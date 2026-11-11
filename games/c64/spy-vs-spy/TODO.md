@@ -4,7 +4,7 @@ Silver: every requirement is met (100 % coverage, `facts.md`, every feature
 confirmed, traced or open, the minisite with the music player, coverage and
 verify on a proven model).
 
-For Gold, a human pass over every section of `index.html`, and then:
+For Gold, a human pass over every section of the Overview (`index.html`), How it works (`mechanics.html`) and Controls (`controls.html`), and then:
 
 - The time bomb's fuse is 200 of its owner's turns; time it live against the
   manual's 15 seconds (`features.md`, open questions).

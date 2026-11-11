@@ -106,6 +106,23 @@ record was cleared.
   (`spy_move` `$6BEA`, `club_in_reach` `$6CF1`).
 - Options screen: up and down choose the line, left and right change the
   value, fire starts (`options_loop` `$A00B`).
+- `read_controls` runs on every raster interrupt, twice a frame, and is the
+  only code that touches CIA 1's ports; the game never sets their direction
+  registers. It ends each call with `$DC00` = `$7F`, keyboard row 7
+  selected, and the next call reads port 1 (`$DC01`) before selecting
+  another row, so row 7's first five keys read as the black spy's stick:
+  1 up, ← down, CTRL left, 2 right, SPACE fire. SPACE therefore starts a
+  game from the options screen (either stick, `$A01E`) and ends the attract
+  demo. In a one-player game the black spy's moves come from the computer
+  (`$6811`), so the keys do nothing there.
+- Each key is tested by comparing its whole row with one value: F5 row 0
+  with `$BF`, RUN/STOP row 7 with `$7F` (not in the demo), S row 1 with
+  `$DF`, counted once per press through `$0284`. Another key held in the
+  row, or anything held on the port-1 stick, which pulls down the same
+  column lines, makes the key do nothing; the port-2 stick does not.
+- These two are traced and run in the kit's 6502 simulator on the listing's
+  bytes, with CIA 1 modelled (`test_controls.js`, which also holds the
+  Controls tab's port); they were not tried in the emulator.
 
 ## Graphics
 

@@ -1,0 +1,242 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spy vs Spy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.svs-cv{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:6px}
+.svs-stack{position:relative}
+.svs-stack canvas+canvas{position:absolute;left:0;top:0}
+.svs-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px;font-family:var(--fm);font-size:12.5px}
+.svs-bar button,.svs-bar select{font:inherit;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:6px 10px;border-radius:6px;cursor:pointer}
+.svs-bar button:hover{border-color:var(--ink-mute)}
+.svs-bar button.svs-on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.svs-bar label{color:var(--ink-mute)}
+.svs-read{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.6em}
+.svs-tbl{border-collapse:collapse;width:100%;font-size:14.5px;margin:6px 0 0}
+.svs-tbl th,.svs-tbl td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.svs-tbl th{font-family:var(--fm);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.svs-tbl td.svs-n{font-family:var(--fm);text-align:right;white-space:nowrap}
+.svs-scroll{overflow-x:auto}
+.svs-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.svs-grid button{font:inherit;font-size:14px;text-align:left;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;color:var(--ink)}
+.svs-grid button:hover{border-color:var(--ink-mute)}
+.svs-grid button small{display:block;font-family:var(--fm);font-size:11.5px;color:var(--ink-mute)}
+.svs-panel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 6px}
+.svs-panel div{background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.svs-panel b{display:block;font-family:var(--fm);font-size:22px;font-weight:500;color:var(--ink)}
+.svs-panel span{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute);letter-spacing:.04em;text-transform:uppercase}
+.svs-miss{font-size:14px;color:var(--coral)}
+@media (max-width:720px){:root{--gx:16px;--h1:36px;--pp:14px}.svs-grid,.svs-panel{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ct-pads{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 14px}
+.ct-pad{background:var(--surface-2);border-radius:8px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+.ct-h{width:100%;margin:0 0 4px;font-family:var(--fm);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute)}
+.ct-pad button{font:inherit;font-family:var(--fm);font-size:13px;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:6px 10px;border-radius:6px;cursor:pointer}
+.ct-pad button:hover{border-color:var(--ink-mute)}
+.ct-pad button[aria-pressed=true]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.ct-out .svs-panel small{display:block;font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+@media (max-width:720px){.ct-pads{grid-template-columns:1fr}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1984 · First Star Software</p>
+  <h1>Spy vs Spy</h1>
+  <p class="sub">Each spy has a joystick, and the game reads both, with three keys, on every raster interrupt. The keyboard and the black spy's port share their wiring, so five keys can play the black spy, and a held black stick switches off the pause, music and restart keys.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · What the game reads</p>
+  <h2 class="t">One routine reads both sticks and three keys, twice a frame</h2>
+  <p class="lede">Hold sticks and keys below to see what the game reads and what it does about it.</p>
+  <div class="plate">
+    <div class="ct-pads">
+      <div class="ct-pad" data-pad="joy2"><p class="ct-h">Port 2: the white spy</p>
+        <button data-bit="1">&uarr; up</button><button data-bit="2">&darr; down</button><button data-bit="4">&larr; left</button><button data-bit="8">&rarr; right</button><button data-bit="16">fire</button></div>
+      <div class="ct-pad" data-pad="joy1"><p class="ct-h">Port 1: the black spy</p>
+        <button data-bit="1">&uarr; up</button><button data-bit="2">&darr; down</button><button data-bit="4">&larr; left</button><button data-bit="8">&rarr; right</button><button data-bit="16">fire</button></div>
+      <div class="ct-pad" data-pad="keys"><p class="ct-h">Keys</p>
+        <button data-key="0,6">F5</button><button data-key="7,7">RUN/STOP</button><button data-key="1,5">S</button><button data-key="1,7">left SHIFT</button>
+        <button data-key="7,0">1</button><button data-key="7,1">&larr;</button><button data-key="7,2">CTRL</button><button data-key="7,3">2</button><button data-key="7,4">SPACE</button></div>
+    </div>
+    <div class="svs-bar ct-mode"><label for="ct-mode">The game is in</label><select id="ct-mode"><option value="0">a game</option><option value="255">the attract demo</option></select><button id="ct-clear">Let go of everything</button></div>
+    <div class="ct-out" id="ct-out"></div>
+    <p class="cap"><b>A port of <code>read_controls</code> (<code>$94A1</code>),</b> run once each time a stick or key changes, as the game runs it on every raster interrupt. Checked against the game's own routine in a 6502 simulator over 46,141 combinations of sticks, keys, demo and held-S states, from the bytes of the listing, with the keyboard and the ports modelled as the C64 wires them: every byte agrees. Not tested on a real machine or in the emulator.</p>
+  </div>
+  <p>Twice a frame, at each of its two raster interrupts, the game calls <code>read_controls</code>. The routine copies joystick port 2 into <code>$0285</code> for the white spy and port 1 into <code>$0286</code> for the black, then looks at three keys: F5 goes back to the options screen, RUN/STOP pauses the game and stops both clocks until it is pressed again, and S switches the music off and on. A stick reads 0 in the bit for each direction held: up, down, left, right and fire, from bit 0 to bit 4. In the attract demo the game ignores the sticks' directions and fire on either stick ends the demo.</p>
+</section>
+
+<section>
+  <p class="fig">02 · The sticks</p>
+  <h2 class="t">What the stick and fire button do</h2>
+  <div class="svs-scroll"><table class="svs-tbl">
+    <thead><tr><th>Where</th><th>The stick</th><th>Fire</th><th>In the code</th></tr></thead>
+    <tbody>
+      <tr><td>The options screen</td><td>up and down choose a line, left and right change its value</td><td>starts the game</td><td><code>options_loop</code> <code>$A00B</code>, either stick</td></tr>
+      <tr><td>The attract demo</td><td>ignored</td><td>ends the demo</td><td><code>read_controls</code> <code>$94A1</code></td></tr>
+      <tr><td>Walking</td><td>up walks to the back of the room, down to the front, left and right across</td><td>beside a door, opens or closes it; beside furniture, searches it</td><td><code>spy_move</code> <code>$6BEA</code>, <code>search_door</code> <code>$725A</code>, <code>search_furniture</code> <code>$7310</code></td></tr>
+      <tr><td>Nothing in reach</td><td></td><td>pressed twice, opens the trapulator</td><td><code>$68E7</code></td></tr>
+      <tr><td>The trapulator</td><td>moves the arrow over the six buttons</td><td>takes the trap, or shows the map</td><td><code>trapulator</code> <code>$98E6</code></td></tr>
+      <tr><td>Both spies in one room</td><td>with fire held, a change of direction swings the club: up and down at the head, left and right a jab</td><td>no searching and no trapulator</td><td><code>spy_walk</code> <code>$6B3D</code>, <code>club_in_reach</code> <code>$6CF1</code></td></tr>
+      <tr><td>The airport</td><td></td><td>on either stick, after the plane leaves, starts a new game</td><td><code>plane_takeoff</code> <code>$885D</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>In a one-player game the computer plays the black spy, and its moves come from the computer player's own byte rather than from port 1 (<code>computer_player</code> <code>$9A67</code>). Both sticks still work on the options screen, so either player can set up the game.</p>
+</section>
+
+<section>
+  <p class="fig">03 · The keyboard</p>
+  <h2 class="t">Secret: five keys play the black spy</h2>
+  <p class="lede">In a two-player game, 1, &larr;, CTRL, 2 and SPACE move the black spy up, down, left and right, and fire.</p>
+  <p>The C64's keyboard and its port-1 joystick share wires. The keyboard is eight rows of eight keys: the computer selects rows by writing to <code>$DC00</code> and reads the columns at <code>$DC01</code>, and joystick port 1 pulls down the same five column lines as the first five columns. <code>read_controls</code> finishes every call by leaving row 7 selected, and the next call reads port 1 before selecting anything else. So the black spy's byte is the stick and row 7's first five keys together: 1 is up, &larr; is down, CTRL is left, 2 is right and SPACE is fire. Press them in the panel above.</p>
+  <p>The same wiring makes SPACE work as fire wherever the game takes fire from either stick: it starts a game from the options screen and ends the attract demo, though the options screen's own text asks for the fire button.</p>
+</section>
+
+<section>
+  <p class="fig">04 · The three keys</p>
+  <h2 class="t">Holding the black spy's stick switches off F5, RUN/STOP and S</h2>
+  <div class="svs-scroll"><table class="svs-tbl">
+    <thead><tr><th>Key</th><th>Row, column</th><th>The row must read</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td>F5</td><td>0, 6</td><td class="svs-n"><code>$BF</code></td><td>back to the options screen (<code>$0282</code> bit 7)</td></tr>
+      <tr><td>RUN/STOP</td><td>7, 7</td><td class="svs-n"><code>$7F</code></td><td>pause or carry on, in a game only (<code>$0282</code> bit 6)</td></tr>
+      <tr><td>S</td><td>1, 5</td><td class="svs-n"><code>$DF</code></td><td>music off or on, once per press (<code>$0284</code>); on again, the tune starts from the top</td></tr>
+    </tbody>
+  </table></div>
+  <p>The routine checks each key by comparing its whole row with one value, the row with that key alone held. Any other key held in the same row changes the value, and so does the black spy's stick, which pulls down columns of every row. So S does nothing while left SHIFT is held, RUN/STOP does nothing while SPACE is held, and none of the three keys work while the black player holds the stick in any direction or holds fire. The white player's stick, on the other port, does not get in the way. Try it in the panel: hold S, then push the black spy's stick.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script>
+/* svs-controls */
+// read_controls ($94A1), the routine the game runs on every raster interrupt, twice a frame, for
+// the page. CIA 1 as the game leaves it: port A ($DC00) an output that selects keyboard rows
+// (a row is selected while its bit is 0) and reads joystick port 2; port B ($DC01) an input that
+// reads the keyboard's columns in the selected rows and joystick port 1, 0 where pulled low.
+// st holds what the routine keeps between calls: portA (what $DC00 was last set to; the routine
+// leaves it at $7F), demo ($CFF7, negative in the attract demo), latch ($0284, set while S is
+// held) and music ($0263, 1 while the music is off). input holds keys, a list of [row, column]
+// held, and joy1 and joy2, the directions held on each stick (1 up, 2 down, 4 left, 8 right,
+// 16 fire). One call updates st and returns the bytes it wrote: white ($0285), black ($0286),
+// flags ($0282: bit 7 F5 or the end of the demo, bit 6 RUN/STOP) and restart (S turned the
+// music back on, which starts the tune again).
+function svsReadControls(st, input) {
+  const readA = () => st.portA & ~input.joy2 & 0xFF;
+  const readB = () => {
+    let v = 0xFF;
+    for (const [row, col] of input.keys) if (!(st.portA >> row & 1)) v &= ~(1 << col);
+    return v & ~input.joy1 & 0xFF;
+  };
+  let white, black, y, restart = false;
+  if (st.demo & 0x80) {                                    // $94A4: the demo plays recorded moves
+    white = black = 0xFF;
+    y = (readA() & 0x10) && (readB() & 0x10) ? 0 : 0x80;   // fire on either stick ends it
+  } else {
+    white = readA(); black = readB(); y = 0;               // $94C1
+  }
+  st.portA = 0xFE;                                         // row 0: F5 alone reads $BF
+  if (readB() === 0xBF) y = 0x80;
+  st.portA = 0x7F;                                         // row 7: RUN/STOP alone reads $7F
+  if (readB() === 0x7F && st.demo === 0) y |= 0x40;
+  st.portA = 0xFD;                                         // row 1: S alone reads $DF
+  if (readB() === 0xDF) {
+    if (!st.latch) { st.music ^= 1; restart = st.music === 0; st.latch = 1; }
+  } else st.latch = 0;
+  st.portA = 0x7F;                                         // $9548: row 7 is left selected
+  return { white, black, flags: y, restart };
+}
+</script>
+<script>
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const hx = (n) => '$' + n.toString(16).toUpperCase().padStart(2, '0');
+const bits = (n) => n.toString(2).padStart(8, '0');
+const DIRS = ['up', 'down', 'left', 'right', 'fire'];
+const held = { joy1: 0, joy2: 0, keys: new Set() };
+const st = { portA: 0x7F, demo: 0, latch: 0, music: 0 };
+let last = null;
+function stick(v) {
+  const on = DIRS.filter((d, i) => !(v >> i & 1));
+  return on.length ? on.join(' + ') : 'nothing held';
+}
+function rowRead(row) {                                   // what $DC01 gives with only this row selected
+  let v = 0xFF;
+  for (const k of held.keys) { const [r, c] = k.split(',').map(Number); if (r === row) v &= ~(1 << c); }
+  return v & ~held.joy1 & 0xFF;
+}
+function run() {
+  const input = { keys: [...held.keys].map(k => k.split(',').map(Number)), joy1: held.joy1, joy2: held.joy2 };
+  last = svsReadControls(st, input);
+  show();
+}
+function show() {
+  const r = last, demo = st.demo & 0x80;
+  const rows = [[0, 0xBF, 'F5'], [7, 0x7F, 'RUN/STOP'], [1, 0xDF, 'S']].map(([row, want, key]) => {
+    const got = rowRead(row);
+    return '<tr><td>' + key + '</td><td>row ' + row + '</td><td class="svs-n"><code>' + hx(got) + '</code> ' + bits(got) +
+      '</td><td>' + (got === want ? 'alone: counts' : got === 0xFF ? 'not held' : 'not alone: ignored') + '</td></tr>';
+  }).join('');
+  const did = [];
+  if (r.flags & 0x80) did.push(demo ? 'the demo ends' : 'back to the options screen');
+  if (r.flags & 0x40) did.push('pause, or carry on');
+  did.push('music ' + (st.music ? 'off' : 'on') + (r.restart ? ', the tune starts again' : ''));
+  $('ct-out').innerHTML =
+    '<div class="svs-panel">' +
+      '<div><span>White, $0285</span><b>' + hx(r.white) + '</b><small>' + (demo ? 'ignored in the demo' : stick(r.white)) + '</small></div>' +
+      '<div><span>Black, $0286</span><b>' + hx(r.black) + '</b><small>' + (demo ? 'ignored in the demo' : stick(r.black)) + '</small></div>' +
+      '<div><span>Keys, $0282</span><b>' + hx(r.flags) + '</b><small>' + (r.flags ? (r.flags & 0x80 ? 'bit 7' : '') + (r.flags & 0x40 ? ' bit 6' : '') : 'no key') + '</small></div>' +
+      '<div><span>Music, $0263</span><b>' + st.music + '</b><small>' + (st.music ? 'off' : 'on') + '</small></div>' +
+    '</div>' +
+    '<div class="svs-scroll"><table class="svs-tbl"><thead><tr><th>Key</th><th>Row read</th><th>$DC01</th><th>The key</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+    '<p class="svs-read">' + did.join('; ') + '.</p>';
+}
+document.querySelectorAll('.ct-pad button').forEach((b) => {
+  b.setAttribute('aria-pressed', 'false');
+  b.addEventListener('click', () => {
+    const pad = b.closest('.ct-pad').dataset.pad, on = b.getAttribute('aria-pressed') !== 'true';
+    b.setAttribute('aria-pressed', String(on));
+    if (pad === 'keys') { if (on) held.keys.add(b.dataset.key); else held.keys.delete(b.dataset.key); }
+    else held[pad] = on ? held[pad] | +b.dataset.bit : held[pad] & ~+b.dataset.bit;
+    run();
+  });
+});
+$('ct-mode').addEventListener('change', (e) => { st.demo = +e.target.value; run(); });
+$('ct-clear').addEventListener('click', () => {
+  held.joy1 = held.joy2 = 0; held.keys.clear();
+  document.querySelectorAll('.ct-pad button').forEach(b => b.setAttribute('aria-pressed', 'false'));
+  run();
+});
+run();
+})();
+</script>

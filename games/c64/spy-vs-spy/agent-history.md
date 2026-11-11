@@ -87,3 +87,25 @@ game drew frame 0 on its first turn, which corrected the tab's claim
 that frame 0 is never drawn, and the frame headers' listing comment,
 which described three bytes a strip, was corrected to the two the code
 reads.
+
+## 11 November 2026, the Overview and Controls tabs
+
+The contributor asked for an Overview tab before How it works, and a
+Controls tab. The How it works page moved from `index.html` to
+`mechanics.html`, as other games with an Overview have it, and
+`game.json`'s `redirects` send each of its old section links on.
+
+The Overview's release and reception rest on Wikipedia, C64-Wiki and
+scans of Commodore User on the Internet Archive. A search snippet put the
+magazine's review in "issue 15, February 1985"; the archive dates issue 15
+December 1984, and the scan of page 66 gave the scores (4, 4, 4 and 3 out
+of 5). The same page's Screen Star award went to Zaxxon, not to Spy vs
+Spy. MobyGames and Lemon64 refused automated requests (HTTP 403).
+
+The container was new and the disk image was gone, so the controls were
+checked in the kit's 6502 simulator rather than in the emulator. Reading
+`read_controls` showed that it leaves keyboard row 7 selected between
+calls, so row 7's keys read as the port-1 stick, and that it tests each key
+by its whole row. `features.md` had said Space is not read on the options
+screen; the simulator shows SPACE reads as port 1's fire, which the options
+screen takes from either stick, and the row was corrected.
