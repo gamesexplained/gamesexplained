@@ -96,10 +96,14 @@ with $FF for unused slots. Layout 2 has an apple at column 8, row 4.
 The reported invisible apple to the right of the spawn remains open.
 
 The clear routines are $2C00 (cherries, then bottom row for state 4),
-$2C78 (the four corner cells), and $1E34 (enemies). Live probes removed
-the cherries in layout 1 to reach state 3. In layout 2 removing the
-cherries alone left state 4. Adding six type-3 bottom tiles reached
-state 5. Setting the corners to type 5 in layout 3 reached state 1.
+$2C78 (the four corner cells), and $1E34 (enemies). In layout 1, opening
+the shafts beneath the six apples and freezing enemy movement let all
+six settle on the bottom with cherries still on the board. Once all
+cherries were gone, the game reached state 3 in both the six-apple
+setup and a fresh test with zero bottom apples.
+In layout 2, removing the cherries left state 4 with zero or five
+type-3 bottom tiles. Adding the sixth reached state 5. Setting the
+corners to type 5 in layout 3 reached state 1.
 These probes test the win predicates using controlled RAM changes.
 Both clear routes award the remaining bonus at $2C60. The alternate
 route adds 1,000, 2,000, or 3,000 points through $1AA8.
