@@ -49,3 +49,7 @@ The resident-stash disassembler session exported its owned annotations but omitt
 Decoding the outcome streams exposed `$EF82=$91`, a stop command omitted from the earlier listing. The embedded sound data had inherited a zero at that position. It was corrected to match the captured bytes, and the existing sound check passed.
 
 Typing the effect records exposed 220 more zero-filled bytes in the embedded sound data. They were restored from the airshaft capture; the existing sound check then matched the rebuilt listing and its recorded VICE samples.
+
+The airshaft ledger now includes 24 previously uncounted stretches of stable unpacker output, 10,878 bytes in total. Their purposes remain open; this corrects the coverage denominator rather than treating their presence as understanding.
+
+The same audit added 19,852 Broadway bytes and 11,675 museum bytes to their ledgers, including play-time copies identified by the listing. They remain unexplained.

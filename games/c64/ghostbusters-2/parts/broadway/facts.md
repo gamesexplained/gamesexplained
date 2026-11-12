@@ -35,3 +35,5 @@ The sequence routine at `$A4EE` selects a pair of bytes for the sprite layout. A
 The paired-state routine at `$9D05` alternates patched addresses between two groups in `$F000–$F8xx`, then dispatches separate updates according to `$9C8C/$9C8E`. The routines at `$9E05/$9EC6` move two X coordinates and copy 64-byte frames into `$4280/$42C0` every fourth movement update. The raster handler at `$86D6–$86FE` uses those low X bytes and selects sprite pointers `$0A/$0B` for sprites 3 and 4. The objects’ identities remain open.
 
 The frame sources at `$F000–$F7FF` comprise 32 records of 64 bytes. The two movement routines select records in `$40` steps and copy them to the sprite slots; all 2,048 source bytes match between the captured entry and play snapshots. The Graphics tab displays their first 63 bytes with illustrative colours.
+
+The ledger includes 19,852 bytes previously outside the count. Forty stretches match stable unpacker output at the entry snapshot; another is a copy visible in play whose source is present at entry. Their individual purposes remain open.

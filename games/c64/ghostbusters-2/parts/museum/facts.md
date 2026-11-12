@@ -67,3 +67,5 @@ The floor helper at `$B6E4` converts an offset position into character-cell coor
 An [alternative image on the Censor release page](https://csdb.dk/release/?id=78781) contains a complete `7.THE MUSEUM` file. Its 28,376 raw bytes, including the load address, have SHA-256 `390f8a8edce40a94a07273100f3839378cbf352b4ab500a5682baedb5a447d6a`, identical to the Jondi museum file. Its `5.THE LIBERTY` file is also byte-identical to Jondi’s. The alternative therefore does not independently establish the origin of the museum jumps.
 
 The shared sound-effect record 13 is requested when either side initializes a movement slot after the fire-input path. Record 16 is requested when the proximity test at `$957A` matches. The records’ other possible uses remain open.
+
+The ledger includes 11,675 bytes previously outside the count. Nineteen stretches match stable unpacker output at the entry snapshot; three are copies visible in play whose sources are present at entry. Their individual purposes remain open.
