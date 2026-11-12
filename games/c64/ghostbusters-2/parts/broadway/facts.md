@@ -50,8 +50,16 @@ The pointer table at `$B33D` names 29 lists at `$B377–$BD8A`, containing 176 r
 
 The 52-byte order at `$C8CB` chooses among the record lists and ends with `$FF`; `$A353` wraps on that marker. The main loop calls it and initializes the next list when `$AE87` returns 1. With `$16` zero, that check requires the five state entries at even offsets 0–8 of `$B172` to differ from 1 and the entry at offset `$18` to be zero. With `$16` nonzero, it requires the five entries to differ from both 1 and 2. The gameplay meaning of these states remains open.
 
-The record field at offset 8 selects a pointer from `$BD8B`; the first 113 entries point into the byte streams at `$BE71–$C4EF`. The loop at `$A492` reads a stream command, selects a handler from the 58-entry table at `$A6E1`, advances the stream pointer and calls it. It stores the resulting pointer and repeats when the handler returns with Y nonzero. The handler entries are disassembled, but their command formats and the streams remain open.
+The record field at offset 8 selects a pointer from `$BD8B`; the first 114 entries point into byte streams at `$BE6F–$C4F4`. The loop at `$A492` reads a stream command, selects a handler from the 58-entry table at `$A6E1`, advances the stream pointer and calls it. It stores the resulting pointer and repeats when the handler returns with Y nonzero. The handler entries are disassembled, but their command formats and the streams remain open.
 
 Path commands `$00–$0C` have been traced in the listing. `$00` returns immediately; `$01–$0B` consume between one and three parameter bytes and set indexed state, including coordinate-derived values in `$B0D6/$B0D7` and `$B0F0/$B0F1` for commands `$02–$09`. `$0C` selects a sprite sequence through `$C4F5`, sets state 2 and tells the dispatcher to continue. What these states mean during play remains open.
 
 The listing also traces path commands `$0D–$10`, `$13`, `$16–$18` and `$1C`. The `$0D` handler copies X to the processor stack pointer, changes X, and later copies the stack pointer back to X before executing RTS. Its caller stack state and whether the command executes during play remain open.
+
+Commands `$14`, `$15` and `$19–$1B` have also been traced. `$19` and `$1A` conditionally replace the stream pointer using a selector from the following byte; `$1B` updates a three-step counter and can advance two stored operands. The listing records the conditions and remaining unknown effects.
+
+Commands `$11` and `$12` compare the low bytes of differences between two indexed coordinate pairs after adding half of a parameter. When both comparisons pass, they select an animation for the current or the other entry respectively. On its successful path `$12`, like `$0D`, copies X into the stack pointer and later reads it back before RTS; the caller stack state and whether the path executes in play remain open.
+
+The dispatcher also selects coordinate handlers: `$1E` adds signed eight-bit values to the two 16-bit coordinates; `$1F–$22` advance a phase and use it in both curve lookups, while `$23–$26` subtract the phase step. `$31` adds four to the second coordinate. Their reachability and effect on the scene remain open.
+
+The 114 path pointers have 113 distinct targets. Taken in address order, those targets divide `$BE6F–$C4F4` into 113 segments; linear decoding with the command handlers accounts for all 1,670 bytes without crossing a target boundary. The listing records each segment and its parameter bytes. Conditional pointer changes, timing and actual reachability remain open.
