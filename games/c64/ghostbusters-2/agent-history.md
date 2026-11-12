@@ -109,3 +109,5 @@ Traced the zero case of the airshaft screen-pattern drawing routine, including i
 Connected the zero pattern restore to its matching save-and-draw path and noted that it does not save the original colours.
 
 Traced the airshaft pointer `$25` draw and restore pair and its boundary-limited diagonal.
+
+Traced two further airshaft drawing cases, including the shared column writer and restore routine.
