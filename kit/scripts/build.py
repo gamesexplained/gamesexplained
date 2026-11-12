@@ -69,6 +69,9 @@ The authored pages have {{title}}, {{platform}}, {{year}} and {{publisher}}
 filled from game.json. A game page's eyebrow leaves out the platform, which its
 breadcrumb names: the build drops a platform name at the eyebrow's start. The build fails on a src or href that points at no
 file it published: a page's own .js beside it would otherwise 404 on the site.
+It fails too on a file a page's script loads by name that it did not publish
+(unpublished_loads): C64.load('listing.json') in a game whose listings are its
+parts' draws nothing, and the page still builds.
 It lists pages with blocks hidden by the page editor (kit/scripts/edit.py), and
 fails on a Gold page that still has one. It stops on a Platinum game without a
 Play tab and the test_play.js beside it that holds the published page. It counts the links into a
@@ -2468,6 +2471,72 @@ def broken_links(out_root):
     return bad
 
 
+def loaders():
+    """The names of the site's loaders that fetch listing.json when a page gives them no URL:
+    C64, BBC and the rest, each from the site/lib/ script that defines it."""
+    names = []
+    for f in sorted(glob.glob(os.path.join(SITE, "lib", "*.js"))):
+        text = read(f)
+        m = re.search(r"^globalThis\.(\w+) = \(function", text, re.M)
+        if m and "url = url || 'listing.json'" in text:
+            names.append(m.group(1))
+    return names
+
+
+SCRIPT = re.compile(r"<script\b([^>]*)>(.*?)</script>", re.S | re.I)
+LOADS = re.compile(r"""\b([\w$]+)\.load\(\s*(?:(["'])([^"'\n]*)\2\s*)?\)|\bfetch\(\s*(["'])([^"'\n]+)\4\s*[,)]""")
+
+
+def unpublished_loads(out_root):
+    """(file, URL) for each file that a script of a built page loads by name and the build did
+    not write: a whole string given to a loader (C64.load('listing.json')) or to fetch, and a
+    loader called with nothing, which fetches listing.json. A URL a script puts together at run
+    time is not read, nor is one the page carries in a data-listing tag, which the loaders take
+    from the page. A script under reference/ is read as its pages run it, from the folder above.
+
+    A game of several parts has no listing.json of its own, and a page left loading one builds
+    cleanly and then draws nothing in the reader's browser (the --adopt of a game's first load,
+    kit/scripts/parts.py, moves the listing its pages were written against)."""
+    named, bad = set(loaders()), []
+
+    def loads(text):
+        for m in LOADS.finditer(text):
+            if "//" in text[text.rfind("\n", 0, m.start()) + 1:m.start()].replace("://", ""):
+                continue   # in a comment
+            if m.group(5) is not None:
+                url = m.group(5)
+            elif m.group(3) is not None:
+                url = m.group(3)
+                if m.group(1) not in named and not url.endswith(".json"):
+                    continue   # some other object's load, of something that is no file
+            elif m.group(1) in named:
+                url = "listing.json"
+            else:
+                continue
+            if url and not re.match(r"[a-z][a-z0-9+.-]*:|//|#", url, re.I) and "${" not in url:
+                yield url
+
+    def missing(folder, url):
+        path = url.split("#")[0].split("?")[0]
+        return bool(path) and not os.path.exists(os.path.normpath(
+            os.path.join(out_root, path.lstrip("/")) if path.startswith("/") else os.path.join(folder, path)))
+
+    carried = {}   # folder: the listings its pages carry
+    for page in sorted(glob.glob(os.path.join(out_root, "**", "*.html"), recursive=True)):
+        text, folder = read(page), os.path.dirname(page)
+        own = set(re.findall(r'data-listing="([^"]+)"', text))
+        carried.setdefault(folder, set()).update(own)
+        for attrs, body in SCRIPT.findall(text):
+            if re.search(r"\bsrc\s*=|application/json", attrs):
+                continue
+            bad += [(os.path.relpath(page, out_root), url) for url in loads(body) if url not in own and missing(folder, url)]
+    for js in sorted(glob.glob(os.path.join(out_root, "**", "reference", "**", "*.js"), recursive=True)):
+        folder = js[:js.rindex(os.sep + "reference" + os.sep)]
+        bad += [(os.path.relpath(js, out_root), url) for url in loads(read(js))
+                if url not in carried.get(folder, ()) and missing(folder, url)]
+    return sorted(set(bad))
+
+
 class AddressLinks(html.parser.HTMLParser):
     """The links into a Source page that a built page carries, as (page, address): each
     <a href="source….html#XXXX">, and each bare <code>$XXXX</code> that site.js makes one of
@@ -2638,6 +2707,14 @@ def main():
         sys.exit(f"{len(bad)} link(s) to nothing the build published. A game folder publishes its authored pages, "
                  "listing.json, symbols.json and reference/ (and for each of its parts, parts/<id>/listing.json and "
                  "symbols.json, and source-<id>.html), nothing else; site/lib/ is at ../../lib/")
+    unloaded = unpublished_loads(out_root)
+    for src, url in unloaded:
+        print(f"nothing to load: {src} loads {url}", file=sys.stderr)
+    if unloaded:
+        sys.exit(f"{len(unloaded)} file(s) that a page's script loads and the build did not publish. A game of several "
+                 "parts has no listing.json of its own: its pages load a part's, as in "
+                 "C64.load('parts/<id>/listing.json'). A game folder publishes its authored pages, listing.json, "
+                 "symbols.json and reference/, and for each of its parts parts/<id>/listing.json and symbols.json")
     total, lost, inside = unrecorded(out_root)
     if "--addresses" in argv:
         pages = {}

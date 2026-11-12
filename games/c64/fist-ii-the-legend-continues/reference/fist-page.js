@@ -1,11 +1,11 @@
-// Shared by the Fist II pages: the game's memory from listing.json, and the fighters' sprite
+// Shared by the Fist II pages: the Adventure's memory from its listing, and the fighters' sprite
 // frames unpacked the game's way. Needs ../../lib/c64.js.
 const FIST = (function () {
   let game = null;
   async function load() {
     if (game) return game;
     if (!window.C64) throw new Error('This widget needs the site\'s shared script, lib/c64.js.');
-    game = await C64.load('listing.json');
+    game = await C64.load('parts/adventure/listing.json');
     return game;
   }
   // Frame i starts at $8000 + $B661[i] * 256 + $B57C[i]. A non-zero byte is copied;
