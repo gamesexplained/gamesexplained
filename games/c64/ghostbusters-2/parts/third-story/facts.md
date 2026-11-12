@@ -9,3 +9,5 @@ The sound-driver instruction ranges $E000–$E0C1, $E256–$E2CD, $E2D7–$E314 
 The 24 two-byte command-table entries at $E226–$E255 and the two 14-byte parameter-pointer tables at $E668–$E683 match the airshaft snapshot. The pointed-to data following them and the two bytes at $E666–$E667 remain open.
 
 The decoded `6.THIRD STORY` load writes `$3000–$37FF`, `$6400–$91FF`, `$C200–$C5FF` and `$E000–$EFE1`. Its later snapshot differs from the dual-fill output in 100 bytes, all in the sound-driver area. The part lies over Broadway; the restored engine at `$1000–$1BFF` is counted in `story-engine`.
+
+This story load contains two picture sources: bitmaps at `$6400–$77FF` and `$7B00–$8EFF`, matrices at `$7800–$7A7F` and `$8F00–$917F`, and colour bytes at `$7A80/$9180`. The shared story copies at `$1538/$1593` use these ranges. In the captured story snapshot, `$4000–$53FF` and `$6000–$627F` match the second bitmap and matrix. The Graphics page shows the first 15 rows of both sources.

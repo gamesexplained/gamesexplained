@@ -42,6 +42,20 @@ assert.deepStrictEqual(picture.bitmap, Array.from(storyListing.ram.slice(0x7b00,
 assert.deepStrictEqual(picture.matrix, Array.from(storyListing.ram.slice(0x8f00, 0x9158)));
 assert.equal(picture.colour.length, 600);
 console.log('OK - story bitmap and colour matrix match the listing');
+const storyExtraMatch = html.match(/<script id="story-picture-extra-data" type="application\/json">([^<]+)<\/script>/);
+assert(storyExtraMatch, 'the graphics page includes the remaining story pictures');
+const storyExtra = JSON.parse(storyExtraMatch[1]);
+assert.equal(storyExtra.length, 6);
+for (const image of storyExtra) {
+  const source = g.listing(`parts/${image.part}/listing.json`);
+  for (let i = 0; i < 4800; i++) assert(source.has[image.bitmapAddress + i]);
+  for (let i = 0; i < 600; i++) assert(source.has[image.matrixAddress + i]);
+  assert.deepStrictEqual(image.bitmap, Array.from(source.ram.slice(image.bitmapAddress, image.bitmapAddress + 4800)));
+  assert.deepStrictEqual(image.matrix, Array.from(source.ram.slice(image.matrixAddress, image.matrixAddress + 600)));
+  assert(image.colour.every(c => c === (source.ram[image.colourAddress] & 15)));
+}
+console.log('OK - six additional story pictures match their source listings');
+
 // Hashes of the 15 rows in the frame reconstructed from the VICE capture. The
 // whole reconstruction differs from VICE by two pixels (raster lines 32 and 122).
 const expectedRows = [

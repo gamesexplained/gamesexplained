@@ -32,3 +32,7 @@ The input scanner at `$16F2` checks CIA1 port A bit 4 and otherwise compares thi
 In the opening-story snapshot, the first 4,800 bitmap bytes at `$7B00–$8DBF` match `$4000–$52BF`, and the first 600 matrix bytes at `$8F00–$9157` match `$6000–$6257`. The copied story routine at `$1593` performs the corresponding picture and matrix copies. The listing counts the loaded sources and excludes the copied display output.
 
 The decoded `2.FIRST STORY` load writes `$3000–$37FF`, `$6400–$91FF` and `$C200–$C87F`; its 15,488 stable output bytes match this snapshot. It does not replace the sound driver loaded by the title, so this part lies over the title and owns only those decoded ranges. Runtime display copies are excluded.
+
+This story load contains two picture sources: bitmaps at `$6400–$77FF` and `$7B00–$8EFF`, matrices at `$7800–$7A7F` and `$8F00–$917F`, and colour bytes at `$7A80/$9180`. The shared story copies at `$1538/$1593` use these ranges. In the captured story snapshot, `$4000–$53FF` and `$6000–$627F` match the second bitmap and matrix. The Graphics page shows the first 15 rows of both sources.
+
+The opening story’s second picture bitmap, matrix and colour byte match the second story’s first picture sources byte for byte, despite their different load addresses.

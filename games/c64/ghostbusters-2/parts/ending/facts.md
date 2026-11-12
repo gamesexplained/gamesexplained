@@ -11,3 +11,5 @@ The 24 two-byte command-table entries at $E226–$E255 and the two 14-byte param
 The decoded `8.THE END` load writes `$3000–$37FF`, `$6400–$7AFF`, `$C200–$C4FF` and `$E000–$ED31`. Its later snapshot differs from the dual-fill output in 87 bytes, all in the sound-driver area. The ending lies over the museum; the restored engine at `$1000–$1BFF` is counted in `story-engine`.
 
 The ending’s first tune record selects three zero-terminated pointer lists at `$EB7F`, `$EB71` and `$EB89`. Their ten distinct entry points share several bytecode suffixes. Six further pointers at `$EC92–$EC97` and `$ECD3–$ECD8` select streams that each end in command `$91`, which stops the sound. The listing gives 16 ordered, non-overlapping decoded pieces; reassembling them reproduces all 406 stream bytes. The loaded byte at `$ED31` and the precise playback timing remain open.
+
+The ending load contains a picture bitmap at `$6400–$77FF`, its 640-byte matrix at `$7800–$7A7F` and a colour byte at `$7A80`. The story copy at `$1538` uses these sources; the ending snapshot’s `$4000–$53FF` bitmap matches the source. The Graphics page shows the first 15 rows.

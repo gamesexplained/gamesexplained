@@ -149,3 +149,5 @@ Added the sprite 6 alternate-state bitmap to the Graphics inspector after tracin
 Included the title credits’ 95-byte zero tail and checked that every stable output byte of `1.THE INTRO` has a title listing record. Answered that packed disk item as the title part.
 
 Audited the story-load outputs against the part listings. The loads replace picture ranges whose untyped bytes were missing from coverage, so added those ranges as unexplained output in all four story ledgers. The coverage total fell accordingly. The shared font and sound ranges still need a byte-by-byte ownership audit.
+
+Decoded seven loaded story picture sources into bitmap, matrix and colour rows. Compared each captured second picture or ending picture to its display copy, and found that the opening story’s second picture matches the second story’s first. Added the six previously hidden sources to the Graphics viewer. The extra story-copy sources at `$9200–$A880` remain to be traced.
