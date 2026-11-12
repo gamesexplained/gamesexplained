@@ -44,6 +44,15 @@ ram[0x9571] = 0x8f; ram[0x9572] = 0x92;
 ram[0x94be] = 1; ram[0x94bc] = 0;
 cpu.call(0x956c);
 assert.deepStrictEqual([ram[0x9571], ram[0x9572], ram[0x94bc]], [0x8f, 0x92, 1]);
+// The corresponding mode-3 pointer moves from the captured 02 to 01.
+ram[0x95bf] = 0x9f; ram[0x95c0] = 0x92;
+ram[0x94bf] = 1;
+cpu.call(0x95ba);
+assert.deepStrictEqual([ram[0x95bf], ram[0x95c0], ram[0x94bf]], [0x97, 0x92, 0]);
+ram[0x95bf] = 0x8f; ram[0x95c0] = 0x92;
+ram[0x94bf] = 1; ram[0x94bd] = 0;
+cpu.call(0x95ba);
+assert.deepStrictEqual([ram[0x95bf], ram[0x95c0], ram[0x94bd]], [0x8f, 0x92, 1]);
 const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const match = html.match(/<script id="frame-data" type="application\/json">([^<]+)<\/script>/);
 assert(match, 'airshaft frame data is embedded');
