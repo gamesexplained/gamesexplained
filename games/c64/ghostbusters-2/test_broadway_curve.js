@@ -18,4 +18,19 @@ for (const f of fixtures) {
   const dest = first ? 0xaf9e : 0xafb8;
   assert.deepStrictEqual([...ram.slice(dest, dest + 2)], f.result, `${f.axis}, phase ${f.phase}`);
 }
-console.log('OK - Broadway curve calculations match eight VICE observations');
+for (const first of [true, false]) {
+  const ram = listing.ram.slice();
+  ram[first ? 0xb03a : 0xb054] = first ? 0x70 : 0x38;
+  ram[0xb0d6] = ram[0xb0f0] = 0x80;
+  ram[0xb0d7] = ram[0xb0f1] = 1;
+  const cpu = new CPU(ram, {port: 0x35});
+  for (let phase = 0; phase < 256; phase++) {
+    const raw = ram[(first ? 0x2ccf : 0x32ff) + phase];
+    const signed = raw < 128 ? raw : raw - 256;
+    const expected = (0x180 + (first ? signed : -signed)) & 0xffff;
+    cpu.call(first ? 0xad07 : 0xad39, {x: 0, y: phase});
+    const dest = first ? 0xaf9e : 0xafb8;
+    assert.equal(ram[dest] + 256 * ram[dest + 1], expected, `phase ${phase}`);
+  }
+}
+console.log('OK - 512 Broadway curve inputs and eight VICE observations');
