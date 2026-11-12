@@ -37,8 +37,8 @@ const storyMatch = html.match(/<script id="story-picture-data" type="application
 assert(storyMatch, 'the graphics page must include the story picture data');
 const picture = JSON.parse(storyMatch[1]);
 const storyListing = g.listing('parts/opening-story/listing.json');
-assert.deepStrictEqual(picture.bitmap, Array.from(storyListing.ram.slice(0x4000, 0x52c0)));
-assert.deepStrictEqual(picture.matrix, Array.from(storyListing.ram.slice(0x6000, 0x6258)));
+assert.deepStrictEqual(picture.bitmap, Array.from(storyListing.ram.slice(0x7b00, 0x8dc0)));
+assert.deepStrictEqual(picture.matrix, Array.from(storyListing.ram.slice(0x8f00, 0x9158)));
 assert.equal(picture.colour.length, 600);
 console.log('OK - story bitmap and colour matrix match the listing');
 // Hashes of the 15 rows in the frame reconstructed from the VICE capture. The
