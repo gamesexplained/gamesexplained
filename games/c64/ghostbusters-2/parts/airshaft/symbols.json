@@ -851,7 +851,7 @@
   {
    "start": 33964,
    "end": 33966,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 33967,
@@ -5572,6 +5572,12 @@
    "kind": "auto"
   },
   {
+   "address": 33964,
+   "name": "airshaft_main_loop_jump_bytes",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 33967,
    "name": "b_84AF",
    "type": "Branch",
@@ -9455,9 +9461,9 @@
   },
   {
    "address": 40935,
-   "name": "s_9FE7",
+   "name": "airshaft_scan_screen_patterns",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40941,
@@ -10733,9 +10739,9 @@
   },
   {
    "address": 44849,
-   "name": "s_AF31",
+   "name": "airshaft_apply_screen_pattern_triggers",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 44859,
@@ -18394,6 +18400,11 @@
    "text": "Wait for the value at $8026 to change, advance the two-step counter at $803C, then select the next update path from that counter and state flags."
   },
   {
+   "address": 33964,
+   "type": "line",
+   "text": "The captured bytes $4C $E5 $83 encode a jump to the main loop at $83E5. The preceding instruction unconditionally jumps to $08CD, and the branch at $84A2 targets $84AF. An alternate entry to these bytes has not been established."
+  },
+  {
    "address": 34144,
    "type": "line",
    "text": "Copy 63 bytes each from $4800, $4880 and $4900 into adjacent buffers at $3E80, $3EBF and $3EFE. Starting with source $3F37 and destination $3F3A, repeatedly copy three bytes, subtracting three from both self-modified addresses until the source low byte is $7D. Clear three bytes at the address in the operand at $85C9/$85CA, advance that operand by three, and copy the three 63-byte buffers back to $4800, $4880 and $4900. Return."
@@ -19294,6 +19305,11 @@
    "text": "When $804B is zero, return immediately if $C90A is nonzero, and otherwise continue only when the sprite 7 pointer operand at $8E2A is $0D or $0E. Form four byte bounds from the sprite 5 Y operand at $8E07 minus and plus $10 and its X operand at $8E02 minus $10 and plus $4F. Compare the sprite 7 Y operand at $8E25 and X operand at $8E20 with those bounds using CMP followed by BPL/BMI, so the sign bit of each eight-bit subtraction controls the branches. If all four tests pass, set $C90A to 1 when $804B is zero, or set $C7B6 to 1 otherwise. The flag meanings and complete gameplay interpretation remain open."
   },
   {
+   "address": 40935,
+   "type": "line",
+   "text": "Return when $A767 is zero. Otherwise compute column 11 from the constant $80 minus $24, divided by 8, and compute a row from the sprite 5 Y operand at $8E07 minus $32 plus 8, with byte wrap, divided by 8. Select the corresponding two-byte address from $C5CC and add the column. Read a byte through the patched operand at $A04B and pass it to $AF31; add the next increment from $A068 to the address, and repeat for 21 reads. The first increment is zero, so the first address is read twice. The final increment is read after the last sample, and does not determine another read. $AF31 passes each byte to the two pattern-trigger routines. The reason this scan is enabled remains open."
+  },
+  {
    "address": 41169,
    "type": "line",
    "text": "Compare the row pointer at $A0CE/$A0CF with $1AB4, $1AA0, $1118 and $1104. Write $1D, $1E, $1E or $1D to $801C on those matches. Then use $801D and the movement values at $801E/$801F to choose the upward or downward scroll path."
@@ -19427,6 +19443,11 @@
    "address": 44697,
    "type": "line",
    "text": "On right input, if $B5B9 is $14 and $B5BA is zero, clear $B5BB, set $B5BA to 4 and clear $B5BC; otherwise return without changing them."
+  },
+  {
+   "address": 44849,
+   "type": "line",
+   "text": "Store A at $AF0D and call the first and second pattern-trigger routines at $AFC3 and $B065, then return."
   },
   {
    "address": 44995,

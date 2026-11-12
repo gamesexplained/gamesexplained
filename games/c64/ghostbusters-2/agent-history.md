@@ -65,3 +65,5 @@ Traced a further Broadway comparison between six active entries and the three fi
 Traced the Broadway active-entry comparison with the second position pair and the sprite 5 comparison with five scene entries, including their state transitions and the carry used in the sprite X calculation.
 
 Traced the airshaft sprite 5 and 7 boundary checks, retaining their actual sign-bit branches and the unresolved flag meanings.
+
+Traced the airshaft screen-pattern scan and recovered the three jump bytes at `$84AC–$84AE` from the snapshot; no alternate entry to those bytes has been established.
