@@ -1343,9 +1343,9 @@
   },
   {
    "address": 2220,
-   "name": "s_08AC",
+   "name": "airshaft_wait_for_fire_cycle",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2222,
@@ -1445,9 +1445,9 @@
   },
   {
    "address": 2806,
-   "name": "s_0AF6",
+   "name": "airshaft_show_outcome_text",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2872,
@@ -16852,7 +16852,12 @@
   {
    "address": 2188,
    "type": "line",
-   "text": "Write 1 to the VIC interrupt status register, call the sound update at $E13A, and jump to the interrupt restore at $8D69. These bytes match in the entry and play snapshots; their origin and whether execution reaches this entry remain open."
+   "text": "Write 1 to the VIC interrupt status register, call the sound update at $E13A, and jump to the interrupt restore at $8D69. The outcome-screen setup at $0AF6 installs $088C in the interrupt vector and enables the VIC interrupt. These bytes match the entry and play snapshots; their load origin remains open."
+  },
+  {
+   "address": 2220,
+   "type": "line",
+   "text": "Read CIA 1 port A bit 4 until it is high, then wait until it is low, and jump to the sound-state clear routine. Bit 4 is the active-low joystick-port-2 fire line; CIA port configuration can affect the read."
   },
   {
    "address": 2284,
@@ -16873,6 +16878,11 @@
    "address": 2644,
    "type": "line",
    "text": "One 120-byte, space-padded failure message passed to $0AF6 by $0AEB. It says not enough slime was collected, refers to Vigo, and asks for fire."
+  },
+  {
+   "address": 2806,
+   "type": "line",
+   "text": "Save X and Y into the low and high bytes of the source operand at $0B5C, disable interrupts, install $088C at the interrupt vector, clear bit 7 of VIC control 1, stop CIA 1 timer A, acknowledge and enable the VIC interrupt, set the background to zero, and re-enable interrupts. Select VIC bank and memory settings, clear the sprite enable register, fill $0400\u2013$07FF with $20 and $D800\u2013$DBFF with $0F, and copy 120 source bytes as three 40-character rows to $0540, $0590 and $05E0. For each byte at least $40, subtract $60 with the carry left by CMP; copy smaller bytes unchanged. Callers supply the source pointer in X/Y for the success, retry, quit and failure texts. The interrupt and bank settings are part of the display setup."
   },
   {
    "address": 3576,
