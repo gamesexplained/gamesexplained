@@ -3248,7 +3248,7 @@
   },
   {
    "address": 9688,
-   "name": "stop_effect_at_push",
+   "name": "settle_apple_and_end_effect",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -4528,7 +4528,7 @@
   {
    "address": 4937,
    "type": "line",
-   "text": "Bytes after BASIC's zero link begin with variable-format records for T, A$, P, Z and A. The running BASIC program allocates its live variables from $2400."
+   "text": "Bytes after BASIC's zero link begin with seven-byte variable-format records for T, A$ and Z. The running BASIC program allocates its live variables from $2400."
   },
   {
    "address": 4972,
@@ -4673,7 +4673,7 @@
   {
    "address": 6304,
    "type": "line",
-   "text": "Attribute values used for the orchard, including two luminance levels for dirt and the title border's fruit."
+   "text": "Attribute constants indexed by layout nibble. The renderer uses entries 0 and 4\u20137 directly; types 1\u20133 take their row-dependent attributes from $34D0 instead."
   },
   {
    "address": 6312,
@@ -4703,7 +4703,7 @@
   {
    "address": 6432,
    "type": "line",
-   "text": "Sixteen screen codes for FEATURING, padded on both sides."
+   "text": "Sixteen screen codes: three blanks, FEATURING and four periods."
   },
   {
    "address": 6448,
@@ -4803,7 +4803,7 @@
   {
    "address": 7168,
    "type": "line",
-   "text": "Adds the enemy speed to an eight-bit accumulator and updates the five enemy slots on carry. Counts down queued spawns and then moves each active apple one pixel. Calls the bonus tick after the enemy update."
+   "text": "Adds the enemy speed to an eight-bit accumulator and updates the five enemy slots on carry. Counts down queued spawns and then moves each active apple one coordinate unit (two display pixels). Calls the bonus tick after the enemy update."
   },
   {
    "address": 7264,
@@ -4833,7 +4833,7 @@
   {
    "address": 7680,
    "type": "line",
-   "text": "Uses each free enemy slot to reserve one spawn from the round's remaining quota. Places the pending enemy at the spawn position and assigns a delay of 64 to 127 enemy updates."
+   "text": "With a nonzero reserve on entry, queues every slot whose direction and timer are both $FF. A countdown of 64\u2013127 activates after 65\u2013128 enemy updates. When more slots are free than remain in reserve, the subtraction wraps the reserve byte."
   },
   {
    "address": 7732,
@@ -4973,7 +4973,7 @@
   {
    "address": 9584,
    "type": "line",
-   "text": "Restores the ball's previous attribute cell and checks whether ball and player still share the same 8-by-8 logical tile. After the ball has left once, re-entering the tile clears the ball."
+   "text": "Writes $71 to the attribute at the ball's new cell. Once the ball has left the player's logical tile, returning to that tile clears its attribute and active state."
   },
   {
    "address": 9632,
@@ -5058,7 +5058,7 @@
   {
    "address": 11248,
    "type": "line",
-   "text": "Tests the low three bits of the player's two pixel coordinates. Runs the tile-entry logic only when both are aligned to an 8-pixel boundary."
+   "text": "Tests the low three bits of the player\u2019s two position coordinates. Runs tile-entry logic only when both are aligned to an 8-unit tile boundary (16 display pixels)."
   },
   {
    "address": 11264,
@@ -5093,7 +5093,7 @@
   {
    "address": 11632,
    "type": "line",
-   "text": "A type-5 block with open space ahead uses the Bad Apple's graphics and falls through to the common slide setup at $2D34."
+   "text": "A type-5 block with open space ahead selects the Bad Apple\u2019s graphics and branches to the common slide setup at $2D34."
   },
   {
    "address": 11652,
@@ -5123,7 +5123,7 @@
   {
    "address": 11904,
    "type": "line",
-   "text": "On even frame counts, moves the player one pixel in its direction if the direction's high bit is clear."
+   "text": "On even frame counts, moves the player one position unit (two display pixels) in its direction if the direction\u2019s high bit is clear."
   },
   {
    "address": 11936,
@@ -5303,7 +5303,7 @@
   {
    "address": 13488,
    "type": "line",
-   "text": "Extra spawn reservations by difficulty index, from 0 through 8. These come after the five slots initialized for the round."
+   "text": "Sixteen entries for difficulty indexes 0\u201315. The reserve values of 0\u20138 supplement the five enemy slots scheduled at round setup."
   },
   {
    "address": 13504,
@@ -5358,7 +5358,7 @@
   {
    "address": 14240,
    "type": "line",
-   "text": "Eight X bytes followed by eight Y bytes in pixels. Six positions match the type-3 apple tiles in the first orchard and $FF marks unused positions."
+   "text": "Eight X bytes followed by eight Y bytes in two-display-pixel units. Six positions match the type-3 apple tiles in the first orchard and $FF marks unused positions."
   },
   {
    "address": 14256,
@@ -5478,12 +5478,12 @@
   {
    "address": 16120,
    "type": "line",
-   "text": "Signed pixel or tile step on the horizontal axis for left, right, up and down."
+   "text": "Signed horizontal step for left, right, up and down. Callers add it either to a position in two-display-pixel units or to a tile column."
   },
   {
    "address": 16124,
    "type": "line",
-   "text": "Signed pixel or tile step on the vertical axis for left, right, up and down."
+   "text": "Signed vertical step for left, right, up and down. Callers add it either to a position in two-display-pixel units or to a tile row."
   },
   {
    "address": 16128,

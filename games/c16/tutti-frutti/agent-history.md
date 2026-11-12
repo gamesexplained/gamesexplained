@@ -20,3 +20,12 @@
 - Compared the reconstructed frame with plus4emu's display window and
   checked the six map renders, 32 moving-shape records, two slide
   traces, and five TED recordings from the listing in Node.
+
+## Full listing audit
+
+- Two independent checkers reviewed 102 and 104 comments. The audit
+  corrected 13 comments and renamed the falling-apple settle hook.
+- Controlled plus4emu probes measured the spawn reserve wraparound,
+  both endpoints of the spawn countdown and the ball's new-cell color.
+- A fresh checker sampled 60 of the 206 revised comments and found
+  zero errors.

@@ -56,14 +56,19 @@ The census over typed engine code found 73 instructions naming these
   (56,20). A gave (56,0), 3 gave (44,8), and 4 gave (68,8). With no
   input the same snapshot left the player in place. The keyboard matrix
   at $3100 also gives T and F3 the port-1 fire line in the selected rows.
-- $2E2C allows direction changes across axes at an eight-pixel tile
-  boundary. $2E80 advances one pixel on even frame counter values.
+- $2E2C allows direction changes across axes at tile boundaries,
+  every eight position units. $2E80 advances one unit (two display
+  pixels) on even frame counter values.
   $2F30 digs or collects under the player. Setting the tile under a
   stationary player to a cherry yielded 25 points at the next update.
-- $2700 launches the ball with diagonal velocity of two pixels per
-  axis. $2740 tests the horizontal and vertical neighbors and then the
-  diagonal. $1D30 starts the random cooldown on an enemy hit. $2570
-  can clear a returning ball when it reaches the player's tile.
+- $2700 launches the ball diagonally at two position units per axis
+  (four display pixels). $2740 tests the horizontal and vertical
+  neighbors and then the diagonal. $1D30 starts the random cooldown
+  on an enemy hit. $2570 colors the ball's new cell and clears a
+  returning ball when it reaches the player's tile. A controlled
+  emulator probe crossed a character cell boundary. The old
+  character code cleared and its attribute stayed at $55. The new
+  cell's attribute became $71.
 - Enemy slots are 1–5 in $0360, $0368 and $0370. $1C00 moves them
   when adding the speed byte to its accumulator carries. At each tile
   boundary $1C80 samples an open direction. It masks off the reverse
@@ -103,8 +108,17 @@ $315F wraps the layout index after six maps. The displayed level
 advanced to 07 while the layout index returned to 0. The difficulty
 index was 6, with speed $A8 and four extra spawns. $1BB0 clamps the
 table lookup to index 15. The raw byte can wrap after 256 rounds.
-The five initial spawn delays are $20, $30, $40, $50 and $60. The
-rate table at $34C0 ranges from $78 through $D0.
+The five opening spawn countdowns start at $20, $30, $40, $50 and $60.
+The rate table at $34C0 ranges from $78 through $D0. Extra spawns
+queued by $1E00 start with countdowns of 64–127. $1C00 tests for zero
+before decrementing. Emulator probes confirmed that the endpoints
+activate on enemy updates 65 and 128.
+
+$1E00 checks whether the reserve is nonzero before visiting the five
+slots. Each free slot then spends one from the reserve. A controlled
+emulator probe with one in reserve and five free slots queued all five
+and left the reserve at 252. A zero-reserve control queued none. A route
+to the wraparound during ordinary play remains open.
 
 ## Fruit and score
 
@@ -158,3 +172,14 @@ cherry hook. Both that comment and the paired hook at $246A were
 corrected. The sample found 1.7% wrong, with a 95% Wilson interval
 of 0.3%–8.9%. This is a lower bound on the mistakes a full audit could
 find.
+
+The full audit checked all 206 comments in two independent ranges.
+GPT-6 Astra found 12 details to correct. A follow-up emulator probe
+showed that $2570 colors the new ball cell, bringing the total to
+13 corrected comments. The other corrections cover movement units,
+spawn timing and reserve handling, a slide branch, and BASIC, text,
+palette and difficulty tables.
+
+A fresh GPT-6 Astra checker found zero errors in 60 of the 206 comments
+after the audit. The draw used seed 2026111202. The observed rate was
+0.0%, with a 95% Wilson interval of 0.0%–6.0%.

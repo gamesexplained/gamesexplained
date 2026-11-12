@@ -13,7 +13,7 @@
 | Title and high-score table, followed by layout previews | confirmed | $2200 draws the six layouts as the two-voice tune advances. $20FA ranks scores during play. |
 | Joystick movement and fire, plus keyboard directions | confirmed | $3100. Live tests from one snapshot confirmed joystick 1 and A, Z, 3, and 4. Joystick 2 fire left the game at the title. |
 | Digging and collecting cherries | confirmed | $2F30 and $2530. A cherry under the player produced 25 points. |
-| Bad Apples fall once the cell below is cleared | confirmed | $32BF starts a 32-tick wait. The test apple moved four pixels in the four ticks after the timer reached zero. |
+| Bad Apples fall once the cell below is cleared | confirmed | $32BF starts a 32-tick wait. The test apple moved four position units (eight display pixels) in the four ticks after the timer reached zero. |
 | Acid Apples emerge at the flashing box and turn through tunnels | confirmed | $1C00, $1C80, $1E00, and $1FA0. Observed after waiting in orchard 1. |
 | Bouncing ball in the first two rulesets | confirmed | $2700 and $2740. Fire gave an active ball with diagonal velocity and it later entered cooldown. |
 | First orchard ends on cherries or enemies | confirmed | $2C00 and $1E34. Each condition advanced the layout in the live probes. |
