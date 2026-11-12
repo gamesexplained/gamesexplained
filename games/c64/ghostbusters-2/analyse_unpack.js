@@ -57,5 +57,11 @@ const snapshot = fs.readFileSync(entryPath);
 if (snapshot.length < 209 + 65536 || snapshot.toString('ascii', 0, 19) !== 'VICE Snapshot File\x1a') throw new Error('expected a VICE snapshot with RAM at offset 209');
 const entry = snapshot.subarray(209, 209 + 65536);
 let mismatches = 0;
-for (let a = 0x700; a < 65536; a++) if (stable[a] && first.ram[a] !== entry[a]) mismatches++;
-console.log(JSON.stringify({file, entryPath, parts: first.parts, secondMatches: JSON.stringify(first.parts.map(({start,end,header,steps})=>({start,end,header,steps}))) === JSON.stringify(second.parts), stableCount, mismatches}));
+const mismatchRanges = [];
+for (let a = 0x700; a < 65536; a++) if (stable[a] && first.ram[a] !== entry[a]) {
+  mismatches++;
+  const last = mismatchRanges[mismatchRanges.length - 1];
+  if (last && a <= last[1] + 16) { last[1] = a; last[2]++; }
+  else mismatchRanges.push([a, a, 1]);
+}
+console.log(JSON.stringify({file, entryPath, parts: first.parts, secondMatches: JSON.stringify(first.parts.map(({start,end,header,steps})=>({start,end,header,steps}))) === JSON.stringify(second.parts), stableCount, mismatches, mismatchRanges}));
