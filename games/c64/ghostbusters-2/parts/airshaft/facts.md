@@ -151,3 +151,5 @@ The character contact-point paths call `$9BE8` for each of seven points. `$9BEF`
 When `$A767` is active, mode 1 checks sprite 5’s Y position against sprites 6, 4 and 7; mode 2 uses both X and Y bounds. Passing checks can set `$C620`, `$C907`, `$C90A` or `$C7B6` according to the sprite and state. The code uses sign-bit branches on byte subtractions, and the gameplay identities of the modes remain open.
 
 When the sprite 5 effect starts, `$A8A5` patches four pointer operands to `$96–$99`. The three additional bitmaps at `$65C0–$667E` match in the entry and play snapshots and are included in the Graphics inspector. `test_graphics.js` runs the setup path in the processor model and checks all four patched operands. The effect’s gameplay identity remains open.
+
+The sprite 6 alternate initializer at `$C703` selects pointer `$A7`. Its bitmap at `$69C0–$69FE` matches the entry and play snapshots and is included in the Graphics inspector.

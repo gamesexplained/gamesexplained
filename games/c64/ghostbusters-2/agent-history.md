@@ -143,3 +143,5 @@ Traced the character contact-point checks against sprites 6 and 7 and their stat
 Traced both sprite 5 contact-check modes and their state-dependent animation flags.
 
 Found three omitted sprite 5 effect shapes in its patched pointer operands, added them to the Graphics inspector, and checked the setup path in the processor model.
+
+Added the sprite 6 alternate-state bitmap to the Graphics inspector after tracing its initializer.
