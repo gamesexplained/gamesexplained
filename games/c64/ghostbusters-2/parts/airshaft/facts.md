@@ -129,3 +129,5 @@ The pointer `$2A` drawing path uses a shared six-cell column writer and correspo
 Pointer `$35` selects a two-character diagonal drawing and restore pair with 38-byte address steps; pointer `$3A` selects a horizontal pair of paths stepping one byte at a time. Both save character bytes and later write them back with fixed colour `$0A`.
 
 `$C588` advances a six-position pattern-frame index every two calls when its counters start in range. Six tables at `$C5A8–$C5CB` provide the character codes used by the different airshaft draw paths; each sequence rises to a peak and returns through its preceding values.
+
+Pointer `$3F` selects a bounded two-character diagonal path and matching restore. Pointer `$44` uses the shared column paths for a single character. Both restore cases write colour `$0A` instead of saved original colours.
