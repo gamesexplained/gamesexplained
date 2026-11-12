@@ -187,6 +187,8 @@ jobs:
       - name: Every game's browser check
         run: |
           for f in $(git ls-files 'games/*-browser.js'); do
+            # a game hidden from the site ("hidden": true in its game.json) has no built page to check
+            if grep -Eq '"hidden"[[:space:]]*:[[:space:]]*true' "$(echo "$f" | cut -d/ -f1-3)/game.json"; then echo "== $f (hidden, skipped)"; continue; fi
             echo "== $f"
             NODE_PATH="$RUNNER_TEMP/pw/node_modules" node "$f" _site --chromium "$(command -v google-chrome)" || exit 1
           done
