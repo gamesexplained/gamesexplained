@@ -62,11 +62,11 @@
   },
   {
    "start": 6103,
-   "end": 6363,
+   "end": 6402,
    "type": "Code"
   },
   {
-   "start": 6364,
+   "start": 6403,
    "end": 6406,
    "type": "Undefined"
   },
@@ -275,10 +275,34 @@
    "kind": "auto"
   },
   {
+   "address": 6103,
+   "name": "story_raster_phase",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6149,
+   "name": "story_irq_1805",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 6212,
    "name": "b_1844",
    "type": "Branch",
    "kind": "auto"
+  },
+  {
+   "address": 6232,
+   "name": "story_irq_1858",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6284,
+   "name": "story_irq_188c",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 6312,
@@ -287,8 +311,32 @@
    "kind": "auto"
   },
   {
+   "address": 6324,
+   "name": "story_irq_18b4",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 6352,
    "name": "b_18D0",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 6364,
+   "name": "story_irq_18dc",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6372,
+   "name": "b_18E4",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 6391,
+   "name": "b_18F7",
    "type": "Branch",
    "kind": "auto"
   },
@@ -312,21 +360,21 @@
   },
   {
    "address": 6407,
-   "name": "s_1907",
+   "name": "story_schedule_irq",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6422,
-   "name": "s_1916",
+   "name": "story_save_registers",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6429,
-   "name": "j_191D",
+   "name": "story_return_from_irq",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6563,
@@ -1440,6 +1488,51 @@
   }
  ],
  "comments": [
+  {
+   "address": 6103,
+   "type": "line",
+   "text": "Call the interrupt helper, set border and background black, select video bank 1 and VIC memory and display settings, increment $0E, then call the helper at $1907 with X=$05, Y=$18 and A=$7A before jumping to $191D."
+  },
+  {
+   "address": 6149,
+   "type": "line",
+   "text": "Call $1916 and set border and background black. When $145D is nonzero, change VIC display and bank settings and enable the sprites; then pass X=$58, Y=$18 and A=$AA to $1907 and jump to $191D."
+  },
+  {
+   "address": 6232,
+   "type": "line",
+   "text": "Call $1916, delay with twelve NOPs, write $18 then $78 to $D011, and set the VIC bank and memory and display registers. Pass X=$8C, Y=$18 and A=$B0 to $1907, then jump to $191D."
+  },
+  {
+   "address": 6284,
+   "type": "line",
+   "text": "Call $1916 and combine $78 with $1903 for $D011. If $1903 is nonzero, pass $18B4 and raster value $B8 to $1907; otherwise pass $18DC and $B7. Both paths jump to $191D."
+  },
+  {
+   "address": 6324,
+   "type": "line",
+   "text": "Call $1916, delay with nine NOPs and combine $10 with $1903 for $D011. If $145E is nonzero call the sound update at $E13A; pass $17D7 and raster value $20 to $1907, then jump to $191D."
+  },
+  {
+   "address": 6364,
+   "type": "line",
+   "text": "Alternate handler selected by $188C when $1903 is zero. Call $1916, delay with three NOPs and a countdown from X=5, then set $D011 from $10 OR $1903. If $145E is nonzero call $E13A; pass $17D7 and raster value $20 to $1907 and jump to $191D."
+  },
+  {
+   "address": 6407,
+   "type": "line",
+   "text": "Write X and Y as the low and high bytes of the next hardware IRQ vector, write A to the raster compare register $D012, acknowledge the raster interrupt, and return."
+  },
+  {
+   "address": 6422,
+   "type": "line",
+   "text": "Save A, X and Y in zero-page bytes $02, $03 and $04, respectively."
+  },
+  {
+   "address": 6429,
+   "type": "line",
+   "text": "Restore A, X and Y from zero-page bytes $02\u2013$04 and return from the interrupt with RTI."
+  },
   {
    "address": 49664,
    "type": "line",
