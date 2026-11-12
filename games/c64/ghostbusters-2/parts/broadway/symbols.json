@@ -2277,9 +2277,9 @@
   },
   {
    "address": 33635,
-   "name": "s_8363",
+   "name": "broadway_update_three_animation_operands",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 33645,
@@ -2343,9 +2343,9 @@
   },
   {
    "address": 33771,
-   "name": "j_83EB",
+   "name": "broadway_select_fixed_animation_operands",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 33787,
@@ -4947,9 +4947,9 @@
   },
   {
    "address": 38733,
-   "name": "s_974D",
+   "name": "broadway_check_fire_positions",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38735,
@@ -11227,6 +11227,16 @@
    "text": "Three times, save the byte at $801D and wait until it changes, then return. The keyboard gate at $8260 calls this between input transitions."
   },
   {
+   "address": 33635,
+   "type": "line",
+   "text": "Read $B1F4. Values $9E, $A2, $A6, $AA, $AE, $B2, $B6, $B8 and $BA select the fixed values at $83EB. Other values increment $801C; when the counter reaches five, clear it and add six to each operand byte at $8606, $864C and $8681. If the first result equals $50, reset the three bytes to $20, $22 and $24 and request effect $15 on voice 2. The counter is not advanced on the fixed-value path."
+  },
+  {
+   "address": 33771,
+   "type": "line",
+   "text": "Write $32, $34 and $36 to the operand bytes at $8606, $864C and $8681, then return."
+  },
+  {
    "address": 33993,
    "type": "line",
    "text": "Save A, X and Y, inspect the stacked status, then jump through the vector at $0314. The status test has no branch here; a BIT instruction follows it before the indirect jump."
@@ -11440,6 +11450,11 @@
    "address": 37392,
    "type": "line",
    "text": "If the byte at $851F is below $FD, add 3 to it. That byte is the immediate operand loaded at $851E and written to sprite 5's X register at $D00A."
+  },
+  {
+   "address": 38733,
+   "type": "line",
+   "text": "Examine six two-byte slots at even offsets Y from $00 through $0A, skipping slots whose $96F0,Y byte is zero. Halve the position at $96FC/$96FD,Y, keep its low result byte, subtract $2E and add $0C for the horizontal test. For five records at even X offsets $00 through $08 whose $B172,X equals 1, require that horizontal value to be at least the halved $AF9E/$AF9F,X position and below the halved $B10A/$B10B,X position. Require $9708,Y to be at least $AFB8,X plus $28 and below $B124,X plus $28. Each match writes $26 to $8C11,Y, calls the scene-match counter and requests voice 3 effect $18. X and Y are saved across the sound request. The arithmetic retains eight-bit wraparound in the tested values."
   },
   {
    "address": 38897,

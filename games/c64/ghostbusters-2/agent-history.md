@@ -181,3 +181,5 @@ Traced the second Broadway fire candidate through its screen and colour writes, 
 Traced the third through sixth Broadway fire candidates and checked their repeated cell-write instructions against the second candidate.
 
 Traced the Broadway fire routine’s row write and reset, including its self-modified screen address.
+
+Traced the Broadway three-operand animation cycle and the six-slot fire-position scan against five scene records.
