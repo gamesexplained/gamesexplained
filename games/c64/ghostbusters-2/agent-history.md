@@ -141,3 +141,5 @@ Traced sprite 4 movement to the raster sprite 1 coordinates and its two alignmen
 Traced the character contact-point checks against sprites 6 and 7 and their state-dependent count responses.
 
 Traced both sprite 5 contact-check modes and their state-dependent animation flags.
+
+Found three omitted sprite 5 effect shapes in its patched pointer operands, added them to the Graphics inspector, and checked the setup path in the processor model.

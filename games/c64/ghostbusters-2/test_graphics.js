@@ -1,5 +1,6 @@
 'use strict';
 const assert = require('assert');
+const {CPU} = require('../../../kit/cpu/cpu6502.js');
 const {game} = require('../../../kit/scripts/port_check.js');
 const g = game(__dirname);
 const html = g.read('graphics.html');
@@ -79,7 +80,7 @@ assert(slotsMatch, 'airshaft sprite inspector has its data');
 const slots = JSON.parse(slotsMatch[1]);
 const expectedSlots = [
   0x01, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0d, 0x0e,
-  ...Array.from({length: 0x77}, (_, n) => n + 0x20),
+  ...Array.from({length: 0x7a}, (_, n) => n + 0x20),
   ...Array.from({length: 4}, (_, n) => n + 0x9a),
   ...Array.from({length: 9}, (_, n) => n + 0x9e),
   ...Array.from({length: 12}, (_, n) => n + 0xa8),
@@ -93,7 +94,11 @@ for (const slot of slots) {
   assert.deepStrictEqual(slot.bytes, Array.from(airshaftListing.ram.slice(start, start + 63)));
 }
 assert.deepStrictEqual(Array.from(airshaftListing.ram.slice(0xcb63, 0xcb6b)), [0xb1, 0xb2, 0xb3, 0xb2, 0xae, 0xaf, 0xb0, 0xaf], 'sprite 4 frame sequences select the six added slots');
-console.log('OK - 159 airshaft sprite slots match the listing');
+const effectRam = airshaftListing.ram.slice();
+effectRam[0x94bd] = 0; effectRam[0xa767] = 1; effectRam[0xa76a] = 0;
+new CPU(effectRam, {port: 0x35}).call(0xa8a5);
+assert.deepStrictEqual([0xa976, 0xa991, 0xa9a7, 0xa9b9].map(address => effectRam[address]), [0x96, 0x97, 0x98, 0x99], 'sprite 5 effect patches all four pointers');
+console.log('OK - 162 airshaft sprite slots match the listing');
 
 const poseMatch = html.match(/<script id="airshaft-pose-data" type="application\/json">([^<]+)<\/script>/);
 assert(poseMatch, 'airshaft pose viewer has its pointer records');
