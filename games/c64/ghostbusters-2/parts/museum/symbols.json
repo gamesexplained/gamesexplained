@@ -208,6 +208,11 @@
     64103,
     64511,
     "stable unpacker output matching the entry snapshot; purpose remains open"
+   ],
+   [
+    41798,
+    41827,
+    "stable loaded bytes following the two pointer sequences; their use remains open"
    ]
   ],
   "edges": [
@@ -770,6 +775,16 @@
   },
   {
    "start": 41687,
+   "end": 41753,
+   "type": "Undefined"
+  },
+  {
+   "start": 41754,
+   "end": 41797,
+   "type": "Byte"
+  },
+  {
+   "start": 41798,
    "end": 41833,
    "type": "Undefined"
   },
@@ -6534,15 +6549,15 @@
   },
   {
    "address": 41754,
-   "name": "f_A31A",
+   "name": "museum_scene_animation_first_pointers",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41776,
-   "name": "f_A330",
+   "name": "museum_scene_animation_second_pointers",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41828,
@@ -7782,9 +7797,9 @@
   },
   {
    "address": 44821,
-   "name": "s_AF15",
+   "name": "museum_advance_scene_animation",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 44878,
@@ -7800,9 +7815,9 @@
   },
   {
    "address": 44922,
-   "name": "b_AF7A",
+   "name": "museum_apply_scene_animation_frame",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 44945,
@@ -7812,9 +7827,9 @@
   },
   {
    "address": 44971,
-   "name": "j_AFAB",
+   "name": "museum_start_active_motion",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 44977,
@@ -9869,6 +9884,12 @@
    "kind": "auto"
   },
   {
+   "address": 50894,
+   "name": "museum_mark_column_cell",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 50899,
    "name": "a_C6D3",
    "type": "AbsoluteAddress",
@@ -10002,9 +10023,9 @@
   },
   {
    "address": 51208,
-   "name": "b_C808",
+   "name": "museum_restore_column_cell",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 51224,
@@ -13994,6 +14015,16 @@
    "text": "Return if $94B4 is set. Otherwise play effect $0D, call $C04C, set $94B4, call $FEA7, store the resulting direction at $94B7 and position bytes at $94AA\u2013$94AC. Directions 5 or more subtract $10 from the 16-bit value before storage."
   },
   {
+   "address": 41754,
+   "type": "line",
+   "text": "Twenty-two pointer values selected by $AF7A for $FC29: $8A, $88, $86, $84, $86, $88 repeated three times, followed by $8A, $88, $86, $84. These select the even-numbered sprite slots $84\u2013$8A. The table matches in the entry and play snapshots."
+  },
+  {
+   "address": 41776,
+   "type": "line",
+   "text": "Twenty-two pointer values selected by $AF7A for $8018: $8B, $89, $87, $85, $87, $89 repeated three times, followed by $8B, $89, $87, $85. These select the odd-numbered sprite slots $85\u2013$8B. The table matches in the entry and play snapshots."
+  },
+  {
    "address": 41834,
    "type": "line",
    "text": "If $A2D8 is zero, copy 512 codes from $1400 to $4400 and return. Otherwise follow the partial-copy and patch path at $A381."
@@ -14022,6 +14053,21 @@
    "address": 44563,
    "type": "line",
    "text": "Increment the counter at $A2F7. When it reaches 5, clear it and increment $A2F8. For $A2F8 values 1 through 4, use it as an index into $C674 and $C679 and write the results to $FC29 and $8018. When $A2F8 reaches 5, jump to the congratulations path at $0A16 if $8050 equals 2; otherwise clear $A2F8, set $8050 to 2, copy 63 bytes from $4280 to $6500 and update the associated pointers. The meaning and normal triggers of these phases need further tracing."
+  },
+  {
+   "address": 44821,
+   "type": "line",
+   "text": "Increment $A2FB and return unless it reaches 5. Then clear it and increment $A2FC. Values below $16 enter $AF7A to select paired sprite pointers. At $16, clear $A2FC; if $8050 is 2, set $A303, select pointer $60 and write 5 to $FC21. Otherwise set $A2FD and $A2D8, call the screen setup, select pointer $6F and write 8 to $FC21. Both paths set $8018 to $58, $FC09/$FC11 to $E8/$00, $FC19 to $71 and $804C to 1. The animated object and transition remain to be identified."
+  },
+  {
+   "address": 44922,
+   "type": "line",
+   "text": "Use Y as an index into the tables at $A31A and $A330, writing the selected pointers to $FC29 and $8018. If voice 3 has no active effect, start effect $14. Then set $FC09/$FC11 to $FF/$00, $FC19 to $50, $FC21 to $0A and $804C to 1. The path at $AF15 supplies indices 1\u201321 during its normal counter cycle."
+  },
+  {
+   "address": 44971,
+   "type": "line",
+   "text": "Call $AFF5, then decrement $803C up to four times and return unless it reaches zero. When it does, return if $A2DA is nonzero; otherwise call $8458, copy $803B to $803C and $804C to $804E, copy $FC09/$FC11/$FC19 to $A2DC/$A2DD/$A2DE, start sound effect $13, set $A2DA to 1 and copy $A2D9 to $A2E2. The gameplay identity remains open."
   },
   {
    "address": 45938,
@@ -14179,6 +14225,11 @@
    "text": "The reverse step paired with $C595. If its load operand low byte is $80, clear $C320 and return; otherwise set that flag, copy a byte and move the forward load and both store operands back by 3. Recalculate the reverse load as the updated forward load minus $3D, as in $C3CE."
   },
   {
+   "address": 50894,
+   "type": "line",
+   "text": "Use $8057 as X to save a screen byte and colour byte in $C64A,X and $C65E,X. Write $FF to the screen cell and $0F to its colour, increment $8057, then add $28 to the patched load and store addresses for both screen and colour. The preceding check at $C6C7 diverts when $8057 equals $13. The game meaning of the marked column remains open."
+  },
+  {
    "address": 51020,
    "type": "line",
    "text": "Advance the descent, then read joystick port 2. Up decreases $8058 unless it is zero; otherwise down increases it while it is below 7. If both are held, the up path takes precedence."
@@ -14187,6 +14238,11 @@
    "address": 51067,
    "type": "line",
    "text": "For the player indexed by $C672, add $8058 to both position bytes at $FC15 and $FC16 while the first is below $B0. Every fourth such update, increase a nonzero $8058 unless it is 8. When the first position reaches $B0 or more, set $805B to 1."
+  },
+  {
+   "address": 51208,
+   "type": "line",
+   "text": "If $8057 is nonzero, decrement it, use it as X to restore the saved screen and colour bytes from $C64A,X and $C65E,X, then subtract $28 from both patched destination addresses and return. If the counter is zero, continue at $C843. The relationship to the forward marking path at $C6CE and the restored column should be checked across the complete scene."
   },
   {
    "address": 51880,

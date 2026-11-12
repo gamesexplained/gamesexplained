@@ -55,3 +55,5 @@ The airshaft ledger now includes 24 previously uncounted stretches of stable unp
 The same audit added 19,852 Broadway bytes and 11,675 museum bytes to their ledgers, including play-time copies identified by the listing. They remain unexplained.
 
 Disassembling the Broadway path-handler entries followed a static edge into the backdrop at `$1000–$141B`. The export guard detected lost coverage. A temporary forced export exposed the changed types; the known backdrop range `$0A2A–$1F7F` was restored to byte data before the listing was rebuilt. The handler entry points are retained as code.
+
+Separating the two museum animation tables shortened an automatic symbol’s reach over 30 following bytes. The export guard detected the lost tracked range; `$A346–$A363` was added explicitly as stable loaded data with its use open before rebuilding the listing.

@@ -93,3 +93,7 @@ The position check at `$A9D5` requires an active `$A2DA` and matching state at `
 The adjacent stored sprite slots `$0DC0/$0E00` spell DAZED when drawn together. They match between the entry and play snapshots. Whether any game path selects that pair is open; the Graphics tab labels it as stored data.
 
 At `$A6CE`, the museum code compares a state byte and a pair of position bytes against stored targets. An exact match sets `$A313`; other cases choose one of two helper paths. One entry into the helper at `$B95F` resets Y to zero, while entry at `$B961` uses Y=4. The target’s gameplay identity remains open.
+
+`$AF15` advances a five-step counter and then a 22-step frame counter. Values 1–21 select paired sprite pointers from `$A31A/$A330`; at the end it takes one of two state-transition paths. The adjacent loaded bytes at `$A346–$A363` are tracked separately because their use is open. `$AFAB` can then copy a position into `$A2DC–$A2DE` and set `$A2DA`. The scene’s identity remains open.
+
+The museum paths at `$C6CE` and `$C808` save and restore screen and colour bytes through `$C64A/$C65E`, using `$8057` as a count and moving patched addresses by 40 bytes between cells. The forward path writes screen code `$FF` and colour `$0F`. Their full relationship during the scene remains open.
