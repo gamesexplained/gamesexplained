@@ -37,3 +37,5 @@ Descriptions from the byte-identical stash source were placed on the executing e
 The alternate Broadway entry and play snapshots agree throughout `$0900–$1F7F` and `$2000–$2AFF`. A separate overlay now owns the alternate data, excluding output that matches the Censor handover. The Levels tab can switch between their backdrop captures.
 
 The alternate Broadway lookup views were described using the shared selector code and the alternate entry/play comparison. Eight eight-byte gaps between the views were given separate unannotated labels so coverage does not count them as explained by the adjacent views.
+
+The eight gaps between alternate Broadway lookup views were read directly: each contains its selector byte followed by `newline`. Their contents are now described, but their runtime purpose remains an open question.
