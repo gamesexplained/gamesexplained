@@ -139,3 +139,5 @@ Traced both sprite 4 setup paths and the counter that advances their animation s
 Traced sprite 4 movement to the raster sprite 1 coordinates and its two alignment flags.
 
 Traced the character contact-point checks against sprites 6 and 7 and their state-dependent count responses.
+
+Traced both sprite 5 contact-check modes and their state-dependent animation flags.
