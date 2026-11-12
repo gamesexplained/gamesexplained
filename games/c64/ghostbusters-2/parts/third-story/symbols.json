@@ -1451,9 +1451,9 @@
   },
   {
    "address": 58429,
-   "name": "s_E43D",
+   "name": "story_sound_select_pitch",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58459,
@@ -1463,9 +1463,9 @@
   },
   {
    "address": 58468,
-   "name": "a_E464",
+   "name": "story_sound_pitch_adjustment",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58520,
@@ -1511,9 +1511,9 @@
   },
   {
    "address": 58621,
-   "name": "b_E4FD",
+   "name": "story_sound_apply_frequency",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58682,
@@ -2386,6 +2386,21 @@
    "address": 58275,
    "type": "line",
    "text": "Count down the indexed voice's delay. When it expires, read its byte stream: values below $80 set the next value and reload the delay, $80-$BF dispatch through the command table, and higher values change stream parameters before reading again. Save the advanced pointer when a value is accepted."
+  },
+  {
+   "address": 58429,
+   "type": "line",
+   "text": "For the voice indexed by X, add its sequence offset at $E0CD,X to its pointer at $E0CB/$E0CC,X and read the selected byte. A byte with bit 7 set resets the offset to $FF and contributes only its low seven bits. Add the value at $E0D3,X, increment the sequence offset, then add the immediate byte at $E464 and the value at $E0E5,X. Double the result and load the corresponding little-endian frequency pair from $E5C2 into $F0/$F1."
+  },
+  {
+   "address": 58468,
+   "type": "line",
+   "text": "This is the immediate operand of the ADC at $E463. The code following it adds $E0E5,X, selects a frequency pair and, when bit $40 of $E0DE,X is set, modifies that frequency using the voice values at $E0DB\u2013$E0DE,X. It updates the direction bit $20 at the upper and lower limits, forms a signed difference and adds its scaled result to $F0/$F1. The instructions from $E4FD continue with the voice's other frequency adjustments."
+  },
+  {
+   "address": 58621,
+   "type": "line",
+   "text": "Toggle bit 0 of $E0C2,X. Depending on bits $24 and a counter at $E0D0,X, update a two-byte accumulator at $E0C9/$E0CA,X and add it to or subtract it from the frequency at $F0/$F1. The routine then moves the two-byte value at $E0D8/$E0D9,X between limits under control of $E0E2,X. Finally it stores the resulting frequency in $E0D6/$E0D7,X and a value derived from $E0E3,X in $E0E4,X."
   },
   {
    "address": 58818,
