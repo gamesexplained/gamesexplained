@@ -5004,9 +5004,9 @@
   },
   {
    "address": 40007,
-   "name": "s_9C47",
+   "name": "museum_motion_dispatch",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40015,
@@ -5058,15 +5058,15 @@
   },
   {
    "address": 40065,
-   "name": "s_9C81",
+   "name": "museum_motion_publish",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40084,
-   "name": "s_9C94",
+   "name": "museum_motion_clear_flag",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40097,
@@ -5076,9 +5076,9 @@
   },
   {
    "address": 40106,
-   "name": "j_9CAA",
+   "name": "museum_motion_direction_0",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40133,
@@ -5088,9 +5088,9 @@
   },
   {
    "address": 40134,
-   "name": "j_9CC6",
+   "name": "museum_motion_direction_1",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40171,
@@ -5112,9 +5112,9 @@
   },
   {
    "address": 40191,
-   "name": "j_9CFF",
+   "name": "museum_motion_direction_2",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40231,
@@ -5124,9 +5124,9 @@
   },
   {
    "address": 40232,
-   "name": "j_9D28",
+   "name": "museum_motion_direction_3",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40269,
@@ -5148,9 +5148,9 @@
   },
   {
    "address": 40289,
-   "name": "j_9D61",
+   "name": "museum_motion_direction_4",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40316,
@@ -5160,9 +5160,9 @@
   },
   {
    "address": 40317,
-   "name": "j_9D7D",
+   "name": "museum_motion_direction_5",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40354,
@@ -5184,9 +5184,9 @@
   },
   {
    "address": 40374,
-   "name": "j_9DB6",
+   "name": "museum_motion_direction_6",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40414,
@@ -5196,9 +5196,9 @@
   },
   {
    "address": 40415,
-   "name": "j_9DDF",
+   "name": "museum_motion_direction_7",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40452,
@@ -12499,6 +12499,61 @@
    "address": 33758,
    "type": "line",
    "text": "Set the display-memory operand at $087B to $1F, call $A36A for the upper screen, copy 488 further codes from $1600 to $4600, and copy the high nibbles of 1,000 bytes at $1C00 to colour RAM before calling $82E8."
+  },
+  {
+   "address": 40007,
+   "type": "line",
+   "text": "Read the direction selector at $9498 and jump to one of eight handlers for values 0 through 7; return without a handler for any other value. Each handler first calls $9C81, chooses a byte at $FC2B,X and then updates the position state at $9499\u2013$949B."
+  },
+  {
+   "address": 40065,
+   "type": "line",
+   "text": "Copy the three state bytes at $9499, $949A and $949B to $FC0B,X, $FC13,X and $FC1B,X, respectively. The caller chooses X. This runs before each directional update, so these destinations receive the previous state."
+  },
+  {
+   "address": 40084,
+   "type": "line",
+   "text": "If X is 1, clear $94B2,Y with Y taken from $94B8; for any other X clear $949D,Y with Y taken from $94A3. The direction handlers call this when their position crosses a boundary. The gameplay identities of these arrays remain open."
+  },
+  {
+   "address": 40106,
+   "type": "line",
+   "text": "Publish the prior position, set $FC2B,X to $7C, and subtract 10 from $949B. If the resulting byte is below $28, call $9C94 to clear the selected flag."
+  },
+  {
+   "address": 40134,
+   "type": "line",
+   "text": "Publish the prior position, set $FC2B,X to $7D, and add 10 to the little-endian value at $9499/$949A. If the high byte is nonzero and the low byte is at least $60, clear the selected flag; otherwise subtract 5 from $949B and clear the flag if that result is below $28."
+  },
+  {
+   "address": 40191,
+   "type": "line",
+   "text": "Publish the prior position, set $FC2B,X to $7E, and add 10 to the little-endian value at $9499/$949A. If the high byte is nonzero and the low byte is at least $60, clear the selected flag."
+  },
+  {
+   "address": 40232,
+   "type": "line",
+   "text": "Publish the prior position, set $FC2B,X to $7F, and add 10 to the little-endian value at $9499/$949A. If the high byte is nonzero and the low byte is at least $60, clear the selected flag; otherwise add 5 to $949B and clear the flag if that result is at least $EA."
+  },
+  {
+   "address": 40289,
+   "type": "line",
+   "text": "Publish the prior position, set $FC2B,X to $80, and add 10 to $949B. If the resulting byte is at least $EA, clear the selected flag."
+  },
+  {
+   "address": 40317,
+   "type": "line",
+   "text": "Publish the prior position, set $FC2B,X to $81, and subtract 10 from the little-endian value at $9499/$949A. If the high byte is zero and the low byte is below $10, clear the selected flag; otherwise add 5 to $949B and clear the flag if that result is at least $EA."
+  },
+  {
+   "address": 40374,
+   "type": "line",
+   "text": "Publish the prior position, set $FC2B,X to $82, and subtract 10 from the little-endian value at $9499/$949A. If the high byte is zero and the low byte is below $10, clear the selected flag."
+  },
+  {
+   "address": 40415,
+   "type": "line",
+   "text": "Publish the prior position, set $FC2B,X to $83, and subtract 10 from the little-endian value at $9499/$949A. If the high byte is zero and the low byte is below $10, clear the selected flag; otherwise subtract 5 from $949B and clear the flag if that result is below $28."
   },
   {
    "address": 41834,
