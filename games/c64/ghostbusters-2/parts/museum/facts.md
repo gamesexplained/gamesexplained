@@ -81,3 +81,5 @@ The joystick direction paths also write an animated sprite pointer to `$FC26,Y`.
 Other scene paths select sprite pointers `$68–$6F` for `$FC29` and `$70–$7B` for `$FC2B/$FC2C`. The tables at `$C674/$C679` select `$84–$8B`, and paths at `$A7DD/$A836` cycle through `$98–$9B` and `$9C–$9F`. Their 36 sprite slots match between entry and play and are available in the Graphics tab. The objects they depict remain open.
 
 The eight values at `$8029–$8030` form four pairs of pointers `$8C–$93`. `$86B6` and `$C69D` copy a selected pair into the raster operands at `$09D2/$09DC`; the raster handler also selects `$94–$96`. All eleven slots differ between entry and play. The Graphics tab shows their captured play-state bitmaps, which match the initial memory in the captured floor frame.
+
+The panel raster handler uses single-colour sprites in VIC bank 0. Pointer `$39` followed by `$3A` selects the bitmap halves that read OK; when a corresponding byte at `$801D–$8020` equals 1, setup changes that pair’s starting pointer to `$35`, selecting the halves that read DEAD. The four bitmap slots match between entry and play. The Graphics tab displays both words.

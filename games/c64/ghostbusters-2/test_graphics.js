@@ -190,3 +190,11 @@ for (const shape of museumExtra) {
   assert.deepStrictEqual(shape.bytes, Array.from(museumListing.ram.slice(address, address + 63)));
 }
 console.log("OK - 47 additional museum sprite shapes match the listing");
+
+const museumStatusMatch = html.match(/<script id="museum-status-data" type="application\/json">([^<]+)<\/script>/);
+assert(museumStatusMatch, "museum status shapes are embedded");
+const museumStatus = JSON.parse(museumStatusMatch[1]);
+for (const [name, addresses] of [["ok", [0x0e40, 0x0e80]], ["dead", [0x0d40, 0x0d80]]]) {
+  assert.deepStrictEqual(museumStatus[name], addresses.map(address => Array.from(museumListing.ram.slice(address, address + 63))));
+}
+console.log("OK - museum status words match the listing");
