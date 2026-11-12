@@ -477,16 +477,21 @@
   },
   {
    "start": 57894,
-   "end": 58274,
-   "type": "Undefined"
+   "end": 57941,
+   "type": "Byte"
   },
   {
-   "start": 58275,
+   "start": 57942,
    "end": 58817,
    "type": "Code"
   },
   {
    "start": 58818,
+   "end": 58939,
+   "type": "Byte"
+  },
+  {
+   "start": 58940,
    "end": 59052,
    "type": "Undefined"
   },
@@ -517,6 +522,36 @@
   },
   {
    "start": 60248,
+   "end": 60251,
+   "type": "Undefined"
+  },
+  {
+   "start": 60252,
+   "end": 60272,
+   "type": "Byte"
+  },
+  {
+   "start": 60273,
+   "end": 61249,
+   "type": "Undefined"
+  },
+  {
+   "start": 61250,
+   "end": 61313,
+   "type": "Byte"
+  },
+  {
+   "start": 61314,
+   "end": 61314,
+   "type": "Undefined"
+  },
+  {
+   "start": 61315,
+   "end": 61407,
+   "type": "Byte"
+  },
+  {
+   "start": 61408,
    "end": 65535,
    "type": "Undefined"
   }
@@ -11035,6 +11070,12 @@
    "kind": "auto"
   },
   {
+   "address": 57544,
+   "name": "f_E0C8",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
    "address": 57545,
    "name": "f_E0C9",
    "type": "Field",
@@ -11558,14 +11599,68 @@
   },
   {
    "address": 57894,
-   "name": "f_E226",
+   "name": "sound_command_jumps",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 57895,
    "name": "f_E227",
    "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 57999,
+   "name": "j_E28F",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 58019,
+   "name": "b_E2A3",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 58068,
+   "name": "b_E2D4",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 58084,
+   "name": "b_E2E4",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 58117,
+   "name": "b_E305",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 58139,
+   "name": "b_E31B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 58165,
+   "name": "b_E335",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 58179,
+   "name": "b_E343",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 58251,
+   "name": "b_E38B",
+   "type": "Branch",
    "kind": "auto"
   },
   {
@@ -11576,14 +11671,20 @@
   },
   {
    "address": 58295,
-   "name": "b_E3B7",
-   "type": "Branch",
+   "name": "j_E3B7",
+   "type": "Jump",
    "kind": "auto"
   },
   {
    "address": 58306,
    "name": "b_E3C2",
    "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 58318,
+   "name": "j_E3CE",
+   "type": "Jump",
    "kind": "auto"
   },
   {
@@ -11732,9 +11833,9 @@
   },
   {
    "address": 58818,
-   "name": "f_E5C2",
+   "name": "sound_frequency_values",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58819,
@@ -12314,9 +12415,9 @@
   },
   {
    "address": 60252,
-   "name": "f_EB5C",
+   "name": "sound_selections",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60253,
@@ -12347,6 +12448,18 @@
    "name": "f_EB61",
    "type": "Field",
    "kind": "auto"
+  },
+  {
+   "address": 61250,
+   "name": "success_sound_streams",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 61315,
+   "name": "failure_sound_streams",
+   "type": "UserDefined",
+   "kind": "user"
   }
  ],
  "comments": [
@@ -12471,9 +12584,34 @@
    "text": "If $E12E is nonzero, advance an eight-bit accumulator; on carry call $E3A3 for channel offsets $00, $24 and $48, then call $E43D for all three. For each enabled channel, write its stored frequency, pulse width, envelope and control values to the SID; finally write $E138 to $D418."
   },
   {
+   "address": 57894,
+   "type": "line",
+   "text": "Twenty-four little-endian jump targets selected by the sound stream command dispatcher at $E42C. Some entries are zero; the nonzero entries point into the command handlers at $E256-$E3A2. The dispatcher writes the selected address into its jump operand."
+  },
+  {
+   "address": 58818,
+   "type": "line",
+   "text": "The first 61 little-endian values in the sound driver's frequency lookup. The driver doubles its index and reads a pair at $E46C and $E471; the success and failure selections read within this portion. The table's full extent remains open."
+  },
+  {
    "address": 60198,
    "type": "line",
    "text": "Clear the four sound flags at $E12E\u2013$E131, then clear SID registers $D400\u2013$D417. The following entry at $EB34 performs only the register clear."
+  },
+  {
+   "address": 60252,
+   "type": "line",
+   "text": "Three seven-byte records consumed by $E000, each holding one timing increment and three little-endian stream pointers. The airshaft success path selects record 1 and its failure paths select record 2; record 0's use remains open."
+  },
+  {
+   "address": 61250,
+   "type": "line",
+   "text": "Stream and pointer bytes selected by record 1 at $EB63. The driver's three channels read these bytes while the airshaft success sound plays; the meaning of individual stream commands remains open."
+  },
+  {
+   "address": 61315,
+   "type": "line",
+   "text": "Stream and pointer bytes selected by record 2 at $EB6A. The driver's three channels read these bytes while the airshaft failure sound plays; the meaning of individual stream commands remains open."
   }
  ]
 }

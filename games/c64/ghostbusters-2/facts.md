@@ -8,3 +8,5 @@ The opening story and each gameplay episode have separate captured states and li
 - The capture of a PAL airshaft frame was reconstructed with zero differing pixels by the kit's frame renderer. The page uses its trimmed visual data; `parts/airshaft/facts.md` records the capture and the interrupt chain.
 
 The listing comments require an independent sample. The media ledger and the unclassified-memory reports are open work items.
+
+- In the airshaft, the success path at `$0897` initializes sound selection 1; failure paths at `$08BB` and `$08CD` initialize selection 2. Their records are at `$EB63` and `$EB6A`. VICE and the kit processor agreed on channel state and all three voice frequencies for initialization and the first 30 calls to `$E13A` for each selection; `sound-vice.json` holds those observations. In the forced-success state, an execution checkpoint counted 30 calls to `$E13A` over 30 PAL frames. The page player and listing agree on every SID write for 500 updates per selection (`test_sound.js`).
