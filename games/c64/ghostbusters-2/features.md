@@ -21,5 +21,6 @@ External reference pictures saved 12 November 2026: [story](https://www.c64-wiki
 | Museum: a Ghostbuster descends on a rope before the floor scene | live | VICE capture using the forced route and alternate disk described in `orientation.md` |
 | Museum: up opens the hands on the rope and down closes them | open | C64-Wiki; a controlled descent needs checking on this disk |
 | Museum: joystick up and down control the descent value | confirmed | `$C74C–$C7BD`; VICE trials and measurements in `parts/museum/facts.md` |
-| Museum: Return opens the weapon screen and Space selects a Ghostbuster | open | C64-Wiki |
+| Museum: Space selects a Ghostbuster | confirmed | `$B372` and controlled VICE comparison in `parts/museum/facts.md` |
+| Museum: Return opens the equipment screen | confirmed | `$CAA8`, `$CCDC` and a VICE panel trial in `parts/museum/facts.md` |
 | Joystick controls the action; P pauses in the first two episodes | open | Manual |

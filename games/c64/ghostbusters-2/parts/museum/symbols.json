@@ -7181,9 +7181,9 @@
   },
   {
    "address": 45938,
-   "name": "s_B372",
+   "name": "museum_floor_input",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 45972,
@@ -7271,9 +7271,9 @@
   },
   {
    "address": 46169,
-   "name": "j_B459",
+   "name": "museum_floor_joystick",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 46182,
@@ -9371,9 +9371,9 @@
   },
   {
    "address": 51880,
-   "name": "j_CAA8",
+   "name": "museum_equipment_screen",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 51939,
@@ -9473,9 +9473,9 @@
   },
   {
    "address": 52444,
-   "name": "s_CCDC",
+   "name": "museum_equipment_input",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 52486,
@@ -9575,9 +9575,9 @@
   },
   {
    "address": 52629,
-   "name": "s_CD95",
+   "name": "museum_first_equipment_slot",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 52667,
@@ -11795,6 +11795,16 @@
    "text": "Save A, X and Y; inspect the stacked status and dispatch BRK through $0316 or IRQ through $0314."
   },
   {
+   "address": 45938,
+   "type": "line",
+   "text": "Scan keyboard matrix rows, including Space. When $8028 is zero, a new Space press toggles $8042 between 0 and 1, calls $86B6 with the selected entry from $8026/$8027 and may call $8396. It then selects the corresponding offsets in $B356 and $B357 and continues to joystick movement at $B459. The earlier key scans can divert or wait before reaching that point."
+  },
+  {
+   "address": 46169,
+   "type": "line",
+   "text": "Read joystick port 2 into $803F and select directional movement. Up takes precedence over down; within either vertical path left takes precedence over right. With neither vertical direction, left takes precedence over right. The selected path writes values to $FC25/$FC26 indexed by $B356, calls movement helpers and advances a four-update animation counter at $8040; the animation's next value is kept in the immediate operand of the path's load instruction."
+  },
+  {
    "address": 51020,
    "type": "line",
    "text": "Advance the descent, then read joystick port 2. Up decreases $8058 unless it is zero; otherwise down increases it while it is below 7. If both are held, the up path takes precedence."
@@ -11803,6 +11813,21 @@
    "address": 51067,
    "type": "line",
    "text": "For the player indexed by $C672, add $8058 to both position bytes at $FC15 and $FC16 while the first is below $B0. Every fourth such update, increase a nonzero $8058 unless it is 8. When the first position reaches $B0 or more, set $805B to 1."
+  },
+  {
+   "address": 51880,
+   "type": "line",
+   "text": "Set up the four-character panel: switch the raster interrupt, copy screen bytes from $1800-$1BE7 to $0400-$07E7 and fill the corresponding colour RAM with $0F. The loop waits for the interrupt-updated $CAA4 to change, then calls $CCDC. When $CAA6 is set, it clears that flag and returns to the museum floor via $81A9."
+  },
+  {
+   "address": 52444,
+   "type": "line",
+   "text": "Read joystick port 2 into $CAA5. A new fire press calls $CD88, which dispatches to four cursor-position-dependent handlers; left and right call the cursor adjustment routines $CD62 and $CD74 within their bounds. When $CA94 is $3E, Space may set $CAA6 after it is released; another exit path depends on fire and cursor state."
+  },
+  {
+   "address": 52629,
+   "type": "line",
+   "text": "Handle fire in the first slot cursor region, where $CA89 is zero and $CA83 is below $45. With $CA94 equal to $3E, copy the slot value at $CA8F into $CA94 and write $3F to the slot. Otherwise return $3E to $CA94 and use the offset at $CD87 to exchange the held and slot values."
   }
  ]
 }
