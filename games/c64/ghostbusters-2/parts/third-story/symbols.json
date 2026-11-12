@@ -227,9 +227,9 @@
   },
   {
    "address": 5332,
-   "name": "s_14D4",
+   "name": "story_wait_tick",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 5334,
@@ -239,9 +239,9 @@
   },
   {
    "address": 5874,
-   "name": "s_16F2",
+   "name": "story_scan_input",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 5883,
@@ -389,9 +389,9 @@
   },
   {
    "address": 6564,
-   "name": "b_19A4",
+   "name": "story_wait_input",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6584,
@@ -1494,6 +1494,16 @@
  ],
  "comments": [
   {
+   "address": 5332,
+   "type": "line",
+   "text": "Read $0E and wait until it changes, then return. The story interrupt handler at $17D7 increments this byte."
+  },
+  {
+   "address": 5874,
+   "type": "line",
+   "text": "If CIA1 port A bit 4 is low, return $80. Otherwise test 30 row and column pattern pairs from $1724 and $1742: write a row to port A, compare port B with the corresponding value, and on a match wait for that value to change before returning its index. Return $FF when none matches."
+  },
+  {
    "address": 6103,
    "type": "line",
    "text": "Call the interrupt helper, set border and background black, select video bank 1 and VIC memory and display settings, increment $0E, then call the helper at $1907 with X=$05, Y=$18 and A=$7A before jumping to $191D."
@@ -1537,6 +1547,11 @@
    "address": 6429,
    "type": "line",
    "text": "Restore A, X and Y from zero-page bytes $02\u2013$04 and return from the interrupt with RTI."
+  },
+  {
+   "address": 6564,
+   "type": "line",
+   "text": "Wait for $0E to change, then test CIA1 port A bit 4. If it is low, return; otherwise scan input with $16F2, save the result at $19A3 and repeat while the result is $FF."
   },
   {
    "address": 49664,
