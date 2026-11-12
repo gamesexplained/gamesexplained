@@ -6010,6 +6010,12 @@
    "kind": "auto"
   },
   {
+   "address": 36999,
+   "name": "airshaft_irq_mid_late",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 37000,
    "name": "a_9088",
    "type": "AbsoluteAddress",
@@ -6040,10 +6046,22 @@
    "kind": "auto"
   },
   {
+   "address": 37069,
+   "name": "airshaft_irq_late_delay",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 37072,
    "name": "b_90D0",
    "type": "Branch",
    "kind": "auto"
+  },
+  {
+   "address": 37095,
+   "name": "airshaft_irq_bottom_band",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 37207,
@@ -16191,6 +16209,21 @@
    "address": 36702,
    "type": "line",
    "text": "Set sprites 0 and 1 from coordinates at $8027 and $8028, with sprite 1 offset by $18 horizontally; patch positions used by later handlers. Set their colours and shape pointers, adjust expansion and multicolour bits, then schedule $8FE4 and acknowledge the interrupt."
+  },
+  {
+   "address": 36999,
+   "type": "line",
+   "text": "Write $A8 to sprites 0 and 1 Y registers and $3E/$0F to pointers $47F8/$47F9. Increment $8026 if either $804D or $804A is nonzero. When both are zero, schedule the handler at $90CD at raster $C8; otherwise schedule $90E7 at raster $F8. Acknowledge the VIC interrupt and jump to $8D69."
+  },
+  {
+   "address": 37069,
+   "type": "line",
+   "text": "Increment $8026, schedule $90E7 at raster $F8, acknowledge the VIC interrupt and jump to $8D69. The other entry at $90D0 performs the same scheduling without incrementing $8026."
+  },
+  {
+   "address": 37095,
+   "type": "line",
+   "text": "After three NOPs, write $77 to $D011, clear sprite 5-7 colours, set multicolour mask $17, clear sprite X high bits and set shared colours $06/$0E. Set sprite 0-4 X positions to $68,$F2,$80,$AC,$DA and their Y positions to $FB; set their colours to 7,1,3,12,10 and pointers $47F8-$47FC to $07,$B4,$09,$06,$01. Schedule $8D6F at raster $0A, acknowledge the interrupt, delay in an X countdown, and when $804A is zero set those sprites' Y positions to $2A. Call the sound update and jump to $8D66."
   },
   {
    "address": 37519,
