@@ -75,3 +75,5 @@ The second pattern-copy controller at `$8800` chooses between the ordinary point
 The sprite 5 controller at `$A77B` selects one of two paths with `$A769`. In the `$A769=1` path, the X operand cycles through `$70`, `$A0` and `$D0`; every time `$A772` reaches 2 it calls the Y updater and chooses a pointer from the six-byte sequence `$9A,$9B,$9C,$9D,$9C,$9B`. The other path is the four-position effect at `$A8A5`.
 
 The related routines at `$AFC3` and `$B065` use the same two pattern-source high bytes but compare `$AF0D` instead. Their selected ranges call `$B055` or `$B0FA`, setting `$AF12` or `$AF13` and resetting the corresponding counters. `analyse_pattern_triggers.js` enumerates all 256 comparison values for each branch group; the gameplay meaning of the state changes remains open.
+
+The first pattern controller at `$86FB` alternates its scheduling through `$8036/$8037`. Its ordinary path copies from the pointer table; its alternate path advances the source operand by `$D0` and treats `$24E0` specially. This parallels the second pattern's `$2A90` controller, while using separate state bytes.
