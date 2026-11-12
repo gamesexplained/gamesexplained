@@ -133,3 +133,5 @@ Pointer `$35` selects a two-character diagonal drawing and restore pair with 38-
 Pointer `$3F` selects a bounded two-character diagonal path and matching restore. Pointer `$44` uses the shared column paths for a single character. Both restore cases write colour `$0A` instead of saved original colours.
 
 Pointers `$4A`, `$4F`, `$54` and `$59` select further bounded diagonal or horizontal draw-and-restore paths. They save the characters underneath and restore them with fixed colour `$0A`; `$4A` and `$59` cap their paths at six character bytes. Their scene-level meaning remains open.
+
+Pointer `$5E` uses the shared six-character column path in the opposite address direction from `$2A`; `$64` selects a bounded horizontal path of at most six characters. The drawing dispatch uses a two-character diagonal fallback for unmatched pointer values, and the restore dispatch has its corresponding fallback. Their individual reachability and visual effects remain open.
