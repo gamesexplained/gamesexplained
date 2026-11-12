@@ -94,6 +94,8 @@ Running the captured unpacker on `3.THE CLOAKS` with two initial RAM fills gives
 
 The four 120-byte blocks at `$08EC`, `$0964`, `$09DC` and `$0A54` are outcome messages. The paths at `$0897`, `$0ACC`, `$0AF2` and `$0AEB` pass those respective addresses to the message routine at `$0AF6`. The retry path changes bytes at `$09A0` and `$09AD` before display.
 
-The Graphics tab includes 41 captured sprite slots selected by the five-frame pointer table at `$919F`, the sprite 5 sequence at `$A829`, and sprite 6 and 7 pointer tables at `$C6FB–$C702` and `$C7BF–$C7CE`. Each displayed image uses the first 63 bytes of its slot. Those bytes match the entry and play snapshots; individual sprite roles and the remaining slots are open.
+The Graphics tab includes 44 captured sprite slots selected by the five-frame pointer table at `$919F`, the sprite 5 sequence at `$A829`, and sprite 6 and 7 pointer tables at `$C6FB–$C702` and `$C7BF–$C7CE`. Each displayed image uses the first 63 bytes of its slot. Those bytes match the entry and play snapshots; individual sprite roles and the remaining slots are open.
 
 Five eight-byte records at `$919F–$91C6` supply six sprite pointers each. The update at `$8644` writes them into operands used by the raster handlers. In the captured setup, the handlers position the six selected pieces as two columns and three rows; assembling their bitmap data gives five character poses. Pointer `$0F` selects the slot at `$43C0`, which initialization clears. The Graphics tab shows the poses with illustrative colours.
+
+The sprite 5 table at `$A829`, sprite 6 tables at `$C6FB/$C6FF`, and sprite 7 table at `$C7BF` select the remaining shapes in the inspector. Their individual gameplay identities remain open; the captured bytes for slots `$05`, `$08` and `$0A` match at entry and in play.
