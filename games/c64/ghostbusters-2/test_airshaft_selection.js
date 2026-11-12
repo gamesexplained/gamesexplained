@@ -8,6 +8,15 @@ const listing = game(__dirname).listing('parts/airshaft/listing.json');
 assert(listing.has[0xaac0] && listing.has[0xaae1]);
 const ram = listing.ram.slice();
 const cpu = new CPU(ram, {port: 0x35});
+// The raster selector reads both four-byte tables for each recorded index.
+for (let i = 0; i < 41; i++) {
+  ram[0xb5b9] = i;
+  cpu.call(0x92e7);
+  const first = 0x9324 + i * 4, second = 0x93c8 + i * 4;
+  assert.deepStrictEqual([ram[0x8ef6], ram[0x8f25], ram[0x8f39]], Array.from(listing.ram.slice(first, first + 3)));
+  assert.deepStrictEqual([ram[0x8e87], ram[0x8e73], ram[0x8dd7]], Array.from(listing.ram.slice(second, second + 3)));
+  for (const address of [0x8f00, 0x8f2f, 0x8f43, 0x8e7d, 0x8e91]) assert.equal(ram[address], listing.ram[first + 3]);
+}
 // The pose selector reads 15 records from each table, including patched offsets.
 const poseOperands = [0x8fb6, 0x8fbb, 0x900f, 0x9014, 0x8fc0, 0x8fc5];
 ram[0x804d] = 0;

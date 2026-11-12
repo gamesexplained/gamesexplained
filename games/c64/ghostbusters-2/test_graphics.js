@@ -81,7 +81,7 @@ const expectedSlots = [
   0x01, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0d, 0x0e,
   ...Array.from({length: 0x77}, (_, n) => n + 0x20),
   ...Array.from({length: 4}, (_, n) => n + 0x9a),
-  0xa2,
+  ...Array.from({length: 9}, (_, n) => n + 0x9e),
   ...Array.from({length: 6}, (_, n) => n + 0xa8),
   0xb4,
   ...Array.from({length: 5}, (_, n) => n + 0xbb),
@@ -92,7 +92,7 @@ for (const slot of slots) {
   for (let i = 0; i < 63; i++) assert(airshaftListing.has[start + i]);
   assert.deepStrictEqual(slot.bytes, Array.from(airshaftListing.ram.slice(start, start + 63)));
 }
-console.log('OK - 145 airshaft sprite slots match the listing');
+console.log('OK - 153 airshaft sprite slots match the listing');
 
 const poseMatch = html.match(/<script id="airshaft-pose-data" type="application\/json">([^<]+)<\/script>/);
 assert(poseMatch, 'airshaft pose viewer has its pointer records');
