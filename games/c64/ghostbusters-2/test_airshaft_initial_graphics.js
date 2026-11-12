@@ -1,0 +1,17 @@
+'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const {CPU} = require('../../../kit/cpu/cpu6502.js');
+const {game} = require('../../../kit/scripts/port_check.js');
+const ram = game(__dirname).listing('parts/airshaft/listing.json').ram.slice();
+const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, 'airshaft-screen-copy-vice.json'), 'utf8'));
+const cpu = new CPU(ram, {port: 0x35});
+cpu.pc = 0x8330;
+cpu.run({until: 0x8388, maxSteps: 12000});
+assert.equal(cpu.pc, 0x8388);
+assert.deepStrictEqual([...ram.slice(0x4400, 0x47e8)], fixture.screen, 'screen matches VICE');
+assert.deepStrictEqual([...ram.slice(0x4800, 0x4940)], fixture.sprites, 'sprite slots match VICE');
+assert.deepStrictEqual(ram.slice(0x4400, 0x47e8), ram.slice(0x3400, 0x37e8));
+assert.deepStrictEqual(ram.slice(0x4800, 0x4940), ram.slice(0x3800, 0x3940));
+console.log('OK - initial airshaft screen and sprite copies match VICE');
