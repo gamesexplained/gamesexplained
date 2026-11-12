@@ -13,3 +13,9 @@ The routine copied to `$13B4` clears `$4000–$53FF`, initializes screen and col
 The copied routines at `$145F`, `$1490` and `$14B2` fill overlapping indexed screen and colour-memory ranges with fixed values; their store order is recorded in the stash listing. `$14D4` waits for the value at `$0E` to change.
 
 The routines copied to `$14DB` and `$1538` each wait for `$0E` to change, copy `$6400–$77FF` to `$4000–$53FF`, and copy three indexed blocks from `$7800–$7A7F` to `$6000–$627F`. Two destination ranges overlap, so the listing records the store order. The routines differ in their colour-memory writes.
+
+Three similar routines at `$1593`, `$15EE` and `$1649` copy twenty-page regions beginning at `$7B00`, `$9200` and `$A900` respectively to `$4000–$53FF`. Each follows with three indexed copies to `$6000–$627F` and colour-memory writes; their source addresses are listed with the routines.
+
+The story engine installs raster handlers through pointers rather than direct calls. The handlers at `$17D7`, `$1805`, `$1858`, `$188C`, `$18B4` and `$18DC` schedule one another through `$1907`; the last two return to `$17D7` and call the sound update when `$145E` is nonzero. Their register writes and raster compare values are described in the stash listing. No frame-rate claim follows from the static code alone.
+
+The routine copied to `$1924` accepts a text pointer in X/Y. Its continuation at `$1928` reads 40-byte rows, converts each row into two buffers through `$1A12`, scrolls screen rows through `$19B9`, and inserts a buffer through `$19F5`. A zero byte at the start of a row ends the passage and is skipped. A joystick or keyboard input returned by `$16F2` can end the routine earlier. Several story call sequences pass `$C200` as the initial pointer.
