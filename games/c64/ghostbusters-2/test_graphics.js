@@ -111,3 +111,12 @@ for (const shape of motionShapes) {
   assert.deepStrictEqual(shape.bytes, Array.from(museumListing.ram.slice(start, start + 63)));
 }
 console.log('OK - eight museum movement shapes match the listing');
+
+const broadwayMotionMatch = html.match(/<script id="broadway-motion-data" type="application\/json">([^<]+)<\/script>/);
+assert(broadwayMotionMatch, 'Broadway movement inspector has its data');
+const broadwayMotionFrames = JSON.parse(broadwayMotionMatch[1]);
+assert.deepStrictEqual(broadwayMotionFrames.map(frame => frame.address), Array.from({length: 32}, (_, n) => 0xf000 + n * 64));
+for (const frame of broadwayMotionFrames) {
+  assert.deepStrictEqual(frame.bytes, Array.from(listing.ram.slice(frame.address, frame.address + 63)));
+}
+console.log('OK - 32 Broadway movement frames match the listing');

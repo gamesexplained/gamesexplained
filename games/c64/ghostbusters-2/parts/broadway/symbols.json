@@ -746,7 +746,7 @@
   {
    "start": 61440,
    "end": 63487,
-   "type": "Undefined"
+   "type": "Byte"
   }
  ],
  "symbols": [
@@ -5120,9 +5120,9 @@
   },
   {
    "address": 40453,
-   "name": "s_9E05",
+   "name": "broadway_animate_first_sprite",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40470,
@@ -5228,9 +5228,9 @@
   },
   {
    "address": 40646,
-   "name": "j_9EC6",
+   "name": "broadway_animate_second_sprite",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40663,
@@ -8762,9 +8762,15 @@
   },
   {
    "address": 61440,
-   "name": "f_F000",
+   "name": "broadway_paired_frames_f000",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
+  },
+  {
+   "address": 61696,
+   "name": "broadway_paired_frames_f100",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 61824,
@@ -8774,15 +8780,45 @@
   },
   {
    "address": 61952,
-   "name": "f_F200",
+   "name": "broadway_paired_frames_f200",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 62080,
    "name": "f_F280",
    "type": "Field",
    "kind": "auto"
+  },
+  {
+   "address": 62208,
+   "name": "broadway_paired_frames_f300",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62464,
+   "name": "broadway_paired_frames_f400",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62720,
+   "name": "broadway_paired_frames_f500",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62976,
+   "name": "broadway_paired_frames_f600",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 63232,
+   "name": "broadway_paired_frames_f700",
+   "type": "UserDefined",
+   "kind": "user"
   }
  ],
  "comments": [
@@ -9192,6 +9228,16 @@
    "text": "If $9C8C is 1, call $9E05; otherwise call $9C9F. Then if $9C8E is 1, jump to $9EC6; otherwise jump to $9CD2. This is the update path selected by $9D05 once $9C99 is nonzero."
   },
   {
+   "address": 40453,
+   "type": "line",
+   "text": "Select a direction using $9C9A. When it is zero, if the high byte $9C71 is zero and the low byte $9C70 is below $A0, set $9C9A to 1 and return; otherwise subtract 1 from the two-byte value at $9C70/$9C71. When $9C9A is nonzero, if the high byte is nonzero and the low byte is at least $90, clear $9C99\u2013$9C9B and return; otherwise add 1 to the pair. Either movement increments $9C9C. On every fourth increment reset that counter and copy 64 bytes through the patched source at $9E38 or $9E93 to $4280. Advance that source by $40, wrapping its high byte at the patched limits. In VIC bank 1, $4280 is sprite slot $0A. The object\u2019s gameplay identity remains open."
+  },
+  {
+   "address": 40646,
+   "type": "line",
+   "text": "Select a direction using $9C9B. When it is zero, if the high byte $9C73 is zero and the low byte $9C72 is below $A0, set $9C9B to 1 and return; otherwise subtract 1 from $9C72/$9C73. When $9C9B is nonzero, if the high byte is nonzero and the low byte is at least $70, clear $9C99\u2013$9C9B and return; otherwise add 1 to the pair. Either movement increments $9C9D. On every fourth increment reset that counter and copy 64 bytes through the patched source at $9EF9 or $9F54 to $42C0. Advance that source by $40, wrapping its high byte at the patched limits. In VIC bank 1, $42C0 is sprite slot $0B. The object\u2019s gameplay identity remains open."
+  },
+  {
    "address": 42222,
    "type": "line",
    "text": "Copy the pointer at $B088/$B089,X into the three load operands at $A50D, $A533 and $A53A. Add 2 to the saved index at $B0A2,X and read the sequence byte. If it is $FF, examine $B0BC,X: 0 backs the index up by 2, 1 restarts at index 0, and any other value clears $B172,X and returns. Save the chosen index, read the pair of sequence bytes into $AFD2,X and $AFD3,X, and return. The layout at $A540 uses those two values to select sprite pointers and a layout variant."
@@ -9565,6 +9611,46 @@
    "address": 60223,
    "type": "line",
    "text": "Shift the four-byte state at $EB58-$EB5B, feeding in a value derived from $EB58 and the incoming carry; return the new byte at $EB58."
+  },
+  {
+   "address": 61440,
+   "type": "line",
+   "text": "Four 64-byte frame records, 0\u20133 of the decreasing-X sequence in address group 1. The movement routines at $9E05/$9EC6 copy these records to sprite slots $0A/$0B in $40-byte steps; $9D05 selects the source group. The VIC uses the first 63 bytes of each copied slot. The objects\u2019 identities remain open."
+  },
+  {
+   "address": 61696,
+   "type": "line",
+   "text": "Four 64-byte frame records, 4\u20137 of the decreasing-X sequence in address group 1. The movement routines at $9E05/$9EC6 copy these records to sprite slots $0A/$0B in $40-byte steps; $9D05 selects the source group. The VIC uses the first 63 bytes of each copied slot. The objects\u2019 identities remain open."
+  },
+  {
+   "address": 61952,
+   "type": "line",
+   "text": "Four 64-byte frame records, 0\u20133 of the increasing-X sequence in address group 1. The movement routines at $9E05/$9EC6 copy these records to sprite slots $0A/$0B in $40-byte steps; $9D05 selects the source group. The VIC uses the first 63 bytes of each copied slot. The objects\u2019 identities remain open."
+  },
+  {
+   "address": 62208,
+   "type": "line",
+   "text": "Four 64-byte frame records, 4\u20137 of the increasing-X sequence in address group 1. The movement routines at $9E05/$9EC6 copy these records to sprite slots $0A/$0B in $40-byte steps; $9D05 selects the source group. The VIC uses the first 63 bytes of each copied slot. The objects\u2019 identities remain open."
+  },
+  {
+   "address": 62464,
+   "type": "line",
+   "text": "Four 64-byte frame records, 0\u20133 of the decreasing-X sequence in address group 2. The movement routines at $9E05/$9EC6 copy these records to sprite slots $0A/$0B in $40-byte steps; $9D05 selects the source group. The VIC uses the first 63 bytes of each copied slot. The objects\u2019 identities remain open."
+  },
+  {
+   "address": 62720,
+   "type": "line",
+   "text": "Four 64-byte frame records, 4\u20137 of the decreasing-X sequence in address group 2. The movement routines at $9E05/$9EC6 copy these records to sprite slots $0A/$0B in $40-byte steps; $9D05 selects the source group. The VIC uses the first 63 bytes of each copied slot. The objects\u2019 identities remain open."
+  },
+  {
+   "address": 62976,
+   "type": "line",
+   "text": "Four 64-byte frame records, 0\u20133 of the increasing-X sequence in address group 2. The movement routines at $9E05/$9EC6 copy these records to sprite slots $0A/$0B in $40-byte steps; $9D05 selects the source group. The VIC uses the first 63 bytes of each copied slot. The objects\u2019 identities remain open."
+  },
+  {
+   "address": 63232,
+   "type": "line",
+   "text": "Four 64-byte frame records, 4\u20137 of the increasing-X sequence in address group 2. The movement routines at $9E05/$9EC6 copy these records to sprite slots $0A/$0B in $40-byte steps; $9D05 selects the source group. The VIC uses the first 63 bytes of each copied slot. The objects\u2019 identities remain open."
   }
  ]
 }
