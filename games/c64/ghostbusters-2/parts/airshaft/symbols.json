@@ -11547,15 +11547,15 @@
   },
   {
    "address": 57671,
-   "name": "a_E147",
+   "name": "sound_tempo_increment",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 57674,
-   "name": "a_E14A",
+   "name": "sound_tempo_accumulator",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 57695,
@@ -11739,9 +11739,9 @@
   },
   {
    "address": 58429,
-   "name": "s_E43D",
+   "name": "sound_channel_pitch",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58459,
@@ -11751,9 +11751,9 @@
   },
   {
    "address": 58468,
-   "name": "a_E464",
+   "name": "sound_pitch_offset",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58520,
@@ -12602,9 +12602,29 @@
    "text": "If $E12E is nonzero, advance an eight-bit accumulator; on carry call $E3A3 for channel offsets $00, $24 and $48, then call $E43D for all three. For each enabled channel, write its stored frequency, pulse width, envelope and control values to the SID; finally write $E138 to $D418."
   },
   {
+   "address": 57671,
+   "type": "line",
+   "text": "Immediate operand of the LDA at $E146. Initialization copies the selected record's first byte here; each enabled sound update adds it to the accumulator stored in the operand at $E14A."
+  },
+  {
+   "address": 57674,
+   "type": "line",
+   "text": "Immediate operand of the ADC at $E149 and the accumulator for the sound update. Initialization writes $FF here; the update stores each sum back. Carry from the addition controls whether it advances the three channel streams."
+  },
+  {
    "address": 57894,
    "type": "line",
    "text": "Twenty-four little-endian jump targets selected by the sound stream command dispatcher at $E42C. Some entries are zero; the nonzero entries point into the command handlers at $E256-$E3A2. The dispatcher writes the selected address into its jump operand."
+  },
+  {
+   "address": 58429,
+   "type": "line",
+   "text": "For the channel selected by X, read a byte from the stream addressed by $E0CB/$E0CC plus $E0CD. A byte with bit 7 set resets the stream offset to $FF and has that bit cleared. Add $E0D3, the global offset at $E464 and $E0E5; use the result to select a little-endian frequency from $E5C2. The continuation at $E464 applies the channel's optional frequency and pulse adjustments and stores the resulting SID values in its state block."
+  },
+  {
+   "address": 58468,
+   "type": "line",
+   "text": "Immediate operand of the ADC at $E463. Initialization clears it; a sound-stream command at $E2C7 replaces it. The same routine then adds the channel byte at $E0E5, looks up a two-byte frequency and applies enabled pitch and pulse-width adjustments before storing the channel's frequency at $E0D6/$E0D7 and pulse width at $E0D8/$E0D9."
   },
   {
    "address": 58818,

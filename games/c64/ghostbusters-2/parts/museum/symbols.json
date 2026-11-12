@@ -9961,9 +9961,9 @@
   },
   {
    "address": 57344,
-   "name": "f_E000",
-   "type": "Field",
-   "kind": "auto"
+   "name": "initialize_sound_selection",
+   "type": "Subroutine",
+   "kind": "user"
   },
   {
    "address": 57351,
@@ -10471,9 +10471,9 @@
   },
   {
    "address": 57658,
-   "name": "s_E13A",
+   "name": "update_sound",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 57664,
@@ -10483,21 +10483,21 @@
   },
   {
    "address": 57665,
-   "name": "s_E141",
+   "name": "update_three_voices",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 57671,
-   "name": "a_E147",
+   "name": "sound_tempo_increment",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 57674,
-   "name": "a_E14A",
+   "name": "sound_tempo_accumulator",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 57695,
@@ -10621,9 +10621,9 @@
   },
   {
    "address": 58429,
-   "name": "s_E43D",
+   "name": "sound_channel_pitch",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58459,
@@ -10633,9 +10633,9 @@
   },
   {
    "address": 58468,
-   "name": "a_E464",
+   "name": "sound_pitch_offset",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58520,
@@ -11251,9 +11251,9 @@
   },
   {
    "address": 60198,
-   "name": "s_EB26",
+   "name": "clear_sound_state",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60212,
@@ -12147,6 +12147,46 @@
    "address": 52629,
    "type": "line",
    "text": "Handle fire in the first slot cursor region, where $CA89 is zero and $CA83 is below $45. With $CA94 equal to $3E, copy the slot value at $CA8F into $CA94 and write $3F to the slot. Otherwise return $3E to $CA94 and use the offset at $CD87 to exchange the held and slot values."
+  },
+  {
+   "address": 57344,
+   "type": "line",
+   "text": "Use A to select a seven-byte record at $EB5C: one accumulator increment and three little-endian pointers. Clear the three $24-byte channel state blocks, initialize their pointers and counters from the selected record, clear SID registers, and enable the channel update flags."
+  },
+  {
+   "address": 57658,
+   "type": "line",
+   "text": "Call the three-voice SID update at $E141, then call the separate routine at $E937 before returning."
+  },
+  {
+   "address": 57665,
+   "type": "line",
+   "text": "If $E12E is nonzero, advance an eight-bit accumulator; on carry call $E3A3 for channel offsets $00, $24 and $48, then call $E43D for all three. For each enabled channel, write its stored frequency, pulse width, envelope and control values to the SID; finally write $E138 to $D418."
+  },
+  {
+   "address": 57671,
+   "type": "line",
+   "text": "Immediate operand of the LDA at $E146. Initialization copies the selected record's first byte here; each enabled sound update adds it to the accumulator stored in the operand at $E14A."
+  },
+  {
+   "address": 57674,
+   "type": "line",
+   "text": "Immediate operand of the ADC at $E149 and the accumulator for the sound update. Initialization writes $FF here; the update stores each sum back. Carry from the addition controls whether it advances the three channel streams."
+  },
+  {
+   "address": 58429,
+   "type": "line",
+   "text": "For the channel selected by X, read a byte from the stream addressed by $E0CB/$E0CC plus $E0CD. A byte with bit 7 set resets the stream offset to $FF and has that bit cleared. Add $E0D3, the global offset at $E464 and $E0E5; use the result to select a little-endian frequency from $E5C2. The continuation at $E464 applies the channel's optional frequency and pulse adjustments and stores the resulting SID values in its state block."
+  },
+  {
+   "address": 58468,
+   "type": "line",
+   "text": "Immediate operand of the ADC at $E463. Initialization clears it; a sound-stream command at $E2C7 replaces it. The same routine then adds the channel byte at $E0E5, looks up a two-byte frequency and applies enabled pitch and pulse-width adjustments before storing the channel's frequency at $E0D6/$E0D7 and pulse width at $E0D8/$E0D9."
+  },
+  {
+   "address": 60198,
+   "type": "line",
+   "text": "Clear the four sound flags at $E12E\u2013$E131, then clear SID registers $D400\u2013$D417. The following entry at $EB34 performs only the register clear."
   }
  ]
 }
