@@ -157,25 +157,30 @@ globalThis.Spectrum = (function () {
     }
     return e & 1;
   }
-  // The screen with the first n bytes of the picture in, over what it held before.
-  function partLoaded(before, picture, n) {
+  // The screen with the first n bytes of the picture in, over what it held before. A range of held,
+  // [from, to), stays as it was before until its last byte is in: a loader can keep a block off the
+  // screen and put it up whole.
+  function partLoaded(before, picture, n, held = []) {
     const ram = new Uint8Array(0x10000);
     ram.set(before, BITMAP); ram.set(picture.subarray(0, n), BITMAP);
+    for (const [a, b] of held) if (n < b) ram.set(before.subarray(a, b), BITMAP + a);
     return ram;
   }
   // The frame t T-states into the load, as RGBA pixels: the screen as far as it has got, and, while
   // bytes are still coming, the border striped in `stripes`, its two colours. A frame lasts 69,888
   // T-states and a line 224; the screen's first line is the frame's 64th, and a pixel is half a
-  // T-state. Once the picture is in the border is `borderColour`.
-  function loadingPixels(before, picture, ends, bit0, bit1, t, { stripes = null, borderColour = 0, border = 16 } = {}) {
-    const n = bytesIn(ends, t), img = screenPixels(partLoaded(before, picture, n), { borderColour, border });
+  // T-state. Once the picture is in the border is `borderColour`. tape is the picture's bytes as the
+  // tape holds them, when the loader turns each into another as it stores it: their bits time the
+  // load and draw the stripes (ends is tapeTimes of them). held is as for partLoaded.
+  function loadingPixels(before, picture, ends, bit0, bit1, t, { stripes = null, borderColour = 0, border = 16, tape = null, held = [] } = {}) {
+    const n = bytesIn(ends, t), img = screenPixels(partLoaded(before, picture, n, held), { borderColour, border });
     if (n >= picture.length || !stripes) return img;
     const { width, height, data } = img, frame = Math.floor(t / 69888) * 69888;
     for (let y = 0; y < height; y++) {
       const line = frame + (64 - border + y) * 224, inside = y >= border && y < border + 192;
       for (let x = 0; x < width; x++) {
         if (inside && x === border) x += 256;
-        const v = RGB[stripes[stripe(picture, ends, bit0, bit1, line + (x - border) / 2)] & 7], o = (y * width + x) * 4;
+        const v = RGB[stripes[stripe(tape || picture, ends, bit0, bit1, line + (x - border) / 2)] & 7], o = (y * width + x) * 4;
         data[o] = v[0]; data[o + 1] = v[1]; data[o + 2] = v[2];
       }
     }
@@ -185,14 +190,14 @@ globalThis.Spectrum = (function () {
   // A loading picture on a page: the canvas, a "Load it again" and a "Skip" button and a line that
   // counts the bytes in. The load runs at the tape's own pace from the picture's first byte, and
   // starts when the canvas comes into view. before and picture are the 6,912 bytes of the screen
-  // before the load and after it; bit0, bit1, stripes and borderColour as for loadingPixels.
-  function loadingPlayer({ canvas, again, skip, status, before, picture, bit0, bit1, stripes, borderColour = 0, border = 16 }) {
-    const ends = tapeTimes(picture, bit0, bit1), END = ends[ends.length - 1], TPS = 3.5e6, all = picture.length;
+  // before the load and after it; bit0, bit1, stripes, borderColour, tape and held as for loadingPixels.
+  function loadingPlayer({ canvas, again, skip, status, before, picture, bit0, bit1, stripes, borderColour = 0, border = 16, tape = null, held = [] }) {
+    const ends = tapeTimes(tape || picture, bit0, bit1), END = ends[ends.length - 1], TPS = 3.5e6, all = picture.length;
     const ctx = canvas.getContext('2d');
     canvas.style.imageRendering = 'pixelated';
     let t0 = 0, raf = 0;
     const paint = (t) => {
-      const img = loadingPixels(before, picture, ends, bit0, bit1, t, { stripes, borderColour, border });
+      const img = loadingPixels(before, picture, ends, bit0, bit1, t, { stripes, borderColour, border, tape, held });
       if (canvas.width !== img.width) canvas.width = img.width;
       if (canvas.height !== img.height) canvas.height = img.height;
       const id = ctx.createImageData(img.width, img.height); id.data.set(img.data); ctx.putImageData(id, 0, 0);

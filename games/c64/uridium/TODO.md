@@ -39,8 +39,5 @@ ported or decoded (see Ideas).
 
 ## Loading picture and tune
 
-- The cassette puts up a text screen, `URIDIUM BY ANDREW BRAYBROOK` in a frame
-  whose colours cycle, with a bar beneath that fills as the tape loads, from about 0:50 to
-  3:00 into the load, in silence. A section on the Graphics tab could show it with the
-  colours cycling and the bar filling, with a Skip button to the full bar; Commando's
-  Graphics tab, which counts down its cassette's blocks, is the model.
+- A new section awaits the steward's pass: the cassette's loading screen, its colours
+  cycling and its bar filling at the tape's pace, on the Graphics tab (section 05).
