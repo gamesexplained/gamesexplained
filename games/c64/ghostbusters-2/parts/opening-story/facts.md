@@ -26,3 +26,5 @@ The partial code map names these groups; it cannot establish that other register
 | `$DD00` | Video bank selection | `$17E4`, `$181D`, `$1873` |
 
 The captured opening-story picture uses multicolour bitmap mode in VIC bank 1. In that frame, `$4000–$52BF` supplies 15 rows of bitmap cells and `$6000–$6257` supplies their screen-matrix colours; colour RAM and `$D021` supply the other colours. A frame reconstructed from the capture differs from VICE in two of 104,448 pixels, at raster lines 32 and 122. The state before the story load has not been captured, so the hand-over audit remains open.
+
+The input scanner at `$16F2` checks CIA1 port A bit 4 and otherwise compares thirty row and column pattern pairs at `$1724–$175F`. The wait at `$19A4` repeats the scan after `$0E` changes. Setup routines at `$1760` and `$1777` install different interrupt vectors; their callers and use in the full loading route remain open. These bytes match the second-story, third-story and ending snapshots.
