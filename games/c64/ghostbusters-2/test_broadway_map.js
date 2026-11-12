@@ -21,6 +21,9 @@ for (let a = 0x0900; a < 0x0a2a; a++) {
 }
 assert.deepStrictEqual(data.codes, Array.from(ram.slice(0x0900, 0x1f80)));
 assert.deepStrictEqual(data.charset, Array.from(listing.ram.slice(0x7000, 0x7800)));
+const alternate = g.listing('parts/broadway-jondi/listing.json');
+assert.deepStrictEqual(data.jondiCodes, Array.from(alternate.ram.slice(0x0900, 0x1f80)));
+assert.notDeepStrictEqual(data.jondiCodes.slice(0, 298), data.codes.slice(0, 298));
 const vice = JSON.parse(fs.readFileSync(path.join(__dirname, 'broadway-map-vice.json'), 'utf8'));
 for (const fixture of vice) assert.deepStrictEqual(columnAt(data.codes, fixture.column), fixture.values,
   `VICE column ${fixture.column}`);
@@ -34,4 +37,12 @@ for (let column = 0; column < 480; column++) {
   assert.deepStrictEqual(columnAt(data.codes, column), Array.from({length: 12}, (_, row) => ram[0x4517 + row * 40]),
     `CPU column ${column}`);
 }
-console.log(`OK - all 480 Broadway columns match the game, including ${vice.length} VICE fixtures`);
+ram.set(data.jondiCodes, 0x0900);
+for (const column of [0, 78, 479]) {
+  const pointer = 0x0900 + column;
+  ram[0x87f7] = pointer & 255; ram[0x87fb] = pointer >> 8;
+  cpu.pc = 0x87f4; cpu.run({until: 0x88c9, maxInstructions: 1000});
+  assert.equal(cpu.pc, 0x88c9);
+  assert.deepStrictEqual(columnAt(data.jondiCodes, column), Array.from({length: 12}, (_, row) => ram[0x4517 + row * 40]));
+}
+console.log(`OK - both Broadway disks match the fetch routine; ${vice.length} Censor columns have VICE fixtures`);
