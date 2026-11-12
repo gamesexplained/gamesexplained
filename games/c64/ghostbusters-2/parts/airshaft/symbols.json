@@ -11111,9 +11111,9 @@
   },
   {
    "address": 45449,
-   "name": "s_B189",
+   "name": "airshaft_route_scan_index",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 45457,
@@ -11405,15 +11405,15 @@
   },
   {
    "address": 45908,
-   "name": "s_B354",
+   "name": "airshaft_character_screen_address",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 46004,
-   "name": "s_B3B4",
+   "name": "airshaft_check_character_screen_byte",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 46078,
@@ -19515,6 +19515,11 @@
    "text": "Set $AF13 to 1, clear $8044, set $8038 to $1C and return."
   },
   {
+   "address": 45449,
+   "type": "line",
+   "text": "Compare Y with $0F, $0E, $0D and $0C; on a match jump to the first range-state handler. Compare it with 3, 2, 1 and 0; on a match jump to the second range-state handler. For other values jump to the shared range check. The scan's index ranges and state interpretation depend on its caller."
+  },
+  {
    "address": 45719,
    "type": "line",
    "text": "Compare the incoming Y value. Values $0C or $0D jump to $B2C5; values $00-$03 jump to $B2FB; every other value jumps to $B2E7."
@@ -19538,6 +19543,16 @@
    "address": 45859,
    "type": "line",
    "text": "Set $B5BB to zero when $B110 is $F6 or $F7, or to $FF when it is $F8 or $F9. Other values leave $B5BB unchanged. Return."
+  },
+  {
+   "address": 45908,
+   "type": "line",
+   "text": "Subtract $24 and add $20 to the character sprite X value at $8027 using byte arithmetic, then shift right three times and store the result at $B10C. Subtract $32 and add 8 to the Y value at $8028, shift right three times and store the result at $B10D. Double the Y result to select a 16-bit row address from $C5CC, add the X result and store the result at $B10E/$B10F. Several screen-scan paths use this address; the raster routine at $8F76 writes $8027/$8028 to sprite registers."
+  },
+  {
+   "address": 46004,
+   "type": "line",
+   "text": "Save A at $B110 and call four checks at $B40C, $B41E, $B430 and $B442, reloading the saved byte for the latter three. Call the first and second pattern checks. Then inspect the sprite pointer operand at $8FB6: for $20, $3A, $54, $6E or $72 pass the saved byte to the first marker check; for $35, $4F, $69, $8E or $92 pass it to the second marker check. Return without either marker check for other values. The full gameplay meaning of these tests remains open."
   },
   {
    "address": 46164,
