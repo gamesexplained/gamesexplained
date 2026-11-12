@@ -49,3 +49,5 @@ The dispatcher at `$9C47` selects eight handlers from `$9498`. Each copies three
 The call at `$9B5A` cycles through three movement slots, handling one per invocation. For an active slot it copies the direction and position into shared state, calls the movement routines, then copies the position back. An inactive slot writes `$03` to `$FC2B`.
 
 Before applying a directional update, `$9B79` calls `$9E18` to check a position-derived table byte and `$9EB4` to compare the position with a second bounded area. Either check can clear the active slot; the second calls `$A474` on a match. The objects and table value involved are not identified.
+
+The placement path at `$96F8` derives a pair of row addresses from position bytes and the table at `$8428`. It reads and tests existing cell codes, then `$9981` writes two rows through patched store operands; a patched index selects two or four bytes per row. The meaning of the tested cell codes and the placed pattern remains open.

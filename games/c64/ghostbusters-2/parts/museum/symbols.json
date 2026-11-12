@@ -4422,15 +4422,15 @@
   },
   {
    "address": 38638,
-   "name": "s_96EE",
+   "name": "museum_advance_position_8",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38648,
-   "name": "j_96F8",
+   "name": "museum_prepare_placement",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38671,
@@ -4548,9 +4548,9 @@
   },
   {
    "address": 38967,
-   "name": "a_9837",
+   "name": "museum_placement_read_high",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38978,
@@ -4710,15 +4710,15 @@
   },
   {
    "address": 39256,
-   "name": "j_9958",
+   "name": "museum_finish_placement",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 39297,
-   "name": "s_9981",
+   "name": "museum_write_placement",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 39299,
@@ -12499,6 +12499,31 @@
    "address": 33758,
    "type": "line",
    "text": "Set the display-memory operand at $087B to $1F, call $A36A for the upper screen, copy 488 further codes from $1600 to $4600, and copy the high nibbles of 1,000 bytes at $1C00 to colour RAM before calling $82E8."
+  },
+  {
+   "address": 38638,
+   "type": "line",
+   "text": "Add 8 to the byte at $8049 and return. The placement routine calls this twice when its computed row is below 6."
+  },
+  {
+   "address": 38648,
+   "type": "line",
+   "text": "Save Y on the stack, set $99C1 to 3 and copy $804A,X to $804D. Read $FC16,Y into $8049, substituting $D2 for $CF, $D0 or $D1; copy $FC06,Y/$FC0E,Y to $8047/$8048 and subtract $10. Subtract $0C from that two-byte value and shift its low byte right three places. Subtract $32 from $8049, shift right three, and round an even result up to an odd value; when it is below 6, add 2 and advance $8049 by 16. Use the row value to select a word at $8428, add the shifted position and, if the adjusted position's high byte is nonzero, $20. Save this address at $99C6/$99C7 and its value plus $28 at $99CC/$99CD. Patch the reads at $97E9 and $9835 to this address. Read the byte at offset 4 and, depending on $8041, test it against $C4, $C5, $D8 and $D9 or against $A9 before continuing at $9835."
+  },
+  {
+   "address": 38967,
+   "type": "line",
+   "text": "High byte of the self-modified read at $9835; $97E3 sets it from the calculated address. The read byte goes to $9488 and selects calls to $9664 and $9698 for $39\u2013$3B. The value of $8041 selects one of two further groups of comparisons against $9488, with calls to $9664, $9698, $99D2 and $99D9; both paths continue at $9958. The meanings of the tested cell codes remain open."
+  },
+  {
+   "address": 39256,
+   "type": "line",
+   "text": "Set $947F to 4 and use that index to copy values from $CA95 and $CA9A to $CA88 and $CA8E. Set $9486,X to 1, restore the saved Y, preserve X across a call to $963F, clear $947E and set $9485 to 1. Execution then falls into $9981."
+  },
+  {
+   "address": 39297,
+   "type": "line",
+   "text": "Copy four bytes each from $99E8 and $99EC to the working rows at $99E0 and $99E4. If $8041 is zero and the destination at $99C6/$99C7 equals $4518, change the first working byte to $81; if it equals $44E4, change the fourth to $A2. Copy the working rows through the self-modified stores at $99C5 and $99CB, whose operands are set by $97DA\u2013$97E6 and $97C4\u2013$97D2. The immediate operand at $99C1 determines the descending index: $96F8 sets it to 3 and some cell tests set it to 1."
   },
   {
    "address": 39770,
