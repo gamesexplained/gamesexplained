@@ -30,3 +30,5 @@ The captured opening-story picture uses multicolour bitmap mode in VIC bank 1. I
 The input scanner at `$16F2` checks CIA1 port A bit 4 and otherwise compares thirty row and column pattern pairs at `$1724–$175F`. The wait at `$19A4` repeats the scan after `$0E` changes. Setup routines at `$1760` and `$1777` install different interrupt vectors; their callers and use in the full loading route remain open. These bytes match the second-story, third-story and ending snapshots.
 
 In the opening-story snapshot, the first 4,800 bitmap bytes at `$7B00–$8DBF` match `$4000–$52BF`, and the first 600 matrix bytes at `$8F00–$9157` match `$6000–$6257`. The copied story routine at `$1593` performs the corresponding picture and matrix copies. The listing counts the loaded sources and excludes the copied display output.
+
+The decoded `2.FIRST STORY` load writes `$3000–$37FF`, `$6400–$91FF` and `$C200–$C87F`; its 15,488 stable output bytes match this snapshot. It does not replace the sound driver loaded by the title, so this part lies over the title and owns only those decoded ranges. Runtime display copies are excluded.
