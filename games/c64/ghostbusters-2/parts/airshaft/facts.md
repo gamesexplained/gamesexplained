@@ -83,3 +83,7 @@ Two airshaft selectors at `$9641` and `$9781` compare the map-pointer operands a
 Before the pointer-based drawing dispatcher, `$B7C6` calculates a row and column from `$8027/$8028` and offsets indexed by `$8029`. It uses the 24 little-endian addresses at `$C5CC–$C5FB`, which step by 40 from `$4400` to `$4798`, then constructs corresponding colour-RAM addresses by adding `$94` to the high byte.
 
 The selector at `$B297` chooses one of three range checks from Y. For `$B110` values `$EE–$FD`, those checks can clear `$801E`, set `$B113` or `$B114`, and call `$B323`; that latter routine sets `$B5BB` to zero for `$F6/$F7` and `$FF` for `$F8/$F9`. The entry at `$B343`, also called by two paths, is an RTS in the captured snapshot.
+
+When `$C8FB` is nonzero, the sprite 7 path at `$C991` can adjust its Y operand by `$801E` in the direction selected by `$801D`. Under the conditions recorded at `$C9BD`, it selects pointer `$0E` and begins a state in which the X operand increases by six until it reaches at least `$F0`, then resets the pointer to `$0F` and X to `$6A`. Its gameplay identity remains open.
+
+The counterpart at `$CBF4` uses `$C8FD/$C8FC` and `$803E` rather than `$C8FB/$C8FA` and `$803D`. Its active horizontal path subtracts six from sprite 7's X operand while it is at least `$6A`, then selects pointer `$0F` and resets X to `$F0`. It uses pointer `$0D` at the start of that state.
