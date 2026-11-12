@@ -68,6 +68,14 @@ ram[0x8031] = 2;
 cpu.call(0x8bde);
 assert.deepStrictEqual([readOperand(0x8bef), readOperand(0x8be9), readOperand(0x8be3), ram[0x8031]],
   [0x92df, 0x92d7, 0x92d7, 0]);
+// Every two position updates request one upper-counter step.
+operand(0xa0cc, 0x1be0); operand(0xa0ce, 0x1af0);
+ram[0x8032] = 2; ram[0x8033] = 2; ram[0x8031] = 0;
+cpu.call(0xa28c); cpu.call(0xa28c);
+assert.deepStrictEqual([readOperand(0xa0cc), readOperand(0xa0ce), ram[0x8031]], [0x1bb8, 0x1ac8, 1]);
+ram[0x8031] = 0;
+cpu.call(0xa259); cpu.call(0xa259);
+assert.deepStrictEqual([readOperand(0xa0cc), readOperand(0xa0ce), ram[0x8031]], [0x1be0, 0x1af0, 2]);
 const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const match = html.match(/<script id="frame-data" type="application\/json">([^<]+)<\/script>/);
 assert(match, 'airshaft frame data is embedded');
