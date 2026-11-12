@@ -73,3 +73,5 @@ Traced the museum coordinate comparison at `$8D0D`, including its state gates, b
 Traced the museum’s eight-way motion dispatcher and restored the `$60` byte after the jump at `$C90F`; an alternate entry remains unestablished.
 
 Traced the second museum motion position’s grid lookup, including its 31-byte high-X adjustment and position-clearing conditions.
+
+Traced the museum’s paired position comparison and its dependency on the first match flag.
