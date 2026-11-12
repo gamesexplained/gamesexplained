@@ -125,3 +125,5 @@ When `$802F` is zero, `$B857` draws pairs of bytes from `$B79D` to screen memory
 For sprite pointer `$25`, `$BF73` saves up to six character bytes along a diagonal and writes replacement characters and colour 9. Its matching restore case at `$B8D8` writes the saved characters back with colour `$0A`; both paths step their addresses by 41 bytes and stop at a column boundary. The scene-level effect remains open.
 
 The pointer `$2A` drawing path uses a shared six-cell column writer and corresponding restore routine, stepping each address by 40 bytes. Pointer `$30` uses a matching diagonal save-and-restore pair stepping by 39 bytes. Both restore saved characters with colour `$0A`; neither stores the original colour bytes in these paths.
+
+Pointer `$35` selects a two-character diagonal drawing and restore pair with 38-byte address steps; pointer `$3A` selects a horizontal pair of paths stepping one byte at a time. Both save character bytes and later write them back with fixed colour `$0A`.
