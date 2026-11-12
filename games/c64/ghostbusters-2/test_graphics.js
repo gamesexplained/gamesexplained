@@ -79,7 +79,7 @@ assert(slotsMatch, 'airshaft sprite inspector has its data');
 const slots = JSON.parse(slotsMatch[1]);
 const expectedSlots = [
   0x01, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0d, 0x0e,
-  ...Array.from({length: 0x1f}, (_, n) => n + 0x20),
+  ...Array.from({length: 0x77}, (_, n) => n + 0x20),
   ...Array.from({length: 4}, (_, n) => n + 0x9a),
   0xa2,
   ...Array.from({length: 6}, (_, n) => n + 0xa8),
@@ -92,17 +92,17 @@ for (const slot of slots) {
   for (let i = 0; i < 63; i++) assert(airshaftListing.has[start + i]);
   assert.deepStrictEqual(slot.bytes, Array.from(airshaftListing.ram.slice(start, start + 63)));
 }
-console.log('OK - 57 airshaft sprite slots match the listing');
+console.log('OK - 145 airshaft sprite slots match the listing');
 
 const poseMatch = html.match(/<script id="airshaft-pose-data" type="application\/json">([^<]+)<\/script>/);
 assert(poseMatch, 'airshaft pose viewer has its pointer records');
 const poses = JSON.parse(poseMatch[1]);
-assert.equal(poses.length, 5);
+assert.equal(poses.length, 30);
 for (let i = 0; i < poses.length; i++) {
   assert.deepStrictEqual(poses[i], Array.from(airshaftListing.ram.slice(0x919f + 8 * i, 0x91a5 + 8 * i)));
   for (const pointer of poses[i]) assert(pointer === 0x0f || expectedSlots.includes(pointer));
 }
-console.log('OK - five character poses match their pointer records');
+console.log('OK - 30 character arrangements match their pointer records');
 
 const motionMatch = html.match(/<script id="museum-motion-data" type="application\/json">([^<]+)<\/script>/);
 assert(motionMatch, 'museum movement inspector has its data');

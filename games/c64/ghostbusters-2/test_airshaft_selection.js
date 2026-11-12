@@ -8,6 +8,22 @@ const listing = game(__dirname).listing('parts/airshaft/listing.json');
 assert(listing.has[0xaac0] && listing.has[0xaae1]);
 const ram = listing.ram.slice();
 const cpu = new CPU(ram, {port: 0x35});
+// The pose selector reads 15 records from each table, including patched offsets.
+const poseOperands = [0x8fb6, 0x8fbb, 0x900f, 0x9014, 0x8fc0, 0x8fc5];
+ram[0x804d] = 0;
+for (let i = 0; i < 15; i++) {
+  ram[0x9166] = 1; ram[0x8029] = i;
+  cpu.call(0xa9be);
+  assert.deepStrictEqual(poseOperands.map(a => ram[a]), Array.from(listing.ram.slice(0x919f + i * 8, 0x91a5 + i * 8)));
+}
+for (let group = 0; group < 3; group++) {
+  for (let i = 0; i < 5; i++) {
+    ram[0x9166] = 2; ram[0x802a] = i; ram[0xaa21] = group * 0x28;
+    cpu.call(0xa9be);
+    const address = 0x9217 + group * 0x28 + i * 8;
+    assert.deepStrictEqual(poseOperands.map(a => ram[a]), Array.from(listing.ram.slice(address, address + 6)));
+  }
+}
 for (const [before, selector, mode] of [[1, 2, 2], [2, 0, 3], [0, 1, 1]]) {
   ram[0xa775] = before;
   ram[0xa776] = 0;
