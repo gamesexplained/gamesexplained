@@ -43,3 +43,5 @@ Six groups of animation sequences start at `$C597`, `$C5DF`, `$C627`, `$C66F`, `
 Other pointer/mode sequences at `$C561`, `$C573`, `$C585`, `$C747`, `$C781` and `$C78B` select slots `$28–$37`, `$44–$4A`, `$4C–$56` and `$58–$61`; all use mode zero and end with `$FF $FF`. The selector table at `$C4F5` points to each sequence. Their bitmap slots and the sequence bytes match in the entry and play snapshots.
 
 The sequence at `$C757` selects sprite pointers `$90–$95` and the blank slot `$08`, each twice; `$C775` selects `$0C`. Both use mode zero and end with `$FF $FF`. Their selected bitmap bytes match between entry and play.
+
+Three sequences at `$C849`, `$C853` and `$C85D` supply base sprite pointers and modes 1 or 2. For an active entry, the mode 1 layout at `$A579` supplies the base and the next three pointers; mode 2 at `$A5E3` supplies the base, the next pointer and `$BC/$BD`. Together the sequences can select slots `$9E–$BD`, at `$6780–$6F7F`. The sequence and bitmap bytes match in the entry and play snapshots; the objects remain unidentified.
