@@ -137,3 +137,5 @@ Found six omitted sprite 4 bitmaps through its pointer sequences and added them 
 Traced both sprite 4 setup paths and the counter that advances their animation sequences.
 
 Traced sprite 4 movement to the raster sprite 1 coordinates and its two alignment flags.
+
+Traced the character contact-point checks against sprites 6 and 7 and their state-dependent count responses.

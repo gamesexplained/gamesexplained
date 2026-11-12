@@ -9065,15 +9065,15 @@
   },
   {
    "address": 39912,
-   "name": "s_9BE8",
+   "name": "airshaft_check_contact_point",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 39919,
-   "name": "s_9BEF",
+   "name": "airshaft_check_point_against_sprite7",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 39940,
@@ -9119,9 +9119,9 @@
   },
   {
    "address": 40019,
-   "name": "s_9C53",
+   "name": "airshaft_check_point_against_sprite6",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40031,
@@ -14243,15 +14243,15 @@
   },
   {
    "address": 50939,
-   "name": "f_C6FB",
+   "name": "airshaft_sprite6_active_sequence",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 50943,
-   "name": "f_C6FF",
+   "name": "airshaft_sprite_effect_sequence",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 50947,
@@ -19456,6 +19456,21 @@
    "text": "Use the seven pairs of offsets at $9AA2. For each pair, add its first byte to $8027 and its second to $8028, store the results in $9AB0/$9AB1 and call $9BE8."
   },
   {
+   "address": 39912,
+   "type": "line",
+   "text": "Call the sprite 7 point check at $9BEF and the sprite 6 point check at $9C53, then return. The caller derives $9AB0/$9AB1 from the character position and one of its offset tables."
+  },
+  {
+   "address": 39919,
+   "type": "line",
+   "text": "When $804B is zero, return if $C90A is nonzero or if the sprite 7 pointer operand $8E2A is neither $0D nor $0E. Form byte-sized bounds from sprite 7 Y operand $8E25 and Y plus $15, and from X operand $8E20 and X plus $18. Compare the point at $9AB0/$9AB1 with those bounds using CMP and BPL/BMI, so the sign bit of each eight-bit subtraction controls the branches. If all tests pass, set $C90A and call the three-byte count-copy path when $804B is zero; otherwise increment $8045. The gameplay identities remain open."
+  },
+  {
+   "address": 40019,
+   "type": "line",
+   "text": "Return if $C620 is nonzero or the sprite 6 pointer operand $8E5F is $0F. Form byte-sized bounds from sprite 6 Y operand $8E5A and Y plus $15, and from X operand $8E55 and X plus $18. Compare the point at $9AB0/$9AB1 with those bounds using CMP and BPL/BMI. If all tests pass and the sprite pointer is $A7, call the three-byte count-copy path and set $C620 to 1; otherwise increment $8045. The gameplay identities remain open."
+  },
+  {
    "address": 40112,
    "type": "line",
    "text": "Return if both $C61D and $C61B are zero. Read the sprite 6 Y operand at $8E5A and return if it is below $30 or at least $E8. Subtract $14 from the sprite 6 X operand at $8E55 and $32 from its Y operand, using byte arithmetic, and divide each by 8. Use the Y result to select a screen-row address from $C5CC and add the X result. Starting with Y equal to 5, patch the screen read at $9D1A to that address, pass the byte to $9D3C, and add $9D36,Y to the address. Decrement Y and repeat until zero, for five reads. The flag meanings remain open."
@@ -19999,6 +20014,16 @@
    "address": 50918,
    "type": "line",
    "text": "Set the sprite 6 pointer operand at $8E5F to $0F and increment $C61C. When it reaches $40, clear $C61D. Return."
+  },
+  {
+   "address": 50939,
+   "type": "line",
+   "text": "Four sprite pointers $AB, $AC, $AD, $AC selected by the sprite 6 update at $C6C4 with an index that advances modulo 4. Their corresponding bitmap slots are shown in the Graphics inspector."
+  },
+  {
+   "address": 50943,
+   "type": "line",
+   "text": "Four sprite pointers $A8, $A9, $AA, $0F selected by sprite 6 and sprite 4 state paths at $C6AE and $CA6C. Slot $0F is cleared during initialization; the other three bitmap slots are shown in the Graphics inspector."
   },
   {
    "address": 50947,
