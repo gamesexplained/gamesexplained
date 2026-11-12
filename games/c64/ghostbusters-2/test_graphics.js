@@ -74,3 +74,19 @@ assert.equal(museum.length, 2048);
 assert.deepStrictEqual(museum, Array.from(museumListing.ram.slice(0x7000, 0x7800)),
   'museum character set must match the listing');
 console.log('OK - museum character set matches the listing');
+const slotsMatch = html.match(/<script id="airshaft-sprite-slots-data" type="application\/json">([^<]+)<\/script>/);
+assert(slotsMatch, 'airshaft sprite inspector has its data');
+const slots = JSON.parse(slotsMatch[1]);
+const expectedSlots = [
+  ...Array.from({length: 0x1a}, (_, n) => n + 0x20),
+  ...Array.from({length: 4}, (_, n) => n + 0x9a),
+  ...Array.from({length: 6}, (_, n) => n + 0xa8),
+  ...Array.from({length: 5}, (_, n) => n + 0xbb),
+];
+assert.deepStrictEqual(slots.map(slot => slot.pointer), expectedSlots);
+for (const slot of slots) {
+  const start = 0x4000 + 64 * slot.pointer;
+  for (let i = 0; i < 63; i++) assert(airshaftListing.has[start + i]);
+  assert.deepStrictEqual(slot.bytes, Array.from(airshaftListing.ram.slice(start, start + 63)));
+}
+console.log('OK - 41 airshaft sprite slots match the listing');

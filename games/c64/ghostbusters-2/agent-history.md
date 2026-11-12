@@ -39,3 +39,5 @@ The alternate Broadway entry and play snapshots agree throughout `$0900–$1F7F`
 The alternate Broadway lookup views were described using the shared selector code and the alternate entry/play comparison. Eight eight-byte gaps between the views were given separate unannotated labels so coverage does not count them as explained by the adjacent views.
 
 The eight gaps between alternate Broadway lookup views were read directly: each contains its selector byte followed by `newline`. Their contents are now described, but their runtime purpose remains an open question.
+
+Forty-one airshaft sprite slots named by traced pointer tables were typed as bitmap data and added to a Graphics inspector. Their individual shapes were left without semantic comments, so the newly counted bytes remain unexplained until their roles are established. The bytes match in the entry and play snapshots.

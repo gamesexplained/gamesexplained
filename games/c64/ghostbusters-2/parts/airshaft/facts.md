@@ -93,3 +93,5 @@ The checks at `$98A3` and `$9978` respond respectively to A values `$51/$53` and
 Running the captured unpacker on `3.THE CLOAKS` with two initial RAM fills gives output at `$0800–$CCFF` and `$E000–$EFE1`. All 54,498 stable output bytes match the captured entry state. The part lies over the opening story and counts those load ranges; the origin of the transition code at `$02A7` remains open, so its names are retained outside the owned ranges.
 
 The four 120-byte blocks at `$08EC`, `$0964`, `$09DC` and `$0A54` are outcome messages. The paths at `$0897`, `$0ACC`, `$0AF2` and `$0AEB` pass those respective addresses to the message routine at `$0AF6`. The retry path changes bytes at `$09A0` and `$09AD` before display.
+
+The Graphics tab includes 41 captured sprite slots selected by the five-frame pointer table at `$919F`, the sprite 5 sequence at `$A829`, and sprite 6 and 7 pointer tables at `$C6FB–$C702` and `$C7BF–$C7CE`. Each displayed image uses the first 63 bytes of its slot. Those bytes match the entry and play snapshots; individual sprite roles and the remaining slots are open.
