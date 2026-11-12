@@ -5,3 +5,5 @@ The game loads `1.THE INTRO` before the title prompt. The prompt state is captur
 In the title-prompt snapshot, all 5,120 bytes at `$6400–$77FF` match `$4000–$53FF`, and all 640 bytes at `$7800–$7A7F` match `$6000–$627F`. The copied story engine has routines that perform these transfers. The individual picture bytes remain to be interpreted.
 
 The title file contains 36 space-padded 40-byte rows at `$C200–$C79F`, followed by zero at `$C7A0`. They give staff and music credits, the developer and publisher, the title and a key prompt. The resident sequence at copied address `$1049` passes `$C200` to the story text renderer at `$1924`.
+
+The title snapshot has sprite pointers `$A0–$A7` at `$07F8–$07FF`. The stored setup writes those pointers, places sprites 0–3 in four positions and sprites 4–7 at the same positions, and sets their colours to 1 and 2. The raster handler selects VIC bank 0 for the sprite portion of the display, so the pointers select eight 64-byte slots at `$2800–$29FF`; each slot contains 63 bitmap bytes and a padding byte.

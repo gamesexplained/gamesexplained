@@ -43,6 +43,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <!-- tabs -->
 <header class="hero"><p class="eyebrow">{{year}} · {{publisher}}</p><h1>{{title}} graphics</h1><p class="sub">Sprites and character sets from the three scenes.</p></header>
 <main class="wrap"><section>
+<h2 class="t">The title sprite layers</h2>
+<p>Eight sprites form four pairs over the title picture. The setup assigns the first four white and the next four red; each pair shares a position. Switch the layers to see how they fit together. The shapes begin at <a href="source-title.html#2800"><code>$2800</code></a>, and the <a href="source-resident-stash.html#D42B">stored setup</a> assigns their pointers.</p>
+<div class="plate"><div class="controls"><label><input type="checkbox" id="title-red" checked> Red layer</label><label><input type="checkbox" id="title-white" checked> White layer</label></div>
+<p><canvas id="title-sprites" width="384" height="336" aria-label="Title sprite group" style="max-width:100%;height:auto;image-rendering:pixelated;background:#23262d;border-radius:6px"></canvas></p><p class="cap">The displayed group reconstructs the captured pointers and setup positions; its backdrop is omitted.</p></div></section><section>
 <h2 class="t">Three shapes for the fireball</h2>
 <p>The game steers sprite 5 across Broadway and cycles its pointer through three shapes. Choose a shape to see its 24 by 21 pixels. The <a href="source-broadway.html#851E"><code>$851E</code></a> raster code sets the position and pointer; the bitmaps begin at <a href="source-broadway.html#40C0"><code>$40C0</code></a>.</p>
 <div class="plate">
@@ -299,5 +303,23 @@ function storyPicturePixels(data, row) {
   }
   select.addEventListener('change', draw);
   draw();
+})();
+</script>
+
+<script id="title-sprite-data" type="application/json">[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,7,0,0,9,0,0,15,0,3,11,0,7,223,0,7,253,0,7,183,0,7,184,0,3,217,0,3,239,0,63,244,0,63,47,0,30,31,0,50,63,0,0,63,0,0,124],[0,48,0,0,120,96,192,120,240,224,120,240,208,56,240,224,56,224,32,56,192,224,25,192,96,25,128,240,27,128,176,7,176,112,120,112,239,255,48,255,247,32,127,248,144,255,255,192,255,248,0,255,192,0,207,128,0,0,0,0,0,0,0],[0,0,112,0,0,64,0,0,0,0,0,0,0,0,0,0,0,1,0,0,7,0,0,31,0,0,15,0,0,6,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,1,128,0,7,128,0,31,128,0,127,128,0,255,0,0,255,0,0,254,0,0,254,0,0,252,0,0,248,0,0,248,0,0,248,0,0,248,0,0,240,0,0,118,0,0,255,0,0,125,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,14,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,7,128,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,62,0,48,126,0,255,158,0],[0,30,3,0,30,15,0,30,63,0,31,255,0,31,254,0,31,248,0,15,224,0,15,128,0,15,128,0,7,192,0,7,224,0,3,248,0,1,254,0,0,254,0,0,62,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[254,30,0,248,30,0,224,30,0,128,30,0,0,62,0,0,62,0,0,126,0,0,124,0,0,252,0,0,248,0,3,248,0,3,240,0,3,224,0,7,192,0,7,128,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]</script>
+<script>
+(() => {
+  const shapes = JSON.parse(document.getElementById('title-sprite-data').textContent);
+  const red = document.getElementById('title-red'), white = document.getElementById('title-white');
+  const ctx = document.getElementById('title-sprites').getContext('2d');
+  function draw() {
+    ctx.clearRect(0, 0, 384, 336);
+    for (let layer = 1; layer >= 0; layer--) {
+      if (!(layer ? red : white).checked) continue;
+      for (let n = 0; n < 4; n++)
+        C64.drawSprite(ctx, shapes[n + layer * 4], (n % 2) * 192, Math.floor(n / 2) * 168, 8, C64.PAL[layer ? 2 : 1]);
+    }
+  }
+  red.addEventListener('change', draw); white.addEventListener('change', draw); draw();
 })();
 </script>
