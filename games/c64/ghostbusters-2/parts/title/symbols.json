@@ -245,16 +245,6 @@
   },
   {
    "start": 57942,
-   "end": 58425,
-   "type": "Code"
-  },
-  {
-   "start": 58426,
-   "end": 58428,
-   "type": "Undefined"
-  },
-  {
-   "start": 58429,
    "end": 58817,
    "type": "Code"
   },
@@ -898,6 +888,18 @@
    "kind": "auto"
   },
   {
+   "address": 57942,
+   "name": "sound_command_set_sequence",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 57958,
+   "name": "sound_next_sequence_pointer",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 57999,
    "name": "j_E28F",
    "type": "Jump",
@@ -910,10 +912,34 @@
    "kind": "auto"
   },
   {
+   "address": 58033,
+   "name": "sound_command_reset_voice",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 58047,
+   "name": "sound_command_clear_voice_byte",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 58055,
+   "name": "sound_command_set_pitch_adjustment",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 58068,
    "name": "b_E2D4",
    "type": "Branch",
    "kind": "auto"
+  },
+  {
+   "address": 58071,
+   "name": "sound_command_set_voice_pitch_offset",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 58084,
@@ -925,6 +951,12 @@
    "address": 58117,
    "name": "b_E305",
    "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 58129,
+   "name": "j_E311",
+   "type": "Jump",
    "kind": "auto"
   },
   {
@@ -1843,12 +1875,32 @@
   {
    "address": 57942,
    "type": "line",
-   "text": "Read a two-byte sequence-table base from the stream into indexed voice state, then select the first pointer in that table."
+   "text": "Read two bytes from the stream pointer $F0/$F1 into $E0C5/$E0C6,X, then jump to $E28F, which initializes the sequence offset and reads its first pointer. The command table at $E252 selects this entry."
   },
   {
    "address": 57958,
    "type": "line",
-   "text": "Add the indexed voice's offset to its sequence-table base and advance the offset. If the selected two-byte pointer is zero, reset to the first table entry; load the selected pointer into the stream pointer and continue reading."
+   "text": "Add the indexed offset at $E0C7/$E0C8,X to the sequence base at $E0C5/$E0C6,X and place the result in $F0/$F1. Advance the offset by 2, including any carry from the preceding high-byte addition. If the two bytes at that address are zero, $E28F restores the base and resets the offset to 2. Read the chosen little-endian pointer into $F0/$F1 and jump to $E3B7. How this entry is reached remains open."
+  },
+  {
+   "address": 58033,
+   "type": "line",
+   "text": "Clear $E0D4,X, $E0D5,X and $E0DA,X, then jump to $E3CE. The command table at $E226 selects this entry."
+  },
+  {
+   "address": 58047,
+   "type": "line",
+   "text": "Clear $E0DA,X and jump to $E3CE. Entry 21 of the command table selects this path."
+  },
+  {
+   "address": 58055,
+   "type": "line",
+   "text": "Copy one byte from the stream pointer $F0/$F1 into the immediate operand at $E464, advance the stream pointer by one with carry and jump to $E3B7. Entry 20 of the command table selects this path."
+  },
+  {
+   "address": 58071,
+   "type": "line",
+   "text": "Copy one byte from the stream pointer $F0/$F1 into $E0E5,X, advance the stream pointer by one with carry and jump to $E3B7. Entry 23 of the command table selects this path; the frequency routine adds $E0E5,X to its selected pitch."
   },
   {
    "address": 58087,

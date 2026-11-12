@@ -13,3 +13,5 @@ The decoded `4.SECOND STORY` load writes `$3000–$37FF`, `$6400–$91FF`, `$C20
 The sound routine at `$E43D` reads a voice sequence, adds its pitch offsets and looks up a little-endian frequency at `$E5C2`. It can adjust the frequency with the per-voice values at `$E0DB–$E0DE` and with a two-byte accumulator. It stores the result in `$E0D6/$E0D7,X`; the exact musical effect of each setting remains open.
 
 The bytes at `$E43D–$E5C1` match the title, airshaft and third-story snapshots. The ending snapshot differs only in the adjustable immediate operand at `$E464`; the shared instruction descriptions therefore apply to all five snapshots.
+
+The sound command table and instructions at `$E226–$E2E6` match the title, airshaft, third-story and ending snapshots. The table selects commands to reset voice state, set pitch operands and set a sequence pointer. The sequence-pointer advance at `$E266` has been decoded, but its entry path remains open.
