@@ -53,3 +53,5 @@ Typing the effect records exposed 220 more zero-filled bytes in the embedded sou
 The airshaft ledger now includes 24 previously uncounted stretches of stable unpacker output, 10,878 bytes in total. Their purposes remain open; this corrects the coverage denominator rather than treating their presence as understanding.
 
 The same audit added 19,852 Broadway bytes and 11,675 museum bytes to their ledgers, including play-time copies identified by the listing. They remain unexplained.
+
+Disassembling the Broadway path-handler entries followed a static edge into the backdrop at `$1000–$141B`. The export guard detected lost coverage. A temporary forced export exposed the changed types; the known backdrop range `$0A2A–$1F7F` was restored to byte data before the listing was rebuilt. The handler entry points are retained as code.
