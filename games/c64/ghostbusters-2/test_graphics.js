@@ -147,3 +147,23 @@ for (const glyph of storyGlyphs) {
   assert.deepStrictEqual(glyph.bytes, Array.from(titleListing.ram.slice(0x3000 + 8 * code, 0x3010 + 8 * code)));
 }
 console.log('OK - 36 lower-band story glyphs match the listing');
+
+const broadwayAnimationMatch = html.match(/<script id="broadway-animation-data" type="application\/json">([^<]+)<\/script>/);
+assert(broadwayAnimationMatch, "Broadway animation shapes are embedded");
+const broadwayAnimation = JSON.parse(broadwayAnimationMatch[1]);
+assert.deepStrictEqual(broadwayAnimation.map(shape => shape.pointer), Array.from({length: 48}, (_, i) => 0x60 + i));
+for (const shape of broadwayAnimation) {
+  const address = 0x4000 + 64 * shape.pointer;
+  assert.deepStrictEqual(shape.bytes, Array.from(listing.ram.slice(address, address + 63)));
+}
+for (let group = 0; group < 6; group++) {
+  const bytes = listing.ram.slice(0xc597 + 72 * group, 0xc597 + 72 * (group + 1));
+  const pointers = new Set(); let terminators = 0;
+  for (let i = 0; i < bytes.length; i += 2) {
+    if (bytes[i] === 0xff) { assert.equal(bytes[i + 1], 0xff); terminators++; }
+    else { assert.equal(bytes[i + 1], 0); pointers.add(bytes[i]); }
+  }
+  assert.equal(terminators, 4);
+  assert.deepStrictEqual([...pointers].sort((a, b) => a - b), Array.from({length: 8}, (_, i) => 0x60 + group * 8 + i));
+}
+console.log("OK - 48 Broadway animation shapes and six sequence groups match the listing");
