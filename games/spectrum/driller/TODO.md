@@ -26,6 +26,7 @@ Source tab says the listing has not had one.
 
 ## Open
 
+- The Graphics tab holds only the loading picture. A Graphics tab should draw every shape the game's moving things are drawn with (`kit/skills/core/70-minisite`): for Driller, the objects of each area, as models.
 - Whether the disc version prints "TAPE OR DISC ?" (`$C838`): this tape
   version holds the text and never prints it.
 - Whether Trachyte's tour of seven areas, which its script starts once 18
