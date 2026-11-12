@@ -25,3 +25,5 @@ The routine at `$94C1` chooses among three mode-dependent paths that copy two ei
 With mode 2 selected in VICE, holding fire and up for 30 frames changed the right-hand pattern pointer at `$9571–$9572` from `$92B7` to `$92AF`; the display changed from 05 to 04. Releasing fire for 60 frames left the pointer at `$92AF`. The path at `$959E` subtracts eight from that operand and clears `$94BE`; `$958A` stops the subtraction when the pointer is `$928F`.
 
 The same VICE trial in mode 3 changed the right-hand pattern pointer at `$95BF–$95C0` from `$929F` to `$9297` while fire and up were held, with the displayed value changing from 02 to 01. Releasing fire left the pointer at `$9297`. The code at `$95EC` subtracts eight and clears `$94BF`; `$95D8` avoids subtracting when the pointer is `$928F`.
+
+The 80 bytes at `$928F–$92DE` form ten eight-byte bitmap patterns for digits 0 through 9. A digit’s pattern begins at `$928F + 8 × digit`, which explains the eight-byte pointer step in the mode 2 and 3 decrement routines. The following eight bytes at `$92DF–$92E6` are separately referenced; their role remains open.

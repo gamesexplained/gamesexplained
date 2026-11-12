@@ -20,6 +20,9 @@ for (const [before, selector, mode] of [[1, 2, 2], [2, 0, 3], [0, 1, 1]]) {
 const graphics = fs.readFileSync(path.join(__dirname, 'graphics.html'), 'utf8');
 const shapeMatch = graphics.match(/<script id="airshaft-mode-data" type="application\/json">([^<]+)<\/script>/);
 assert(shapeMatch, 'captured mode shapes are embedded');
+const digitMatch = graphics.match(/<script id="airshaft-digit-data" type="application\/json">([^<]+)<\/script>/);
+assert(digitMatch, 'digit patterns are embedded');
+assert.deepStrictEqual(JSON.parse(digitMatch[1]), Array.from(listing.ram.slice(0x928f, 0x92df)));
 const shapes = JSON.parse(shapeMatch[1]);
 assert.equal(shapes.length, 3);
 // The observed mode-dependent drawing paths copy two eight-byte columns.
