@@ -69,3 +69,5 @@ Traced the airshaft sprite 5 and 7 boundary checks, retaining their actual sign-
 Traced the airshaft screen-pattern scan and recovered the three jump bytes at `$84AC–$84AE` from the snapshot; no alternate entry to those bytes has been established.
 
 Traced the museum coordinate comparison at `$8D0D`, including its state gates, bounds and conditional dispatch.
+
+Traced the museum’s eight-way motion dispatcher and restored the `$60` byte after the jump at `$C90F`; an alternate entry remains unestablished.
