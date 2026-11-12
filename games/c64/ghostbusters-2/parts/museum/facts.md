@@ -119,3 +119,5 @@ After the rope state sets `$805B`, the path at `$C7BE` can advance through five 
 After the marked column has been restored, `$C843` clears four state bytes and selects a scene transition using `$C673` and `$805E`. One branch marks the selected status byte as 1 before calling `$C9DB`; another does so before changing the active selection and rebuilding the screen.
 
 `$C9DB` resets the first scene position and its column-copy addresses after calling `$C999`. It parallels the second-position reset at `$CA10`, using different sprite-array entries and column addresses.
+
+`$AD07` checks a state-gated placement position against another position and resets placement state on a match. `$A93E` derives a lookup address from an active position and clears `$A2DA` when the selected byte is 1. Unlike the similar `$9321` routine, `$A93E` retains the preceding carry when adding `$AC` to the address high byte. The gameplay meanings of these states remain open.

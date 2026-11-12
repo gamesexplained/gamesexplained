@@ -89,3 +89,5 @@ Connected the museum rope-state animation to its `$805E` status transition while
 Traced the scene decisions after the museum column restoration and their status-panel updates.
 
 Traced the first museum scene-position reset and compared its initialized addresses with the second-position reset.
+
+Traced the museum placement overlap and active-position grid lookup, preserving the carry difference from the similar second-motion lookup.

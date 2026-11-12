@@ -7215,9 +7215,9 @@
   },
   {
    "address": 43326,
-   "name": "s_A93E",
+   "name": "museum_check_active_position_grid",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 43427,
@@ -7251,9 +7251,9 @@
   },
   {
    "address": 43462,
-   "name": "s_A9C6",
+   "name": "museum_check_both_active_positions",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 43477,
@@ -7611,9 +7611,9 @@
   },
   {
    "address": 44295,
-   "name": "s_AD07",
+   "name": "museum_check_placement_overlap",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 44304,
@@ -7629,9 +7629,9 @@
   },
   {
    "address": 44406,
-   "name": "s_AD76",
+   "name": "museum_reset_placement_on_overlap",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 44438,
@@ -14141,9 +14141,29 @@
    "text": "If $FC11 equals $A30D and $FC09 equals $A30C, set $A313 to 1 and return. If the high bytes match but the low bytes differ, choose the $A454 path when $FC09 is lower and the $A434 path otherwise. If the high bytes differ, choose the $A454 path when $FC11 is zero and the $A434 path otherwise. Each path sets $A2E4 and conditionally calls another helper when $A2E3 is nonzero."
   },
   {
+   "address": 43326,
+   "type": "line",
+   "text": "Subtract 12 from the 16-bit position at $A2DC/$A2DD and divide its low byte by 8 for a column. Subtract $32 from $A2DE with byte wrap and divide by 8 for a row. Use that row to select a screen-row address at $8428, add the column, and add 31 if the adjusted position high byte is nonzero. Add $AC to the resulting address high byte with ADC, retaining the carry from the preceding high-byte addition; if $804E is nonzero, add 4 to that high byte with carry cleared. Patch the load at $A9B9 to this address. If the loaded byte is 1, clear $A2DA. This resembles the grid check at $9321, but that routine clears carry before adding $AC; the meaning of the active state remains open."
+  },
+  {
+   "address": 43462,
+   "type": "line",
+   "text": "Call the active-position overlap check at $A9D5 with X and Y both zero, then again with X equal to 1 and Y equal to 2; return."
+  },
+  {
    "address": 43477,
    "type": "line",
    "text": "Return unless $804A,X equals $804E and $A2DA is nonzero. Halve the 16-bit positions at $A2DC/$A2DD and $FC05/$FC0D,Y, retain their low bytes, and test whether the first plus 3 is at least the second and less than the second plus 7, using eight-bit comparisons. Also require $A2DE to be at least $FC15,Y plus 1 and below $FC15,Y plus $16. On a match, call the first overlap dispatcher when X is not 1 or the second when X is 1, in a loop that starts Y at 9 and decrements it after each call. Then start sound effect $19 and clear $A2DA. The gameplay identity of the compared objects remains open."
+  },
+  {
+   "address": 44295,
+   "type": "line",
+   "text": "Return unless $804C equals $804D and $9485 is nonzero. Halve the 16-bit value at $8047/$8048. Subtract $10 from the 16-bit value at $FC09/$FC11 and halve it; separately add 5 to that original 16-bit value and halve it. Continue only if the first halved low byte is at least the lower bound and below the upper bound. Add $10 and $28 respectively to $FC19 using byte arithmetic, and require $8049 to be at least the first bound and below the second. On a match continue into $AD76. The identities of the position and flags remain open."
+  },
+  {
+   "address": 44406,
+   "type": "line",
+   "text": "Clear $8046, $947E, $9485 and $8048; set $8047 to $C5, $8049 to $A5 and $804D to 1; then call the museum screen setup routine and return."
   },
   {
    "address": 44563,
