@@ -1379,9 +1379,9 @@
   },
   {
    "address": 58295,
-   "name": "j_E3B7",
+   "name": "sound_read_stream_byte",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58306,
@@ -1403,21 +1403,21 @@
   },
   {
    "address": 58336,
-   "name": "b_E3E0",
+   "name": "sound_decode_high_stream_byte",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58378,
-   "name": "b_E40A",
+   "name": "sound_set_stream_duration",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58385,
-   "name": "b_E411",
+   "name": "sound_read_two_stream_parameters",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58409,
@@ -1427,9 +1427,9 @@
   },
   {
    "address": 58412,
-   "name": "b_E42C",
+   "name": "sound_dispatch_stream_command",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58427,
@@ -2496,6 +2496,31 @@
    "address": 58275,
    "type": "line",
    "text": "Count down the indexed voice's delay. When it expires, read its byte stream: values below $80 set the next value and reload the delay, $80-$BF dispatch through the command table, and higher values change stream parameters before reading again. Save the advanced pointer when a value is accepted."
+  },
+  {
+   "address": 58295,
+   "type": "line",
+   "text": "Read one byte through $F0/$F1 and advance that pointer with carry. For a byte below $80, set $E0DA,X to 1, store the byte at $E0D3,X, copy $E0D2,X to $E0D1,X, save the updated stream pointer in $E0C3/$E0C4,X and return. Bytes $80\u2013$BF dispatch through $E42C; bytes $C0\u2013$FF take the paths beginning at $E3E0."
+  },
+  {
+   "address": 58336,
+   "type": "line",
+   "text": "For input $C0\u2013$CF, the additions at $E3E4/$E3E8/$E3EC yield an index from 0 to 15. Use it to read low/high bytes from the tables at $E668/$E676 into $E0CB/$E0CC,X, clear $E0CD,X, set bit $10 of $E0C2,X and read another stream byte. The known tables each have 14 entries; this path does not check the index. Inputs $D0\u2013$DF branch to $E411, and $E0\u2013$FF branch to $E40A."
+  },
+  {
+   "address": 58378,
+   "type": "line",
+   "text": "The preceding addition leaves carry set and A in $00\u2013$1F for input $E0\u2013$FF. Add that carry, store 1\u201332 at $E0D2,X and return to $E3B7 to read another stream byte."
+  },
+  {
+   "address": 58385,
+   "type": "line",
+   "text": "Read two bytes through $F0/$F1 into $E0D4,X and $E0D5,X, advance the stream pointer by two with carry and jump to $E3B7. The high-byte decoder selects this path for input $D0\u2013$DF."
+  },
+  {
+   "address": 58412,
+   "type": "line",
+   "text": "Double an input in $80\u2013$BF and use the resulting byte as an offset into the little-endian table at $E226. Copy the selected pair into the jump operand at $E43B/$E43C and jump through it. The documented table has 24 entries; this path does not check that the offset lies within them."
   },
   {
    "address": 58429,

@@ -350,6 +350,11 @@
   },
   {
    "start": 60337,
+   "end": 61249,
+   "type": "Byte"
+  },
+  {
+   "start": 61250,
    "end": 61409,
    "type": "Undefined"
   }
@@ -1395,9 +1400,9 @@
   },
   {
    "address": 58295,
-   "name": "j_E3B7",
+   "name": "sound_read_stream_byte",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58306,
@@ -1419,21 +1424,21 @@
   },
   {
    "address": 58336,
-   "name": "b_E3E0",
+   "name": "sound_decode_high_stream_byte",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58378,
-   "name": "b_E40A",
+   "name": "sound_set_stream_duration",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58385,
-   "name": "b_E411",
+   "name": "sound_read_two_stream_parameters",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58409,
@@ -1443,9 +1448,9 @@
   },
   {
    "address": 58412,
-   "name": "b_E42C",
+   "name": "sound_dispatch_stream_command",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 58427,
@@ -2163,87 +2168,87 @@
   },
   {
    "address": 60337,
-   "name": "a_EBB1",
+   "name": "sound_stream_ebb1",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60364,
-   "name": "a_EBCC",
+   "name": "sound_stream_ebcc",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60419,
-   "name": "a_EC03",
+   "name": "sound_stream_ec03",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60457,
-   "name": "a_EC29",
+   "name": "sound_stream_ec29",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60506,
-   "name": "a_EC5A",
+   "name": "sound_stream_ec5a",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60628,
-   "name": "a_ECD4",
+   "name": "sound_stream_ecd4",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60741,
-   "name": "a_ED45",
+   "name": "sound_stream_ed45",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60799,
-   "name": "a_ED7F",
+   "name": "sound_stream_ed7f",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60854,
-   "name": "a_EDB6",
+   "name": "sound_stream_edb6",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60937,
-   "name": "a_EE09",
+   "name": "sound_stream_ee09",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60989,
-   "name": "a_EE3D",
+   "name": "sound_stream_ee3d",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60990,
-   "name": "a_EE3E",
+   "name": "sound_stream_ee3e",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 61051,
-   "name": "a_EE7B",
+   "name": "sound_stream_ee7b",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 61105,
-   "name": "a_EEB1",
+   "name": "sound_stream_eeb1",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   }
  ],
  "comments": [
@@ -2538,6 +2543,31 @@
    "text": "Count down the indexed voice's delay. When it expires, read its byte stream: values below $80 set the next value and reload the delay, $80-$BF dispatch through the command table, and higher values change stream parameters before reading again. Save the advanced pointer when a value is accepted."
   },
   {
+   "address": 58295,
+   "type": "line",
+   "text": "Read one byte through $F0/$F1 and advance that pointer with carry. For a byte below $80, set $E0DA,X to 1, store the byte at $E0D3,X, copy $E0D2,X to $E0D1,X, save the updated stream pointer in $E0C3/$E0C4,X and return. Bytes $80\u2013$BF dispatch through $E42C; bytes $C0\u2013$FF take the paths beginning at $E3E0."
+  },
+  {
+   "address": 58336,
+   "type": "line",
+   "text": "For input $C0\u2013$CF, the additions at $E3E4/$E3E8/$E3EC yield an index from 0 to 15. Use it to read low/high bytes from the tables at $E668/$E676 into $E0CB/$E0CC,X, clear $E0CD,X, set bit $10 of $E0C2,X and read another stream byte. The known tables each have 14 entries; this path does not check the index. Inputs $D0\u2013$DF branch to $E411, and $E0\u2013$FF branch to $E40A."
+  },
+  {
+   "address": 58378,
+   "type": "line",
+   "text": "The preceding addition leaves carry set and A in $00\u2013$1F for input $E0\u2013$FF. Add that carry, store 1\u201332 at $E0D2,X and return to $E3B7 to read another stream byte."
+  },
+  {
+   "address": 58385,
+   "type": "line",
+   "text": "Read two bytes through $F0/$F1 into $E0D4,X and $E0D5,X, advance the stream pointer by two with carry and jump to $E3B7. The high-byte decoder selects this path for input $D0\u2013$DF."
+  },
+  {
+   "address": 58412,
+   "type": "line",
+   "text": "Double an input in $80\u2013$BF and use the resulting byte as an offset into the little-endian table at $E226. Copy the selected pair into the jump operand at $E43B/$E43C and jump through it. The documented table has 24 entries; this path does not check that the offset lies within them."
+  },
+  {
    "address": 58429,
    "type": "line",
    "text": "For the voice indexed by X, add its sequence offset at $E0CD,X to its pointer at $E0CB/$E0CC,X and read the selected byte. A byte with bit 7 set resets the offset to $FF and contributes only its low seven bits. Add the value at $E0D3,X, increment the sequence offset, then add the immediate byte at $E464 and the value at $E0E5,X. Double the result and load the corresponding little-endian frequency pair from $E5C2 into $F0/$F1."
@@ -2726,6 +2756,76 @@
    "address": 60313,
    "type": "line",
    "text": "11 little-endian sequence pointers, followed by $0000: $ED45, $ED7F, $EE09, $EE09, $EDB6, $EEB1, $EE3E, $EE3E, $EE3E, $EE7B, $EDB6. The initializer reads the first pointer, and the sequence advance at $E266 wraps to the list start on a zero pair."
+  },
+  {
+   "address": 60337,
+   "type": "line",
+   "text": "Linear decode of $EBB1\u2013$EBCB, in bytecode order: $8B, $90[05 08 50], $89[01 02], $EF, $D0[8D 00], $14, $13, $ED, $12, $D0[0E 10], $E0, $0F, $0C, $EF, $17, $96[73 EB]. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $96 reads a new list pointer and dispatches through $E256. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 60364,
+   "type": "line",
+   "text": "Linear decode of $EBCC\u2013$EC02, in bytecode order: $D0[09 20], $89[01 01], $E1, $0C, $E2, $0C, $E0, $10, $E1, $13, $E3, $16, $15, $E1, $0C, $E2, $0C, $E0, $10, $E1, $13, $E1, $16, $16, $E3, $15, $E1, $0C, $E2, $0C, $E0, $10, $E1, $13, $E3, $16, $15, $E1, $0C, $E2, $0C, $E0, $10, $E1, $13, $E1, $0A, $0A, $E3, $09, $88. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $88 dispatches to $E266 to advance the sequence list. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 60419,
+   "type": "line",
+   "text": "Linear decode of $EC03\u2013$EC28, in bytecode order: $D0[0B 10], $89[01 02], $E5, $18, $16, $15, $14, $E3, $13, $11, $E5, $18, $16, $15, $14, $E3, $13, $11, $E5, $18, $16, $15, $14, $E3, $13, $11, $E5, $18, $16, $15, $14, $E7, $13, $88. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $88 dispatches to $E266 to advance the sequence list. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 60457,
+   "type": "line",
+   "text": "Linear decode of $EC29\u2013$EC59, in bytecode order: $8C, $81, $97[00], $E1, $D0[09 80], $21, $22, $21, $22, $21, $22, $21, $22, $21, $22, $21, $22, $21, $22, $21, $22, $D0[0A C0], $21, $22, $21, $22, $21, $22, $21, $22, $D0[0B E0], $2D, $2E, $2D, $2E, $2D, $2E, $2D, $2E, $96[85 EB]. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $96 reads a new list pointer and dispatches through $E256. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 60506,
+   "type": "line",
+   "text": "Linear decode of $EC5A\u2013$ECD3, in bytecode order: $8B, $90[01 08 5A], $D0[08 40], $89[02 02], $E1, $18, $18, $E0, $8E, $8A, $84[00 02 01], $2B, $8B, $1C, $E1, $1F, $E3, $22, $E1, $8E, $8A, $84[00 02 01], $30, $8B, $21, $E1, $18, $18, $E0, $8E, $8A, $84[00 02 01], $2B, $8B, $1C, $E1, $1F, $E1, $22, $22, $E1, $8E, $8A, $84[00 02 01], $30, $8B, $21, $E1, $18, $18, $E0, $8E, $8A, $84[00 02 01], $2B, $8B, $1C, $E1, $1F, $E3, $22, $E1, $8E, $8A, $84[00 02 01], $30, $8B, $21, $E1, $18, $18, $E0, $8E, $8A, $84[00 02 01], $2B, $8B, $1C, $E1, $1F, $E1, $16, $16, $E1, $8E, $8A, $84[00 02 01], $30, $8B, $15, $88. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $88 dispatches to $E266 to advance the sequence list. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 60628,
+   "type": "line",
+   "text": "Linear decode of $ECD4\u2013$ED44, in bytecode order: $8B, $8F[01], $90[00 03 06], $89[1E 1E], $D0[0A 50], $E3, $37, $D0[09 40], $E1, $33, $D0[0A 50], $E3, $37, $D0[09 40], $E1, $33, $D0[0A 50], $E3, $37, $D0[09 40], $E1, $33, $D0[0A 50], $E3, $37, $D0[09 40], $E1, $33, $D0[0A 50], $37, $D0[09 40], $33, $E0, $31, $32, $E1, $33, $D0[0A 50], $E3, $37, $D0[09 40], $E1, $33, $D0[0A 50], $E3, $37, $D0[09 40], $E1, $33, $D0[0A 50], $E3, $37, $D0[09 40], $E1, $33, $D0[0A 50], $E3, $37, $D0[09 40], $E1, $33, $E7, $D0[0D 00], $84[00 02 1E], $3C, $88. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $88 dispatches to $E266 to advance the sequence list. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 60741,
+   "type": "line",
+   "text": "Linear decode of $ED45\u2013$ED7E, in bytecode order: $8C, $89[04 04], $E1, $D0[09 80], $21, $22, $21, $22, $21, $22, $21, $22, $89[06 06], $21, $22, $21, $22, $21, $22, $21, $22, $D0[0A C0], $89[08 08], $21, $22, $21, $22, $21, $22, $21, $22, $D0[0B E0], $89[10 10], $2D, $2E, $2D, $2E, $2D, $2E, $2D, $2E, $96[9B EB]. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $96 reads a new list pointer and dispatches through $E256. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 60799,
+   "type": "line",
+   "text": "Linear decode of $ED7F\u2013$EDB5, in bytecode order: $8B, $8F[06], $90[04 08 50], $89[04 08], $D0[0A 10], $E1, $81, $0C, $82, $E5, $1F, $E3, $22, $21, $E1, $81, $0C, $82, $E5, $1F, $E3, $26, $24, $E1, $81, $0C, $82, $E5, $1F, $E3, $22, $21, $E1, $81, $0C, $82, $E5, $1F, $D0[09 10], $E1, $26, $26, $E3, $24, $88. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $88 dispatches to $E266 to advance the sequence list. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 60854,
+   "type": "line",
+   "text": "Linear decode of $EDB6\u2013$EE08, in bytecode order: $8B, $8F[06], $90[04 08 50], $D0[09 20], $89[04 08], $E1, $81, $0C, $82, $E5, $1F, $E3, $22, $21, $E1, $81, $0C, $82, $E1, $1F, $D0[0A 10], $89[04 08], $E0, $2E, $2D, $E1, $2B, $E0, $2D, $2B, $E1, $29, $E3, $2B, $D0[09 20], $E1, $81, $0C, $82, $E5, $1F, $E3, $26, $24, $E1, $81, $0C, $82, $E1, $1F, $D0[0A 10], $89[06 0C], $E0, $34, $32, $E1, $30, $E0, $32, $30, $E1, $2E, $E3, $30, $88. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $88 dispatches to $E266 to advance the sequence list. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 60937,
+   "type": "line",
+   "text": "Linear decode of $EE09\u2013$EE3C, in bytecode order: $D0[08 80], $89[0A 0A], $E1, $0C, $E0, $30, $30, $D0[09 80], $E1, $34, $30, $32, $E1, $2E, $E7, $80, $D0[08 40], $E0, $30, $30, $30, $30, $D0[09 80], $E1, $2E, $E0, $30, $80, $D0[0A 30], $E3, $8A, $C3, $84[00 02 02], $3A, $8B, $C0, $88. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $88 dispatches to $E266 to advance the sequence list. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 60989,
+   "type": "line",
+   "text": "The $81 command clears the indexed voice\u2019s $E0DE state, then falls through into the shared stream at $EE3E. Another sequence pointer enters that shared stream directly."
+  },
+  {
+   "address": 60990,
+   "type": "line",
+   "text": "Linear decode of $EE3E\u2013$EE7A, in bytecode order: $8B, $8F[01], $90[00 03 05], $D0[0A 80], $E3, $33, $D0[09 40], $E1, $30, $D0[0A 80], $E3, $33, $D0[09 40], $E1, $30, $D0[0A 80], $E3, $33, $D0[09 40], $E1, $30, $D0[0A 80], $E3, $33, $D0[09 40], $E1, $30, $D0[0A 80], $33, $D0[09 40], $30, $E0, $2E, $2F, $E1, $30, $88. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $88 dispatches to $E266 to advance the sequence list. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 61051,
+   "type": "line",
+   "text": "Linear decode of $EE7B\u2013$EEB0, in bytecode order: $8B, $89[28 28], $D0[0A 80], $E3, $33, $D0[09 40], $E1, $30, $D0[0A 80], $E3, $33, $D0[09 40], $E1, $30, $D0[0A 80], $E3, $33, $D0[09 40], $E1, $30, $D0[0A 80], $E3, $33, $D0[09 40], $E1, $30, $E7, $D0[0F 00], $84[00 01 1E], $37, $88. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $88 dispatches to $E266 to advance the sequence list. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 61105,
+   "type": "line",
+   "text": "Linear decode of $EEB1\u2013$EF41, in bytecode order: $89[10 10], $D0[08 10], $E0, $33, $33, $30, $30, $D0[0A 10], $E9, $32, $D0[08 10], $E0, $30, $30, $D0[0A 10], $E1, $2E, $D0[08 10], $30, $D0[0A 10], $EB, $30, $D0[08 10], $E0, $2E, $2E, $2B, $2B, $D0[0A 10], $E7, $2D, $E3, $33, $E0, $32, $80, $D0[0B 00], $E9, $30, $D0[09 10], $E3, $8A, $84[00 04 02], $30, $8B, $D0[08 10], $E0, $33, $33, $30, $30, $D0[0A 10], $E9, $32, $D0[08 10], $E0, $30, $30, $D0[0A 10], $E1, $2E, $D0[08 10], $30, $D0[0A 10], $EB, $30, $D0[08 10], $E0, $2E, $2E, $2B, $2B, $D0[0A 10], $E7, $2D, $89[28 28], $E3, $3A, $E0, $39, $80, $D0[0B 00], $E9, $37, $D0[09 10], $E1, $8A, $84[00 04 02], $30, $8B, $2B, $89[28 28], $88. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $88 dispatches to $E266 to advance the sequence list. The timing and reachability of every branch remain open."
   }
  ]
 }
