@@ -64,3 +64,23 @@ for (let frame = 0; frame <= 500; frame++) {
 const digest = require('crypto').createHash('sha256').update(JSON.stringify(endingWrites)).digest('hex');
 assert.equal(digest, vice.ending.writes_sha256_500, 'ending SID writes must match the captured ending driver');
 console.log('OK - ending: 500 driver updates match the captured scene, first 30 match VICE');
+
+const broadwayMatch = html.match(/<script id="broadway-sound-data" type="application\/json">([^<]+)<\/script>/);
+assert(broadwayMatch, 'the player must include the Broadway sound data');
+const broadway = JSON.parse(broadwayMatch[1]);
+const broadwayDriver = createGhostSound({mem, broadway}, {CPU});
+broadwayDriver.init(4);
+const broadwayWrites = [Array.from(broadwayDriver.writes)];
+for (let frame = 0; frame <= 500; frame++) {
+  if (frame) { broadwayDriver.play(); broadwayWrites.push(Array.from(broadwayDriver.writes)); }
+  if (frame < vice.broadway.states.length) {
+    const state = vice.broadway.states[frame];
+    assert.equal(Buffer.from(broadwayDriver.mem.slice(0xe0c2, 0xe13b)).toString('hex'), state.variables,
+      `Broadway update ${frame}: VICE channel state`);
+    assert.deepStrictEqual([0, 7, 14].map(n => broadwayDriver.sid[n] | broadwayDriver.sid[n + 1] << 8), state.frequencies,
+      `Broadway update ${frame}: VICE frequencies`);
+  }
+}
+const broadwayDigest = require('crypto').createHash('sha256').update(JSON.stringify(broadwayWrites)).digest('hex');
+assert.equal(broadwayDigest, vice.broadway.writes_sha256_500, 'Broadway SID writes must match the captured prompt');
+console.log('OK - Broadway: 500 driver updates match the captured scene, first 30 match VICE');
