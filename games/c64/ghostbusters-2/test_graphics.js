@@ -180,3 +180,13 @@ for (const [operand, base] of [[0xb46e, 0x48], [0xb4bf, 0x28], [0xb509, 0x20], [
   assert.equal(museumListing.ram[operand], base);
 }
 console.log("OK - 64 museum walking frames match the listing and direction operands");
+
+const museumExtraMatch = html.match(/<script id="museum-extra-data" type="application\/json">([^<]+)<\/script>/);
+assert(museumExtraMatch, "additional museum sprite shapes are embedded");
+const museumExtra = JSON.parse(museumExtraMatch[1]);
+assert.deepStrictEqual(museumExtra.map(shape => shape.pointer), [...Array.from({length: 20}, (_, i) => 0x68 + i), ...Array.from({length: 19}, (_, i) => 0x84 + i), ...Array.from({length: 8}, (_, i) => 0x98 + i)]);
+for (const shape of museumExtra) {
+  const address = 0x4000 + shape.pointer * 64;
+  assert.deepStrictEqual(shape.bytes, Array.from(museumListing.ram.slice(address, address + 63)));
+}
+console.log("OK - 47 additional museum sprite shapes match the listing");
