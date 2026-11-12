@@ -76,6 +76,22 @@ assert.deepStrictEqual([readOperand(0xa0cc), readOperand(0xa0ce), ram[0x8031]], 
 ram[0x8031] = 0;
 cpu.call(0xa259); cpu.call(0xa259);
 assert.deepStrictEqual([readOperand(0xa0cc), readOperand(0xa0ce), ram[0x8031]], [0x1be0, 0x1af0, 2]);
+// Three code paths copy different shapes and advance the same tens pointer.
+for (const [entry, end, source, destination] of [
+  [0x9914, 0x993a, 0x0f00, 0x4240],
+  [0x999e, 0x99bd, 0x0f15, 0x4255],
+  [0x9a1f, 0x9a3e, 0x0f2a, 0x426a],
+]) {
+  ram[0x960c] = 2; ram[0x8018] = 0;
+  operand(0x8be9, 0x928f);
+  cpu.pc = entry;
+  cpu.run({until: end, maxInstructions: 1000});
+  assert.equal(cpu.pc, end);
+  assert.equal(ram[0x8018], 1);
+  assert.equal(readOperand(0x8be9), 0x9297);
+  assert.deepStrictEqual(Array.from(ram.slice(destination, destination + 21)),
+    Array.from(ram.slice(source, source + 21)));
+}
 const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const match = html.match(/<script id="frame-data" type="application\/json">([^<]+)<\/script>/);
 assert(match, 'airshaft frame data is embedded');
