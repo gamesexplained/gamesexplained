@@ -38,3 +38,5 @@ This story load contains two picture sources: bitmaps at `$6400–$77FF` and `$7
 The opening story’s second picture bitmap, matrix and colour byte match the second story’s first picture sources byte for byte, despite their different load addresses.
 
 The text tail `$C81B–$C87F` is zero in both decompressor-fill runs and the story snapshot; its use beyond the text terminator remains open. The font at `$3000–$37FF` matches the title snapshot and is listed with the title. All remaining stable output bytes have records in this part’s listing.
+
+The 127 bytes after each loaded picture colour byte are described in the listing. The known story picture-copy routines stop at the colour byte; whether other code reads these following bytes remains open.

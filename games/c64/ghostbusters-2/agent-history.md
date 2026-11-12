@@ -159,3 +159,5 @@ Audited the airshaft, Broadway and museum decompressor outputs against their lis
 Reran the shorter Censor museum file only until input exhaustion on both initial RAM fills. Its first two decoded segments match the complete museum entry, while the third has 3,158 differing stable bytes and the next header starts a segment that exhausts the file. The file remains open in the media ledger. Answered the Jondi bootstrap as a loader after reviewing the captured intro and prompts; its introductory sound remains open.
 
 Traced the forced airshaft success through the restored story-engine entry to `$10B7`. Its two later conditional picture copies read ranges that match the preceding clean airshaft snapshot; their actual display path remains unobserved.
+
+Described the byte distributions in the seven 127-byte tails following the story-picture colour bytes. The known picture-copy routines stop at the colour bytes; any other use of the tails remains open.

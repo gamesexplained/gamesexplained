@@ -15,3 +15,5 @@ The ending’s first tune record selects three zero-terminated pointer lists at 
 The ending load contains a picture bitmap at `$6400–$77FF`, its 640-byte matrix at `$7800–$7A7F` and a colour byte at `$7A80`. The story copy at `$1538` uses these sources; the ending snapshot’s `$4000–$53FF` bitmap matches the source. The Graphics page shows the first 15 rows.
 
 The text tail `$C480–$C4FF` is zero in both decompressor-fill runs and the story snapshot; its use beyond the text terminator remains open. The font at `$3000–$37FF` matches the title snapshot and is listed with the title. The loaded sound bytes at `$E6B6–$E7C9` also match the title snapshot and are listed there. All remaining stable output bytes have records in this part’s listing.
+
+The 127 bytes after each loaded picture colour byte are described in the listing. The known story picture-copy routines stop at the colour byte; whether other code reads these following bytes remains open.
