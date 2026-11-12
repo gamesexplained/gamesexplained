@@ -44,3 +44,23 @@ for (const selection of [0, 1, 2]) {
   if (selection) assert(!driver.playing(), `selection ${selection} should finish`);
   console.log(`OK - selection ${selection}: 500 driver updates match the listing, first 30 match VICE`);
 }
+
+const endingMatch = html.match(/<script id="ending-sound-data" type="application\/json">([^<]+)<\/script>/);
+assert(endingMatch, 'the player must include the ending sound data');
+const ending = JSON.parse(endingMatch[1]);
+const endingDriver = createGhostSound({mem, ending}, {CPU});
+endingDriver.init(3);
+const endingWrites = [Array.from(endingDriver.writes)];
+for (let frame = 0; frame <= 500; frame++) {
+  if (frame) { endingDriver.play(); endingWrites.push(Array.from(endingDriver.writes)); }
+  if (frame < vice.ending.states.length) {
+    const state = vice.ending.states[frame];
+    assert.equal(Buffer.from(endingDriver.mem.slice(0xe0c2, 0xe13b)).toString('hex'), state.variables,
+      `ending update ${frame}: VICE channel state`);
+    assert.deepStrictEqual([0, 7, 14].map(n => endingDriver.sid[n] | endingDriver.sid[n + 1] << 8), state.frequencies,
+      `ending update ${frame}: VICE frequencies`);
+  }
+}
+const digest = require('crypto').createHash('sha256').update(JSON.stringify(endingWrites)).digest('hex');
+assert.equal(digest, vice.ending.writes_sha256_500, 'ending SID writes must match the captured ending driver');
+console.log('OK - ending: 500 driver updates match the captured scene, first 30 match VICE');
