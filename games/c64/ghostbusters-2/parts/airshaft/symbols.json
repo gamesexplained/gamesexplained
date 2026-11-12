@@ -11753,9 +11753,9 @@
   },
   {
    "address": 46527,
-   "name": "s_B5BF",
+   "name": "airshaft_update_swing_state",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 46567,
@@ -11831,9 +11831,9 @@
   },
   {
    "address": 46719,
-   "name": "j_B67F",
+   "name": "airshaft_finish_swing_update",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 46752,
@@ -11843,9 +11843,9 @@
   },
   {
    "address": 46753,
-   "name": "s_B6A1",
+   "name": "airshaft_mark_swing_side",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 46772,
@@ -11855,9 +11855,9 @@
   },
   {
    "address": 46773,
-   "name": "s_B6B5",
+   "name": "airshaft_adjust_swing_below_centre",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 46791,
@@ -11879,9 +11879,9 @@
   },
   {
    "address": 46806,
-   "name": "s_B6D6",
+   "name": "airshaft_adjust_swing_above_centre",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 46824,
@@ -19503,6 +19503,31 @@
    "address": 46339,
    "type": "line",
    "text": "Read the high byte at $88BC of the second pattern-copy source address and compare $B110. For high bytes $25 or $26, values $8E-$97 and $9A-$A5 select the special path at $B5A6. For $27, values $90-$95 and $9A-$A5 select the ordinary path at $B5A2. For $28, values $94-$95 and $9E-$A5 select the ordinary path. All other high bytes select that path only for $A2-$A5. The ordinary path increments $8045. The special path sets $8046, $8047 and $B112 to 1, calls $B0FA, then increments $8045. All remaining values return without those writes. The ranges cover all 256 input values, checked in the processor model."
+  },
+  {
+   "address": 46527,
+   "type": "line",
+   "text": "Return when $8046 is nonzero. Otherwise call $B6A1 to set $B5BD according to a sign-bit comparison of $B5B9 with $14. Increment $B5BC; when it reaches 2, clear it and, if $B5B9 is not $14, call $B6B5 when the comparison's sign bit is set or $B6D6 otherwise. Copy $B5BA to zero page $02. When $B5BB is not $FF, add that amount to $B5B9 if the sign-bit comparison with $25 permits it; when it is $FF, subtract the amount if the comparison with 3 permits it. If bit 4 of $8021 is set, call $B62D and $B654, then continue at $B67F. The values' gameplay meanings remain open."
+  },
+  {
+   "address": 46719,
+   "type": "line",
+   "text": "Return if $B5BD is zero, the sign bit of $B5B9 minus $14 is set, or $B5BA is zero. Otherwise increment $B5BE modulo 4 and decrement $B5BA when the result is zero. A nonzero result branches back to $B629, which jumps here again; this loop repeats until the counter is zero."
+  },
+  {
+   "address": 46753,
+   "type": "line",
+   "text": "Clear $B5BD. Compare $B5B9 with $14; if unequal and the subtraction's sign bit is set, store $FF at $B5BD. Return."
+  },
+  {
+   "address": 46773,
+   "type": "line",
+   "text": "If $B5BB is nonzero, decrement $B5BA and clear $B5BB when it reaches zero. Otherwise increment $B5BA unless it equals $B5B8 or the sign bit of the comparison with $B5B8 is clear. Return."
+  },
+  {
+   "address": 46806,
+   "type": "line",
+   "text": "If $B5BB is zero, decrement $B5BA and set $B5BB to $FF when it reaches zero. Otherwise increment $B5BA unless it equals $B5B8 or the sign bit of the comparison with $B5B8 is clear. Return."
   },
   {
    "address": 47046,

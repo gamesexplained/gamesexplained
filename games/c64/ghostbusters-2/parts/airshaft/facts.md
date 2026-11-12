@@ -115,3 +115,5 @@ At `$AA7A`, the game selects CIA1 keyboard row 5 and tests column 1, the P key. 
 At `$9F78`, the airshaft program tests the X and Y operands used for sprites 5 and 7 against byte-sized bounds, using the sign bit of each subtraction. Depending on `$804B`, a passing test sets `$C90A` or `$C7B6`; when `$804B` is zero, it also requires the sprite 7 pointer operand to be `$0D` or `$0E` and `$C90A` to be clear. The flags’ gameplay meanings remain open.
 
 When `$A767` is nonzero, `$9FE7` derives a screen row from sprite 5’s Y coordinate and samples 21 screen bytes starting at column 11, passing each to two pattern-trigger routines. Its first increment is zero, so it samples the first position twice. The condition enabling the scan remains open.
+
+`$B5BF` updates `$B5B9`, the selector for the rope-position tables, using an amount at `$B5BA` and a direction byte at `$B5BB`. Its helpers adjust the amount around selector value `$14`; their branches use the sign bit of eight-bit comparisons. The meanings of the input gates and the full state bounds remain open.

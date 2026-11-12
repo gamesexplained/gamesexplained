@@ -93,3 +93,5 @@ Traced the first museum scene-position reset and compared its initialized addres
 Traced the museum placement overlap and active-position grid lookup, preserving the carry difference from the similar second-motion lookup.
 
 Traced the museum phase dispatcher and its counter-controlled active-position initialization.
+
+Traced the airshaft rope-table selector update and its sign-bit-based amount and direction adjustments.
