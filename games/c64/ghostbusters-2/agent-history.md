@@ -43,3 +43,5 @@ The eight gaps between alternate Broadway lookup views were read directly: each 
 Forty-one airshaft sprite slots named by traced pointer tables were typed as bitmap data and added to a Graphics inspector. Their individual shapes were left without semantic comments, so the newly counted bytes remain unexplained until their roles are established. The bytes match in the entry and play snapshots.
 
 The five airshaft character poses were reconstructed from the six pointers in each `$919F` record and the raster handlers' captured two-column, three-row placement. Their 26 nonblank sprite pieces now have specific pose and position descriptions; slot `$0F` is cleared by the initialization routine.
+
+The resident-stash disassembler session exported its owned annotations but omitted 1,561 automatic symbols, four system labels and unrelated blocks outside that part's range. They were restored from the preceding export, the new `$D000–$DFFF` annotations were retained, and dependent listings were relabelled. The resident listing and affected checks then passed. This behavior needs investigation in the retrospective.
