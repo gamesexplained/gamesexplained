@@ -89,3 +89,5 @@ When `$C8FB` is nonzero, the sprite 7 path at `$C991` can adjust its Y operand b
 The counterpart at `$CBF4` uses `$C8FD/$C8FC` and `$803E` rather than `$C8FB/$C8FA` and `$803D`. Its active horizontal path subtracts six from sprite 7's X operand while it is at least `$6A`, then selects pointer `$0F` and resets X to `$F0`. It uses pointer `$0D` at the start of that state.
 
 The checks at `$98A3` and `$9978` respond respectively to A values `$51/$53` and `$60/$62`. Each uses its marker selector to inspect a state byte, returns if it is already set, and otherwise sets it and calls `$8CFF` with X=`$10` before continuing through the paths in the listing.
+
+Running the captured unpacker on `3.THE CLOAKS` with two initial RAM fills gives output at `$0800–$CCFF` and `$E000–$EFE1`. All 54,498 stable output bytes match the captured entry state. The part lies over the opening story and counts those load ranges; the origin of the transition code at `$02A7` remains open, so its names are retained outside the owned ranges.
