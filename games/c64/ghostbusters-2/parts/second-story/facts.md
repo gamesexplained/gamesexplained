@@ -1,6 +1,6 @@
 # Second story facts
 
-The snapshot `work/story.vsf` is the story prompt reached after forcing the airshaft success path, as described in the game’s `orientation.md`. RAM at `$C200–$C3B7` contains eleven space-padded 40-byte rows and `$C3B8` is zero. The shared story engine can read 40-byte rows from this address; its exact route into this scene remains open.
+The snapshot `work/story.vsf` is the story prompt reached after forcing the airshaft success path, as described in the game’s `orientation.md`. RAM at `$C200–$C3B7` contains eleven space-padded 40-byte rows and `$C3B8` is zero. The forced success path restores the story engine and enters `$10B7`; the loader opens `4*`, and the shared text renderer reads 40-byte rows from this address.
 
 A 60-frame VICE capture at the story wait recorded 535 instruction starts in `codemap.json`. It does not cover the preceding load or the full story sequence.
 
@@ -28,6 +28,6 @@ This story load contains two picture sources: bitmaps at `$6400–$77FF` and `$7
 
 The text tail `$C3B8–$C3FF` is zero in both decompressor-fill runs and the story snapshot; its use beyond the text terminator remains open. The font at `$3000–$37FF` matches the title snapshot and is listed with the title. The loaded sound bytes at `$E6B6–$E7C9` also match the title snapshot and are listed there. All remaining stable output bytes have records in this part’s listing.
 
-The forced airshaft success path restores the story engine with X=0 and Y=2, which enters `$10B7`. If successive story input checks leave `$19A3=$FF`, that routine calls `$15EE` and `$1649` after `$1538/$1593`. Those copy from `$9200–$A880` and `$A900–$BF80` respectively. In the captured second-story snapshot, both source ranges are byte-identical to the preceding clean airshaft snapshot; the `4.SECOND STORY` decompressor did not produce stable output there. The captured route does not establish whether those extra copies are reached or what they display.
+The forced airshaft success path restores the story engine with X=0 and Y=2, which enters `$10B7`. If successive story input checks leave `$19A3=$FF`, that routine calls `$15EE` and `$1649` after `$1538/$1593`. Those copy from `$9200–$A880` and `$A900–$BF80` respectively. In the captured second-story snapshot, both source ranges are byte-identical to the preceding clean airshaft snapshot; the `4.SECOND STORY` decompressor did not produce stable output there. In the saved story state, VICE reports PC `$14D6`, stack pointer `$F9`, and stack bytes `$A6 $19 $0A $11 $39 $10`. These return addresses put the machine in the tick wait inside `$19A4`, called from `$1108`, after the conditional copies in the `$10B7` path. This supports that the forced route passed the two calls; their intermediate displays have not been captured.
 
 The 127 bytes after each loaded picture colour byte are described in the listing. The known story picture-copy routines stop at the colour byte; whether other code reads these following bytes remains open.
