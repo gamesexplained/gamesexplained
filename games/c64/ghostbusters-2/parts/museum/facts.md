@@ -47,3 +47,5 @@ The Jondi museum file decodes into `$0800–$CFFF`, `$E000–$ED31`, `$F000–$F
 The dispatcher at `$9C47` selects eight handlers from `$9498`. Each copies three state bytes to indexed destinations, writes a selector from `$7C` through `$83`, then adjusts the state and clears an indexed flag at a boundary. The meaning of the two flag arrays and the role of this movement in play remain open.
 
 The call at `$9B5A` cycles through three movement slots, handling one per invocation. For an active slot it copies the direction and position into shared state, calls the movement routines, then copies the position back. An inactive slot writes `$03` to `$FC2B`.
+
+Before applying a directional update, `$9B79` calls `$9E18` to check a position-derived table byte and `$9EB4` to compare the position with a second bounded area. Either check can clear the active slot; the second calls `$A474` on a match. The objects and table value involved are not identified.
