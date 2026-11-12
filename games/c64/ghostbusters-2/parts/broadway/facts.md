@@ -31,3 +31,5 @@ The setup at `$802A` initializes state, copies 1,000 screen bytes from `$3C00` t
 The routine at `$A540` expands an entry’s computed position into four sets of offsets and values at `$B1C0–$B1FA`. Its choice at `$AFD3` changes two values, and a non-1 value at `$B172` writes `$08` to the last three slots. The raster routine at `$C901` reads these arrays as X and Y positions and sprite pointers for sprites 0–4, limiting Y to `$9D`. The entries’ gameplay identities remain open.
 
 The sequence routine at `$A4EE` selects a pair of bytes for the sprite layout. At a `$FF` terminator, its mode either holds the previous pair, restarts the sequence, or clears the entry’s active flag.
+
+The paired-state routine at `$9D05` alternates patched addresses between two groups in `$F000–$F8xx`, then dispatches separate updates according to `$9C8C/$9C8E`. The purpose of those address groups remains open.
