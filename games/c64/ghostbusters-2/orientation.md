@@ -20,7 +20,11 @@ For `parts/museum/work/floor-two.vsf`, advance 120 neutral frames from the first
 
 ## Parts and loader
 
-The manual describes three gameplay episodes: the airshaft, Broadway and the museum. Their numbered disk files are `3.THE CLOAKS`, `5.THE LIBERTY` and `7.THE MUSEUM`; their mapping to the playable states needs verification. The intervening story and ending files are still open in `media.json`. Snapshots and routes for the later episodes are open.
+The manual describes three gameplay episodes: the airshaft, Broadway and the museum. The transition routes above capture each episode; the story scenes and ending need a complete ownership audit.
+
+The loader uses the KERNAL's internal OPEN entry `$F3D5`, not its LOAD entry. Break there and read the filename length at `$B7` and pointer at `$BB–$BC` to see its requests. From the opening-story fire prompt, the Censor disk opens `3*` and reaches the airshaft entry at `$8009`. After the forced airshaft success it opens `4*`; at the following story's fire wait, pressing fire opens `5*` and reaches Broadway at `$8009`. After the forced Broadway success on the Jondi/Censor disk it opens `6*`; at the following story's fire wait, pressing fire opens `7*` and reaches the museum at `$8009`. Each wildcard has a single corresponding numbered filename in that disk's directory. The newly captured Broadway and museum entries agree with the earlier entry snapshots in `$1000–$3FFF`, `$8000–$CFFF` and `$E000–$FFFF`. The airshaft entries agree in the first two ranges and differ only in the two hardware IRQ-vector bytes in the last range.
+
+The second and third story waits are saved as `work/second-story.vsf` and `work/third-story.vsf`. Relative to the opening-story snapshot, the second has 43 different bytes in `$1000–$1BFF` and the third has three, while their `$C200–$C8FF` contents differ extensively. That comparison suggests a reused story engine with different content; which bytes each compressed file writes and whether it contains code overwritten before the snapshot remain open. The file ledger therefore keeps the numbered files open.
 
 On the play snapshot, `$01` read `$35`; the RAM hardware IRQ vector at `$FFFE` read `$8D53` and the KERNAL IRQ vector at `$0314` read `$8D6F`. A captured frame recorded nine successive IRQ-vector values, listed in `parts/airshaft/facts.md`. The loader shows a Censor intro and loads the title, story and first episode in sequence. Its file-to-memory map remains open.
 
