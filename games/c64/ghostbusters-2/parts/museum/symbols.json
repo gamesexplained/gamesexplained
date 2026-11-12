@@ -395,6 +395,11 @@
   },
   {
    "start": 37993,
+   "end": 38008,
+   "type": "Byte"
+  },
+  {
+   "start": 38009,
    "end": 38107,
    "type": "Undefined"
   },
@@ -675,8 +680,13 @@
   },
   {
    "start": 65035,
-   "end": 65071,
+   "end": 65055,
    "type": "Undefined"
+  },
+  {
+   "start": 65056,
+   "end": 65071,
+   "type": "Byte"
   },
   {
    "start": 65072,
@@ -3872,15 +3882,15 @@
   },
   {
    "address": 37993,
-   "name": "f_9469",
+   "name": "museum_direction_x_offsets",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38001,
-   "name": "f_9471",
+   "name": "museum_direction_y_offsets",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38009,
@@ -5018,9 +5028,9 @@
   },
   {
    "address": 39537,
-   "name": "s_9A71",
+   "name": "museum_start_motion_slot",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 39548,
@@ -12260,9 +12270,9 @@
   },
   {
    "address": 65048,
-   "name": "KERNAL_SETMSGj",
+   "name": "museum_chosen_direction",
    "type": "Predefined",
-   "kind": "system"
+   "kind": "user"
   },
   {
    "address": 65049,
@@ -12308,21 +12318,21 @@
   },
   {
    "address": 65056,
-   "name": "f_FE20",
+   "name": "museum_direction_pointer_values",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 65064,
-   "name": "f_FE28",
+   "name": "museum_direction_remap",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 65072,
-   "name": "s_FE30",
+   "name": "museum_choose_motion_origin",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 65079,
@@ -12669,6 +12679,16 @@
    "text": "Set the display-memory operand at $087B to $1F, call $A36A for the upper screen, copy 488 further codes from $1600 to $4600, and copy the high nibbles of 1,000 bytes at $1C00 to colour RAM before calling $82E8."
   },
   {
+   "address": 37993,
+   "type": "line",
+   "text": "Eight bytes added to the low X position at $FC05 by $FE30 after selecting a direction. The result and carry are stored at $FE12/$FE13."
+  },
+  {
+   "address": 38001,
+   "type": "line",
+   "text": "Eight bytes added to the Y position at $FC15 by $FE30 after selecting a direction. The routine subtracts 8 and stores the result at $FE14."
+  },
+  {
    "address": 38638,
    "type": "line",
    "text": "Add 8 to the byte at $8049 and return. The placement routine calls this twice when its computed row is below 6."
@@ -12692,6 +12712,11 @@
    "address": 39297,
    "type": "line",
    "text": "Copy four bytes each from $99E8 and $99EC to the working rows at $99E0 and $99E4. If $8041 is zero and the destination at $99C6/$99C7 equals $4518, change the first working byte to $81; if it equals $44E4, change the fourth to $A2. Copy the working rows through the self-modified stores at $99C5 and $99CB, whose operands are set by $97DA\u2013$97E6 and $97C4\u2013$97D2. The immediate operand at $99C1 determines the descending index: $96F8 sets it to 3 and some cell tests set it to 1."
+  },
+  {
+   "address": 39537,
+   "type": "line",
+   "text": "If $9486 is nonzero, clear it and return. Otherwise select the first zero flag among $949D\u2013$949F; if none is zero, return. Call $86E1 with A=$0D and call $C02C, set the selected flag to 1, and call $FE30. Save the direction at $FE18 into the selected byte at $94A0\u2013$94A2. Copy the position at $FE12\u2013$FE14 into the selected three-byte slot at $948F\u2013$9497, subtracting $10 from its low/high pair when the direction is at least 5. The exact gameplay identity of the slot remains open."
   },
   {
    "address": 39770,
@@ -13242,6 +13267,26 @@
    "address": 64986,
    "type": "line",
    "text": "In reverse array order, write the eight prepared Y and low X values to the VIC sprite-position registers. Shift each prepared high X value into the VIC X-high register, then write the eight prepared sprite pointers to $47F8\u2013$47FF and colours to the VIC sprite-colour registers."
+  },
+  {
+   "address": 65048,
+   "type": "line",
+   "text": "RAM byte holding the direction selected by $FE30. In the captured museum state $01=$35, so the CPU sees RAM here; the machine's KERNAL label at the same address does not describe this byte."
+  },
+  {
+   "address": 65056,
+   "type": "line",
+   "text": "Eight sprite pointer values $60\u2013$67, searched by $FE30 against $FC25. If no match is found before X wraps, the search falls through with X=0."
+  },
+  {
+   "address": 65064,
+   "type": "line",
+   "text": "Eight direction values $05,$03,$04,$00,$01,$07,$02,$06. $FE30 indexes this table with the position found in the pointer-value search and stores the result at $FE18."
+  },
+  {
+   "address": 65072,
+   "type": "line",
+   "text": "Set $FE19 to 1 and search for $FC25 in the values starting at $FE20, advancing X until a match or X wraps. Use X to select a direction from $FE28 and save it at $FE18. Index $9469 and $9471 with that direction to offset the position at $FC05/$FC0D/$FC15. Store the resulting position at $FE12\u2013$FE14; the high X byte starts at 1 if $FC0D is nonzero, otherwise 0, and includes carry from the low-byte addition."
   }
  ]
 }
