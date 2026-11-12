@@ -69,11 +69,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <div class="plate"><label for="airshaft-slot">Sprite slot</label> <select id="airshaft-slot"></select>
 <p><canvas id="airshaft-slot-image" width="192" height="168" aria-label="Selected airshaft sprite bitmap" style="max-width:100%;height:auto;image-rendering:pixelated;background:#23262d;border-radius:6px"></canvas></p>
 <p id="airshaft-slot-address" aria-live="polite"></p><p class="cap">The inspector shows the captured bytes in multicolour with illustrative colours. The game may combine pieces or use different colours.</p></div></section>
-<section><h2 class="t">Museum sprite pairs</h2>
-<p>Two lookup routines swap eight pairs of sprite pointers. Select a pair to see both stored shapes side by side.</p>
+<section><h2 class="t">Museum Ghostbuster directions</h2>
+<p>The selected Ghostbuster uses a pair of sprite shapes for each joystick direction. Choose a direction to see the two stored shapes side by side.</p>
 <div class="plate"><label for="museum-pair">Pair</label> <select id="museum-pair"></select>
 <p><canvas id="museum-pair-image" width="384" height="168" aria-label="Two mapped museum sprite shapes" style="max-width:100%;height:auto;image-rendering:pixelated;background:#23262d;border-radius:6px"></canvas></p>
-<p id="museum-pair-address" aria-live="polite"></p><p class="cap">The <a href="source-museum.html#9618">pointer tables</a> and <a href="source-museum.html#9628">lookup routines</a> establish the pairs. Colours and multicolour mode are illustrative; the figures’ identities remain open.</p></div></section>
+<p id="museum-pair-address" aria-live="polite"></p><p class="cap">The <a href="source-museum.html#B459">joystick routine</a> selects these pairs, and the <a href="source-museum.html#9618">pointer tables</a> map between them. Colours and multicolour mode are illustrative. A <a href="source-museum.html#957A">nearby interaction</a> selects the second shape for the chosen Ghostbuster; the object involved remains unidentified.</p></div></section>
 <section><h2 class="t">Eight museum movement shapes</h2>
 <p>A new fire press can start a movement slot, and eight handlers select different sprite pointers. Choose one to inspect the bitmap stored for the captured floor’s video bank. The object these shapes depict is still being traced.</p>
 <div class="plate"><label for="museum-motion-shape">Shape</label> <select id="museum-motion-shape"></select>
@@ -396,9 +396,10 @@ function storyPicturePixels(data, row) {
 (() => {
   const pairs = JSON.parse(document.getElementById('museum-pair-data').textContent);
   const select = document.getElementById('museum-pair'), canvas = document.getElementById('museum-pair-image');
+  const directions = ['Up and left', 'Up and right', 'Up', 'Down and left', 'Down and right', 'Down', 'Left', 'Right'];
   pairs.forEach((pair, index) => {
     const option = document.createElement('option'); option.value = index;
-    option.textContent = 'Pair ' + (index + 1); select.appendChild(option);
+    option.textContent = directions[index]; select.appendChild(option);
   });
   function draw() {
     const pair = pairs[Number(select.value)], ctx = canvas.getContext('2d');

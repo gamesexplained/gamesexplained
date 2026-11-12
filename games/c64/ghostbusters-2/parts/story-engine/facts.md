@@ -7,3 +7,5 @@ Each of the second-story, third-story and ending snapshots differs from this cop
 The entry snapshot's `$1000–$1BFF` matches the stash source at `$D000–$DBFF` byte for byte. Existing descriptions of the copied routines and data were therefore carried to their executing addresses. The listing marks the display routines' I/O context separately from the routines that select RAM under I/O. The final copied bytes at `$1B80–$1BFF` remain to be classified.
 
 The isolated byte at `$11DD` is `$12`, immediately after an unconditional jump to `$11F3`. The bytes at `$1A37–$1A66` form 24 little-endian addresses from `$0400` to `$0798`, 40 bytes apart. A consumer of that table has not been established.
+
+The 128 bytes at `$1B80–$1BFF` match RAM beneath `$FCD7–$FD56` in both the title and opening-story snapshots. In the captured airshaft play state, 31 of the corresponding high-memory bytes differ while the stash copy remains unchanged. The same bytes also occur at `$2DA0–$2E1F` in the earlier Censor-intro snapshot. These matches do not establish the copying path or what the data represents.
