@@ -36,4 +36,16 @@ for (const fixture of fixtures) {
   assert.deepStrictEqual(Array.from(ram.slice(0x4400, 0x47e8)), fixture.screen, `CPU screen flag ${fixture.flag}`);
   assert.deepStrictEqual(Array.from(colours), fixture.colour, `CPU colours flag ${fixture.flag}`);
 }
-console.log('OK - both museum setup branches match VICE and the stored screen data');
+const observed = JSON.parse(fs.readFileSync(path.join(__dirname, 'museum-alt-observed.json'), 'utf8'));
+const alternate = decode(data, 1);
+const changed = [];
+for (let cell = 0; cell < 1000; cell++) if (alternate.codes[cell] !== observed.screen[cell]) {
+  changed.push({cell, stored: alternate.codes[cell], observed: observed.screen[cell]});
+}
+assert.equal(changed.length, 9);
+assert.deepStrictEqual(changed, observed.changed);
+assert.deepStrictEqual(alternate.colours, observed.colour);
+assert.deepStrictEqual(observed.vic.map(value => value & 15), [8, 15, 0, 6, 13]);
+assert(observed.vic[0] & 0x10, 'multicolour character mode');
+assert.equal(observed.vic[1] & 0x0e, 0x0e, 'alternate character set at $7800');
+console.log('OK - both museum setups and the observed alternate screen match VICE');
