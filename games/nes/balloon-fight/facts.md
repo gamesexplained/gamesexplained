@@ -267,29 +267,51 @@ rises on the call that counts down what the RAM held at power-on: the
 the kit's NES on 7 November 2026, the recorded game below with the byte
 set before power-on). Later rounds start from what the last one left.
 
-## The recorded game
+## The recorded games
 
-`route/route.json` is a game from power-on, one player through phases
-1, 2 and 3 and the first bonus round to the start of phase 4, with no
-life lost: 6,513 reads of controller 1 and none of controller 2. Every
-read of the controllers is a call of `read_joypad_x` (`$E76A`), from
-`wait_frame_pause` (`$F477`, `$F48C`), `steer_actor` (`$E6FC`), the
-title loop (`$DAD5`), the demonstration (`$F31C`) and game over
-(`$F378`), each at most once a frame, so the recording keeps the value
-at each read (`route/route.js`). `route/find_route.js` found it on the
-kit's NES from the listing's bytes with the RAM cleared, since the
-listing carries the RAM of the snapshot it was made from.
+`route/route.json` holds seven games from power-on, each one player
+through phases 1, 2 and 3 and the first bonus round to the start of
+phase 4, with no life lost and all 20 bonus balloons popped: 5,468 to
+7,208 reads of controller 1 and none of controller 2. The Play tab's
+Watch button picks one at random. Every read of the controllers is a
+call of `read_joypad_x` (`$E76A`), from `wait_frame_pause` (`$F477`,
+`$F48C`), `steer_actor` (`$E6FC`), the title loop (`$DAD5`), the
+demonstration (`$F31C`) and game over (`$F378`), each at most once a
+frame, so a recording keeps the value at each read (`route/route.js`).
+`route/find_route.js` found them on the kit's NES from the listing's
+bytes with the RAM cleared, since the listing carries the RAM of the
+snapshot it was made from.
 
-Replayed read by read on 7 November 2026, each reached all 150
-milestones (`test_route.js`, `route/check_emulator.py`):
+The search scores the bonus round by `balloons_popped` (`$05CD`): the
+round's balloons are paid into the score only on its results screen, so
+the score does not move while it is played. Searched on 10 November
+2026 from seeds 1 to 10, every seed cleared phases 1 to 3 with no life
+lost, and seven popped all 20 (the others 18 and 19); those seven were
+kept, and reach phase 4 with 38,250 to 42,750 points. The one recording
+before them, searched by score alone, popped 5 and reached phase 4 with
+26,500.
 
-| Machine | Milestones | Frames against the kit's NES |
-|---|---|---|
-| the kit's NES, from the listing | 150 of 150, the recording's own | 0 |
-| the Play tab's machine (`bf-play.js`) | 150 of 150 | 0 |
-| MesenCE 2.2.1, as it powers on | 150 of 150 | 0 |
-| jsnes 2.1.0, RAM cleared at power-on | 150 of 150 | 0 |
-| jsnes 2.1.0, as it powers on (RAM `$FF`) | 124, then the second bonus balloon popped two reads early | 0 until it parts |
+| Seed | Reads | Frame at the last read | Milestones |
+|---|---|---|---|
+| 3 | 5,468 | 4,624 | 143 |
+| 4 | 6,484 | 5,884 | 162 |
+| 5 | 7,177 | 6,396 | 176 |
+| 6 | 6,158 | 5,136 | 153 |
+| 7 | 7,208 | 6,399 | 178 |
+| 9 | 6,173 | 5,629 | 157 |
+| 10 | 6,162 | 5,630 | 157 |
+
+On 11 November 2026 each reached every one of its milestones on the
+kit's NES and on the Play tab's machine (`bf-play.js`), 0 frames apart
+(`test_route.js`). The replay on the emulators (`route/check_emulator.py`)
+was run on 7 November 2026 on the one earlier recording, with these
+results:
+
+| Machine | Milestones |
+|---|---|
+| MesenCE 2.2.1, as it powers on | 150 of 150 |
+| jsnes 2.1.0, RAM cleared at power-on | 150 of 150 |
+| jsnes 2.1.0, as it powers on (RAM `$FF`) | 124, then the second bonus balloon popped two reads early |
 
 A bisection over the RAM, clearing all of it on jsnes but one range
 left at `$FF`, found the one byte that parts them: `$05CC`.
