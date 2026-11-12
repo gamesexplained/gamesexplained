@@ -16,6 +16,11 @@
     53248,
     57343,
     "I/O and colour RAM"
+   ],
+   [
+    53248,
+    57343,
+    "byte-identical shared stash counted in resident-stash; full load ownership remains open"
    ]
   ],
   "extra": [
@@ -8346,9 +8351,9 @@
   },
   {
    "address": 43055,
-   "name": "s_A82F",
+   "name": "airshaft_update_sprite5_y",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 43098,
@@ -8400,9 +8405,9 @@
   },
   {
    "address": 43173,
-   "name": "j_A8A5",
+   "name": "airshaft_sprite5_effect_state",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 43184,
@@ -8430,9 +8435,9 @@
   },
   {
    "address": 43286,
-   "name": "b_A916",
+   "name": "airshaft_sprite5_effect_continue",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 43339,
@@ -16326,6 +16331,21 @@
    "address": 42639,
    "type": "line",
    "text": "Move the 26-column shaft window in screen RAM at $4400 down by one character row, using $A74A as a temporary row. Then copy 27 alternating bytes from $CF00 into the top row, starting at offset $8025, and clear its two outer cells."
+  },
+  {
+   "address": 43055,
+   "type": "line",
+   "text": "Return if $8047 or $A0D0 is nonzero or $801E is zero. Otherwise use $801D to choose a direction for the sprite 5 Y operand at $8E07. One direction subtracts $801E while the value is at least $2E; below that it sets $A777 to $FF and increments $A778. The other adds $801E while the value is below $F8; at or above it, it sets $A777 to 1 and increments $A778. In the opposite state, decrement $A778 and clear $A777 when it reaches zero."
+  },
+  {
+   "address": 43173,
+   "type": "line",
+   "text": "If $94BD is nonzero, clear the effect state at $A8F0. If it is zero and $A767 is zero, return. Otherwise, on the first call set $A76A to 1, clear $A76E, change the sprite-related operands at $8E4B, $8E50 and $8E11, and write $96-$99 to the operands at $A976, $A991, $A9A7 and $A9B9. Later calls increment $A76E; at $F0 clear five state bytes and restore the sprite operands, otherwise continue at $A916."
+  },
+  {
+   "address": 43286,
+   "type": "line",
+   "text": "Form two Y values from $8028 minus $0A and that result plus $35, and two X values from $8027 minus $1C and plus $14. If the first X is at least $C0, replace the X pair with $BF/$EF; if it is below $50, replace them with $53/$83. Increment $A76B and use its values 1, 2, 3 and 4 to select the four X/Y combinations for the sprite 5 operands at $8E02/$8E07 and an immediate sprite pointer at $A9B9, $A9A7, $A991 or $A976. At 4, reset $A76B to zero before returning."
   },
   {
    "address": 43630,
