@@ -69,6 +69,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <div class="plate"><label for="airshaft-slot">Sprite slot</label> <select id="airshaft-slot"></select>
 <p><canvas id="airshaft-slot-image" width="192" height="168" aria-label="Selected airshaft sprite bitmap" style="max-width:100%;height:auto;image-rendering:pixelated;background:#23262d;border-radius:6px"></canvas></p>
 <p id="airshaft-slot-address" aria-live="polite"></p><p class="cap">The inspector shows the captured bytes in multicolour with illustrative colours. The game may combine pieces or use different colours.</p></div></section>
+<section><h2 class="t">Museum sprite pairs</h2>
+<p>Two lookup routines swap eight pairs of sprite pointers. Select a pair to see both stored shapes side by side.</p>
+<div class="plate"><label for="museum-pair">Pair</label> <select id="museum-pair"></select>
+<p><canvas id="museum-pair-image" width="384" height="168" aria-label="Two mapped museum sprite shapes" style="max-width:100%;height:auto;image-rendering:pixelated;background:#23262d;border-radius:6px"></canvas></p>
+<p id="museum-pair-address" aria-live="polite"></p><p class="cap">The <a href="source-museum.html#9618">pointer tables</a> and <a href="source-museum.html#9628">lookup routines</a> establish the pairs. Colours and multicolour mode are illustrative; the figures’ identities remain open.</p></div></section>
 <section><h2 class="t">Eight museum movement shapes</h2>
 <p>A new fire press can start a movement slot, and eight handlers select different sprite pointers. Choose one to inspect the bitmap stored for the captured floor’s video bank. The object these shapes depict is still being traced.</p>
 <div class="plate"><label for="museum-motion-shape">Shape</label> <select id="museum-motion-shape"></select>
@@ -381,6 +386,30 @@ function storyPicturePixels(data, row) {
     const address = frame.address.toString(16).toUpperCase();
     const link = document.createElement('a'); link.href = 'source-broadway.html#' + address; link.textContent = '$' + address;
     document.getElementById('broadway-motion-address').replaceChildren('Source at ', link);
+  }
+  select.addEventListener('change', draw); draw();
+})();
+</script>
+
+<script id="museum-pair-data" type="application/json">[[{"pointer":101,"bytes":[0,84,0,1,89,0,1,86,0,1,87,0,2,87,0,3,102,64,1,181,64,5,181,128,5,117,208,89,121,224,222,105,148,230,221,84,231,158,100,151,158,100,91,219,101,111,167,149,27,119,149,6,103,153,5,102,88,1,165,100,0,85,80]},{"pointer":175,"bytes":[0,84,0,1,89,0,1,86,0,1,87,0,2,87,0,3,102,64,1,181,64,5,181,128,5,117,208,89,121,224,222,105,148,230,221,84,231,158,100,151,158,100,91,219,101,111,167,149,27,119,149,6,103,153,5,102,88,1,165,100,0,85,80]}],[{"pointer":100,"bytes":[0,21,0,0,101,64,0,149,64,0,213,64,0,213,128,1,153,192,1,94,64,2,94,80,7,93,80,11,109,101,22,105,183,21,119,155,25,182,219,25,182,214,89,231,229,86,218,249,86,221,228,102,217,144,37,153,80,25,90,64,5,85,0]},{"pointer":174,"bytes":[0,21,0,0,101,64,0,149,64,0,213,64,0,213,128,1,153,192,1,94,64,2,94,80,7,93,80,11,109,101,22,105,183,21,119,155,25,182,219,25,182,214,89,231,229,86,218,249,86,221,228,102,217,144,37,153,80,25,90,64,5,85,0]}],[{"pointer":99,"bytes":[0,20,0,0,85,0,0,101,0,0,101,0,1,101,64,1,117,64,2,117,128,2,117,128,7,117,144,7,117,144,11,117,144,11,117,160,11,117,164,10,117,164,6,117,164,6,117,148,2,117,160,2,117,144,2,101,144,2,101,128,1,101,64]},{"pointer":173,"bytes":[0,20,0,0,85,0,0,101,0,0,101,0,1,101,64,1,117,64,2,117,128,2,117,128,7,117,144,7,117,144,11,117,144,11,117,160,11,117,164,10,117,164,6,117,164,6,117,148,2,117,160,2,117,144,2,101,144,2,101,128,1,101,64]}],[{"pointer":96,"bytes":[1,64,0,5,80,0,6,80,0,11,80,0,15,80,0,6,144,0,11,213,0,7,154,64,6,86,64,9,105,64,30,173,128,31,237,128,11,238,64,6,159,64,6,219,128,11,214,64,23,111,64,29,191,64,121,126,64,213,105,0,69,84,0]},{"pointer":169,"bytes":[1,64,0,5,80,0,6,80,0,11,80,0,15,80,0,6,144,0,11,213,0,7,154,64,20,86,64,105,105,64,182,109,128,155,93,128,166,94,64,185,95,64,21,91,128,21,106,64,57,175,64,57,187,64,25,101,64,21,85,0,5,84,0]}],[{"pointer":97,"bytes":[0,1,64,0,5,80,0,5,144,0,5,224,0,5,240,0,6,144,0,87,224,1,166,208,1,149,144,1,105,96,2,122,180,2,123,244,1,187,224,1,246,144,2,231,144,1,151,224,1,249,212,1,254,116,1,189,109,0,105,87,0,21,81]},{"pointer":171,"bytes":[0,5,0,0,21,64,0,22,64,0,23,128,0,23,192,0,26,64,1,95,128,6,155,64,6,84,80,5,165,164,9,230,184,9,214,248,6,214,248,7,213,164,11,149,80,6,165,80,7,233,176,7,185,176,5,101,144,1,85,80,0,85,64]}],[{"pointer":98,"bytes":[0,16,0,0,84,0,0,84,0,0,153,0,1,253,64,1,101,64,6,185,64,11,169,64,11,103,128,6,87,208,26,166,144,25,85,80,39,85,80,59,214,80,27,214,144,22,175,80,5,238,80,5,218,64,1,213,64,1,149,64,1,85,64]},{"pointer":170,"bytes":[0,16,0,0,84,0,0,84,0,0,153,0,1,253,64,1,101,64,5,185,64,5,105,64,26,103,128,45,151,208,38,230,144,41,149,80,46,150,148,26,86,148,21,85,148,21,94,84,6,158,80,6,154,80,2,213,80,1,149,84,1,85,64]}],[{"pointer":103,"bytes":[1,64,0,5,80,0,5,81,0,10,81,64,11,145,64,7,213,64,15,213,64,7,149,64,2,89,64,1,110,80,1,111,80,1,159,80,1,222,80,1,219,80,5,230,80,27,214,80,245,121,80,165,253,80,21,121,64,0,85,64,0,84,0]},{"pointer":168,"bytes":[1,64,0,5,80,0,5,81,0,10,81,64,11,145,64,7,213,64,15,213,64,103,149,64,185,89,64,149,110,80,251,111,80,185,111,80,37,110,144,21,91,144,21,174,144,26,126,80,27,121,80,10,85,80,5,85,64,0,85,64,0,84,0]}],[{"pointer":102,"bytes":[0,1,64,0,5,80,0,69,80,1,69,160,1,70,224,1,87,208,1,87,240,1,86,208,1,101,128,5,185,64,5,249,64,5,246,64,5,183,64,5,231,64,5,155,80,5,151,228,5,109,95,5,127,90,1,109,84,1,85,0,0,21,0]},{"pointer":172,"bytes":[0,5,0,0,21,64,1,21,64,5,22,128,5,27,128,5,95,64,5,95,80,5,89,164,5,149,248,22,229,248,23,229,184,23,233,100,22,245,80,22,181,84,21,157,84,21,191,148,21,110,124,21,90,104,5,85,80,5,84,0,0,84,0]}]]</script>
+<script>
+(() => {
+  const pairs = JSON.parse(document.getElementById('museum-pair-data').textContent);
+  const select = document.getElementById('museum-pair'), canvas = document.getElementById('museum-pair-image');
+  pairs.forEach((pair, index) => {
+    const option = document.createElement('option'); option.value = index;
+    option.textContent = 'Pair ' + (index + 1); select.appendChild(option);
+  });
+  function draw() {
+    const pair = pairs[Number(select.value)], ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const text = document.getElementById('museum-pair-address'); text.replaceChildren('Bitmaps at ');
+    pair.forEach((shape, index) => {
+      C64.drawSpriteMC(ctx, shape.bytes, index * 192, 0, 8, C64.PAL[1], C64.PAL[14], C64.PAL[8]);
+      const address = (0x4000 + 64 * shape.pointer).toString(16).toUpperCase();
+      const link = document.createElement('a'); link.href = 'source-museum.html#' + address; link.textContent = '$' + address;
+      if (index) text.append(' and '); text.append(link);
+    });
   }
   select.addEventListener('change', draw); draw();
 })();

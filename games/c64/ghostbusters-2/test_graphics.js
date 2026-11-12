@@ -120,3 +120,16 @@ for (const frame of broadwayMotionFrames) {
   assert.deepStrictEqual(frame.bytes, Array.from(listing.ram.slice(frame.address, frame.address + 63)));
 }
 console.log('OK - 32 Broadway movement frames match the listing');
+
+const museumPairMatch = html.match(/<script id="museum-pair-data" type="application\/json">([^<]+)<\/script>/);
+assert(museumPairMatch, 'museum sprite-pair viewer has its data');
+const museumPairs = JSON.parse(museumPairMatch[1]);
+assert.equal(museumPairs.length, 8);
+for (let i = 0; i < museumPairs.length; i++) {
+  assert.deepStrictEqual(museumPairs[i].map(shape => shape.pointer), [museumListing.ram[0x9618 + i], museumListing.ram[0x9620 + i]]);
+  for (const shape of museumPairs[i]) {
+    const start = 0x4000 + 64 * shape.pointer;
+    assert.deepStrictEqual(shape.bytes, Array.from(museumListing.ram.slice(start, start + 63)));
+  }
+}
+console.log('OK - eight museum sprite pairs match the tables and listing');
