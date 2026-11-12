@@ -47,3 +47,5 @@ The five airshaft character poses were reconstructed from the six pointers in ea
 The resident-stash disassembler session exported its owned annotations but omitted 1,561 automatic symbols, four system labels and unrelated blocks outside that part's range. They were restored from the preceding export, the new `$D000–$DFFF` annotations were retained, and dependent listings were relabelled. The resident listing and affected checks then passed. This behavior needs investigation in the retrospective.
 
 Decoding the outcome streams exposed `$EF82=$91`, a stop command omitted from the earlier listing. The embedded sound data had inherited a zero at that position. It was corrected to match the captured bytes, and the existing sound check passed.
+
+Typing the effect records exposed 220 more zero-filled bytes in the embedded sound data. They were restored from the airshaft capture; the existing sound check then matched the rebuilt listing and its recorded VICE samples.
