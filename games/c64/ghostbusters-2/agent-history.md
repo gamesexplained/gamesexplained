@@ -131,3 +131,5 @@ Traced airshaft outcome-screen setup and established how the `$088C` sound inter
 Traced the character-relative screen address, scan-index routing and pointer-dependent marker checks.
 
 Traced four airshaft character-code counters and their three-byte copy response.
+
+Found six omitted sprite 4 bitmaps through its pointer sequences and added them to the Graphics inspector. Their bitmaps match both captured snapshots.

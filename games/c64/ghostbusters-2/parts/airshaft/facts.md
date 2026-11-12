@@ -143,3 +143,5 @@ Pointer `$5E` uses the shared six-character column path in the opposite address 
 `$B354` converts the character sprite coordinates at `$8027/$8028` into a screen-cell address used by several scans. `$B3B4` tests each supplied character code and selects one of two marker checks for particular sprite-pointer values. The gameplay meaning of these checks remains open.
 
 Four checks at `$B40C–$B453` increment `$8045` for character codes `$A6–$D5`. `$868B` tests that count using the sign bit of subtraction; its copy path clears the count and copies three bytes through self-modifying source and destination operands, advancing both until a specified destination sets `$804D`. The count’s gameplay meaning remains open.
+
+Sprite 4 uses the four-pointer sequences `$B1/$B2/$B3/$B2` and `$AE/$AF/$B0/$AF` at `$CB63/$CB67`. Their six distinct bitmaps at `$6B80–$6D3E` match in the entry and play snapshots and are shown in the Graphics inspector. The object’s identity remains open.
