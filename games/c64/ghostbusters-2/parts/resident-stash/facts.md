@@ -9,3 +9,5 @@ The copied code at `$11F7` and `$1216` calls KERNAL SETLFS, SETNAM and LOAD for 
 The routine copied to `$134F` selects RAM under I/O with `$01=$34`, copies `$DC00–$DFFF` to `$0400–$07FF`, then writes `$36` to `$01`. This is a second copy path visible in the stored code; the separately observed transition in `orientation.md` copies the same source pages at `$02A7`.
 
 The routine copied to `$13B4` clears `$4000–$53FF`, initializes screen and colour bytes, sets sprite positions, and fills the eight sprite pointers and colours. It writes `$01=$35` before accessing the video registers, so the store at `$13EA` reaches the VIC at `$D000` rather than the hidden-RAM stash at that address.
+
+The copied routines at `$145F`, `$1490` and `$14B2` fill overlapping indexed screen and colour-memory ranges with fixed values; their store order is recorded in the stash listing. `$14D4` waits for the value at `$0E` to change.
