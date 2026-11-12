@@ -127,3 +127,5 @@ For sprite pointer `$25`, `$BF73` saves up to six character bytes along a diagon
 The pointer `$2A` drawing path uses a shared six-cell column writer and corresponding restore routine, stepping each address by 40 bytes. Pointer `$30` uses a matching diagonal save-and-restore pair stepping by 39 bytes. Both restore saved characters with colour `$0A`; neither stores the original colour bytes in these paths.
 
 Pointer `$35` selects a two-character diagonal drawing and restore pair with 38-byte address steps; pointer `$3A` selects a horizontal pair of paths stepping one byte at a time. Both save character bytes and later write them back with fixed colour `$0A`.
+
+`$C588` advances a six-position pattern-frame index every two calls when its counters start in range. Six tables at `$C5A8–$C5CB` provide the character codes used by the different airshaft draw paths; each sequence rises to a peak and returns through its preceding values.

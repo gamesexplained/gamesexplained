@@ -113,3 +113,5 @@ Traced the airshaft pointer `$25` draw and restore pair and its boundary-limited
 Traced two further airshaft drawing cases, including the shared column writer and restore routine.
 
 Traced the `$35` and `$3A` airshaft drawing and restore cases.
+
+Decoded the six airshaft pattern-character sequences and the counter that selects them.
