@@ -167,3 +167,7 @@ Inspected the saved second-story CPU state in VICE with dummy sound: PC `$14D6`,
 Described the remaining ranges of the title and story-band character sets as eight-byte patterns, retaining their display use as open. Checked the title picture’s 127-byte tail in the captured snapshot.
 
 Traced the museum raster interrupt scheduling and the selected sprite’s split handler, keeping the visual role open.
+
+Identified the three patched high bytes in the title sound-effect selectors as instruction operands, not separate routines.
+
+Recovered two sound helper entries that were typed as data, and traced the SID clear and four-byte shift-state operations.

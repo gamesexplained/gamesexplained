@@ -285,6 +285,16 @@
   },
   {
    "start": 60141,
+   "end": 60197,
+   "type": "Undefined"
+  },
+  {
+   "start": 60198,
+   "end": 60247,
+   "type": "Code"
+  },
+  {
+   "start": 60248,
    "end": 60272,
    "type": "Undefined"
   },
@@ -2331,25 +2341,49 @@
   },
   {
    "address": 60198,
-   "name": "s_EB26",
+   "name": "title_clear_sound_state",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60212,
-   "name": "s_EB34",
+   "name": "title_clear_sid_registers",
    "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 60216,
+   "name": "b_EB38",
+   "type": "Branch",
    "kind": "auto"
   },
   {
    "address": 60223,
-   "name": "s_EB3F",
+   "name": "title_step_sound_shift_register",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60248,
-   "name": "a_EB58",
+   "name": "title_sound_shift_state",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 60249,
+   "name": "a_EB59",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 60250,
+   "name": "a_EB5A",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 60251,
+   "name": "a_EB5B",
    "type": "AbsoluteAddress",
    "kind": "auto"
   },
@@ -2514,6 +2548,12 @@
    "name": "a_EEED",
    "type": "AbsoluteAddress",
    "kind": "auto"
+  },
+  {
+   "address": 61229,
+   "name": "title_sound_stream_eeb1_tail",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 61250,
@@ -3190,14 +3230,29 @@
    "text": "Take an effect index in A, clear voice 1 effect state at $E12F and $E132, double the index to select a pointer from $E7CA, and copy its 12-byte record to $EAED. Initialize the voice frequency, attack/decay and pulse-width high registers from the copied record; write the control byte and then the next value, write the mode and volume value from $E138, and set the effect active flag at $E12F."
   },
   {
+   "address": 59079,
+   "type": "line",
+   "text": "High byte of the absolute-X load operand at $E6C5. The voice 1 effect selector patches this byte and the low byte at $E6C6 from the indexed pointer table before copying the selected 12-byte record."
+  },
+  {
    "address": 59148,
    "type": "line",
    "text": "Take an effect index in A, clear voice 2 effect state at $E130 and $E133, double the index to select a pointer from $E7CA, and copy its 12-byte record to $EAFC. Initialize the voice frequency, attack/decay and pulse-width high registers from the copied record; write the control byte and then the next value, write the mode and volume value from $E138, and set the effect active flag at $E130."
   },
   {
+   "address": 59174,
+   "type": "line",
+   "text": "High byte of the absolute-X load operand at $E724. The voice 2 effect selector patches this byte and the low byte at $E725 from the indexed pointer table before copying the selected 12-byte record."
+  },
+  {
    "address": 59243,
    "type": "line",
    "text": "Take an effect index in A, clear voice 3 effect state at $E131 and $E134, double the index to select a pointer from $E7CA, and copy its 12-byte record to $EB0B. Initialize the voice frequency, attack/decay and pulse-width high registers from the copied record; write the control byte and then the next value, write the mode and volume value from $E138, and set the effect active flag at $E131."
+  },
+  {
+   "address": 59269,
+   "type": "line",
+   "text": "High byte of the absolute-X load operand at $E783. The voice 3 effect selector patches this byte and the low byte at $E784 from the indexed pointer table before copying the selected 12-byte record."
   },
   {
    "address": 59338,
@@ -3370,6 +3425,26 @@
    "text": "Update the third voice's timed effect: clear its flag and envelope on expiry, otherwise count down, reload and step its frequency and write SID voice 3."
   },
   {
+   "address": 60198,
+   "type": "line",
+   "text": "Store zero in $E12E\u2013$E131, then fall through to $EB34 to clear 24 SID registers. This entry is called from the sound initialization and stop paths."
+  },
+  {
+   "address": 60212,
+   "type": "line",
+   "text": "Write zero to SID addresses $D400\u2013$D417 in descending order, then return. This does not write the mode and volume register at $D418."
+  },
+  {
+   "address": 60223,
+   "type": "line",
+   "text": "Mask $EB58 with $48, add $38 with the incoming carry, shift the result left twice and rotate its carry through the four state bytes $EB5B, $EB5A, $EB59 and $EB58. Return the resulting $EB58 in A; the addition depends on the carry supplied by the caller."
+  },
+  {
+   "address": 60248,
+   "type": "line",
+   "text": "Four bytes of mutable state shifted by the routine at $EB3F. Their initial values in this captured snapshot need not match the loaded values."
+  },
+  {
    "address": 60252,
    "type": "line",
    "text": "Initial accumulator increment $2A in the first seven-byte tune record. The initializer at $E000 selects a record and stores this byte at $E139 and the immediate operand $E147."
@@ -3493,6 +3568,16 @@
    "address": 61105,
    "type": "line",
    "text": "Linear decode of $EEB1\u2013$EF41, in bytecode order: $89[10 10], $D0[08 10], $E0, $33, $33, $30, $30, $D0[0A 10], $E9, $32, $D0[08 10], $E0, $30, $30, $D0[0A 10], $E1, $2E, $D0[08 10], $30, $D0[0A 10], $EB, $30, $D0[08 10], $E0, $2E, $2E, $2B, $2B, $D0[0A 10], $E7, $2D, $E3, $33, $E0, $32, $80, $D0[0B 00], $E9, $30, $D0[09 10], $E3, $8A, $84[00 04 02], $30, $8B, $D0[08 10], $E0, $33, $33, $30, $30, $D0[0A 10], $E9, $32, $D0[08 10], $E0, $30, $30, $D0[0A 10], $E1, $2E, $D0[08 10], $30, $D0[0A 10], $EB, $30, $D0[08 10], $E0, $2E, $2E, $2B, $2B, $D0[0A 10], $E7, $2D, $89[28 28], $E3, $3A, $E0, $39, $80, $D0[0B 00], $E9, $37, $D0[09 10], $E1, $8A, $84[00 04 02], $30, $8B, $2B, $89[28 28], $88. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path, and $E0\u2013$FF set durations; the remaining commands are decoded at $E3B7. The final $88 dispatches to $E266 to advance the sequence list. The timing and reachability of every branch remain open."
+  },
+  {
+   "address": 61165,
+   "type": "line",
+   "text": "The first parameter byte of the $D0 command at $EEEC within the sound stream that starts at $EEB1. The complete linear decode and its open timing and reachability questions are recorded at that stream's entry."
+  },
+  {
+   "address": 61229,
+   "type": "line",
+   "text": "A $D0 command within the stream that begins at $EEB1. The remaining commands through $EF41, including the final $88 sequence-list command, are decoded at the stream's entry; their timing and reachability remain open."
   },
   {
    "address": 61250,
