@@ -26,7 +26,7 @@ The routines at `$AD07` and `$AD39` use X to select an entry, and Y as an index 
 
 The Censor Broadway unpacker writes `$0A2A–$CEFF`, `$E000–$EF76` and `$F000–$F7FF`; its 56,397 stable output bytes match the handover snapshot. The part lies over the second story and owns those output ranges. The map comparison assembles the retained `$0900–$0A29` prefix from the airshaft listing with the rest from Broadway. The separate Jondi file writes from `$0900` and matched 56,695 stable bytes at its own handover; its differing backdrop and coordinate data still need their own analysis.
 
-The setup at `$802A` initializes state, copies 1,000 screen bytes from `$3C00` to `$4400`, prepares colour RAM and selects VIC bank 1. At `$8260` a keyboard-bit sequence can gate the loop, with waits for three changes of `$801D` between transitions; the key’s gameplay purpose remains open.
+The setup at `$802A` initializes state, copies 1,000 screen bytes from `$3C00–$3FE7` to `$4400–$47E7`, prepares colour RAM and selects VIC bank 1. The source bytes match in the entry and play snapshots; the initialization then patches several destination cells. At `$8260` a keyboard-bit sequence can gate the loop, with waits for three changes of `$801D` between transitions; the key’s gameplay purpose remains open.
 
 The routine at `$A540` expands an entry’s computed position into four sets of offsets and values at `$B1C0–$B1FA`. Its choice at `$AFD3` changes two values, and a non-1 value at `$B172` writes `$08` to the last three slots. The raster routine at `$C901` reads these arrays as X and Y positions and sprite pointers for sprites 0–4, limiting Y to `$9D`. The entries’ gameplay identities remain open.
 
