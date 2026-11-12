@@ -141,3 +141,5 @@ Pointer `$5E` uses the shared six-character column path in the opposite address 
 `$0AF6` prepares the airshaft outcome screen and copies 120 bytes from a caller-supplied pointer into three 40-character rows. It installs `$088C` as the interrupt handler, establishing a route to the sound-update tail. The success, retry, quit and failure paths supply different text pointers; `$08AC` waits for fire to be released and then pressed before clearing sound state.
 
 `$B354` converts the character sprite coordinates at `$8027/$8028` into a screen-cell address used by several scans. `$B3B4` tests each supplied character code and selects one of two marker checks for particular sprite-pointer values. The gameplay meaning of these checks remains open.
+
+Four checks at `$B40C–$B453` increment `$8045` for character codes `$A6–$D5`. `$868B` tests that count using the sign bit of subtraction; its copy path clears the count and copies three bytes through self-modifying source and destination operands, advancing both until a specified destination sets `$804D`. The count’s gameplay meaning remains open.

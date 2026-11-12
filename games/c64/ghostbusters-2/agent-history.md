@@ -129,3 +129,5 @@ Connected the two screen-scan result flags to sprite 6 and sprite 4 animation pa
 Traced airshaft outcome-screen setup and established how the `$088C` sound interrupt entry is installed.
 
 Traced the character-relative screen address, scan-index routing and pointer-dependent marker checks.
+
+Traced four airshaft character-code counters and their three-byte copy response.
