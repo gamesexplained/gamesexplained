@@ -213,6 +213,21 @@
     41798,
     41827,
     "stable loaded bytes following the two pointer sequences; their use remains open"
+   ],
+   [
+    2048,
+    53247,
+    "stable output of this load; unclassified bytes remain unexplained"
+   ],
+   [
+    61440,
+    63463,
+    "stable output of this load; unclassified bytes remain unexplained"
+   ],
+   [
+    64103,
+    65534,
+    "stable output of this load; unclassified bytes remain unexplained"
    ]
   ],
   "edges": [
@@ -1017,15 +1032,15 @@
  "symbols": [
   {
    "address": 2064,
-   "name": "s_0810",
+   "name": "museum_schedule_raster_irq",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2079,
-   "name": "s_081F",
+   "name": "museum_enable_raster_irq",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2129,
@@ -1044,6 +1059,12 @@
    "name": "j_0867",
    "type": "Jump",
    "kind": "auto"
+  },
+  {
+   "address": 2157,
+   "name": "museum_upper_raster_irq",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 2171,
@@ -1094,6 +1115,12 @@
    "kind": "auto"
   },
   {
+   "address": 2338,
+   "name": "museum_sprite_split_irq",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 2344,
    "name": "a_0928",
    "type": "AbsoluteAddress",
@@ -1125,9 +1152,15 @@
   },
   {
    "address": 2370,
-   "name": "j_0942",
+   "name": "museum_schedule_lower_raster",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
+  },
+  {
+   "address": 2382,
+   "name": "museum_lower_raster_irq",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 2389,
@@ -1167,9 +1200,9 @@
   },
   {
    "address": 2604,
-   "name": "s_0A2C",
+   "name": "museum_wait_then_fire",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2606,
@@ -13336,9 +13369,44 @@
  ],
  "comments": [
   {
+   "address": 2064,
+   "type": "line",
+   "text": "Set the VIC raster compare from A, acknowledge its interrupt, and write X and Y to the low and high bytes of the IRQ dispatch vector at $0314/$0315."
+  },
+  {
+   "address": 2079,
+   "type": "line",
+   "text": "Disable the CIA interrupt sources, select $35 at the CPU port, install the IRQ entry at $0851, schedule $086D for raster value zero, clear the high raster-compare bit and enable the VIC raster interrupt before returning with interrupts enabled."
+  },
+  {
    "address": 2129,
    "type": "line",
    "text": "Save A, X and Y; inspect the stacked status and dispatch BRK through $0316 or IRQ through $0314."
+  },
+  {
+   "address": 2157,
+   "type": "line",
+   "text": "Select VIC bank 1 and the character display settings, enable multicolour sprites, wait on the raster state, and write sprite positions. It then uses $801A to select a sprite; if its pointer is not $03 and its Y plus $11 is in the range $3C\u2013$F5, it copies twelve bytes from each of two computed sprite addresses to $4033 and $4000, patches the split handler operands and schedules $0922 at Y plus $15. Otherwise it schedules $094E at $F9. The code uses eight-bit arithmetic for these tests."
+  },
+  {
+   "address": 2338,
+   "type": "line",
+   "text": "Acknowledge the interrupt, set the selected sprite's Y and pointer from operands patched by $086D, wait until the raster passes a second Y value, then replace that sprite pointer with the other patched value. Continue to $0942 to schedule the later handler."
+  },
+  {
+   "address": 2370,
+   "type": "line",
+   "text": "Schedule the handler at $094E for raster value $F9, then restore the interrupt registers and return."
+  },
+  {
+   "address": 2382,
+   "type": "line",
+   "text": "Change the display settings, initialize sprite enable, multicolour, coordinates, colours and pointer bytes, call the sound update, and schedule $086D for raster value $0A. It then prepares room sprites before restoring the interrupt registers and returning."
+  },
+  {
+   "address": 2604,
+   "type": "line",
+   "text": "Wait for 28 transitions through the high raster bit, then wait for the joystick fire bit at CIA port A to be released and pressed. Tail-call the sound-state clear routine."
   },
   {
    "address": 3392,

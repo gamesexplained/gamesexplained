@@ -165,3 +165,5 @@ Described the byte distributions in the seven 127-byte tails following the story
 Inspected the saved second-story CPU state in VICE with dummy sound: PC `$14D6`, stack pointer `$F9`, and return bytes `$A6 $19 $0A $11 $39 $10` place it in the final wait called from `$1108`. That supports the forced path having passed both conditional copies, but the intermediate displays remain unobserved.
 
 Described the remaining ranges of the title and story-band character sets as eight-byte patterns, retaining their display use as open. Checked the title picture’s 127-byte tail in the captured snapshot.
+
+Traced the museum raster interrupt scheduling and the selected sprite’s split handler, keeping the visual role open.
