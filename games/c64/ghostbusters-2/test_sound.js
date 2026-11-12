@@ -14,7 +14,7 @@ for (const [address, bytes] of mem) {
     `sound data at $${address.toString(16)} must match the listing`);
 }
 const vice = g.json('sound-vice.json');
-for (const selection of [1, 2]) {
+for (const selection of [0, 1, 2]) {
   const driver = createGhostSound({mem}, {CPU});
   const reference = listing.ram.slice(), written = [], sid = new Uint8Array(25);
   const cpu = new CPU(reference, {port: 0x35, io: {
@@ -25,7 +25,7 @@ for (const selection of [1, 2]) {
       sid[reg] = value; written.push(reg, value);
     },
   }});
-  driver.init(selection - 1); cpu.call(0xe000, {a: selection});
+  driver.init(selection); cpu.call(0xe000, {a: selection});
   assert.deepStrictEqual(Array.from(driver.writes), written, 'initializer writes');
   for (let frame = 0; frame <= 500; frame++) {
     if (frame) {
@@ -41,6 +41,6 @@ for (const selection of [1, 2]) {
       assert.deepStrictEqual(frequencies, state.frequencies, `selection ${selection}, update ${frame}: VICE frequencies`);
     }
   }
-  assert(!driver.playing(), `selection ${selection} should finish`);
+  if (selection) assert(!driver.playing(), `selection ${selection} should finish`);
   console.log(`OK - selection ${selection}: 500 driver updates match the listing, first 30 match VICE`);
 }
