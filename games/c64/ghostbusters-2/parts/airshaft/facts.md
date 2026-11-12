@@ -81,3 +81,5 @@ The first pattern controller at `$86FB` alternates its scheduling through `$8036
 Two airshaft selectors at `$9641` and `$9781` compare the map-pointer operands at `$A0CC/$A0CD` and `$A0CE/$A0CF` with pairs of fixed addresses. Each match calls a routine that either copies small patterns into `$7A60–$7A9F` or `$7B00–$7B17`, or uses a fallback according to a state byte. The exact addresses and copied source patterns are in the listing; the visual meaning of these updates remains open.
 
 Before the pointer-based drawing dispatcher, `$B7C6` calculates a row and column from `$8027/$8028` and offsets indexed by `$8029`. It uses the 24 little-endian addresses at `$C5CC–$C5FB`, which step by 40 from `$4400` to `$4798`, then constructs corresponding colour-RAM addresses by adding `$94` to the high byte.
+
+The selector at `$B297` chooses one of three range checks from Y. For `$B110` values `$EE–$FD`, those checks can clear `$801E`, set `$B113` or `$B114`, and call `$B323`; that latter routine sets `$B5BB` to zero for `$F6/$F7` and `$FF` for `$F8/$F9`. The entry at `$B343`, also called by two paths, is an RTS in the captured snapshot.
