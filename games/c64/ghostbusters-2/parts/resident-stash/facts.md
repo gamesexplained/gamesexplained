@@ -11,3 +11,5 @@ The routine copied to `$134F` selects RAM under I/O with `$01=$34`, copies `$DC0
 The routine copied to `$13B4` clears `$4000–$53FF`, initializes screen and colour bytes, sets sprite positions, and fills the eight sprite pointers and colours. It writes `$01=$35` before accessing the video registers, so the store at `$13EA` reaches the VIC at `$D000` rather than the hidden-RAM stash at that address.
 
 The copied routines at `$145F`, `$1490` and `$14B2` fill overlapping indexed screen and colour-memory ranges with fixed values; their store order is recorded in the stash listing. `$14D4` waits for the value at `$0E` to change.
+
+The routines copied to `$14DB` and `$1538` each wait for `$0E` to change, copy `$6400–$77FF` to `$4000–$53FF`, and copy three indexed blocks from `$7800–$7A7F` to `$6000–$627F`. Two destination ranges overlap, so the listing records the store order. The routines differ in their colour-memory writes.
