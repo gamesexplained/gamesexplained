@@ -3345,15 +3345,21 @@
   },
   {
    "address": 36238,
-   "name": "j_8D8E",
+   "name": "broadway_fire_second_candidate",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 36246,
    "name": "b_8D96",
    "type": "Branch",
    "kind": "auto"
+  },
+  {
+   "address": 36388,
+   "name": "broadway_fire_second_cell",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 36389,
@@ -11300,6 +11306,26 @@
    "address": 36021,
    "type": "line",
    "text": "If the fire latch at $8C10 is already nonzero, return. Otherwise set it and check $96F0; a nonzero value sends control to the next candidate at $8D8E. For a zero value, call $9192 and $83FB, set $96F0, derive screen positions from the sprite coordinates at $851F/$8524 and the row table at $9221, and update screen and colour bytes. If the selected screen byte is $FB or $FE, clear $96F0 instead. The remaining candidates and their effects need separate tracing."
+  },
+  {
+   "address": 36230,
+   "type": "line",
+   "text": "High byte of the colour-store operand at $8D84. The first fire candidate patches it from $8C2A after deriving a colour address from the chosen screen address."
+  },
+  {
+   "address": 36238,
+   "type": "line",
+   "text": "If $96F2 is nonzero, continue to the next candidate at $8E5C. Otherwise call $9192, request effect $19 and set $96F2. Derive a column and row-table address from the sprite 5 X and Y operand bytes at $851F/$8524, add the column to the row address, and derive a colour address by adding $94 to its high byte. Also set a two-byte position to sprite X plus $18 and a Y value to sprite Y plus $0A. Patch the screen and colour load and store operands at $8E24\u2013$8E54, then continue at $8E24."
+  },
+  {
+   "address": 36388,
+   "type": "line",
+   "text": "Read the patched screen address. If its byte is $FB or $FE, clear $96F2 and return. Otherwise save that byte and the corresponding colour byte, choose $FE when the screen address high byte is $44 or the saved screen byte is $30, and $FB otherwise. Store the chosen character and colour $0A at the patched addresses and return."
+  },
+  {
+   "address": 36436,
+   "type": "line",
+   "text": "High byte of the colour-store operand at $8E52. The second fire candidate patches this byte from $8C2C and its low byte from $8C2B before the store."
   },
   {
    "address": 37341,

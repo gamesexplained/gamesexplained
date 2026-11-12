@@ -175,3 +175,5 @@ Recovered two sound helper entries that were typed as data, and traced the SID c
 Described the title sound command dispatch table, including its zero entries and unchecked index.
 
 Traced the Broadway extra-animation delay, movement and pointer selection, and identified the patched store operand.
+
+Traced the second Broadway fire candidate through its screen and colour writes, including both patched colour-store operands.
