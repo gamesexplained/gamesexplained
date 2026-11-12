@@ -5778,9 +5778,9 @@
   },
   {
    "address": 40886,
-   "name": "s_9FB6",
+   "name": "broadway_scan_space",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40904,
@@ -5808,9 +5808,9 @@
   },
   {
    "address": 40952,
-   "name": "s_9FF8",
+   "name": "broadway_toggle_space_state",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40998,
@@ -11142,7 +11142,7 @@
   {
    "address": 33376,
    "type": "line",
-   "text": "Write $DF to CIA1 port A and test bit $02 of port B. If it is set, continue at $829F. If it is clear, set $8027 to 1, call $8291, wait for that bit to become set, call $8291, wait for it to become clear, call $8291, then wait for it to become set again. Clear $8027 and continue at $829F. The meaning of this keyboard sequence remains open."
+   "text": "Select keyboard row 5 and test column 1, the P key. If it is released, continue at $829F. If pressed, set $8027 to 1 and wait for release, another press and another release, calling the three-tick wait at $8291 between transitions. Clear $8027 and continue. The CIA port also reads joystick-port-1 lines."
   },
   {
    "address": 33425,
@@ -11273,6 +11273,16 @@
    "address": 40646,
    "type": "line",
    "text": "Select a direction using $9C9B. When it is zero, if the high byte $9C73 is zero and the low byte $9C72 is below $A0, set $9C9B to 1 and return; otherwise subtract 1 from $9C72/$9C73. When $9C9B is nonzero, if the high byte is nonzero and the low byte is at least $70, clear $9C99\u2013$9C9B and return; otherwise add 1 to the pair. Either movement increments $9C9D. On every fourth increment reset that counter and copy 64 bytes through the patched source at $9EF9 or $9F54 to $42C0. Advance that source by $40, wrapping its high byte at the patched limits. In VIC bank 1, $42C0 is sprite slot $0B. The object\u2019s gameplay identity remains open."
+  },
+  {
+   "address": 40886,
+   "type": "line",
+   "text": "Select CIA1 keyboard row 7 and test column 4, the Space key. A pressed key calls $9FF8; release clears the latch at $9C81. The routine then selects update paths according to $9C82 and $9C80. CIA1 port B also reads joystick-port-1 lines."
+  },
+  {
+   "address": 40952,
+   "type": "line",
+   "text": "Return if the latch at $9C81 is nonzero. Otherwise set $9C82 and $9C81 to 1, increment $9C80 and wrap it at 2. The resulting state 0 writes $50, $53 and $56 to the sprite-pointer operands at $86E9, $86EE and $86F3; state 1 writes $58, $5B and $5E. The gameplay identity and full movement of the affected sprites remain open."
   },
   {
    "address": 41811,

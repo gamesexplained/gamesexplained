@@ -19,10 +19,11 @@ External reference pictures saved 12 November 2026: [story](https://www.c64-wiki
 | Broadway displays the Statue of Liberty against a city backdrop | live | VICE capture using the forced route described in `orientation.md` |
 | Statue hits and replacement fireballs consume slime | open | Manual |
 | Street pedestrians collect slime drops; Space moves them | open | Manual |
+| Broadway: Space toggles a sprite-update state | confirmed | `$9FB6–$A035` and short VICE presses in `parts/broadway/facts.md`; the sprites’ identities remain open |
 | Museum: control Ghostbusters, select a team member and arrange weapons | open | Manual and C64-Wiki |
 | Museum: a Ghostbuster descends on a rope before the floor scene | live | VICE capture using the forced route and alternate disk described in `orientation.md` |
 | Museum: up opens the hands on the rope and down closes them | open | C64-Wiki; a controlled descent needs checking on this disk |
 | Museum: joystick up and down control the descent value | confirmed | `$C74C–$C7BD`; VICE trials and measurements in `parts/museum/facts.md` |
 | Museum: Space selects a Ghostbuster | confirmed | `$B372` and controlled VICE comparison in `parts/museum/facts.md` |
 | Museum: Return opens the equipment screen | confirmed | `$CAA8`, `$CCDC` and a VICE panel trial in `parts/museum/facts.md` |
-| Joystick controls the action; P pauses in the first two episodes | open | Manual |
+| Joystick controls the action; P pauses in the first two episodes | confirmed | Airshaft `$AA7A` and Broadway `$8260`, with short VICE trials in their respective `facts.md` | 
