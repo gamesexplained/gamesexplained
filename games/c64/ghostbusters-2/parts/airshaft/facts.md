@@ -155,3 +155,7 @@ When the sprite 5 effect starts, `$A8A5` patches four pointer operands to `$96�
 The sprite 6 alternate initializer at `$C703` selects pointer `$A7`. Its bitmap at `$69C0–$69FE` matches the entry and play snapshots and is included in the Graphics inspector.
 
 All 54,498 stable output addresses from the packed load have records in this part’s listing. The listing uses the later play snapshot and differs from the matching load-time snapshot at 1,580 output addresses; these differences are not all classified. The loaded-byte coverage range includes the previously omitted bytes as unexplained.
+
+The scroll controller at `$A0D1` selects the second character set by writing `$1E` to `$801C`, which the raster handler at `$8D6F` copies to `$D018`. With VIC bank `$4000`, this selects the character patterns at `$7800`. The large animation buffers occupy `$7B90–$7C5F` and `$7C60–$7D2F`; four 96-byte buffers begin at `$7D30`, `$7D90`, `$7DF0` and `$7E50`. Their copy routines are described at `$87D5`, `$88B8`, `$89B2`, `$8AE7`, `$8A46` and `$8B73`.
+
+The four short-pattern contact tests at `$AF3B`, `$AF5D`, `$AF7F` and `$AFA1` accept respectively `$A6–$B1`, `$B2–$BD`, `$BE–$C9` and `$CA–$D5`. An exhaustive processor-model check tested every byte against each routine and confirmed both the accepted range and the reset of its two counters.

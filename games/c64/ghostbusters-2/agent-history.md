@@ -183,3 +183,17 @@ Traced the third through sixth Broadway fire candidates and checked their repeat
 Traced the Broadway fire routine’s row write and reset, including its self-modified screen address.
 
 Traced the Broadway three-operand animation cycle and the six-slot fire-position scan against five scene records.
+
+Resumed on the contributor-supplied model ID `gpt-sol-6.1`. Reopened pull request #889 as a draft. Traced all 36 bytes of each music voice's state and the 15-byte state for each timed effect, and carried their meanings into the scene copies after checking that the driver instructions differ only in mutable operands. The sound test still matches 500 updates for each published selection and the recorded VICE states.
+
+Removed automatic hidden-RAM labels created by accesses to I/O registers from the resident stash, preserving its 4,096-byte denominator. Split the previously undescribed lower tail into the 18-byte filename-record helpers and loader raster setup, keeping the intervening zero runs and unmatched prefix byte unexplained.
+
+Traced the museum's eight directional floor probes and their self-modified cell operands. Tested the first sprite pair in VICE and the processor model at the four boundary codes $00, $3F, $40 and $FF; all sixteen cases matched and every entry control fired once. Kept the low/high-byte conditions on room crossing explicit rather than replacing them with a wider numeric comparison.
+
+Traced the airshaft's second character set at $7800 through the $801C mode selector and raster $D018 write, including all six mutable pattern buffers. Completed the remaining unannotated airshaft subroutine entries and exhaustively checked the four short-pattern contact predicates across all 256 input bytes.
+
+Traced the remaining Broadway routine entries and the six fire-cell updaters. Compared the six instruction streams before templating their slot-specific comments, then checked 180 processor-model cases across all slots, both screen bands, five background codes and three step counts. The tests verify the restored character, fixed restoration colour, new fire code and colour, pointer advances and terminal count.
+
+Completed descriptions for every currently identified code range in the three gameplay parts. Removed unannotated automatic labels inside instruction operands, where they were incorrectly treated as independent routine boundaries, without changing the 257,478-byte denominator. Consolidated analogous interior labels in already-described screen rows and sprite records. Then excluded generated screen destinations, sprite-shift scratch buffers and explicitly cleared Broadway runtime arrays after tracing their initializers; their authored sources remain counted. All existing game tests passed with the corrected runtime exclusions.
+
+Accounted for the media inventory's six remaining entries: the damaged museum copy, decorative directory entries, the additional preview program and orphan allocated sectors. The short museum file shares a 10,668-byte prefix with the complete 28,376-byte file; its incomplete decode remains documented.
