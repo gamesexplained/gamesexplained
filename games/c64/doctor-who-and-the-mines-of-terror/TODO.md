@@ -33,7 +33,5 @@ Worth doing, found in the run and not done:
 
 ## Loading picture and tune
 
-- The disk shows its title picture (the TARDIS and the
-  credits) about 10 seconds into the load, in silence. How it works shows it as a reference
-  screenshot only. A section on the Graphics tab could draw it from the disk's bytes; Power
-  Drift's Graphics tab is the model.
+- A new section awaits the steward's pass: the disk's title screen, drawn in the C64's own
+  characters, on the Graphics tab (the last section).

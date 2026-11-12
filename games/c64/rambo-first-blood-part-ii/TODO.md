@@ -29,10 +29,10 @@ Gold: a human's section-by-section pass over the copy.
 
 ## Loading picture and tune
 
-- The Ocean cassette draws its picture of Rambo with the Ocean logo
-  from the top down (from about 1:30 to 2:00 into the load) and plays Ocean's loader tune
-  from about 1:30 to 4:30; the game starts at about 5:50. Neither is on the pages. A section
-  on the Graphics tab could draw the picture from the tape's bytes, revealed top down, with
-  a Skip button, and the tune could sit beside Martin Galway's music on How it works, named
-  against HVSC's `Ocean_Loader` files. Short Circuit's and Green Beret's pages are the
-  models.
+- Three new sections await the steward's pass: the cassette's loading picture on the
+  Graphics tab (section 07), its loading tune with the Morse read out on How it works
+  (section 04; the three sections after it are renumbered, their text unchanged), and why
+  the Morse turns every I into an E on Discoveries (section 06).
+- Why the Morse's tone drops twice (voice 1 goes from `$224B` to `$1B38` and then `$19B1`,
+  which the High Voltage SID Collection's notes mark before GALWAY's A and inside STEVE's S)
+  is not traced.

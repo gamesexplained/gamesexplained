@@ -14,7 +14,5 @@ Tier: Gold (Silver, then curated page by page with Euan on 10 November 2026). Wh
 
 ## Loading picture and tune
 
-- The disk shows the picture of the Bydo creature under the R-TYPE logo about
-  20 seconds into the load and keeps it, in silence, while the game loads. A section on the
-  Graphics tab could draw it from the disk's bytes; Power Drift's Graphics tab is the
-  model.
+- A new section awaits the steward's pass: the disk's loading picture on the Graphics tab
+  (the last section).
