@@ -19,3 +19,5 @@ The transition at `$02A7` banks out I/O and restores `$D000–$DBFF` to `$1000�
 In the captured airshaft frame, the VIC uses bank 1 and selects the character set at `$7000`. All 2,048 bytes of that set are identical in the airshaft entry and play snapshots. The frame reconstruction used its visible glyphs and matched the VICE capture pixel for pixel.
 
 The sound-stream command at `$E3EF` reads paired low and high bytes from `$E668–$E675` and `$E676–$E683` into indexed voice state. The fourteen pairs point into `$E684–$E6AB`; the structure and full extent of the pointed-to data remain open. The two tables match in the captured story, Broadway, museum and ending snapshots.
+
+The routine at `$94C1` chooses among three mode-dependent paths that copy two eight-byte columns into `$41A8–$41BF` at a stride of three bytes. In VICE, after switching each mode and allowing 32 frames, both destination columns matched the addresses in that path’s current load operands: `$92D7/$92D7` for mode 1, `$928F/$92B7` for mode 2, and `$928F/$929F` for mode 3. The status-area image visibly changes in the three captures. The source operands can be changed during play.

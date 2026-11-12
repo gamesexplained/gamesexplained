@@ -15,4 +15,15 @@ for (const [before, selector, mode] of [[1, 2, 2], [2, 0, 3], [0, 1, 1]]) {
   assert.equal(cpu.pc, 0xaae1);
   assert.deepStrictEqual([ram[0xa775], ram[0x9166], ram[0xa776]], [selector, mode, 1]);
 }
-console.log('OK - airshaft selection cycles through the three VICE-observed modes');
+// The observed mode-dependent drawing paths copy two eight-byte columns.
+for (const [mode, left, right] of [[1, 0x92d7, 0x92d7], [2, 0x928f, 0x92b7], [3, 0x928f, 0x929f]]) {
+  ram[0x9166] = mode;
+  ram[0x94c0] = 3;
+  ram[0x94ba] = ram[0x94be] = ram[0x94bf] = 0;
+  cpu.call(0x94c1);
+  for (let row = 0; row < 8; row++) {
+    assert.equal(ram[0x41a8 + row * 3], ram[left + row], `mode ${mode}, left row ${row}`);
+    assert.equal(ram[0x41a9 + row * 3], ram[right + row], `mode ${mode}, right row ${row}`);
+  }
+}
+console.log('OK - airshaft selection and drawing match the three VICE-observed modes');
