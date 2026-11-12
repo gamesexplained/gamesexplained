@@ -91,3 +91,5 @@ The position check at `$A9D5` requires an active `$A2DA` and matching state at `
 `$FEA7` calculates a second motion origin from the sprite pointer at `$FC27` and position bytes `$FC07/$FC0F/$FC17`. It searches the same pointer and direction tables as `$FE30`, applies the direction offsets and stores the resulting position in `$FE15–$FE17` as well as `$FE0F–$FE11`. `$C04C` selects one of four sprite-buffer routines using `$8027`; its visual effect remains open.
 
 The adjacent stored sprite slots `$0DC0/$0E00` spell DAZED when drawn together. They match between the entry and play snapshots. Whether any game path selects that pair is open; the Graphics tab labels it as stored data.
+
+At `$A6CE`, the museum code compares a state byte and a pair of position bytes against stored targets. An exact match sets `$A313`; other cases choose one of two helper paths. One entry into the helper at `$B95F` resets Y to zero, while entry at `$B961` uses Y=4. The target’s gameplay identity remains open.
