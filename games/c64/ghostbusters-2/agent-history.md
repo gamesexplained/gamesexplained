@@ -133,3 +133,5 @@ Traced the character-relative screen address, scan-index routing and pointer-dep
 Traced four airshaft character-code counters and their three-byte copy response.
 
 Found six omitted sprite 4 bitmaps through its pointer sequences and added them to the Graphics inspector. Their bitmaps match both captured snapshots.
+
+Traced both sprite 4 setup paths and the counter that advances their animation sequences.
