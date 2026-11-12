@@ -109,3 +109,5 @@ The museum paths at `$C6CE` and `$C808` save and restore screen and colour bytes
 After both position flags are set, `$A4DF` or `$A4E7` records the selected state and every second call to `$A4EC` copies a byte through self-modified addresses at `$A4FF`. The source and destination advance by three, and the code updates the addresses used by a separate copy path. Its full visual effect remains open.
 
 At `$AE8F`, another byte-copy path reverses the address changes made by `$A4FF`, stepping them backward by three every eighth update. `$94DC` gates its scene updates on state bytes and, for one selected state, reads the active-low joystick-port-2 fire line with a held-button latch at `$9489`; a new press reaches one of two interaction calls and toggles motion mode. Port configuration can affect the read.
+
+`$A0A7` handles a second state-gated fire path with a separate latch at `$948C` and initializes an interaction slot on a new press. The placement routine has two entry wrappers and adjusts its pair of screen addresses by one horizontally or 40 vertically; the corresponding position values move by eight. Their complete gameplay purpose remains open.

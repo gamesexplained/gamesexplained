@@ -79,3 +79,5 @@ Traced the museum’s paired position comparison and its dependency on the first
 Traced the first response reached when both museum position comparisons match, including the self-modifying byte-copy addresses.
 
 Traced the reverse museum byte-copy path and the gated joystick-fire input in the scene update loop.
+
+Traced the second museum fire path and the address and position adjustments made by the placement routines.

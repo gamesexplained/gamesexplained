@@ -5061,33 +5061,33 @@
   },
   {
    "address": 38486,
-   "name": "s_9656",
+   "name": "museum_prepare_first_placement",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38493,
-   "name": "s_965D",
+   "name": "museum_prepare_second_placement",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38500,
-   "name": "s_9664",
+   "name": "museum_move_placement_left",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38552,
-   "name": "s_9698",
+   "name": "museum_move_placement_right",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38604,
-   "name": "s_96CC",
+   "name": "museum_move_placement_down",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38638,
@@ -6075,9 +6075,9 @@
   },
   {
    "address": 41088,
-   "name": "s_A080",
+   "name": "museum_toggle_second_motion",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41099,
@@ -6099,9 +6099,9 @@
   },
   {
    "address": 41127,
-   "name": "j_A0A7",
+   "name": "museum_update_second_interaction",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41135,
@@ -13896,6 +13896,31 @@
    "text": "Search the eight bytes at $9620 for the pointer at $FC25,Y. On a match, replace that pointer with the byte at the same index in $9618; return unchanged when no entry matches."
   },
   {
+   "address": 38486,
+   "type": "line",
+   "text": "Set X and Y to zero, then jump to the shared placement routine at $96F8."
+  },
+  {
+   "address": 38493,
+   "type": "line",
+   "text": "Set X to 1 and Y to 2, then jump to the shared placement routine at $96F8."
+  },
+  {
+   "address": 38500,
+   "type": "line",
+   "text": "Subtract 1 from each 16-bit address at $99C6/$99C7 and $99CC/$99CD, then subtract 8 from the 16-bit value at $8047/$8048 and return. These values were prepared by the placement routine; the full placement meaning remains open."
+  },
+  {
+   "address": 38552,
+   "type": "line",
+   "text": "Add 1 to each 16-bit address at $99C6/$99C7 and $99CC/$99CD, then add 8 to the 16-bit value at $8047/$8048 and return."
+  },
+  {
+   "address": 38604,
+   "type": "line",
+   "text": "Add 40 to each 16-bit address at $99C6/$99C7 and $99CC/$99CD, then fall through to $96EE, which adds 8 to $8049 and returns."
+  },
+  {
    "address": 38638,
    "type": "line",
    "text": "Add 8 to the byte at $8049 and return. The placement routine calls this twice when its computed row is below 6."
@@ -14039,6 +14064,16 @@
    "address": 40955,
    "type": "line",
    "text": "Index $CA8F with $8026. Unless the result is $3D, clear $948A. If $948A remains nonzero call $871B; otherwise, when the indexed value is not $3C, clear the three flags at $949D\u2013$949F and write $03 to $FC2B, then call the three-slot cycle at $9B5A. Next index $CA8F with $8027. When that byte is $3D, optionally call $8DC2 according to $948D and inspect bit $10 of $DC00. A newly detected clear bit sets $948C, chooses $965D or $9573 according to $947E/$947F, clears $C00C indexed by $8027, and calls $A080. A set bit clears $948C; a held clear bit returns. Other values branch to $A0A7."
+  },
+  {
+   "address": 41088,
+   "type": "line",
+   "text": "If $9486 is nonzero, clear it and return. Otherwise, if $948D is zero, set it to 1, call the second motion dispatcher and return. If $948D is nonzero, clear it and call $FF0D when $FE1D is nonzero, then return. The state meanings remain open."
+  },
+  {
+   "address": 41127,
+   "type": "line",
+   "text": "If $FE1D is nonzero, call $FF0D, then call $A1EA. Use $8027 to index $C00C. When the selected byte is nonzero, increment $94DB and, when it reaches $D0, clear it and the selected $C00C byte, then return. Otherwise read CIA 1 port A bit 4, the active-low joystick-port-2 fire line. A release clears the latch $948C. On a new press, set the latch and call $965D if $947E is nonzero and $8027 equals $947F, or call the second interaction check otherwise; then call the interaction-slot initializer. The gating bytes' gameplay meanings remain open, and CIA port configuration can affect the input read."
   },
   {
    "address": 41217,
