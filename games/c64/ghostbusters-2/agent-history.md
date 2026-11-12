@@ -145,3 +145,5 @@ Traced both sprite 5 contact-check modes and their state-dependent animation fla
 Found three omitted sprite 5 effect shapes in its patched pointer operands, added them to the Graphics inspector, and checked the setup path in the processor model.
 
 Added the sprite 6 alternate-state bitmap to the Graphics inspector after tracing its initializer.
+
+Included the title credits’ 95-byte zero tail and checked that every stable output byte of `1.THE INTRO` has a title listing record. Answered that packed disk item as the title part.
