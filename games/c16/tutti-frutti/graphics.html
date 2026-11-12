@@ -1,0 +1,313 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutti Frutti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'DM Sans',system-ui,sans-serif; --fb:'DM Sans',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+</style>
+
+<style>
+:root{--accent:#87403e;--link:#853e3c;--link-hover:#5e2a29;--ink-mute:#62666c}
+.tf-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.tf-pair figure,.tf-figure{margin:0}
+.tf-image{display:block;width:100%;height:auto;image-rendering:pixelated;background:#202020;border-radius:5px}
+.tf-frame{position:relative;max-width:640px;margin:0 auto;background:#080808}
+.tf-frame canvas,.tf-orchard{display:block;width:100%;height:auto;image-rendering:pixelated}
+.tf-frame.tf-grid::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(to right,#ffffff55 1px,transparent 1px),linear-gradient(to bottom,#ffffff55 1px,transparent 1px);background-size:2.5% 4%}
+.tf-panel{background:#242228;color:#f3efed}
+.tf-panel .cap{color:#dbd0cc}
+.tf-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:0 0 14px}
+.tf-controls label{display:inline-flex;gap:7px;align-items:center}
+.tf-controls input[type=range]{width:min(310px,100%);accent-color:var(--accent)}
+.tf-controls input[type=checkbox]{accent-color:var(--accent)}
+.tf-controls select,.tf-controls button{font:inherit;color:var(--ink);padding:7px 10px;background:#fff;border:1px solid #aaa49c;border-radius:5px}
+.tf-controls button{cursor:pointer}
+.tf-controls button:hover:not(:disabled){border-color:var(--accent)}
+.tf-controls button:disabled{opacity:.45;cursor:default}
+.tf-controls button[aria-pressed=true]{background:#eed9d5}
+.tf-controls :focus-visible,.tf-orchard:focus-visible{outline:3px solid #97574f;outline-offset:2px}
+.tf-table{width:100%;border-collapse:collapse;text-align:left}
+.tf-table th,.tf-table td{padding:9px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.tf-table th{font-size:.86em}
+.tf-out{display:block;padding:10px 12px;background:var(--surface-2);border-radius:5px;font-family:var(--fm);font-size:.82em;min-height:2.6em}
+.tf-board{max-width:640px;margin:0 auto 14px;background:#080808}
+.tf-board canvas{cursor:crosshair}
+.tf-shape{
+  --pixel:4px; --cell:calc(8 * var(--pixel));
+  position:relative;overflow:hidden;height:clamp(192px,32vw,256px);border-radius:5px;margin:12px 0 16px;
+  background-color:#101713;
+  background-image:linear-gradient(to right,#bfcea915 1px,transparent 1px),linear-gradient(to bottom,#bfcea915 1px,transparent 1px);
+  background-size:var(--cell) var(--cell);
+}
+.tf-shape canvas{position:absolute;top:0;left:0;width:calc(24 * var(--pixel));height:auto;image-rendering:pixelated}
+.tf-controls label[hidden]{display:none}
+.tf-controls.tf-phase input{flex:1 1 140px;min-width:0}
+#tf-shape-info{margin:0}
+.tf-status{color:var(--ink-soft);font-size:.85em}
+.tf-foot{font-size:.85em;color:var(--ink-soft);margin-top:32px}
+@media(max-width:680px){:root{--gx:20px;--h1:37px;--fs:16px;--pp:15px;--sy:30px}.tf-table td,.tf-table th{padding:8px 5px}}
+@media(max-width:500px){.tf-pair{grid-template-columns:1fr}#tf-shape-info{min-height:calc(3.2em + 20px)}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Mastertronic · Commodore 16 / Plus/4</p>
+  <h1>Tutti Frutti</h1>
+  <p class="sub">The strawberry, apples, and even the ball are built from the same eight-by-eight character cells as the score.</p>
+</header>
+<main class="wrap">
+<section id="pieces">
+  <h2 class="t">The moving fruit</h2>
+  <p>A moving figure needs different pieces as it crosses a cell boundary. The draw records at <code>$3E80</code> give the strawberry’s pieces and their positions. An Acid Apple uses the same positions with a different group of patterns. Fruit has its own records at <code>$3400</code>.</p>
+  <div class="plate">
+    <div class="tf-controls">
+      <label>Shape <select id="tf-kind">
+        <option value="strawberry">Super Strawberry</option><option value="enemy">Acid Apple</option>
+        <option value="falling">Falling Bad Apple</option><option value="apple">Sliding Bad Apple</option>
+        <option value="cherry">Sliding cherry</option>
+        <option value="static">Standing fruit</option><option value="ball">Ball</option><option value="crush">Crushed cherry</option>
+      </select></label>
+      <label id="tf-direction-control">Direction <select id="tf-direction">
+        <option value="left">Left</option><option value="right" selected>Right</option><option value="up">Up</option><option value="down">Down</option>
+      </select></label>
+      <button type="button" id="tf-animate" disabled>Play</button>
+    </div>
+    <div class="tf-shape" id="tf-stage"><canvas id="tf-shape" width="24" height="24" role="img" aria-label="Fruit drawn from original TED character patterns"></canvas></div>
+    <div class="tf-controls tf-phase"><label for="tf-phase">Drawing phase</label><input type="range" id="tf-phase" min="0" max="1" value="0" disabled></div>
+    <p id="tf-shape-info" class="tf-out" aria-live="polite">Loading the listing…</p>
+    <p class="cap">Playback smooths the travel between the game’s drawing positions. Drag the slider to pause and see how the original glyphs fit the eight-pixel grid.</p>
+  </div>
+</section>
+<section id="publisher">
+  <h2 class="t">The Mastertronic loading screen</h2>
+  <p>The packed PRG opens on a BASIC screen that assembles the striped lettering from its own character patterns. The engine then loads a different set of character patterns for the orchard.</p>
+  <figure class="tf-figure">
+    <img class="tf-image" src="reference/publisher-screen.png" width="384" height="294" alt="Blue Mastertronic loading screen with large striped Tutti Frutti lettering">
+    <figcaption class="cap">The first screen from the supplied PRG. BASIC prints the letter cells from <code>$10D0</code>.</figcaption>
+  </figure>
+</section>
+</main>
+<footer class="wrap tf-foot">
+  Game by Shaun Southern for Mr. Chip Software. <a href="https://github.com/gamesexplained/gamesexplained">Games Explained</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> text · <a href="https://opensource.org/licenses/MIT">MIT</a> page code.
+</footer>
+<script src="../../lib/c16.js"></script>
+<script>
+/* tutti-shapes */
+function drawingCells(ram, kind, direction, phase) {
+  const four = [0,1,40,41];
+  if (kind === 'ball') return [[0, 0x2C + phase, 0x71]];
+  if (kind === 'static' || kind === 'crush') {
+    const start = kind === 'crush' ? 0x30 + phase * 4 : phase === 0 ? 0x40 : 0x68;
+    return four.map((offset, i) => [offset, start + i, 0x5A]);
+  }
+  const actor = kind === 'strawberry' || kind === 'enemy';
+  const group = actor ? 2 * direction + phase : (direction === 2 ? 4 : 0) + phase;
+  const first = ram[(actor ? 0x3E80 : 0x3400) + group];
+  const end = ram[(actor ? 0x3E86 : 0x3408) + group];
+  const chars = actor ? 0x3E8C : 0x3410;
+  const offsets = actor ? 0x3EAA : 0x343C;
+  const bias = kind === 'enemy' ? 0x1E : kind === 'cherry' ? 0x28 : 0;
+  return Array.from({length: end - first}, (_, k) => {
+    const i = first + k;
+    const attr = actor ? 0x79 : kind === 'falling' ? 0x08 : 0x5A;
+    return [ram[offsets + i], ram[chars + i] + bias, attr];
+  });
+}
+
+function movingDrawing(distance, dx, dy, step) {
+  const position = Math.floor(distance / step) * step;
+  const offsetX = (dx * position) & 7;
+  const offsetY = (dy * position) & 7;
+  const phase = (offsetX + (dx && dy ? 2 : 1) * offsetY) / step;
+  return {phase, offsetX, offsetY};
+}
+// end of tutti-shapes
+const kind = document.getElementById('tf-kind');
+const direction = document.getElementById('tf-direction');
+const directionControl = document.getElementById('tf-direction-control');
+const phase = document.getElementById('tf-phase');
+const toggle = document.getElementById('tf-animate');
+const info = document.getElementById('tf-shape-info');
+if (typeof C16 === 'undefined') {
+  info.textContent = 'The shape viewer uses the built site’s Commodore renderer.';
+} else {
+  C16.load('listing.json').then(({ram}) => {
+    const stage = document.getElementById('tf-stage');
+    const canvas = document.getElementById('tf-shape');
+    const ctx = canvas.getContext('2d');
+    const {width, height} = canvas;
+    const palFrame = 1000 * 312 * 114 / 1773447;
+    const shapes = {
+      strawberry: {phases: 2, step: 4, ticks: 4},
+      enemy: {phases: 2, step: 4, ticks: 2 * 256 / ram[0x34C0]},
+      falling: {phases: 4, step: 2, ticks: 1, path: [0, 1, 2]},
+      apple: {phases: 4, step: 2, ticks: 1},
+      cherry: {phases: 4, step: 2, ticks: 1},
+      static: {phases: 2},
+      ball: {phases: 4, step: 4, ticks: 1, path: [1, 1, 0]},
+      crush: {phases: 4, ticks: 8},
+    };
+    const paths = {left: [-1, 0, 0], right: [1, 0, 1], up: [0, -1, 2], down: [0, 1, 2]};
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    const ted = Array(32).fill(0);
+    ted[6] = 0x1B;
+    ted[7] = 0x98;
+    ted[0x13] = 0x38;
+    ted[0x14] = 8;
+    ted[0x16] = 0x32;
+    ted[0x17] = 0x35;
+    let frames, visibleFrame, path, shape, scale, stageWidth, stageHeight;
+    let elapsed = 0, lastTime, request;
+    let wantsMotion = !reducedMotion.matches;
+    let manual = true;
+
+    function renderFrame(cells) {
+      const mem = ram.slice();
+      for (const [offset, glyph, attr] of cells) {
+        mem[0x800 + offset] = attr;
+        mem[0xC00 + offset] = glyph;
+      }
+      const pic = C16.render(mem, ted, {size: 0x4000});
+      const px = new Uint8Array(width * height);
+      for (const [offset] of cells) {
+        const x = (offset % 40) * 8;
+        const y = Math.floor(offset / 40) * 8;
+        for (let row = y; row < y + 8; row++) {
+          const start = row * pic.w + x;
+          px.set(pic.px.subarray(start, start + 8), row * width + x);
+        }
+      }
+      const rgba = C16.rgba({w: width, h: height, px});
+      for (let i = 0; i < px.length; i++) if (px[i] === ted[0x15]) rgba[4 * i + 3] = 0;
+      return new ImageData(rgba, width, height);
+    }
+
+    function draw() {
+      const size = kind.value === 'ball' ? 4 : 16;
+      let x = Math.round((stageWidth - size) / 16) * 8;
+      let y = Math.round((stageHeight - size) / 16) * 8;
+      let index = Number(phase.value);
+      if (!manual && shape.step) {
+        const [dx, dy] = path;
+        const span = dx && dy ? Math.min(stageWidth, stageHeight) : dx ? stageWidth : stageHeight;
+        const cycle = span + size;
+        const distance = (cycle / 2 + elapsed * shape.step / (shape.ticks * palFrame)) % cycle;
+        const drawing = movingDrawing(distance, dx, dy, shape.step);
+        // The glyphs already include the position within their character cells.
+        if (dx) x = (stageWidth - size) / 2 + dx * (distance - cycle / 2) - drawing.offsetX;
+        if (dy) y = (stageHeight - size) / 2 + dy * (distance - cycle / 2) - drawing.offsetY;
+        index = drawing.phase;
+      } else if (!manual && kind.value === 'crush') {
+        const slot = Math.floor(elapsed / (shape.ticks * palFrame)) % 6;
+        index = Math.min(slot, frames.length);
+      }
+      canvas.style.transform = `translate(${Math.round(x * scale)}px, ${Math.round(y * scale)}px)`;
+      if (index === visibleFrame) return;
+      const frame = frames[index];
+      if (frame) ctx.putImageData(frame.image, 0, 0);
+      else ctx.clearRect(0, 0, width, height);
+      visibleFrame = index;
+      phase.value = Math.min(index, frames.length - 1);
+      info.textContent = frame ? frame.label : 'The cherry disappears.';
+    }
+
+    function resize() {
+      scale = canvas.clientWidth / width;
+      if (!scale) return;
+      stageWidth = stage.clientWidth / scale;
+      stageHeight = stage.clientHeight / scale;
+      draw();
+    }
+
+    function animate(now) {
+      if (lastTime !== undefined) elapsed += now - lastTime;
+      lastTime = now;
+      draw();
+      request = requestAnimationFrame(animate);
+    }
+
+    function setAnimation(on) {
+      cancelAnimationFrame(request);
+      request = undefined;
+      lastTime = undefined;
+      toggle.textContent = on ? 'Pause' : 'Play';
+      info.setAttribute('aria-live', on ? 'off' : 'polite');
+      if (on) {
+        manual = false;
+        request = requestAnimationFrame(animate);
+      }
+    }
+
+    function configure() {
+      shape = shapes[kind.value];
+      path = shape.path || paths[direction.value];
+      directionControl.hidden = Boolean(shape.path || !shape.step);
+      frames = Array.from({length: shape.phases}, (_, index) => {
+        const cells = drawingCells(ram, kind.value, path[2], index);
+        const name = kind.value === 'static' ? ['Bad Apple', 'Cherry'][index] : `Phase ${index + 1} of ${shape.phases}`;
+        return {image: renderFrame(cells), label: `${name} · Glyphs ${cells.map(cell => C16.hex(cell[1], 2)).join(' ')}`};
+      });
+      visibleFrame = undefined;
+      elapsed = 0;
+      manual = true;
+      phase.disabled = false;
+      phase.max = shape.phases - 1;
+      phase.value = 0;
+      toggle.disabled = !shape.ticks;
+      resize();
+      setAnimation(wantsMotion && !toggle.disabled);
+    }
+
+    kind.addEventListener('change', configure);
+    direction.addEventListener('change', configure);
+    phase.addEventListener('input', () => {
+      wantsMotion = false;
+      setAnimation(false);
+      manual = true;
+      elapsed = kind.value === 'crush' ? Number(phase.value) * shape.ticks * palFrame : 0;
+      draw();
+    });
+    toggle.addEventListener('click', () => {
+      wantsMotion = request === undefined;
+      setAnimation(wantsMotion);
+    });
+    reducedMotion.addEventListener('change', ({matches}) => {
+      if (matches) {
+        wantsMotion = false;
+        setAnimation(false);
+      }
+    });
+    configure();
+    new ResizeObserver(resize).observe(stage);
+  }).catch(error => { info.textContent = error.message; });
+}
+</script>
