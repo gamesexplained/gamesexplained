@@ -35,3 +35,5 @@ A separate `story-engine` part now lists the executing `$1000–$1BFF` copy from
 Descriptions from the byte-identical stash source were placed on the executing engine addresses and the already traced code and data ranges were typed there. The engine listing uses explicit I/O contexts: for example the `$13EA` store names the VIC register, while the `$1356` load names the RAM beneath I/O. The unclassified gaps remain in the ledger.
 
 The alternate Broadway entry and play snapshots agree throughout `$0900–$1F7F` and `$2000–$2AFF`. A separate overlay now owns the alternate data, excluding output that matches the Censor handover. The Levels tab can switch between their backdrop captures.
+
+The alternate Broadway lookup views were described using the shared selector code and the alternate entry/play comparison. Eight eight-byte gaps between the views were given separate unannotated labels so coverage does not count them as explained by the adjacent views.

@@ -48,4 +48,21 @@ for (let axis = 0; axis < views.length; axis++) {
     }
   }
 }
-console.log('OK - 32 Broadway lookup views, 512 coordinate inputs and eight VICE observations');
+// The alternate disk changes these tables while keeping the lookup code.
+const alternate = game(__dirname).listing('parts/broadway-jondi/listing.json');
+for (let axis = 0; axis < views.length; axis++) {
+  const ram = listing.ram.slice();
+  for (let address = 0x2000; address < 0x2b00; address++) {
+    assert(alternate.has[address], `missing alternate table byte at $${address.toString(16)}`);
+    ram[address] = alternate.ram[address];
+  }
+  const cpu = new CPU(ram, {port: 0x35});
+  for (const [selector, base] of views[axis].filter(([, base]) => base < 0x2b00)) {
+    ram[axis ? 0xb054 : 0xb03a] = selector;
+    for (const phase of [0, 127, 255]) {
+      cpu.call(axis ? 0xadee : 0xad6b, {x: 0, y: phase});
+      assert.equal(cpu.a, ram[base + phase], `alternate selector ${selector}, phase ${phase}`);
+    }
+  }
+}
+console.log('OK - 32 Broadway lookup views, alternate table samples and eight VICE observations');
