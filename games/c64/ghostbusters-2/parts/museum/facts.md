@@ -45,3 +45,5 @@ At `$FC73`, the museum compares the current room with four room values. For a mi
 The Jondi museum file decodes into `$0800–$CFFF`, `$E000–$ED31`, `$F000–$F7E7` and `$FA67–$FFFE`. All 58,034 bytes stable under both initial RAM fills match its captured entry. The museum part lies over the third story and owns those ranges.
 
 The dispatcher at `$9C47` selects eight handlers from `$9498`. Each copies three state bytes to indexed destinations, writes a selector from `$7C` through `$83`, then adjusts the state and clears an indexed flag at a boundary. The meaning of the two flag arrays and the role of this movement in play remain open.
+
+The call at `$9B5A` cycles through three movement slots, handling one per invocation. For an active slot it copies the direction and position into shared state, calls the movement routines, then copies the position back. An inactive slot writes `$03` to `$FC2B`.
