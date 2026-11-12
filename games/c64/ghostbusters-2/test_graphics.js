@@ -167,3 +167,16 @@ for (let group = 0; group < 6; group++) {
   assert.deepStrictEqual([...pointers].sort((a, b) => a - b), Array.from({length: 8}, (_, i) => 0x60 + group * 8 + i));
 }
 console.log("OK - 130 Broadway animation slots and six sequence groups match the listing");
+
+const museumWalkMatch = html.match(/<script id="museum-walk-data" type="application\/json">([^<]+)<\/script>/);
+assert(museumWalkMatch, "museum walking frames are embedded");
+const museumWalk = JSON.parse(museumWalkMatch[1]);
+assert.deepStrictEqual(museumWalk.map(shape => shape.pointer), Array.from({length: 64}, (_, i) => 0x20 + i));
+for (const shape of museumWalk) {
+  const address = 0x4000 + shape.pointer * 64;
+  assert.deepStrictEqual(shape.bytes, Array.from(museumListing.ram.slice(address, address + 63)));
+}
+for (const [operand, base] of [[0xb46e, 0x48], [0xb4bf, 0x28], [0xb509, 0x20], [0xb564, 0x58], [0xb5b5, 0x38], [0xb5ff, 0x40], [0xb650, 0x50], [0xb69e, 0x30]]) {
+  assert.equal(museumListing.ram[operand], base);
+}
+console.log("OK - 64 museum walking frames match the listing and direction operands");
