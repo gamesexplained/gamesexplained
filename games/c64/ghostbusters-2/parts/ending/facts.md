@@ -9,3 +9,5 @@ The sound-driver instruction ranges $E000–$E0C1, $E256–$E2CD, $E2D7–$E314 
 The 24 two-byte command-table entries at $E226–$E255 and the two 14-byte parameter-pointer tables at $E668–$E683 match the airshaft snapshot. The pointed-to data following them and the two bytes at $E666–$E667 remain open.
 
 The decoded `8.THE END` load writes `$3000–$37FF`, `$6400–$7AFF`, `$C200–$C4FF` and `$E000–$ED31`. Its later snapshot differs from the dual-fill output in 87 bytes, all in the sound-driver area. The ending lies over the museum; the restored engine at `$1000–$1BFF` is counted in `story-engine`.
+
+The ending’s first tune record selects three zero-terminated pointer lists at `$EB7F`, `$EB71` and `$EB89`. Their ten distinct entry points share several bytecode suffixes. Six further pointers at `$EC92–$EC97` and `$ECD3–$ECD8` select streams that each end in command `$91`, which stops the sound. The listing gives 16 ordered, non-overlapping decoded pieces; reassembling them reproduces all 406 stream bytes. The loaded byte at `$ED31` and the precise playback timing remain open.
