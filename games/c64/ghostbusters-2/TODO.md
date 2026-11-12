@@ -10,7 +10,7 @@ The game is at tier `none`: the three gameplay episodes have been captured, but 
 - Finish and verify the listings, including the runtime purpose of the alternate Broadway lookup separators, account for all open media items, and complete the minisite and its music and graphics players. The Levels tab reconstructs the airshaft for a downward pass and Broadway’s scrolling backdrop; verify both full routes, identify the animated museum detail and the fourth code in each pattern row, and extract the episodes’ remaining parameters.
 - Have a proven model check the listing under `kit/CHECKING.md`; the run's model is not listed as proven.
 
-- Finish classifying the stable picture-range tails of all four story loads, and trace the extra story-copy sources at `$9200–$A880`. Each load writes its own bytes over earlier scenes; the coverage ranges keep unclassified bytes in the denominator.
+- Finish classifying the stable picture-range tails of all four story loads, and trace the extra story-copy sources at `$9200–$A880` and `$A900–$BF80`. Each load writes its own bytes over earlier scenes; the coverage ranges keep unclassified bytes in the denominator.
 
 - Classify the newly counted gameplay-load bytes and explain the measured differences between each load-time snapshot and its listing snapshot.
 
