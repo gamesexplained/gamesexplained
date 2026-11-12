@@ -11,3 +11,5 @@ The game is at tier `none`: the three gameplay episodes have been captured, but 
 - Have a proven model check the listing under `kit/CHECKING.md`; the run's model is not listed as proven.
 
 - Finish classifying the stable picture-range tails of all four story loads, and trace the extra story-copy sources at `$9200–$A880`. Each load writes its own bytes over earlier scenes; the coverage ranges keep unclassified bytes in the denominator.
+
+- Classify the newly counted gameplay-load bytes and explain the measured differences between each load-time snapshot and its listing snapshot.

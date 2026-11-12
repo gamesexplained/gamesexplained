@@ -153,3 +153,5 @@ Audited the story-load outputs against the part listings. The loads replace pict
 Decoded seven loaded story picture sources into bitmap, matrix and colour rows. Compared each captured second picture or ending picture to its display copy, and found that the opening story’s second picture matches the second story’s first. Added the six previously hidden sources to the Graphics viewer. The extra story-copy sources at `$9200–$A880` remain to be traced.
 
 Accounted for the four story text tails and verified each stable output byte against its own listing or the byte-identical title font and shared sound range. Answered the four packed story files in the media ledger; the documented sound-driver snapshot differences remain open.
+
+Audited the airshaft, Broadway and museum decompressor outputs against their listings, added all omitted loaded bytes to coverage as unexplained, and measured the load-time to listing-snapshot differences. The alternate Broadway shared ranges match the Censor load-time snapshot; its unique zero tail is now listed. Answered the four complete gameplay disk items, leaving the truncated museum copy open.

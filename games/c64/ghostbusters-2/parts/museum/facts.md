@@ -123,3 +123,5 @@ After the marked column has been restored, `$C843` clears four state bytes and s
 `$AD07` checks a state-gated placement position against another position and resets placement state on a match. `$A93E` derives a lookup address from an active position and clears `$A2DA` when the selected byte is 1. Unlike the similar `$9321` routine, `$A93E` retains the preceding carry when adding `$AC` to the address high byte. The gameplay meanings of these states remain open.
 
 `$AD97` selects the phase step, reverse byte-copy path, or other scene updates according to `$A302/$A301/$A303`. One path copies the position at `$FC09/$FC11/$FC19` into the active-position fields and sets `$A2DA` after a counter expires. The full scene-state meanings remain open.
+
+All 58,034 stable output addresses from the packed load have records in this part’s listing. The listing uses the later play snapshot and differs from the matching load-time snapshot at 1,713 output addresses; these differences are not all classified. The loaded-byte coverage range includes the previously omitted bytes as unexplained.

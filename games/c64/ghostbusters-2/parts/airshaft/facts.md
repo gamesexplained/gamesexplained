@@ -153,3 +153,5 @@ When `$A767` is active, mode 1 checks sprite 5’s Y position against sprites 6,
 When the sprite 5 effect starts, `$A8A5` patches four pointer operands to `$96–$99`. The three additional bitmaps at `$65C0–$667E` match in the entry and play snapshots and are included in the Graphics inspector. `test_graphics.js` runs the setup path in the processor model and checks all four patched operands. The effect’s gameplay identity remains open.
 
 The sprite 6 alternate initializer at `$C703` selects pointer `$A7`. Its bitmap at `$69C0–$69FE` matches the entry and play snapshots and is included in the Graphics inspector.
+
+All 54,498 stable output addresses from the packed load have records in this part’s listing. The listing uses the later play snapshot and differs from the matching load-time snapshot at 1,580 output addresses; these differences are not all classified. The loaded-byte coverage range includes the previously omitted bytes as unexplained.
