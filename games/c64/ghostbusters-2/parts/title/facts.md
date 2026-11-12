@@ -13,3 +13,5 @@ In the saved title state `$145D=$01`, `$1905=$3B` and `$1906=$1B`. The raster ha
 The title’s sound-update instructions at `$E13A–$E225` match the airshaft code except for the mutable rate and accumulator operands at `$E147/$E14A`. The update advances three voice streams on accumulator carry, calculates their pitch values, writes enabled voice state to the SID and writes the volume byte.
 
 The opening-story frame writes `$07` to `$DD00`, `$1D` to `$D018` and `$08` to `$D016` at raster line 171, then `$17` to `$D011` at line 184. In the resulting standard-text band, VIC bank 0 and `$D018=$1D` select the character set at `$3000`. Those 2,048 bytes match the title snapshot. Codes `$00/$01` are blank; `$20/$21` through `$32/$33` form the renderer’s digit pairs, and `$42/$43` through `$74/$75` its letter pairs. The other glyphs remain open.
+
+The shared effect selectors at `$E6AD`, `$E70C` and `$E76B` each use an index in A to fetch a 12-byte record through the pointer table at `$E7CA`. They copy the record into per-voice state and initialize the corresponding SID voice. The selector bytes are identical in the captured title, airshaft, Broadway and museum states.

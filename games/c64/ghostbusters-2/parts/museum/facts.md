@@ -69,3 +69,5 @@ An [alternative image on the Censor release page](https://csdb.dk/release/?id=78
 The shared sound-effect record 13 is requested when either side initializes a movement slot after the fire-input path. Record 16 is requested when the proximity test at `$957A` matches. The records’ other possible uses remain open.
 
 The ledger includes 11,675 bytes previously outside the count. Nineteen stretches match stable unpacker output at the entry snapshot; three are copies visible in play whose sources are present at entry. Their individual purposes remain open.
+
+The routine at `$871B` uses `$FC25` and other state to clear or select a motion origin, choose sound effects, and dispatch values `$60–$67` to eight separate routines. Each recognized value then calls `$8C7A` and jumps to `$8D0D`. The exact effects of those paths remain open.
