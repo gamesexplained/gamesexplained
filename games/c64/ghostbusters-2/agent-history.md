@@ -75,3 +75,5 @@ Traced the museum’s eight-way motion dispatcher and restored the `$60` byte af
 Traced the second museum motion position’s grid lookup, including its 31-byte high-X adjustment and position-clearing conditions.
 
 Traced the museum’s paired position comparison and its dependency on the first match flag.
+
+Traced the first response reached when both museum position comparisons match, including the self-modifying byte-copy addresses.

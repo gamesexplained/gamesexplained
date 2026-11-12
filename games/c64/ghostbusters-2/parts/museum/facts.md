@@ -105,3 +105,5 @@ The museum paths at `$C6CE` and `$C808` save and restore screen and colour bytes
 `$9321` derives a lookup-grid address from the second motion position, selects the `$F000` or `$F400` grid using `$804B`, and clears the position when the selected byte is 1 or its Y value is below `$38`. The address calculation adds 31 when the adjusted X high byte is nonzero. The complete meanings of the grid values remain open.
 
 `$93B4` performs a second gated position comparison, paralleling `$8D0D`. It sets `$A319` on a match and reaches a state-specific handler only when `$A318` is also set.
+
+After both position flags are set, `$A4DF` or `$A4E7` records the selected state and every second call to `$A4EC` copies a byte through self-modified addresses at `$A4FF`. The source and destination advance by three, and the code updates the addresses used by a separate copy path. Its full visual effect remains open.
