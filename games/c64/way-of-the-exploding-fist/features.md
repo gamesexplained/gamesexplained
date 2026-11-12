@@ -47,7 +47,7 @@ Sources:
 | A bonus round in which a bull charges and must be felled with one blow | confirmed | `bull_round` `$132C`, after a rank cleared on the Buddha backdrop; only move 7 (down-forward from a crouch) at a distance of `$19`-`$1D` fells it, for 3000 points; live, `reference/bull-charge.png`, `reference/bull-felled.png` |
 | A computer opponent that fights back | confirmed | `ai_think` `$22CF`: blocks, nine scripted plans, attacks by distance; live, `reference/play-novice-knockdown.png` |
 | A shadow under a fighter in the air | confirmed | the line-`$D9` handler draws fixed sprites from `$D480` at Y `$DA`; live, `reference/jump-shadow.png` |
-| A shout ("kiai") during loading; the disk carries `m.spchtbl` and `m.tsound` | open | the game itself has a one-bit speech player (`$311A`) with four samples at `$F540`, started on attacks and hits; its samples are the disk file `m.xsprites` (at `$F540`) and its period table `m.prerun`. The loader's shout is the loader's, not read by policy; `m.spchtbl` and `m.tsound` are not in the game's memory as they stand on disk |
+| A shout ("kiai") during loading; the disk carries `m.spchtbl` and `m.tsound` | confirmed | live, on Melbourne House's 1985 cassette (the Ultimate Tape Archive's) and on this disk after 1 at the menu: the loader puts up the loading picture (`M.PICTURE`, bitmap `$E000`, screen `$CC00`; on the tape `$C36F`), then its routine at `$9000` (the disk's file `LOADER`) plays `$2000`-`$35D6` of `M.TSOUND` through `$D418`, each byte's time from the timer table `M.SPCHTBL` (`$9800`/`$9900`), 9 x (count + 1) cycles; 5,591 flips, 2.24 seconds by the table and 0.7 % longer measured (2,726 of 4,479 gaps timed live within 4 cycles of it, the rest moved by interrupts held up), loading stopped meanwhile. The tape loads the same three files' bytes. Graphics and Music and speech show both |
 | Music by Neil Brennan | confirmed | the driver at `$09A5` and four songs; song 2 live in a one-player bout; tuned for NTSC, so two-thirds of a semitone flat on PAL (facts.md, Sound) |
 | Sound effects on and off with DEL (the menu program's text) | confirmed | DEL flips `$CF` (`$1ED8`), which switches the speech samples off (`$3186`); live, `$CF` 0 to 1 |
 
@@ -66,9 +66,6 @@ Found in the code, not in the manual.
 
 ## Open questions
 
-- `m.tsound` (5,632 bytes) and `m.spchtbl` (768) are not in the game's
-  memory as they stand on disk (searched in 16-byte pieces in both
-  snapshots); they may be the loader's shout, not checked.
 - Why `blow_reaction` tests CIA 2's timer A (`$2CAE`) is not known.
 - Gaps of exactly `$15` lines between the fighters' tops ask two row
   changes of the same raster line (`$32EA`, `$32FD`); whether a row then
