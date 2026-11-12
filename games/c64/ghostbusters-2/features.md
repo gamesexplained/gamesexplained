@@ -10,7 +10,8 @@ External reference pictures saved 12 November 2026: [story](https://www.c64-wiki
 | Airshaft: descend and swing on a cable to collect a slime sample | live | First playable scene reached in VICE; movement and goal remain to be checked |
 | Ghost contact reduces courage; elixir restores it | open | Manual |
 | Collect three scoop parts from the shaft walls | open | Manual |
-| Switch between proton beam, PKR bomb and shield with Space | open | Manual |
+| Space cycles an airshaft selection through three positions | confirmed | `$AA6E` and a controlled Space press in `parts/airshaft/facts.md`; the meaning of each position remains open |
+| The three airshaft selections are proton beam, PKR bomb and shield | open | Manual |
 | Hold fire and aim a bomb up or down; release to detonate | open | Manual |
 | Sawing monsters can sever the cable | open | Manual |
 | Broadway: steer the fireball | confirmed | `$8C59`, `$91DD–$9220` and VICE trials in `parts/broadway/facts.md` |
