@@ -135,3 +135,5 @@ Pointer `$3F` selects a bounded two-character diagonal path and matching restore
 Pointers `$4A`, `$4F`, `$54` and `$59` select further bounded diagonal or horizontal draw-and-restore paths. They save the characters underneath and restore them with fixed colour `$0A`; `$4A` and `$59` cap their paths at six character bytes. Their scene-level meaning remains open.
 
 Pointer `$5E` uses the shared six-character column path in the opposite address direction from `$2A`; `$64` selects a bounded horizontal path of at most six characters. The drawing dispatch uses a two-character diagonal fallback for unmatched pointer values, and the restore dispatch has its corresponding fallback. Their individual reachability and visual effects remain open.
+
+`$9CB0` and `$9D5B` derive five screen-cell reads from the coordinates of sprites 6 and 4 respectively, using the same offset table. Their helpers count selected character codes with sign-bit comparisons; the first sets `$C620` when its counter reaches `$10`, and the second sets `$C907` at `$20`. The enable gates and consequences of those flags remain open.
