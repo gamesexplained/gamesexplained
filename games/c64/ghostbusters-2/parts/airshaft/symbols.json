@@ -23,6 +23,11 @@
     59012,
     59052,
     "bytes beginning at pointer targets; their structure and full extent remain open"
+   ],
+   [
+    4096,
+    7155,
+    "20-byte shaft records; the first 14 bytes are tile indices and the other six bytes remain unclassified"
    ]
   ],
   "edges": [
@@ -98,11 +103,11 @@
   },
   {
    "start": 4096,
-   "end": 4121,
-   "type": "Code"
+   "end": 7155,
+   "type": "Byte"
   },
   {
-   "start": 4122,
+   "start": 7156,
    "end": 19531,
    "type": "Undefined"
   },
@@ -299,7 +304,7 @@
   {
    "start": 41818,
    "end": 42457,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 42458,
@@ -1736,12 +1741,6 @@
    "address": 18688,
    "name": "f_4900",
    "type": "Field",
-   "kind": "auto"
-  },
-  {
-   "address": 19532,
-   "name": "j_4C4C",
-   "type": "Jump",
    "kind": "auto"
   },
   {
@@ -5772,15 +5771,15 @@
   },
   {
    "address": 41664,
-   "name": "s_A2C0",
+   "name": "airshaft_expand_row",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41674,
-   "name": "b_A2CA",
+   "name": "airshaft_expand_inner_row",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41678,
@@ -5796,9 +5795,9 @@
   },
   {
    "address": 41746,
-   "name": "j_A312",
+   "name": "airshaft_expand_outer_row",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41750,
@@ -5813,10 +5812,22 @@
    "kind": "auto"
   },
   {
+   "address": 41818,
+   "name": "airshaft_inner_tiles",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42106,
+   "name": "airshaft_outer_tiles",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 42458,
-   "name": "s_A5DA",
+   "name": "airshaft_scroll_rows_up",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42460,
@@ -5838,9 +5849,9 @@
   },
   {
    "address": 42639,
-   "name": "s_A68F",
+   "name": "airshaft_scroll_rows_down",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42641,
@@ -12693,6 +12704,41 @@
    "address": 41612,
    "type": "line",
    "text": "Subtract $14 from each 16-bit value at $A0CC and $A0CE. Decrement $8033; when it reaches zero, request a counter increment by writing 1 to $8031 and reset $8033 to 2."
+  },
+  {
+   "address": 41664,
+   "type": "line",
+   "text": "Expand fourteen indices from the row pointed to by $F8\u2013$F9. When $801C is $1E use the four-byte blocks at $A35A; otherwise use those at $A47A. Write four bytes per index to $CF00 and exchange the middle two bytes of each block."
+  },
+  {
+   "address": 41674,
+   "type": "line",
+   "text": "For each of fourteen indices, multiply it by four, add $A35A, copy four bytes into $CF00 and swap the two middle bytes. This is the $801C=$1E branch of $A2C0."
+  },
+  {
+   "address": 41746,
+   "type": "line",
+   "text": "For each of fourteen indices, multiply it by four, add $A47A, copy four bytes into $CF00 and swap the two middle bytes. This is the other branch of $A2C0."
+  },
+  {
+   "address": 41818,
+   "type": "line",
+   "text": "Seventy-two four-byte character blocks indexed by the shaft expansion routine at $A2CA when $801C is $1E. The routine swaps the middle bytes as it writes $CF00."
+  },
+  {
+   "address": 42106,
+   "type": "line",
+   "text": "Eighty-eight four-byte character blocks indexed by the shaft expansion routine at $A312 when $801C is not $1E. The routine swaps the middle bytes as it writes $CF00."
+  },
+  {
+   "address": 42458,
+   "type": "line",
+   "text": "Move the 26-column shaft window in screen RAM at $4400 up by one character row. Then copy 27 alternating bytes from $CF00 into the bottom row, starting at offset $8025, and clear its two outer cells."
+  },
+  {
+   "address": 42639,
+   "type": "line",
+   "text": "Move the 26-column shaft window in screen RAM at $4400 down by one character row, using $A74A as a temporary row. Then copy 27 alternating bytes from $CF00 into the top row, starting at offset $8025, and clear its two outer cells."
   },
   {
    "address": 43630,
