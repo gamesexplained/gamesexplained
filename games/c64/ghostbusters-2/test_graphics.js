@@ -66,3 +66,11 @@ for (let row = 0; row < expectedRows.length; row++) {
   assert.equal(hash, expectedRows[row], `reconstructed story picture row ${row}`);
 }
 console.log('OK - story picture rows match the reconstructed VICE frame');
+const museumMatch = html.match(/<script id="museum-charset-data" type="application\/json">([^<]+)<\/script>/);
+assert(museumMatch, 'the graphics page must include the museum character set');
+const museum = JSON.parse(museumMatch[1]);
+const museumListing = g.listing('parts/museum/listing.json');
+assert.equal(museum.length, 2048);
+assert.deepStrictEqual(museum, Array.from(museumListing.ram.slice(0x7000, 0x7800)),
+  'museum character set must match the listing');
+console.log('OK - museum character set matches the listing');
