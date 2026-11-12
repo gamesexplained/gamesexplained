@@ -11,3 +11,5 @@ The emulator's first execution-map export stalled at its monitor socket. Restart
 The first load trace stopped while the loading animation still ran. A second, with warp enabled, covered the transition through to the retry screen and recorded no call to `$FFD5`. A separate observation found the loading code calling the serial receive entry at `$EE13`.
 
 A breakpoint on the KERNAL internal OPEN entry `$F3D5`, with the filename read through `$B7/$BB–$BC`, found the numbered wildcard requests that the earlier LOAD-only watch could not see. The second-story route first returned to BASIC with the Jondi/Censor disk attached; retrying with the Censor disk reached the story wait and Broadway. That observation does not establish why the first attempt failed.
+
+While inspecting the copied story engine, the disassembler displayed a store to `$D000` at `$13EA` with the label of the hidden-RAM source at `$D000`. The code has `$01=$35` there, so that store reaches the VIC register, not the saved source byte. The stash listing describes the source as data; any future listing of the copied engine needs the I/O context marked explicitly.
