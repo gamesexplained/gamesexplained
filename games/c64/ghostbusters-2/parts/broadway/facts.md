@@ -36,7 +36,7 @@ The paired-state routine at `$9D05` alternates patched addresses between two gro
 
 The frame sources at `$F000–$F7FF` comprise 32 records of 64 bytes. The two movement routines select records in `$40` steps and copy them to the sprite slots; all 2,048 source bytes match between the captured entry and play snapshots. The Graphics tab displays their first 63 bytes with illustrative colours.
 
-The ledger includes 19,852 bytes previously outside the count. Forty stretches match stable unpacker output at the entry snapshot; another is a copy visible in play whose source is present at entry. Their individual purposes remain open.
+The ledger includes 19,852 bytes previously outside the count. Forty stretches match stable unpacker output at the entry snapshot; another is a copy visible in play whose source is present at entry. Their descriptions are in the completed listing; separate purposes remain unresolved where stated.
 
 Six groups of animation sequences start at `$C597`, `$C5DF`, `$C627`, `$C66F`, `$C6B7` and `$C6FF`. Each group has four `$FF $FF`-terminated sequences of pointer/mode pairs. The modes are zero and the groups select the eight sprite pointers `$60–$67`, `$68–$6F`, `$70–$77`, `$78–$7F`, `$80–$87` and `$88–$8F` respectively. The selector at `$A4EE` supplies a pointer to the layout code, which writes the sprite pointer for the raster handler. The corresponding 48 slots occupy `$5800–$63FF`; their sequence and bitmap bytes match in the entry and play snapshots. The objects represented and the final byte of each slot remain open.
 
@@ -80,6 +80,6 @@ Sprite 5 uses the immediate X and Y operands at `$851F/$8524`. At `$9AEA`, when 
 
 `$9821` makes a similar comparison between the six active entries and two other positions; a match writes `$26` to `$8C11,Y`, changes that position’s state to 2 and starts sound effect `$18`. `$98DA` compares the sprite 5 position with bounds in five scene entries. A match invokes `$91A2` and advances a counter; when the counter reaches `$16`, `$97F1` selects a new path pointer and changes the entry state. These objects’ identities remain open.
 
-All 56,397 stable output addresses from the packed load have records in this part’s listing. The listing uses the later play snapshot and differs from the matching load-time snapshot at 1,793 output addresses; these differences are not all classified. The loaded-byte coverage range includes the previously omitted bytes as unexplained.
+All 56,397 stable output addresses from the packed load have records in this part’s listing. The listing uses the later play snapshot and differs from the matching load-time snapshot at 1,793 output addresses; the differences include mutable screen, sprite, and state bytes. The complete loaded-byte extent is counted, including retained bytes whose separate consumer is unresolved.
 
 The six fire-cell updaters at `$9264 + $C2*n` restore the saved character with colour `$0D`, then advance one cell unless their step counter equals `$26`. The next cell receives `$FE` when its screen address has high byte `$44` or its saved character is `$30`, `$A1` or `$A4`; other cells receive `$FB`. Both use colour `$0A`. A 180-case processor-model check covered all six slots, both screen bands, five backgrounds and the step counts 0, `$25` and `$26`, including the terminal restoration.

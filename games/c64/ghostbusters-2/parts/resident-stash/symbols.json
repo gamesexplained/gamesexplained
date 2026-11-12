@@ -1471,13 +1471,19 @@
   },
   {
    "address": 56032,
-   "name": "stash_copy_candidate",
+   "name": "restored_engine_self_copy",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 56077,
-   "name": "stash_after_copy_candidate",
+   "name": "stash_retained_db0d",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 56192,
+   "name": "stash_retained_db80",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1591,7 +1597,7 @@
   },
   {
    "address": 56463,
-   "name": "stash_loader_gap_048f",
+   "name": "stash_retained_dc8f",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1651,7 +1657,7 @@
   },
   {
    "address": 56489,
-   "name": "stash_loader_gap_04a9",
+   "name": "stash_retained_dca9",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1669,7 +1675,7 @@
   },
   {
    "address": 56555,
-   "name": "stash_loader_gap_04eb",
+   "name": "stash_retained_dceb",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1741,13 +1747,13 @@
   },
   {
    "address": 57044,
-   "name": "stash_loader_zero_gap",
+   "name": "stash_retained_ded4",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 57190,
-   "name": "stash_loader_prefix_byte",
+   "name": "stash_retained_df66",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1789,7 +1795,7 @@
   },
   {
    "address": 57317,
-   "name": "stash_after_loader_raster",
+   "name": "stash_retained_dfe5",
    "type": "UserDefined",
    "kind": "user"
   }
@@ -2168,7 +2174,17 @@
   {
    "address": 56032,
    "type": "line",
-   "text": "The bytes copied to $1AE0\u2013$1B0C decode as a routine that disables interrupts, selects $01=$34, sets a load operand to $D000 and a store operand to $1000, and increments the high bytes after each 256-byte pass until the load high byte equals $E0. On that exit it writes $35 to $01, enables interrupts and returns. In a forced, bounded VICE run from the copied snapshot, the copy to $1AF3 changed its own source operand from $DA back to $D0; the processor model agreed. The entry path and behavior after that write remain open."
+   "text": "In a forced call from the copied snapshot, this routine disables interrupts, selects RAM under I/O, and copies through self-modified source and destination operands. The store to $1AF3 resets its source high byte from $DA to $D0; later page starts run from $D1 through $DF while destinations continue through $29. The processor model returns after 26 destination-page passes (26,791 instructions), and VICE reaches the caller with source high $E0 and destination high $2A. It then has selected $01=$35 and enabled interrupts. A normal entry path remains unresolved."
+  },
+  {
+   "address": 56077,
+   "type": "line",
+   "text": "115 retained bytes between the self-copy routine and the final 128-byte fragment of the engine page. These bytes remain part of the saved load image; a separate active role is unresolved."
+  },
+  {
+   "address": 56192,
+   "type": "line",
+   "text": "128 retained bytes also present at $2DA0-$2E1F in the Censor introduction and at $FCD7-$FD56 beneath ROM in the title and opening story. They are copied with the complete engine page to $1B80-$1BFF; their original producer and separate consumer remain unresolved. These bytes remain part of the saved load image; a separate active role is unresolved."
   },
   {
    "address": 56320,
@@ -2261,6 +2277,11 @@
    "text": "Copied to $0486\u2013$048E. Store X/Y in $04A7/$04A8 and jump to $04B0."
   },
   {
+   "address": 56463,
+   "type": "line",
+   "text": "Eight bytes between loader helpers. These bytes remain part of the saved load image; a separate active role is unresolved."
+  },
+  {
    "address": 56471,
    "type": "line",
    "text": "Copied to $0497\u2013$0498: the two filename bytes 1*."
@@ -2306,6 +2327,11 @@
    "text": "Copied to $04A7/$04A8. The entries at $047D and $0486 write this pointer; $04D5/$04D8 read it for SETNAM."
   },
   {
+   "address": 56489,
+   "type": "line",
+   "text": "Seven bytes following the loader helper and before the next decoded entry. These bytes remain part of the saved load image; a separate active role is unresolved."
+  },
+  {
    "address": 56496,
    "type": "line",
    "text": "Copied to $04B0\u2013$04C7. Disable interrupts, write $37 to $01, set $0314/$0315 to $EA31, and call $FD15, $FF5E and $E5AD before continuing at $04C8."
@@ -2314,6 +2340,11 @@
    "address": 56520,
    "type": "line",
    "text": "Copied to $04C8\u2013$04EA. Write zero to $D020/$D021/$D011, call SETNAM with length 2 and the pointer at $04A7/$04A8, call SETLFS with A/X/Y all 8, call $06A7 with A=1, and return."
+  },
+  {
+   "address": 56555,
+   "type": "line",
+   "text": "Twenty-one bytes after the low-memory loader code and before its next source page. These bytes remain part of the saved load image; a separate active role is unresolved."
   },
   {
    "address": 56576,
@@ -2371,6 +2402,16 @@
    "text": "Copied to $06A7. Save $01 and the border colour, select the KERNAL and open the file at $0651. While bit 6 of status $90 is clear, call $0669 to decode another segment; then untalk, call $F642, restore the saved border colour and $01, and return."
   },
   {
+   "address": 57044,
+   "type": "line",
+   "text": "146 bytes between the decompressor and the 18-byte filename-record loader helpers. These bytes remain part of the saved load image; a separate active role is unresolved."
+  },
+  {
+   "address": 57190,
+   "type": "line",
+   "text": "One retained byte immediately before the filename-record loader entry. These bytes remain part of the saved load image; a separate active role is unresolved."
+  },
+  {
    "address": 57191,
    "type": "line",
    "text": "Copied to $0767. Save X at $02, call SETLFS with file 1, device 8 and secondary address 0, then SETNAM with length 16 and the filename pointer at $FB/$FC. Call KERNAL LOAD with A=0 and X/Y from $0789/$078A, restore X from $02 and return. Its caller remains unestablished."
@@ -2399,6 +2440,11 @@
    "address": 57304,
    "type": "line",
    "text": "Copied to $07D8. Write $78 to $D011, acknowledge the raster interrupt, then jump to KERNAL $EA31. The setup at $07AD installs this handler."
+  },
+  {
+   "address": 57317,
+   "type": "line",
+   "text": "27 bytes following the loader raster handler, through the end of the copied page. These bytes remain part of the saved load image; a separate active role is unresolved."
   }
  ]
 }

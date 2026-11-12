@@ -25,6 +25,12 @@
 <section><h2>Museum movement skips eight overlap checks</h2>
 <p>The museum code contains blocks that compare two position records. When their comparisons match, the blocks return before a movement update. In the examined Jondi disk and the alternative Censor disk, each of eight movement paths contains an unconditional jump over one of these blocks. For example, <a href="source-museum.html#B7FB"><code>$B7FB</code></a> jumps to <a href="source-museum.html#B833"><code>$B833</code></a>, past the <a href="source-museum.html#B7FE">comparison at <code>$B7FE</code></a>.</p>
 <p>The two disks’ museum files are byte-for-byte identical, and the eight jumps are present in the museum entry snapshot and four later saved states. The first Censor image has an incomplete museum file. Other possible entries into the skipped blocks, the reason for the jumps and their behavior in other releases remain open.</p></section>
+<section><h2>Copying over the copy loop</h2>
+<p>A helper stored with the story engine copies memory into the region containing its own instructions. When the copy reaches its source-address operand, the incoming byte sends that operand backwards. The destination keeps advancing.</p>
+<p>A forced call to <a href="source-story-engine.html#1AE0"><code>$1AE0</code></a> visits 26 destination pages before returning. The apparent source range spans 16 pages, but some source pages are read twice.</p>
+<div class="plate"><table><thead><tr><th>Page passes</th><th>Source page at the start</th><th>Destination page</th></tr></thead><tbody><tr><td>1–10</td><td><code>$D0–$D9</code></td><td><code>$10–$19</code></td></tr><tr><td>11</td><td><code>$DA</code>; operand changes during the copy</td><td><code>$1A</code></td></tr><tr><td>12–26</td><td><code>$D1–$DF</code></td><td><code>$1B–$29</code></td></tr></tbody></table></div>
+<p class="cap">The processor model and VICE both returned with source high byte <code>$E0</code> and destination high byte <code>$2A</code>. A normal gameplay route into this helper has not been established; this is the measured behavior of the stored routine when called directly.</p>
+</section>
 <section><h2>A stored status word</h2>
 <p>Two museum sprite slots spell <strong>DAZED</strong> when placed side by side. The same area holds the <a href="graphics.html">OK and DEAD words the panel can select</a>. The stored DAZED bitmaps are at <a href="source-museum.html#0DC0"><code>$0DC0</code></a> and <a href="source-museum.html#0E00"><code>$0E00</code></a>; whether a game path selects them remains open.</p></section>
 </main>

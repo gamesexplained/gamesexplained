@@ -7,22 +7,22 @@ External reference pictures saved 12 November 2026: [story](https://www.c64-wiki
 | Feature | Status | Evidence |
 |---|---|---|
 | Three episodes: the airshaft, Broadway and the museum | confirmed | Each reached in VICE; the latter two use forced success paths, as described in `orientation.md` |
-| Airshaft: descend and swing on a cable to collect a slime sample | live | First playable scene reached in VICE; movement and goal remain to be checked |
-| Ghost contact reduces courage; elixir restores it | open | Manual |
-| Collect three scoop parts from the shaft walls | open | Manual |
+| Airshaft: descend and swing on a cable to collect a slime sample | live | First playable scene reached in VICE; up/down motion and the row switches were tested. The normal route to the sample remains unrecorded |
+| Ghost contact reduces courage; elixir restores it | open | Manual; traced contact paths at airshaft `$9AB6`, `$9BEF`, and `$9C53` and the numeric HUD updates, but their complete courage/elixir mapping is unresolved |
+| Collect three scoop parts from the shaft walls | open | Manual; three collection paths at `$9914`, `$999E`, and `$9A1F` copy successive seven-row pieces of one HUD sprite. Their normal pickup conditions and item identity remain unresolved |
 | Space cycles an airshaft selection through three positions | confirmed | `$AA6E` and a controlled Space press in `parts/airshaft/facts.md`; the meaning of each position remains open |
-| The three airshaft selections are proton beam, PKR bomb and shield | open | Manual |
-| Hold fire and aim a bomb up or down; release to detonate | open | Manual |
-| Sawing monsters can sever the cable | open | Manual |
+| The three airshaft selections are proton beam, PKR bomb and shield | open | Manual; Space cycles three modes and changes HUD values and effect paths. The one-to-one mapping to those names is unresolved |
+| Hold fire and aim a bomb up or down; release to detonate | open | Manual; traced fire paths `$A8A5` and `$A82F` and tested mode-dependent stock decrements. The complete hold/release sequence remains unresolved |
+| Sawing monsters can sever the cable | open | Manual; traced sprite 6/7 state machines and contact responses around `$C622` and `$C80A`. A normally reached cable-cutting event has not been established |
 | Broadway: steer the fireball | confirmed | `$8C59`, `$91DD–$9220` and VICE trials in `parts/broadway/facts.md` |
-| Broadway: shoot ghosts to protect the Statue of Liberty | open | Manual |
+| Broadway: shoot ghosts to protect the Statue of Liberty | open | Manual; six projectile-cell paths and the 29 scene lists are traced. All sprite identities and the complete protection/win sequence remain unresolved |
 | Broadway displays the Statue of Liberty against a city backdrop | live | VICE capture using the forced route described in `orientation.md` |
-| Statue hits and replacement fireballs consume slime | open | Manual |
-| Street pedestrians collect slime drops | open | Manual |
+| Statue hits and replacement fireballs consume slime | open | Manual; firing, stock display, and overlap responses were traced, but their complete mapping to the documented slime supply remains unresolved |
+| Street pedestrians collect slime drops | open | Manual; Space-controlled walking figures and overlap paths `$9976` and `$9AEA` were tested. The complete drop-to-supply transfer remains unresolved |
 | Broadway: Space reverses three walking figures | confirmed | `$9FB6–$A22F`, the captured sprite shapes and short VICE trial in `parts/broadway/facts.md` |
-| Museum: control Ghostbusters, select a team member and arrange weapons | open | Manual and C64-Wiki |
+| Museum: control Ghostbusters, select a team member and arrange weapons | traced | Manual and C64-Wiki; selection at `$B372`, directional floor probes, and equipment exchanges `$CDF1/$CE5D/$CEC9` are described. Space and the equipment panel were observed in VICE |
 | Museum: a Ghostbuster descends on a rope before the floor scene | live | VICE capture using the forced route and alternate disk described in `orientation.md` |
-| Museum: up opens the hands on the rope and down closes them | open | C64-Wiki; a controlled descent needs checking on this disk |
+| Museum: up opens the hands on the rope and down closes them | open | C64-Wiki; alternating up/down reaches the landing in VICE and replays in the second machine. The precise hand-pose mapping remains unresolved |
 | Museum: joystick up and down control the descent value | confirmed | `$C74C–$C7BD`; VICE trials and measurements in `parts/museum/facts.md` |
 | Museum: Space selects a Ghostbuster | confirmed | `$B372` and controlled VICE comparison in `parts/museum/facts.md` |
 | Museum: Return opens the equipment screen | confirmed | `$CAA8`, `$CCDC` and a VICE panel trial in `parts/museum/facts.md` |

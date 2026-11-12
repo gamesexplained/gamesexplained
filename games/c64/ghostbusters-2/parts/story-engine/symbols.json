@@ -53,7 +53,13 @@
     "Museum"
    ]
   ],
-  "extra": [],
+  "extra": [
+   [
+    7040,
+    7167,
+    "copied from $DB80\u2013$DBFF; purpose remains open"
+   ]
+  ],
   "edges": [
    0,
    256,
@@ -969,6 +975,12 @@
    "kind": "user"
   },
   {
+   "address": 6880,
+   "name": "restored_engine_self_copy",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 6895,
    "name": "b_1AEF",
    "type": "Branch",
@@ -982,14 +994,20 @@
   },
   {
    "address": 6899,
-   "name": "story_copy_source_high",
+   "name": "self_copy_source_high",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 6902,
-   "name": "story_copy_destination_high",
+   "name": "self_copy_destination_high",
    "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 7040,
+   "name": "retained_engine_fragment",
+   "type": "UserDefined",
    "kind": "user"
   }
  ],
@@ -1412,17 +1430,22 @@
   {
    "address": 6880,
    "type": "line",
-   "text": "The bytes copied to $1AE0\u2013$1B0C decode as a routine that disables interrupts, selects $01=$34, sets a load operand to $D000 and a store operand to $1000, and increments the high bytes after each 256-byte pass until the load high byte equals $E0. On that exit it writes $35 to $01, enables interrupts and returns. In a forced, bounded VICE run from the copied snapshot, the copy to $1AF3 changed its own source operand from $DA back to $D0; the processor model agreed. The entry path and behavior after that write remain open."
+   "text": "In a forced call from the copied snapshot, this routine disables interrupts, selects RAM under I/O, and copies through self-modified source and destination operands. The store to $1AF3 resets its source high byte from $DA to $D0; later page starts run from $D1 through $DF while destinations continue through $29. The processor model returns after 26 destination-page passes (26,791 instructions), and VICE reaches the caller with source high $E0 and destination high $2A. It then has selected $01=$35 and enabled interrupts. A normal entry path remains unresolved."
   },
   {
    "address": 6899,
    "type": "line",
-   "text": "High byte of the indexed load operand at $1AF1. The candidate copy at $1AE0 initializes it to $D0, increments it after each page and compares it with $E0. The copied code overwrites this operand during a forced run; the normal entry path remains open."
+   "text": "Source-high operand at $1AF1. It starts at $D0; the self-copy resets it from $DA to $D0 before page stepping continues to $E0."
   },
   {
    "address": 6902,
    "type": "line",
-   "text": "High byte of the indexed store operand at $1AF4. The candidate copy initializes it to $10 and increments it after each page. Its subsequent behavior after the observed self-overwrite remains open."
+   "text": "Destination-high operand at $1AF4. In the forced complete call it advances from $10 through $29, with $2A left on return."
+  },
+  {
+   "address": 7040,
+   "type": "line",
+   "text": "Final 128 bytes copied from stash $DB80-$DBFF. They match the Censor introduction at $2DA0-$2E1F and the title/opening-story RAM beneath $FCD7-$FD56. The copying extent is established; their original producer and separate consumer remain unresolved."
   }
  ]
 }

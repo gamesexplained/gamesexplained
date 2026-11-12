@@ -1,41 +1,28 @@
 # Ghostbusters II — kit feedback
 
-Written in the retrospective (`kit/skills/core/80-retro`). Which skill text
-changed what the run did, what the skills and kit got wrong or left out,
-what was changed, what needs a maintainer's decision, what cost the most
-time, operating system and tool versions.
-
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `60-verify`: "Both the sample and the audit are done by checkers": a fresh checker found a source-array error in the random sample and 26 additional errors in the new state descriptions.
+- `50-coverage`: "Runtime state is excluded": traced entry initialization before excluding generated state, while retaining authored sources and the image bytes needed by the graphics inspector.
+- `60-verify`: "A control reading zero means the instrument is dead": paired the museum collision trials and the self-copy return test with entry counters.
+- `60-verify`: "An `unused` answer in `media.json` is a negative result as well": read the filename dispatcher and named-load paths before resolving the decorative entries and stray disk sectors.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+None. The changes are confined to this analysis and its review images.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+Setting a data type in the running disassembler retraced the whole image and recreated automatic labels inside instruction operands and known data records. Those labels fragmented coverage. Comparing each boundary with the decoded instruction or the established data allocation exposed the problem. A future diagnostic could report such interior automatic boundaries; a second affected game is needed before adding a general skill rule.
+
+The first state-table descriptions assigned plausible coordinate and pointer roles without following every consumer. The independent targeted review exposed these errors. The existing checker rules already require this verification, so another rule would duplicate them.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None. The required model review is recorded in TODO.md and the pull request.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+A diagnostic that distinguishes automatic operand boundaries from real data and routine entries would have saved the most time in this run.
+
+The host was Linux x86_64. VICE release v3.13.1 and the installed regenerator2000 servers were reused; this continuation installed no software.

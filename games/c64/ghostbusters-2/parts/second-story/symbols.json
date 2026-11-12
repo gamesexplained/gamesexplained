@@ -2273,7 +2273,7 @@
   },
   {
    "address": 58982,
-   "name": "story_sound_frequency_tail",
+   "name": "sound_frequency_tail",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3059,21 +3059,21 @@
   },
   {
    "address": 60249,
-   "name": "a_EB59",
+   "name": "sound_shift_state_byte_1",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60250,
-   "name": "a_EB5A",
+   "name": "sound_shift_state_byte_2",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60251,
-   "name": "a_EB5B",
+   "name": "sound_shift_state_byte_3",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 60252,
@@ -3295,6 +3295,12 @@
    "address": 61370,
    "name": "outcome_sound_stream_efba",
    "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 61409,
+   "name": "sound_stream_last_byte",
+   "type": "UserDefined",
    "kind": "user"
   }
  ],
@@ -4635,6 +4641,11 @@
    "text": "Continuation of the little-endian frequency values starting at $E5C2. This byte is the high byte of entry 32; $E604\u2013$E665 contain entries 33 through 81. The reader at $E46C/$E471 doubles its index and reads the low and high bytes."
   },
   {
+   "address": 58982,
+   "type": "line",
+   "text": "Two stored bytes following the 82 frequency words at $E5C2-$E665. They would be the low/high pair for index 82 if that index reaches the frequency reader; the observed tune tests have not established that use."
+  },
+  {
    "address": 58984,
    "type": "line",
    "text": "Fourteen low bytes of pointers selected by a sound command at $E3EF. The matching high bytes start at $E676."
@@ -5175,6 +5186,21 @@
    "text": "Four bytes of mutable state shifted by the routine at $EB3F. Their initial values in this captured snapshot need not match the loaded values."
   },
   {
+   "address": 60249,
+   "type": "line",
+   "text": "Byte 1 of the four-byte mutable word at $EB58-$EB5B. The shift routine at $EB3F rotates this byte along with the other three to update the sound driver state."
+  },
+  {
+   "address": 60250,
+   "type": "line",
+   "text": "Byte 2 of the four-byte mutable word at $EB58-$EB5B. The shift routine at $EB3F rotates this byte along with the other three to update the sound driver state."
+  },
+  {
+   "address": 60251,
+   "type": "line",
+   "text": "Byte 3 of the four-byte mutable word at $EB58-$EB5B. The shift routine at $EB3F rotates this byte along with the other three to update the sound driver state."
+  },
+  {
    "address": 60252,
    "type": "line",
    "text": "Initial accumulator increment $2A in the first seven-byte tune record. The initializer at $E000 selects a record and stores this byte at $E139 and the immediate operand $E147."
@@ -5358,6 +5384,11 @@
    "address": 61370,
    "type": "line",
    "text": "Linear decode of $EFBA\u2013$EFE0, in bytecode order: $89[04 08], $8B, $8F[04], $90[02 08 50], $D0[08 20], $E0, $24, $24, $D0[0A 20], $E1, $27, $24, $26, $E5, $22, $D0[08 20], $E0, $24, $24, $D0[0A 00], $24, $22, $E7, $1F, $91. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path and $E0\u2013$FF set durations; other commands are decoded at $E3B7. The final $91 jumps through $E338 to stop the sound. Timing and reachability remain open."
+  },
+  {
+   "address": 61409,
+   "type": "line",
+   "text": "Final retained byte $EA after the decoded sound-stream extent in this load. A separate consumer of this byte remains unresolved."
   }
  ]
 }

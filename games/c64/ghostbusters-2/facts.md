@@ -2,12 +2,12 @@
 
 The opening story and each gameplay episode have separate captured states and listings under `parts/`; the exact route and the two disk releases are in `orientation.md`.
 
-- In the four captured states, all 4,096 bytes of RAM under `$D000–$DFFF` are identical. The airshaft transition at `$02A7` copies them back into `$1000–$1BFF` and `$0400–$07FF` before jumping to `$1000`. The ownership of that preserved code and data is open.
-- All four captured states contain identical bytes at `$E464–$E5C1` and `$E000–$E0C1`. The three-voice update at `$E141–$E225` differs between them only in the immediate operands at `$E147` and `$E14A`, which its initialization and update modify. It writes all three SID voices at `$E176–$E218` and volume at `$E222`; the airshaft calls it through `$E13A`. The full extent and tune data of the shared sound code require further tracing.
-- The sound initializer at `$E000` selects a seven-byte record at `$EB5C`: one accumulator increment and three little-endian pointers. With A set to 1 from the airshaft snapshot, VICE stopped at its return with `$E147 = $24` and channel pointers `$EF44`, `$EF42`, `$EF46`; the kit's 6502 simulator produced the same values. The tune or effect selected by that record is unidentified.
+- In the four captured states, all 4,096 bytes of RAM under `$D000–$DFFF` are identical. The airshaft transition at `$02A7` copies them back into `$1000–$1BFF` and `$0400–$07FF` before jumping to `$1000`. The shared copy is counted once in `parts/resident-stash`; its executable lower-memory copy is described in `parts/story-engine`. Its original boot producer remains unresolved.
+- All four captured states contain identical bytes at `$E464–$E5C1` and `$E000–$E0C1`. The three-voice update at `$E141–$E225` differs between them only in the immediate operands at `$E147` and `$E14A`, which its initialization and update modify. It writes all three SID voices at `$E176–$E218` and volume at `$E222`; the airshaft calls it through `$E13A`. The driver, its three voice-state records, effect-state records, and the per-load tune streams are described in the corresponding listings.
+- The sound initializer at `$E000` selects a seven-byte record at `$EB5C`: one accumulator increment and three little-endian pointers. With A set to 1 from the airshaft snapshot, VICE stopped at its return with `$E147 = $24` and channel pointers `$EF44`, `$EF42`, `$EF46`; the kit's 6502 simulator produced the same values. That record is the first outcome selection; its audible result is available in the page player.
 - The capture of a PAL airshaft frame was reconstructed with zero differing pixels by the kit's frame renderer. The page uses its trimmed visual data; `parts/airshaft/facts.md` records the capture and the interrupt chain.
 
-The listing comments require an independent sample. The media ledger and the unclassified-memory reports are open work items.
+All 11 part ledgers have full annotation coverage. The 17 media items have dispositions in `media.json`, including the damaged museum file and disk-directory decoration. Coverage includes retained bytes whose separate gameplay purpose is explicitly unresolved; it does not claim those bytes have an established active role.
 
 - In the airshaft, the success path at `$0897` initializes sound selection 1; failure paths at `$08BB` and `$08CD` initialize selection 2. Their records are at `$EB63` and `$EB6A`. VICE and the kit processor agreed on channel state and all three voice frequencies for initialization and the first 30 calls to `$E13A` for each selection; `sound-vice.json` holds those observations. In the forced-success state, an execution checkpoint counted 30 calls to `$E13A` over 30 PAL frames. The page player and listing agree on every SID write for 500 updates per selection (`test_sound.js`).
 
@@ -22,3 +22,17 @@ The listing comments require an independent sample. The media ledger and the unc
 - The sound initializer `$E000–$E0C1`, update `$E13A–$E225` and stop/clear code `$EB26–$EB57` were paired across the opening story, Broadway and museum with `carry.py`. The initializer and stop/clear ranges match the airshaft code. The update ranges differ only at the self-modified immediate operands `$E147` and `$E14A`; the initializer and update write those bytes. The annotations describe the operations rather than the snapshot-specific operand values.
 
 - The 14 pointer pairs at `$E668–$E683` select short offset sequences at `$E684–$E6AC`. The driver at `$E43D` masks a sequence byte's high bit and resets the sequence index when that bit is set, before adding the resulting value to the voice state. These bytes match the airshaft, Broadway, museum, opening-story, second-story, third-story and ending snapshots. Whether each sequence is reached during ordinary play remains open.
+
+## The listing's error rate
+
+The sample with seed 121126 drew 80 comments from a population of 5,150: 60 of 3,907 written comments and 20 of 1,243 generated descriptions. The independent checker used gpt-6-astra. One written comment named the wrong source array for sorted high X coordinates in the museum; it was corrected, together with the matching source-address descriptions for the other sorted arrays. The raw result is 1/80, with a 95% Wilson interval of 0.2%–6.7%; weighting the two strata gives 1.3%. This is a lower bound on the true error rate, not a full audit.
+
+A separate targeted review of the new state-group and field descriptions found 26 additional wrong comments. Corrections distinguish coordinates from pointers and flags, identify the actual equipment exchange fields, and describe both motion workspaces correctly. This selected review has no random error-rate interpretation. A full independent audit remains recommended.
+
+The analysis used model identifiers not recognised as proven by `kit/models.json`. The fresh checker's sample does not replace the maintainer's check required by `kit/CHECKING.md`; the published tier remains Bronze pending that review.
+
+## Additional verification
+
+The museum's four first-pair floor probes accepted codes $00 and $3F and rejected $40 and $FF in all 16 VICE trials, with an entry checkpoint firing once in each trial. The processor model agreed. Its 16 directional display routines were checked at all three animation phases. The six Broadway fire-cell routines passed 180 processor comparisons across screen bands, backgrounds, and terminal counts. The four airshaft short-contact tests were checked across all 256 input codes each.
+
+Entry-path processor traces reached the first main-loop wait in each gameplay episode and identified state written before its first read. Those generated bytes are excluded from coverage; the declared ranges name their first writers. Authored maps, source bitmaps, tables, and retained load bytes stay counted. The sprite image bytes used by the Graphics page remain in the listing.
