@@ -12,12 +12,18 @@ assert(match, 'Broadway backdrop is embedded in the Levels page');
 const data = JSON.parse(match[1]);
 const listing = g.listing('parts/broadway/listing.json');
 const {broadwayMapColumn: columnAt} = g.run('levels.html', 'broadway-map-column', 'broadwayMapColumn');
-assert.deepStrictEqual(data.codes, Array.from(listing.ram.slice(0x0900, 0x1f80)));
+// The Censor Broadway load retains the first 298 bytes from the airshaft.
+const inherited = g.listing('parts/airshaft/listing.json');
+const ram = listing.ram.slice();
+for (let a = 0x0900; a < 0x0a2a; a++) {
+  assert(inherited.has[a], `missing inherited airshaft byte at $${a.toString(16)}`);
+  ram[a] = inherited.ram[a];
+}
+assert.deepStrictEqual(data.codes, Array.from(ram.slice(0x0900, 0x1f80)));
 assert.deepStrictEqual(data.charset, Array.from(listing.ram.slice(0x7000, 0x7800)));
 const vice = JSON.parse(fs.readFileSync(path.join(__dirname, 'broadway-map-vice.json'), 'utf8'));
 for (const fixture of vice) assert.deepStrictEqual(columnAt(data.codes, fixture.column), fixture.values,
   `VICE column ${fixture.column}`);
-const ram = listing.ram.slice();
 const cpu = new CPU(ram, {port: 0x35});
 for (let column = 0; column < 480; column++) {
   const pointer = 0x0900 + column;
