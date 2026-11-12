@@ -179,3 +179,5 @@ Traced the Broadway extra-animation delay, movement and pointer selection, and i
 Traced the second Broadway fire candidate through its screen and colour writes, including both patched colour-store operands.
 
 Traced the third through sixth Broadway fire candidates and checked their repeated cell-write instructions against the second candidate.
+
+Traced the Broadway fire routine’s row write and reset, including its self-modified screen address.
