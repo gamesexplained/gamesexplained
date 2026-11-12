@@ -6,14 +6,15 @@ External reference pictures saved 12 November 2026: [story](https://www.c64-wiki
 
 | Feature | Status | Evidence |
 |---|---|---|
-| Three episodes: the airshaft, Broadway and the museum | open | Manual and C64-Wiki |
+| Three episodes: the airshaft, Broadway and the museum | confirmed | Each reached in VICE; the latter two use forced success paths, as described in `orientation.md` |
 | Airshaft: descend and swing on a cable to collect a slime sample | live | First playable scene reached in VICE; movement and goal remain to be checked |
 | Ghost contact reduces courage; elixir restores it | open | Manual |
 | Collect three scoop parts from the shaft walls | open | Manual |
 | Switch between proton beam, PKR bomb and shield with Space | open | Manual |
 | Hold fire and aim a bomb up or down; release to detonate | open | Manual |
 | Sawing monsters can sever the cable | open | Manual |
-| Broadway: steer a fireball and shoot ghosts to protect the Statue of Liberty | open | Manual |
+| Broadway: steer the fireball | confirmed | `$8C59`, `$91DD–$9220` and VICE trials in `parts/broadway/facts.md` |
+| Broadway: shoot ghosts to protect the Statue of Liberty | open | Manual |
 | Broadway displays the Statue of Liberty against a city backdrop | live | VICE capture using the forced route described in `orientation.md` |
 | Statue hits and replacement fireballs consume slime | open | Manual |
 | Street pedestrians collect slime drops; Space moves them | open | Manual |
