@@ -76,6 +76,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gx-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.4em}
 @media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
 </style>
+<style>.ur-l-cv{width:100%;max-width:768px;image-rendering:pixelated;display:block;background:#000;border-radius:6px}.ur-l-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0;font-family:var(--fm);font-size:13px}.ur-l-bar button{font:inherit;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;color:var(--ink)}</style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">1986 · Hewson Consultants</p>
@@ -167,6 +168,20 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="gx-out" id="gx-chamout">Point at a character to see its code.</p>
     <p class="cap">The chamber's characters <code>$80</code>-<code>$BF</code>, copied to <code>$7C00</code> from <code>$D200</code>, in the panel's colours: white, light grey and dark grey from the faded backgrounds, and black for the slot interiors. Codes <code>$A0</code>-<code>$A3</code> spell &ldquo;Quit&rdquo;; the arrows, slot ends and digit box fill the rest. The shared characters <code>$00</code>-<code>$7F</code> are the same set the status lines use.</p>
   </div>
+</section>
+
+<section id="loading">
+  <p class="fig">05 · The loading screen</p>
+  <h2 class="t">Stripes that never stop moving while the tape loads</h2>
+  <p class="lede">About 42 seconds into the 1986 cassette, the game's name comes up in a frame of stripes, with BY ANDREW BRAYBROOK beneath it and an empty bar near the foot of the screen. For the next two minutes and 22 seconds, in silence, the stripes' colours keep moving and the bar fills, until the game starts.</p>
+  <div class="plate">
+    <canvas class="ur-l-cv" id="ur-l-cv" width="384" height="272" role="img" aria-label="Uridium's loading screen: URIDIUM in black letters inside a frame of coloured stripes, BY ANDREW BRAYBROOK below it in striped letters, and a yellow bar near the foot of the screen that fills with arrows"></canvas>
+    <div class="ur-l-bar"><button type="button" id="ur-l-again">Again</button><button type="button" id="ur-l-skip">Skip</button><span id="ur-l-stat" aria-live="off"></span></div>
+    <p class="cap">The cassette's screen at the tape's pace, from the moment it comes up. The loop the tape runs while it loads, written again in JavaScript, recolours a frame recorded in VICE and fills its bar, frame by frame, as it did on the recorded load. Skip goes to the end of the load.</p>
+  </div>
+  <p>Every other frame, the loop moves the three colours round one place: the background takes the first multicolour's, the first takes the second's, and the second takes the background's, so the stripes and the letters below them seem to flow. Every 256 frames, about five seconds, it starts again from one of eight sets of three in a table, greys, reds, blues and greens. It picks the set by the last three bits of the address the tape has reached, so the order depends on exactly how fast the tape runs.</p>
+  <p>The bar stays yellow while everything above it changes colour. Its outline and arrows are drawn in the background colour, so in every frame the loop turns the background yellow when the beam reaches the empty line under ANDREW BRAYBROOK, and back again once the beam is past the foot of the screen.</p>
+  <p>The bar is drawn from the address the tape is loading into. Each of its 24 cells stands for 2 KB of memory, and fills in four steps of 512 bytes. The tape loads from <code>$0900</code> to <code>$BEFF</code>, about 330 bytes a second, so the first cell, which stands for the first 2 KB, is full from the start.</p>
 </section>
 
 </main>
@@ -524,5 +539,90 @@ C64.load('listing.json').then((L) => {
   };
   requestAnimationFrame(loop);
 }).catch((e) => { wait.hidden = false; wait.textContent = 'The listing could not be read: ' + e.message; });
+})();
+</script>
+<script type="application/json" id="ur-loading-data">{"frame":{"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"Hewson's 1986 cassette, the Ultimate Tape Archive's Uridium.tap, 100 seconds in: kit/c64/frame.py capture, then trim, in VICE 3.10 (vice-mcp 3.14.0) on 12 November 2026, with the characters of every step of the bar ($55-$59) kept","vic":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27,0,0,0,0,216,0,155,113,240,0,0,0,0,0,240,254,246,241,243,244,240,241,242,243,244,245,246,247,252],"cia2":[148,63],"writes":[[176,22,53281,247,247],[256,17,53281,254,254],[256,54,53283,254,254],[256,58,53281,246,246],[256,62,53282,241,241]],"colour":"CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIBA8FDwMOAAsECwIPAAcFDA==","ram":[{"a":58368,"b":"Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/PwwNDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODxA/Pz8xMgUGBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcICRESPz8/MTIqKwABAgICQEFDREVDQkNGR0NCQ0BBQ0hJSgICAgMECgsREj8/PzEyKisgISIiImBhY2RlY2JjZmdjYmNgYWNoaWoiIiIjJAoLERI/Pz8xMiUmJycnJycnJycnJycnJycnJycnJycnJycnJycnJycoKRESPz8/LC0uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4vMD8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/PxMUFRY/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8zNDU2Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8XGBkaGxwdHk1OT1A/Pz8TFB0eFxgVFhMUHR5RUlFSU1Q/Pz8/Pz8/Nzg5Ojs8PT5tbm9wPz8/MzQ9Pjc4NTYzND0+cXJxcnN0Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/WltbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1w/Pz8/Pz8/Pz8/Pz8/P3VVVVVVVVVVVVVVVz8/Pz8/Pz8/Pz8/Pz92Pz8/Pz8/Pz8/Pz8/Pz96e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7fD8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz8/Pw=="},{"a":59392,"b":"VWpgYWFhYWFVqgBVqoCFhlWqAFWqAFWqVaoAVaoCUpJVqQlJSUlJSQAABQUFBQUFAABVVaqqoKAAAFVVqqoAAAAAVVWqqgoKAABQUFBQUFAKCgoKCgoKClBQUFBQUFBQAAAFBQUFBQUAAFVVVWpqagAAVVVVqqqqAABVVVWpqakAAFBQUFBQUKmpqampqampUFBQUFBQUFD/wNXrw9fqw/8PV+vDX68P/8PX68PX+vD/w9frw9evD//89erD1+rA/z9fq8PXqwP/w9fqwNXqwP/D1+vDV6sD/8DV68PX68P/P1+rw9frw//A1evD1+rA/w9X68PXrw8="},{"a":59648,"b":"YWFhYWFgalWGhYCqVQCqVapVAKpVAKpVklICqlUAqlVJSUlJSQmpVQUFBQUFBQAAoKCqqlVVAAAAAKqqVVUAAAoKqqpVVQAAUFBQUFBQAAAFBQUFBQUFBaCgoKCgoKCgBQUFBQUFAABqampVVVUAAKqqqlVVVQAAqampVVVVAABQUFBQUFAAAAUFBQUFBQUFampqampqamrX68DV/////9frA1///////f78/f////9/vz9//////9frw9f/////1+vD1//////X68PX/////1erw9f/////1+vA1f/////Xqw9//////9frw9f/////1+vD1////////////////1W+PH2+PH2+Va8PX68PX69Vvjx9vjx9vlWqAFWqAFWqVb8/fb48fb9V+vx/rw9//lW/P32+PH2+Vf7/f68PX69Vqw9/vjx9vlX//32+PH2+Verw/b48fb4="},{"a":60008,"b":"/8DV68PV6sD/A1f//1+vD//D1+vD1+vD//D1+jB1ujD/8NXrw9frw/8PV+vD1+vD/8PX68PV6sD/w9evD3+/P//AMAwDDDDA/////////////z8/Pz8////PPw8PDz/P/8MzDwMPM8P///////Dw8///////AAD///////8PD88="},{"a":60160,"b":"vn08v18DqlWvXw+//fCqVb59PL59PKpVqlUAqlUAqlW/fzy+fTyqVfr9P69fD6pVvn08vn8/qlWvXw+///yqVb59PL59PKpVvn08vn08qlW+fTy+fTyqVQ=="},{"a":60264,"b":"1+vA1f///////wNX/////9fq8P3/////daoDX//////X68D1/////9frA1//////1+vD1/////9fr8PX//////Pz8/Pz8/Pzz8/Pz8/Pz88="},{"a":60368,"b":"8/Pw8P///////wAA/////8/PDw//////"},{"a":65535,"b":"Aw=="}]},"tables":[1,7,1,15,1,7,1,3,15,8,14,12,10,8,13,5,11,2,6,11,2,9,5,6],"fb":[0,141,218,53,150,249,104,243,223,119,18,24,139,25,46,97,212,151,225,82,27,174,4,110,90,62,238,66],"fc":[[0,236],[34,9],[73,10],[153,12],[233,14],[315,16],[396,18],[478,20],[558,22],[639,24],[719,26],[799,28],[880,30],[960,32],[1040,34],[1120,36],[1200,38],[1281,40],[1360,42],[1440,44],[1520,46],[1599,48],[1679,50],[1757,52],[1833,54],[1912,56],[1987,58],[2052,60],[2127,62],[2209,64],[2288,66],[2352,68],[2415,70],[2477,72],[2557,74],[2634,76],[2710,78],[2770,80],[2849,82],[2929,84],[3009,86],[3089,88],[3168,90],[3239,92],[3324,94],[3407,96],[3493,98],[3575,100],[3662,102],[3745,104],[3824,106],[3906,108],[3985,110],[4066,112],[4134,114],[4207,116],[4287,118],[4368,120],[4447,122],[4532,124],[4613,126],[4699,128],[4775,130],[4852,132],[4926,134],[5000,136],[5076,138],[5155,140],[5231,142],[5307,144],[5388,146],[5470,148],[5552,150],[5631,152],[5711,154],[5790,156],[5871,158],[5954,160],[6025,162],[6095,164],[6169,166],[6242,168],[6305,170],[6364,172],[6422,174],[6499,176],[6578,178],[6658,180],[6739,182],[6819,184],[6901,186],[6985,188],[7067,190]],"frames":7107}</script>
+<script>
+/* ur-loading */
+// The cassette's loading screen. While the tape loads, a loop the tape puts at $E037-$E0C6 runs once a frame,
+// and urLoading(D) runs it again from the block ur-loading-data: D.frame is a frame recorded in VICE,
+// D.tables the loop's colour table ($E0C9-$E0E0, the background, then the two multicolours, eight sets of each),
+// D.fb the low byte of the tape's load address ($FB) each time the loop picked a set on the recorded load,
+// D.fc the frames at which its bar drawing read a new high byte ($FC), and D.frames the frames it ran.
+// step() runs one pass, one frame, and returns the colours the frame shows: background, then multicolours 1 and 2.
+const UR_YELLOW = [176, 22, 0xD021, 0xF7, 0xF7];  // the background turned yellow on line 176, each frame
+// urBar(mem, fc): the bar drawn for the load address's high byte fc, as $E07C-$E0A1 draws it at $E750
+function urBar(mem, fc) {
+  if (fc >= 0xD0) return;
+  const b = fc >> 1, x = b >> 2;
+  mem[0xE750 + x] = 0x56 + (b & 3);
+  for (let i = x - 1; i >= 0; i--) mem[0xE750 + i] = 0x55;
+}
+function urLoading(D) {
+  const bytes = (s) => Uint8Array.from(atob(s), (ch) => ch.charCodeAt(0));
+  const T = D.tables, mem = new Uint8Array(0x10000);
+  for (const r of D.frame.ram) mem.set(bytes(r.b), r.a);
+  mem.fill(0x3F, 0xE751, 0xE768);  // the bar empty, as the screen comes up
+  let n = 0, r = 0, k = 0, q = 0, fc = 0xFF, c;
+  const reload = () => { const x = D.fb[r++] & 7; c = [T[x], T[8 + x], T[16 + x]]; n = 0; };  // $E037
+  reload();
+  return {
+    mem,
+    get k() { return k; },
+    get colours() { return c.slice(); },  // as the loop holds them at $E04E, before the next pass
+    step() {
+      n = (n + 1) & 255;
+      if (!(n & 1)) c = [c[1], c[2], c[0]];
+      while (q < D.fc.length && D.fc[q][0] <= k) fc = D.fc[q++][1];
+      urBar(mem, fc);
+      const shown = c.slice();
+      k++;
+      if (n === 0 && k < D.frames) reload();
+      return shown;
+    },
+  };
+}
+// urRoles(D, mem): the screen drawn with the colours the loop cycles stood in by 2, 3 and 4, which nothing else
+// on it uses; urPixels(roles, c) puts the frame's own colours in their place.
+function urRoles(D, mem) {
+  const vic = D.frame.vic.slice(); vic[0x21] = 0xF2; vic[0x22] = 0xF3; vic[0x23] = 0xF4;
+  return C64.renderFrame(Object.assign({}, D.frame, { vic, mem, writes: [UR_YELLOW] }));
+}
+function urPixels(roles, c) {
+  return roles.px.map((v) => (v === 2 ? c[0] : v === 3 ? c[1] : v === 4 ? c[2] : v));
+}
+// end of ur-loading
+(() => {
+  const $ = (id) => document.getElementById(id);
+  if (typeof C64 === 'undefined') { $('ur-l-stat').textContent = 'The screen is drawn by the site\'s shared scripts, which the built site serves.'; return; }
+  const D = JSON.parse($('ur-loading-data').textContent), cv = $('ur-l-cv');
+  const ctx = cv.getContext('2d'), img = ctx.createImageData(384, 272);
+  const rgb = C64.PAL.map((x) => [1, 3, 5].map((i) => parseInt(x.substr(i, 2), 16)));
+  let L, roles, bar, shown, t0 = 0, raf = 0;
+  const mmss = (f) => { const s = Math.floor(f / 50); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+  const paint = (c) => {
+    const key = L.mem.subarray(0xE750, 0xE769).join();
+    if (key !== bar) { bar = key; roles = urRoles(D, L.mem); }
+    const px = urPixels(roles, c);
+    for (let i = 0; i < px.length; i++) { const p = rgb[px[i]], o = i * 4; img.data[o] = p[0]; img.data[o + 1] = p[1]; img.data[o + 2] = p[2]; img.data[o + 3] = 255; }
+    ctx.putImageData(img, 0, 0);
+    $('ur-l-stat').textContent = mmss(L.k) + ' of ' + mmss(D.frames);
+  };
+  const reset = () => { L = urLoading(D); bar = null; shown = L.step(); paint(shown); };
+  const tick = (now) => {
+    const want = Math.min(D.frames, Math.floor((now - t0) / 20) + 1);
+    let moved = false;
+    while (L.k < want) { shown = L.step(); moved = true; }
+    if (moved) paint(shown);
+    raf = L.k < D.frames ? requestAnimationFrame(tick) : 0;
+  };
+  const go = () => { cancelAnimationFrame(raf); reset(); t0 = performance.now(); raf = requestAnimationFrame(tick); };
+  $('ur-l-again').addEventListener('click', go);
+  $('ur-l-skip').addEventListener('click', () => { cancelAnimationFrame(raf); raf = 0; while (L.k < D.frames) shown = L.step(); paint(shown); });
+  reset();
+  if (typeof IntersectionObserver !== 'undefined') {
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { threshold: 0.5 });
+    io.observe(cv);
+  } else go();
 })();
 </script>
