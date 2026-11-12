@@ -2680,9 +2680,9 @@
   },
   {
    "address": 34811,
-   "name": "a_87FB",
+   "name": "broadway_column_pointer_high",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 35017,
@@ -5836,9 +5836,9 @@
   },
   {
    "address": 41014,
-   "name": "s_A036",
+   "name": "broadway_space_forward_0",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41022,
@@ -5866,9 +5866,9 @@
   },
   {
    "address": 41092,
-   "name": "s_A084",
+   "name": "broadway_space_forward_1",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41100,
@@ -5896,9 +5896,9 @@
   },
   {
    "address": 41170,
-   "name": "s_A0D2",
+   "name": "broadway_space_forward_2",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41178,
@@ -5926,9 +5926,9 @@
   },
   {
    "address": 41248,
-   "name": "s_A120",
+   "name": "broadway_space_return_0",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41256,
@@ -5956,9 +5956,9 @@
   },
   {
    "address": 41329,
-   "name": "s_A171",
+   "name": "broadway_space_return_1",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41337,
@@ -5986,9 +5986,9 @@
   },
   {
    "address": 41411,
-   "name": "s_A1C3",
+   "name": "broadway_space_return_2",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41419,
@@ -6016,9 +6016,9 @@
   },
   {
    "address": 41493,
-   "name": "s_A215",
+   "name": "broadway_finish_space_return",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41519,
@@ -11240,6 +11240,11 @@
    "text": "Read one byte from each of twelve backdrop rows, starting at the pointer in the immediate operands at $87F7 and $87FB and adding $01E0 between rows. Write the bytes at $4517, $453F and the following screen positions, forty bytes apart."
   },
   {
+   "address": 34811,
+   "type": "line",
+   "text": "High byte of the immediate column-pointer operand loaded at $87FA. The following unrolled sequence repeatedly reads one byte through $9B/$9C, writes it to successive screen positions $28 bytes apart, and adds $01E0 to the source pointer to reach the next backdrop row. After twelve rows, the code at $88C9 increments the column-pointer operands. The source has 480 columns; the complete copy was checked against the processor and three VICE fixtures."
+  },
+  {
    "address": 35017,
    "type": "line",
    "text": "Increment the 16-bit backdrop column pointer in the operands at $87F7 and $87FB, then continue into the screen-shift loop."
@@ -11313,6 +11318,41 @@
    "address": 40952,
    "type": "line",
    "text": "Return if the latch at $9C81 is nonzero. Otherwise set $9C82 and $9C81 to 1, increment $9C80 and wrap it at 2. The resulting state 0 writes $50, $53 and $56 to the sprite-pointer operands at $86E9, $86EE and $86F3; state 1 writes $58, $5B and $5E. The gameplay identity and full movement of the affected sprites remain open."
+  },
+  {
+   "address": 41014,
+   "type": "line",
+   "text": "If $973B is nonzero, jump to its special path. Otherwise, while the low coordinate byte at $9C6A is below $D0, increment $9C7D and, whenever it reaches 2, clear it and add 1 to the 16-bit value at $9C6A/$9C6B. Continue through $A065, which advances the sprite-pointer operand at $86E9 every sixth visit and wraps from $4F to $57."
+  },
+  {
+   "address": 41092,
+   "type": "line",
+   "text": "If $973D is nonzero, jump to its special path. Otherwise, while the low coordinate byte at $9C6C is below $D8, increment $9C7E and, whenever it reaches 2, clear it and add 1 to the 16-bit value at $9C6C/$9C6D. Continue through $A0B3, which advances the sprite-pointer operand at $86EE every sixth visit and wraps from $4F to $57."
+  },
+  {
+   "address": 41170,
+   "type": "line",
+   "text": "If $973F is nonzero, jump to its special path. Otherwise, while the low coordinate byte at $9C6E is below $E0, increment $9C7F and, whenever it reaches 2, clear it and add 1 to the 16-bit value at $9C6E/$9C6F. Continue through $A101, which advances the sprite-pointer operand at $86F3 every sixth visit and wraps from $4F to $57."
+  },
+  {
+   "address": 41248,
+   "type": "line",
+   "text": "If $973B is nonzero, jump to its special path. Otherwise, when the low coordinate byte at $9C6A is at least $20, increment $9C7D and, whenever it reaches 2, clear it and subtract 1 from the 16-bit value at $9C6A/$9C6B. This path advances the sprite-pointer operand at $86E9 every sixth visit and wraps from $57 to $5F. Below the threshold it uses the animation path at $A065."
+  },
+  {
+   "address": 41329,
+   "type": "line",
+   "text": "If $973D is nonzero, jump to its special path. Otherwise, when the low coordinate byte at $9C6C is at least $28, increment $9C7E and, whenever it reaches 2, clear it and subtract 1 from the 16-bit value at $9C6C/$9C6D. This path advances the sprite-pointer operand at $86EE every sixth visit and wraps from $57 to $5F. Below the threshold it uses the animation path at $A0B3."
+  },
+  {
+   "address": 41411,
+   "type": "line",
+   "text": "If $973F is nonzero, jump to its special path. Otherwise, when the low coordinate byte at $9C6E is at least $30, increment $9C7F and, whenever it reaches 2, clear it and subtract 1 from the 16-bit value at $9C6E/$9C6F. This path advances the sprite-pointer operand at $86F3 every sixth visit and wraps from $57 to $5F. Below the threshold it uses the animation path at $A101."
+  },
+  {
+   "address": 41493,
+   "type": "line",
+   "text": "Compare the low coordinate bytes at $9C6A, $9C6C and $9C6E with $20, $28 and $30. If all match, clear $9C82; otherwise leave it unchanged. The Space update calls this after the return paths."
   },
   {
    "address": 41811,
