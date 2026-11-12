@@ -34,6 +34,9 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 .cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
 .cap b{color:var(--ink);font-weight:700}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.controls{display:flex;flex-wrap:wrap;gap:8px}
+.controls button,#sprites{min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);font:inherit;cursor:pointer}
+.controls button:hover,#sprites:hover{border-color:var(--link)}
 
 </style>
 <!-- tabs -->
@@ -55,6 +58,17 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <button type="button" id="sprites" aria-pressed="true">Sprites on</button>
     <p><canvas id="airshaft-frame" aria-label="Reconstructed airshaft frame" style="max-width:100%;height:auto;image-rendering:pixelated"></canvas></p>
     <p class="cap">A PAL frame captured in VICE and reconstructed from the video data and register writes. The reconstruction matched all 104,448 pixels of the emulator capture.</p>
+  </div>
+</section>
+<section>
+  <h2 class="t">Control the descent</h2>
+  <p>In the museum, the joystick changes a descent value. Up reduces it; down increases it. The game adds the value to the Ghostbuster’s position and, while it is nonzero, increases it again after four updates. The <a href="source-museum.html#C74C"><code>$C74C</code></a> control read and <a href="source-museum.html#C77B"><code>$C77B</code></a> descent routine implement these steps.</p>
+  <div class="plate">
+    <p>Each button advances one descent update. Start from the captured rope position and try to reach the floor.</p>
+    <div class="controls"><button type="button" data-rope="up">Up</button><button type="button" data-rope="none">Release</button><button type="button" data-rope="down">Down</button><button type="button" id="rope-reset">Start again</button></div>
+    <label for="rope-position">Descent position</label> <progress id="rope-position" max="176" value="42"></progress>
+    <p id="rope-result" aria-live="polite"></p>
+    <p class="cap">This steps the position and descent-value rules. It does not model the landing consequences or the rest of the museum.</p>
   </div>
 </section>
 </main>
@@ -83,5 +97,47 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     draw();
   });
   draw();
+})();
+</script>
+<script>
+/* rope-model */
+function ropeStep(state, direction) {
+  const next = {...state};
+  if (next.position < 0xB0) {
+    next.position = (next.position + next.speed) & 0xFF;
+    next.second = (next.second + next.speed) & 0xFF;
+    next.count = (next.count + 1) & 0xFF;
+    if (next.count === 4) {
+      next.count = 0;
+      if (next.speed !== 0 && next.speed !== 8) next.speed = (next.speed + 1) & 0xFF;
+    }
+  } else {
+    next.landed = 1;
+  }
+  if (direction === 'up' || direction === 'both') {
+    if (next.speed !== 0) next.speed--;
+  } else if (direction === 'down' && next.speed < 7) {
+    next.speed++;
+  }
+  return next;
+}
+// end of rope-model
+</script>
+<script>
+(() => {
+  let state;
+  const progress = document.getElementById('rope-position');
+  const result = document.getElementById('rope-result');
+  const show = () => {
+    progress.value = state.position;
+    result.textContent = `Position ${state.position} / 176 · descent value ${state.speed}${state.landed ? ' · floor reached' : ''}`;
+  };
+  const reset = () => { state = {position: 42, second: 63, speed: 0, count: 0, landed: 0}; show(); };
+  document.querySelectorAll('[data-rope]').forEach(button => button.addEventListener('click', () => {
+    if (!state.landed) state = ropeStep(state, button.dataset.rope);
+    show();
+  }));
+  document.getElementById('rope-reset').addEventListener('click', reset);
+  reset();
 })();
 </script>
