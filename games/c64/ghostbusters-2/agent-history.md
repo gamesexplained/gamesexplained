@@ -103,3 +103,5 @@ Decoded the two 41-byte airshaft character-position curves and traced their outp
 Traced the airshaft rope-position Y adjustment, including its offset bounds and screen-row copies.
 
 Connected the rope Y adjustment enable to the airshaft scroll boundary and its offset direction to the joystick handlers.
+
+Traced the zero case of the airshaft screen-pattern drawing routine, including its paired character and colour writes.
