@@ -12131,9 +12131,9 @@
   },
   {
    "address": 47320,
-   "name": "b_B8D8",
+   "name": "airshaft_restore_pointer_25",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 47338,
@@ -12983,9 +12983,9 @@
   },
   {
    "address": 49011,
-   "name": "j_BF73",
+   "name": "airshaft_draw_pointer_25",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 49040,
@@ -19575,6 +19575,11 @@
    "text": "Clear $802E and inspect $802F. When it is nonzero, continue through the other pattern cases at $B8D8. For zero, return if the column value $B7BA is below 9. Otherwise start with X zero and patch the two screen destinations and two colour destinations with the 16-bit addresses in $B7BE/$B7BF and $B7C4/$B7C5. Copy the successive pair of bytes at $B79D,X to screen offsets 0 and 1, and write colour $0A to the corresponding colour positions. Subtract $2A from both destination addresses, advance X by 2 and subtract 2 from $B7BA; repeat while the resulting column value is at least 9. The zero pattern at $BEE0 saved those screen bytes to $B79D before drawing; this path restores the character bytes but writes colour $0A rather than restoring their previous colours. The full visual purpose remains open."
   },
   {
+   "address": 47320,
+   "type": "line",
+   "text": "Compare A, loaded from $802F on the preceding path; if it is not 1, continue to the next pattern case at $B943. Otherwise set $B7C2 to 6 and return if $B7BA is below $0E. Starting at X zero, patch a screen store from $B7BE/$B7BF and a colour store from $B7C4/$B7C5, then write $B79D,X to the screen and $0A to colour. Subtract $29 from both 16-bit destination addresses; increment X and decrement $B7BA and $B7C2. Repeat while the counter is nonzero and the column is at least $0E. The matching $BF73 draw path saves each overwritten character byte, but not its original colour."
+  },
+  {
    "address": 48744,
    "type": "line",
    "text": "If $802E is nonzero call $B857, then call $B7C6 and $8D09 with X=$11. Read the sprite pointer operand at $8FB6. Values $20,$25,$2A,$30,$35,$3A,$3F,$44,$4A,$4F,$54,$59,$5E and $64 jump respectively to $BEE0,$BF73,$BFE3,$BFF5,$C065,$C0F7,$C15A,$C1FB,$C20D,$C2B0,$C313,$C3A5,$C40D and $C41F; all other values jump to $C487."
@@ -19583,6 +19588,11 @@
    "address": 48864,
    "type": "line",
    "text": "Clear $802F, call $C588 and use Y to read $C5A8. Write that byte and the next value to the immediate operands at $BF34 and $BF49. If $B7B8 is below 9 return. Otherwise initialize X to zero and repeat: use $B7BC/$B7BD to set the absolute addresses of the two loads and four stores in the loop, with $94 added to the high byte for the two colour stores; save two original bytes in $B79D,X and $B79E,X; call $AF14 for each; and store the two selected values and colour 9. Subtract $2A from the 16-bit pointer at $B7BC/$B7BD, add 2 to X, subtract 2 from $B7B8, and continue while $B7B8 is at least 9."
+  },
+  {
+   "address": 49011,
+   "type": "line",
+   "text": "Set $802F to 1, call $C588, set $B7C2 to 6 and copy $C5AE,Y to the immediate operand at $BFBA. Return if $B7B8 is below $0E. Otherwise start at X zero and patch a screen load, screen store and colour store from $B7BC/$B7BD, adding $94 to the high byte for the colour address. Save the original screen byte at $B79D,X, pass it to $AF14, then write colour 9 and the selected character. Subtract $29 from $B7BC/$B7BD, increment X and decrement $B7B8 and $B7C2; repeat while the counter is nonzero and the column remains at least $0E."
   },
   {
    "address": 49498,

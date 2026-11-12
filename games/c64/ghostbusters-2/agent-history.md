@@ -107,3 +107,5 @@ Connected the rope Y adjustment enable to the airshaft scroll boundary and its o
 Traced the zero case of the airshaft screen-pattern drawing routine, including its paired character and colour writes.
 
 Connected the zero pattern restore to its matching save-and-draw path and noted that it does not save the original colours.
+
+Traced the airshaft pointer `$25` draw and restore pair and its boundary-limited diagonal.
