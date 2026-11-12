@@ -26,3 +26,13 @@ Gold: a human's section-by-section pass over the copy.
 - The map with the four items, the hut and the landing sites marked, and
   the seven entry zones of the soldiers.
 - A Play tab: the scroll and the spawn budget are small enough to port.
+
+## Loading picture and tune
+
+- The Ocean cassette draws its picture of Rambo with the Ocean logo
+  from the top down (from about 1:30 to 2:00 into the load) and plays Ocean's loader tune
+  from about 1:30 to 4:30; the game starts at about 5:50. Neither is on the pages. A section
+  on the Graphics tab could draw the picture from the tape's bytes, revealed top down, with
+  a Skip button, and the tune could sit beside Martin Galway's music on How it works, named
+  against HVSC's `Ocean_Loader` files. Short Circuit's and Green Beret's pages are the
+  models.

@@ -97,8 +97,19 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>An effect is a voice's whole setting in one block: waveform, envelope, frequency, pulse width, and a frequency slide or arpeggio with a pulse sweep. <code>sfx_start</code> copies it to the voice and marks the voice as taken, and the music's notes on that voice go silent until the effect's sound time runs out. A bigger sound, an explosion, a bazooka shell or a weapon being taken, takes all three voices at once.</p>
 </section>
 
+<section id="loading-tune">
+  <p class="fig">04 · The loading tune</p>
+  <h2 class="t">Music: the loading tune, the one Galway liked least</h2>
+  <p class="lede">The cassette and the disk play a tune of their own while the game loads, by Martin Galway. It is not one of the arcade's tunes. The High Voltage SID Collection, which lists it as the first of the game's tunes, notes that from 54 seconds in it may owe something to Jean-Michel Jarre's "Night in Shanghai", and that it is the one of all his tunes Galway is least happy with. The game itself never plays it.</p>
+  <div class="plate">
+    <div id="gb-load"></div>
+    <p class="cap">The player runs the tune's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette calls it. It was checked against the cassette loading in VICE: the sound chip's registers after each of the first 12,200 calls, four minutes of music, are the player's. The disk holds the same bytes, and the High Voltage SID Collection holds them too, but for one.</p>
+  </div>
+  <p>The tune plays at full volume and never uses the filter. On the cassette it is already playing when the loading picture starts to arrive (<a href="graphics.html#loading">Graphics</a>); the disk starts it only once the picture is whole, and stops it when a key or the fire button is pressed. After its first 2 minutes 39 seconds it repeats every 1 minute 17 seconds.</p>
+</section>
+
 <section>
-  <p class="fig">04 · One frame, rebuilt from memory</p>
+  <p class="fig">05 · One frame, rebuilt from memory</p>
   <h2 class="t">Twenty-one figures on eight sprites</h2>
   <p class="lede">The C64 has eight sprites. Green Beret moves up to 21 figures, and re-uses each sprite lower down the screen once its first figure has been drawn.</p>
   <div class="plate">
@@ -112,7 +123,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">05 · The map</p>
+  <p class="fig">06 · The map</p>
   <h2 class="t">A stage is a strip of tiles</h2>
   <p class="lede">Each new column at the right edge of the screen is read from two tiles, one above the other.</p>
   <div class="plate">
@@ -128,7 +139,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">06 · The hero</p>
+  <p class="fig">07 · The hero</p>
   <h2 class="t">A jump is 42 frames</h2>
   <p class="lede">The hero is moved from the raster interrupt, once a frame, and every jump in the game follows one table of heights.</p>
   <div class="plate">
@@ -143,7 +154,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">07 · The enemies</p>
+  <p class="fig">08 · The enemies</p>
   <h2 class="t">The soldiers and what each one does</h2>
   <p class="lede">Every enemy is two sprites, a top and legs, and a type number from 0 to 9 that picks its colour, its speed, its points and its behaviour.</p>
   <div class="plate">
@@ -155,7 +166,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">08 · Who comes when</p>
+  <p class="fig">09 · Who comes when</p>
   <h2 class="t">The difficulty creeps up while you play</h2>
   <p class="lede">Most enemies come from five lanes, each a timer. A difficulty number rises as you play and changes which enemy each lane sends and how soon.</p>
   <div class="plate">
@@ -173,7 +184,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">09 · The end of each stage</p>
+  <p class="fig">10 · The end of each stage</p>
   <h2 class="t">Each stage ends in a fight of its own</h2>
   <p class="lede">When the scroll reaches the stage's last column, an alarm sounds, the hero may walk on across the screen, and the stage's own routine takes over the main loop.</p>
   <p><b>The Missile Base.</b> A lorry drives across the bottom floor, slowing from 6 pixels a frame to 2 as it goes, and leaves the screen. Then eighteen soldiers and kickers come from the right, never more than three on the floor at once.</p>
@@ -184,7 +195,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">10 · Memory</p>
+  <p class="fig">11 · Memory</p>
   <h2 class="t">Four stages in one load</h2>
   <p class="lede">The game loads once. Each stage's characters, tiles and tile colours wait elsewhere in memory, and nine block swaps put them where the video chip and the map routine read them.</p>
   <div class="gb-scroll"><table class="gb-tbl" id="gb-swaps"></table></div>
@@ -331,7 +342,7 @@ function gbMines(m, s) {
 <script>
 // The page's widgets, drawn from the listing's memory (C64.load): the stages' memory and map by
 // gb-stage's helpers, the two sound players by gb-music's createDriver on the game's own driver,
-// and the frame of section 03 from its recording above.
+// and the frame of section 05 from its recording above.
 (function () {
 const $ = (id) => document.getElementById(id);
 const P = C64.PAL, hex = C64.hex;
@@ -566,5 +577,37 @@ function memory(mem) {
       + td(w(0xFF83 + 2 * n).toLocaleString('en-GB'), 'n') + td(GB_SWAPS[n][0]) + td(GB_SWAPS[n][1]) + '</tr>';
   $('gb-swaps').innerHTML = h;
 }
+})();
+</script>
+<script type="application/json" id="gb-loader-data">{"about":"The loading tune's code and notes, $A000-$ACED, as the cassette leaves them in memory when it starts the tune","blocks":[[40960,"rhaorBeojhuojByorQiojR+orQeojR6orQaojR2oYK49qKw+qI5CqIxDqK0vqI1GqK0uqI1FqK0tqI1EqGCuZKisZaiOaaiMaqitVqiNbaitVaiNbKitVKiNa6hgxhPwDkzSoakDGGUNhQ2QAuYOoACxDcnAkBCqvVuojYWgvVyojYagTP//hRvJYJAC6WDJX/BnqqkIjQTUoBy5T6eZ/qeIEPetaaeNBtStaKeNBdStZqeNA9StZaeNAtS8c6i9x6iNFqiMF6iNANSMAdSsZqeMFaiuZaeOFKiOIaiMIqiuXaeODKiOI6iMJKitZ6eNGKgp940E1CAAoKABsQ2mG+BgsASqve2nhROpAhhlDYUNkALmDkzSoeYWpBa+bKe5dKeGDYUOTG+gphYYqQJlDZ1sp5hlDp10p8ixDZ18p8YWqQJMZqCmFt59p/ANvG2nvXWnhA2FDkxvoOYWqQFMZqDIsQ2FGcixDYUaoASxGZlnp4gQ+ExkoMixDYUZyLENhRqgDbEZmU+niLEZmU+niBDyTGSgqQOkFhhlDZlsp6kAZQ6ZdKfGFqABsQ2qyLENhg2FDkxvoMixDarIsQ2dT6dMZKDIsQ2qyLENnf6nTGSgYK4aqPD6rRioKQjwE6UTzRmosBapAI0ZqKlAjRio0AfOGajQBalAjQTUrQ6o8AfODqhMUqIYriGorCKorSOo8BCKbRCoqphtEaioziOoTEairSSo8BCKbRKoqphtE6ioziSoTEairQyojSOorQ2ojSSoTAaijiGojCKojgLUjAPUrhuorByoGK0KqPAMzgqorQuoKQLQPmAYrR2o8A/OHaiKbf6nqpht/6dMr6KtHqjwD84eqIptAKiqmG0BqEyvoq0fqPAmzh+oim0CqKqYbQOoTK+iim0EqKqYbQWoqI4A1IwB1I4bqIwcqGAgDKBMaaLGFPAOTEukqQMYZQ+FD5AC5hCgALEPycCQEKq9caiN66K9cqiN7KJM//+FG8lgkALpYMlf8GiqoBy5hKeZJaiIEPetnqeNDdStnaeNDNStnKeNP6gp940L1K2bp40K1K2ap40J1LxzqL3HqI09qIw+qI0H1IwI1Kybp4w8qK6ap447qI5IqIxJqKyTp4w0qK6Sp44zqI5KqIxLqCAfoKABsQ+mG+BgsASqve2nhRSpAhhlD4UPkALmEExLpOYXpBe+oae5qaeGD4UQTNWiphcYqQJlD52hp5hlEJ2pp8ixD52xp8YXqQJMzKKmF96yp/ANvKKnvaqnhA+FEEzVouYXqQFMzKLIsQ+FGcixD4UaoASxGZmcp4gQ+EzKosixD4UZyLEPhRqgDbEZmYSniLEZmYSniBDyTMqiyLEPjQmkyLEPjQqkIP//TMqiqQOkFxhlD5mhp6kAZRCZqafGF6ABsQ+qyLEPhg+FEEzVosixD6rIsQ+dhKdMyqLIsQ+qyLEPnSWoTMqiYK5BqPD6rT+oKQjwFqUUzUCosCSpAI1AqK0/qCn2jT+o0BKtQKjQBs5BqNALYM5AqNAFqUCNC9StNajwB841qEzZpBiuSKisSaitSqjwEIptN6iqmG04qKjOSqhMzaStS6jwEIptOaiqmG06qKjOS6hMzaStM6iNSqitNKiNS6hMjaSOSKiMSaiOCdSMCtSuQqisQ6gYrTGo8AzOMaitMqgpAtA+YBitRKjwD85EqIptJaiqmG0mqEw2pa1FqPAPzkWoim0nqKqYbSioTDalrUao8CbORqiKbSmoqphtKqhMNqWKbSuoqphtLKiojgfUjAjUjkKojEOoYCAroEzwpMYV8A5MlKapAxhlEYURkALmEqAAsRHJwJAQqr2HqI1ypb2IqI1zpUz//4UbyWCQAulgyV/waKqgG7m5p5lMqIgQ963Tp40U1K3Sp40T1K3Rp41mqCn3jRLUrdCnjRHUrc+njRDUvHOovceojWSojGWojQ7UjA/UrNCnjGOors+njmKojm+ojHCorMinjFuorsenjlqojnGojHKoID6goAGxEaYb4GCwBKq97aeFFakCGGURhRGQAuYSTJSm5hikGL7Wp7nep4YRhRJMXKWmGBipAmURndanmGUSnd6nyLERneanxhipAkxTpaYY3uen8A2816e936eEEYUSTFyl5hipAUxTpaAcufirmbmniBD3qQFMU6XIsRGNbKbIsRGNbaYg//9MUaWpA6QYGGURmdanqQBlEpnep8YYoAGxEarIsRGGEYUSTFylYK5oqPD6zmeo0AWpQI0S1Biub6iscKitcajwEIptXqiqmG1fqKjOcahM46atcqjwEIptYKiqmG1hqKjOcqhM46atWqiNcaitW6iNcqhMo6aOb6iMcKiOENSMEdSuaaisaqgYrWuo8A/Oa6iKbUyoqphtTahMO6etbKjwD85sqIptTqiqmG1PqEw7p61tqPAmzm2oim1QqKqYbVGoTDunim1SqKqYbVOoqI4O1IwP1I5pqIxqqGAgSqBM9aYoANj/KACQAAMGAwAFBf8AAAUDAAAAAAdJCMoI/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQA7P8UAAAAAwYDAB4FCgoKBWQAnP8ACEnMyhT/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABwD5/wcAAAAECAQAAAf//wAFBQD7/wAIQf8MIP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAwQFBgcICQoLDA0ODxAAQEBAQEBAQEBAQEBAQEBAQEBAQFiqf2qJawBAQEHBwcAAAABAQEHAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQECAgICAgICAwMDAwMEBAQEBQUFBgYGBwcICAkJCgoLDAwNDg8QERITFBUWGBkbHB4gIiQmKCstMDM2OT1AREhMUVZbYGZsc3qBEiM0RlpuhJuzzekGJUVojLPcCDZnm9IMSYvQGWe5EGzONaMXkxWfPM1yINica0YvJSo/ZJrjP7E41o1eS1V+yDTGf2FvrH68lan8oWmM/sLfWDR4GKGVoaiht6EpoUahAQB4oWGhxKEBAH+jDqQhpDCkkKOto72q36PIoz2k/KMGpnGmhKYCABemNKZPpgIAAgACAF+mQbut///SFADSFgDSGADSGgDSHAC/AL8AwpeqNwRDBDoQv6A3BEMEPBC/oMYYQUgCRgJFAkYCxhhJQxC/gEEIPgQ8BDoEMgTGDQc1EL+gv4DGDQXIA8KXqsrQuKrGBojGB//IBL8AysgCo//QXanGDBi/YUMD0g0HXwWj/7+ByqOgowHSBmLSBwDSDAfSDQe/D9IGntIH/9IMCF8EoaBBCKHAo2CkYKSgQwRBBKMAyAS/AMpfEMTEqRQA7P8UAAAAAwYDAB4Fy/8AAAAAAAD/AAAACAQgHqAgSqUgw6JMXaCLCMyLCMyNCMyLCMyOCMyNCMySCMyOCMyVCMySCMyXCMyVCMyXCMyXGMyaCMyXCMyZCMyaCMyXCMyZCMySCMyXCMyQCMySCMyOCMyQCMyLCMyOGMzAIRZ3Bwo3BD4EOhC/oDcEPgQ8EL+gNwRFBEYQv6BDBD4EPBC/oMBJu80U/62cp0lgjZynqQFMzKKiFL0SqJUNqQCdANTKEPNgouWgqo4yqowzqmDumqfQA+6bp2CiHqCg0OqiuZ08qsrQ+mDIBr8Ayi4QKxC/gCQQJxC/wCIIIQgfEF8QIhApECsQHxBzgMYMA8YQBcYXANCSql8Qwj2qwj2q1NqqyBDCParK1O6qwj2q1PSqxhcI0F2pv2CXAL9glABfCJPAkGCTYJLAlcCVoDMEMgSToDMIkoAuCCwIi7ArBIxQLAQwCCwEMwQsBDgEl6A6AjgCNwI4ApVQMwTGBinGBwDGDAjGDQc0CMYNBTMExg0HNATGDQUzBM4jqi4EzhWqxgwDi1ArBC4CKwIuAjICLgIyAjUCMgI1AjoCOQI6ApcAvwC/AL+AxE6rqUAsqSCNZ6ipQY0S1GCpQI3Up6nujdOnYAUA+/8FAP//AwYDAgUFBfoIBQoAnP8AB0EIegVkyAIfBCIEJwQrBCcEIgTKwB8QyB7U4qtfEMrU7at/gMge1N+rv4DKzH9gHwSCUB8EIgQmEB8EIgQmBCsMHwQiBCYEKwQmCMgEHwQiBCYEKwQmBCIEysgCyAQfBCIEJgQrBCYEIgTKyAQfBCMEKAQrBCgEIwTKysgCIAQkBCcEKwQnBCQEysgCIAQkBCcEKQQnBCQEysgDIgQmBCkEKwQpBCYEyiIEJgQpBCwEKQQmBMgCyAIgBCIEJwQsBCcEIgTKwhWsyAIdBCIEJwQpBCcEIgTKwhWsysRqrA=="]],"init":43722,"play":43569,"before":[[22,100],[24,15]]}</script>
+<script>
+/* gb-loader-tune */
+// createLoaderTune for C64Sid: the loading tune's own code on the kit's 6502 over the cassette's
+// bytes (D.blocks, the block gb-loader-data): the cassette sets the filter cutoff and the volume
+// (D.before), calls $AACA once and then $AA31 once a frame, from the loader's loop at $0120. Only
+// the SID's registers are I/O; the tune reads them as 0.
+function createLoaderTune(D, C64Cpu) {
+  const mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
+  const image = D.blocks.map(([a, s]) => [a, Uint8Array.from(atob(s), (c) => c.charCodeAt(0))]);
+  let writes = [], on = false;
+  const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: {
+    read: (a) => (a >= 0xD400 && a <= 0xD41F ? 0 : mem[a]),
+    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); } else mem[a] = v; },
+  } });
+  const set = (list) => { for (const [r, v] of list || []) { sid[r] = v; writes.push(r, v); } };
+  return {
+    init() { mem.fill(0); for (const [a, b] of image) mem.set(b, a); sid.fill(0); writes = [];
+      set(D.before); cpu.call(D.init, {}, { maxSteps: 200000 }); set(D.after); on = true; },
+    stop() { on = false; },
+    play() { writes = []; if (on) cpu.call(D.play, {}, { maxSteps: 200000 }); },
+    sid, get writes() { return writes; }, playing: () => on, mem,
+  };
+}
+// end of gb-loader-tune
+(() => {
+  const el = document.getElementById('gb-load');
+  if (typeof C64Sid === 'undefined' || typeof C64Cpu === 'undefined') { el.textContent = 'The player needs the site\'s shared scripts, which the built site serves.'; return; }
+  C64Sid.mount(el, { driver: createLoaderTune, data: JSON.parse(document.getElementById('gb-loader-data').textContent),
+    tunes: ['The loading tune'], loops: [{ from: 7937, period: 3840 }] });
 })();
 </script>

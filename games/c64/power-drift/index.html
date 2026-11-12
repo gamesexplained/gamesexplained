@@ -97,8 +97,19 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The game writes <code>$B805</code> in three places: 2 when the player's place changes (<code>update_place</code>) or a rival comes alongside (<code>rival_near</code>), and 3 when the kart spins (<code>kart_spin</code>). Effect 1 has no writer at all. Effect 4 is a steady tone with a sweeping pulse, which starts itself again whenever it ends; it sounds like an engine. Only starting effect 4 sets the flag at <code>$B808</code> that keeps it going, and only a routine nothing calls clears it (<code>sound_engine_off</code>). So the game carries an engine sound it never plays.</p>
 </section>
 
+<section id="loading-tune">
+  <p class="fig">04 · The loading tune</p>
+  <h2 class="t">Music: the cassette plays an arcade tune the game never plays</h2>
+  <p class="lede">The 1989 cassette plays a tune while it loads, over its credits, its logo and its portrait of Jason (<a href="graphics.html#loading">Graphics</a>), for about five minutes, and then fades it out: the last minute and a half of the load is silent. The High Voltage SID Collection names it Poker Face, one of Hiroshi Kawaguchi's tunes for Sega's arcade game, arranged for the C64 by Dave Lowe. It is neither of the two tunes the game plays, and the disk loads without it.</p>
+  <div class="plate">
+    <div id="pd-load"></div>
+    <p class="cap">The cassette's own copy of the game's sound driver, with the tunes it carries, runs on the kit's 6502 simulator from the bytes the cassette leaves in memory: the tune's number, 1, is already in <code>$B804</code>, and the cassette calls <code>sound_reset</code> (<code>$B80A</code>) once and then <code>sound_play</code> (<code>$B800</code>) once a frame. It was checked against the cassette loading in VICE: after each of the first 4,399 calls, a minute and a half of music, the sound chip's registers are the player's.</p>
+  </div>
+  <p>The driver is the disk's, byte for byte but for its variables, from <code>$B800</code> to <code>$C4B9</code>. What differs is the music after it: the cassette's tunes from <code>tune_table</code> (<code>$C4BA</code>) on are not the disk's. The tune comes round every 61 seconds.</p>
+</section>
+
 <section id="rivals">
-  <p class="fig">04 · The rivals</p>
+  <p class="fig">05 · The rivals</p>
   <h2 class="t">The fastest rival is always the face to the right of yours</h2>
   <p class="lede">The eleven other drivers have no skill of their own. A kart's top speed belongs to its place on the starting grid, and the game deals the places out along the row of faces, the fastest to the face after the one picked.</p>
   <div class="plate" id="pd-pick">
@@ -133,7 +144,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="frame">
-  <p class="fig">05 · One frame</p>
+  <p class="fig">06 · One frame</p>
   <h2 class="t">One frame of a race, drawn from memory</h2>
   <p class="lede">The race screen is two screens in one: a panel of five text rows at the top, and the view under it.</p>
   <div class="plate">
@@ -149,7 +160,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="view">
-  <p class="fig">06 · The view</p>
+  <p class="fig">07 · The view</p>
   <h2 class="t">The roadside is cut out of a sheet of characters</h2>
   <p class="lede">The view is a screen of text characters. Each object beside the road is a block of them, with a picture of its own for each of 16 distances.</p>
   <p>Each picture of the view is built in the same order. <code>clear_view</code> fills the screen with the sky character. <code>draw_horizon_rows</code> copies in the stage's two horizon pictures, 40 characters of each from a picture 80 wide, starting at a column that moves one place for each step of a bend, so the skyline turns as the road does. <code>draw_road</code> draws the road a row at a time from the bottom up. Last, <code>draw_scenery</code> draws the objects, far ones first so that near ones cover them. Every object is copied out of the tile sheet by one routine, <code>draw_tiles</code>, which leaves out the empty character 0, so an object's shape is cut round its outline. Every kind of object at all 16 distances is on <a href="graphics.html#roadside">Graphics</a>.</p>
@@ -158,7 +169,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="road">
-  <p class="fig">07 · The road</p>
+  <p class="fig">08 · The road</p>
   <h2 class="t">Every hill is a list of road widths</h2>
   <p class="lede">The road is drawn from the bottom of the screen up, one character row at a time. A list gives each row's width, and a hill is a different list for every step.</p>
   <div class="plate">
@@ -170,7 +181,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="karts">
-  <p class="fig">08 · The karts</p>
+  <p class="fig">09 · The karts</p>
   <h2 class="t">Eleven rivals share four sprites</h2>
   <p class="lede">The C64 shows eight sprites at once. The player's kart takes four of them, and the other eleven karts take turns with the remaining four.</p>
   <p>The player's kart is a head and three body sprites, set once a frame by a timer interrupt (<code>sprite_band_irq</code>). The rivals are up to twelve records of a position, a picture and a colour, built each race frame by <code>place_rivals</code>, sorted from the top of the screen down (<code>sort_karts</code>) and copied where the interrupts read them (<code>copy_kart_sprites</code>). Down the screen, an interrupt (<code>kart_mux_irq</code>) puts the next record into the next of sprites 4 to 7 just after the one before has been drawn, so one sprite can show several karts in one frame. Every picture a kart is drawn with, the rivals' at each distance, the spin, the start lights and the podium among them, is on <a href="graphics.html#cast">Graphics</a>.</p>
@@ -178,7 +189,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="speed">
-  <p class="fig">09 · Speed and time</p>
+  <p class="fig">10 · Speed and time</p>
   <h2 class="t">Speed levels of 7 km/h</h2>
   <p class="lede">Up on the stick adds a speed level every other race frame. The read-out adds 7 km/h for each level.</p>
   <div class="plate">
@@ -194,7 +205,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="places">
-  <p class="fig">10 · Places</p>
+  <p class="fig">11 · Places</p>
   <h2 class="t">Three places on the podium, and the game ends when they are gone</h2>
   <p class="lede">Each race has three places on the podium. Once rivals have taken all three, the game is over, wherever the player is.</p>
   <div class="plate pd-shots"><figure><img src="reference/wiki-third-place.png" alt="Three karts stacked above the road, each with a driver's face" width="320" height="200"><figcaption>The player has finished third. The three finishers stand one above another over the road, the first at the top, each with its driver's face from the front.</figcaption></figure></div>
@@ -694,5 +705,38 @@ function raceFrame(m, colour) {
     };
     drawRoster(); drawGrid();
   }).catch((e) => { $('pd-roster').insertAdjacentHTML('afterend', '<p class="cap">The listing did not load: ' + e.message + '</p>'); });
+})();
+</script>
+<script type="application/json" id="pd-loader-data">{"about":"The cassette's copy of the game's sound driver and its tunes, $B800-$C884, and the driver's zero-page variables at $F4-$FF, as the cassette leaves them in memory when it starts the tune: the tune's number, 1, is already at $B804","blocks":[[244,"y8NNraalzUKEexMg"],[47104,"TDa4YAEAAAAA6iBtvyB6vyCHv603wo0Y1CAowCCUv6kEjQTUjQvUjRLUqQCNBNSNC9SNEtRgrQe40GatBbjwYckE0AiiAY4IuExMuAqqvTfCjaPA6L03wo2kwKkBjbvAqQCNBbiNncCNnsCN48CN5MCN5cCN5sCN58CN6MCN6cCNFNSNqcCNqsCNq8CNrcCNrsCNsMCNssCNs8CNtMCNFNQgrbitEtCNusBgPhCpAM0GuPADTMy5qQCN9ACp1I31AK1XwIX6rVjAhfutWcCF/K1awIX9rVvAhf6tXMCF/6m+hfapwIX3qVWF+KnAhfmpBI25wCAWu6X6jVfApfuNWMCl/I1ZwKX9jVrApf6NW8Cl/41cwK1vwIX6rXDAhfutccCF/K1ywIX9rXPAhf6tdMCF/6nFhfapwIX3qW2F+KnAhfmpC425wCAWu6X6jW/ApfuNcMCl/I1xwKX9jXLApf6Nc8Cl/410wK27wPAKqeyN9ACpwI31AK2HwIX6rYjAhfuticCF/K2KwIX9rYvAhf6tjMCF/6nMhfapwIX3qYWF+KnAhfmpEo25wCAWu6X6jYfApfuNiMCl/I2JwKX9jYrApf6Ni8Cl/42MwK27wPBeqQCN9ACp1I31AK2fwIX6raDAhfutocCF/K2iwIX9raPAhf6tpMCF/6njhfapwIX3qZ2F+KnAhfmpEo25wCAWu6X6jZ/ApfuNoMCl/I2hwKX9jaLApf6No8Cl/42kwK27wPAtrenAjRTUrejAjRPUrefAjRLUrebAjRHUreXAjRDUreTAjQ/UrePAjQ7UTJW6qQDNBrjwA0wVu63SwI0U1K3RwI0T1K3QwI0S1K3PwI0R1K3OwI0Q1K3NwI0P1K3MwI0O1K28wPAnreLAjQ3UreHAjQzUreDAjQvUrd/AjQrUrd7AjQnUrd3AjQjUTOW6rcvAjQ3UrcrAjQzUrcnAjQvUrcjAjQrUrcfAjQnUrcbAjQjUrcXAjQfUrcTAjQbUrcPAjQXUrcLAjQTUrcHAjQPUrcDAjQLUrb/AjQHUrb7AjQDUYKAAsfjIEfjwFog4sfjpAZH4yLH46QCR+CDZv0wovGCgALH+yf7QA0zVu6qYrLnAkfSK0A2pMY38AKnCjf0ATIm7qr2dwaAAkfboyL2dwZH2oAqx+I38AMix+I39AKAUsfiIkfiIsfiIkfiIsfjwBKmZkfju/gDQA+7/AKAAsf6q0CXu/gDQA+7/ALH+kfju/gDQA+7/ALH+yJH47v4A0APu/wAg2b9gvQHBkfjoyL0BwZH47v4A0APu/wAg2b9gqfuN+bupu436u+7+ANAD7v8Asf4Ybfm7jfm7rfq7aQCN+rtM+7sAAABMO71Mir1M7r1MNr5Mbb5Mrb5Mvr5M3L5M7b5MF79MrL1MLb9Mzr1MR76gF7H48EfJAfAioAKx9jigFvH4oAKR9six9ukAkfbwA0x1vKAXqQGR+Ex1vKACsfYYoBZx+KACkfbIsfZpAJH2yQ/wA0x1vKAXqQKR+KAMsfjwWckB8DOgALH2oA048figAJH2yLH2CKAP0fiwFChIiLH4oACR9shokfagDKkAkfhgoAEo6QCR9mCgALH2oA0YcfigAJH2yLH2CKAP0fiQA0yWvKABKGkAkfZgoBCx+NABYKqgEbH48AY46QGR+GCgE7H48AY46QGR+GCgFLH4iJH4GIpqkB1JgKqgAbH2SIix9qAVOPH4oACR9mjpAMiR9kw1vaqgAbH2SIix9qAVGHH4oACR9mhpAMiR9qAQipH4YKAAsfqN/gDJ/vAY7voA0APu+wCx+o3/AO76ANAD7vsATDW77voA0APu+wCx+skA8A6N/wDu+gDQA+77AEw1u6AIsfiN+gDIsfiN+wBMO73u/gDQA+7/ALH+qu7+ANAD7v8A4P/wCLH+nb7ATIq9TDW77v4A0APu/wCx/qru/gDQA+7/AOD/8Aix/p3VwEyKvUw1u+7+ANAD7v8AoACx/qru/gDQA+7/ALH+jf8Ajv4ATDW7oADu/gDQA+7/ALH+SO7+ANAD7v8Asf5I7v4A0APu/wCx/kju/gDQA+7/ALH+7v4A0APu/wCgD5H4iGiR+IhokfiIaJH4TDW77v4A0APu/wCgDKkAkfhMNbupAKy5wJH07v4A0APu/wCgALH+jePA7v4A0APu/wCx/o3kwExmu+7+ANAD7v8AoACx/kju/gDQA+7/ALH+SO7+ANAD7v8Asf6gFZH4aIiR+IiIaJH4iIipmZH47v4A0APu/wBMNbugEKkAkfju/gDQA+7/AEw1u+7+ANAD7v8Asf6gFpH4yKkBkfju/gDQA+7/AEw1u6kAoBeR+O7+ANAD7v8ATDW77v4A0APu/wCgALH+qu7+ANAD7v8Asf6gC5H4iIqR+O7+ANAD7v8ATDW7qQCNu8CNBbiNFNTNCLjwBakEjQW4YK0B3O7+ANAD7v8AoACx/g3pwI3pwO7+ANAD7v8Asf6NncDu/gDQA+7/ALH+jZ7ArefAKf6N58Du/gDQA+7/AGCi5KkAqJkA1Mjo0PlgoripAKiZVcDI6ND5YKLrqQComb7AyOjQ+WCtBLgKCgqqvbrEjV3A6L26xI1ewOi9usSNdcDovbrEjXbA6L26xI2NwOi9usSNjsDovbrEjb67jcW76L26xI2/u43Gu2CgALH8yf/wOqru/ADQA+79ALH8oASR9sjIqQDNu8DwF6kPjRjUqRLNucDQB6kAzbvA0ASKTBHAipH27vwA0APu/QBgqQCNCLiNBbggF79gqbWiwI1bwI5cwI1zwI50wI2LwI6MwKm3osCNV8COWMCNb8COcMCNh8COiMBgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/gP+AAAAAAAw1KkSzXo50AepAM18OdAEikzSOIqRAAD8ANAD7v0AYKkAjckwjQAAAAAAAAAAADmNHDmOHTmNNDmONTmNTDmOTTmpeAAAAwAHAAsADwATABcAGwAfACMAJwArAC8AMwA3ADsAPwBDAEcASwBPAFMAVwBbAF8AYwBnAGsAbwBzAHcAewB/AAIAAQAEAAUACgAJAAQACgAUAAEAAQAAAAUACwARABcAHQAjACkALwA1ADsAQQBHAE0AUwBZAF8AZQBrAHEAdwB9AIMAiQCPAJUAmwChAKcArQCzALkAvwDFAAAAFANDA3QDqQPgAxsEWgScBOIELQV7Bc8FUQaFBugGUQfBBzcItAg4CcUJWQr3Cp4LTwwKDdENow6CD24QaBFxEokTsxTuFTwXnRgUGqEbRh0DH9sgzyLDJBMnZincK3cuOzEoNEI3izoGPrdBn0XDSSZOy1K3V+9cdWJQaIRuFnUNfG2DPouFk0uclqVvr92568QAEf8CAAAPDyTDRsNjw3zDBfCB8IH/8IHwgfAR8IHwEfCB8IHwgfAR8IHwgfCB8BHwEfCB8IHggeAR4IHgEeCB4BHggeAR4IHgEeCB4BHggeAR4IHgEeCB4IHgEeCB4BHggeAR4IHgEeCB4IHgEeCB4BHggeCB4BHggeAR4IHggeAR4IHgEeCB4IHgEeCB4BHggeCB4BHggeAR4IHggcAR/4AhgIGAQYCBgEGAgYBBgIGAgYBBgIGAQf/wQfBB8EHwQfBB8EHwQfBB8EHwQfBB4EHgQdBB0EHAQcBBsEGwQaBBcEFgQWBBUEFQQUBBMEEgQf/+BhEIEAr//htHwhwEHAT+G0LCJgj+CQIBhQb+JAoyAP4e/hvrwv4VFP4GEQEQCv/+CQKMhQb+DwEG/kwQ/h7+G2fC/g8KAfr+CQH6t0FsGGwE/id0w/4e/hvSwv4GEQoQCv/+FTL+KrgLBP4nisP+HqAhkEGAIYARgBFQIUAhIEH/0EHAIaAhgBFwEXAhYCFAQf/wgfBB8BHwEfAR8BHwEfAR8BGwEbAR//CB8CHQEaARoBGgEaARoBEAEf+AgWCBEIEQgQCB/3CBUIEwgSCBAIH/QIEggQBB/8BBsIGggZCBkIGQgYCBgIFwgXBBYIFQgVCBQIEwgSCBAIH/wEGwgaCBkIGAgXCBYIFAQTCBIIEAgf+wgbBBoEGQQYBBcEFwQWBBUEFQQVBBQEEAQf/wQcAhwEGgQZBBgEFwQVBBIEH/0EGwQZBBgEGAQXARcBFwQVBBMEEgQQBB//CB8BH/wEHAQcARwBGgIaAhcCH/YCFQIUBBQEFAQUBB/zBBMEEwQSBBAEH/wCHAQaBBoEGQIYBBYEH/AAAAAAAAAADKxOzE/sSAx4HGwsaIxsLGiMbCxojGwsaIxojGiMbwxojGiMaIxjrH/gAexR7FHsVYxYzFjMWMxYzF/gDCxcLF/8W8xdXF1cX/xf4AAAj+AwAg/gMAHP4DAAT+A/4GCgUJyP/+GzjE/hVLFgQWBBYCLgQWAioEFgIQBBYCKgIuAhYEFgQWAi4EFgIWAioGKgQoAi4C/gMWBBYEFgIuBBYCKgQWAhAEFgIqAi4CFgQWBBYCLgQWAhwCNAIeAjYCIAI4AiICOgL+DP4DJAIkBDwGOAI8AiQCJAQ8BjgCPAIkAiQEPAY4AjwCJAIkAjgCPAI4AjICLgIqAv4D/htuyP4D/gYRBhAK//4bq8T+DwoB+v4VZAACXgZeBF4EWghYBlQERhBaBloIAAJeBl4EXgRaCFgGVARUEFoGWgj+A1rsAOpaBFQKXuwA6l4EVApaAlQEUARUCkoEUARUBFrsAOpaBFQKXuwA6l4EVAb+G6vE/gkB+jsxWAz+G6bDXgZaAlQESgRQBFQEWuwA6loEVApe7ADqXgRUCloCVARQBFQKSgRQBFQEWuwA6loEVApe7ADqXgRUCloEVARQBFQU/gP+BgMEAmT//hvOw/4JAvoAATQE/gz+G+HDiAKIAv4b/sM4CP4bzsP+CQL6AAE0BP4JAvoAATQE/gz+G/7DOAj+A/4bzsP+CQL6AAE0CP4b/sM4BP4b7MP+CQL6AAF8AnwCfAL+DP4b/sM4BjgI/gP+G7fD/gkC+oUGJgI6AjgCAAL+DP4b/sM4BP4bt8P+CQL6hQY4AgACJgI6AjgCAAL+DP4b/sM4BP4bt8P+CQL6hQZWAjgC/gz+A/4bt8P+CQKWhQYOAjoEAAL+DP4b/sM4BP4bt8P+CQL6hQY4AgACJgI6AlAE/gz+G/7DOAT+G7fD/gkC+oUGIgI4Av4M/gMAAAUACwARABcAHQAjACkALwA1ADsAQQBHAE0AUwBZAF8AZQBrAHEAdwB9AIMAiQCPAJUAmwChAKcArQCzALkAvwDFAMsA0QDXAN0A4wDpAO8A9QD7AAEBBwENARMBGQEfASUBKwExATcBPQFDAUkBTwFVAVsBYQFnAW0BcwF5AX8BhQGLAZEBlwGdAaMBqQGvAbUBuwHBAccBzQHTAdkB3wHlAesB8QH3Af0BAwIJAg8CFQIbAiECJwItAjMCOQI/AkUCSwJRAlcCXQJjAmkCbwJ1AnsCgQIDAAMABwAHAA8ADwAHAA8AHwACAAIA0IHQQdAR0BHQEdARwBHAEcARsBGwEf8="]],"init":47114,"play":47104,"after":[[24,15]]}</script>
+<script>
+/* pd-loader-tune */
+// createLoaderTune for C64Sid: the cassette's copy of the sound driver on the kit's 6502 over the
+// cassette's bytes (D.blocks, the block pd-loader-data): the cassette calls sound_reset ($B80A) once,
+// with the tune's number already in $B804, sets the volume to 15 (D.after), and then calls
+// sound_play ($B800) once a frame from its interrupt. Only the SID's registers are I/O; the driver
+// reads them as 0, and the raster line it reads ($D012) as 0 too.
+function createLoaderTune(D, C64Cpu) {
+  const mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
+  const image = D.blocks.map(([a, s]) => [a, Uint8Array.from(atob(s), (c) => c.charCodeAt(0))]);
+  let writes = [], on = false;
+  const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: {
+    read: (a) => (a >= 0xD400 && a <= 0xD41F ? 0 : mem[a]),
+    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); } else mem[a] = v; },
+  } });
+  const set = (list) => { for (const [r, v] of list || []) { sid[r] = v; writes.push(r, v); } };
+  return {
+    init() { mem.fill(0); for (const [a, b] of image) mem.set(b, a); sid.fill(0); writes = [];
+      set(D.before); cpu.call(D.init, {}, { maxSteps: 200000 }); set(D.after); on = true; },
+    stop() { on = false; },
+    play() { writes = []; if (on) cpu.call(D.play, {}, { maxSteps: 200000 }); },
+    sid, get writes() { return writes; }, playing: () => on, mem,
+  };
+}
+// end of pd-loader-tune
+(() => {
+  const el = document.getElementById('pd-load');
+  if (typeof C64Sid === 'undefined' || typeof C64Cpu === 'undefined') { el.textContent = 'The player needs the site\'s shared scripts, which the built site serves.'; return; }
+  C64Sid.mount(el, { driver: createLoaderTune, data: JSON.parse(document.getElementById('pd-loader-data').textContent),
+    tunes: ['Poker Face, the loading tune'], filter: '6581', loops: [{ from: 7, period: 3072 }] });
 })();
 </script>

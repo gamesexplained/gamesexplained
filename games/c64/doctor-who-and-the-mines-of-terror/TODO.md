@@ -30,3 +30,10 @@ Worth doing, found in the run and not done:
   it holds 68 byte offsets of 0-63.
 - The comment on `$4E` says which event sets it was not traced: the code
   lock's success path sets it (`$BF59`).
+
+## Loading picture and tune
+
+- The disk shows its title picture (the TARDIS and the
+  credits) about 10 seconds into the load, in silence. How it works shows it as a reference
+  screenshot only. A section on the Graphics tab could draw it from the disk's bytes; Power
+  Drift's Graphics tab is the model.

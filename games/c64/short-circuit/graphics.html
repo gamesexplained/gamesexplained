@@ -1,0 +1,116 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Short Circuit — Graphics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+.sc-cv{width:100%;max-width:768px;image-rendering:pixelated;display:block;background:#000;border-radius:6px}
+.sc-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0;font-family:var(--fm);font-size:13px}
+.sc-bar button{font:inherit;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;color:var(--ink)}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+</style>
+<!--
+  Template for a game article. Keep it self-contained: inline CSS and JS,
+  fonts are the only external resource, opens from disk. The section below
+  shows the parts a section is made of, not which section comes first: the
+  kinds of section are listed in kit/skills/core/70-minisite, in no order,
+  and this page's order is its own. The best thing to press or hear goes
+  as high as the explanation lets it, and every section should have
+  something the reader can press. Copy follows kit/style.md and is written
+  last.
+-->
+<!-- tabs -->
+<header class="hero"><p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">The title picture that fills the screen while the cassette loads, drawn from the game's own bytes at the tape's own pace.</p></header>
+<main class="wrap">
+<section id="loading"><p class="fig">01 · The loading picture</p><h2 class="t">Number 5 comes alive a row of cells at a time</h2>
+<p class="lede">While it loads, the cassette shows the picture the game later uses as its title: lightning striking Number 5 on a hilltop at sunset, under the words "Something wonderful has happened... No.5 is alive." On a white screen it fills in a cell at a time, left to right along each row of cells and down the screen, over 34 seconds, while Martin Galway's Ocean loading tune plays (<a href="music.html#loading-tune">Music</a>).</p>
+<div class="plate"><canvas class="sc-cv" id="sc-l-cv" width="384" height="272" role="img" aria-label="Short Circuit's title picture: lightning striking the robot Number 5 on a hilltop at sunset, the words Something wonderful has happened, No.5 is alive, the Short Circuit logo, PSO and Ocean"></canvas>
+<div class="sc-bar"><button type="button" id="sc-l-go">Load it again</button><button type="button" id="sc-l-skip">Skip</button><span id="sc-l-stat" aria-live="polite"></span></div>
+<p class="cap">The game's own bytes, from the listing: the bitmap at <code>$6000</code>-<code>$7F3F</code>, its screen colours at <code>$5C00</code>-<code>$5FE7</code> and the colour RAM that the title copies from <code>$8548</code>, all three the same byte for byte as the cassette loads them. The bitmap appears at the tape's own pace, where it had got to every fifth of a second, measured in VICE.</p></div>
+<p>The screen colours and the colour RAM are in place when the screen comes on, so each cell comes in finished. The picture is a multicolour bitmap, 8,000 bytes, read in the order it lies in memory: the eight rows of an 8 by 8 cell together, forty cells across, then the next row of cells down. It arrives at about 230 bytes a second, from 68 seconds into the tape to 102.</p>
+<p>The game keeps the picture. In the attract mode it comes round between the credits and the high-score table (<a href="index.html">How it works</a>).</p></section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script>
+/* sc-loading */
+// scLoadingFrame(ram, n): the frame for C64.drawFrame (../../lib/c64.js) of the title picture as the
+// tape shows it with the first n of the bitmap's 8,000 bytes loaded (the rest are still 0). ram is the
+// listing's memory: bitmap $6000, screen colours $5C00, colour RAM from $8548. The video chip's
+// registers are those of a frame recorded in VICE with the picture on the screen: a multicolour
+// bitmap ($D011 = $3B, $D016 = $D8) in bank 1 ($DD00 = $96, $D018 = $79), black border and white
+// background.
+const SC_VIC = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,59,0,0,0,0,216,0,121,112,240,0,0,0,0,0,240,241,241,242,243,244,240,241,242,243,244,245,246,247,252];
+// The bitmap's bytes loaded at each fifth of a second from 67.6 seconds into the tape, read from the
+// tape's memory in VICE.
+const SC_FRONT = [0,5,51,97,145,195,247,296,339,380,423,466,509,554,607,652,697,742,795,845,891,938,982,1026,1081,1127,1169,1214,1263,1307,1368,1410,1450,1495,1536,1586,1640,1690,1735,1776,1815,1862,1914,1970,2019,2066,2109,2154,2201,2256,2303,2348,2391,2435,2478,2526,2580,2625,2668,2720,2766,2813,2860,2909,2958,3005,3052,3092,3135,3183,3229,3275,3316,3359,3398,3438,3480,3529,3573,3612,3652,3698,3736,3782,3826,3871,3916,3954,3993,4039,4085,4129,4180,4226,4273,4321,4370,4417,4467,4516,4563,4609,4661,4716,4764,4813,4859,4904,4952,5006,5057,5105,5148,5194,5244,5293,5350,5396,5440,5491,5541,5588,5636,5691,5741,5791,5837,5883,5930,5986,6038,6088,6136,6181,6223,6268,6317,6366,6415,6464,6508,6555,6601,6650,6695,6745,6791,6836,6885,6929,6973,7021,7074,7121,7168,7220,7272,7323,7372,7420,7464,7513,7567,7617,7667,7712,7760,7809,7854,7901,7948,7999,8000];
+function scLoadingFrame(ram, n) {
+  const mem = ram.slice();
+  mem.fill(0, 0x6000 + n, 0x7F40);
+  const colourMem = new Uint8Array(1024);
+  for (let i = 0; i < 1000; i++) colourMem[i] = ram[0x8548 + i] & 15;
+  return { schema: 1, standard: 'PAL', lines: 312, cycles: 63, vic: SC_VIC, cia2: [0x96, 0x3F], writes: [], mem, colourMem };
+}
+// end of sc-loading
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const cv = $('sc-l-cv'), stat = $('sc-l-stat');
+  if (typeof C64 === 'undefined') { stat.textContent = 'The picture is drawn by the site\'s shared scripts, which the built site serves.'; return; }
+  let L;
+  try { L = await C64.load('listing.json'); } catch (e) {
+    stat.textContent = 'The listing did not load, so the picture cannot be drawn.'; return;
+  }
+  const STEP = 200, END = (SC_FRONT.length - 1) * STEP;     // milliseconds from the screen coming on
+  let t0 = 0, raf = 0, shown = -1;
+  const at = (ms) => {                                      // the bytes loaded ms into the bitmap
+    if (ms >= END) return 8000;
+    const k = Math.floor(ms / STEP), f = ms / STEP - k;
+    return Math.round(SC_FRONT[k] + (SC_FRONT[k + 1] - SC_FRONT[k]) * f);
+  };
+  const draw = (n) => { if (n !== shown) { C64.drawFrame(cv, scLoadingFrame(L.ram, n), 1); shown = n; } };
+  const skip = () => { cancelAnimationFrame(raf); raf = 0; draw(8000); stat.textContent = ''; };
+  const tick = (now) => {
+    const ms = Math.max(0, now - t0), n = at(ms);   // the first frame can be stamped before t0
+    draw(n);
+    stat.textContent = n < 8000 ? Math.floor(ms / 1000) + ' s, ' + n.toLocaleString('en-GB') + ' of 8,000 bytes' : '';
+    raf = n < 8000 ? requestAnimationFrame(tick) : 0;
+  };
+  const go = () => { cancelAnimationFrame(raf); t0 = performance.now(); shown = -1; raf = requestAnimationFrame(tick); };
+  $('sc-l-go').addEventListener('click', go);
+  $('sc-l-skip').addEventListener('click', skip);
+  draw(0);
+  // the load starts when the picture comes into view
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { threshold: 0.4 });
+    io.observe(cv);
+  } else go();
+})();
+</script>
