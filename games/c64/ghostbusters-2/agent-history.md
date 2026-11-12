@@ -91,3 +91,5 @@ Traced the scene decisions after the museum column restoration and their status-
 Traced the first museum scene-position reset and compared its initialized addresses with the second-position reset.
 
 Traced the museum placement overlap and active-position grid lookup, preserving the carry difference from the similar second-motion lookup.
+
+Traced the museum phase dispatcher and its counter-controlled active-position initialization.
