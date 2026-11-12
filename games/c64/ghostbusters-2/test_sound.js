@@ -84,3 +84,29 @@ for (let frame = 0; frame <= 500; frame++) {
 const broadwayDigest = require('crypto').createHash('sha256').update(JSON.stringify(broadwayWrites)).digest('hex');
 assert.equal(broadwayDigest, vice.broadway.writes_sha256_500, 'Broadway SID writes must match the captured prompt');
 console.log('OK - Broadway: 500 driver updates match the captured scene, first 30 match VICE');
+
+const censorMatch = html.match(/<script id="censor-sound-data" type="application\/json">([^<]+)<\/script>/);
+assert(censorMatch, 'the player must include the Censor intro sound data');
+const censorData = JSON.parse(censorMatch[1]);
+const {createCensorSound} = g.run('index.html', 'censor-sound-driver', 'createCensorSound');
+const censorDriver = createCensorSound(censorData, {CPU});
+censorDriver.init(0);
+assert.deepStrictEqual(Array.from(censorDriver.sid), vice.censor.initial_sid, 'initial intro SID state');
+const addresses = censorData.mem.flatMap(([base, bytes]) => bytes.map((_, i) => base + i))
+  .filter(address => address >= 0x0fe8 && address < 0x1770);
+const censorWrites = [];
+for (let frame = 0; frame < 500; frame++) {
+  censorDriver.play(); censorWrites.push(Array.from(censorDriver.writes));
+  if (frame < vice.censor.states.length) {
+    const state = vice.censor.states[frame];
+    const bytes = Buffer.from(addresses.map(address => censorDriver.mem[address]));
+    const stateHash = require('crypto').createHash('sha256').update(bytes).digest('hex');
+    assert.equal(stateHash, state.state_sha256, `intro update ${frame + 1}: VICE driver state`);
+    const zp = Buffer.from([0x14, 0x15, 0xf8, 0xf9].map(address => censorDriver.mem[address])).toString('hex');
+    assert.equal(zp, state.zp, `intro update ${frame + 1}: VICE zero page`);
+    assert.deepStrictEqual(Array.from(censorDriver.sid), state.sid, `intro update ${frame + 1}: VICE SID`);
+  }
+}
+const censorDigest = require('crypto').createHash('sha256').update(JSON.stringify(censorWrites)).digest('hex');
+assert.equal(censorDigest, vice.censor.writes_sha256_500, 'intro SID writes must match the captured sound driver');
+console.log('OK - Censor intro: 500 driver updates match the capture, first 30 match VICE');
