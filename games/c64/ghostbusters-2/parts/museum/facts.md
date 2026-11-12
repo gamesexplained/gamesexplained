@@ -115,3 +115,5 @@ At `$AE8F`, another byte-copy path reverses the address changes made by `$A4FF`,
 When `$805E` is 1, `$C913` sets a status byte selected by `$8025−1` to 1, then calls `$CA10` to reset scene state and sprite positions. The status panel selects the DEAD sprite pair for a status value of 1. The events that produce `$805E` values remain open.
 
 After the rope state sets `$805B`, the path at `$C7BE` can advance through five sprite-pointer entries and set `$805E` to 1 or 2 according to `$8025`. `$C913` uses that value to select the subsequent status transition. The event causing this sequence remains open.
+
+After the marked column has been restored, `$C843` clears four state bytes and selects a scene transition using `$C673` and `$805E`. One branch marks the selected status byte as 1 before calling `$C9DB`; another does so before changing the active selection and rebuilding the screen.
