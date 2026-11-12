@@ -39,3 +39,7 @@ The frame sources at `$F000–$F7FF` comprise 32 records of 64 bytes. The two mo
 The ledger includes 19,852 bytes previously outside the count. Forty stretches match stable unpacker output at the entry snapshot; another is a copy visible in play whose source is present at entry. Their individual purposes remain open.
 
 Six groups of animation sequences start at `$C597`, `$C5DF`, `$C627`, `$C66F`, `$C6B7` and `$C6FF`. Each group has four `$FF $FF`-terminated sequences of pointer/mode pairs. The modes are zero and the groups select the eight sprite pointers `$60–$67`, `$68–$6F`, `$70–$77`, `$78–$7F`, `$80–$87` and `$88–$8F` respectively. The selector at `$A4EE` supplies a pointer to the layout code, which writes the sprite pointer for the raster handler. The corresponding 48 slots occupy `$5800–$63FF`; their sequence and bitmap bytes match in the entry and play snapshots. The objects represented and the final byte of each slot remain open.
+
+Other pointer/mode sequences at `$C561`, `$C573`, `$C585`, `$C747`, `$C781` and `$C78B` select slots `$28–$37`, `$44–$4A`, `$4C–$56` and `$58–$61`; all use mode zero and end with `$FF $FF`. The selector table at `$C4F5` points to each sequence. Their bitmap slots and the sequence bytes match in the entry and play snapshots.
+
+The sequence at `$C757` selects sprite pointers `$90–$95` and the blank slot `$08`, each twice; `$C775` selects `$0C`. Both use mode zero and end with `$FF $FF`. Their selected bitmap bytes match between entry and play.
