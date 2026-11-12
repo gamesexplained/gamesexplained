@@ -134,3 +134,10 @@ assert(frame.writes.some(([line, cycle, address, value]) =>
   line === 251 && cycle === 2 && address === 0x47fa && value === 9), 'sprite 2 selects slot 9');
 assert.equal(0x4000 + 9 * 64, 0x4240, 'slot 9 contains the three pieces');
 console.log('OK - airshaft selection and drawing match the three VICE-observed modes');
+// The downloadable route must contain the same control reads and milestones as its source record.
+const article = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const routeSource = JSON.parse(fs.readFileSync(path.join(__dirname, 'airshaft-route.json'), 'utf8'));
+const routeEmbed = JSON.parse(article.match(/<script id="airshaft-route-data" type="application\/json">([\s\S]*?)<\/script>/)[1]);
+assert.deepStrictEqual(routeEmbed, routeSource);
+assert.equal(routeSource.reads.length, 1124);
+assert.deepStrictEqual(routeSource.milestones.map(x => x.parts || (x.won ? 'won' : null)), [1, 2, 3, 'won']);

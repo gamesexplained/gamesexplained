@@ -26,3 +26,6 @@ None. The required model review is recorded in TODO.md and the pull request.
 A diagnostic that distinguishes automatic operand boundaries from real data and routine entries would have saved the most time in this run.
 
 The host was Linux x86_64. VICE release v3.13.1 and the installed regenerator2000 servers were reused; this continuation installed no software.
+
+
+The uncertainty pass benefited from `60-verify`’s instruction to check every reader and writer before making a claim about the whole game. Two hit flags looked like a simultaneous-beam requirement until the independent checker followed the off toggle and the skipped update branch. The prescribed second reading caught it. The input-recording guidance also exposed a banked-memory mistake in the VICE replay helper: writing the recording below I/O needed the CPU port set to RAM first. The positive-control breakpoint showed zero hits in the failed attempt, so it was discarded as an instrument failure. Both failures were covered by existing guidance; no additional kit rule was needed.

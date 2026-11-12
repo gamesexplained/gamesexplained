@@ -3,7 +3,7 @@
  "platform": "c64",
  "game": "ghostbusters-2",
  "part": "broadway",
- "build": "",
+ "build": "Censor Design 1989; Jondi/Censor museum and alternate Broadway data",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -2369,7 +2369,7 @@
   },
   {
    "address": 32790,
-   "name": "broadway_run_state",
+   "name": "broadway_resource_bypass",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -2621,7 +2621,7 @@
   },
   {
    "address": 33542,
-   "name": "broadway_copy_sprite_row",
+   "name": "broadway_draw_slime_depletion",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -2633,7 +2633,7 @@
   },
   {
    "address": 33556,
-   "name": "broadway_copy_next_damage_row",
+   "name": "broadway_draw_slime_refill",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -3515,7 +3515,7 @@
   },
   {
    "address": 37266,
-   "name": "broadway_fire_adjust_row",
+   "name": "broadway_consume_shot",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -3527,7 +3527,7 @@
   },
   {
    "address": 37282,
-   "name": "broadway_fire_reset_row",
+   "name": "broadway_replace_fireball",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -4541,7 +4541,7 @@
   },
   {
    "address": 38897,
-   "name": "broadway_advance_scene_match_count",
+   "name": "broadway_damage_ghost",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -5627,7 +5627,7 @@
   },
   {
    "address": 41791,
-   "name": "projectile_positions",
+   "name": "broadway_ground_slime_positions",
    "type": "Field",
    "kind": "user"
   },
@@ -5999,7 +5999,7 @@
   },
   {
    "address": 43902,
-   "name": "broadway_path_command_15",
+   "name": "broadway_script_drop_slime",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -6047,7 +6047,7 @@
   },
   {
    "address": 44065,
-   "name": "broadway_path_command_1b",
+   "name": "broadway_script_hit_statue",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -6785,7 +6785,7 @@
   },
   {
    "address": 45610,
-   "name": "broadway_move_five_projectiles",
+   "name": "broadway_scroll_ground_slime",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -6809,7 +6809,7 @@
   },
   {
    "address": 45659,
-   "name": "broadway_test_five_projectiles",
+   "name": "broadway_check_slime_pickups",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -6827,7 +6827,7 @@
   },
   {
    "address": 45676,
-   "name": "broadway_projectile_figure_collision",
+   "name": "broadway_collect_ground_slime",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -6863,13 +6863,13 @@
   },
   {
    "address": 45833,
-   "name": "broadway_draw_projectile_cell",
+   "name": "broadway_draw_ground_slime",
    "type": "Subroutine",
    "kind": "user"
   },
   {
    "address": 45858,
-   "name": "broadway_restore_projectile_cell",
+   "name": "broadway_restore_slime_road_cell",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -11489,7 +11489,7 @@
   {
    "address": 32790,
    "type": "line",
-   "text": "Two bytes of run state before the animation counter at $8018. Their direct initialization and consumers are retained in the listing; their distinct gameplay meanings remain unresolved."
+   "text": "Stored debug/bypass flag. Nonzero suppresses supply depletion in $91A2 and $AC21 and suppresses the countdown-failure branch at $8476. It does not refill the gauge; the empty-gauge tests precede the bypass. The loaded value is zero and no normal setter is established. The following byte is retained storage."
   },
   {
    "address": 32807,
@@ -11514,12 +11514,12 @@
   {
    "address": 33542,
    "type": "line",
-   "text": "Copy three bytes from the self-modified source at $8309/$830A to the destination at $830C/$830D. The snapshot selects $41C0 and $4180; collision handling moves their low bytes backwards by three."
+   "text": "Copy one three-byte row from the empty supply-gauge bitmap at $41C0 to the displayed gauge at $4180. The source/destination operands are advanced when a replacement fireball or three statue contacts consume one supply unit."
   },
   {
    "address": 33556,
    "type": "line",
-   "text": "Return unless $8026 is set. Clear that flag, form a source $80 bytes beyond the row source at $8309/$830A, and copy the current destination pointer. If the resulting source low byte equals $40, return. Otherwise advance both low bytes by three and copy three bytes through the operands at $8358/$8359 and $835B/$835C."
+   "text": "When a pedestrian pickup sets $8026, clear that flag and copy a three-byte row from the full-gauge source $80 bytes beyond the depletion source. A full gauge returns without a copy; otherwise this restores the row at the just-decremented depletion cursor."
   },
   {
    "address": 33635,
@@ -11799,7 +11799,7 @@
   {
    "address": 37266,
    "type": "line",
-   "text": "Compare the low operand byte at $919C with $50. If equal, continue to $91A2. Otherwise write $1B to the screen address encoded in the store at $919B and decrement that store's low operand byte before returning."
+   "text": "Consume a shot by replacing one cell of the 22-cell shot bar with $1B and stepping the store operand left. When its low address byte is $50, replace the fireball through $91A2 instead."
   },
   {
    "address": 37276,
@@ -11809,7 +11809,7 @@
   {
    "address": 37282,
    "type": "line",
-   "text": "If the byte at $8309 equals $F9, jump to $CA1A. Otherwise, when $8016 is zero, add three to each byte at $8309 and $830C. Set the sprite 5 coordinate operands $851F/$8524 to $66/$74, reset the store operand at $919C to $66, and fill 22 bytes at $4751\u2013$4766 with $FD."
+   "text": "If the supply cursor is $F9, take the exhausted-supply failure path. Otherwise consume one gauge unit by adding three to the depletion source and destination, unless debug flag $8016 bypasses consumption. Reset the fireball position to $66/$74 and the 22-cell shot bar at $4751-$4766."
   },
   {
    "address": 37341,
@@ -12259,12 +12259,12 @@
   {
    "address": 38897,
    "type": "line",
-   "text": "Preserve Y and increment $B1A6,X. If it equals the value at zero-page $16, use twice the byte at $B13E,X to select a little-endian pointer from $BD8B and store it at $AF6A,X; clear $AFEC,X and $B006,X, and set $B172,X to 2. Restore Y and return."
+   "text": "Increment the selected ghost hit counter. When it equals the scene threshold in zero-page $16, select the death-path pointer indexed by $B13E, clear its delay and step fields, and change state to 2. Hit counters start at $FF, so threshold 0 is reached on the first hit. The resulting death script can create ground slime with command $15."
   },
   {
    "address": 38945,
    "type": "line",
-   "text": "Calculate two 16-bit positions at $9C70 and $9C72 plus 24. Loop over six entries with even Y from 0 to 10 and skip each whose $96F0,Y is zero. For each of two positions with even X, require $9C8C,X to equal 1 and $9708,Y to be in $B5 through $C9. Halve the 16-bit value at $96FC,Y, subtract $2A and add $12 with low-byte arithmetic; compare it to the halved position and its halved upper bound. On a match write $26 to $8C11,Y, set $9C8C,X to 2 and $9C90,X to $8F, and play sound effect $18 while preserving the indices. The entry and pair identities remain open."
+   "text": "Calculate two 16-bit positions at $9C70 and $9C72 plus 24. Loop over six entries with even Y from 0 to 10 and skip each whose $96F0,Y is zero. For each of two positions with even X, require $9C8C,X to equal 1 and $9708,Y to be in $B5 through $C9. Halve the 16-bit value at $96FC,Y, subtract $2A and add $12 with low-byte arithmetic; compare it to the halved position and its halved upper bound. On a match write $26 to $8C11,Y, set $9C8C,X to 2 and $9C90,X to $8F, and play sound effect $18 while preserving the indices. The six entries are cell shots. A hit terminates the shot at step $26 and starts the independent figure's hit animation."
   },
   {
    "address": 39130,
@@ -12279,7 +12279,7 @@
   {
    "address": 39451,
    "type": "line",
-   "text": "Save X on the stack. When X is zero, return if the sprite-pointer operand at $86F8 is 8; then, for either X value, return if the operand at $86FD is 8. If $973B,Y is zero, set it to 1, save X and Y, start sound effect $18 through $8405, and restore X and Y. Restore X from the stack before returning. The meaning of the flag remains open."
+   "text": "Save X on the stack. When X is zero, return if the sprite-pointer operand at $86F8 is 8; then, for either X value, return if the operand at $86FD is 8. If $973B,Y is zero, set it to 1, save X and Y, start sound effect $18 through $8405, and restore X and Y. Restore X from the stack before returning. This flag selects a collector hit reaction; pointer $08 is the hidden-sprite guard."
   },
   {
    "address": 39499,
@@ -12299,7 +12299,7 @@
   {
    "address": 39835,
    "type": "line",
-   "text": "Calculate each of the three figure X low bytes at $9C6A/$9C6C/$9C6E plus 24 with carry. Loop over six entries using even Y from 0 to 10; skip an entry if $96F0,Y is zero or if $9708,Y is outside $B5 through $C9. Halve its 16-bit value at $96FC,Y, subtract $2A, then add $12 using low-byte arithmetic. Compare that value against each figure's halved 16-bit X and halved upper bound, skipping figures whose $973B,X equals 1. On a match write $26 to $8C11,Y and call $9C4A. The object and state meanings remain open."
+   "text": "Calculate each of the three figure X low bytes at $9C6A/$9C6C/$9C6E plus 24 with carry. Loop over six entries using even Y from 0 to 10; skip an entry if $96F0,Y is zero or if $9708,Y is outside $B5 through $C9. Halve its 16-bit value at $96FC,Y, subtract $2A, then add $12 using low-byte arithmetic. Compare that value against each figure's halved 16-bit X and halved upper bound, skipping figures whose $973B,X equals 1. On a match write $26 to $8C11,Y and call $9C4A. The six entries are cell shots; the three compared positions are the Space-controlled collectors. A hit terminates the shot and triggers the collector reaction."
   },
   {
    "address": 40010,
@@ -12429,7 +12429,7 @@
   {
    "address": 40197,
    "type": "line",
-   "text": "If both $9C8C and $9C8E equal 3, clear $9C99\u2013$9C9B. If $9C99 is nonzero, continue at $9DE8. Otherwise set $9C99, $9C71, $9C73, $9C8C and $9C8E to 1; set $9C70/$9C72 to $60/$80 and the operands at $86F8/$86FD to $0A/$0B. Increment $9C9E. When it becomes 2, reset it and patch four address operands at $9E39, $9E94, $9EFA and $9F55 to $F000, $F200, $F080 and $F280; patch the associated high bytes at $9E56/$9E5A, $9EB1/$9EB5, $9F17/$9F1B and $9F72/$9F76 to the $F0\u2013$F4 ranges. Otherwise patch the four addresses to $F400, $F600, $F480 and $F680 and their associated high bytes to the $F4\u2013$F8 ranges. The gameplay meaning of the two address groups remains open."
+   "text": "If both $9C8C and $9C8E equal 3, clear $9C99\u2013$9C9B. If $9C99 is nonzero, continue at $9DE8. Otherwise set $9C99, $9C71, $9C73, $9C8C and $9C8E to 1; set $9C70/$9C72 to $60/$80 and the operands at $86F8/$86FD to $0A/$0B. Increment $9C9E. When it becomes 2, reset it and patch four address operands at $9E39, $9E94, $9EFA and $9F55 to $F000, $F200, $F080 and $F280; patch the associated high bytes at $9E56/$9E5A, $9EB1/$9EB5, $9F17/$9F1B and $9F72/$9F76 to the $F0\u2013$F4 ranges. Otherwise patch the four addresses to $F400, $F600, $F480 and $F680 and their associated high bytes to the $F4\u2013$F8 ranges. These are two independent street-level moving figures. They use copied animation frames and separate hit states from the three player-directed collectors."
   },
   {
    "address": 40424,
@@ -12549,7 +12549,7 @@
   {
    "address": 41791,
    "type": "line",
-   "text": "Five little-endian projectile X positions at $A33F-$A348, followed by five two-byte-spaced activity entries at $A349-$A352. $A430 clears the entries, $AB7E creates a projectile, and $B22A/$B25B visit offsets 0,2,4,6,8 to move and draw them."
+   "text": "Five little-endian X positions for slime droplets on the street, followed by five two-byte-spaced activity flags at $A349. Script command $15 creates a droplet from a defeated ghost position. $B22A scrolls the droplets and $B26C lets the three pedestrians collect them."
   },
   {
    "address": 41811,
@@ -12559,7 +12559,7 @@
   {
    "address": 41831,
    "type": "line",
-   "text": "Double A and use it to select a list through $B33D. Clear five active flags, then for each 14-byte entry use its first byte times two as an array index; copy offsets 2\u20135 to $AF9E/$AF9F and $AFB8/$AFB9, offset 6 to $B006, look up the offset 8 selector through $BD8B into $AF6A/$AF6B, look up offset 10 through $C4F5 into $B088/$B089, and copy offset 12 to $B13E. Initialize further state and set the active flag to 3 for index $0C, otherwise 1. A $FF first byte ends the list; the byte two positions later is copied to $16. The role of each entry remains open."
+   "text": "Double A and use it to select a list through $B33D. Clear five active flags, then for each 14-byte entry use its first byte times two as an array index; copy offsets 2\u20135 to $AF9E/$AF9F and $AFB8/$AFB9, offset 6 to $B006, look up the offset 8 selector through $BD8B into $AF6A/$AF6B, look up offset 10 through $C4F5 into $B088/$B089, and copy offset 12 to $B13E. Initialize further state and set the active flag to 3 for index $0C, otherwise 1. A $FF first byte ends the list; the byte two positions later is copied to $16. These are ghost-wave records. Unread bytes are the high bytes of fixed-width word fields, retained in the 14-byte layout."
   },
   {
    "address": 42053,
@@ -12569,7 +12569,7 @@
   {
    "address": 42130,
    "type": "line",
-   "text": "Copy the current entry pointer from $AF6A/$AF6B,X to $11/$12 and read its first byte into $AF84,X. Double that byte to select a handler address from $A6E1, patch the call at $A4B4, and advance the pointer by one before the call. Store the possibly changed pointer back to the entry; while the handler returns with Y nonzero, repeat the dispatch. The individual command formats and their gameplay effects remain open."
+   "text": "Copy the current entry pointer from $AF6A/$AF6B,X to $11/$12 and read its first byte into $AF84,X. Double that byte to select a handler address from $A6E1, patch the call at $A4B4, and advance the pointer by one before the call. Store the possibly changed pointer back to the entry; while the handler returns with Y nonzero, repeat the dispatch. The stored stream segments use 20 distinct commands, including $00; neither $0D nor $12 occurs in their decoded command positions."
   },
   {
    "address": 42182,
@@ -12589,7 +12589,7 @@
   {
    "address": 42304,
    "type": "line",
-   "text": "For entry X, add $18 to the 16-bit value at $AF9E/$AF9F,X and write it to $B1C0/$B1C1,X. Add $28 to $AFB8,X and write $B1DA,X; copy $AFD2,X to $B1F4,X. If $B172,X is not 1, jump to $A645. Otherwise select $A579 for $AFD3,X=1, $A5E3 for 2, and return for any other value. The identities of the entries remain open."
+   "text": "For entry X, add $18 to the 16-bit value at $AF9E/$AF9F,X and write it to $B1C0/$B1C1,X. Add $28 to $AFB8,X and write $B1DA,X; copy $AFD2,X to $B1F4,X. If $B172,X is not 1, jump to $A645. Otherwise select $A579 for $AFD3,X=1, $A5E3 for 2, and return for any other value. These entries describe the scripted ghosts; the layout supports a single sprite, a two-piece figure or a four-piece figure."
   },
   {
    "address": 42361,
@@ -12694,7 +12694,7 @@
   {
    "address": 43461,
    "type": "line",
-   "text": "Command $0D consumes two bytes. After reading the first, it copies X to the processor stack pointer, doubles that first byte into X, and uses the second byte to select a pointer at $C4F5. It writes the selected pointer, clears $B0A2,X and sets $B0BC,X and $B172,X to 2. It then copies the stack pointer back to X, sets Y to 1 and executes RTS. The caller stack state and whether this entry executes in play remain open."
+   "text": "Command $0D consumes two bytes. After reading the first, it copies X to the processor stack pointer, doubles that first byte into X, and uses the second byte to select a pointer at $C4F5. It writes the selected pointer, clears $B0A2,X and sets $B0BC,X and $B172,X to 2. It then copies the stack pointer back to X, sets Y to 1 and executes RTS. No command $0D occurs in the 113 decoded stream segments. Its stack-changing path is outside the supplied wave scripts."
   },
   {
    "address": 43503,
@@ -12719,7 +12719,7 @@
   {
    "address": 43708,
    "type": "line",
-   "text": "Command $12 consumes three bytes and performs the same two low-byte comparisons as $11. If both pass, it uses the first parameter to select an animation pointer for the entry selected by twice the third parameter, clears that entry at $B0A2 and sets its $B0BC and $B172 values to 2. The path copies the original X to the stack pointer before changing X, then copies the stack pointer back to X before RTS. Its caller stack state and whether the command executes in play remain open."
+   "text": "Command $12 consumes three bytes and performs the same two low-byte comparisons as $11. If both pass, it uses the first parameter to select an animation pointer for the entry selected by twice the third parameter, clears that entry at $B0A2 and sets its $B0BC and $B172 values to 2. The path copies the original X to the stack pointer before changing X, then copies the stack pointer back to X before RTS. No command $12 occurs in the 113 decoded stream segments. Its stack-changing success path is outside the supplied wave scripts."
   },
   {
    "address": 43826,
@@ -12734,7 +12734,7 @@
   {
    "address": 43902,
    "type": "line",
-   "text": "Command $15 consumes one byte without using its value, sets $A349,X to 1 and derives $A33F/$A340,X from $AF9E/$AF9F,X plus $10, masking the low result with $F8 and ORing $801E into it. It clears $B172,X, calls $8405 with X equal to 5 while saving the original X on the stack, and returns with Y equal to 1."
+   "text": "Script command $15 leaves ground slime from the defeated ghost: consume the command parameter, mark $A349,X active, derive X from $AF9E/$AF9F plus $10, align its low bits to the current scroll phase, and clear ghost state $B172,X. Play effect 5 and continue the script. A forced hit followed through the native updater reaches this command and creates a droplet."
   },
   {
    "address": 43949,
@@ -12764,7 +12764,7 @@
   {
    "address": 44065,
    "type": "line",
-   "text": "Command $1B consumes one byte without using its value, saves X and Y, calls $8405 with X equal to $18, restores X and Y, and increments $8021. At 3 it resets that counter; if $8309 equals $F9 it jumps to $CA1A. Otherwise, when $8016 is zero, it adds 3 to both $8309 and $830C. Other paths return with Y equal to 1."
+   "text": "Script command $1B registers a ghost reaching the statue. Consume its parameter, play effect $18 and increment the contact counter $8021. Every third contact clears the counter and consumes one supply-gauge row, unless debug flag $8016 bypasses consumption. An already exhausted gauge enters the failure path."
   },
   {
    "address": 44136,
@@ -12794,12 +12794,12 @@
   {
    "address": 44295,
    "type": "line",
-   "text": "Call $AD6B with X selecting an entry and Y indexing a lookup table. Treat the returned byte as a signed offset and add it to the 16-bit base at $B0D6/$B0D7 indexed by X; store the result at $AF9E/$AF9F indexed by X. Negative values are negated and subtracted."
+   "text": "Call $AD6B with X selecting an entry and Y indexing a lookup table. Treat the returned byte as a signed offset and add it to the 16-bit base at $B0D6/$B0D7 indexed by X; store the result at $AF9E/$AF9F indexed by X. Negative values are negated and subtracted. The indexed entries are scripted ghost positions; this produces one coordinate from a signed curve sample."
   },
   {
    "address": 44345,
    "type": "line",
-   "text": "Call $ADEE with X selecting an entry and Y indexing a lookup table. Treat the returned byte as a signed offset and subtract it from the 16-bit base at $B0F0/$B0F1 indexed by X; store the result at $AFB8/$AFB9 indexed by X. Negative values are negated and added."
+   "text": "Call $ADEE with X selecting an entry and Y indexing a lookup table. Treat the returned byte as a signed offset and subtract it from the 16-bit base at $B0F0/$B0F1 indexed by X; store the result at $AFB8/$AFB9 indexed by X. Negative values are negated and added. The indexed entries are scripted ghost positions; this produces their other coordinate from a signed curve sample."
   },
   {
    "address": 44395,
@@ -12869,17 +12869,17 @@
   {
    "address": 45610,
    "type": "line",
-   "text": "Visit five two-byte slots at even offsets 0 through 8. Restore each old screen cell through $B322. For an active slot, subtract one from its 16-bit X at $A33F/$A340; a resulting high byte $FF clears its activity flag at $A349. Otherwise draw the new cell through $B309."
+   "text": "For five droplet slots at even offsets 0 through 8, restore the previous road character, subtract one from active droplet X to follow the scrolling road, remove a droplet when its high byte becomes $FF, and draw the remaining droplets with $B309."
   },
   {
    "address": 45659,
    "type": "line",
-   "text": "Visit five even slot offsets, calling the projectile collision routine at $B26C for each nonzero activity flag at $A349,X."
+   "text": "Visit five ground-slime slots at even offsets and call $B26C for each active slot to test the three pedestrians."
   },
   {
    "address": 45676,
    "type": "line",
-   "text": "Compute a half-width projectile X plus $0A, then test its value plus $0C against three figure intervals derived from $9C6A/$9C6B,Y and an X extent of $18. A match sets $8026, saves the slot indices, plays voice 2 effect $16, moves the damage-row operands backwards by three unless their source low byte is $C0, clears projectile activity and returns 1. Exhausting the three candidates returns zero."
+   "text": "Compare one ground droplet with the three pedestrian X ranges using the halved-coordinate test. On a match set gauge-refill flag $8026, play effect $16, move the depletion source/destination back three bytes unless already full at $41C0/$4180, and remove the droplet. VICE confirmed one pickup restoring one gauge unit."
   },
   {
    "address": 45829,
@@ -12889,12 +12889,12 @@
   {
    "address": 45833,
    "type": "line",
-   "text": "Divide the projectile's 16-bit X by eight, keep the low byte as Y, and write character $FC at $46CF,Y. The first shift uses the high X byte, followed by two shifts of the saved low byte."
+   "text": "Convert the ground droplet X to a character column by dividing by eight and draw code $FC in the road row at $46CF,Y."
   },
   {
    "address": 45858,
    "type": "line",
-   "text": "Compute the same low eight bits of X divided by eight as $B309, then write background character $D5 at $46CF,Y."
+   "text": "Convert the previous ground droplet X to a character column and restore road character $D5 at $46CF,Y before the scrolling update."
   },
   {
    "address": 45883,

@@ -1,6 +1,6 @@
 # Title screen facts
 
-The game loads `1.THE INTRO` before the title prompt. The prompt state is captured in `work/entry.vsf`; the opening story follows a further load. The packed file expands to the ranges in `part.json` when the captured decompressor is run over RAM filled with either zeroes or ones. Its 16,098 output bytes differ from the later title snapshot in 99 places, all in the sound-driver area `$E0C2–$E14A`, `$E43B–$E43C` and `$EB58–$EB5B`. These include mutable voice state and self-modified operands; the cause of each difference remains open. See `../../unpack-map.json`.
+The game loads `1.THE INTRO` before the title prompt. The prompt state is captured in `work/entry.vsf`; the opening story follows a further load. The packed file expands to the ranges in `part.json` when the captured decompressor is run over RAM filled with either zeroes or ones. Its 16,098 output bytes differ from the later title snapshot in 99 places, all in the sound-driver area `$E0C2–$E14A`, `$E43B–$E43C` and `$EB58–$EB5B`. These are runtime voice state, self-modified decoder and rate operands, and the advancing four-byte effect-noise generator, all written by the sound driver. See `../../unpack-map.json`.
 
 In the title-prompt snapshot, all 5,120 bytes at `$6400–$77FF` match `$4000–$53FF`, and all 640 bytes at `$7800–$7A7F` match `$6000–$627F`. The title sequence at `$1049` calls the transfer routine at `$14DB`. It copies sixteen 320-byte bitmap rows and sixteen 40-byte screen-matrix rows. The raster handler at `$17D7` selects VIC bank 1, bitmap address `$4000`, matrix address `$6000` and multicolour mode for the picture band. Each bitmap cell takes eight bytes; the corresponding matrix byte supplies two colours. The routine also fills colour RAM using the value at `$7A80`.
 
@@ -16,6 +16,6 @@ The opening-story frame writes `$07` to `$DD00`, `$1D` to `$D018` and `$08` to `
 
 The shared effect selectors at `$E6AD`, `$E70C` and `$E76B` each use an index in A to fetch a 12-byte record through the pointer table at `$E7CA`. They copy the record into per-voice state and initialize the corresponding SID voice. The selector bytes are identical in the captured title, airshaft, Broadway and museum states.
 
-The 95 bytes after the credits terminator at `$C7A0` are zero in both decompressor-fill runs and in the title snapshot. They are included in the listing; their use beyond the preceding terminator remains open. All 16,098 stable output bytes from `1.THE INTRO` now have listing records, with the 99 snapshot differences described above.
+The 95 bytes after the credits terminator at `$C7A0` are zero in both decompressor-fill runs and in the title snapshot. They are included in the listing; they are padding after the terminating zero, outside the text renderer’s row reads. All 16,098 stable output bytes from `1.THE INTRO` now have listing records, with the 99 snapshot differences described above.
 
-The 127 bytes following the title picture colour at `$7A80` all hold `$2A` in the captured title snapshot. The transfer routine reads `$7A80`; any other use of the following bytes remains open.
+The 127 bytes following the title picture colour at `$7A80` all hold `$2A` in the captured title snapshot. The picture transfer reads the single colour byte at `$7A80`; the remaining bytes pad the loaded segment and are outside that transfer’s source range.

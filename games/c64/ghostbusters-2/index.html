@@ -49,9 +49,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <main class="wrap">
 <section>
   <h2 class="t">The airshaft</h2>
-  <p>Space cycles through three modes. The <a href="source-airshaft.html#AAC0">selection routine</a> requires a release before it counts another press. Each mode uses a different drawing path for the status image, shown on the <a href="graphics.html#airshaft-mode-sprite">Graphics tab</a>; the mapping from modes to the documented weapons remains unresolved.</p>
-  <p>In a VICE trial, holding down for 240 frames moved the upper counter from 00 to 11; holding up for the next 240 frames returned it to 01. The <a href="source-airshaft.html#A28C">update routine</a> requests one counter step for every two calls. Three other code paths each advance its tens digit and increment a shared count; the <a href="source-airshaft.html#9914">first path</a> also copies a shape. What the counter measures remains open.</p>
-  <p>The first scene lowers a Ghostbuster on a rope. The game's manual describes a search for a slime sample at the bottom of the shaft.</p>
+  <p>Space selects the proton beam, PKR bomb or PKR shield. The <a href="source-airshaft.html#AA6E">selection routine</a> requires a release between presses. Hold fire and a vertical direction to launch a bomb; release fire to detonate it. The shield uses a separate effect around the character.</p>
+  <p>The percentage combines two tasks: descending contributes 70 points, and the <a href="source-airshaft.html#9914">three scoop parts</a> contribute ten each. At the bottom, center the swing and lower the character to retrieve the sample. A <a id="airshaft-route-download" href="#airshaft-route-data" download="airshaft-route.json">recorded control sequence</a> collects all three parts and wins from the captured playable state; it replayed successfully in VICE.</p>
+  <p>Ghost contact drains courage. The elixir restores it. The sawing creature attacks a separate resource: the cable. Its <a href="source-airshaft.html#CB38">wear display</a> advances through six damaged states, and the last one ends the attempt.</p>
   <p>The shaft is stored as rows of tile indices. The <a href="source-airshaft.html#A2C0">expansion routine</a> turns each index into four character codes; the <a href="levels.html#shaft-map">Levels tab</a> draws a downward-pass reconstruction from the stored rows.</p>
   <div class="plate"><img src="reference/airshaft.png" alt="A Ghostbuster hanging on a rope inside a brick airshaft" style="max-width:100%;image-rendering:pixelated"><p class="cap">The airshaft scene, captured in VICE.</p></div>
 </section>
@@ -67,7 +67,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <h2 class="t">Music from the story and airshaft</h2>
   <p>The opening story, Broadway prompt and ending each have a tune; the airshaft uses two short selections for success and failure. The player runs the sound driver from the airshaft listing, with Broadway and ending data taken from their captured scenes. VICE checks channel state and voice frequencies for the first 30 updates of each selection.</p>
-  <div class="plate"><div id="airshaft-sound"></div><p class="cap">The SID model plays the game’s driver at one update per PAL frame. The selection records begin at <a href="source-airshaft.html#EB5C"><code>$EB5C</code></a>; the sound update is at <a href="source-airshaft.html#E13A"><code>$E13A</code></a>. The names of individual sound effects remain unresolved.</p></div>
+  <div class="plate"><div id="airshaft-sound"></div><p class="cap">The SID model plays the game’s driver at one update per PAL frame. The selection records begin at <a href="source-airshaft.html#EB5C"><code>$EB5C</code></a>; the sound update is at <a href="source-airshaft.html#E13A"><code>$E13A</code></a>. Slime firing, baby pickup and enemy hits use separate effect records; their callers are identified in the source listings.</p></div>
 </section>
 <section>
   <h2 class="t">The story in forty columns</h2>
@@ -94,6 +94,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The scroll routine reads twelve long rows of character codes. In the Censor capture, the beginning of the first row is retained from the preceding airshaft load; the alternate disk supplies different bytes there. The <a href="source-broadway.html#87F4">scroll routine</a> reads one column at a time; explore the whole stored strip on the <a href="levels.html#broadway-map">Levels tab</a>.</p>
   <p>The joystick changes the coordinates the interrupt writes to sprite 5. Each direction moves it three units when its boundary test permits. The <a href="graphics.html">Graphics tab</a> shows its three sprite shapes. Try one input check at a time; the <a href="source-broadway.html#8C59"><code>$8C59</code></a> input routine calls the four movement helpers.</p>
   <p>Fire uses a latch: holding the button does not count as another press until it has been released. The <a href="source-broadway.html#8CB5"><code>$8CB5</code></a> path checks the latch and then looks for an available entry.</p>
+  <p>A defeated ghost leaves <a href="source-broadway.html#AB7E">slime on the road</a>. Space reverses the three pedestrians, who <a href="source-broadway.html#B26C">collect drops automatically</a>. Each drop restores one row of the statue’s supply gauge. A replacement fireball costs one row; three ghost contacts with the statue cost another.</p>
   <div class="plate">
     <div class="controls"><button type="button" data-broadway="up">Up</button><button type="button" data-broadway="down">Down</button><button type="button" data-broadway="left">Left</button><button type="button" data-broadway="right">Right</button><button type="button" id="broadway-reset">Start again</button></div>
     <p><svg id="broadway-field" viewBox="0 0 312 274" role="img" aria-label="Position in the Broadway play area" style="display:block;width:100%;max-width:312px;background:#23262d;border-radius:6px"><circle id="broadway-dot" r="6" fill="#f8b84e"></circle></svg></p>
@@ -102,7 +103,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
 </section>
 <section>
-  <h2 class="t">Control the descent</h2>
+  <h2 class="t">Inside the museum</h2>
   <p>The museum keeps two screens and packs their colour layers into opposite halves of each byte. In the observed route, horizontal boundary checks change the room and reset the selected character’s position when walking <a href="source-museum.html#BFA1">right</a> or <a href="source-museum.html#BE7B">left</a>. The <a href="source-museum.html#8396">setup routine</a> selects a screen; the <a href="levels.html#museum-screen-map">Levels tab</a> shows both stored backgrounds.</p>
   <p>For objects in a different room, the <a href="source-museum.html#FC73">sprite preparation code</a> saves their picture pointers and substitutes pointer 3. In the captured floor scene that points to an all-zero sprite shape; when the room values match again, the code restores the saved pointers.</p>
   <p>Once both Ghostbusters have reached the museum floor, Space switches which one the joystick moves. The <a href="source-museum.html#B372"><code>$B372</code></a> keyboard scan changes the selection, and the <a href="source-museum.html#B459"><code>$B459</code></a> joystick handler chooses a direction for it.</p>
@@ -119,8 +120,17 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="controls"><button type="button" data-rope="up">Up</button><button type="button" data-rope="none">Release</button><button type="button" data-rope="down">Down</button><button type="button" id="rope-reset">Start again</button></div>
     <label for="rope-position">Descent position</label> <progress id="rope-position" max="176" value="42"></progress>
     <p id="rope-result" aria-live="polite"></p>
-    <p class="cap">This steps the position and descent-value rules. It does not model the landing consequences or the rest of the museum.</p>
+    <p class="cap">The movement rules come from the game’s code. At landing, a descent value below 6 survives; 6 or above triggers the fatal fall animation. This example stops at that decision.</p>
   </div>
+</section>
+<section>
+  <h2 class="t">Slime first, then both beams</h2>
+  <p>The equipment panel’s two weapons behave differently. The slime weapon fires individual drops, with up to three in flight per Ghostbuster. A proton beam stays on until another press switches it off. Both consume weapon energy, which replenishes over time.</p>
+  <p>Slime hits <a href="source-museum.html#9EB4">damage Janosz</a>, removing two rows from his twenty-row strength gauge. Ten uninterrupted hits empty it. A short collapse animation advances the fight to the next phase.</p>
+  <p>Vigo’s damage test requires <a href="source-museum.html#8D0D">both beam-hit flags</a>. Each beam records whether it touched him. Forty damage-entry calls without restoration empty the twenty-row gauge. The first collapse advances to the final phase; repeating the attack triggers congratulations. Those counts are game-update calls, not seconds.</p>
+  <p>There is a loophole: switching a beam off leaves its last hit flag set. Once that beam has hit, the other can keep damaging Vigo by itself. The <a href="discoveries.html#stale-beam">stale beam flag</a> is verified in VICE.</p>
+  <p>Oscar is part of the floor map until a Ghostbuster <a href="source-museum.html#957A">picks him up</a>. The character then uses a set of carrying poses. Putting him down draws a new two-row image at that position; while Janosz remains active, contact lets him return Oscar to the crib.</p>
+  <p class="cap">The weapon, pickup and damage paths were tested in VICE. The complete museum fight has been traced through its transitions, but this page does not claim a recorded winning playthrough.</p>
 </section>
 <section>
   <h2 class="t">After the museum</h2>
@@ -370,7 +380,7 @@ function ropeStep(state, direction) {
   const result = document.getElementById('rope-result');
   const show = () => {
     progress.value = state.position;
-    result.textContent = `Position ${state.position} / 176 · descent value ${state.speed}${state.landed ? ' · floor reached' : ''}`;
+    result.textContent = `Position ${state.position} / 176 · descent value ${state.speed}${state.landed ? (state.speed < 6 ? ' · safe landing' : ' · fatal fall') : ''}`;
   };
   const reset = () => { state = {position: 42, second: 63, speed: 0, count: 0, landed: 0}; show(); };
   document.querySelectorAll('[data-rope]').forEach(button => button.addEventListener('click', () => {
@@ -379,5 +389,13 @@ function ropeStep(state, direction) {
   }));
   document.getElementById('rope-reset').addEventListener('click', reset);
   reset();
+})();
+</script>
+
+<script id="airshaft-route-data" type="application/json">{"schema":1,"start":"Captured clean-play state named in parts/airshaft/facts.md; no state pokes in the route","inputAddress":43678,"frames":2337,"reads":[199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,215,215,215,215,215,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,203,203,203,203,203,203,203,203,203,203,203,203,203,203,203,203,203,203,203,203,203,213,203,203,203,203,203,213,203,203,203,203,203,213,203,203,203,203,203,213,203,203,203,203,203,213,203,203,203,203,203,213,203,203,203,203,203,213,203,203,203,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,203,203,203,203,203,213,203,203,203,203,203,213,203,203,203,203,203,213,203,203,203,203,203,213,203,203,203,203,203,213,203,203,203,203,203,213,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,203,203,203,213,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,203,213,203,203,203,203,203,203,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,214,214,214,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,213,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221,221],"milestones":[{"frame":184,"read":92,"parts":1,"row":6656},{"frame":1414,"read":663,"parts":2,"row":5136},{"frame":1630,"read":771,"parts":3,"row":4776},{"frame":2337,"read":1124,"won":true}],"verification":{"machine":"kit C64 machine with CIA timers and video DMA","vice":{"reads":1124,"parts":3,"success_entries":1,"death_entries":0}}}</script>
+<script>
+(() => {
+ const text = document.getElementById("airshaft-route-data").textContent;
+ document.getElementById("airshaft-route-download").href = URL.createObjectURL(new Blob([text], {type: "application/json"}));
 })();
 </script>

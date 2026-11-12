@@ -5880,9 +5880,9 @@
   },
   {
    "address": 32792,
-   "name": "a_8018",
+   "name": "airshaft_scoop_parts",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 32793,
@@ -6486,13 +6486,13 @@
   },
   {
    "address": 34443,
-   "name": "airshaft_check_count_copy",
+   "name": "airshaft_accumulate_courage_damage",
    "type": "Subroutine",
    "kind": "user"
   },
   {
    "address": 34450,
-   "name": "airshaft_copy_count_chunk",
+   "name": "airshaft_deplete_courage_strip",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -7195,6 +7195,12 @@
   {
    "address": 37095,
    "name": "airshaft_irq_bottom_band",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37207,
+   "name": "airshaft_cable_frame_operand",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -8490,7 +8496,7 @@
   },
   {
    "address": 39188,
-   "name": "airshaft_first_shape_count",
+   "name": "airshaft_collect_scoop_first",
    "type": "Branch",
    "kind": "user"
   },
@@ -8502,7 +8508,7 @@
   },
   {
    "address": 39240,
-   "name": "airshaft_first_shape_alternate",
+   "name": "airshaft_collect_elixir",
    "type": "Branch",
    "kind": "user"
   },
@@ -8532,7 +8538,7 @@
   },
   {
    "address": 39326,
-   "name": "airshaft_second_shape_count",
+   "name": "airshaft_collect_scoop_second",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -8556,7 +8562,7 @@
   },
   {
    "address": 39455,
-   "name": "airshaft_third_shape_count",
+   "name": "airshaft_collect_scoop_third",
    "type": "Branch",
    "kind": "user"
   },
@@ -9666,15 +9672,15 @@
   },
   {
    "address": 42854,
-   "name": "a_A766",
+   "name": "airshaft_thrown_weapon_direction",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42855,
-   "name": "a_A767",
+   "name": "airshaft_thrown_weapon_activated",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42856,
@@ -9684,9 +9690,9 @@
   },
   {
    "address": 42857,
-   "name": "a_A769",
+   "name": "airshaft_thrown_weapon_kind",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42858,
@@ -9756,9 +9762,9 @@
   },
   {
    "address": 42869,
-   "name": "a_A775",
+   "name": "airshaft_weapon_selection",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42870,
@@ -13158,7 +13164,7 @@
   },
   {
    "address": 51932,
-   "name": "airshaft_advance_sprite4_sequence",
+   "name": "airshaft_saw_cable",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -13188,7 +13194,7 @@
   },
   {
    "address": 52024,
-   "name": "airshaft_count_sprite7_contacts",
+   "name": "airshaft_advance_cable_damage",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -18744,6 +18750,11 @@
    "text": "Disable interrupts, select processor-port value $36, reset the stack pointer to $FF, clear decimal mode, call initialization at $8054, and return."
   },
   {
+   "address": 32792,
+   "type": "line",
+   "text": "Number of distinct scoop parts collected. The three pickup paths increment it and add ten percentage points each. The bottom-of-shaft retrieval at $901D requires exactly 3 before the winch animation can complete the episode."
+  },
+  {
    "address": 32801,
    "type": "line",
    "text": "Active-low joystick sample written by the input scan at $AAA1, then tested by the movement, fire and mode-specific paths."
@@ -18806,12 +18817,12 @@
   {
    "address": 34443,
    "type": "line",
-   "text": "Compare $8045 with $20 and return when the eight-bit subtraction's sign bit is set. Otherwise fall through to $8692. Several character-code checks increment $8045; the broader meaning of the count remains open."
+   "text": "Apply one courage-gauge depletion step when pending damage $8045 is in the signed-comparison accepted range $20-$9F. Ordinary ghost contacts and hazardous character codes increment that pending count. On the normal path, 32 increments reach the threshold; the copy step clears the count. Some large-contact paths call the copy step directly."
   },
   {
    "address": 34450,
    "type": "line",
-   "text": "Clear $8045. Starting at X zero, copy three bytes through the self-modified source operand at $869C to the destination operand at $869F. If the destination operand equals $41FC, set $804D to 1, call $8D09 with X equal to $0C and return. Otherwise add 3 to both 16-bit operands and return. The captured operands start within $0FCC and $41CC; other code can change them."
+   "text": "Clear pending courage damage and copy three bytes from the empty-gauge source into the displayed gauge at $41C0. Advance both source/destination operands by three until the destination is $41FC; that final copy sets death flag $804D and starts effect $0C. From the clean-play state 17 forced steps exhaust the gauge; VICE and the processor model agree."
   },
   {
    "address": 34530,
@@ -18821,7 +18832,7 @@
   {
    "address": 34555,
    "type": "line",
-   "text": "Increment $8036, mask it with 1 and store it back. If it is nonzero jump to $8937. Otherwise increment $8037; when it reaches 2, clear it and jump to the second pattern controller at $8800. For other values continue at $871D."
+   "text": "Increment $8036, mask it with 1 and store it back. If it is nonzero jump to $8937. Otherwise increment $8037; when it reaches 2, clear it and jump to the second pattern controller at $8800. For other values continue at $871D. This controls the first large wall-hazard animation and its terminal frame."
   },
   {
    "address": 34589,
@@ -18836,7 +18847,7 @@
   {
    "address": 34773,
    "type": "line",
-   "text": "Starting with X=$CF, copy bytes X=$CF down through 1 from the address in the load operand at $87D8/$87D9 into $7B90,X, leaving offset zero untouched. Then add two to $8035, reset it to zero if the result is $2A, and replace the operand with the selected pointer from $88E3/$88E4."
+   "text": "Starting with X=$CF, copy bytes X=$CF down through 1 from the address in the load operand at $87D8/$87D9 into $7B90,X, leaving offset zero untouched. Then add two to $8035, reset it to zero if the result is $2A, and replace the operand with the selected pointer from $88E3/$88E4. This updates the first large wall-hazard glyph buffer. Byte zero is invariant $AA across all seven source frames and already equals the destination, so skipping it preserves the image."
   },
   {
    "address": 34777,
@@ -18846,7 +18857,7 @@
   {
    "address": 34816,
    "type": "line",
-   "text": "If $8053 is nonzero, increment $8051; on reaching 5, clear $8053, $8051, $8046 and $8047. If $B112 and $AF13 are both zero, jump to the ordinary pattern-copy routine at $88B8. Otherwise copy the current source operand $88BB/$88BC into $887E/$887F. If it equals $2A90, clear $B112 and $8051 and set $8053 to 1 when $B112 was nonzero, copy offsets $CF down to 1 from the source at $887D into $7C60, set the ordinary source operand to $2A90, and increment $8044; when it becomes $10 clear $AF13. Otherwise continue at $887B."
+   "text": "If $8053 is nonzero, increment $8051; on reaching 5, clear $8053, $8051, $8046 and $8047. If $B112 and $AF13 are both zero, jump to the ordinary pattern-copy routine at $88B8. Otherwise copy the current source operand $88BB/$88BC into $887E/$887F. If it equals $2A90, clear $B112 and $8051 and set $8053 to 1 when $B112 was nonzero, copy offsets $CF down to 1 from the source at $887D into $7C60, set the ordinary source operand to $2A90, and increment $8044; when it becomes $10 clear $AF13. Otherwise continue at $887B. This controls the second large wall-hazard animation and its terminal frame."
   },
   {
    "address": 34939,
@@ -18856,7 +18867,7 @@
   {
    "address": 35000,
    "type": "line",
-   "text": "Starting with X=$CF, copy bytes X=$CF down through 1 from the address in the load operand at $88BB/$88BC into $7C60,X, leaving offset zero untouched. Then add two to $8038, reset it to zero if the result is $2A, and replace the operand with the selected pointer from $890D/$890E."
+   "text": "Starting with X=$CF, copy bytes X=$CF down through 1 from the address in the load operand at $88BB/$88BC into $7C60,X, leaving offset zero untouched. Then add two to $8038, reset it to zero if the result is $2A, and replace the operand with the selected pointer from $890D/$890E. This updates the second large wall-hazard glyph buffer. Byte zero is invariant $AA across all seven source frames and already equals the destination."
   },
   {
    "address": 35043,
@@ -19004,9 +19015,14 @@
    "text": "After three NOPs, write $77 to $D011, clear sprite 5-7 colours, set multicolour mask $17, clear sprite X high bits and set shared colours $06/$0E. Set sprite 0-4 X positions to $68,$F2,$80,$AC,$DA and their Y positions to $FB; set their colours to 7,1,3,12,10 and pointers $47F8-$47FC to $07,$B4,$09,$06,$01. Schedule $8D6F at raster $0A, acknowledge the interrupt, delay in an X countdown, and when $804A is zero set those sprites' Y positions to $2A. Call the sound update and jump to $8D66."
   },
   {
+   "address": 37207,
+   "type": "line",
+   "text": "Immediate sprite pointer for the cable close-up in the HUD. Initialization selects $B4; sawing advances it through $BA, whose selection triggers the cable-break death path."
+  },
+  {
    "address": 37279,
    "type": "line",
-   "text": "First eight-byte character-pose record. The six leading bytes are sprite pointers consumed by $8666 and $A9ED; the next pose begins eight bytes later. This is the same eight-byte format as the following 29 records."
+   "text": "First eight-byte character-pose record. The six leading bytes are sprite pointers consumed by $8666 and $A9ED; the next pose begins eight bytes later. This is the same eight-byte format as the following 29 records. These six-pointer records assemble the character poses; the inspector draws their two columns and three rows."
   },
   {
    "address": 37287,
@@ -19081,7 +19097,7 @@
   {
    "address": 37399,
    "type": "line",
-   "text": "Character-pose record at index 15 in the eight-byte table starting at $919F. The six leading bytes are sprite pointers read by the pose-copy paths, and the final two bytes are outside that six-pointer copy."
+   "text": "Character-pose record at index 15 in the eight-byte table starting at $919F. The six leading bytes are sprite pointers read by the pose-copy paths, and the final two bytes are outside that six-pointer copy. These records assemble alternate character poses selected by movement and weapon state."
   },
   {
    "address": 37407,
@@ -19186,7 +19202,7 @@
   {
    "address": 37668,
    "type": "line",
-   "text": "Record 0: X-position bytes $69, $60, $57 and sprite pointer $9E. The selector at $92E7 reads this row when $B5B9 is 0; it matches in the entry and play snapshots."
+   "text": "Record 0: X-position bytes $69, $60, $57 and sprite pointer $9E. The selector at $92E7 reads this row when $B5B9 is 0; it matches in the entry and play snapshots. These records give the rope geometry for swing indices 0-40, centered on 20."
   },
   {
    "address": 37669,
@@ -19711,12 +19727,12 @@
   {
    "address": 39188,
    "type": "line",
-   "text": "If $960C equals 2, copy 21 bytes from $0F00 to $4240, increment $8018, add eight to the upper counter's tens-pattern pointer at $8BE9, reset $9612, set $9613 and call $9769. Otherwise continue at $9948."
+   "text": "For first-wall selection 2, collect the first scoop part: copy seven sprite rows from $0F00 to $4240, increment $8018 and add ten to the displayed progress. Clear the pickup lockout and remove its wall glyph. Other selections continue at $9948."
   },
   {
    "address": 39240,
    "type": "line",
-   "text": "Copy 55 bytes from $0F89 to $41C9, set the operands at $869C and $869F to $0FC9 and $41C9, clear $8045 and $9612, set $9613 and call $9769."
+   "text": "Refill the courage gauge by copying 55 bytes from $0F89 to $41C9. Reset the depletion source to $0FC9 and destination to $41C9, clear the pending damage and pickup-delay counters, mark the pickup, and remove its wall glyph. The selected first-wall item is an elixir when $960C is 3."
   },
   {
    "address": 39288,
@@ -19726,7 +19742,7 @@
   {
    "address": 39326,
    "type": "line",
-   "text": "Copy 21 bytes from $0F15 to $4255, increment $8018, add eight to the upper counter's tens-pattern pointer at $8BE9, reset $9612, set $9613 and call $9891."
+   "text": "Collect the second scoop part from second-wall selection 0: copy seven sprite rows from $0F15 to $4255, increment $8018 and add ten percentage points. Clear the pickup lockout and remove its wall glyph."
   },
   {
    "address": 39371,
@@ -19741,7 +19757,7 @@
   {
    "address": 39455,
    "type": "line",
-   "text": "Copy 21 bytes from $0F2A to $426A, increment $8018, add eight to the upper counter's tens-pattern pointer at $8BE9, reset $9612, set $9613 and call $9891."
+   "text": "Collect the third scoop part from second-wall selection 3: copy seven sprite rows from $0F2A to $426A, increment $8018 and add ten percentage points. Clear the pickup lockout and remove its wall glyph."
   },
   {
    "address": 39500,
@@ -20074,6 +20090,26 @@
    "text": "Twenty-six temporary character codes. The downward screen-copy routine saves its middle row here before shifting rows, then restores these bytes at the join between its two copy loops."
   },
   {
+   "address": 42854,
+   "type": "line",
+   "text": "Nonzero while a bomb or shield has been launched: 1 travels upward and 2 downward. While fire remains held, the controller moves Y by five per update; the release path activates the selected effect."
+  },
+  {
+   "address": 42855,
+   "type": "line",
+   "text": "Set by the fire-release path once a bomb or shield has been launched. Kind $A769 selects bomb or shield behavior; mode 2 uses frames $9A-$9D and mode 3 uses $96-$99."
+  },
+  {
+   "address": 42857,
+   "type": "line",
+   "text": "Thrown-weapon kind: 1 selects the PKR bomb controller and 2 selects the PKR shield effect. The firing paths assign these values in modes 2 and 3; release sets the activation flag at $A767."
+  },
+  {
+   "address": 42869,
+   "type": "line",
+   "text": "Space-key selection state. The derived mode at $9166 is 1 for the proton beam, 2 for the PKR bomb and 3 for the PKR shield. The live mode test observed the distinct icons, stock decrement, and bomb/shield release paths."
+  },
+  {
    "address": 42875,
    "type": "line",
    "text": "Read $A769. Return when it is zero, continue at $A78E when it is 1, and jump to the effect state at $A8A5 for any other value."
@@ -20096,12 +20132,12 @@
   {
    "address": 43055,
    "type": "line",
-   "text": "Return if $8047 or $A0D0 is nonzero or $801E is zero. Otherwise use $801D to choose a direction for the sprite 5 Y operand at $8E07. One direction subtracts $801E while the value is at least $2E; below that it sets $A777 to $FF and increments $A778. The other adds $801E while the value is below $F8; at or above it, it sets $A777 to 1 and increments $A778. In the opposite state, decrement $A778 and clear $A777 when it reaches zero."
+   "text": "Compensate the activated bomb/explosion's Y operand $8E07 for shaft scrolling. Return if $8047 or $A0D0 is nonzero or scroll speed $801E is zero. Direction $801D selects subtraction or addition, with boundary state $A777/$A778. $A7CC calls this only after activation $A767; held-fire bomb travel is at $ABEC-$AC59."
   },
   {
    "address": 43173,
    "type": "line",
-   "text": "If $94BD is nonzero, clear the effect state at $A8F0. If it is zero and $A767 is zero, return. Otherwise, on the first call set $A76A to 1, clear $A76E, change the sprite-related operands at $8E4B, $8E50 and $8E11, and write $96-$99 to the operands at $A976, $A991, $A9A7 and $A9B9. Later calls increment $A76E; at $F0 clear five state bytes and restore the sprite operands, otherwise continue at $A916."
+   "text": "If $94BD is nonzero, clear the effect state at $A8F0. If it is zero and $A767 is zero, return. Otherwise, on the first call set $A76A to 1, clear $A76E, change the sprite-related operands at $8E4B, $8E50 and $8E11, and write $96-$99 to the operands at $A976, $A991, $A9A7 and $A9B9. Later calls increment $A76E; at $F0 clear five state bytes and restore the sprite operands, otherwise continue at $A916. This places and animates the four shield-effect pieces around the player."
   },
   {
    "address": 43286,
@@ -20136,7 +20172,7 @@
   {
    "address": 44548,
    "type": "line",
-   "text": "If $802E is nonzero, call $B857, clear sound flag $E131, and request sound selection $0E through $8D09; otherwise return immediately. Its normal gameplay caller is unresolved."
+   "text": "When $802E is nonzero, call $B857 to restore the beam background, clear effect flag $E131 and call $8D09. That wrapper takes the effect number from X: the LDA #$0E at $AE11 is overwritten by TXA and does not select effect $0E. Otherwise return. No ordinary caller has been established."
   },
   {
    "address": 44567,
@@ -20401,7 +20437,7 @@
   {
    "address": 47191,
    "type": "line",
-   "text": "Clear $802E and inspect $802F. When it is nonzero, continue through the other pattern cases at $B8D8. For zero, return if the column value $B7BA is below 9. Otherwise start with X zero and patch the two screen destinations and two colour destinations with the 16-bit addresses in $B7BE/$B7BF and $B7C4/$B7C5. Copy the successive pair of bytes at $B79D,X to screen offsets 0 and 1, and write colour $0A to the corresponding colour positions. Subtract $2A from both destination addresses, advance X by 2 and subtract 2 from $B7BA; repeat while the resulting column value is at least 9. The zero pattern at $BEE0 saved those screen bytes to $B79D before drawing; this path restores the character bytes but writes colour $0A rather than restoring their previous colours. The full visual purpose remains open."
+   "text": "Clear $802E and inspect $802F. When it is nonzero, continue through the other pattern cases at $B8D8. For zero, return if the column value $B7BA is below 9. Otherwise start with X zero and patch the two screen destinations and two colour destinations with the 16-bit addresses in $B7BE/$B7BF and $B7C4/$B7C5. Copy the successive pair of bytes at $B79D,X to screen offsets 0 and 1, and write colour $0A to the corresponding colour positions. Subtract $2A from both destination addresses, advance X by 2 and subtract 2 from $B7BA; repeat while the resulting column value is at least 9. The zero pattern at $BEE0 saved those screen bytes to $B79D before drawing; this path restores the character bytes but writes colour $0A rather than restoring their previous colours. This restores the character cells saved under the proton beam, using fixed colour $0A."
   },
   {
    "address": 47320,
@@ -20486,7 +20522,7 @@
   {
    "address": 48864,
    "type": "line",
-   "text": "Clear $802F, call $C588 and use Y to read $C5A8. Write that byte and the next value to the immediate operands at $BF34 and $BF49. If $B7B8 is below 9 return. Otherwise initialize X to zero and repeat: use $B7BC/$B7BD to set the absolute addresses of the two loads and four stores in the loop, with $94 added to the high byte for the two colour stores; save two original bytes in $B79D,X and $B79E,X; call $AF14 for each; and store the two selected values and colour 9. Subtract $2A from the 16-bit pointer at $B7BC/$B7BD, add 2 to X, subtract 2 from $B7B8, and continue while $B7B8 is at least 9."
+   "text": "Clear $802F, call $C588 and use Y to read $C5A8. Write that byte and the next value to the immediate operands at $BF34 and $BF49. If $B7B8 is below 9 return. Otherwise initialize X to zero and repeat: use $B7BC/$B7BD to set the absolute addresses of the two loads and four stores in the loop, with $94 added to the high byte for the two colour stores; save two original bytes in $B79D,X and $B79E,X; call $AF14 for each; and store the two selected values and colour 9. Subtract $2A from the 16-bit pointer at $B7BC/$B7BD, add 2 to X, subtract 2 from $B7B8, and continue while $B7B8 is at least 9. This draws a directional proton-beam trace into the character screen, saving the overwritten characters for restoration."
   },
   {
    "address": 49011,
@@ -20516,7 +20552,7 @@
   {
    "address": 49498,
    "type": "line",
-   "text": "Set $802F and $B7C2 to 6, then use $C588 and the table at $C5A8 to patch two consecutive character values into the drawing loop. If $B7B8 is at least 14, patch the loads and stores from the screen address at $B7BC/$B7BD and patch the colour stores with its high byte plus $94. The loop saves two screen bytes at $B79D indexed by X, calls $AF14 for each, writes the selected character values and colour 9, then subtracts $2A from the screen address and subtracts 2 from both $B7B8 and $B7C2 before deciding whether to repeat. The on-screen meaning and reachability of this path remain open."
+   "text": "Set $802F and $B7C2 to 6, then use $C588 and the table at $C5A8 to patch two consecutive character values into the drawing loop. If $B7B8 is at least 14, patch the loads and stores from the screen address at $B7BC/$B7BD and patch the colour stores with its high byte plus $94. The loop saves two screen bytes at $B79D indexed by X, calls $AF14 for each, writes the selected character values and colour 9, then subtracts $2A from the screen address and subtracts 2 from both $B7B8 and $B7C2 before deciding whether to repeat. This is another directional proton-beam drawing path, paired with background restoration."
   },
   {
    "address": 49659,
@@ -20616,7 +20652,7 @@
   {
    "address": 50722,
    "type": "line",
-   "text": "Increment $C61E; when it reaches 2 clear it and return. Otherwise, if $A0CF is not $10 and $C61B is nonzero, jump to $C703; if $A0CF is $10 and $C61D is zero, take the same jump. Otherwise increment $C61A, replacing $E0 with $70, and continue at $C658."
+   "text": "Increment $C61E; when it reaches 2 clear it and return. Otherwise, if $A0CF is not $10 and $C61B is nonzero, jump to $C703; if $A0CF is $10 and $C61D is zero, take the same jump. Otherwise increment $C61A, replacing $E0 with $70, and continue at $C658. This initializes and updates the upward-moving sprite-6 ghost; the alternate $C703 path enters from above."
   },
   {
    "address": 50776,
@@ -20646,7 +20682,7 @@
   {
    "address": 50947,
    "type": "line",
-   "text": "Increment $C61A, replacing $E0 with $60. If $C61B is zero, set it to 1; clear $C620, $9A68, $C621 and $C61F; set the sprite 6 Y, pointer and colour operands at $8E5A/$8E5F/$8E64 to $2E/$A7/$09; copy $C61A into its X operand $8E55, clear $C61C and return. Otherwise continue at $C745."
+   "text": "Increment $C61A, replacing $E0 with $60. If $C61B is zero, set it to 1; clear $C620, $9A68, $C621 and $C61F; set the sprite 6 Y, pointer and colour operands at $8E5A/$8E5F/$8E64 to $2E/$A7/$09; copy $C61A into its X operand $8E55, clear $C61C and return. Otherwise continue at $C745. This is the downward-moving sprite-6 ghost, with scrolling compensation through $C778."
   },
   {
    "address": 51013,
@@ -20736,7 +20772,7 @@
   {
    "address": 51210,
    "type": "line",
-   "text": "Call $CA32, then inspect $C7B6. If nonzero, increment $C7B4 modulo 2; on zero increment $C7B5. Before $C7B5 reaches 4, use it to select a sprite pointer from $C6FF for the operand at $8E2A. At 4 set that operand to $0F, clear $C7AF, $C7B6 and $C7B5, set the sprite Y operand at $8E25 to $FF and return. If $C7B6 is zero, continue at $C847."
+   "text": "Call $CA32, then inspect $C7B6. If nonzero, increment $C7B4 modulo 2; on zero increment $C7B5. Before $C7B5 reaches 4, use it to select a sprite pointer from $C6FF for the operand at $8E2A. At 4 set that operand to $0F, clear $C7AF, $C7B6 and $C7B5, set the sprite Y operand at $8E25 to $FF and return. If $C7B6 is zero, continue at $C847. This is the sprite-7 ghost controller; its defeat flag selects the disappearance animation."
   },
   {
    "address": 51271,
@@ -20826,12 +20862,12 @@
   {
    "address": 51932,
    "type": "line",
-   "text": "Return unless both $C900 and $C901 are nonzero. Increment $C903 and return unless it reaches 3. Then increment $C906, call $CB38 and clear $C903. Increment $C902, resetting it to zero when it reaches 4; index the pointer sequence at $CB63 if $C904 is zero, or $CB67 otherwise, and store the selected pointer at $8EE7. Start sound effect 3 on voice 2 through $8D04 and return."
+   "text": "The cable-cutting creature saws only after both $C900 and $C901 alignment flags are set. Every third call advances its four-frame saw animation, increments $C906 and calls the cable-damage step at $CB38. A 16-step subdivision advances the HUD cable frame; six such advances break the cable."
   },
   {
    "address": 52024,
    "type": "line",
-   "text": "Return unless $C906 equals $10. Clear it and increment $9157. When that count reaches $BA, set the failure flag $804D, clamp the count to $BA, and request effect 4 on voice 2 and effect $0C on voice 1."
+   "text": "When the sawing counter $C906 equals $10, clear it and advance the cable close-up pointer at $9157. Pointers $B4-$BA show progressive cable damage. Reaching $BA sets death flag $804D, clamps the pointer, and starts the break/fall effects. With both alignment flags set, $CADC reaches this step every 48 calls and breaks the cable on call 288 from an intact state."
   },
   {
    "address": 52067,
