@@ -58,4 +58,4 @@ The routine at `$9A71` initializes the first available one of three movement slo
 
 At `$9A17`, a newly detected low on the joystick-2 fire bit can initialize a movement slot through `$9A71`; the latch at `$9489` prevents a held low from repeating the initialization. A nonzero indexed `$C00C` byte delays this input path. The moving object’s exact identity remains open.
 
-After an indexed overlap, `$C33D` or `$C35D` selects a handler using `$8026` or `$8027`. One handler at `$C376` copies a byte through patched source and destination operands and advances them by three; `$C3CE` performs the corresponding reverse step. The visual meaning of this pattern remains open.
+After an indexed overlap, `$C33D` or `$C35D` selects a handler using `$8026` or `$8027`. One handler at `$C376` copies a byte through patched source and destination operands and advances them by three; `$C3CE` performs the corresponding reverse step. Three analogous pairs at `$C42B`, `$C4E0` and `$C595` use separate destinations and flags. The visual meaning of these patterns remains open.
