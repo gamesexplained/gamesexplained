@@ -62,12 +62,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .tf-out{display:block;padding:10px 12px;background:var(--surface-2);border-radius:5px;font-family:var(--fm);font-size:.82em;min-height:2.6em}
 .tf-board{max-width:640px;margin:0 auto 14px;background:#080808}
 .tf-board canvas{cursor:crosshair}
-.tf-shape{display:grid;place-items:center;min-height:192px;background:#080808;border-radius:5px;margin:12px 0}
-.tf-shape canvas{width:144px;height:144px;image-rendering:pixelated}
+.tf-shape{
+  --pixel:4px; --cell:calc(8 * var(--pixel));
+  position:relative;overflow:hidden;height:clamp(192px,32vw,256px);border-radius:5px;margin:12px 0 16px;
+  background-color:#101713;
+  background-image:linear-gradient(to right,#bfcea915 1px,transparent 1px),linear-gradient(to bottom,#bfcea915 1px,transparent 1px);
+  background-size:var(--cell) var(--cell);
+}
+.tf-shape canvas{position:absolute;top:0;left:0;width:calc(24 * var(--pixel));height:auto;image-rendering:pixelated}
+.tf-controls label[hidden]{display:none}
+.tf-controls.tf-phase input{flex:1 1 140px;min-width:0}
+#tf-shape-info{margin:0}
 .tf-status{color:var(--ink-soft);font-size:.85em}
 .tf-foot{font-size:.85em;color:var(--ink-soft);margin-top:32px}
 @media(max-width:680px){:root{--gx:20px;--h1:37px;--fs:16px;--pp:15px;--sy:30px}.tf-table td,.tf-table th{padding:8px 5px}}
-@media(max-width:500px){.tf-pair{grid-template-columns:1fr}}
+@media(max-width:500px){.tf-pair{grid-template-columns:1fr}#tf-shape-info{min-height:calc(3.2em + 20px)}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -87,15 +96,15 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
         <option value="cherry">Sliding cherry</option>
         <option value="static">Standing fruit</option><option value="ball">Ball</option><option value="crush">Crushed cherry</option>
       </select></label>
-      <label>Direction <select id="tf-direction">
-        <option value="0">Left</option><option value="1">Right</option><option value="2">Vertical</option>
+      <label id="tf-direction-control">Direction <select id="tf-direction">
+        <option value="left">Left</option><option value="right" selected>Right</option><option value="up">Up</option><option value="down">Down</option>
       </select></label>
-      <button type="button" id="tf-animate" aria-pressed="false">Animate</button>
+      <button type="button" id="tf-animate" disabled>Play</button>
     </div>
-    <div class="tf-controls"><label for="tf-phase">Drawing phase</label><input type="range" id="tf-phase" min="0" max="1" value="0"></div>
-    <div class="tf-shape"><canvas id="tf-shape" width="24" height="24" aria-label="Fruit assembled from its original TED character patterns"></canvas></div>
-    <output id="tf-shape-info" class="tf-out" aria-live="polite">Loading the listing…</output>
-    <p class="cap">Each entry lists the glyph codes on screen. The ball uses four quarter-cell positions. The crush uses four successive groups of cells.</p>
+    <div class="tf-shape" id="tf-stage"><canvas id="tf-shape" width="24" height="24" role="img" aria-label="Fruit drawn from original TED character patterns"></canvas></div>
+    <div class="tf-controls tf-phase"><label for="tf-phase">Drawing phase</label><input type="range" id="tf-phase" min="0" max="1" value="0" disabled></div>
+    <p id="tf-shape-info" class="tf-out" aria-live="polite">Loading the listing…</p>
+    <p class="cap">Playback smooths the travel between the game’s drawing positions. Drag the slider to pause and see how the original glyphs fit the eight-pixel grid.</p>
   </div>
 </section>
 <section id="publisher">
@@ -133,9 +142,18 @@ function drawingCells(ram, kind, direction, phase) {
     return [ram[offsets + i], ram[chars + i] + bias, attr];
   });
 }
+
+function movingDrawing(distance, dx, dy, step) {
+  const position = Math.floor(distance / step) * step;
+  const offsetX = (dx * position) & 7;
+  const offsetY = (dy * position) & 7;
+  const phase = (offsetX + (dx && dy ? 2 : 1) * offsetY) / step;
+  return {phase, offsetX, offsetY};
+}
 // end of tutti-shapes
 const kind = document.getElementById('tf-kind');
 const direction = document.getElementById('tf-direction');
+const directionControl = document.getElementById('tf-direction-control');
 const phase = document.getElementById('tf-phase');
 const toggle = document.getElementById('tf-animate');
 const info = document.getElementById('tf-shape-info');
@@ -143,58 +161,153 @@ if (typeof C16 === 'undefined') {
   info.textContent = 'The shape viewer uses the built site’s Commodore renderer.';
 } else {
   C16.load('listing.json').then(({ram}) => {
+    const stage = document.getElementById('tf-stage');
     const canvas = document.getElementById('tf-shape');
     const ctx = canvas.getContext('2d');
-    const period = {strawberry: 80.3, enemy: 85.6, falling: 20.1, apple: 20.1, cherry: 20.1, crush: 160.5};
-    let timer;
-    function update() {
-      const cells = drawingCells(ram, kind.value, Number(direction.value), Number(phase.value));
+    const {width, height} = canvas;
+    const palFrame = 1000 * 312 * 114 / 1773447;
+    const shapes = {
+      strawberry: {phases: 2, step: 4, ticks: 4},
+      enemy: {phases: 2, step: 4, ticks: 2 * 256 / ram[0x34C0]},
+      falling: {phases: 4, step: 2, ticks: 1, path: [0, 1, 2]},
+      apple: {phases: 4, step: 2, ticks: 1},
+      cherry: {phases: 4, step: 2, ticks: 1},
+      static: {phases: 2},
+      ball: {phases: 4, step: 4, ticks: 1, path: [1, 1, 0]},
+      crush: {phases: 4, ticks: 8},
+    };
+    const paths = {left: [-1, 0, 0], right: [1, 0, 1], up: [0, -1, 2], down: [0, 1, 2]};
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    const ted = Array(32).fill(0);
+    ted[6] = 0x1B;
+    ted[7] = 0x98;
+    ted[0x13] = 0x38;
+    ted[0x14] = 8;
+    ted[0x16] = 0x32;
+    ted[0x17] = 0x35;
+    let frames, visibleFrame, path, shape, scale, stageWidth, stageHeight;
+    let elapsed = 0, lastTime, request;
+    let wantsMotion = !reducedMotion.matches;
+    let manual = true;
+
+    function renderFrame(cells) {
       const mem = ram.slice();
       for (const [offset, glyph, attr] of cells) {
         mem[0x800 + offset] = attr;
         mem[0xC00 + offset] = glyph;
       }
-      const ted = Array(32).fill(0);
-      ted[6] = 0x1B;
-      ted[7] = 0x98;
-      ted[0x13] = 0x38;
-      ted[0x14] = 8;
-      ted[0x16] = 0x32;
-      ted[0x17] = 0x35;
       const pic = C16.render(mem, ted, {size: 0x4000});
-      const width = canvas.width, height = canvas.height;
       const px = new Uint8Array(width * height);
-      for (let y = 0; y < height; y++) px.set(pic.px.subarray(y * pic.w, y * pic.w + width), y * width);
-      ctx.putImageData(new ImageData(C16.rgba({w: width, h: height, px}), width, height), 0, 0);
-      info.textContent = `Phase ${Number(phase.value) + 1} of ${Number(phase.max) + 1} · glyphs ${cells.map(cell => cell[1].toString(16).toUpperCase().padStart(2,'0')).join(' ')}`;
+      for (const [offset] of cells) {
+        const x = (offset % 40) * 8;
+        const y = Math.floor(offset / 40) * 8;
+        for (let row = y; row < y + 8; row++) {
+          const start = row * pic.w + x;
+          px.set(pic.px.subarray(start, start + 8), row * width + x);
+        }
+      }
+      const rgba = C16.rgba({w: width, h: height, px});
+      for (let i = 0; i < px.length; i++) if (px[i] === ted[0x15]) rgba[4 * i + 3] = 0;
+      return new ImageData(rgba, width, height);
     }
+
+    function draw() {
+      const size = kind.value === 'ball' ? 4 : 16;
+      let x = Math.round((stageWidth - size) / 16) * 8;
+      let y = Math.round((stageHeight - size) / 16) * 8;
+      let index = Number(phase.value);
+      if (!manual && shape.step) {
+        const [dx, dy] = path;
+        const span = dx && dy ? Math.min(stageWidth, stageHeight) : dx ? stageWidth : stageHeight;
+        const cycle = span + size;
+        const distance = (cycle / 2 + elapsed * shape.step / (shape.ticks * palFrame)) % cycle;
+        const drawing = movingDrawing(distance, dx, dy, shape.step);
+        // The glyphs already include the position within their character cells.
+        if (dx) x = (stageWidth - size) / 2 + dx * (distance - cycle / 2) - drawing.offsetX;
+        if (dy) y = (stageHeight - size) / 2 + dy * (distance - cycle / 2) - drawing.offsetY;
+        index = drawing.phase;
+      } else if (!manual && kind.value === 'crush') {
+        const slot = Math.floor(elapsed / (shape.ticks * palFrame)) % 6;
+        index = Math.min(slot, frames.length);
+      }
+      canvas.style.transform = `translate(${Math.round(x * scale)}px, ${Math.round(y * scale)}px)`;
+      if (index === visibleFrame) return;
+      const frame = frames[index];
+      if (frame) ctx.putImageData(frame.image, 0, 0);
+      else ctx.clearRect(0, 0, width, height);
+      visibleFrame = index;
+      phase.value = Math.min(index, frames.length - 1);
+      info.textContent = frame ? frame.label : 'The cherry disappears.';
+    }
+
+    function resize() {
+      scale = canvas.clientWidth / width;
+      if (!scale) return;
+      stageWidth = stage.clientWidth / scale;
+      stageHeight = stage.clientHeight / scale;
+      draw();
+    }
+
+    function animate(now) {
+      if (lastTime !== undefined) elapsed += now - lastTime;
+      lastTime = now;
+      draw();
+      request = requestAnimationFrame(animate);
+    }
+
     function setAnimation(on) {
-      clearInterval(timer);
-      toggle.setAttribute('aria-pressed', on);
-      toggle.textContent = on ? 'Pause animation' : 'Animate';
-      if (on) timer = setInterval(() => {
-        phase.value = (Number(phase.value) + 1) % (Number(phase.max) + 1);
-        update();
-      }, period[kind.value]);
+      cancelAnimationFrame(request);
+      request = undefined;
+      lastTime = undefined;
+      toggle.textContent = on ? 'Pause' : 'Play';
+      info.setAttribute('aria-live', on ? 'off' : 'polite');
+      if (on) {
+        manual = false;
+        request = requestAnimationFrame(animate);
+      }
     }
+
     function configure() {
-      const actor = kind.value === 'strawberry' || kind.value === 'enemy';
-      const movable = ['strawberry','enemy','apple','cherry'].includes(kind.value);
-      direction.disabled = !movable;
-      direction.options[1].disabled = !actor;
-      if (!actor && direction.value === '1') direction.value = '0';
-      if (kind.value === 'falling') direction.value = '2';
-      phase.max = actor || kind.value === 'static' ? '1' : '3';
-      phase.value = '0';
-      toggle.disabled = kind.value === 'static' || kind.value === 'ball';
-      setAnimation(false);
-      update();
+      shape = shapes[kind.value];
+      path = shape.path || paths[direction.value];
+      directionControl.hidden = Boolean(shape.path || !shape.step);
+      frames = Array.from({length: shape.phases}, (_, index) => {
+        const cells = drawingCells(ram, kind.value, path[2], index);
+        const name = kind.value === 'static' ? ['Bad Apple', 'Cherry'][index] : `Phase ${index + 1} of ${shape.phases}`;
+        return {image: renderFrame(cells), label: `${name} · Glyphs ${cells.map(cell => C16.hex(cell[1], 2)).join(' ')}`};
+      });
+      visibleFrame = undefined;
+      elapsed = 0;
+      manual = true;
+      phase.disabled = false;
+      phase.max = shape.phases - 1;
+      phase.value = 0;
+      toggle.disabled = !shape.ticks;
+      resize();
+      setAnimation(wantsMotion && !toggle.disabled);
     }
+
     kind.addEventListener('change', configure);
-    direction.addEventListener('change', update);
-    phase.addEventListener('input', update);
-    toggle.addEventListener('click', () => setAnimation(toggle.getAttribute('aria-pressed') !== 'true'));
+    direction.addEventListener('change', configure);
+    phase.addEventListener('input', () => {
+      wantsMotion = false;
+      setAnimation(false);
+      manual = true;
+      elapsed = kind.value === 'crush' ? Number(phase.value) * shape.ticks * palFrame : 0;
+      draw();
+    });
+    toggle.addEventListener('click', () => {
+      wantsMotion = request === undefined;
+      setAnimation(wantsMotion);
+    });
+    reducedMotion.addEventListener('change', ({matches}) => {
+      if (matches) {
+        wantsMotion = false;
+        setAnimation(false);
+      }
+    });
     configure();
+    new ResizeObserver(resize).observe(stage);
   }).catch(error => { info.textContent = error.message; });
 }
 </script>

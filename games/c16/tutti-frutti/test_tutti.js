@@ -31,7 +31,12 @@ for (let level = 1; level <= 6; level++) {
   assert.ok(new Set(board.px).size >= 4, `layout ${level} has a rendered palette`);
 }
 
-const {drawingCells} = g.run('graphics.html', 'tutti-shapes', 'drawingCells');
+const {drawingCells, movingDrawing} = g.run('graphics.html', 'tutti-shapes', 'drawingCells', 'movingDrawing');
+assert.deepEqual(movingDrawing(7.9, 1, 0, 4), {phase: 1, offsetX: 4, offsetY: 0});
+assert.deepEqual(movingDrawing(8, 1, 0, 4), {phase: 0, offsetX: 0, offsetY: 0});
+assert.deepEqual(movingDrawing(2, -1, 0, 2), {phase: 3, offsetX: 6, offsetY: 0});
+assert.deepEqual(movingDrawing(6, 0, -1, 2), {phase: 1, offsetX: 0, offsetY: 2});
+assert.deepEqual(movingDrawing(4, 1, 1, 4), {phase: 3, offsetX: 4, offsetY: 4});
 function queueCells(kind, direction, phase) {
   const mem = ram.slice();
   mem.fill(0xFF, 0x370, 0x380);
