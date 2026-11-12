@@ -1,6 +1,8 @@
 'use strict';
 const assert = require('assert');
 const {CPU} = require('../../../kit/cpu/cpu6502.js');
+const fs = require('fs');
+const path = require('path');
 const {game} = require('../../../kit/scripts/port_check.js');
 const listing = game(__dirname).listing('parts/airshaft/listing.json');
 assert(listing.has[0xaac0] && listing.has[0xaae1]);
@@ -26,4 +28,13 @@ for (const [mode, left, right] of [[1, 0x92d7, 0x92d7], [2, 0x928f, 0x92b7], [3,
     assert.equal(ram[0x41a9 + row * 3], ram[right + row], `mode ${mode}, right row ${row}`);
   }
 }
+const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const match = html.match(/<script id="frame-data" type="application\/json">([^<]+)<\/script>/);
+assert(match, 'airshaft frame data is embedded');
+const frame = JSON.parse(match[1]);
+assert.equal((~frame.cia2[0] & 3) * 0x4000, 0x4000, 'VIC bank');
+assert.equal(0x4000 + ((frame.vic[24] >> 4) & 15) * 1024, 0x4400, 'screen matrix');
+assert(frame.writes.some(([line, cycle, address, value]) =>
+  line === 251 && cycle === 8 && address === 0x47fb && value === 6), 'sprite 3 selects slot 6');
+assert.equal(0x4000 + 6 * 64, 0x4180, 'selected sprite slot contains the drawn bytes');
 console.log('OK - airshaft selection and drawing match the three VICE-observed modes');
