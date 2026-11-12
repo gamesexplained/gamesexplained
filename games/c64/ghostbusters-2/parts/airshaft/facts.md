@@ -1,12 +1,17 @@
 # Airshaft facts
 
-The listing uses the clean-boot play snapshot `work/play-clean.vsf`, with `work/entry.vsf` for the loaded-data audit. Its disk and boot route are in the game's `orientation.md`. The frame observation below was made on the earlier boot and still needs repeating on the clean boot.
+The listing uses the clean-boot play snapshot `work/play-clean.vsf`, with `work/entry.vsf` for the loaded-data audit. Its disk and boot route are in the game's `orientation.md`.
 
 - The hardware IRQ vector points to `$8D53`, which saves A, X and Y and dispatches through `$0314` or `$0316` according to the stacked status. In this snapshot `$0314` points to `$8D6F`, which sets display and sprite registers and schedules `$8E4A` at raster line `$2B`.
-- A captured PAL frame writes `$0314/$0315` to select `$8E4A`, `$8EB1`, `$8F1F`, `$8F5E`, `$8FE4`, `$9087`, `$90CD`, `$90E7` and `$8D6F` in that order. These are the next handler addresses written by the preceding handler, not the raster lines at which those next handlers run. The capture is `work/frame-live.json`.
+- A clean-boot PAL frame writes `$0314/$0315` to select `$8E4A`, `$8EB1`, `$8F1F`, `$8F5E`, `$8FE4`, `$9087`, `$90CD`, `$90E7` and `$8D6F` in that order. These are the next handler addresses written by the preceding handler, not the raster lines at which those next handlers run. The capture is `work/frame-clean.json`.
+- `frame.py compare` reproduced all 104,448 pixels of that capture, both from the full frame and from the 2,547 RAM bytes retained by `frame.py trim`. The page embeds that trimmed visual data and the captured register writes.
+- In that frame, the VIC reads sprite pointer `$A2` from bank 1 at `$6880`. Its 63 bytes contain a single set pixel in each of the first 20 rows and a blank final row. The interrupt handlers reuse this narrow vertical shape at several positions along the rope.
+- The same frame reads sprite slots `$3A–$3E` at `$4E80–$4FBF` and character bitmap rows at `$7000–$7117`. These regions have been typed as data; the individual sprite pictures still need to be identified.
 - The routine at `$AA6E` scans the keyboard and joystick. It increments the selection byte at `$A775` on a new Space press, wraps it after three positions, and uses `$A776` as the held-key latch. In VICE, holding Space from the clean-boot play snapshot changed those bytes from `01 00` to `02 01`. The meaning of each selection remains open.
 - The code at `$8054` clears and initializes state, copies display resources and configures the video chip before entering the loop at `$83E5`. That loop waits for `$8026` to change and alternates update paths using `$803C`.
 
 The clean-boot executed-address capture found 1,051 instruction starts. It covers only the captured play interval; unobserved code and data remain open. The disassembler's control-flow walk requires checking against data and the capture before its blocks can be treated as authoritative.
 
 Comparing the clean airshaft entry with `work/story-before-airshaft.vsf` in the game folder, every byte of RAM under `$D000–$DFFF` is unchanged from the preceding story state. The airshaft can still use that RAM, so its ownership remains open. In `$4C68–$7A5F`, 2,334 of 11,768 bytes agree; the load changed most of that range. The comparison does not by itself establish what the changed bytes are.
+
+The transition at `$02A7` banks out I/O and restores `$D000–$DBFF` to `$1000–$1BFF` and `$DC00–$DFFF` to `$0400–$07FF`, then jumps to `$1000` with X and Y restored. Of the first copied range, 2,983 of 3,072 bytes match `$1000–$1BFF` in the captured preceding story. Of the second, 112 of 1,024 match the story snapshot's `$0400–$07FF`. The comparison does not account for the differences or establish every byte's ownership.

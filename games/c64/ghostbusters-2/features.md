@@ -2,6 +2,8 @@
 
 Sources read 12 November 2026: [Ghostbusters II manual](https://www.gamesdatabase.org/Media/SYSTEM/Sinclair_ZX_Spectrum/Manual/formated/Ghostbusters_II_-_1989_-_Activision.htm) and [C64-Wiki](https://www.c64-wiki.com/wiki/Ghostbusters_II). These describe the game; open items still need to be checked against this disk.
 
+External reference pictures saved 12 November 2026: [story](https://www.c64-wiki.com/images/1/12/Ghostbusters2_1.png), [airshaft](https://www.c64-wiki.com/images/f/fc/Ghostbusters2_2.png), [Broadway](https://www.c64-wiki.com/images/3/31/Ghostbusters2_4.png) and [museum](https://www.c64-wiki.com/images/9/93/Ghostbusters2_3.png), all from C64-Wiki. The `reference/` folder also holds VICE captures of the title, first story and airshaft.
+
 | Feature | Status | Evidence |
 |---|---|---|
 | Three episodes: the airshaft, Broadway and the museum | open | Manual and C64-Wiki |
@@ -12,7 +14,9 @@ Sources read 12 November 2026: [Ghostbusters II manual](https://www.gamesdatabas
 | Hold fire and aim a bomb up or down; release to detonate | open | Manual |
 | Sawing monsters can sever the cable | open | Manual |
 | Broadway: steer a fireball and shoot ghosts to protect the Statue of Liberty | open | Manual |
+| Broadway displays the Statue of Liberty against a city backdrop | live | VICE capture using the forced route described in `orientation.md` |
 | Statue hits and replacement fireballs consume slime | open | Manual |
 | Street pedestrians collect slime drops; Space moves them | open | Manual |
 | Museum: control Ghostbusters, select a team member and arrange weapons | open | Manual and C64-Wiki |
+| Museum: a Ghostbuster descends on a rope before the floor scene | live | VICE capture using the forced route and alternate disk described in `orientation.md` |
 | Joystick controls the action; P pauses in the first two episodes | open | Manual |
