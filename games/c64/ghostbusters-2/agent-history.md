@@ -87,3 +87,5 @@ Traced the museum status transition and scene reset, linking a status value to t
 Connected the museum rope-state animation to its `$805E` status transition while leaving the cause unassigned.
 
 Traced the scene decisions after the museum column restoration and their status-panel updates.
+
+Traced the first museum scene-position reset and compared its initialized addresses with the second-position reset.
