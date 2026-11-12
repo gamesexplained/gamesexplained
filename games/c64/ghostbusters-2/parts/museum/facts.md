@@ -97,3 +97,5 @@ At `$A6CE`, the museum code compares a state byte and a pair of position bytes a
 `$AF15` advances a five-step counter and then a 22-step frame counter. Values 1–21 select paired sprite pointers from `$A31A/$A330`; at the end it takes one of two state-transition paths. The adjacent loaded bytes at `$A346–$A363` are tracked separately because their use is open. `$AFAB` can then copy a position into `$A2DC–$A2DE` and set `$A2DA`. The scene’s identity remains open.
 
 The museum paths at `$C6CE` and `$C808` save and restore screen and colour bytes through `$C64A/$C65E`, using `$8057` as a count and moving patched addresses by 40 bytes between cells. The forward path writes screen code `$FF` and colour `$0F`. Their full relationship during the scene remains open.
+
+`$8D0D` clears `$A318`, then conditionally compares two pairs of sprite coordinates after checking scene state `$8050`, per-state flags and the values at `$804A/$804C`. A match sets `$A318`; if `$A319` is set, it jumps to one of two handlers selected by `$8050`. The identities of the objects and flags remain open.

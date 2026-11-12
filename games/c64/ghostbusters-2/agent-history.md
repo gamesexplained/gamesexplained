@@ -67,3 +67,5 @@ Traced the Broadway active-entry comparison with the second position pair and th
 Traced the airshaft sprite 5 and 7 boundary checks, retaining their actual sign-bit branches and the unresolved flag meanings.
 
 Traced the airshaft screen-pattern scan and recovered the three jump bytes at `$84AC–$84AE` from the snapshot; no alternate entry to those bytes has been established.
+
+Traced the museum coordinate comparison at `$8D0D`, including its state gates, bounds and conditional dispatch.
