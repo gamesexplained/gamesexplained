@@ -133,3 +133,15 @@ for (let i = 0; i < museumPairs.length; i++) {
   }
 }
 console.log('OK - eight museum sprite pairs match the tables and listing');
+
+const storyGlyphMatch = html.match(/<script id="story-lower-glyph-data" type="application\/json">([^<]+)<\/script>/);
+assert(storyGlyphMatch, 'story lower-band glyph viewer has its data');
+const storyGlyphs = JSON.parse(storyGlyphMatch[1]);
+const titleListing = g.listing('parts/title/listing.json');
+assert.equal(storyGlyphs.length, 36);
+for (const glyph of storyGlyphs) {
+  const code = /^[A-Z]$/.test(glyph.character) ? 0x42 + 2 * (glyph.character.charCodeAt(0) - 65) : 0x20 + 2 * Number(glyph.character);
+  assert.equal(glyph.code, code);
+  assert.deepStrictEqual(glyph.bytes, Array.from(titleListing.ram.slice(0x3000 + 8 * code, 0x3010 + 8 * code)));
+}
+console.log('OK - 36 lower-band story glyphs match the listing');

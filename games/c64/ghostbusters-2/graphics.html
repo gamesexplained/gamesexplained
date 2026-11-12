@@ -55,6 +55,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <p id="fireball-address" aria-live="polite"></p>
 <p class="cap">The VIC reads 63 bytes for each multicolour sprite. These colours come from the Broadway raster handler. Other moving shapes require their own identification.</p>
 </div></section>
+<section><h2 class="t">The story’s lower-band letters</h2>
+<p>The story renderer represents each letter or digit with two character codes, one above the other. Choose a character to see its shape from the character set selected in the captured lower text band.</p>
+<div class="plate"><label for="story-lower-glyph">Character</label> <select id="story-lower-glyph"></select>
+<p><canvas id="story-lower-glyph-image" width="96" height="192" aria-label="Selected story character" style="max-width:100%;height:auto;image-rendering:pixelated;background:#23262d;border-radius:6px"></canvas></p>
+<p id="story-lower-glyph-address" aria-live="polite"></p><p class="cap">The <a href="source-story-engine.html#1A12">text renderer</a> selects the paired codes. The <a href="source-story-engine.html#1858">raster handlers</a> select this character set in the captured opening-story frame. The colour here is illustrative.</p></div></section>
 <section><h2 class="t">Broadway movement frames</h2>
 <p>Two sprites move across the lower part of the scene. Every fourth movement update, the game copies a stored frame into each sprite slot. Select a frame to inspect its source bitmap.</p>
 <div class="plate"><label for="broadway-motion-frame">Frame</label> <select id="broadway-motion-frame"></select>
@@ -365,6 +370,27 @@ function storyPicturePixels(data, row) {
     const address = (0x4000 + 64 * shape.pointer).toString(16).toUpperCase().padStart(4, '0');
     const link = document.createElement('a'); link.href = 'source-airshaft.html#' + address; link.textContent = '$' + address;
     const text = document.getElementById('airshaft-slot-address'); text.replaceChildren('Bitmap at ', link);
+  }
+  select.addEventListener('change', draw); draw();
+})();
+</script>
+
+<script id="story-lower-glyph-data" type="application/json">[{"character":"A","code":66,"bytes":[3,7,15,31,63,119,127,127,127,119,119,119,119,102,68,0]},{"character":"B","code":68,"bytes":[24,60,126,119,119,118,124,126,127,119,119,119,127,111,70,0]},{"character":"C","code":70,"bytes":[12,30,63,121,112,112,112,112,112,112,120,125,63,30,12,0]},{"character":"D","code":72,"bytes":[24,60,126,119,119,119,119,119,119,119,119,119,127,111,70,0]},{"character":"E","code":74,"bytes":[12,30,63,121,112,112,126,126,126,112,120,125,63,30,12,0]},{"character":"F","code":76,"bytes":[12,30,63,121,112,112,124,124,124,112,112,112,112,96,64,0]},{"character":"G","code":78,"bytes":[12,30,63,121,112,112,119,119,119,115,123,127,63,30,12,0]},{"character":"H","code":80,"bytes":[17,51,119,119,119,119,127,127,127,119,119,119,119,102,68,0]},{"character":"I","code":82,"bytes":[6,12,28,60,28,28,28,28,28,28,28,30,28,24,48,0]},{"character":"J","code":84,"bytes":[3,6,14,30,14,14,14,14,78,78,110,126,62,28,8,0]},{"character":"K","code":86,"bytes":[16,49,115,119,127,126,124,120,126,127,119,119,119,102,68,0]},{"character":"L","code":88,"bytes":[16,48,112,112,112,112,112,112,112,112,120,124,63,30,12,0]},{"character":"M","code":90,"bytes":[65,99,119,127,127,127,119,119,119,119,119,119,119,102,68,0]},{"character":"N","code":92,"bytes":[68,102,119,127,127,127,127,119,119,119,119,119,119,102,68,0]},{"character":"O","code":94,"bytes":[12,30,63,127,119,119,119,119,119,119,119,127,63,30,12,0]},{"character":"P","code":96,"bytes":[12,30,63,127,119,119,127,126,124,120,112,112,112,96,64,0]},{"character":"Q","code":98,"bytes":[12,30,63,127,119,119,119,119,119,119,119,127,126,63,27,0]},{"character":"R","code":100,"bytes":[12,30,63,127,119,119,127,126,126,127,119,119,119,102,68,0]},{"character":"S","code":102,"bytes":[12,30,63,123,113,120,60,30,15,71,103,127,126,60,24,0]},{"character":"T","code":104,"bytes":[7,15,30,60,124,124,124,92,28,28,28,30,28,24,48,0]},{"character":"U","code":106,"bytes":[20,54,119,119,119,119,119,119,119,119,119,119,127,62,28,0]},{"character":"V","code":108,"bytes":[20,54,119,119,119,119,119,119,119,119,127,127,62,28,8,0]},{"character":"W","code":110,"bytes":[65,99,119,119,119,119,119,119,119,127,127,127,119,99,65,0]},{"character":"X","code":112,"bytes":[65,99,119,119,62,62,28,28,62,62,127,119,119,99,65,0]},{"character":"Y","code":114,"bytes":[17,51,119,119,119,119,127,63,31,79,119,127,62,28,8,0]},{"character":"Z","code":116,"bytes":[31,63,127,7,15,15,30,30,60,60,120,120,127,126,124,0]},{"character":"0","code":32,"bytes":[28,62,127,119,119,119,119,119,119,119,119,127,62,28,0,0]},{"character":"1","code":34,"bytes":[4,12,28,60,28,28,28,28,28,28,28,30,28,24,48,0]},{"character":"2","code":36,"bytes":[28,62,127,103,15,30,60,120,112,112,115,127,127,126,0,0]},{"character":"3","code":38,"bytes":[28,62,127,103,7,62,60,62,7,103,119,127,62,28,0,0]},{"character":"4","code":40,"bytes":[7,15,31,63,127,119,119,119,127,127,127,7,7,7,0,0]},{"character":"5","code":42,"bytes":[126,126,126,112,124,126,127,7,7,7,15,62,124,120,0,0]},{"character":"6","code":44,"bytes":[28,62,127,119,112,124,126,127,119,119,119,127,62,28,0,0]},{"character":"7","code":46,"bytes":[127,127,127,103,7,15,14,30,28,60,56,56,56,56,0,0]},{"character":"8","code":48,"bytes":[28,62,127,119,119,127,62,127,119,119,119,127,62,28,0,0]},{"character":"9","code":50,"bytes":[28,62,127,119,119,127,63,31,7,39,119,127,62,28,0,0]}]</script>
+<script>
+(() => {
+  const glyphs = JSON.parse(document.getElementById('story-lower-glyph-data').textContent);
+  const select = document.getElementById('story-lower-glyph'), canvas = document.getElementById('story-lower-glyph-image');
+  for (const glyph of glyphs) {
+    const option = document.createElement('option'); option.value = glyph.character; option.textContent = glyph.character; select.appendChild(option);
+  }
+  function draw() {
+    const glyph = glyphs.find(item => item.character === select.value), ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    C64.drawGlyph(ctx, glyph.bytes, 0, 0, 0, 12, C64.PAL[1]);
+    C64.drawGlyph(ctx, glyph.bytes, 1, 0, 96, 12, C64.PAL[1]);
+    const address = (0x3000 + 8 * glyph.code).toString(16).toUpperCase();
+    const link = document.createElement('a'); link.href = 'source-title.html#' + address; link.textContent = '$' + address;
+    document.getElementById('story-lower-glyph-address').replaceChildren('Glyph bytes at ', link);
   }
   select.addEventListener('change', draw); draw();
 })();
