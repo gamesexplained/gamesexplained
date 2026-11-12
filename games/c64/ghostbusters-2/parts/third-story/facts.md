@@ -11,3 +11,5 @@ The 24 two-byte command-table entries at $E226–$E255 and the two 14-byte param
 The decoded `6.THIRD STORY` load writes `$3000–$37FF`, `$6400–$91FF`, `$C200–$C5FF` and `$E000–$EFE1`. Its later snapshot differs from the dual-fill output in 100 bytes, all in the sound-driver area. The part lies over Broadway; the restored engine at `$1000–$1BFF` is counted in `story-engine`.
 
 This story load contains two picture sources: bitmaps at `$6400–$77FF` and `$7B00–$8EFF`, matrices at `$7800–$7A7F` and `$8F00–$917F`, and colour bytes at `$7A80/$9180`. The shared story copies at `$1538/$1593` use these ranges. In the captured story snapshot, `$4000–$53FF` and `$6000–$627F` match the second bitmap and matrix. The Graphics page shows the first 15 rows of both sources.
+
+The text tail `$C521–$C5FF` is zero in both decompressor-fill runs and the story snapshot; its use beyond the text terminator remains open. The font at `$3000–$37FF` matches the title snapshot and is listed with the title. The loaded sound bytes at `$E6B6–$E7C9` also match the title snapshot and are listed there. All remaining stable output bytes have records in this part’s listing.
