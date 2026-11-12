@@ -4956,9 +4956,9 @@
   },
   {
    "address": 39408,
-   "name": "s_99F0",
+   "name": "museum_toggle_motion_mode",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 39419,
@@ -4980,9 +4980,9 @@
   },
   {
    "address": 39447,
-   "name": "j_9A17",
+   "name": "museum_update_motion_input",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 39455,
@@ -12360,9 +12360,9 @@
   },
   {
    "address": 65174,
-   "name": "s_FE96",
+   "name": "museum_clear_motion_origin",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 65191,
@@ -12712,6 +12712,16 @@
    "address": 39297,
    "type": "line",
    "text": "Copy four bytes each from $99E8 and $99EC to the working rows at $99E0 and $99E4. If $8041 is zero and the destination at $99C6/$99C7 equals $4518, change the first working byte to $81; if it equals $44E4, change the fourth to $A2. Copy the working rows through the self-modified stores at $99C5 and $99CB, whose operands are set by $97DA\u2013$97E6 and $97C4\u2013$97D2. The immediate operand at $99C1 determines the descending index: $96F8 sets it to 3 and some cell tests set it to 1."
+  },
+  {
+   "address": 39408,
+   "type": "line",
+   "text": "If $9486 is nonzero, clear it and return. Otherwise toggle $948A. When setting it, call $871B; when clearing it, call $FE96 if $FE19 is nonzero. The gameplay role of $948A remains open."
+  },
+  {
+   "address": 39447,
+   "type": "line",
+   "text": "If $FE19 is nonzero, call $FE96, then process one movement slot through $9B5A. Index $C00C with $8026. While that byte is nonzero, increment $94DA and clear both when the counter reaches $D0, then return. Otherwise read bit $10 of CIA1 port A, the joystick-2 fire line. A set bit clears the latch at $9489; a clear bit with the latch already set returns. On a newly detected clear bit, set the latch, call $9656 or $956C according to $947E/$947F, then call $9A71 to initialize a free movement slot. The exact gameplay identity of the moving object remains open."
   },
   {
    "address": 39537,
@@ -13287,6 +13297,11 @@
    "address": 65072,
    "type": "line",
    "text": "Set $FE19 to 1 and search for $FC25 in the values starting at $FE20, advancing X until a match or X wraps. Use X to select a direction from $FE28 and save it at $FE18. Index $9469 and $9471 with that direction to offset the position at $FC05/$FC0D/$FC15. Store the resulting position at $FE12\u2013$FE14; the high X byte starts at 1 if $FC0D is nonzero, otherwise 0, and includes carry from the low-byte addition."
+  },
+  {
+   "address": 65174,
+   "type": "line",
+   "text": "Clear $FE19, $FC0B and $FC13, write $03 to $FC2B and return. Callers use this when $FE19 is set before updating the movement slots."
   }
  ]
 }

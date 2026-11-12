@@ -55,3 +55,5 @@ The placement path at `$96F8` derives a pair of row addresses from position byte
 The eight movement handlers at `$9CAA–$9E17` select sprite pointers `$7C–$83`. The ordering and output routines at `$FD51` and `$FDDA` pass those values to the VIC sprite-pointer table. In the captured floor's VIC bank 1, the pointers select eight 63-byte bitmap shapes at `$5F00–$60FE`; those shapes match between the museum entry and play snapshots. The object they depict remains open.
 
 The routine at `$9A71` initializes the first available one of three movement slots. It gets a direction and origin from `$FE30`, whose lookup maps sprite-pointer values `$60–$67` through the direction table at `$FE28` and position offsets at `$9469/$9471`. The direction byte at `$FE18` is RAM in the captured `$01=$35` state, despite sharing an address with a KERNAL entry.
+
+At `$9A17`, a newly detected low on the joystick-2 fire bit can initialize a movement slot through `$9A71`; the latch at `$9489` prevents a held low from repeating the initialization. A nonzero indexed `$C00C` byte delays this input path. The moving object’s exact identity remains open.
