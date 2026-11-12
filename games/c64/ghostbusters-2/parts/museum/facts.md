@@ -83,3 +83,11 @@ Other scene paths select sprite pointers `$68–$6F` for `$FC29` and `$70–$7B`
 The eight values at `$8029–$8030` form four pairs of pointers `$8C–$93`. `$86B6` and `$C69D` copy a selected pair into the raster operands at `$09D2/$09DC`; the raster handler also selects `$94–$96`. All eleven slots differ between entry and play. The Graphics tab shows their captured play-state bitmaps, which match the initial memory in the captured floor frame.
 
 The panel raster handler uses single-colour sprites in VIC bank 0. Pointer `$39` followed by `$3A` selects the bitmap halves that read OK; when a corresponding byte at `$801D–$8020` equals 1, setup changes that pair’s starting pointer to `$35`, selecting the halves that read DEAD. The four bitmap slots match between entry and play. The Graphics tab displays both words.
+
+The interaction path at `$A101` can initialize the first available one of three slots flagged by `$94B2–$94B4`. It starts effect `$0D`, calls `$C04C` and `$FEA7`, then saves a direction and three position bytes. For directions 5 or more it subtracts 16 from the first 16-bit value before saving. The gameplay identity of those slots remains open.
+
+The position check at `$A9D5` requires an active `$A2DA` and matching state at `$804A,X/$804E`, then compares halved horizontal coordinates and vertical bounds. On a match it calls one of the overlap dispatchers, starts effect `$19` and clears `$A2DA`. The exact arithmetic and dispatcher conditions are in the listing; the objects’ gameplay identities remain open.
+
+`$FEA7` calculates a second motion origin from the sprite pointer at `$FC27` and position bytes `$FC07/$FC0F/$FC17`. It searches the same pointer and direction tables as `$FE30`, applies the direction offsets and stores the resulting position in `$FE15–$FE17` as well as `$FE0F–$FE11`. `$C04C` selects one of four sprite-buffer routines using `$8027`; its visual effect remains open.
+
+The adjacent stored sprite slots `$0DC0/$0E00` spell DAZED when drawn together. They match between the entry and play snapshots. Whether any game path selects that pair is open; the Graphics tab labels it as stored data.

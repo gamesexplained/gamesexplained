@@ -325,6 +325,26 @@
   },
   {
    "start": 3519,
+   "end": 3519,
+   "type": "Undefined"
+  },
+  {
+   "start": 3520,
+   "end": 3582,
+   "type": "Byte"
+  },
+  {
+   "start": 3583,
+   "end": 3583,
+   "type": "Undefined"
+  },
+  {
+   "start": 3584,
+   "end": 3646,
+   "type": "Byte"
+  },
+  {
+   "start": 3647,
    "end": 3647,
    "type": "Undefined"
   },
@@ -1241,6 +1261,18 @@
   {
    "address": 3456,
    "name": "museum_panel_dead_right",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 3520,
+   "name": "museum_panel_dazed_left",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 3584,
+   "name": "museum_panel_dazed_right",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -6100,9 +6132,9 @@
   },
   {
    "address": 41217,
-   "name": "s_A101",
+   "name": "museum_initialize_interaction_slot",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41228,
@@ -6118,9 +6150,9 @@
   },
   {
    "address": 41302,
-   "name": "b_A156",
+   "name": "museum_initialize_interaction_slot_2",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41352,
@@ -6130,9 +6162,9 @@
   },
   {
    "address": 41376,
-   "name": "b_A1A0",
+   "name": "museum_initialize_interaction_slot_3",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 41425,
@@ -7210,9 +7242,9 @@
   },
   {
    "address": 43477,
-   "name": "s_A9D5",
+   "name": "museum_check_active_position_overlap",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 43486,
@@ -9046,9 +9078,9 @@
   },
   {
    "address": 49228,
-   "name": "s_C04C",
+   "name": "museum_dispatch_second_pattern",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 49238,
@@ -13234,9 +13266,9 @@
   },
   {
    "address": 65191,
-   "name": "s_FEA7",
+   "name": "museum_choose_second_motion_origin",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 65198,
@@ -13290,6 +13322,16 @@
    "address": 3456,
    "type": "line",
    "text": "Sixty-three single-colour sprite bitmap bytes in VIC bank 0. The right half of the word DEAD, selected after pointer $35 when a status byte equals 1. The pointer setup is at $CB13\u2013$CB54 and $CBC2\u2013$CC01. These bytes match in the entry and play snapshots."
+  },
+  {
+   "address": 3520,
+   "type": "line",
+   "text": "Sixty-three stored single-colour sprite bitmap bytes in VIC bank 0. The image reads DAZ; together with the adjacent slot at $0E00 it reads DAZED. The bytes match in the entry and play snapshots. Whether a game path selects this pair remains open."
+  },
+  {
+   "address": 3584,
+   "type": "line",
+   "text": "Sixty-three stored single-colour sprite bitmap bytes in VIC bank 0. The image reads ED; together with the adjacent slot at $0DC0 it reads DAZED. The bytes match in the entry and play snapshots. Whether a game path selects this pair remains open."
   },
   {
    "address": 3648,
@@ -13937,6 +13979,21 @@
    "text": "Index $CA8F with $8026. Unless the result is $3D, clear $948A. If $948A remains nonzero call $871B; otherwise, when the indexed value is not $3C, clear the three flags at $949D\u2013$949F and write $03 to $FC2B, then call the three-slot cycle at $9B5A. Next index $CA8F with $8027. When that byte is $3D, optionally call $8DC2 according to $948D and inspect bit $10 of $DC00. A newly detected clear bit sets $948C, chooses $965D or $9573 according to $947E/$947F, clears $C00C indexed by $8027, and calls $A080. A set bit clears $948C; a held clear bit returns. Other values branch to $A0A7."
   },
   {
+   "address": 41217,
+   "type": "line",
+   "text": "If $9487 is nonzero, clear it and return. Otherwise test the three slot flags $94B2, $94B3 and $94B4 in order. For the first clear flag, start sound effect $0D on voice 2 through $86F2, call $C04C, set that flag and call $FEA7. Store $FE1C in the corresponding direction byte at $94B5\u2013$94B7. Copy $FE15\u2013$FE17 to the corresponding three-byte destination, except that a direction of 5 or more subtracts $10 from the first two bytes as a 16-bit value. If all three flags are set, return. The gameplay identity of the slots remains open."
+  },
+  {
+   "address": 41302,
+   "type": "line",
+   "text": "If $94B3 is clear, initialize the second slot: play effect $0D, call $C04C, set $94B3, call $FEA7, store the resulting direction at $94B6 and position bytes at $94A7\u2013$94A9. Directions 5 or more subtract $10 from the 16-bit value before storage. Otherwise try the third slot at $A1A0."
+  },
+  {
+   "address": 41376,
+   "type": "line",
+   "text": "Return if $94B4 is set. Otherwise play effect $0D, call $C04C, set $94B4, call $FEA7, store the resulting direction at $94B7 and position bytes at $94AA\u2013$94AC. Directions 5 or more subtract $10 from the 16-bit value before storage."
+  },
+  {
    "address": 41834,
    "type": "line",
    "text": "If $A2D8 is zero, copy 512 codes from $1400 to $4400 and return. Otherwise follow the partial-copy and patch path at $A381."
@@ -13945,6 +14002,11 @@
    "address": 41857,
    "type": "line",
    "text": "Copy selected ranges from the alternate screen to $4400\u2013$45FF, then repeat six bytes from $A364 in eight screen rows. This is the nonzero-$A2D8 branch of $A36A."
+  },
+  {
+   "address": 43477,
+   "type": "line",
+   "text": "Return unless $804A,X equals $804E and $A2DA is nonzero. Halve the 16-bit positions at $A2DC/$A2DD and $FC05/$FC0D,Y, retain their low bytes, and test whether the first plus 3 is at least the second and less than the second plus 7, using eight-bit comparisons. Also require $A2DE to be at least $FC15,Y plus 1 and below $FC15,Y plus $16. On a match, call the first overlap dispatcher when X is not 1 or the second when X is 1, in a loop that starts Y at 9 and decrements it after each call. Then start sound effect $19 and clear $A2DA. The gameplay identity of the compared objects remains open."
   },
   {
    "address": 44563,
@@ -14050,6 +14112,11 @@
    "address": 49126,
    "type": "line",
    "text": "If $FC0F is nonzero and $FC07 is at least $40, return without moving. Otherwise add two to $FC07/$FC0F, duplicate the resulting bytes at $FC08/$FC10, and return."
+  },
+  {
+   "address": 49228,
+   "type": "line",
+   "text": "Select a routine from $8027: values 0, 1, 2 and 3 jump to $C06C, $C117, $C1C2 and $C26D respectively. Other values return. The selected routines alter sprite-buffer bytes; their visual meaning remains open."
   },
   {
    "address": 49981,
@@ -14845,6 +14912,11 @@
    "address": 65174,
    "type": "line",
    "text": "Clear $FE19, $FC0B and $FC13, write $03 to $FC2B and return. Callers use this when $FE19 is set before updating the movement slots."
+  },
+  {
+   "address": 65191,
+   "type": "line",
+   "text": "Set $FE1D to 1 and search for $FC27 in the values starting at $FE20, advancing X until a match or X wraps. Use X to select a direction from $FE28 and save it at $FE1C. Index $9469 and $9471 with that direction to offset the position at $FC07/$FC0F/$FC17. Store the resulting low and high X bytes at both $FE0F/$FE10 and $FE15/$FE16; the high byte starts at 1 if $FC0F is nonzero, otherwise 0, and includes carry from the low-byte addition. Store the resulting Y minus 8 at both $FE11 and $FE17."
   }
  ]
 }
