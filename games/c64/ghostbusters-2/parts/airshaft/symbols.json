@@ -12407,9 +12407,9 @@
   },
   {
    "address": 47927,
-   "name": "b_BB37",
+   "name": "airshaft_restore_pointer_4a",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 47934,
@@ -12479,9 +12479,9 @@
   },
   {
    "address": 48069,
-   "name": "j_BBC5",
+   "name": "airshaft_restore_pointer_4f",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 48082,
@@ -12521,9 +12521,9 @@
   },
   {
    "address": 48163,
-   "name": "b_BC23",
+   "name": "airshaft_restore_pointer_54",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 48176,
@@ -12587,9 +12587,9 @@
   },
   {
    "address": 48286,
-   "name": "b_BC9E",
+   "name": "airshaft_restore_pointer_59",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 48301,
@@ -13385,9 +13385,9 @@
   },
   {
    "address": 49677,
-   "name": "j_C20D",
+   "name": "airshaft_draw_pointer_4a",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 49709,
@@ -13493,9 +13493,9 @@
   },
   {
    "address": 49840,
-   "name": "j_C2B0",
+   "name": "airshaft_draw_pointer_4f",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 49864,
@@ -13553,9 +13553,9 @@
   },
   {
    "address": 49939,
-   "name": "j_C313",
+   "name": "airshaft_draw_pointer_54",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 49967,
@@ -13655,9 +13655,9 @@
   },
   {
    "address": 50085,
-   "name": "j_C3A5",
+   "name": "airshaft_draw_pointer_59",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 50111,
@@ -19610,6 +19610,26 @@
    "text": "Compare A, normally the previously loaded $802F, with 7. If equal, set $B7C0 to 1, clear $B7C3 and jump to the shared column restore at $BDEC. Otherwise continue to the next case at $BB37."
   },
   {
+   "address": 47927,
+   "type": "line",
+   "text": "Compare A, normally the previously loaded $802F, with 8; jump to $BBC5 if unequal. Set $B7C2 to 6 and return if $B7BA is at least $19. Otherwise start at X zero and patch two screen stores and two colour stores from $B7BE/$B7BF and $B7C4/$B7C5. Write the pair at $B79D,X to screen offsets 0 and 1 and write $0A to both colour bytes. Subtract $26 from both 16-bit destinations, add 2 to X and $B7BA, and subtract 2 from $B7C2. Repeat while the counter is nonzero and the column remains below $19. The matching $C20D path saves the character bytes, but not their original colours."
+  },
+  {
+   "address": 48069,
+   "type": "line",
+   "text": "Compare A, normally the previously loaded $802F, with 9; continue to $BC23 if unequal. Return if $B7BA is at least $1F. Otherwise start at X zero and patch a screen store and a colour store from $B7BE/$B7BF and $B7C4/$B7C5. Write $B79D,X to the screen and $0A to colour. Increment X and both 16-bit destinations and $B7BA; repeat while the column remains below $1F. The matching $C2B0 path saves the character bytes, but not their original colours."
+  },
+  {
+   "address": 48163,
+   "type": "line",
+   "text": "Compare A, normally the previously loaded $802F, with 10; continue to $BC9E if unequal. Return if $B7BA is below 9. Otherwise start at X zero and patch two screen stores and two colour stores from $B7BE/$B7BF and $B7C4/$B7C5. Write the pair at $B79D,X to screen offsets 0 and 1 and write $0A to both colour bytes. Add $26 to both 16-bit destinations, add 2 to X, and subtract 2 from $B7BA. Repeat while the column remains at least 9. The matching $C313 path saves the character bytes, but not their original colours."
+  },
+  {
+   "address": 48286,
+   "type": "line",
+   "text": "Compare A, normally the previously loaded $802F, with 11; continue to $BD01 if unequal. Return if $B7BA is below $0E. Otherwise set Y to 6 and X to zero, and patch a screen store and a colour store from $B7BE/$B7BF and $B7C4/$B7C5. Write $B79D,X to the screen and $0A to colour. Subtract 1 from both 16-bit destinations, increment X and decrement Y. Return when Y reaches zero; otherwise decrement $B7BA and repeat while the column remains at least $0E. The matching $C3A5 path saves the character bytes, but not their original colours."
+  },
+  {
    "address": 48620,
    "type": "line",
    "text": "Starting at X zero, patch screen and colour stores from $B7BE/$B7BF and $B7C4/$B7C5. Write $B79D,X and colour $0A, then advance both 16-bit destinations by $28 if $B7C3 is nonzero, or subtract $28 if it is zero. Increment X, decrement $B7C0 and repeat until the counter becomes zero. Callers initialize the counter and direction before entering."
@@ -19658,6 +19678,26 @@
    "address": 49659,
    "type": "line",
    "text": "Set $802F to 7, set $B7C1 to 1, clear $B7C3 and jump to the shared column draw at $C519. The matching restore case at $BB26 restores one character with fixed colour $0A."
+  },
+  {
+   "address": 49677,
+   "type": "line",
+   "text": "Set $802F to 8 and $B7C2 to 6, call $C588, and use $C5C0,Y and that byte plus 1 to patch the immediate character operands at $C266 and $C27B. Return if $B7B8 is at least $19. Otherwise start at X zero and patch two screen loads, two screen stores and two colour stores from $B7BC/$B7BD, adding $94 to the high byte for colour. Save the two screen bytes at $B79D,X and $B79E,X and pass each to $AF14, then write the selected characters and colour 9. Subtract $26 from the 16-bit address, add 2 to X and $B7B8, and subtract 2 from $B7C2. Repeat while the counter is nonzero and the column remains below $19."
+  },
+  {
+   "address": 49840,
+   "type": "line",
+   "text": "Set $802F to 9, call $C588 and use $C5C6,Y to patch the immediate character operand at $C2ED. Return if $B7B8 is at least $1F. Otherwise start at X zero and patch a screen load, screen store and colour store from $B7BC/$B7BD, adding $94 to the high byte for the colour address. Save the screen byte at $B79D,X and pass it to $AF14, then write the selected character and colour 9. Increment $B7B8, X and the 16-bit address; repeat while the column remains below $1F."
+  },
+  {
+   "address": 49939,
+   "type": "line",
+   "text": "Set $802F to 10, call $C588, and use $C5C0,Y and that byte plus 1 to patch the immediate character operands at $C366 and $C37B. Return if $B7B8 is below 9. Otherwise start at X zero and patch two screen loads, two screen stores and two colour stores from $B7BC/$B7BD, adding $94 to the high byte for colour. Save the two screen bytes at $B79D,X and $B79E,X and pass each to $AF14, then write the selected characters and colour 9. Add $26 to the 16-bit address, add 2 to X, and subtract 2 from $B7B8. Repeat while the column remains at least 9."
+  },
+  {
+   "address": 50085,
+   "type": "line",
+   "text": "Set $802F to 11, call $C588 and use $C5C6,Y to patch the immediate character operand at $C3E4. Return if $B7B8 is below $0E. Otherwise set Y to 6 and X to zero, and patch a screen load, screen store and colour store from $B7BC/$B7BD, adding $94 to the high byte for colour. Save the screen byte at $B79D,X and pass it to $AF14, then write the selected character and colour 9. Subtract 1 from the 16-bit address, increment X and decrement Y. Return when Y reaches zero; otherwise decrement $B7B8 and repeat while the column remains at least $0E."
   },
   {
    "address": 50457,

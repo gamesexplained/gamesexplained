@@ -131,3 +131,5 @@ Pointer `$35` selects a two-character diagonal drawing and restore pair with 38-
 `$C588` advances a six-position pattern-frame index every two calls when its counters start in range. Six tables at `$C5A8–$C5CB` provide the character codes used by the different airshaft draw paths; each sequence rises to a peak and returns through its preceding values.
 
 Pointer `$3F` selects a bounded two-character diagonal path and matching restore. Pointer `$44` uses the shared column paths for a single character. Both restore cases write colour `$0A` instead of saved original colours.
+
+Pointers `$4A`, `$4F`, `$54` and `$59` select further bounded diagonal or horizontal draw-and-restore paths. They save the characters underneath and restore them with fixed colour `$0A`; `$4A` and `$59` cap their paths at six character bytes. Their scene-level meaning remains open.

@@ -117,3 +117,5 @@ Traced the `$35` and `$3A` airshaft drawing and restore cases.
 Decoded the six airshaft pattern-character sequences and the counter that selects them.
 
 Connected the `$3F` and `$44` airshaft drawing cases to their matching restore paths.
+
+Traced the `$4A`, `$4F`, `$54` and `$59` airshaft draw-and-restore pairs.
