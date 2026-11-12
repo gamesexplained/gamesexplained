@@ -15,3 +15,5 @@ The sound routine at `$E43D` reads a voice sequence, adds its pitch offsets and 
 The bytes at `$E43D–$E5C1` match the title, airshaft and third-story snapshots. The ending snapshot differs only in the adjustable immediate operand at `$E464`; the shared instruction descriptions therefore apply to all five snapshots.
 
 The sound command table and instructions at `$E226–$E2E6` match the title, airshaft, third-story and ending snapshots. The table selects commands to reset voice state, set pitch operands and set a sequence pointer. The sequence-pointer advance at `$E266` has been decoded, but its entry path remains open.
+
+The first three seven-byte tune records begin at `$EB5C`, `$EB63` and `$EB6A`. Each supplies an increment and three sequence-list addresses to `$E000`. In the title, airshaft, second-story and third-story snapshots, record 0 points to zero-terminated lists at `$EB83`, `$EB99` and `$EB71`; the ending has different records and lists. The entries are listed individually in each part’s Source tab.
