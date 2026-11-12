@@ -79,3 +79,5 @@ The related routines at `$AFC3` and `$B065` use the same two pattern-source high
 The first pattern controller at `$86FB` alternates its scheduling through `$8036/$8037`. Its ordinary path copies from the pointer table; its alternate path advances the source operand by `$D0` and treats `$24E0` specially. This parallels the second pattern's `$2A90` controller, while using separate state bytes.
 
 Two airshaft selectors at `$9641` and `$9781` compare the map-pointer operands at `$A0CC/$A0CD` and `$A0CE/$A0CF` with pairs of fixed addresses. Each match calls a routine that either copies small patterns into `$7A60–$7A9F` or `$7B00–$7B17`, or uses a fallback according to a state byte. The exact addresses and copied source patterns are in the listing; the visual meaning of these updates remains open.
+
+Before the pointer-based drawing dispatcher, `$B7C6` calculates a row and column from `$8027/$8028` and offsets indexed by `$8029`. It uses the 24 little-endian addresses at `$C5CC–$C5FB`, which step by 40 from `$4400` to `$4798`, then constructs corresponding colour-RAM addresses by adding `$94` to the high byte.
