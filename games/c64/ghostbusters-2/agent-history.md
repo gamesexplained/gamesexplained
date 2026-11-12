@@ -41,3 +41,5 @@ The alternate Broadway lookup views were described using the shared selector cod
 The eight gaps between alternate Broadway lookup views were read directly: each contains its selector byte followed by `newline`. Their contents are now described, but their runtime purpose remains an open question.
 
 Forty-one airshaft sprite slots named by traced pointer tables were typed as bitmap data and added to a Graphics inspector. Their individual shapes were left without semantic comments, so the newly counted bytes remain unexplained until their roles are established. The bytes match in the entry and play snapshots.
+
+The five airshaft character poses were reconstructed from the six pointers in each `$919F` record and the raster handlers' captured two-column, three-row placement. Their 26 nonblank sprite pieces now have specific pose and position descriptions; slot `$0F` is cleared by the initialization routine.

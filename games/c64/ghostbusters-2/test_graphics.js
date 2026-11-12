@@ -90,3 +90,13 @@ for (const slot of slots) {
   assert.deepStrictEqual(slot.bytes, Array.from(airshaftListing.ram.slice(start, start + 63)));
 }
 console.log('OK - 41 airshaft sprite slots match the listing');
+
+const poseMatch = html.match(/<script id="airshaft-pose-data" type="application\/json">([^<]+)<\/script>/);
+assert(poseMatch, 'airshaft pose viewer has its pointer records');
+const poses = JSON.parse(poseMatch[1]);
+assert.equal(poses.length, 5);
+for (let i = 0; i < poses.length; i++) {
+  assert.deepStrictEqual(poses[i], Array.from(airshaftListing.ram.slice(0x919f + 8 * i, 0x91a5 + 8 * i)));
+  for (const pointer of poses[i]) assert(pointer === 0x0f || expectedSlots.includes(pointer));
+}
+console.log('OK - five character poses match their pointer records');

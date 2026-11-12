@@ -55,6 +55,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <p id="fireball-address" aria-live="polite"></p>
 <p class="cap">The VIC reads 63 bytes for each multicolour sprite. These colours come from the Broadway raster handler. Other moving shapes require their own identification.</p>
 </div></section>
+<section><h2 class="t">Five airshaft character poses</h2>
+<p>The raster handlers assemble the character from six sprite slots in three rows. Choose a pointer-table record to see its pieces together.</p>
+<div class="plate"><label for="airshaft-pose">Pose</label> <select id="airshaft-pose"><option value="0">Pose 1</option><option value="1">Pose 2</option><option value="2">Pose 3</option><option value="3">Pose 4</option><option value="4">Pose 5</option></select>
+<p><canvas id="airshaft-pose-image" width="288" height="378" aria-label="Assembled airshaft character pose" style="max-width:100%;height:auto;image-rendering:pixelated;background:#23262d;border-radius:6px"></canvas></p><p class="cap">The <a href="source-airshaft.html#919F">pointer records</a> select the six pieces; the <a href="source-airshaft.html#8F5E">raster setup</a> positions them. Colours are illustrative. Slot $0F is cleared during initialization and is shown as transparent.</p></div></section>
 <section><h2 class="t">Airshaft sprite pieces</h2>
 <p>Several airshaft routines select sprite slots from four pointer tables. Choose a slot to inspect its 24-by-21 bitmap. Many are pieces of larger figures; their individual roles remain open.</p>
 <div class="plate"><label for="airshaft-slot">Sprite slot</label> <select id="airshaft-slot"></select>
@@ -346,6 +350,25 @@ function storyPicturePixels(data, row) {
     const address = (0x4000 + 64 * shape.pointer).toString(16).toUpperCase().padStart(4, '0');
     const link = document.createElement('a'); link.href = 'source-airshaft.html#' + address; link.textContent = '$' + address;
     const text = document.getElementById('airshaft-slot-address'); text.replaceChildren('Bitmap at ', link);
+  }
+  select.addEventListener('change', draw); draw();
+})();
+</script>
+
+<script id="airshaft-pose-data" type="application/json">[[32,33,34,35,36,15],[37,38,39,40,41,15],[42,43,44,45,46,47],[48,49,50,51,15,52],[53,54,55,56,15,57]]</script>
+<script>
+(() => {
+  const poses = JSON.parse(document.getElementById('airshaft-pose-data').textContent);
+  const shapes = JSON.parse(document.getElementById('airshaft-sprite-slots-data').textContent);
+  const select = document.getElementById('airshaft-pose'), canvas = document.getElementById('airshaft-pose-image');
+  function draw() {
+    const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height);
+    poses[Number(select.value)].forEach((pointer, index) => {
+      if (pointer === 0x0f) return;
+      const shape = shapes.find(item => item.pointer === pointer);
+      C64.drawSpriteMC(ctx, shape.bytes, (index % 2) * 24 * 6, Math.floor(index / 2) * 21 * 6,
+        6, C64.PAL[1], C64.PAL[14], C64.PAL[8]);
+    });
   }
   select.addEventListener('change', draw); draw();
 })();
