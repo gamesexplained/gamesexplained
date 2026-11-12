@@ -8285,9 +8285,9 @@
   },
   {
    "address": 42875,
-   "name": "s_A77B",
+   "name": "airshaft_sprite5_controller",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42890,
@@ -8303,9 +8303,9 @@
   },
   {
    "address": 42894,
-   "name": "j_A78E",
+   "name": "airshaft_sprite5_controller_state",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42905,
@@ -8327,9 +8327,9 @@
   },
   {
    "address": 42956,
-   "name": "b_A7CC",
+   "name": "airshaft_sprite5_controller_cycle",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42986,
@@ -8363,9 +8363,9 @@
   },
   {
    "address": 43049,
-   "name": "f_A829",
+   "name": "airshaft_sprite5_pointer_cycle",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 43055,
@@ -9197,9 +9197,9 @@
   },
   {
    "address": 44995,
-   "name": "s_AFC3",
+   "name": "airshaft_trigger_first_pattern",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 45012,
@@ -9281,15 +9281,15 @@
   },
   {
    "address": 45141,
-   "name": "j_B055",
+   "name": "airshaft_trigger_first_pattern_state",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 45157,
-   "name": "s_B065",
+   "name": "airshaft_trigger_second_pattern",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 45171,
@@ -9377,9 +9377,9 @@
   },
   {
    "address": 45306,
-   "name": "j_B0FA",
+   "name": "airshaft_trigger_second_pattern_state",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 45322,
@@ -16431,6 +16431,26 @@
    "text": "Move the 26-column shaft window in screen RAM at $4400 down by one character row, using $A74A as a temporary row. Then copy 27 alternating bytes from $CF00 into the top row, starting at offset $8025, and clear its two outer cells."
   },
   {
+   "address": 42875,
+   "type": "line",
+   "text": "Read $A769. Return when it is zero, continue at $A78E when it is 1, and jump to the effect state at $A8A5 for any other value."
+  },
+  {
+   "address": 42894,
+   "type": "line",
+   "text": "When $94BC is nonzero, clear $A774, $A767, $A766, $A778 and $A777 and restore the sprite-related operands at $8E0C/$8E11/$8E4B/$8E50 to $0F/$0A/$1F/$FF. Otherwise return if $A767 is zero; when it is nonzero, increment $A774 and perform the same reset if it becomes $80. For other values continue at $A7CC."
+  },
+  {
+   "address": 42956,
+   "type": "line",
+   "text": "Set sprite-related operands $8E11/$8E4B/$8E50 to $01/$3F/$DF. Increment $A768 and choose $70 when it is 1, $A0 when it is 2, or $D0 and clear $A768 otherwise; write the chosen value to the sprite 5 X operand at $8E02. Increment $A772. When it reaches 2, call the Y update at $A82F, clear $A772, increment $A773 and clear it if it becomes 6, then use it to select a pointer from $A829 for $8E0C. Return."
+  },
+  {
+   "address": 43049,
+   "type": "line",
+   "text": "Six sprite pointer values $9A,$9B,$9C,$9D,$9C,$9B, indexed by $A773 after the counter update at $A812."
+  },
+  {
    "address": 43055,
    "type": "line",
    "text": "Return if $8047 or $A0D0 is nonzero or $801E is zero. Otherwise use $801D to choose a direction for the sprite 5 Y operand at $8E07. One direction subtracts $801E while the value is at least $2E; below that it sets $A777 to $FF and increments $A778. The other adds $801E while the value is below $F8; at or above it, it sets $A777 to 1 and increments $A778. In the opposite state, decrement $A778 and clear $A777 when it reaches zero."
@@ -16479,6 +16499,26 @@
    "address": 44697,
    "type": "line",
    "text": "On right input, if $B5B9 is $14 and $B5BA is zero, clear $B5BB, set $B5BA to 4 and clear $B5BC; otherwise return without changing them."
+  },
+  {
+   "address": 44995,
+   "type": "line",
+   "text": "Select a comparison from the high byte of the first pattern source operand at $87D9. The position byte $AF0D triggers $B055 for values $72-$8B when that high byte is $20; $72-$77 or $7C-$87 when it is $21 or $22; $72-$73 or $7C-$83 when it is $23; and $7C-$7F for any other high byte. All other values return. These ranges cover all 256 position values, checked in the processor model."
+  },
+  {
+   "address": 45141,
+   "type": "line",
+   "text": "Set $AF12 to 1, clear $8043, set $8035 to $0E and return."
+  },
+  {
+   "address": 45157,
+   "type": "line",
+   "text": "Select a comparison from the high byte of the second pattern source operand at $88BC. The position byte $AF0D triggers $B0FA for values $8C-$A5 when that high byte is $25 or $26; $90-$95 or $9A-$A5 when it is $27; $94-$95 or $9E-$A5 when it is $28; and $A2-$A5 for any other high byte. All other values return. These ranges cover all 256 position values, checked in the processor model."
+  },
+  {
+   "address": 45306,
+   "type": "line",
+   "text": "Set $AF13 to 1, clear $8044, set $8038 to $1C and return."
   },
   {
    "address": 46164,
