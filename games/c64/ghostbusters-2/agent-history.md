@@ -147,3 +147,5 @@ Found three omitted sprite 5 effect shapes in its patched pointer operands, adde
 Added the sprite 6 alternate-state bitmap to the Graphics inspector after tracing its initializer.
 
 Included the title credits’ 95-byte zero tail and checked that every stable output byte of `1.THE INTRO` has a title listing record. Answered that packed disk item as the title part.
+
+Audited the story-load outputs against the part listings. The loads replace picture ranges whose untyped bytes were missing from coverage, so added those ranges as unexplained output in all four story ledgers. The coverage total fell accordingly. The shared font and sound ranges still need a byte-by-byte ownership audit.
