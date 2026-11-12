@@ -71,3 +71,5 @@ The shared sound-effect record 13 is requested when either side initializes a mo
 The ledger includes 11,675 bytes previously outside the count. Nineteen stretches match stable unpacker output at the entry snapshot; three are copies visible in play whose sources are present at entry. Their individual purposes remain open.
 
 The routine at `$871B` uses `$FC25` and other state to clear or select a motion origin, choose sound effects, and dispatch values `$60–$67` to eight separate routines. Each recognized value then calls `$8C7A` and jumps to `$8D0D`. The exact effects of those paths remain open.
+
+The museum and ending snapshots match byte for byte at `$EB5C–$ED31`. The command-handler bytes used to interpret these streams also match at `$E266–$E27F`, `$E338–$E345` and `$E3B7–$E43A`. The museum listing carries the same sequence pointers and ordered stream decodes as the ending; the timing and reachability of every command remain open.
