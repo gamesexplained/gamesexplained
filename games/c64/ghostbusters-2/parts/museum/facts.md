@@ -101,3 +101,5 @@ The museum paths at `$C6CE` and `$C808` save and restore screen and colour bytes
 `$8D0D` clears `$A318`, then conditionally compares two pairs of sprite coordinates after checking scene state `$8050`, per-state flags and the values at `$804A/$804C`. A match sets `$A318`; if `$A319` is set, it jumps to one of two handlers selected by `$8050`. The identities of the objects and flags remain open.
 
 `$8DC2` dispatches eight values of `$FC27` to eight motion handlers after checking scene state and choosing a motion origin. The selected handler is followed by `$9321` and a jump to `$93B4`. The meanings of the state gates remain open.
+
+`$9321` derives a lookup-grid address from the second motion position, selects the `$F000` or `$F400` grid using `$804B`, and clears the position when the selected byte is 1 or its Y value is below `$38`. The address calculation adds 31 when the adjusted X high byte is nonzero. The complete meanings of the grid values remain open.

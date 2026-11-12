@@ -3867,15 +3867,15 @@
   },
   {
    "address": 36468,
-   "name": "s_8E74",
+   "name": "museum_restore_second_motion_position",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 36487,
-   "name": "s_8E87",
+   "name": "museum_clear_second_motion_position",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 36499,
@@ -4329,9 +4329,9 @@
   },
   {
    "address": 37665,
-   "name": "s_9321",
+   "name": "museum_check_second_motion_grid",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 37766,
@@ -13824,6 +13824,21 @@
    "address": 36290,
    "type": "line",
    "text": "If $FC27 is at least $A0, clear the motion origin and return. Otherwise, if $FE1D is nonzero, call $86F2 with A equal to 7 and then $FF0D. Use $8027 to index $C00C; if that byte is nonzero call $A080 and return. Otherwise increment $8715, reset it and call the second-pattern dispatcher when it reaches $1A, and call $86F2 with A equal to $11 if $E130 is zero. Choose the second motion origin, copy $FC27 to $FE0B, and dispatch the values $63, $64, $66, $61, $62, $60, $67 and $65 to $8E93, $8F12, $8F9B, $901E, $90B5, $9142, $91ED and $9284 respectively. Each selected path calls $9321 and jumps to $93B4; other values return. The runtime interpretation of the pointer and state bytes remains open."
+  },
+  {
+   "address": 36468,
+   "type": "line",
+   "text": "Copy the three bytes at $FE0F\u2013$FE11 to $FC0C, $FC14 and $FC1C respectively, then return."
+  },
+  {
+   "address": 36487,
+   "type": "line",
+   "text": "Store zero at $FC0C, $FC14 and $FC1C, then return."
+  },
+  {
+   "address": 37665,
+   "type": "line",
+   "text": "Subtract 12 from the 16-bit value at $FC0C/$FC14 and store the result at $8716/$8717. Shift the low byte right three times for a column, and calculate a row by subtracting $28 from $FC1C with byte wrap and shifting right three times. Select the row address from $8428, add the column, then add 31 if $8717 is nonzero. Add $AC to the resulting high byte, and add a further 4 when $804B is nonzero, selecting one of the lookup grids at $F000 or $F400. Patch the load at $939E to this address. If the loaded byte is 1, call $8E87; also call $8E87 if $FC1C is below $38. The meaning of each grid value and state is not fully established."
   },
   {
    "address": 37993,

@@ -71,3 +71,5 @@ Traced the airshaft screen-pattern scan and recovered the three jump bytes at `$
 Traced the museum coordinate comparison at `$8D0D`, including its state gates, bounds and conditional dispatch.
 
 Traced the museum’s eight-way motion dispatcher and restored the `$60` byte after the jump at `$C90F`; an alternate entry remains unestablished.
+
+Traced the second museum motion position’s grid lookup, including its 31-byte high-X adjustment and position-clearing conditions.
