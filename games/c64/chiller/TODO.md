@@ -99,7 +99,5 @@ Next: Review Painted scenery against the original collision surfaces before exte
 
 ## Loading picture and tune
 
-- The cassette shows the picture of the girl, the boy and the ghost with the
-  CHILLER logo from about 1:20 to 3:50 into the load, in silence, while the loader's colour
-  stripes run in the border. A section on the Graphics tab could draw it from the tape's
-  bytes; Green Beret's Graphics tab is the model.
+- A new section awaits the steward's pass: the cassette's loading picture, with the
+  loader's border stripes, on the Graphics tab (section 03).

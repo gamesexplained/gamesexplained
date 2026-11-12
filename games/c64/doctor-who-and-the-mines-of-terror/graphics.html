@@ -4,6 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="reference/dw-page.css">
+<style>.dw-l-cv{width:100%;max-width:768px;image-rendering:pixelated;display:block;background:#000;border-radius:6px}</style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
@@ -78,6 +79,16 @@
   </div>
   <p>The game writes its own text in a private alphabet in which each letter is its ASCII code plus 155: A is <code>$DC</code>, Z is <code>$F5</code>, the digits are <code>$F6</code>-<code>$FF</code>, and <code>$94</code> is a space. The video chip finds a character's shape at eight times its code from the start of the font. In the status band the font starts at <code>$0000</code>, so the shapes for <code>$94</code>-<code>$FF</code> sit at <code>$04A0</code>-<code>$07FF</code>, in the unused rows of the status bar's own screen.</p>
   <p>As the game starts, it copies the screen and its own shapes from <code>$4B00</code>, then copies A to Z and 0 to 9 from the Commodore's character ROM into place (<code>$48F5</code>). One shape does not fit. The shape for <code>$FF</code> would be the last eight bytes of the screen's memory, where the video chip reads the sprite pointers. So the digit 9 is drawn with <code>$F5</code>, the code for Z, and the digit table at <code>$1730</code> sends 9 there. The status bar never needs a Z.</p>
+</section>
+<section id="loading">
+  <p class="fig">The title screen</p>
+  <h2 class="t">A TARDIS made of letters</h2>
+  <p class="lede">About ten seconds into the load the disk puts up its title screen, in silence. Every part of it is the C64's own character set in ROM: the police box is built from its line and block pieces, and so are the outlined letters of DOCTOR WHO.</p>
+  <div class="plate">
+    <canvas class="dw-l-cv" id="dw-l-cv" width="384" height="272" role="img" aria-label="Doctor Who's title screen: the credits Game design Micro Power and Tony Sothcott, Programming Tony Sothcott, a blue police box on brown ground among stars, the words DOCTOR WHO and the Mines of Terror in outlined letters, and the lines 1986 Micro Power, by arrangement with the BBC, Doctor Who series BBC"></canvas>
+    <p class="cap">The disk's own screen, recorded in VICE and drawn as the video chip draws it. The page carries only the 60 characters the screen shows, 480 bytes of Commodore's character ROM 901225-01.</p>
+  </div>
+  <p>Some seconds later the program prints LOAD A SAVED POSITION (Y/N)? across the empty second line, and waits for an answer.</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
@@ -239,5 +250,24 @@ const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","v
   const b1 = document.getElementById('sb1'), b2 = document.getElementById('sb2');
   b1.onclick = () => { whole = false; b1.setAttribute('aria-pressed', true); b2.setAttribute('aria-pressed', false); status(); };
   b2.onclick = () => { whole = true; b2.setAttribute('aria-pressed', true); b1.setAttribute('aria-pressed', false); status(); };
+})();
+</script>
+<script type="application/json" id="dw-loading-data">{"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"Micro Power's 1986 disk at 18 seconds, the C64 Preservation Project's doctor_who_and_the_mines_of_terror[micro-power_1986](pal).g64: kit/c64/frame.py capture, then trim, in VICE 3.10 (vice-mcp 3.14.0) on 12 November 2026, with the screen and colour RAM as memory held them 18 seconds in, before the program prints its question on the second line; rom_excerpt holds the characters of Commodore's character ROM 901225-01 that the screen shows","vic":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27,0,0,0,0,200,0,21,113,240,0,0,0,0,0,240,246,241,242,243,244,240,241,242,243,244,245,246,247,252],"cia2":[199,63],"writes":[],"colour":"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEGBgYGBgYGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcHBwcHBwcHBwcHBwcHBwcHBwcAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBwcHBwcHBwcHBwcHBwcHBwcHAAAAAAAAAAEBAQEBAQEBAQEBAAAABwcHBwcHBwcHBwcHBwcHBwcHBwAAAAAAAAAAAAAAAAAAAAAAAAAAAAcHBwcHBwcHBwcHBwcHBwcHBwcAAAAAAAAAAA4ODg4ADg4ODgAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODg4OAA4ODg4ABgAABwcHBwcHBwcHBwcHBwcHBwcHBwAAAAAAAAAADg4ODgAODg4OAAYAAAcHBwcHBwcHBwcHBwcHBwcICAgAAAAAAAAAAA4ODg4ADg4ODgAAAAAHBwcHBwcHBwcHBwcHBwcHBwcHAAAAAAAAAAAGAAAAAAAAAAAABgAABwcHBwcHBwcHBwcHBwcHBwgICAAAAAAAAAAABgYGAAAGBgYAAAYAAAcHBwcHBwcHBwcHBwcHBwcHBwcAAAAAAAAAAAYAAAAABgAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAAAAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgYGAAAGBgYAAAYAAAAACgoKCgoKCgoKCgoKCgoKCgoAAAAAAAAAAAYAAAAABgAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAAAAAAYAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgYGAAAGBgYAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkJAAAAAAAAAAAAAAAAAAkJCQEBAQEBAQEBAQEBAQEBAQEBAQEGBgYJCQkJCQkJCQkJCQkJAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBCQkJCQkJCQkJCQkJCQkJAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBBgkADQAAAAAECwQNCQcFDgkDBQwCBAELAQ==","ram":[{"a":1024,"b":"BwENBSAEBRMJBw46IA0JAxIPIBAPFwUSICYgFA8OGSATDxQIAw8UFCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgEBIPBxIBDQ0JDgc6IBQPDhkgEw8UCAMPFBQgICAgICAgrqCgoNGgoKCgoKCgoKCgoKCgoKCgoKCgoKCgrqDRoKCgoKCgoKCgoKCgoKCgrqCg4qCgoKCgqqCgoKCgoK6goKCgoKCgoK6goKCgoKCgoKCgoOzi4uLi+/js4uLi4vugrnBDSVVDSVVDSUNyQ1VDSXBDSSD0rqCgoK5wQ0NDQ0NDQ0NDQ0NuoKBCIEJCIEJCICAgQiBCIEJCIEIg9KCgoKCgQhAPDAkDBSAgAg8YQqCgQiBCQiBCQiAgIEIgQiBCa0NJIPSgoKCg4CBCZGRkZEJkZGRkQiCgoG1DS0pDS0pDSyBxIEpDS3EgcSD0qqCgoKAgQkJCQkJCQkJCQkJmrqCgoKCgoKCgoKCgoK6goKCgoKCgoKCgoKCgIEJrW1tzQmtbW3NCZqCgciByIHIgciAgciBVQ0NJICAgIPSgoKCg4CBCQkJCQkJCQkJCQmagoEIgQiBCIEIgIEIgQiAgQiABDgT0oKCgoOAgQmNjY2NCY2NjY0IgoKBCIEIgQiBrQ0NzIEIgIEIgICAg9LqgoKqgIEJmd3dQQiB3d1BCZqCgQiBCIEIgQiAgQiBCICBCIBQIBfSgoKCg4CBCZmZmakJmZmZqQmagoEpDcUNLIHEgIHEgSkNDSyAgICD0oKCgoKAgQmZjY2NCZmNjY0JmoKCgoKCgoKCgoKCgoKCgoKCgoKCgrqCgoKCgIEJmd3dQQiB3d1BCZqCgICAgICAgICAgICAgICAgICAgIKCgoKCgriBCZmZmakJmZmZqQmagoCAgDQkOBRMgDwYgFAUSEg8SICCgoKCgrqAgQmZjY2NCZmNjY0JmoKAgICAgICAgICAgICAgICAgICAgoK6goKCgIEJmd3dQQmZ3d1BCZqCgoKCgoKCgoKCgoK6goKCgoKCgoKCgoKCgoCBCZmZmakJmZmZqQmagoKCgoKCqoKCgoKCgoKCgoKCuoKCgoKCgoKAgQiBjY2NCZmNjY0JmoKCgoKCgoKCuoKCgoKCgoKCgoKCgoKCgoKDsQ3FDQ0NDcUNDQ0NxQ/sgICgDKTE5ODYgDQkDEg8gEA8XBRIgICCgoKCgoKCgoKCgoKAgAhkgARISAQ4HBQ0FDhQgFwkUCCAUCAUgAgIDoKCgoKCgoKCgoKCgoKAgBA8DFA8SIBcIDyATBRIJBRMgKAMpAgIDIA=="}],"rom_excerpt":{"rom":"chargen 901225-01","ranges":[{"a":8,"b":"GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHhgYGAAPGZgbmZmPABmZmZ+ZmZmADwYGBgYGDwA"},{"a":96,"b":"YGBgYGBgfgBjd39rY2NjAGZ2fn5uZmYAPGZmZmZmPAB8ZmZ8YGBgAA=="},{"a":144,"b":"fGZmfHhsZgA8ZmA8BmY8AH4YGBgYGBgA"},{"a":184,"b":"Y2Nja393YwBmZjwYPGZmAGZmZjwYGBgA"},{"a":256,"b":"AAAAAAAAAAA="},{"a":304,"b":"PGY8OGdmPwA="},{"a":320,"b":"DBgwMDAYDAAwGAwMDBgwAA=="},{"a":392,"b":"GBg4GBgYfgA="},{"a":432,"b":"PGZgfGZmPAA="},{"a":448,"b":"PGZmPGZmPAA8ZmY+BmY8AAAAGAAAGAAA"},{"a":528,"b":"GBgYGBgYGBgAAAD//wAAAA=="},{"a":584,"b":"AAAA4PA4GBgYGBwPBwAAABgYOPDgAAAA"},{"a":640,"b":"//8DAwMDAwM="},{"a":680,"b":"AAAABw8cGBg="},{"a":728,"b":"GBgY//8YGBg="},{"a":792,"b":"/wAAAAAAAAAAAAAAAAAA/w=="},{"a":816,"b":"zMwzM8zMMzM="},{"a":848,"b":"AwMDAwMDAwMYGBgfHxgYGA=="},{"a":872,"b":"GBgYHx8AAAAAAAD4+BgYGA=="},{"a":896,"b":"AAAAHx8YGBgYGBj//wAAAAAAAP//GBgYGBgY+PgYGBg="},{"a":952,"b":"//8AAAAAAAA="},{"a":1280,"b":"//////////8="},{"a":1360,"b":"/5nDAMOZ//8="},{"a":1392,"b":"///////n5/8="},{"a":1488,"b":"///n///n//8="},{"a":1672,"b":"/8OBgYGBw/8="},{"a":1792,"b":"//////////8="},{"a":1808,"b":"/////wAAAAA="},{"a":1888,"b":"//////Dw8PA="},{"a":1952,"b":"Pz8/Pz8/Pz8="},{"a":1984,"b":"AAAA//////8="},{"a":2008,"b":"/////w8PDw8="}]}}</script>
+<script>
+/* dw-loading */
+// dwFont(F): the frame F (the block dw-loading-data) with charrom, the character ROM the video chip
+// reads, built from F.rom_excerpt: the glyphs of Commodore's character ROM 901225-01 that the screen
+// shows, each at its own offset, and zeros for the rest, which the screen never shows.
+function dwFont(F) {
+  const font = new Uint8Array(4096);
+  for (const r of F.rom_excerpt.ranges) font.set(Uint8Array.from(atob(r.b), (c) => c.charCodeAt(0)), r.a);
+  return Object.assign({}, F, { charrom: btoa(String.fromCharCode(...font)) });
+}
+// end of dw-loading
+(() => {
+  const cv = document.getElementById('dw-l-cv');
+  if (typeof C64 === 'undefined') { cv.insertAdjacentText('afterend', 'The picture is drawn by the site\'s shared scripts, which the built site serves.'); return; }
+  const F = JSON.parse(document.getElementById('dw-loading-data').textContent);
+  C64.drawFrame(cv, dwFont(F), 1);
 })();
 </script>
