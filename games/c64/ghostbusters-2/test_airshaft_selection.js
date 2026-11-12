@@ -56,6 +56,18 @@ ram[0x95bf] = 0x8f; ram[0x95c0] = 0x92;
 ram[0x94bf] = 1; ram[0x94bd] = 0;
 cpu.call(0x95ba);
 assert.deepStrictEqual([ram[0x95bf], ram[0x95c0], ram[0x94bd]], [0x8f, 0x92, 1]);
+// The upper status counter rolls 99 to 100 and back by changing glyph pointers.
+function operand(address, value) { ram[address] = value & 255; ram[address + 1] = value >> 8; }
+function readOperand(address) { return ram[address] | (ram[address + 1] << 8); }
+operand(0x8be3, 0x92d7); operand(0x8be9, 0x92d7); operand(0x8bef, 0x92df);
+ram[0x8031] = 1;
+cpu.call(0x8bde);
+assert.deepStrictEqual([readOperand(0x8bef), readOperand(0x8be9), readOperand(0x8be3), ram[0x8031]],
+  [0x9297, 0x928f, 0x928f, 0]);
+ram[0x8031] = 2;
+cpu.call(0x8bde);
+assert.deepStrictEqual([readOperand(0x8bef), readOperand(0x8be9), readOperand(0x8be3), ram[0x8031]],
+  [0x92df, 0x92d7, 0x92d7, 0]);
 const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const match = html.match(/<script id="frame-data" type="application\/json">([^<]+)<\/script>/);
 assert(match, 'airshaft frame data is embedded');
