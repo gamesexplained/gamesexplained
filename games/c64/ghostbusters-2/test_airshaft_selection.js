@@ -34,6 +34,16 @@ for (const [mode, left, right] of [[1, 0x92d7, 0x92d7], [2, 0x928f, 0x92b7], [3,
     assert.equal(ram[0x41a9 + row * 3], ram[right + row], `mode ${mode}, right row ${row}`);
   }
 }
+// VICE observed the mode-2 source operand step back by eight while firing.
+ram[0x9166] = 2;
+ram[0x9571] = 0xb7; ram[0x9572] = 0x92;
+ram[0x94be] = 1;
+cpu.call(0x956c);
+assert.deepStrictEqual([ram[0x9571], ram[0x9572], ram[0x94be]], [0xaf, 0x92, 0]);
+ram[0x9571] = 0x8f; ram[0x9572] = 0x92;
+ram[0x94be] = 1; ram[0x94bc] = 0;
+cpu.call(0x956c);
+assert.deepStrictEqual([ram[0x9571], ram[0x9572], ram[0x94bc]], [0x8f, 0x92, 1]);
 const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const match = html.match(/<script id="frame-data" type="application\/json">([^<]+)<\/script>/);
 assert(match, 'airshaft frame data is embedded');
