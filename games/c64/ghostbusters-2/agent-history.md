@@ -105,3 +105,5 @@ Traced the airshaft rope-position Y adjustment, including its offset bounds and 
 Connected the rope Y adjustment enable to the airshaft scroll boundary and its offset direction to the joystick handlers.
 
 Traced the zero case of the airshaft screen-pattern drawing routine, including its paired character and colour writes.
+
+Connected the zero pattern restore to its matching save-and-draw path and noted that it does not save the original colours.
