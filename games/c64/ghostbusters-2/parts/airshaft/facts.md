@@ -101,3 +101,5 @@ Five eight-byte records at `$919F–$91C6` supply six sprite pointers each. The 
 The sprite 5 table at `$A829`, sprite 6 tables at `$C6FB/$C6FF`, and sprite 7 table at `$C7BF` select the remaining shapes in the inspector. Their individual gameplay identities remain open; the captured bytes for slots `$05`, `$08` and `$0A` match at entry and in play.
 
 The airshaft success path selects sound record 1 at `$EB63`; its failure paths select record 2 at `$EB6A`. In the opening-story snapshot, the active channel list pointers match record 0 at `$EB5C`. A 12,000-update simulation of that state read the full `$EB71–$EF41` range, but the individual stream commands and the tune’s full cycle remain open.
+
+Records 1 and 2 each point to three short sound streams at `$EF48–$EF82` and `$EF89–$EFE0`. Their ordered decodes reproduce 147 stream bytes; each ends in command `$91`. The ending contains the same six streams at `$EC98–$ECD2` and `$ECD9–$ED30`, with relocated pointer words. The byte `$EFE1` following them remains unexplained.
