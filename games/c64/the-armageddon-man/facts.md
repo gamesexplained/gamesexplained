@@ -33,7 +33,7 @@ from reading the code in the snapshot named in `orientation.md`.
 
 | Thing | Where |
 |---|---|
-| Title picture, never shown: colours, bitmap | `$0C00`-`$0FE7`, `$2000`-`$3F3F` |
+| Title picture, never shown on disk (the cassette's loading picture): colours, bitmap | `$0C00`-`$0FE7`, `$2000`-`$3F3F` |
 | Developer's loader, then the RAMSAVE copy of the state | `$1000`-`$1320` |
 | Window save area (what open windows cover) | from `$2000` up (`window_init`) |
 | Music driver, four tunes, 17 sound effects, alarm | `$4000`-`$4DCE` |
@@ -321,7 +321,17 @@ unless named, in VICE 3.10 (the vice-mcp release v3.14.0) with the kit's client.
   stripes in the border; no instruction left in memory but the
   developer's loader at `$1000` writes `$D018`, and at the hand-over the
   video chip is in text mode with `$D018` = `$14`. The title picture is
-  never shown.
+  never shown on the disk.
+- The cassette: Martech's 1987 tape, the Ultimate Tape Archive's
+  `Armageddon_Man,_The.tap` (495,162 bytes, SHA-256
+  `43305cb92680af7d5a5a4ada624811f54bda28e16f105d244392934e6ebb4f78`), in the
+  same VICE on 12 November 2026. Its loader turns on a high-resolution
+  bitmap at `$2000` with colours at `$0C00` (`$D018` = `$3D`, bank 0)
+  between 80.5 and 81.0 seconds in, and the game's screen replaces it
+  between 232.5 and 233.0; the sound chip is silent until then. Memory read
+  at 90, 160 and 230 seconds matches the listing at `$0C00`-`$0FE7` and
+  `$2000`-`$3F3F` in every byte, so the disk's unshown title picture is the
+  cassette's loading picture.
 - Clock: non-stopping checkpoints on `irq`, the main loop, `game_clock`
   and `country_events` for 100 and 400 frames (Timing, above).
 - Hostility 0: `$5D34` (China's hostility to Israel) poked to 0, 1 and

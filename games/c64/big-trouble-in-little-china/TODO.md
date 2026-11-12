@@ -14,4 +14,3 @@ Tier: Silver. Coverage and verify ran on a proven model.
 
 - A Play tab: a port of the street, the spawner and the fights.
 - Check the *Commodore User* score (3/10, from Wikipedia) and the *Zzap!64* scores in the magazines.
-- Confirm the developer (only the Games Database names Focus Creative Enterprises).
