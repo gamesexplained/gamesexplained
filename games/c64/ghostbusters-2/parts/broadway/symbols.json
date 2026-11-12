@@ -757,6 +757,12 @@
    "kind": "user"
   },
   {
+   "address": 2602,
+   "name": "broadway_backdrop_first_row_tail",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 2784,
    "name": "broadway_backdrop_row_01",
    "type": "UserDefined",
@@ -772,6 +778,12 @@
    "address": 3744,
    "name": "broadway_backdrop_row_03",
    "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4096,
+   "name": "broadway_backdrop_row_04_tail",
+   "type": "Jump",
    "kind": "user"
   },
   {
@@ -5828,9 +5840,9 @@
   },
   {
    "address": 42222,
-   "name": "s_A4EE",
+   "name": "broadway_advance_sprite_sequence",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42253,
@@ -5888,9 +5900,9 @@
   },
   {
    "address": 42304,
-   "name": "s_A540",
+   "name": "broadway_expand_layout",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42346,
@@ -5906,21 +5918,21 @@
   },
   {
    "address": 42361,
-   "name": "b_A579",
+   "name": "broadway_expand_layout_one",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42467,
-   "name": "j_A5E3",
+   "name": "broadway_expand_layout_two",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42565,
-   "name": "j_A645",
+   "name": "broadway_expand_layout_inactive",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 42577,
@@ -6848,9 +6860,9 @@
   },
   {
    "address": 51457,
-   "name": "s_C901",
+   "name": "broadway_write_sprite_arrays",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 51559,
@@ -8780,6 +8792,11 @@
    "text": "Row 1 of the Broadway backdrop: 480 character codes read one column at a time by $87F4, starting at $0900."
   },
   {
+   "address": 2602,
+   "type": "line",
+   "text": "The final 182 character codes, columns 298\u2013479, of the first 480-byte backdrop row read by $87F4. On this Censor capture the decoded load starts here; the preceding 298 codes at $0900\u2013$0A29 are inherited from the airshaft state. The Jondi disk loads a complete first row."
+  },
+  {
    "address": 2784,
    "type": "line",
    "text": "Row 2 of the Broadway backdrop: 480 character codes read one column at a time by $87F4, starting at $0AE0."
@@ -8793,6 +8810,11 @@
    "address": 3744,
    "type": "line",
    "text": "Row 4 of the Broadway backdrop: 480 character codes read one column at a time by $87F4, starting at $0EA0."
+  },
+  {
+   "address": 4096,
+   "type": "line",
+   "text": "The final 128 character codes, columns 352\u2013479, of backdrop row 4. The row starts at $0EA0 and is read a column at a time by $87F4; $1000 is a listing region boundary within it, not a new row."
   },
   {
    "address": 4224,
@@ -9160,6 +9182,31 @@
    "text": "If the byte at $851F is below $FD, add 3 to it. That byte is the immediate operand loaded at $851E and written to sprite 5's X register at $D00A."
   },
   {
+   "address": 42222,
+   "type": "line",
+   "text": "Copy the pointer at $B088/$B089,X into the three load operands at $A50D, $A533 and $A53A. Add 2 to the saved index at $B0A2,X and read the sequence byte. If it is $FF, examine $B0BC,X: 0 backs the index up by 2, 1 restarts at index 0, and any other value clears $B172,X and returns. Save the chosen index, read the pair of sequence bytes into $AFD2,X and $AFD3,X, and return. The layout at $A540 uses those two values to select sprite pointers and a layout variant."
+  },
+  {
+   "address": 42304,
+   "type": "line",
+   "text": "For entry X, add $18 to the 16-bit value at $AF9E/$AF9F,X and write it to $B1C0/$B1C1,X. Add $28 to $AFB8,X and write $B1DA,X; copy $AFD2,X to $B1F4,X. If $B172,X is not 1, jump to $A645. Otherwise select $A579 for $AFD3,X=1, $A5E3 for 2, and return for any other value. The identities of the entries remain open."
+  },
+  {
+   "address": 42361,
+   "type": "line",
+   "text": "Build three further positions from the selected entry. Add $30, $18 and $30 to the 16-bit base $AF9E/$AF9F,X and store them at $B1C2/$B1C3,X, $B1C4/$B1C5,X and $B1C6/$B1C7,X. Store $AFB8,X plus $28, $3D and $3D at $B1DC, $B1DE and $B1E0 indexed by X. Store $AFD2,X plus 1, 2 and 3 at $B1F6, $B1F8 and $B1FA indexed by X, then return."
+  },
+  {
+   "address": 42467,
+   "type": "line",
+   "text": "Compute the same three position pairs and offsets as $A579. Store $AFD2,X plus 1 at $B1F6,X, but write fixed values $BC and $BD to $B1F8,X and $B1FA,X, then return."
+  },
+  {
+   "address": 42565,
+   "type": "line",
+   "text": "Write $08 to each of $B1F6,X, $B1F8,X and $B1FA,X and return. The entry at $A540 takes this path when $B172,X is not 1."
+  },
+  {
    "address": 44295,
    "type": "line",
    "text": "Call $AD6B with X selecting an entry and Y indexing a lookup table. Treat the returned byte as a signed offset and add it to the 16-bit base at $B0D6/$B0D7 indexed by X; store the result at $AF9E/$AF9F indexed by X. Negative values are negated and subtracted."
@@ -9178,6 +9225,11 @@
    "address": 44526,
    "type": "line",
    "text": "Read the selector at $B054,X and compare it against a series of constants. A match selects one of the tables at $2040\u2013$3827 and returns the byte indexed by Y; for selector $38 the table starts at $32FF. If no value matches, return with the selector in A."
+  },
+  {
+   "address": 51457,
+   "type": "line",
+   "text": "Write the low X bytes at $B1C0, $B1C2, $B1C4, $B1C6 and $B1C8 to sprites 0\u20134 and shift the low bits of the following high bytes into $D010. Shift zeroes for sprites 5\u20137, writing zero X positions for sprites 6 and 7. Write $B1DA, $B1DC, $B1DE, $B1E0 and $B1E2 to sprite Y positions 0\u20134, limiting each to $9D. Copy pointers $B1F4, $B1F6, $B1F8, $B1FA and $B1FC to $47F8\u2013$47FC and write colour $0C to sprites 0\u20134. The raster handler calls this routine at $851B."
   },
   {
    "address": 57344,
