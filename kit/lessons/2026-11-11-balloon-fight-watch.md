@@ -1,4 +1,4 @@
-## next · 2026-11-11 · Balloon Fight (NES) · Zihe Jia with Claude
+## 0.0.339 · 2026-11-11 · Balloon Fight (NES) · Zihe Jia with Claude
 
 - **A search for a route has to score what the game counts while it is
   played.** The recorded game on the Play tab popped 5 of the 20 bonus
