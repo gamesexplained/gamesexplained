@@ -99,3 +99,5 @@ Traced the airshaft rope-table selector update and its sign-bit-based amount and
 Traced the airshaft rope-selector input gates back to the cached CIA port A read.
 
 Decoded the two 41-byte airshaft character-position curves and traced their output to the raster sprite registers.
+
+Traced the airshaft rope-position Y adjustment, including its offset bounds and screen-row copies.
