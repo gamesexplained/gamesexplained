@@ -95,3 +95,5 @@ Traced the museum placement overlap and active-position grid lookup, preserving 
 Traced the museum phase dispatcher and its counter-controlled active-position initialization.
 
 Traced the airshaft rope-table selector update and its sign-bit-based amount and direction adjustments.
+
+Traced the airshaft rope-selector input gates back to the cached CIA port A read.
