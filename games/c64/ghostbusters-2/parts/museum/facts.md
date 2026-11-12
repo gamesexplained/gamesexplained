@@ -51,3 +51,5 @@ The call at `$9B5A` cycles through three movement slots, handling one per invoca
 Before applying a directional update, `$9B79` calls `$9E18` to check a position-derived table byte and `$9EB4` to compare the position with a second bounded area. Either check can clear the active slot; the second calls `$A474` on a match. The objects and table value involved are not identified.
 
 The placement path at `$96F8` derives a pair of row addresses from position bytes and the table at `$8428`. It reads and tests existing cell codes, then `$9981` writes two rows through patched store operands; a patched index selects two or four bytes per row. The meaning of the tested cell codes and the placed pattern remains open.
+
+The eight movement handlers at `$9CAA–$9E17` select sprite pointers `$7C–$83`. The ordering and output routines at `$FD51` and `$FDDA` pass those values to the VIC sprite-pointer table. In the captured floor's VIC bank 1, the pointers select eight 63-byte bitmap shapes at `$5F00–$60FE`; those shapes match between the museum entry and play snapshots. The object they depict remains open.

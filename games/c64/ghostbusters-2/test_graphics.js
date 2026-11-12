@@ -101,3 +101,13 @@ for (let i = 0; i < poses.length; i++) {
   for (const pointer of poses[i]) assert(pointer === 0x0f || expectedSlots.includes(pointer));
 }
 console.log('OK - five character poses match their pointer records');
+
+const motionMatch = html.match(/<script id="museum-motion-data" type="application\/json">([^<]+)<\/script>/);
+assert(motionMatch, 'museum movement inspector has its data');
+const motionShapes = JSON.parse(motionMatch[1]);
+assert.deepStrictEqual(motionShapes.map(shape => shape.pointer), Array.from({length: 8}, (_, n) => n + 0x7c));
+for (const shape of motionShapes) {
+  const start = 0x4000 + 64 * shape.pointer;
+  assert.deepStrictEqual(shape.bytes, Array.from(museumListing.ram.slice(start, start + 63)));
+}
+console.log('OK - eight museum movement shapes match the listing');

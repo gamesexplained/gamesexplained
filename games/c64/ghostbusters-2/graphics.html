@@ -64,6 +64,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <div class="plate"><label for="airshaft-slot">Sprite slot</label> <select id="airshaft-slot"></select>
 <p><canvas id="airshaft-slot-image" width="192" height="168" aria-label="Selected airshaft sprite bitmap" style="max-width:100%;height:auto;image-rendering:pixelated;background:#23262d;border-radius:6px"></canvas></p>
 <p id="airshaft-slot-address" aria-live="polite"></p><p class="cap">The inspector shows the captured bytes in multicolour with illustrative colours. The game may combine pieces or use different colours.</p></div></section>
+<section><h2 class="t">Eight museum movement shapes</h2>
+<p>Eight movement handlers select different sprite pointers. Choose one to inspect the bitmap stored for the captured floor’s video bank. The object these shapes depict is still being traced.</p>
+<div class="plate"><label for="museum-motion-shape">Shape</label> <select id="museum-motion-shape"></select>
+<p><canvas id="museum-motion-image" width="192" height="168" aria-label="Selected museum movement shape" style="max-width:100%;height:auto;image-rendering:pixelated;background:#23262d;border-radius:6px"></canvas></p>
+<p id="museum-motion-address" aria-live="polite"></p><p class="cap">The inspector uses illustrative colours and multicolour mode. The <a href="source-museum.html#9C47">movement dispatcher</a> selects the pointers; the game’s mode and colours can vary.</p></div></section>
 <section><h2 class="t">The airshaft status sprite</h2>
 <p>Space selects one of three modes. In one captured state the lower row displays 99, 05 or 02. Select a mode to see the 24 by 21 sprite after the game draws it. In VICE tests, holding fire and up changed mode 2’s 05 to 04 and mode 3’s 02 to 01; the meaning of the numbers remains open.</p>
 <div class="plate"><label for="airshaft-mode">Mode</label> <select id="airshaft-mode"><option value="0">Mode 1</option><option value="1">Mode 2</option><option value="2">Mode 3</option></select>
@@ -350,6 +355,27 @@ function storyPicturePixels(data, row) {
     const address = (0x4000 + 64 * shape.pointer).toString(16).toUpperCase().padStart(4, '0');
     const link = document.createElement('a'); link.href = 'source-airshaft.html#' + address; link.textContent = '$' + address;
     const text = document.getElementById('airshaft-slot-address'); text.replaceChildren('Bitmap at ', link);
+  }
+  select.addEventListener('change', draw); draw();
+})();
+</script>
+
+<script id="museum-motion-data" type="application/json">[{"pointer":124,"bytes":[0,0,0,0,16,0,0,100,0,1,185,0,1,253,0,1,185,0,1,169,0,0,168,0,0,100,0,0,100,0,0,32,0,0,32,0,0,16,0,0,32,0,0,16,0,0,16,0,0,16,0,0,16,0,0,0,0,0,0,0,0,0,0]},{"pointer":125,"bytes":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,64,0,6,144,0,11,224,0,26,224,0,26,160,0,106,160,0,186,144,1,229,64,2,64,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"pointer":126,"bytes":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,105,0,5,174,1,107,255,0,5,174,0,0,105,0,0,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"pointer":127,"bytes":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,2,64,0,1,229,64,0,186,144,0,107,224,0,26,224,0,26,160,0,10,160,0,6,144,0,1,64,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"pointer":128,"bytes":[0,0,0,0,16,0,0,16,0,0,16,0,0,16,0,0,32,0,0,16,0,0,32,0,0,32,0,0,100,0,0,100,0,0,184,0,1,253,0,1,185,0,1,169,0,1,101,0,0,84,0,0,16,0,0,0,0,0,0,0,0,0,0]},{"pointer":129,"bytes":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,1,128,1,91,64,6,174,0,11,233,0,11,164,0,10,164,0,10,160,0,6,144,0,1,64,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"pointer":130,"bytes":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,105,0,0,186,80,0,255,233,64,186,80,0,105,0,0,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"pointer":131,"bytes":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,64,0,6,144,0,11,224,0,11,164,0,10,164,0,10,169,0,6,174,0,1,91,64,0,1,128,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}]</script>
+<script>
+(() => {
+  const shapes = JSON.parse(document.getElementById('museum-motion-data').textContent);
+  const select = document.getElementById('museum-motion-shape'), canvas = document.getElementById('museum-motion-image');
+  for (const shape of shapes) {
+    const option = document.createElement('option'); option.value = shape.pointer;
+    option.textContent = 'Pointer $' + shape.pointer.toString(16).toUpperCase(); select.appendChild(option);
+  }
+  function draw() {
+    const shape = shapes.find(item => item.pointer === Number(select.value));
+    const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height);
+    C64.drawSpriteMC(ctx, shape.bytes, 0, 0, 8, C64.PAL[1], C64.PAL[14], C64.PAL[8]);
+    const address = (0x4000 + 64 * shape.pointer).toString(16).toUpperCase();
+    const link = document.createElement('a'); link.href = 'source-museum.html#' + address; link.textContent = '$' + address;
+    document.getElementById('museum-motion-address').replaceChildren('Bitmap at ', link);
   }
   select.addEventListener('change', draw); draw();
 })();
