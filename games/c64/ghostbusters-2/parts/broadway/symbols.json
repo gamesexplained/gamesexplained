@@ -60,7 +60,7 @@
    [
     52992,
     53247,
-    "Museum"
+    "2 parts: Museum, Broadway alternate disk"
    ],
    [
     61303,
@@ -138,7 +138,7 @@
    [
     52992,
     53247,
-    "Museum"
+    "2 parts: Museum, Broadway alternate disk"
    ],
    [
     61303,
@@ -1610,9 +1610,9 @@
   },
   {
    "address": 32810,
-   "name": "s_802A",
+   "name": "broadway_initialize",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 33184,
@@ -1682,9 +1682,9 @@
   },
   {
    "address": 33376,
-   "name": "j_8260",
+   "name": "broadway_keyboard_gate",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 33396,
@@ -1706,9 +1706,9 @@
   },
   {
    "address": 33425,
-   "name": "s_8291",
+   "name": "broadway_wait_three_ticks",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 33427,
@@ -9038,6 +9038,21 @@
    "address": 32382,
    "type": "line",
    "text": "Byte 6 of glyph $CF in the $7800 character set, followed by more glyph bytes. The video chip reads this RAM as character data when the Broadway frame selects that base; the byte's other uses need checking."
+  },
+  {
+   "address": 32810,
+   "type": "line",
+   "text": "Clear the border and background and initialize state bytes at $8018\u2013$8026, $9C74, $9C81\u2013$9C88 and $9C8C\u2013$9C9E, $96F0\u2013$9713 and $973B\u2013$9740, with selected bytes set to 1 or other starting values. Set additional operands and state at $8420\u2013$8422, $851F/$8524, $87F7/$87FB, $895D, $919C, $9C6A\u2013$9C73 and $8309/$830C. Copy 1,000 screen bytes from $3C00\u2013$3FE7 to $4400\u2013$47E7, then overwrite six cells at $47AF and $47B2\u2013$47B6. Copy offsets 1\u201363 from $4240 to $4180. Set $0288 to $44 and $D018 to $1F, call $8484, and fill ranges of colour RAM with $0B and $0D. Override 22 colours at $DB51 with $0A and the corresponding screen bytes at $4751 with $FD, five colours at $DBB2 with $07 and sixteen at $DBA0 with $01. Write $06 to $DD00 and call $AF11 and $840A before entering $8260."
+  },
+  {
+   "address": 33376,
+   "type": "line",
+   "text": "Write $DF to CIA1 port A and test bit $02 of port B. If it is set, continue at $829F. If it is clear, set $8027 to 1, call $8291, wait for that bit to become set, call $8291, wait for it to become clear, call $8291, then wait for it to become set again. Clear $8027 and continue at $829F. The meaning of this keyboard sequence remains open."
+  },
+  {
+   "address": 33425,
+   "type": "line",
+   "text": "Three times, save the byte at $801D and wait until it changes, then return. The keyboard gate at $8260 calls this between input transitions."
   },
   {
    "address": 33993,
