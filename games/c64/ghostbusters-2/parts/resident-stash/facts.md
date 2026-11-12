@@ -21,3 +21,5 @@ The story engine installs raster handlers through pointers rather than direct ca
 The routine copied to `$1924` accepts a text pointer in X/Y. Its continuation at `$1928` reads 40-byte rows, converts each row into two buffers through `$1A12`, scrolls screen rows through `$19B9`, and inserts a buffer through `$19F5`. A zero byte at the start of a row ends the passage and is skipped. A joystick or keyboard input returned by `$16F2` can end the routine earlier. Several story call sequences pass `$C200` as the initial pointer.
 
 The bytes copied to `$16A4–$16CA` decode as an `$A5` seed for zero-page `$0D` and a left shift whose incoming bit is the exclusive OR of the old bits 1 and 6. The code returns the old bit 7 in carry. How either entry is reached remains open.
+
+A stored 40-byte row copied to `$1AB7` reads “this is just some test text!”, surrounded by spaces and followed by zero. Whether the game displays it remains open. The following bytes decode as a copy routine at `$1AE0` whose destination range includes its own operands; its entry path and the result of that overlap have not been established.
