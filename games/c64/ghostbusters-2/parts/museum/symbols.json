@@ -880,6 +880,21 @@
   },
   {
    "start": 61440,
+   "end": 62399,
+   "type": "Byte"
+  },
+  {
+   "start": 62400,
+   "end": 62463,
+   "type": "Undefined"
+  },
+  {
+   "start": 62464,
+   "end": 63423,
+   "type": "Byte"
+  },
+  {
+   "start": 63424,
    "end": 63463,
    "type": "Undefined"
   },
@@ -2555,9 +2570,9 @@
   },
   {
    "address": 33832,
-   "name": "f_8428",
+   "name": "museum_screen_row_table",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 33833,
@@ -3491,9 +3506,9 @@
   },
   {
    "address": 35962,
-   "name": "s_8C7A",
+   "name": "museum_lookup_selected_position",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 36063,
@@ -12431,9 +12446,15 @@
   },
   {
    "address": 61440,
-   "name": "a_F000",
+   "name": "museum_lookup_grid_0",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
+  },
+  {
+   "address": 62464,
+   "name": "museum_lookup_grid_1",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 64512,
@@ -13460,6 +13481,11 @@
    "text": "Set the display-memory operand at $087B to $1F, call $A36A for the upper screen, copy 488 further codes from $1600 to $4600, and copy the high nibbles of 1,000 bytes at $1C00 to colour RAM before calling $82E8."
   },
   {
+   "address": 33832,
+   "type": "line",
+   "text": "Twenty-four little-endian screen row addresses, starting at $4400 and increasing by 40 to $4798. Several lookup routines add a calculated column to an address from this table and then adjust the high byte to address the grids at $F000 or $F400."
+  },
+  {
    "address": 34226,
    "type": "line",
    "text": "Compare $804A,X with $8041. When they differ, copy it to $8041, set $8042 to 0 for X other than 1 or 1 for X=1, call $86B6 with the matching value from $8026/$8027, then preserve X across a call to $8396. Set $8035,X to 1. If $8037,X is nonzero, return. Otherwise increment $8039; on every fifth call reset it and increment $803A. For values below 5, $868C uses $803A to update a pair of sprite pointers. On reaching 5, reset $803A, set $8037,X and the selected $801D,Y to 1. If $8025 is 4, set $8028 and switch the selected entry and screen using the other side; otherwise set $8041 to 0, call $8396, copy X to $8042, set $8056 to 1 and call $C9DB or $CA10 according to X."
@@ -13473,6 +13499,11 @@
    "address": 34587,
    "type": "line",
    "text": "If $FC25 is at least $A0, clear the motion origin and return. Otherwise, when $FE19 is nonzero, select sound effect $07 and clear the motion origin. If the $C00C entry indexed by $8026 is nonzero, toggle the motion mode and return. Increment $8714 and, on reaching $1A, reset it and call $C02C; if the voice 1 effect flag $E12F is clear, select effect $11. Choose a motion origin, copy $FC25 to $FE0B and dispatch values $60\u2013$67 to eight separate routines; each recognized value then calls $8C7A and jumps to $8D0D. The purpose of each dispatched path remains to be traced."
+  },
+  {
+   "address": 35962,
+   "type": "line",
+   "text": "Subtract $000C from $FC0B/$FC13 and $28 from $FC1B, then divide the low coordinate bytes by 8. Select a screen row through $8428, add the calculated column and, when the saved high X byte is nonzero, add $1F. Add $AC to the resulting high byte, plus 4 when $804A is nonzero, and read the patched address at $8CF7. If its value is 1, call $87E0; also call it if $FC1B is below $38. That helper clears $FC0B, $FC13 and $FC1B. The gameplay effect remains open."
   },
   {
    "address": 37993,
@@ -14523,6 +14554,16 @@
    "address": 60682,
    "type": "line",
    "text": "Linear decode of $ED0A\u2013$ED30, in bytecode order: $89[04 08], $8B, $8F[04], $90[02 08 50], $D0[08 20], $E0, $24, $24, $D0[0A 20], $E1, $27, $24, $26, $E5, $22, $D0[08 20], $E0, $24, $24, $D0[0A 00], $24, $22, $E7, $1F, $91. Brackets contain immediate parameter bytes. Values below $80 feed the pitch path and $E0\u2013$FF set durations; other commands are decoded at $E3B7. The final $91 jumps through $E338 to stop the sound. Timing and reachability remain open."
+  },
+  {
+   "address": 61440,
+   "type": "line",
+   "text": "Twenty-four rows of 40 bytes, indexed using the screen row addresses at $8428 after adding $AC to the high byte. The checks at $8CF7, $939E, $9E94 and $A9B9 compare a selected cell with 1. This grid contains values 0, 1 and 5 in the matching entry and play snapshots; the meaning of each value and all callers remains open."
+  },
+  {
+   "address": 62464,
+   "type": "line",
+   "text": "Twenty-four rows of 40 bytes, indexed using the screen row addresses at $8428 after adding $B0 to the high byte. State selects this grid in the checks at $8CF7, $939E, $9E94 and $A9B9. Its cells contain values 0 and 1 in the matching entry and play snapshots; their gameplay meaning remains open."
   },
   {
    "address": 64627,
