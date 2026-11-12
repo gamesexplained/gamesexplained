@@ -123,3 +123,5 @@ Traced the `$4A`, `$4F`, `$54` and `$59` airshaft draw-and-restore pairs.
 Finished tracing the airshaft drawing dispatch and its matching restore cases, retaining the open reachability and scene-effect questions.
 
 Traced the two airshaft sprite-relative screen scans, their five-step address table and their separate counters.
+
+Connected the two screen-scan result flags to sprite 6 and sprite 4 animation paths.
