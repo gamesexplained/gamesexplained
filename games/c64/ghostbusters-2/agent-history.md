@@ -81,3 +81,5 @@ Traced the first response reached when both museum position comparisons match, i
 Traced the reverse museum byte-copy path and the gated joystick-fire input in the scene update loop.
 
 Traced the second museum fire path and the address and position adjustments made by the placement routines.
+
+Traced the museum status transition and scene reset, linking a status value to the previously decoded DEAD panel sprites.
