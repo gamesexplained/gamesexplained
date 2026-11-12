@@ -177,3 +177,5 @@ Described the title sound command dispatch table, including its zero entries and
 Traced the Broadway extra-animation delay, movement and pointer selection, and identified the patched store operand.
 
 Traced the second Broadway fire candidate through its screen and colour writes, including both patched colour-store operands.
+
+Traced the third through sixth Broadway fire candidates and checked their repeated cell-write instructions against the second candidate.
