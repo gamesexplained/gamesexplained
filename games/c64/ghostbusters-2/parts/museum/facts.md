@@ -113,3 +113,5 @@ At `$AE8F`, another byte-copy path reverses the address changes made by `$A4FF`,
 `$A0A7` handles a second state-gated fire path with a separate latch at `$948C` and initializes an interaction slot on a new press. The placement routine has two entry wrappers and adjusts its pair of screen addresses by one horizontally or 40 vertically; the corresponding position values move by eight. Their complete gameplay purpose remains open.
 
 When `$805E` is 1, `$C913` sets a status byte selected by `$8025−1` to 1, then calls `$CA10` to reset scene state and sprite positions. The status panel selects the DEAD sprite pair for a status value of 1. The events that produce `$805E` values remain open.
+
+After the rope state sets `$805B`, the path at `$C7BE` can advance through five sprite-pointer entries and set `$805E` to 1 or 2 according to `$8025`. `$C913` uses that value to select the subsequent status transition. The event causing this sequence remains open.

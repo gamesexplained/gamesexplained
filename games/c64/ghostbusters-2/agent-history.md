@@ -83,3 +83,5 @@ Traced the reverse museum byte-copy path and the gated joystick-fire input in th
 Traced the second museum fire path and the address and position adjustments made by the placement routines.
 
 Traced the museum status transition and scene reset, linking a status value to the previously decoded DEAD panel sprites.
+
+Connected the museum rope-state animation to its `$805E` status transition while leaving the cause unassigned.
