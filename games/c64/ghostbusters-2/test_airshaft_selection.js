@@ -25,6 +25,10 @@ assert(digitMatch, 'digit patterns are embedded');
 assert.deepStrictEqual(JSON.parse(digitMatch[1]), Array.from(listing.ram.slice(0x928f, 0x92df)));
 const shapes = JSON.parse(shapeMatch[1]);
 assert.equal(shapes.length, 3);
+const pieceMatch = graphics.match(/<script id="airshaft-piece-data" type="application\/json">([^<]+)<\/script>/);
+assert(pieceMatch, 'airshaft sprite pieces are embedded');
+assert.deepStrictEqual(JSON.parse(pieceMatch[1]), Array.from(listing.ram.slice(0x0f00, 0x0f3f)));
+
 // The observed mode-dependent drawing paths copy two eight-byte columns.
 for (const [mode, left, right] of [[1, 0x92d7, 0x92d7], [2, 0x928f, 0x92b7], [3, 0x928f, 0x929f]]) {
   ram[0x9166] = mode;
@@ -101,4 +105,7 @@ assert.equal(0x4000 + ((frame.vic[24] >> 4) & 15) * 1024, 0x4400, 'screen matrix
 assert(frame.writes.some(([line, cycle, address, value]) =>
   line === 251 && cycle === 8 && address === 0x47fb && value === 6), 'sprite 3 selects slot 6');
 assert.equal(0x4000 + 6 * 64, 0x4180, 'selected sprite slot contains the drawn bytes');
+assert(frame.writes.some(([line, cycle, address, value]) =>
+  line === 251 && cycle === 2 && address === 0x47fa && value === 9), 'sprite 2 selects slot 9');
+assert.equal(0x4000 + 9 * 64, 0x4240, 'slot 9 contains the three pieces');
 console.log('OK - airshaft selection and drawing match the three VICE-observed modes');
