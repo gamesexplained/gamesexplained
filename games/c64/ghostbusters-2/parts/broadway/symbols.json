@@ -4954,9 +4954,9 @@
   },
   {
    "address": 38897,
-   "name": "s_97F1",
+   "name": "broadway_advance_scene_match_count",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38942,
@@ -4966,9 +4966,9 @@
   },
   {
    "address": 38945,
-   "name": "s_9821",
+   "name": "broadway_check_active_objects_against_pair",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38981,
@@ -5008,9 +5008,9 @@
   },
   {
    "address": 39130,
-   "name": "s_98DA",
+   "name": "broadway_check_sprite_five_against_scene_entries",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 39163,
@@ -11300,6 +11300,21 @@
    "address": 37392,
    "type": "line",
    "text": "If the byte at $851F is below $FD, add 3 to it. That byte is the immediate operand loaded at $851E and written to sprite 5's X register at $D00A."
+  },
+  {
+   "address": 38897,
+   "type": "line",
+   "text": "Preserve Y and increment $B1A6,X. If it equals the value at zero-page $16, use twice the byte at $B13E,X to select a little-endian pointer from $BD8B and store it at $AF6A,X; clear $AFEC,X and $B006,X, and set $B172,X to 2. Restore Y and return."
+  },
+  {
+   "address": 38945,
+   "type": "line",
+   "text": "Calculate two 16-bit positions at $9C70 and $9C72 plus 24. Loop over six entries with even Y from 0 to 10 and skip each whose $96F0,Y is zero. For each of two positions with even X, require $9C8C,X to equal 1 and $9708,Y to be in $B5 through $C9. Halve the 16-bit value at $96FC,Y, subtract $2A and add $12 with low-byte arithmetic; compare it to the halved position and its halved upper bound. On a match write $26 to $8C11,Y, set $9C8C,X to 2 and $9C90,X to $8F, and play sound effect $18 while preserving the indices. The entry and pair identities remain open."
+  },
+  {
+   "address": 39130,
+   "type": "line",
+   "text": "Compute the low byte of the sprite 5 Y operand at $8524 plus 5 and retain its carry; use that carry as the high byte when halving the sprite X operand at $851F. For even X from 0 through 8, only consider entries with $B172,X equal to 1. Subtract 12 from the halved sprite X low byte and test it against the halved 16-bit bounds at $AF9E,X and $B10A,X. Test the computed Y low byte against the low bytes at $AFB8,X and $B124,X, each plus $20. If both comparisons pass, preserve X across $91A2, call $97F1 and start sound effect $18 while preserving X and Y. These comparisons wrap to eight bits; the entries' gameplay identities remain open."
   },
   {
    "address": 39286,

@@ -61,3 +61,7 @@ Separating the two museum animation tables shortened an automatic symbol’s rea
 Traced the Broadway sprite 5 position comparisons at `$9A4B` and `$9AEA`. A focused processor-model check confirms the latter match, its vertical threshold and its already-set flag guard; object identities remain open.
 
 Traced a further Broadway comparison between six active entries and the three figures, retaining unknown object identities. Two bytes between movement routines were recovered from the snapshot as `$60` after unconditional jumps; neither has an established alternate entry.
+
+Traced the Broadway active-entry comparison with the second position pair and the sprite 5 comparison with five scene entries, including their state transitions and the carry used in the sprite X calculation.
+
+Traced the airshaft sprite 5 and 7 boundary checks, retaining their actual sign-bit branches and the unresolved flag meanings.
