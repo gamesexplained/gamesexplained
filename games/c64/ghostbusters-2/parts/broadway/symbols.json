@@ -766,7 +766,7 @@
   {
    "start": 41347,
    "end": 41347,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 41348,
@@ -776,7 +776,7 @@
   {
    "start": 41429,
    "end": 41429,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 41430,
@@ -5116,9 +5116,9 @@
   },
   {
    "address": 39835,
-   "name": "s_9B9B",
+   "name": "broadway_check_active_objects_against_figures",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 39885,
@@ -5158,9 +5158,9 @@
   },
   {
    "address": 40010,
-   "name": "s_9C4A",
+   "name": "broadway_record_active_object_figure_match",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40039,
@@ -5967,6 +5967,12 @@
    "kind": "auto"
   },
   {
+   "address": 41347,
+   "name": "broadway_figure_return_byte_1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 41348,
    "name": "b_A184",
    "type": "Branch",
@@ -5995,6 +6001,12 @@
    "name": "b_A1CB",
    "type": "Branch",
    "kind": "auto"
+  },
+  {
+   "address": 41429,
+   "name": "broadway_figure_return_byte_2",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 41430,
@@ -11315,6 +11327,16 @@
    "text": "Preserve X and check the figure flag at $973B,Y. If it is zero, set it to 1, reset the sprite X and Y operands at $851F and $8524 to $66 and $74, and start sound effect $18 while preserving the indices. An already-set flag skips those changes. Restore X before returning."
   },
   {
+   "address": 39835,
+   "type": "line",
+   "text": "Calculate each of the three figure X low bytes at $9C6A/$9C6C/$9C6E plus 24 with carry. Loop over six entries using even Y from 0 to 10; skip an entry if $96F0,Y is zero or if $9708,Y is outside $B5 through $C9. Halve its 16-bit value at $96FC,Y, subtract $2A, then add $12 using low-byte arithmetic. Compare that value against each figure's halved 16-bit X and halved upper bound, skipping figures whose $973B,X equals 1. On a match write $26 to $8C11,Y and call $9C4A. The object and state meanings remain open."
+  },
+  {
+   "address": 40010,
+   "type": "line",
+   "text": "Preserve X; if $973B,X is zero, set it to 1, save both indices, start sound effect $18 through $8405 and restore the indices. Restore X and return. The caller normally skips a flag equal to 1, while other nonzero flag values reach this routine and do not trigger the effect."
+  },
+  {
    "address": 40197,
    "type": "line",
    "text": "If both $9C8C and $9C8E equal 3, clear $9C99\u2013$9C9B. If $9C99 is nonzero, continue at $9DE8. Otherwise set $9C99, $9C71, $9C73, $9C8C and $9C8E to 1; set $9C70/$9C72 to $60/$80 and the operands at $86F8/$86FD to $0A/$0B. Increment $9C9E. When it becomes 2, reset it and patch four address operands at $9E39, $9E94, $9EFA and $9F55 to $F000, $F200, $F080 and $F280; patch the associated high bytes at $9E56/$9E5A, $9EB1/$9EB5, $9F17/$9F1B and $9F72/$9F76 to the $F0\u2013$F4 ranges. Otherwise patch the four addresses to $F400, $F600, $F480 and $F680 and their associated high bytes to the $F4\u2013$F8 ranges. The gameplay meaning of the two address groups remains open."
@@ -11370,9 +11392,19 @@
    "text": "If $973D is nonzero, jump to its special path. Otherwise, when the low coordinate byte at $9C6C is at least $28, increment $9C7E and, whenever it reaches 2, clear it and subtract 1 from the 16-bit value at $9C6C/$9C6D. This path advances the sprite-pointer operand at $86EE every sixth visit and wraps from $57 to $5F. Below the threshold it uses the animation path at $A0B3."
   },
   {
+   "address": 41347,
+   "type": "line",
+   "text": "The captured byte is $60, a 6502 return opcode. The preceding instruction is an unconditional jump to $A0B3, and the preceding conditional branch targets $A184; another entry to this byte has not been established."
+  },
+  {
    "address": 41411,
    "type": "line",
    "text": "If $973F is nonzero, jump to its special path. Otherwise, when the low coordinate byte at $9C6E is at least $30, increment $9C7F and, whenever it reaches 2, clear it and subtract 1 from the 16-bit value at $9C6E/$9C6F. This path advances the sprite-pointer operand at $86F3 every sixth visit and wraps from $57 to $5F. Below the threshold it uses the animation path at $A101."
+  },
+  {
+   "address": 41429,
+   "type": "line",
+   "text": "The captured byte is $60, a 6502 return opcode. The preceding instruction is an unconditional jump to $A101, and the preceding conditional branch targets $A1D6; another entry to this byte has not been established."
   },
   {
    "address": 41493,
