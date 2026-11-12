@@ -30,6 +30,8 @@ On a fresh boot with the Censor disk, a breakpoint at `$F3D5` catches `1*`; the 
 
 From the saved museum floor state `parts/museum/work/floor-two.vsf`, hold up on port 2 for 30 frames, then right for 180 frames and release both directions for two frames. The selected Ghostbuster enters the portrait room; the resulting state is `parts/museum/work/alternate-observed.vsf`. The earlier episodes on this route were advanced through forced success paths.
 
+From `parts/museum/work/alternate-observed.vsf`, hold left on port 2 for 90 frames to return to the previous room. This continuation was observed in VICE; a control-read recording and second-machine replay remain open.
+
 To inspect the ending, load `parts/museum/work/floor-two.vsf` with the Jondi/Censor disk attached, set the PC to `$0A16` and resume. This enters the congratulations path without satisfying the museum's win conditions. After its fire prompt, the loader opens `8*`; the story wait is `work/ending.vsf`. The scene displays a congratulations message. Its `$1000–$1BFF` differs in three bytes from the opening-story snapshot, while `$C200–$C819` differs in 1,136 bytes. This is a forced route, not a recorded win.
 
 The second and third story waits are saved as `work/second-story.vsf` and `work/third-story.vsf`. Relative to the opening-story snapshot, the second has 43 different bytes in `$1000–$1BFF` and the third has three, while their `$C200–$C8FF` contents differ extensively. That comparison suggests a reused story engine with different content; which bytes each compressed file writes and whether it contains code overwritten before the snapshot remain open. The file ledger therefore keeps the numbered files open.
