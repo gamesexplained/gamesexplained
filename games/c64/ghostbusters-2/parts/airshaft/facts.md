@@ -17,3 +17,5 @@ Comparing the clean airshaft entry with `work/story-before-airshaft.vsf` in the 
 The transition at `$02A7` banks out I/O and restores `$D000–$DBFF` to `$1000–$1BFF` and `$DC00–$DFFF` to `$0400–$07FF`, then jumps to `$1000` with X and Y restored. Of the first copied range, 2,983 of 3,072 bytes match `$1000–$1BFF` in the captured preceding story. Of the second, 112 of 1,024 match the story snapshot's `$0400–$07FF`. The comparison does not account for the differences or establish every byte's ownership.
 
 In the captured airshaft frame, the VIC uses bank 1 and selects the character set at `$7000`. All 2,048 bytes of that set are identical in the airshaft entry and play snapshots. The frame reconstruction used its visible glyphs and matched the VICE capture pixel for pixel.
+
+The sound-stream command at `$E3EF` reads paired low and high bytes from `$E668–$E675` and `$E676–$E683` into indexed voice state. The fourteen pairs point into `$E684–$E6AB`; the structure and full extent of the pointed-to data remain open. The two tables match in the captured story, Broadway, museum and ending snapshots.
