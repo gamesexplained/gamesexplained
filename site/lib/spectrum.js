@@ -97,6 +97,130 @@ globalThis.Spectrum = (function () {
     return canvas;
   }
 
+  // The same screen as RGBA pixels, border and all, ready for a canvas's ImageData: what
+  // drawScreen paints at s = 1, without a canvas, so a test can hash it.
+  const RGB = PAL.map(c => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)));
+  function screenPixels(ram, { borderColour = 7, border = 16, phase = 0 } = {}) {
+    const width = 256 + 2 * border, height = 192 + 2 * border, data = new Uint8ClampedArray(width * height * 4);
+    const put = (x, y, c) => { const o = (y * width + x) * 4, v = RGB[c]; data[o] = v[0]; data[o + 1] = v[1]; data[o + 2] = v[2]; data[o + 3] = 255; };
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++)
+      if (x < border || x >= border + 256 || y < border || y >= border + 192) put(x, y, borderColour & 7);
+    for (let y = 0; y < 192; y++) for (let cx = 0; cx < 32; cx++) {
+      const a = ram[ATTRS + ((y >> 3) << 5) + cx], b = (a >> 6) & 1, bits = ram[bitmapAddr(cx << 3, y)];
+      const ink = (a & 7) | (b << 3), paper = ((a >> 3) & 7) | (b << 3), flip = (a >> 7) && phase;
+      for (let i = 0; i < 8; i++) put(border + (cx << 3) + i, border + y, ((bits >> (7 - i)) & 1) ^ flip ? ink : paper);
+    }
+    return { width, height, data };
+  }
+
+  // screenPixels into a canvas, one canvas pixel to a Spectrum pixel and scaled by its CSS: quick
+  // enough to repaint every frame while a picture loads.
+  function paintScreen(canvas, ram, opts = {}) {
+    const img = screenPixels(ram, opts);
+    if (canvas.width !== img.width) canvas.width = img.width;
+    if (canvas.height !== img.height) canvas.height = img.height;
+    canvas.style.imageRendering = 'pixelated';
+    const ctx = canvas.getContext('2d'), id = ctx.createImageData(img.width, img.height);
+    id.data.set(img.data); ctx.putImageData(id, 0, 0);
+    return canvas;
+  }
+
+  // A loading picture as a tape brings it in. The loader fills the screen in the order it lies in
+  // memory, the bitmap from $4000 a third of the screen at a time and then the colours from $5800,
+  // and each bit is two pulses of the tape's signal, one length for a 0 and another for a 1.
+  // tapeTimes gives when each byte is in, in T-states (3.5 million to the second) from the end of
+  // the block's flag byte; bit0 and bit1 are the length of a pulse, as a TZX file records them.
+  function tapeTimes(bytes, bit0, bit1) {
+    const ends = new Float64Array(bytes.length); let t = 0;
+    for (let k = 0; k < bytes.length; k++) {
+      for (let i = 7; i >= 0; i--) t += 2 * ((bytes[k] >> i) & 1 ? bit1 : bit0);
+      ends[k] = t;
+    }
+    return ends;
+  }
+  // How many of the bytes are in at time t.
+  function bytesIn(ends, t) {
+    let lo = 0, hi = ends.length;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (ends[m] <= t) lo = m + 1; else hi = m; }
+    return lo;
+  }
+  // Which of its two colours the border shows at time t, 0 or 1: the loader turns it over at every
+  // edge of the signal, so each pulse draws a band across the border.
+  function stripe(bytes, ends, bit0, bit1, t) {
+    const k = bytesIn(ends, t);
+    if (k >= bytes.length) return 0;
+    let at = k ? ends[k - 1] : 0, e = 0;
+    for (; e < 16; e++) {
+      const p = (bytes[k] >> (7 - (e >> 1))) & 1 ? bit1 : bit0;
+      if (at + p > t) break;
+      at += p;
+    }
+    return e & 1;
+  }
+  // The screen with the first n bytes of the picture in, over what it held before.
+  function partLoaded(before, picture, n) {
+    const ram = new Uint8Array(0x10000);
+    ram.set(before, BITMAP); ram.set(picture.subarray(0, n), BITMAP);
+    return ram;
+  }
+  // The frame t T-states into the load, as RGBA pixels: the screen as far as it has got, and, while
+  // bytes are still coming, the border striped in `stripes`, its two colours. A frame lasts 69,888
+  // T-states and a line 224; the screen's first line is the frame's 64th, and a pixel is half a
+  // T-state. Once the picture is in the border is `borderColour`.
+  function loadingPixels(before, picture, ends, bit0, bit1, t, { stripes = null, borderColour = 0, border = 16 } = {}) {
+    const n = bytesIn(ends, t), img = screenPixels(partLoaded(before, picture, n), { borderColour, border });
+    if (n >= picture.length || !stripes) return img;
+    const { width, height, data } = img, frame = Math.floor(t / 69888) * 69888;
+    for (let y = 0; y < height; y++) {
+      const line = frame + (64 - border + y) * 224, inside = y >= border && y < border + 192;
+      for (let x = 0; x < width; x++) {
+        if (inside && x === border) x += 256;
+        const v = RGB[stripes[stripe(picture, ends, bit0, bit1, line + (x - border) / 2)] & 7], o = (y * width + x) * 4;
+        data[o] = v[0]; data[o + 1] = v[1]; data[o + 2] = v[2];
+      }
+    }
+    return img;
+  }
+
+  // A loading picture on a page: the canvas, a "Load it again" and a "Skip" button and a line that
+  // counts the bytes in. The load runs at the tape's own pace from the picture's first byte, and
+  // starts when the canvas comes into view. before and picture are the 6,912 bytes of the screen
+  // before the load and after it; bit0, bit1, stripes and borderColour as for loadingPixels.
+  function loadingPlayer({ canvas, again, skip, status, before, picture, bit0, bit1, stripes, borderColour = 0, border = 16 }) {
+    const ends = tapeTimes(picture, bit0, bit1), END = ends[ends.length - 1], TPS = 3.5e6, all = picture.length;
+    const ctx = canvas.getContext('2d');
+    canvas.style.imageRendering = 'pixelated';
+    let t0 = 0, raf = 0;
+    const paint = (t) => {
+      const img = loadingPixels(before, picture, ends, bit0, bit1, t, { stripes, borderColour, border });
+      if (canvas.width !== img.width) canvas.width = img.width;
+      if (canvas.height !== img.height) canvas.height = img.height;
+      const id = ctx.createImageData(img.width, img.height); id.data.set(img.data); ctx.putImageData(id, 0, 0);
+    };
+    const tick = (now) => {
+      const t = Math.max(0, now - t0) / 1000 * TPS, n = bytesIn(ends, t);   // a frame can be stamped before t0
+      paint(t);
+      if (status) status.textContent = n < all ? Math.floor(t / TPS) + ' s, ' + n.toLocaleString('en-GB') + ' of ' + all.toLocaleString('en-GB') + ' bytes' : '';
+      raf = n < all ? requestAnimationFrame(tick) : 0;
+    };
+    const go = () => { cancelAnimationFrame(raf); t0 = performance.now(); raf = requestAnimationFrame(tick); };
+    const done = () => { cancelAnimationFrame(raf); raf = 0; paint(END); if (status) status.textContent = ''; };
+    if (again) again.addEventListener('click', go);
+    if (skip) skip.addEventListener('click', done);
+    paint(0);
+    if (typeof IntersectionObserver !== 'undefined') {
+      const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { threshold: 0.4 });
+      io.observe(canvas);
+    } else go();
+    return { go, skip: done, seconds: END / TPS };
+  }
+
+  // Base64 to bytes, for the screens a page embeds.
+  function unbase64(s) {
+    if (typeof atob === 'function') return Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+    return new Uint8Array(Buffer.from(s, 'base64'));
+  }
+
   // A grid of the 96 ROM-font glyphs, when the page has them: eight bytes a glyph, MSB first.
   function drawCharset(canvas, font, { n = 96, per = 16, s = 2, ink = '#d7d7d7', bg = '#000000' } = {}) {
     canvas.width = per * 9 * s; canvas.height = Math.ceil(n / per) * 9 * s;
@@ -109,7 +233,8 @@ globalThis.Spectrum = (function () {
   }
 
   const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
-  return { PAL, load, bitmapAddr, pixel, attr, colour, drawScreen, drawCharset, hex };
+  return { PAL, load, bitmapAddr, pixel, attr, colour, drawScreen, screenPixels, paintScreen, drawCharset, hex,
+           tapeTimes, bytesIn, stripe, partLoaded, loadingPixels, loadingPlayer, unbase64 };
 })();
 
 // The Spectrum's names for the footprint categories; the drawing is makeMemMap in memmap.js.
