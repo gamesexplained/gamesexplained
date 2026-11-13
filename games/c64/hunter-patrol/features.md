@@ -37,6 +37,7 @@ Sources:
 - A second tune player at `$1000-$116F` with its own tune at `$8200` that nothing calls; the Music tab plays it.
 - The three better messages pay alike: 16 hits or more gives an extra life and the next level (`$2EA1`).
 - Any hit on the target darkens its middle part (`$80BC`), and a colour read per level is thrown away (`$2BCF`).
+- The flak cannot crash the plane during a strafing run: the run's test looks for sprite 7 (`$2D86`).
 - The texts misspell "STRAFFING" and "TARTARGET".
 - The cracker's trainer patches `$1934` to `$0D03`: the C= key ends the level as a destroyed target.
 - The loading picture is shown by the cracker's loader and signed "Jim". Whether the original tape or disk had one is not known.

@@ -57,7 +57,7 @@ The stick is read at `$DC01` (port one) by `$0D14`. Every 8th pass `$193C` moves
 
 - A ground object starts when the noise voice's random byte `$33` has its low seven bits clear (`$1670`); an aircraft when `$33` is zero (`$1A10`).
 - A hit on a ground object scores 100, on an aircraft 50, and both count off `$42` (`$22D0`). In a strafing run each hit on a target part counts one in `$45` and scores 100 (`$2CD0`).
-- The plane crashes on touching the flak, a near aircraft (`$0F00`), or, while low, a ground object with its shadow.
+- The plane crashes on touching the flak, a near aircraft (`$0F00`), or, while low, a ground object with its shadow. In a strafing run the flak test masks the ground latch with `$81` (sprites 0 and 7, `$2D86`) instead of `$05`, and sprite 7 is off, so the flak cannot crash the plane there.
 - `$2C00` writes black to sprite 5's colour (`$80BC`) whichever target part is hit; `$2BCF` reads `$8000` + level and loads 1 over it, so every target is white.
 - Result messages by `$45`: 64 or more, 48, 16, fewer (`$2E41`). The texts misspell "STRAFFING" (`$8B20`) and "TARTARGET" (`$8C00`).
 
@@ -78,6 +78,8 @@ Voice 3 runs as noise for random numbers (`$1900`, `$1920`). The engine note on 
 ## The listing's error rate
 
 Sample of seed 2611: 60 of the 396 comments, checked by one checker on claude-opus-5-5 that wrote none of them. Five were wrong (8.3 %, 95 % interval 3.6 % to 18.1 %): one wrong, a byte said to be read by a sort's shift that the shift only uses as its base address (`$850E`, with the same belief at `$84FE` and `$8506`), and four wrong in a detail: a pointer's list of uses missing the target sets (`$26`), a title-screen block's text stopping a row early (`$426B`), the ground band said to keep only the plane sprites' x when it keeps their y too (`$8090`), and a music byte's uses missing the pitch drop (`$A41B`). All five, and the two other comments holding the same belief, were corrected. Building the Music tab's player showed one more wrong comment (`$AE09`, the driver's stop entry, which leaves the volume at 15), corrected.
+
+Sample of seed 2613, drawn as the maintainer's check at Euan's request (unorig): 60 of the 396 comments, checked by a fresh checker on claude-opus-5-5 that wrote none of them. Eight were wrong in a detail (13.3 %, 95 % interval 6.9 % to 24.2 %), over the mark of one in 30: the title screen's fire wait (release, then press) and its name entry, which never returns (`$11A0`); the ground objects' record search, which runs from record 3 down (`$1670`); the approach rate's two forms and what `$32` counts (`$1720`); the aircraft's random change of up and down, said to be a turn every 32 passes (`$1AD9`); the strafing run's flak test, which tests sprite 7 (`$2CD0`); a title-screen field's extent (`$4023`); an explosion's colours (`$7000`); and the range of a result message (`$8BE0`). All eight were corrected. A full audit of every comment is needed before the game can be Silver.
 
 ## Live tests
 

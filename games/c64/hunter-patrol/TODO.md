@@ -4,7 +4,7 @@ Tier: **bronze**, with every Silver requirement met but one. Coverage is 100 % (
 
 ## For Silver
 
-- A maintainer's sample of 60 comments on a proven model (`kit/CHECKING.md`), recorded with `by`.
+- The maintainer's sample (seed 2613) found 8 of 60 wrong, over the mark, so a full audit of the 397 comments on a proven model is needed, then a sample after it (`kit/CHECKING.md`).
 
 ## Recommended
 
