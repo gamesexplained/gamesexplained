@@ -39,7 +39,7 @@ Sources:
 - F1 and F3 on the attract screen start part one and part two directly; fire plays the intro first. The C64-Wiki page says only that cracked copies with a menu can skip to part two (`orientation.md`).
 - The game uses undocumented 6502 opcodes (`LAX (zp),y`) in its colour-fill loops at `$0BCF`, `$0BDD`, `$1EC8`, `$1ED6`, `$2AD6`, `$2AF4` and `$2B02`.
 - `$3DE0`-`$3FFF` holds an older build of the code at `$39C4`-`$3BE3`, moved up by `$41C`, that is never run (`facts.md`).
-- A lighted cigarette dropped in the bin at map column `$F8` sets the bin on fire and the alarm off; with the sprinklers on it adds a fault in the circuitry, and otherwise a guard is sent four minutes later (`$1FD8`).
+- A lighted cigarette dropped in the bin at map column `$F8` sets the bin on fire and the alarm off; with the sprinklers on it adds a fault in the circuitry, and in any case a guard is sent when the clock's minutes have changed four times, three to four minutes later (`$1FD8`, `check_countdown`).
 - The credits screen is text in video bank 2 at `$8000`, its chrome stripes 24 writes a frame to `$D023` (`$9637`; Graphics tab).
 - Part two has fourteen creatures, events 1 to 15 without 10: a bird, a rabbit, a squirrel, a mouse, a fin in the water, a log, a snake, a grey robot, a soldier, a flying elephant, a rolling ball, a small cyan machine, a duck and a frog (shapes and colours seen on the kit's machine model; names of 3, 4 and 11 from the contributor).
 - Part two uses a CIA2 timer NMI as a second scroll driver.

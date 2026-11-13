@@ -4,15 +4,15 @@ Current truth for this game. The workflow lives in `kit/skills/`; how this under
 
 ## Build
 
-The original Ocean cassette: a boot program at `$0316` in the KERNAL's format, then Ocean's turbo loader reads 275 pages of 256 bytes. The first are the loading tune (`$A000`-`$AFFF`) and the loading picture, which shows while the rest of memory up to `$FFFF` loads; the last 16 pages are the game's own `$A000`-`$AFFF` (`orientation.md`, `media.json`). Both parts of the game, all graphics and the music are in that one load. A cracked disk version hands the same bytes to the game from `$0334` to `$FFF9`.
+The original Ocean cassette: a boot program at `$0316` in the KERNAL's format, then Ocean's turbo loader reads 275 pages of 256 bytes. The first two are the loader's own (`$0100`-`$02FF`), then come the loading tune (`$A000`-`$AFFF`) and the loading picture, which shows while the rest of memory up to `$FFFF` loads; the last 16 pages are the game's own `$A000`-`$AFFF` (`orientation.md`, `media.json`). Both parts of the game, all graphics and the music are in that one load. A cracked disk version hands the same bytes to the game from `$0334` to `$FFF9`.
 
 ## Memory layout
 
 | Thing | Where |
 |---|---|
 | Zero page: pointers, the stick direction (`$20`), the scroll direction (`$21`), the scroll value (`$22`), the voices' script pointers (`$E0`-`$E5`) | `$0000`-`$00FF` |
-| Game variables, the eight sprite slots (`$024B`-`$028B`), the message queue (`$02C4`), the inventory (`$02DF`), the score (`$02E7`) | `$0200`-`$03FF` |
-| Part one's code, main loop at `$0455`; the action and mode handlers; the message printer | `$0400`-`$25EB` |
+| Game variables, the eight sprite slots (nine tables of eight bytes, `$024B`-`$0292`), the message queue (`$02C4`), the inventory (`$02DF`), the score (`$02E7`) | `$0200`-`$03FF` |
+| Part one's code, main loop at `$0455`; the action and mode handlers; the message printer; then the frame wait at `$25EB` that all three modes of play use, and the start values at `$2602` | `$0400`-`$2623` |
 | Part two's code, entry at `$2624`; its interrupt handlers and the actors | `$2624`-`$3CB2` |
 | Raster colour-bar handlers for the attract mode | `$3CDF`-`$3DDF` |
 | An older build of `$39C4`-`$3BE3` (the end of the sinking animation to the chase trigger), moved up by `$41C` and calling an older build's addresses; nothing runs it | `$3DE0`-`$3FFF` |
@@ -28,7 +28,7 @@ The original Ocean cassette: a boot program at `$0316` in the KERNAL's format, t
 | High-score table | `$83E8`-`$8423` |
 | Character colours of part one | `$8448`-`$8547` |
 | Title picture colour data | `$8548`-`$892F` |
-| Part two's event code and tables | `$8930`-`$9007` |
+| Part two's event code and tables (the event numbers, starters, ground lookup and terrain types; then, after the credits font, the sprite frame lists, the jump path and the walk handlers) | `$8930`-`$8BFE`, `$8F90`-`$9007` |
 | The credits screen's character shapes (characters `$80`-`$F1` of the set at `$8800`) | `$8C00`-`$8F8F` |
 | Panel and picture characters, part two's character colours | `$9100`-`$9547` |
 | The start-up and the attract mode | `$9548`-`$9B4E` |
@@ -64,9 +64,9 @@ The original Ocean cassette: a boot program at `$0316` in the KERNAL's format, t
 - **Modes.** `$0200` holds the mode, and `$04E8` dispatches on it through `$43E8` (twelve handlers). Mode 0 is walking, 1 and 2 search, 3 and 4 take, 5 the utilise menu, 6 and 7 hide, 8 and 9 describe, 10 and 11 input. When fire is pressed the action's handler returns into the mode dispatch, so both run in that pass.
 - **Walking.** Johnny may step only where the character probed ahead and the one to its right are both `$76` (`$1B61`). Every third step up also steps right, and every third step down also steps left (`$0205`). The room is left on the left: scroll column `$FC`, sprite X `$39` or less, facing left.
 - **Objects.** 21 objects in `$1568`, four bytes each: map column, layer, object number, description. Their names are messages 53 to 73 and their descriptions 75 onwards (`$0DF5`, `$0DFB`). SEARCH lists the objects whose column equals the player's map column (`$0D62`); at most four can be held (`$0CB4`). Taking an object sets its column to 0.
-- **Containers and terminals.** Eight locked containers at `$15BC`, their open and key flags in `$020B` and `$020C`; a locked one answers MALFUNCTION and LOCKED (messages 20 and 16, `$0C2D`). Ten terminals at `$15CC` with an INPUT handler each (`$1CB5`-`$1DC3`).
-- **Terminals' puzzle.** `$0299` starts at `$0C`. Logging on (bit 0) needs the PASSWORD object (15), linking (bit 1) the COMPUTER PROTOCOLS (12); the SECURITY DOCUMENT (9) clears bit 2, which is set while the general alarm is armed, and the FIRE SYSTEM MANUAL (11) clears bit 3, which is set while the sprinklers are on (`$1DC3`).
-- **The cigarette in the bin.** When the LIGHTED CIGARETTE (object 16) is put down at map column `$F8`, `$1FD8` queues BIN IS ON FIRE and ALARM HAS GONE OFF and sets `$0212`. With the sprinklers on it adds SPRINKLER SYSTEM ACTIVATED and FAULT IN CIRCUITRY; otherwise `check_countdown` starts counting four minutes towards sending a guard. `$0212` also lets the main loop run the end-of-part check for the decoy's parts (`$2219`).
+- **Containers and terminals.** Eight locked containers at `$15BC`, their open flags in `$020B` and their jammed flags in `$020C` (the wrong key jams a lock, `$1D57`); a locked one answers MALFUNCTION and LOCKED (messages 20 and 16, `$0C2D`). Ten places where INPUT does something, at `$15CC`, each with its handler: eight key locks (`$1CB5`, `$1CCC`, `$1CE3`, through the lock check at `$1CFA`), the PASSCARD reader at column `$55` (`$1D95`) and the computer at column `$6B` (`$1DC3`).
+- **Terminals' puzzle.** `$0299` starts at `$0C`. Logging on (bit 0) needs the PASSWORD object (15), linking (bit 1) the COMPUTER PROTOCOLS (12); once linked, the SECURITY DOCUMENT (9) toggles bit 2, which is set while the general alarm is armed, and the FIRE SYSTEM MANUAL (11) toggles bit 3, which is set while the sprinklers are on; each change clears bits 0 and 1 again, so the next needs a new log-on and link (`$1DC3`, `$1E88`).
+- **The cigarette in the bin.** When the LIGHTED CIGARETTE (object 16) is put down at map column `$F8`, `$1FD8` queues BIN IS ON FIRE and ALARM HAS GONE OFF and sets `$0212`. With the sprinklers on it adds SPRINKLER SYSTEM ACTIVATED and FAULT IN CIRCUITRY; otherwise it zeroes the count of `check_countdown`, which runs whenever `$0212` is set and counts changes of the clock's minutes: at the fourth, three to four minutes later, it sets the guard state `$0219` to 2, sending a guard. `$0212` also lets the main loop run the end-of-part check for the decoy's parts (`$2219`).
 - **Score** is six decimal digits at `$02E7`-`$02E9`, added to through `$02EA`-`$02EC` by `$15FB`. Part one awards points for opening a container, passing columns and finishing; part two awards 1,000 points every sixteenth column (`$8936`). Winning part two stores 5 into the top byte of the score (`$39F5`), which makes it 50,000 plus its last four digits.
 - **Energy.** Two bars of six cells, `$029A` and `$029B`; each hit drains steps from one or the other (`$32C7`), and the drain takes as many steps as it is given. When either reaches zero `$0206` is set and the game ends (`$26BC`, `$0455`).
 - **Part two's events.** `$896E` gives, for each of 256 scroll columns, an event number 0 to 15; `$8936` starts the creature through `$8A6E`, sixteen address-minus-one words of which numbers 0 and 10 are zero; no column holds 10. The fourteen starters allocate a sprite slot (`$3663`). Part two's actors measure X through `$37D4`, which halves it, so their distances are in units of two pixels.
@@ -83,13 +83,13 @@ The original Ocean cassette: a boot program at `$0316` in the KERNAL's format, t
 | Event numbers | `$896E` | 256 bytes |
 | Event starters | `$8A6E` | 16 words, address minus one; 0 and 10 empty |
 | Terrain types | `$8AFF` | indexed by character code |
-| Creature frames | `$8F90`-`$8FC7` | sprite pointer lists, one or two per creature |
+| Hit-effect and creature frames | `$8F90`-`$8FC7` | sprite pointer lists: the hit effect's nine frames (`$8F91`-`$8F99`), then one or two per creature (`$8F9A`-`$8FC7`) |
 | High scores | `$83E8` | 10 entries of 6 bytes: score (3), initials (3) |
 | Tunes | `$ACA0` | 5 records of 7 bytes |
 
 ## Text
 
-Messages are plain ASCII: capital letters, digits and the space as themselves, `$32` ('2') a line break, `$33` ('3') the end of a message that waits for the player (the printer at `$0EB2` draws the prompt arrow, `$7B` `$7C`, at `$C360`), and `$21` ('!') the end of every message. The printer (`$0E48`) adds `$20` to each character to reach the panel font. `queue_message` (`$0DEF`) adds `$0B` to the number it is given. The system messages are numbered from 11, 45 to 48 are the endings, 49 the copyright line, 50 and 51 the part headings, 52 the high-score prompt, the object names from 53 and the descriptions from 75. The screens' text (the credits, the high-score heading) is drawn from separate tables.
+Messages are plain ASCII: capital letters, digits and the space as themselves, `$32` ('2') a line break, `$33` ('3') the prompt: the printer at `$0EB2` draws the prompt arrow, `$7B` `$7C`, at `$C360` and ends the message; it is the whole of message 10, which `clear_mode` queues when a mode ends, and `$21` ('!') the end of every message. The printer (`$0E48`) adds `$20` to each character to reach the panel font. `queue_message` (`$0DEF`) adds `$0B` to the number it is given. The system messages are numbered from 11, 45 to 48 are the endings, 49 the copyright line, 50 and 51 the part headings, 52 the high-score prompt, the object names from 53 and the descriptions from 75. The credits are not drawn at all: they are the screen memory at `$8000`, loaded with the game. The high-score heading is copied from its own table at `$99B1`.
 
 ## Sound
 
@@ -99,12 +99,12 @@ Martin Galway's three-voice script driver. Each tune is a record of seven bytes 
 
 Two samples, both read by the model that wrote the comments, so neither is independent: of 60 comments drawn from all 1,110, 12 were wrong (10 of them mechanical, variable comments that named a wrong routine as writer or reader); of 28 comments of code routines, 5 were wrong in a detail. All were corrected.
 
-An audit on a proven model, claude-opus-5-5, then checked every one of the 1,146 comments, range by range, each range by a checker that wrote none of it: 454 were wrong, 424 in a detail and 30 in their main claim, and all 454 were corrected, with 4 more comments that repeated a corrected belief. The commonest errors were writer and reader lists that named the routine whose label came before an instruction instead of the one it belonged to, or missed accesses made through an index; conditions read the wrong way round; and counts and distances off, among them part two's distances read at half their size.
+An audit on a proven model, claude-opus-5-5, then checked every one of the 1,146 comments, range by range, each range by a checker that wrote none of it: 454 were wrong, 424 in a detail and 30 in their main claim, and all 454 were corrected, with 4 more comments that repeated a corrected belief. The commonest errors were writer and reader lists that named the routine whose label came before an instruction instead of the one it belonged to, or missed accesses made through an index; conditions read the wrong way round; and counts and distances off, among them part two's distances read at half their size. A further checker then audited the 126 claims of this file against the corrected listing: 12 were wrong in a detail and were corrected, and 6 could not be checked from the bytes.
 
 ## Live tests
 
 - F3 on the attract screen started part two (the clock read 6:00 and the countryside was drawn), 1 November 2026, and again from the cassette, 13 November 2026.
 - F7 held the clock: tenths and seconds read the same twice, three seconds apart (1 November 2026).
-- F5 returned the machine to the attract-mode code at `$0594`.
+- F5 returned the machine to the attract mode (`$9561`); the processor was then in `$0586`'s routine at `$0594`, which the attract loop calls.
 - The joystick in port 2 moved Johnny in both parts (the walk and the menu both answered it).
 - Each of part two's fourteen events, started on the kit's machine model by setting the scroll column to one of its columns, drew the shapes and colours the Graphics tab shows (13 November 2026).
