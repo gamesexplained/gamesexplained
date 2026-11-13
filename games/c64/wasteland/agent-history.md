@@ -273,3 +273,48 @@ square_action_record found no record and the check returned at once.
 **Wrong turns.** The first count of the squares counted the words
 "difficulty" in the listing comments, which also say "at a difficulty
 above 0" for Dan's marker; counting pairs from the bytes fixed it.
+
+## 12 November 2026, the fights
+
+Aaron asked what Wasteland still held after Pool of Radiance's tabs, and
+chose six pull requests. This was the first: seven sections for the Dice
+and combat tab, each a fight the page runs on the game's own code.
+
+**The disks.** The four sides came from the Internet Archive's C64
+Preservation Project collection. The masters refuse to play ("make a
+copy"), and the side check was switched off in memory for the session
+(engine `$18B0`, `D0 12` to `EA EA`) rather than run the Copy utility.
+Nothing from that session is in the listings.
+
+**Live.** Two things were tried in VICE before any page was written.
+Twelve rounds against two Mutants with Thrasher unconscious: a
+checkpoint on member_takes_damage counted 25 calls, none for him. Then
+two parties on the world map, one walked 64 steps: the walkers healed 8
+points and the others 16. A random encounter interrupted the first walk
+at step 2, so the world map's chance byte (`$4C2F`) was set to 0 for the
+measurement.
+
+**The fights on the page.** The engine's, the game's and one map's
+listing laid over each other make a machine the game's fight code runs
+on. What it needed besides: the zero page a map load leaves (`$09`,
+`$91`, `$8D`, `$55`, `$56`, `$61/$62`, `$63`), a party table, and
+stand-ins for random_byte, the two routines that draw a glyph, and the
+ones that wait for a key. Hooking print_char (`$1DF8`) printed both
+halves of every his/her and singular/plural switch; the glyph sinks
+(`$1FEA`, `$1F86`) come after the switch and gave the text as the screen
+shows it.
+
+**The slip in the planner.** The patrol's Guards kept running from
+Rangers given 250 CON so that a fight would last. The listing said a
+humanoid line flees under a quarter of the party's CON. The plans fitted
+a half for one Guard and a quarter for two. A hook on the compare at
+`$86B2` showed why: X came back from `$8600` holding the line's count.
+The comment at `$8600` had already said the two routines share the byte.
+
+**Wrong turns.** The scan found nothing until `$8D`, the battle map, was
+set. Zeroing an encounter's line types did not remove its group; the
+game's own change to the square does. Counting blows on monsters by a
+hook on monster_takes_damage counted its retries on dead monsters; the
+text's lines are one a blow. A sweep of 179 rounds of gunfire in the
+Outer Sanctum never printed "a final shot" (message 34), so the page
+does not describe it.
