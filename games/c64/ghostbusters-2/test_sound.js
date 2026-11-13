@@ -110,3 +110,26 @@ for (let frame = 0; frame < 500; frame++) {
 const censorDigest = require('crypto').createHash('sha256').update(JSON.stringify(censorWrites)).digest('hex');
 assert.equal(censorDigest, vice.censor.writes_sha256_500, 'intro SID writes must match the captured sound driver');
 console.log('OK - Censor intro: 500 driver updates match the capture, first 30 match VICE');
+
+const jondiMatch = html.match(/<script id="jondi-sound-data" type="application\/json">([^<]+)<\/script>/);
+assert(jondiMatch, 'the player must include the Jondi intro sound data');
+const jondiData = JSON.parse(jondiMatch[1]);
+const jondiDriver = createCensorSound(jondiData, {CPU});
+jondiDriver.init(0);
+assert.deepStrictEqual(Array.from(jondiDriver.sid), vice.jondi.initial_sid);
+const jondiWrites = [];
+for (let frame = 0; frame < 500; frame++) {
+  jondiDriver.play();
+  jondiWrites.push(Array.from(jondiDriver.writes));
+  if (frame < vice.jondi.states.length) {
+    const state = vice.jondi.states[frame];
+    const actualSid = Array.from(jondiDriver.sid, (value, reg) => [3, 10, 17].includes(reg) ? value & 15 : value);
+    assert.deepStrictEqual(actualSid, state.sid, `Jondi update ${frame + 1}: VICE SID`);
+    const bytes = Buffer.from(vice.jondi.state_addresses.map(address => jondiDriver.mem[address]));
+    assert.equal(require('crypto').createHash('sha256').update(bytes).digest('hex'), state.state_sha256,
+      `Jondi update ${frame + 1}: VICE driver state`);
+  }
+}
+assert.equal(require('crypto').createHash('sha256').update(JSON.stringify(jondiWrites)).digest('hex'),
+  vice.jondi.writes_sha256_500, 'Jondi SID writes match the captured driver');
+console.log('OK - Jondi intro: 500 driver updates match the capture, first 30 match VICE');
