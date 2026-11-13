@@ -586,44 +586,14 @@
    "kind": "auto"
   },
   {
-   "address": 133,
-   "name": "zpp_85",
-   "type": "ZeroPagePointer",
-   "kind": "auto"
-  },
-  {
    "address": 145,
    "name": "zpa_91",
    "type": "ZeroPageAbsoluteAddress",
    "kind": "auto"
   },
   {
-   "address": 174,
-   "name": "zpa_AE",
-   "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
-  },
-  {
-   "address": 175,
-   "name": "zpa_AF",
-   "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
-  },
-  {
    "address": 189,
    "name": "zpa_BD",
-   "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
-  },
-  {
-   "address": 195,
-   "name": "zpa_C3",
-   "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
-  },
-  {
-   "address": 196,
-   "name": "zpa_C4",
    "type": "ZeroPageAbsoluteAddress",
    "kind": "auto"
   },
@@ -818,12 +788,6 @@
    "name": "loader_stack_address",
    "type": "Jump",
    "kind": "user"
-  },
-  {
-   "address": 281,
-   "name": "r_0119",
-   "type": "Return",
-   "kind": "auto"
   },
   {
    "address": 512,
@@ -7420,12 +7384,6 @@
    "kind": "user"
   },
   {
-   "address": 35616,
-   "name": "a_8B20",
-   "type": "AbsoluteAddress",
-   "kind": "auto"
-  },
-  {
    "address": 35839,
    "name": "part2_unknown_tables",
    "type": "UserDefined",
@@ -11937,22 +11895,22 @@
   {
    "address": 6,
    "type": "line",
-   "text": "Low byte of the pointer to the screen-map cell that the drawing routines are writing."
+   "text": "Low byte of the pointer into the screen map: build_screen and draw_part_two_screen write characters through it, and the colour fills ($0BB8, $1EC6, $2AD4) read the characters through it to look up their colours."
   },
   {
    "address": 7,
    "type": "line",
-   "text": "High byte of the pointer to the screen-map cell that the drawing routines are writing."
+   "text": "High byte of the pointer into the screen map: build_screen and draw_part_two_screen write characters through it, and the colour fills read the characters through it to look up their colours."
   },
   {
    "address": 8,
    "type": "line",
-   "text": "Low byte of the pointer to the screen-map column being written by the column writer."
+   "text": "Low byte of a pointer with two uses: the screen-map column that write_column_buffer writes (set to $C04F by draw_tile_column), and, in build_screen and draw_part_two_screen, the row of the room's tile map that they read tile numbers from."
   },
   {
    "address": 9,
    "type": "line",
-   "text": "High byte of the pointer to the screen-map column being written by the column writer."
+   "text": "High byte of a pointer with two uses: the screen-map column that write_column_buffer writes, and, in build_screen and draw_part_two_screen, the row of the room's tile map that they read tile numbers from."
   },
   {
    "address": 10,
@@ -11982,12 +11940,12 @@
   {
    "address": 32,
    "type": "line",
-   "text": "The stick direction as decoded from CIA1 port A: 0 for none, 1 to 10 for the eight directions and the two vertical ones; bit 4 holds the fire button in part one's read."
+   "text": "The stick direction as decoded from CIA1 port A by read_joystick through the table at $1A1B: bit 0 up, bit 1 down, bit 2 left, bit 3 right, so 0 is none and the eight directions are 1, 2, 4, 5, 6, 8, 9 and 10; bit 4 is the fire button, which part two masks off. While a jump is under way, jump_step overwrites it with the direction saved at take-off ($0300)."
   },
   {
    "address": 33,
    "type": "line",
-   "text": "The scroll direction: $01 for right, $FF for left, 0 for no scroll step wanted. The raster handler acts on it."
+   "text": "The scroll direction in part one: $01 when the screen content scrolls right (Johnny walking left), $FF when it scrolls left (walking right), 0 for no scroll step wanted; the raster tail at $078D acts on it. In part two it is only a request: part_two_walk_right_step increases it, and part_two_irq_panel runs scroll_sprites_step whenever it is non-zero and clears it."
   },
   {
    "address": 34,
@@ -12037,7 +11995,7 @@
   {
    "address": 98,
    "type": "line",
-   "text": "Attract mode: counts the raster lines of the colour bars."
+   "text": "Attract mode: counts the interrupts of the colour bars, one every two raster lines; after 24 colour_bar_irq hands over to the next handler."
   },
   {
    "address": 99,
@@ -12052,37 +12010,37 @@
   {
    "address": 133,
    "type": "line",
-   "text": "Data at $0085 (zpp_85): read by loader_stack_address."
+   "text": "Not used by the game: no instruction in its code reads or writes $0085-$008C. A cross-reference to loader_stack_address came from decoding the stack page at $0107 as code, where the bytes are only stack contents."
   },
   {
    "address": 145,
    "type": "line",
-   "text": "Data at $0091 (zpa_91): written by playfield_colour_fill, part_two_colour_fill."
+   "text": "Not used by the game: no instruction reads or writes $0091-$0098. The apparent writes at $0BD3, $0BE1, $2AF8 and $2B06 are the STA ($0E),Y opcode $91 inside the colour-fill loops, misread when the undocumented LAX ($06),Y before it is not decoded."
   },
   {
    "address": 174,
    "type": "line",
-   "text": "Data at $00AE (zpa_AE): written by loader_stack_address."
+   "text": "Not used by the game's code: no instruction reads or writes $00AE. A cross-reference to loader_stack_address came from decoding the stack page at $0107 as code, where the bytes are only stack contents."
   },
   {
    "address": 175,
    "type": "line",
-   "text": "Data at $00AF (zpa_AF): written by loader_stack_address."
+   "text": "Not used by the game's code: no instruction reads or writes $00AF-$00B6. A cross-reference to loader_stack_address came from decoding the stack page at $0107 as code, where the bytes are only stack contents."
   },
   {
    "address": 189,
    "type": "line",
-   "text": "Data at $00BD (zpa_BD): written by playfield_colour_fill, draw_picture_colours, part_two_colour_fill."
+   "text": "Not used by the game: no instruction reads or writes $00BD-$00C2. The apparent writes in the colour fills ($0BD0, $0BDE, $1EC9, $1ED7, $2AD7, $2AF5, $2B03) are the bytes $06 $BD of LAX ($06),Y followed by LDA table,X, misread when the undocumented LAX is not decoded."
   },
   {
    "address": 195,
    "type": "line",
-   "text": "Data at $00C3 (zpa_C3): read by loader_stack_address."
+   "text": "Not used by the game's code: no instruction reads or writes $00C3. A cross-reference to loader_stack_address came from decoding the stack page at $0107 as code, where the bytes are only stack contents."
   },
   {
    "address": 196,
    "type": "line",
-   "text": "Data at $00C4 (zpa_C4): read by loader_stack_address."
+   "text": "Not used by the game's code: no instruction reads or writes $00C4-$00CB. A cross-reference to loader_stack_address came from decoding the stack page at $0107 as code, where the bytes are only stack contents."
   },
   {
    "address": 224,
@@ -12147,27 +12105,27 @@
   {
    "address": 236,
    "type": "line",
-   "text": "Data at $00EC (zpf_EC): written by start_tune, voice3_pitch_reset_b; read by v1_play_note."
+   "text": "Voice 1's transposition: the number added to each note by v1_play_note ($A4C2, $A5AF). Set from the script by v1_cmd_set_transpose ($A011) and cleared by start_tune when the voice starts."
   },
   {
    "address": 237,
    "type": "line",
-   "text": "Data at $00ED (zpa_ED): written by v1_cmd_load_envelope, v2_cmd_set_transpose, v2_cmd_return; read by v2_play_note."
+   "text": "Voice 2's transposition: the number added to each note by v2_play_note ($A619, $A708). Set from the script by v2_cmd_set_transpose ($A1F9) and by the unlabelled voice 2 commands at $A156 and $A256, and cleared by start_tune when the voice starts."
   },
   {
    "address": 238,
    "type": "line",
-   "text": "Data at $00EE (zpa_EE): written by v2_cmd_set_sweep_byte, v3_copy14_source_high, v3_cmd_set_transpose; read by v3_play_note."
+   "text": "Voice 3's transposition: the number added to each note by v3_play_note ($A776, $A865). Set from the script by v3_cmd_set_transpose ($A3B4) and by the unlabelled voice 3 commands at $A281 and $A33D, and cleared by start_tune when the voice starts."
   },
   {
    "address": 239,
    "type": "line",
-   "text": "Data at $00EF (zpa_EF): written by v1_cmd_call, v1_cmd_load_envelope, v2_cmd_set_sweep_byte, v3_cmd_load_envelope and 4 more; read by v1_cmd_call, v1_cmd_load_envelope, v2_cmd_set_sweep_byte, v3_cmd_load_envelope and 4 more."
+   "text": "Scratch byte of the music driver, the low byte of a pointer with $F0: the address v1_cmd_call_machine jumps through (JMP ($00EF) at $A048), the source the load-envelope commands copy five bytes from ($A140, $A26B, $A3BD), and the table voice2_effects reads at $AAC5. The play-note routines of the three voices also keep the note index here across their call to reset_sweeps."
   },
   {
    "address": 240,
    "type": "line",
-   "text": "Data at $00F0 (zpa_F0): written by v1_cmd_call, v1_cmd_load_envelope, v2_cmd_set_sweep_byte, v3_cmd_load_envelope and 1 more."
+   "text": "High byte of the music driver's scratch pointer at $EF: written by v1_cmd_call_machine, the three load-envelope commands ($A140, $A26B, $A3BD) and voice2_effects, and read through by the same routines."
   },
   {
    "address": 241,
@@ -12237,12 +12195,12 @@
   {
    "address": 255,
    "type": "line",
-   "text": "The note byte being played, kept for the transposition test."
+   "text": "The script byte of the note being played, shared by the three voices' play-note routines: they test it again for $60 or more, which means the byte after it is the note's duration itself rather than an index into the duration table at $9DD5, and rebuild the transposed note from it as the start of the pitch sweep."
   },
   {
    "address": 263,
    "type": "line",
-   "text": "An address inside the resident loader's copy in the stack page, which the NMI path at $2B25 jumps to; the game's own stack has grown over most of the loader by the time play begins, so what is there is not reliable."
+   "text": "An address inside the copy of the loader in the stack page, which nmi_serial_exit jumps to at $2B4C. It is the operand byte of LDA $0C at $0106, so entered here the bytes read as the undocumented NOP $0229, BNE $0111, and both paths reach $0111. The game's stack (set at $0122 by boot_entry) overwrites $0111-$0122 during play, so the code from $0111 on is not the loader's any more."
   },
   {
    "address": 512,
@@ -12322,7 +12280,7 @@
   {
    "address": 527,
    "type": "line",
-   "text": "Walk step state: 0 standing, positive moving right through the walk animation, negative moving left."
+   "text": "Turn in progress: 0 when Johnny faces the way he wants; 1 while he turns with his facing frame $02EE counting down, $FF while it counts up. mode_walk sets it at $1A97 and $1ACB and clears it at $1B00 when the turn ends, copying the wanted facing $0297 to $0296; part_two_walk uses it the same way."
   },
   {
    "address": 528,
@@ -12337,12 +12295,12 @@
   {
    "address": 530,
    "type": "line",
-   "text": "The decoy has been built; part one is complete."
+   "text": "Set to 1 by check_laser_pickup the first time the object entry at $15A8 reads $F8 (the object has been taken). Once it is set, check_countdown counts four minutes towards sending a guard, the timed event can fire, input_terminal_a sends no guard with the alarm, and main_loop_scroll_check runs the end-of-part decoy check."
   },
   {
    "address": 531,
    "type": "line",
-   "text": "Enemy robot walk state: 0 stopped, 1 going forward, $FF going back."
+   "text": "Enemy robot turn state: 0 while it walks (direction in $0214), 1 while it turns with its frame $02F9 counting down, $FF while the frame counts up; enemy_walk sets it back to 0 at $2169 when the turn is done."
   },
   {
    "address": 532,
@@ -12357,12 +12315,12 @@
   {
    "address": 534,
    "type": "line",
-   "text": "Enemy robot step timer, counting down from 6."
+   "text": "Enemy robot turn timer: reset_enemy_timer sets it to 6, and enemy_walk counts it down while the robot turns, showing the next turning frame each time it runs out."
   },
   {
    "address": 535,
    "type": "line",
-   "text": "Data at $0217 (a_0217): written by pause_check; read by irq_band_panel_mid."
+   "text": "The game is paused: pause_check sets it to 1 when F7 pauses the game ($21F0) and clears it on resume ($220C); while it is set irq_frame_bottom ($07C8) skips the clock update."
   },
   {
    "address": 536,
@@ -12447,7 +12405,7 @@
   {
    "address": 553,
    "type": "line",
-   "text": "Data at $0229 (a_0229): written by spawn_event_6, actor_0229_update, actor_022B_group_update, spawn_group_member; read by actor_0229_update, run_actors, check_exit_blocked."
+   "text": "Data at $0229 (a_0229): written by spawn_event_6 and actor_0229_update; read by actor_0229_update, run_actors and check_exit_blocked."
   },
   {
    "address": 554,
@@ -12457,17 +12415,17 @@
   {
    "address": 555,
    "type": "line",
-   "text": "Data at $022B (a_022B): read by actor_022B_group_update, run_actors, end_sequence_wait."
+   "text": "First of five bytes, $022B-$022F, one for each sprite slot 2 to 6 of the ending sequence's group: written by spawn_group_member ($30A4) and actor_022B_group_update ($3074) through $0229,X; read by run_actors ($37B1, which runs the group update when any of the five is set), actor_022B_group_update and end_sequence_wait."
   },
   {
    "address": 557,
    "type": "line",
-   "text": "Data at $022D (a_022D): read by actor_022B_group_update."
+   "text": "The group members in sprite slots 4 and 5 (part of $022B-$022F): written by spawn_group_member and actor_022B_group_update through $0229,X; read by run_actors through $022B,X, and actor_022B_group_update tests $022D to see whether the second pair has started."
   },
   {
    "address": 559,
    "type": "line",
-   "text": "Data at $022F (a_022F): read by actor_022B_group_update."
+   "text": "The group member in sprite slot 6, last of $022B-$022F: written by spawn_group_member and actor_022B_group_update through $0229,X; read by run_actors through $022B,X, and actor_022B_group_update tests it first to see whether the whole group has started."
   },
   {
    "address": 560,
@@ -12572,12 +12530,12 @@
   {
    "address": 582,
    "type": "line",
-   "text": "The attract mode's current screen: 0 the credits, 2 the picture."
+   "text": "The attract mode's current screen: 0 the credits (attract_screen_setup), 1 the high-score table (draw_high_score_table), 2 the picture (attract_bitmap_show); attract_mode doubles it to pick the next step."
   },
   {
    "address": 583,
    "type": "line",
-   "text": "Data at $0247 (a_0247): written by part_two_irq_lower_band, scroll_sprites_step; read by part_two_irq_lower_band."
+   "text": "Part two: scenery scroll steps waiting. scroll_sprites_step adds $80 to $0248 on each call and increases this byte on each carry (every second call); part_two_irq_lower_band runs part_two_scroll_rows_irq and decreases it while it is non-zero."
   },
   {
    "address": 584,
@@ -12602,17 +12560,17 @@
   {
    "address": 588,
    "type": "line",
-   "text": "Data at $024C (a_024C): written by part_two_start, part_two_walk_left_step, part_two_walk_right_step, actor_0230_update and 2 more; read by actor_0230_update, look_up_ground_row."
+   "text": "Slot 1 of the X-position table at $024B (the second sprite of Johnny's pair in part two): the sprite-slot routines (alloc_sprite_slot, move_sprite_slot, scroll_sprite_slots, slot_x_position, slots_to_vic, the spawn routines and start_laser_shot) read and write it through $024B,X; part_two_start, part_two_walk_left_step, part_two_walk_right_step, end_sequence_wait and attract_sprites write it directly, and look_up_ground_row reads it."
   },
   {
    "address": 589,
    "type": "line",
-   "text": "Data at $024D (a_024D): written by attract_sprites."
+   "text": "Slot 2 of the X-position table at $024B: the sprite-slot routines (alloc_sprite_slot, move_sprite_slot, scroll_sprite_slots, slot_x_position, slots_to_vic, the spawn routines and start_laser_shot) read and write it through $024B,X; attract_sprites also writes it directly."
   },
   {
    "address": 590,
    "type": "line",
-   "text": "Data at $024E (a_024E): written by attract_sprites; read by spawn_actor_0236."
+   "text": "Slots 3 to 7 of the X-position table at $024B: the sprite-slot routines (alloc_sprite_slot, move_sprite_slot, scroll_sprite_slots, slot_x_position, slots_to_vic, the spawn routines and start_laser_shot) read and write it through $024B,X; attract_sprites also writes $024E directly and spawn_actor_0236 reads it."
   },
   {
    "address": 595,
@@ -12622,17 +12580,17 @@
   {
    "address": 596,
    "type": "line",
-   "text": "Data at $0254 (a_0254): written by part_two_start, attract_sprites; read by actor_0223_update, actor_0225_update, actor_0227_update, actor_0226_update and 4 more."
+   "text": "Slot 1 of the Y-position table at $0253 (the second sprite of Johnny's pair in part two): the sprite-slot routines (alloc_sprite_slot, move_sprite_slot, scroll_sprite_slots, slots_to_vic, update_shots and the spawn routines) read and write it through $0253,X; part_two_start and attract_sprites write it directly, and the actor updates, ground_type_under_player and look_up_ground_row read it to compare heights."
   },
   {
    "address": 597,
    "type": "line",
-   "text": "Data at $0255 (a_0255): written by attract_sprites."
+   "text": "Slot 2 of the Y-position table at $0253: the sprite-slot routines (alloc_sprite_slot, move_sprite_slot, scroll_sprite_slots, slots_to_vic, update_shots and the spawn routines) read and write it through $0253,X; attract_sprites also writes it directly."
   },
   {
    "address": 598,
    "type": "line",
-   "text": "Data at $0256 (a_0256): written by attract_sprites; read by spawn_actor_0236."
+   "text": "Slots 3 to 7 of the Y-position table at $0253: the sprite-slot routines (alloc_sprite_slot, move_sprite_slot, scroll_sprite_slots, slots_to_vic, update_shots and the spawn routines) read and write it through $0253,X; attract_sprites also writes $0256 directly and spawn_actor_0236 reads it."
   },
   {
    "address": 603,
@@ -12642,17 +12600,17 @@
   {
    "address": 604,
    "type": "line",
-   "text": "Data at $025C (a_025C): written by part_two_start, end_sequence_wait."
+   "text": "Slot 1 of the active-flag table at $025B: the sprite-slot routines (alloc_sprite_slot, move_sprite_slot, scroll_sprite_slots, slots_to_vic, free_slot_if_off_screen, slot_animations and update_shots) read and write it through $025B,X; part_two_start and end_sequence_wait also write it directly."
   },
   {
    "address": 605,
    "type": "line",
-   "text": "Data at $025D (f_025D): written by intro_sequence; read by chase_trigger."
+   "text": "Slot 2 of the active-flag table at $025B: the sprite-slot routines (alloc_sprite_slot, move_sprite_slot, scroll_sprite_slots, slots_to_vic, free_slot_if_off_screen, slot_animations and update_shots) read and write it through $025B,X; intro_sequence also writes it directly, and chase_trigger counts the active slots 2 to 7 from here ($3BD0)."
   },
   {
    "address": 606,
    "type": "line",
-   "text": "Data at $025E (a_025E): written by intro_sequence."
+   "text": "Slots 3 to 7 of the active-flag table at $025B: the sprite-slot routines (alloc_sprite_slot, move_sprite_slot, scroll_sprite_slots, slots_to_vic, free_slot_if_off_screen, slot_animations and update_shots) read and write it through $025B,X; intro_sequence also writes $025E directly, and chase_trigger reads them through $025D,X."
   },
   {
    "address": 611,
@@ -12662,17 +12620,17 @@
   {
    "address": 612,
    "type": "line",
-   "text": "Data at $0264 (a_0264): written by part_two_start, end_sequence_wait, attract_sprites."
+   "text": "Slot 1 of the table of X-position ninth bits at $0263: the sprite-slot routines (alloc_sprite_slot, move_sprite_slot, free_slot_if_off_screen, slot_x_position and slots_to_vic) read and write it through $0263,X; part_two_start, end_sequence_wait and attract_sprites also write it directly."
   },
   {
    "address": 613,
    "type": "line",
-   "text": "Data at $0265 (a_0265): written by attract_sprites."
+   "text": "Slot 2 of the table of X-position ninth bits at $0263: the sprite-slot routines (alloc_sprite_slot, move_sprite_slot, free_slot_if_off_screen, slot_x_position and slots_to_vic) read and write it through $0263,X; attract_sprites also writes it directly."
   },
   {
    "address": 614,
    "type": "line",
-   "text": "Data at $0266 (a_0266): written by attract_sprites."
+   "text": "Slots 3 to 7 of the table of X-position ninth bits at $0263: the sprite-slot routines (alloc_sprite_slot, move_sprite_slot, free_slot_if_off_screen, slot_x_position and slots_to_vic) read and write it through $0263,X; attract_sprites also writes $0266 directly."
   },
   {
    "address": 619,
@@ -12732,7 +12690,7 @@
   {
    "address": 665,
    "type": "line",
-   "text": "Part one puzzle flags: bit 0 logged on, bit 1 link made, bit 2 alarm override, bit 3 sprinkler off."
+   "text": "Part one puzzle flags, starting at $0C: bit 0 logged on, bit 1 link made (both cleared after each alarm or sprinkler change), bit 2 set while the general alarm is armed (cleared to override it), bit 3 set while the sprinkler system is on (cleared to switch it off)."
   },
   {
    "address": 666,
@@ -12747,7 +12705,7 @@
   {
    "address": 668,
    "type": "line",
-   "text": "The video memory register value of the panel band."
+   "text": "The video memory register value ($D018) of the playfield band: irq_frame_bottom writes it at line $F3 for the top of the next frame, while irq_panel_band sets a fixed $06 for the panel at line $A3. draw_picture_screen sets it to $04 while it draws and $06 after."
   },
   {
    "address": 669,
@@ -12827,7 +12785,7 @@
   {
    "address": 685,
    "type": "line",
-   "text": "Scroll phase: the character within the tile at the left of the screen, 0 to 3."
+   "text": "Scroll phase: the character column, 0 to 3, within the tile at the left of the screen. playfield_colour_fill sets it to $FF after a full redraw, and refill_edge_column also leaves $FF when it steps back past 0; the next step left turns $FF into 3 of the previous tile column ($0A6B)."
   },
   {
    "address": 686,
@@ -12857,7 +12815,7 @@
   {
    "address": 702,
    "type": "line",
-   "text": "Set to 1 by the top raster handler every frame; the main loop only does a full pass when it is set, and clears it at the start of the pass."
+   "text": "Set to 1 once a frame by irq_panel_band, part one's raster handler at line $A3; main_loop_frame does a full pass only when it is set and clears it at the start of the pass, and walk_off_screen waits on it and decrements it."
   },
   {
    "address": 703,
@@ -12892,7 +12850,7 @@
   {
    "address": 709,
    "type": "line",
-   "text": "Data at $02C5 (f_02C5): read by message_dequeue."
+   "text": "The rest of the message queue that starts at $02C4: message_enqueue stores new message numbers here through $02C4,X, and message_dequeue moves each entry down one place when a message ends."
   },
   {
    "address": 720,
@@ -12947,7 +12905,7 @@
   {
    "address": 736,
    "type": "line",
-   "text": "Data at $02E0 (f_02E0): written by mode_search_finish, mode_hide_do, input_lock_check; read by mode_hide_do, mode_describe_do, input_lock_check."
+   "text": "The rest of the inventory that starts at $02DF: $02E0 is the description index of the first held object, and $02E1-$02E6 the object number and description index of the second to fourth. mode_search_finish writes a pair when an object is taken, mode_hide_do and input_lock_check move the last pair into a removed one, and the menus, action_laser, action_jump and check_decoy_parts read it through $02DF,X or $02E0,X."
   },
   {
    "address": 743,
@@ -12987,7 +12945,7 @@
   {
    "address": 750,
    "type": "line",
-   "text": "Johnny's walk frame number."
+   "text": "Johnny's facing frame, 0 to 7: mode_walk loads it from walk_frame_tables when a turn starts and steps it down or up by one, wrapping, at each step of the turn, showing it through set_walk_frame_pointers (the eight facings at $1C60). The frame of the walk cycle is $0303."
   },
   {
    "address": 751,
@@ -13022,7 +12980,7 @@
   {
    "address": 757,
    "type": "line",
-   "text": "Data at $02F5 (a_02F5): written by draw_panel, draw_picture_screen."
+   "text": "The length of the second page of a colour fill: draw_panel stores $90 and draw_picture_screen $E0, and draw_picture_colours stops its second page at this count (CPY $02F5 at $1EDE)."
   },
   {
    "address": 758,
@@ -13037,7 +12995,7 @@
   {
    "address": 760,
    "type": "line",
-   "text": "Data at $02F8 (a_02F8): written by timed_event."
+   "text": "Countdown of timed_event: while bit 3 of $0299 and the flag $0212 are set and fewer than four messages wait, each call decrements it ($204D), and when it reaches zero the game ends through idle_drain_loop. Nothing else writes it, so it starts from the 0 that boot_entry leaves and first lasts 256 calls."
   },
   {
    "address": 761,
@@ -13142,7 +13100,7 @@
   {
    "address": 781,
    "type": "line",
-   "text": "Data at $030D (a_030D): written by maybe_stop_walk, look_up_ground_row."
+   "text": "Countdown before Johnny sinks: look_up_ground_row sets it to 2, and the ground handlers at $38DC and $38EA (in maybe_stop_walk) decrement it while no jump path is active, starting sinking_animation when it reaches zero."
   },
   {
    "address": 782,
@@ -13162,7 +13120,7 @@
   {
    "address": 785,
    "type": "line",
-   "text": "Attract mode counter that rotates the colour table every sixth tick."
+   "text": "Attract mode tick counter that times the rotation of the colour table: attract_irq_handler_d rotates it every sixth tick, and on the colour-bar screen the frame handler at $3D2E counts to 4 and rotates it on every second wrap (every eighth tick, with $0312)."
   },
   {
    "address": 786,
@@ -13187,7 +13145,7 @@
   {
    "address": 790,
    "type": "line",
-   "text": "Counter of the ending sequence's repeats."
+   "text": "Step counter of sinking_animation: set to 22 at the start and decremented once per step, each step draining the energy bar."
   },
   {
    "address": 791,
@@ -13207,7 +13165,7 @@
   {
    "address": 795,
    "type": "line",
-   "text": "Music speed flag: when set, the sound timer runs the music four times as often."
+   "text": "Music speed flag of part two: part_two_start sets it and part_two_main_loop clears it at the energy-out ending. While it is set, sound_timer_loop (called from part two's raster handler at $2843) runs sound_timer_step four times, each adding $B0 to $031A and running the music on a carry, so about 2.75 music ticks per call; while it is clear the music runs once per call."
   },
   {
    "address": 937,
