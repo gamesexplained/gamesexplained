@@ -7,35 +7,53 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "A widget that runs a mechanic is a claim too": the test of the page's music player ran the game's driver to the end of the second tune's data, where it ran on into the scenery after 1,082 ticks; `facts.md` had called that voice whole, from a parser of the data that sized two commands wrong, and it now says the voice is cut at `$0AFF`.
+- `60-verify`: "A control reading zero means the": the checkpoint on `update_sound` that counted 0 in 6,000 frames stood in one batch with `irq_top` at 5,998 and `start_sound` at 66, so "the sound effects' second half never runs" went on the Discoveries page as a count, not as a breakpoint that might have been dead.
+- `50-coverage`: "without the search, leave the claim out": the readers of `level` came from `opcodes.py --refs`, every one a list, a colour, a name or a headline, which is what lets the Levels page say that the helicopters, the soldiers and the vehicles behave the same on the twentieth level as on the first.
+- `60-verify`: "Prove reachability with inputs, not pokes": the hidden names were looked for in an unattended demonstration before being forced; twelve minutes in warp mode brought down one building of the eighteen levels it would take, so the page says the message is hard to reach by playing and that its picture comes from setting the level by hand.
+- `tool-regen2000`: "Code that indexes into I/O mints symbols in the RAM beneath": the symbols `STA $D800,X` left at `$D800`-`$DBC0` sat on sprite shapes kept under the I/O area; they were cleared and the 64 shapes labelled as shapes.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+None. Nothing this run met went wrong without showing itself and was
+left uncovered by a rule or a script the kit already has.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+A colour read off a small screenshot was wrong three times: rows of the
+play screen taken for blue where they are black, and the site palette's
+dark blue (`#2e2c9b`) taken for black, twice, in an image viewer. Two of
+them reached a draft of the Levels page ("the border is dark grey", "the
+weak road is unmarked") before the pixels' values, the border register
+and the drawing code said otherwise. No other game's notes show the same
+slip, so it stays here. The skill would say, in `70-minisite` where a
+page describes what a picture shows: take a colour from the register or
+the table that sets it, or from a pixel's value, never from how a
+screenshot looks at a small size.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+No gap in the kit cost this run more than a few minutes; the one change
+that would have saved the most is `kit/c64/loads.py` stopping at the
+KERNAL's load routine itself (`$F4A5`) as well as at `$FFD5`, since this
+disk's loader calls it there and the tool reported no loads, which left
+the files' order and addresses to be read out of the loader's code.
+
+## Operating system and tools
+
+Linux x86_64 (Ubuntu 24.04) in a cloud container with no display; VICE
+3.14.0 (`v3.14.0-linux-x86_64-gui.zip`) under the kit's launcher, with
+the libraries it needs unpacked into `tools/vice-libs` as
+`kit/c64/INSTALL.md` says, 57 of 57 of `check-emulator`'s checks passed;
+regenerator2000 0.9.20. Nothing to add to the install notes.
+
+The disk's protection passes on some boots only in VICE, as it does for
+`games/c64/ik-plus`, whose `orientation.md` this run found the recipe
+in. The failure shows itself (the machine resets to `READY.`), so it is
+written in `orientation.md` and `agent-history.md` and not in a skill.
+`agent-history.md`, "What will not behave", lists the other things that
+stopped and said so.

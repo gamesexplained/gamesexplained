@@ -15,8 +15,17 @@ Activision's European disk of 1987, as a G64 bit image
 (`$E000`-`$F5FF`) and the second half of the last loader stage, the music
 driver at `$0200`-`$03FF`. Nothing is loaded once the game runs.
 
-The program carries no version number and no credit. The newspaper
-screen's bottom line reads `PRESS FIRE TO JOIN THE ACTION`.
+The program in memory carries no version number and no credit. The
+second loading picture (`PART6`, which the game's data then loads over)
+reads `CREATED ON THE 64 BY: M.ARCHER D.JOLLIFF M.JONES D.WAINWRIGHT OF
+CATALYST CODERS` and `A SOFTWARE STUDIOS PRODUCTION` (drawn from the
+file's bytes on `graphics.html`). A comment signed David Jolliff under
+Games That Weren't's page on another, unfinished Rampage (`features.md`,
+sources) gives the first names and the jobs: "C64 Rampage was created by
+Michael Archer and myself (David Jolliff) with Mark Jones creating the
+graphics", as "part of the Catalyst Coders team under contract with
+Activision". It does not say what D. Wainwright did. The newspaper screen's bottom line
+reads `PRESS FIRE TO JOIN THE ACTION`.
 
 ## Memory layout
 
@@ -226,7 +235,8 @@ the next level. `game_start` runs again for every level.
 - `draw_rubble` (`$B2DF`) sets the screen's fine scroll to a random 0-7
   on each pass a building has no strength, which shakes the city, and
   nothing sets it back until the next level. *Live:* `$D016` read `$D8`
-  before any building fell, `$DB` and `$DF` after one had.
+  before any building fell, `$DB` and `$DF` after one had. The number
+  comes from `random` (`$993D`: the seed times 5, plus 21).
 
 **Window things.** `spawn_window_thing` (`$A0CF`) puts one thing a pass
 at a place taken from a counter; it stays only where a punch has opened
@@ -239,8 +249,11 @@ Eating any of them does the same thing: the chewing animation.
 on a diagonal (`heli_fire`, `$9E26`); B never does. A punch near one
 sends it down path 8, the explosion.
 
+- Path 8 is three moves, kinds 8, 9 and 10: shapes `$C0`, `$C1` and
+  `$C2`, for 10, 11 and 11 frames. The sprite data holds four explosion
+  shapes, `$C0`-`$C3`; `$C4` and `$C5` are blank.
 - The explosion's shapes have the rotor's frame added like any other
-  shape. *Live:* an exploding helicopter showed shapes `C1 C2 C2 C3 C3
+  shape, so `$C3` is seen only through that sum. *Live:* an exploding helicopter showed shapes `C1 C2 C2 C3 C3
   C2 C2 C1 C1 C0`, then `C0 C2 C2 C3 C3 C4 C4 C3 C3 C2 C2`, then `C2 C2
   C3 C3 C4 C4 C5 C5 C4 C4 C3 C3`; `$C4` and `$C5` are blank.
 
@@ -259,6 +272,15 @@ with down and fire wrecks a car or a tank and makes a tram drive faster
 **The weak road.** On levels 3, 11 and 19 (`level_init` gives the road to levels where `level` + 1 has bit 2 set, and `weak_road` does nothing on the second scenery) a stretch
 of street, X `$2C`-`$43`, gives way when a falling monster lands on it
 (`weak_road`, `$9858`). A monster in the hole is hurt every step.
+
+- The stretch is drawn as a patch of bricks, eight characters wide, at
+  columns 10-17 of rows 23 and 24. `weak_road_state` (`$9082`) is 4 on a
+  level without the road and 3 while the patch is whole. A monster in
+  state 12 (falling) with Y at `$AA` or more and X in `$2C`-`$43` starts
+  it breaking: the stage drops by one on every fourth pass, 3 to 2 to 1
+  to 0, each with effect 0, and at 0 the patch is a hole of water.
+  Checked by running `weak_road` and the drawing code on the page's
+  processor (`test_city.js`).
 
 **Demo.** With no player joined, `demo_mode` is 1: the computer plays
 all three, nothing loses energy, a fire button returns to the title.
@@ -319,6 +341,14 @@ number set use the second scenery (`draw_scenery_alt`, `$9746`).
 The tables have entries for levels 20 and 21, both a single building,
 which `end_of_pass` never lets the level number reach.
 
+`level` (`$9083`) is read for the level's lists, the scenery, the weak
+road, the border colour (`border_colours`, `$90DD`: black when the
+number, counted from 0, is even and blue when it is odd), the hidden names, a patch of the
+character set (`scenery_chars`, `$9CA6`), the headline and the newspaper screen, and for
+nothing else (the references search: no other instruction reads it).
+Nothing about the helicopters, the people, the vehicles or the
+buildings' strengths changes with the level.
+
 **Headlines** (`headline_lo`, `headline_hi`): `READY FOR ACTION` for a
 player not joined; `...CURED.... GO BACK TO NORMAL LIFE` for one who is
 out; for one playing, one of eight by (strip + level) EOR 3 AND 7:
@@ -333,6 +363,19 @@ out; for one playing, one of eight by (strip + level) EOR 3 AND 7:
 | 5 | WOMAN FINDS LAKE TO BE RADIOACTIVE. |
 | 6 | UNUSUAL FOOD ADDITIVE MAY BE RECALLED |
 | 7 | SUSPECTED.. POLLUTION OF WATER SUPPLY |
+
+**The newspaper's pictures.** Each strip of the newspaper screen is five
+squares from `newspaper_pictures` (`$B1AD`: `00 0C 0C 0D 02`, `04 0C 0C
+0D 06`, `08 0C 0C 0D 0A`); the game-over screen takes its from
+`gameover_pictures` (`$B1BC`, ten of picture 0 and then `$0F`-`$13`).
+The ends of a strip are replaced from `character_pictures` (1, 5, 9) for
+a monster not joined and `playing_pictures` (3, 7, 11) for one that is.
+Picture `$0E` of the twenty at `$7000` is in none of the lists.
+
+**Names.** The status lines show six characters of a name. The names
+are padded with character `$01`, which is blank like `$51`. The third of
+the hidden names is `YOU` followed by three blanks and `PR`, so the six
+shown are `YOU` and blanks.
 
 **Text nothing prints:** `MISS YOU` and `CUDDLE WHUMP FLUMP DUNKS`
 (`unused_text`), `THEN PRESS FIRE` (`unused_then_fire`), `ONE`, `TWO`,
@@ -359,6 +402,8 @@ one, and two buildings whose codes are all in their ruined forms.
   line is taken from its first byte. The two differ only in frames `$18`
   and `$19` facing left, the raised fist, which loses one byte of its
   second line.
+- `irq_top` holds twenty `NOP`s (`irq_top_gap`, `$7953`), where something was taken
+  out of the once-a-frame handler.
 - `damage_code` gives roof ends the values `$88`, `$89` and `$8A`, and
   `damage_building` keeps only the low three bits, so they become blocks
   `$54`, `$55` and `$56`, pieces of wall and window, where `$5C`, `$5D`
@@ -410,6 +455,11 @@ filter and end it on time, is never called, so each effect is a single
 burst that dies by its own envelope. *Live:* no run of it in 6,000
 frames of play, in which `start_sound` ran 66 times. Effects 3 and 4 are
 never started.
+
+Run from the frame after an effect starts, `update_sound` would end the
+five effects after 1, 4, 2, 3 and 3 calls of itself (`sfx_time`), and 50
+frames later the voice is silent. How often the game meant to call it is
+unknown: nothing calls it.
 
 ## The listing's error rate
 

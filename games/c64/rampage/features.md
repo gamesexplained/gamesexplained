@@ -18,6 +18,10 @@ Sources:
 - Wikipedia, "Rampage (1986 video game)",
   <https://en.wikipedia.org/wiki/Rampage_(1986_video_game)>, read 13
   November 2026, for the arcade game this one converts
+- Games That Weren't, "Rampage V1",
+  <https://gamesthatwerent.com/gtw64/rampage-v1>, read 13 November 2026,
+  for a reader's comment signed David Jolliff (11 September 2014) on who
+  made the released game
 
 ## Features
 
