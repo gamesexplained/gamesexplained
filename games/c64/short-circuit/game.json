@@ -8,8 +8,8 @@
   "developer": "Ocean Software",
   "title_image": "reference/title-credits.png",
   "build": "TAP of the original Ocean cassette (643,155 bytes): a 701-byte boot program in the KERNAL's format, then Ocean's turbo loader reading 275 pages of 256 bytes: the loading tune, the loading picture and the whole of memory from $0400 to $FFFF, which holds both parts of the game",
-  "tier": "bronze",
-  "coverage_percent": null,
+  "tier": "silver",
+  "coverage_percent": 100.0,
   "copy": "agent-draft",
   "steward": "",
   "credits": [
@@ -27,11 +27,11 @@
     }
   ],
   "tools": {
-    "host": "macOS arm64 (Apple silicon)",
-    "emulator": "release v3.14.0, v3.14.0-macos-arm64-gui.dmg",
+    "host": "Bronze run: macOS arm64 (Apple silicon). Silver run: Linux x86_64 (WSL2) on Windows 11 Pro 10.0.26200, Ubuntu, Intel x86_64",
+    "emulator": "Bronze run: release v3.14.0, v3.14.0-macos-arm64-gui.dmg. Silver run: own build of github.com/barryw/vice-mcp, release v3.13.2, commit 1e83aab134, driven through kit/c64/vice.py",
     "disassembler": "regenerator2000 0.9.20",
-    "publication": "Python 3; symbols_export.py and listing.py",
-    "subagents": "none: one agent throughout"
+    "publication": "Python 3 and node 24; tap.py, media.py, symbols_export.py, listing.py, frame.py and build.py",
+    "subagents": "Bronze run: none. Silver run: seven audit checkers and one sample checker, one at a time, all on claude-opus-5-5"
   },
   "model": "claude-sonnet-5-5",
   "step_models": {
@@ -39,7 +39,17 @@
       "claude-sonnet-5-5"
     ],
     "60-verify": [
+      "claude-opus-5-5",
       "claude-sonnet-5-5"
+    ],
+    "12-media": [
+      "claude-opus-5-5"
+    ],
+    "70-minisite": [
+      "claude-opus-5-5"
+    ],
+    "80-retro": [
+      "claude-opus-5-5"
     ]
   },
   "accuracy": [
@@ -78,9 +88,32 @@
         "claude-sonnet-5-5"
       ],
       "note": "28 comments of code routines drawn at random and read against their code by the model that wrote them, not by another: 5 were wrong in a detail (a label taken for a mid-instruction operand of a BIT skip, a missing step in a menu, a loose description of two routines, voice 3's command table one word off); all 5 fixed, and the false symbols of the same kind ($03A9, $05A9, $07A9) corrected"
+    },
+    {
+      "step": "audit",
+      "checked": 1146,
+      "of": 1146,
+      "fixed": 458,
+      "by": "Nico-van-der-Zijden",
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "note": "six address ranges, each by a fresh checker: 454 comments wrong (424 in a detail, 30 in their main claim), all corrected, with 4 that repeated a corrected belief; and every claim in facts.md, 126, of which 12 were corrected"
+    },
+    {
+      "step": "sample",
+      "size": 60,
+      "wrong": 10,
+      "fixed": 10,
+      "seed": 51113,
+      "by": "Nico-van-der-Zijden",
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "note": "checked by a checker that took no part in writing or auditing; 5 of the 10 were writer lists that left out the zeroing at start-up and reset, corrected in all 73 such lists; 105 comments corrected in all, the 10 with them"
     }
   ],
-  "kit_version": "0.0.256",
+  "kit_version": "0.0.339",
   "created": "2026-11-01",
   "video": {
     "screen": "$C000",
