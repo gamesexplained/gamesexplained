@@ -1,0 +1,47 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/hunter-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Secrets, quirks and oddities found in the program: an inverted stick, a plane that cannot move sideways, a tune that stops, and what the cracker added.</p>
+</header>
+<main class="wrap">
+<section id="stick">
+  <p class="fig">01 · Quirk</p>
+  <h2 class="t">Quirk: pushing the stick up dives</h2>
+  <p>The documents on the disk say nothing about which way the stick turns the plane. The code does: up lowers the nose and down raises it, as in a flight simulator. <code>$193C</code> sets the climb rate <code>$37</code> to <code>$FF</code> for up, and <code>$1990</code> adds it to the plane's vertical sprite position <code>$8061</code>, where a bigger number is lower on the screen. Arcade games usually map up to up. The <a href="controls.html#stick">Controls tab</a> has the test.</p>
+</section>
+
+<section id="sideways">
+  <p class="fig">02 · Quirk</p>
+  <h2 class="t">Quirk: the plane's sideways position never changes</h2>
+  <p>In the live test, left and right changed the scroll speed <code>$22</code> and nothing else. The plane's sprite x position <code>$8060</code> held its value <code>$A0</code> in every test. A search for instructions that can touch that address finds only reads of it (the interrupt's copy to the chip at <code>$13C1</code>), and the routine that moves the plane, <code>$1990</code>, writes only the vertical position. What looks like banking left and right is the landscape and the targets sliding the other way (<code>$2220</code> moves every object by <code>$22</code>).</p>
+</section>
+
+<section id="music">
+  <p class="fig">03 · Secret</p>
+  <h2 class="t">Secret: Rob Hubbard's tune plays on the title screen and stops when play starts</h2>
+  <p>The music driver at <code>$A000</code> installs itself as the game's interrupt. At the start of each life <code>$14F0</code> calls it, and it sets the interrupt vector <code>$0314</code> to <code>$AE03</code> and starts a timer that fires every 18,433 cycles, which is 53.45 times a second on a PAL machine (<code>$ADD0</code>). That interrupt calls <code>$A006</code>, the player. Pressing fire starts the game proper, and <code>$1370</code> then points the vector at the game's raster interrupt, <code>$13AB</code>, which does not call the player. In the test, the vector read <code>$AE03</code> on the title screen and <code>$13AB</code> three seconds into play. The sound in play is the game's own effects, written to the sound chip by routines such as <code>$2580</code> (the engine note) and <code>$2400</code> (the crash).</p>
+  <p>ZZAP!64 gave the sound 87 % and called the tune a "very good military tune, but gets monotonous".<sup class="fn"><a href="about.html#src-3" title="GameBase64 page, with the ZZAP!64 review">3</a></sup></p>
+</section>
+
+<section id="rating">
+  <p class="fig">04 · Quirk</p>
+  <h2 class="t">Quirk: a target that is only scratched still earns the extra plane</h2>
+  <p>After the strafing runs, the program gives an extra life and the next level once the target has taken 16 hits, the lowest threshold of the three damage messages (<code>$2EA1</code>). The message for that rating is "TARGET PARTIALLY DAMAGED". Destroying the target outright, at 64 hits, earns the same extra life and the same level, so the three better results pay alike.</p>
+</section>
+
+<section id="cracker">
+  <p class="fig">05 · Secret</p>
+  <h2 class="t">Secret: the disk opens with the cracker's notes, not the game</h2>
+  <p>The crack by Remember starts with a scrolling intro and a set of text pages, "Documents to Hunter Patrol", typed by the cracker. Their last page names the cracker's work: "Cracked, Trained, Hi-saver installed and Documents typed by Jack Alien", with "Original supplied by Derbyshire Ram".</p>
+  <figure class="overview-shot"><img src="reference/documents.png" width="384" height="272" alt="The last page of the documents: controls, credits and the cracker's credits"><figcaption>The documents' last page. The game's own credit is one line, "Game written by Steve Lee"; the rest is the cracker's.</figcaption></figure>
+  <p>After the documents come the loading picture and a menu: "[H]ighscore or [T]rainers ??". The first choice then asks whether to load or reset the high-score list; the analysis here chose H and then R, with no trainer. The trainer choices were not examined. The high-score list is saved by the cracker's code, which loads and saves the file <code>H.PATROL HI /REM</code> at <code>$0C00</code> (<code>$0C55</code>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

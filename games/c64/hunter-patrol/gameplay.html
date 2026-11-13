@@ -1,0 +1,55 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/hunter-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">What the player does in a level: shoot four kinds of ground defence, then spend one plane per pass on the target.</p>
+</header>
+<main class="wrap">
+<section id="defences">
+  <p class="fig">01 · The ground defences</p>
+  <h2 class="t">Four kinds of defence, and each takes more hits at higher levels</h2>
+  <p class="lede">The first half of a level is a count: destroy every installation of four kinds.</p>
+  <p>The instructions say the player must destroy four types of ground defence before reaching the target.<sup class="fn"><a href="about.html#src-1" title="The documents on the disk">1</a></sup> The program keeps that count in <code>$41</code>, and <code>$29E0</code> adds one each time the hits needed for a kind, kept in <code>$42</code>, reach zero. At four, the program starts the target run (<code>$2A4C</code> sets <code>$41</code> to <code>$80</code>). In a test run, <code>$41</code> went 1, 2, 3 and then <code>$80</code> as the score rose from 450 to 1,400.</p>
+  <p>The hits needed for a kind come from <code>$0F60</code>: 5 on the first level, 10 on the second, 20 on the third, and 20 again on the fourth. A hit scores 50 or 100 points (<code>$22D0</code>).</p>
+  <p>Installations are sprites that slide down the screen towards the plane and sideways with the scroll. They come in several sizes for the several distances, which the <a href="graphics.html#sizes">Graphics tab</a> shows. The game starts a new installation every 32 frames (<code>$2900</code>).</p>
+</section>
+
+<section id="air">
+  <p class="fig">02 · The air</p>
+  <h2 class="t">Enemy aircraft and flak</h2>
+  <p class="lede">The top of the screen belongs to other aircraft, and flak bursts there too.</p>
+  <p>Aircraft cross the sky in the top part of the picture. The game keeps them in a table of records at <code>$8880</code>, and <code>$2680</code> starts one in a free record with a random position taken from the sound chip's third voice, which the game runs as a noise source (<code>$1900</code>).</p>
+  <p>The instructions say to climb to shoot them down for extra score, and that the flak will knock the plane from the sky. A crash starts an explosion that lasts <code>$A0</code> steps, and then a life goes (<code>$2400</code>).</p>
+</section>
+
+<section id="target">
+  <p class="fig">03 · The target</p>
+  <h2 class="t">One plane for each pass at the target</h2>
+  <p class="lede">After the fourth kind, the game stops to announce a strafing run, and every pass uses up a plane.</p>
+  <figure class="overview-shot"><img src="reference/strafing-prompt.png" width="384" height="272" alt="The screen reads PRESS FIRE TO CONTINUE above the plane, and the status line reads STRAFING RUN AIRCRAFT NO.3"><figcaption>Before each pass the plane waits and the status line names the aircraft: "STRAFING RUN AIRCRAFT NO.3". Fire, released and pressed again, continues.</figcaption></figure>
+  <p>In the test run the prompt read "NO.3", then "NO.2", then "NO.1" as the lives on the status line fell from 3 to 1. The instructions put it this way: the player has one strafing run for each remaining life.<sup class="fn"><a href="about.html#src-1" title="The documents on the disk">1</a></sup></p>
+  <figure class="overview-shot"><img src="reference/strafing-run.png" width="384" height="272" alt="A long white building crosses the screen under the plane"><figcaption>The target, a long white building, crosses the ground during a pass. The HIT figure on the status line counts the plane's hits on it.</figcaption></figure>
+  <p>When the passes are over, <code>$2E30</code> shows a message chosen by the hits on the target, counted in <code>$45</code> and drawn as the HIT figure by <code>$2DE1</code>. The thresholds are in hexadecimal in the code and in decimal on the screen:</p>
+  <div class="plate"><table class="t">
+    <tr><th>Hits</th><th>Message</th><th>Result</th></tr>
+    <tr><td>64 or more (<code>$40</code>)</td><td>"WELL DONE, TARGET DESTROYED"</td><td>an extra life and the next level</td></tr>
+    <tr><td>48 to 63 (<code>$30</code>)</td><td>"TARGET SUSTAINED HEAVY DAMAGE"</td><td>an extra life and the next level</td></tr>
+    <tr><td>16 to 47 (<code>$10</code>)</td><td>"TARGET PARTIALLY DAMAGED"</td><td>an extra life and the next level</td></tr>
+    <tr><td>under 16</td><td>"TARGET UNDAMAGED, TRY AGAIN"</td><td>the level starts again with the planes that are left</td></tr>
+  </table><p class="cap">The messages are at <code>$8BA0</code>, <code>$8BC0</code>, <code>$8BE0</code> and <code>$8C00</code>, chosen through the pointers at <code>$8B90</code> (read from the program, not from play). The extra life stops at 9 lives (<code>$2EA5</code>).</p></div>
+  </section>
+
+<section id="levels">
+  <p class="fig">04 · The levels</p>
+  <h2 class="t">Four difficulty steps, then round again</h2>
+  <p class="lede">The level number does not change the picture: it changes how hard the installations are to destroy.</p>
+  <p>The level is kept in <code>$44</code>, and <code>$2EA1</code> to <code>$2EB7</code> add one after a won target. At the fourth level the value is set to <code>$FF</code> and then incremented, so it returns to the first. The instructions say that later levels get faster and the flak meaner;<sup class="fn"><a href="about.html#src-1" title="The documents on the disk">1</a></sup> the one change the code shows is the hit count of <a href="#defences">the defences</a>. The speed and the flak are open questions in the game's notes.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
