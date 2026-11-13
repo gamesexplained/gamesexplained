@@ -34,8 +34,6 @@ cite code nothing calls (the clearing loop at `$12ED`).
 - Why `blow_reaction` tests CIA 2's timer A (`$2CAE`).
 - Whether a gap of exactly `$15` lines between the fighters makes a
   sprite row a frame late (`$32EA`, `$32FD`).
-- What `m.tsound` and `m.spchtbl` are: not in the game's memory as they
-  stand on disk; perhaps the loader's shout.
 - What the sprite images at `$D200`-`$D3BF` and `$E5C0`-`$E63F` are for;
   nothing found points at them.
 - Keyboard controls were traced, not typed live.
