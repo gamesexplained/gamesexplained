@@ -80,7 +80,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <p class="cap">Left: the two walking guards, animated, and the pair <code>$EC</code>/<code>$ED</code> that <code>$2312</code> sets just before a capture, unless the guard's sprite stands from 0 to 15 lines below Number 5's. Right: the eight sprites as <code>$2498</code> sets them up when part one starts, at their positions in <code>$24B9</code>, with their shapes and colours: the truck, four sprites (<code>$C8</code>-<code>$CB</code>), a guard standing (<code>$E6</code>/<code>$E7</code>) and Number 5 (<code>$C2</code>/<code>$C6</code>). Under it, the wheel <code>$D9</code> that <code>$257E</code> gives sprite 3. Guards in colour 8, orange.</p></div></section>
 
 <section id="creatures"><p class="fig">05 · Part two</p><h2 class="t">Fourteen things in the way</h2>
-<p class="lede">Part two's map gives each of its 256 columns an event number (<code>$896E</code>). When the scroll reaches a column, <code>$8936</code> starts that event's creature through the table at <code>$8A6E</code>. Fifteen numbers have a routine; number 10 has none, and no column asks for it. Each creature runs through its own short list of shapes in <code>$8F9A</code>-<code>$8FC7</code>, and a burst of light, the ten frames at <code>$8F90</code>, plays in a sprite of its own (<code>$3BF1</code>).</p>
+<p class="lede">Part two's map gives each of its 256 columns an event number (<code>$896E</code>). When the scroll reaches a column, <code>$8936</code> starts that event's creature through the table at <code>$8A6E</code>. Fifteen numbers have a routine; number 10 has none, and no column asks for it. Each creature runs through its own short list of shapes in <code>$8F9A</code>-<code>$8FC7</code>, and where one is hit, a flash plays: the nine frames at <code>$8F91</code>-<code>$8F99</code>, one every fourth pass, its colour flipping between yellow and red (<code>$3BF1</code>).</p>
 <div class="plate"><canvas class="sc-cv sc-spr" id="sc-c-cv" width="416" height="520" role="img" aria-label="Part two's creatures, animated in their own colours"></canvas>
 <p class="cap">Each creature as the game draws it, in its own colour. The shapes and colours were taken from each event started on the kit's model of the machine, from a snapshot of part two with the scroll column set to a column of that event.</p></div>
 <table class="sc-tab" id="sc-c-tab"></table></section>
@@ -169,7 +169,7 @@ const SC_CREATURES = [
   [13, 'a small cyan machine', '$8FC2', 3, [['B8'], ['B9']]],
   [14, 'a duck', '$8FC4', 1, [['BE'], ['BF']]],
   [15, 'a frog, leaping', '$8FC6', 7, [['B6'], ['B7']]],
-  [0, 'the burst of light', '$8F90', 7, [['96'], ['97'], ['98'], ['A5'], ['A6'], ['A6'], ['A5'], ['98'], ['97'], ['96']]],
+  [0, 'the hit flash', '$8F91', 7, [['97'], ['98'], ['A5'], ['A6'], ['A6'], ['A5'], ['98'], ['97'], ['96']]],
 ];
 // Who uses each shape, by pointer, for the whole bank.
 function scUsers(ram) {
@@ -253,7 +253,7 @@ function scUsers(ram) {
     SC_CREATURES.forEach(([e, , , col, fr], i) => {
       const f = fr[(tick >> 3) % fr.length], x = 8 + (i % 3) * 138, y = 4 + Math.floor(i / 3) * 104;
       f.forEach((s, j) => { const [t, b] = s.split('/').map((p) => parseInt(p, 16)); if (b !== undefined) pair(c, t, b, x, y, col); else spr(c, t, x + j * 48, y + 12, col); });
-      c.fillStyle = '#23262d'; c.font = '12px "IBM Plex Mono", monospace'; c.fillText(e ? 'event ' + e : 'burst', x, y + 98);
+      c.fillStyle = '#23262d'; c.font = '12px "IBM Plex Mono", monospace'; c.fillText(e ? 'event ' + e : 'hit flash', x, y + 98);
     });
   };
   // the whole bank

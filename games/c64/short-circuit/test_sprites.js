@@ -4,7 +4,7 @@
 // the listing's bytes:
 // - every creature whose frames come from one of the lists at $8F9A-$8FC7 draws exactly that
 //   list's pointers, in order (the snake and the log, two sprites wide, two lists side by side);
-// - the burst is the ten pointers at $8F90; the grey robot is Number 5's walk table at $1C84;
+// - the hit flash is the nine pointers at $8F91 (slot_animations reads $8F90 plus 1 to 9); the grey robot is Number 5's walk table at $1C84;
 //   the soldier's legs are the guard's at $23FC;
 // - Number 5's part-two pairs are the immediates the game loads ($2C14, $2C19, $2C1F, $2C24,
 //   $2C4F, $2C59, $3ACA, $3ACF, $3A9D, $3AA2) and the lower half of the duck in $2DBE;
@@ -26,7 +26,7 @@ const check = (what, got, want) => { if (String(got) !== String(want)) { bad++; 
 const bytes = (a, n) => Array.from(ram.subarray(a, a + n), (b) => b.toString(16).toUpperCase().padStart(2, '0'));
 const col = (frames, j) => frames.map((f) => f[j]);
 
-const lists = { '$8F9A': 4, '$8F9E': 3, '$8FA9': 2, '$8FA7': 2, '$8FB9': 3, '$8FC0': 2, '$8FC2': 2, '$8FC4': 2, '$8FC6': 2, '$8F90': 10 };
+const lists = { '$8F9A': 4, '$8F9E': 3, '$8FA9': 2, '$8FA7': 2, '$8FB9': 3, '$8FC0': 2, '$8FC2': 2, '$8FC4': 2, '$8FC6': 2, '$8F91': 9 };
 for (const [e, name, where, , frames] of SC_CREATURES) {
   if (lists[where]) check(`event ${e} ${name}`, col(frames, 0), bytes(parseInt(where.slice(1), 16), lists[where]));
 }
