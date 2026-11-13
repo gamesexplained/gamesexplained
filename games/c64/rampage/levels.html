@@ -73,9 +73,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="rp-bar"><button type="button" id="rp-l-marks" aria-pressed="true">Show the punches each building takes</button></div>
     <canvas id="rp-l-view" width="640" height="400" aria-label="The chosen level"></canvas>
     <p class="rp-out" id="rp-l-out"></p>
-    <p class="cap">Each level is set up and drawn by the game's own code, run on the site's 6502, without the monsters and the army. A test compares the buildings of every level with the game's level tables read directly.</p>
+    <p class="cap">Each level is set up and drawn by the game's own code, which the page runs on a copy of the C64's processor, the 6502. The monsters and the army are left out. A test compares the buildings of every level with the game's level tables read directly.</p>
   </div>
-  <p>A level is a list of building shapes and a list of the screen columns they stand in (<code>$A48E</code>, <code>$A462</code>). There are six shapes, and each has a strength: the number of damaging punches it takes before it falls. <a href="index.html#building">How it works</a> explains the shapes and the punches.</p>
+  <p>A level is a list of building shapes and a list of the screen columns they stand in (<code>$A48E</code>, <code>$A462</code>; a number after a $ is an address in the game's memory, written in hexadecimal, and links to that place on the Source code tab). There are six shapes, and each has a strength: the number of damaging punches it takes before it falls. <a href="index.html#building">How it works</a> explains the shapes and the punches.</p>
   <p>The first level needs 30 punches and the twelfth, with six buildings, needs 51. The level number changes the buildings, the colours, and the scenery, and nothing else: the helicopters, the soldiers, and the vehicles behave the same on the twentieth level as on the first.</p>
 </section>
 
@@ -85,7 +85,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The same six building shapes in sixteen colour schemes and two sceneries.</p>
   <div class="plate"><div class="rp-sheet" id="rp-l-all"></div></div>
   <p>The colours of the walls and windows come from two tables of sixteen entries (<code>$9DC1</code>, <code>$9DD0</code>), read with the level number, so levels 17 to 20 repeat the colours of levels 1 to 4. The border is black on odd levels and blue on even ones.</p>
-  <p>Levels 5 to 8 and 13 to 16 stand in front of hills. The others have the city skyline. The two sceneries are rows of characters 79 wide, of which the screen shows 40.</p>
+  <p>Levels 5 to 8 and 13 to 16 stand in front of hills. The others have the city skyline. Each scenery is stored as rows of characters, the 8 by 8 pixel tiles the screen is made of. The rows are 79 characters wide, and the screen shows 40 of them.</p>
 </section>
 
 <section id="road">
@@ -96,9 +96,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="rp-sheet" id="rp-l-road"></div>
     <p class="cap">The patch on level 4 in its four stages, drawn by the game's own code (<code>$9858</code>) on the site's 6502 with the stage set by hand.</p>
   </div>
-  <p>The patch is eight characters wide, left of the middle of the screen. The game watches for a monster that is falling, has reached street height, and is over the patch. From then on the patch breaks a stage every fourth pass, with the sound of a punch each time, until it is a hole full of water.</p>
+  <p>The patch is eight characters wide, left of the middle of the screen. The game watches for a monster that is falling, has reached street height, and is over the patch. From then on the patch breaks a stage on every fourth pass of the game's main loop, a little under once a second, with the sound of a punch each time, until it is a hole full of water.</p>
   <p>A monster standing in the hole has a picture of its own and is hit on every step it spends there. The hole stays open for the rest of the level.</p>
-  <p>The levels are picked by arithmetic. The game adds 1 to the level number as it counts it, from 0, and looks at one bit of the result, which is set for four levels in every eight. Three of each four are levels with hills, whose street is drawn by different code, and that leaves levels 4, 12, and 20.</p>
+  <p>The levels are picked by arithmetic. The game adds 1 to the level number as it counts it, from 0, and looks at one binary digit of the result, which is 1 for four levels in every eight. Three of each four are levels with hills, whose street is drawn by different code, and that leaves levels 4, 12, and 20.</p>
 </section>
 
 <section id="spare">

@@ -77,16 +77,16 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <canvas id="rp-g-mon" width="288" height="288" aria-label="The chosen monster in the chosen pose"></canvas>
     <p class="rp-out" id="rp-g-out"></p>
-    <p class="cap">Every picture is built by the game's own code on the site's 6502, from the frame's 36 tile numbers to the six sprite shapes the screen shows. A test checks all 228 pictures against their tiles. The order of the frames in each animation is read from the game's tables (<code>$8C2A</code>, <code>$8C41</code>, <code>$89AF</code>).</p>
+    <p class="cap">Every picture is built by the game's own code, which the page runs on a copy of the C64's processor, the 6502, from the frame's 36 tile numbers to the six sprite shapes the screen shows. A test checks all 228 pictures against their tiles. The order of the frames in each animation is read from the game's tables (<code>$8C2A</code>, <code>$8C41</code>, <code>$89AF</code>; a number after a $ is an address in the game's memory, written in hexadecimal, and links to that place on the Source code tab).</p>
   </div>
-  <p>The three characters share one list of 38 poses and differ in their tiles. Each has its own colour (orange, green, and light blue), and all three share yellow and dark grey. A monster facing right is a second set of pictures with tiles of its own. The pictures are not mirrored by the program. <a href="index.html#monster">How it works</a> shows the tiles of a frame.</p>
+  <p>A monster's picture is made of 36 small tiles, shown by six sprites, the movable pictures the video chip can place anywhere on the screen. The three characters share one list of 38 poses and differ in their tiles. Each has its own colour (orange, green, and light blue), and all three share yellow and dark grey. A monster facing right is a second set of pictures with tiles of its own. The pictures are not mirrored by the program. <a href="index.html#monster">How it works</a> shows the tiles of a frame.</p>
   <p>Walking is four pictures, each held for four steps. Climbing is two, swapped on every step. A punch is one picture, held for as long as the fire button is down. A monster that runs out of energy plays the last animation in the list: it shrinks through four pictures and walks off as a human.</p>
 </section>
 
 <section id="army">
   <p class="fig">02 · The army</p>
   <h2 class="t">Helicopters, vehicles, and wrecks</h2>
-  <p class="lede">Everything that is not a monster or a building is a sprite shape kept in memory as the disk supplied it.</p>
+  <p class="lede">Everything that is not a monster or a building is a sprite shape, 24 pixels by 21, kept in memory as the disk supplied it.</p>
   <div class="plate"><div class="rp-sheet" id="rp-g-army"></div>
   <p class="cap">Each shape is drawn from the game's sprite data. The helicopters turn their rotors at the game's speed, a new rotor frame every second frame. The wreck is slowed to two pictures a second.</p></div>
   <p>A helicopter among the buildings has six poses, and each pose is four shapes in a row for the four positions of the rotor. Two smaller helicopters cross the status lines at the top of the screen in single-colour shapes of their own. The blimp carries the monsters onto the screen. A vehicle is two shapes side by side, and so is each picture of its wreck.</p>
@@ -116,13 +116,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <p class="cap">The first screen is a screenshot. The two pictures are drawn from the bytes of their files on the disk, <code>PART2</code> and <code>PART6</code>, with the video chip set as the loader sets it. A test holds the bytes on this page to the files by their checksums.</p>
   </div>
-  <p>Each picture is a multicolour bitmap of 160 by 200 double-width pixels: 8,000 bytes of picture and 2,000 bytes of colour. The second picture reads <code>CREATED ON THE 64 BY: M.ARCHER D.JOLLIFF M.JONES D.WAINWRIGHT OF CATALYST CODERS</code> and <code>A SOFTWARE STUDIOS PRODUCTION</code>. These are the only credits on the disk. The game itself names nobody.</p>
+  <p>Each picture is a multicolour bitmap, a picture stored pixel by pixel: 160 by 200 double-width pixels in 8,000 bytes, with 2,000 more bytes that say which colours each 8 by 8 square may use. The second picture reads <code>CREATED ON THE 64 BY: M.ARCHER D.JOLLIFF M.JONES D.WAINWRIGHT OF CATALYST CODERS</code> and <code>A SOFTWARE STUDIOS PRODUCTION</code>. These are the only credits on the disk. The game itself names nobody.</p>
 </section>
 
 <section id="blocks">
   <p class="fig">05 · Building blocks</p>
   <h2 class="t">Two hundred blocks: a hundred whole and a hundred ruined</h2>
-  <p class="lede">Every building is made of blocks two characters wide and two tall, and every block has a ruined twin.</p>
+  <p class="lede">Every building is made of blocks two characters wide and two tall, a character being one of the 8 by 8 pixel tiles the screen is made of. Every block has a ruined twin.</p>
   <div class="plate">
     <div class="rp-row">
       <figure style="margin:0"><canvas id="rp-g-blocks-a" width="624" height="384" aria-label="Blocks 0 to 99"></canvas><figcaption class="rp-out">Blocks 0 to 99</figcaption></figure>
@@ -136,7 +136,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="pictures">
   <p class="fig">06 · The text screens</p>
   <h2 class="t">The newspaper's portraits are squares of 64 characters</h2>
-  <p class="lede">The pictures on the text screens are stored as twenty squares, each 8 characters by 8.</p>
+  <p class="lede">The pictures on the text screens are stored as twenty squares, each 8 characters by 8, or 64 pixels by 64.</p>
   <div class="plate"><div class="rp-sheet" id="rp-g-pics"></div>
   <p class="cap">The twenty pictures at <code>$7000</code>, each drawn from its 64 character numbers with the text screens' character set and colours. They are numbered from 0.</p></div>
   <p>The first twelve squares are the ends of the newspaper's three strips, four for each character: the human, the monster, and two skylines. A strip shows the human and a skyline until somebody joins as that monster, and the monster's portrait after that. A monster that is out of the game gets the two skylines.</p>
@@ -146,7 +146,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="sets">
   <p class="fig">07 · Character sets</p>
   <h2 class="t">One character set for the city and one for the words</h2>
-  <p class="lede">The game changes character set part of the way down every frame.</p>
+  <p class="lede">A character set is the 256 tiles a screen can be built from. The game changes character set part of the way down every frame.</p>
   <div class="plate">
     <div class="rp-row">
       <figure style="margin:0"><canvas id="rp-g-set-city" width="512" height="128" aria-label="The city's 256 characters"></canvas><figcaption class="rp-out">The city's set</figcaption></figure>

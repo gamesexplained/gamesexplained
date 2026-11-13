@@ -70,11 +70,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">A monster that grabs something from a window chews it and gets nothing: no energy, no points, and no harm from the poison.</p>
   <div class="plate">
     <div class="rp-row"><canvas id="rp-d-over" width="640" height="400" aria-label="The screen that ends a game: YOU MUST EAT FOOD TO SURVIVE"></canvas><canvas id="rp-d-items" width="640" height="400" aria-label="The COLLECT ITEMS screen, with its three groups of things"></canvas></div>
-    <p class="cap">Two of the game's text screens, drawn by the game's own code on the site's 6502. Left: the screen that ends a game. Right: the list shown before the first level, in three groups: things worth points in the arcade game, food, and things that hurt.</p>
+    <p class="cap">Two of the game's text screens, drawn by the game's own code, which the page runs on a copy of the C64's processor, the 6502. Left: the screen that ends a game. Right: the list shown before the first level, in three groups: things worth points in the arcade game, food, and things that hurt.</p>
   </div>
   <p>In the arcade game, food gives a monster energy back, and the manual of this version says the same: "edibles" increase your energy and electrical appliances give "nasty surprises". One of the newspaper's headlines is a hint about it: <code>WANT TO EAT. WELL PUNCH SLOWER</code>.</p>
-  <p>The code has one routine for eating (<code>$8BFF</code>). It plays 21 steps of a chewing animation and goes back to what the monster was doing. The routine never looks at which of the twelve things was grabbed, so a turkey, a toaster, and a bottle of poison are the same. Nothing in the program adds to a monster's energy (<code>$9B81</code>), and the only routine that adds to a score is the one for a punch on a building.</p>
-  <p>In the emulator, a monster chewed for 70 frames. Its energy was 40 before and 40 after, and its score did not change.</p>
+  <p>The code has one routine for eating (<code>$8BFF</code>; a number after a $ is an address in the game's memory, written in hexadecimal, and links to that place on the Source code tab). The routine plays 21 steps of a chewing animation and goes back to what the monster was doing. The routine never looks at which of the twelve things was grabbed, so a turkey, a toaster, and a bottle of poison are the same. Nothing in the program adds to a monster's energy (<code>$9B81</code>), and the only routine that adds to a score is the one for a punch on a building.</p>
+  <p>In the emulator, a monster chewed for 70 frames, a frame being a fiftieth of a second. Its energy was 40 before and 40 after, and its score did not change.</p>
   <p>Energy therefore only ever goes down. A monster starts with 56 units and loses one for every second hit that counts, so each monster is out of the game after 112 counted hits, whatever it eats. A routine that adds 500 points sits in the code beside the one that adds 100 (<code>$98E2</code>), and nothing calls it.</p>
 </section>
 
@@ -85,7 +85,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="rp-bar"><button type="button" id="rp-d-names-go" aria-pressed="true">Nobody has joined</button></div>
     <canvas id="rp-d-names" width="640" height="400" aria-label="The nineteenth level with its status lines"></canvas>
-    <p class="cap">The nineteenth level as the game's own code sets it up and draws it, run on the site's 6502. The button changes one byte, the one that says whether anybody has joined (<code>$9C61</code>).</p>
+    <p class="cap">The nineteenth level as the game's own code sets it up and draws it, run on the site's 6502. The button changes one byte of memory, the one that says whether anybody has joined (<code>$9C61</code>).</p>
   </div>
   <p>When a level starts, the game checks two things (<code>$90E4</code>): that nobody has joined, and that the level number is 18, which is the nineteenth level because the count starts at 0. When both are true the game reads the three names from a different place in its table of names (<code>$9AE2</code>).</p>
   <p>The message is hard to reach by playing. The level number only goes up when a level is cleared, and with nobody playing, the computer's monsters would have to flatten eighteen levels alone. They punch at random: in a long unattended run in the emulator they brought down one of the first level's three buildings. The picture above comes from setting the level number by hand before the level begins.</p>
@@ -99,7 +99,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <table class="rp-tab" id="rp-d-shots"></table>
     <p class="cap">The page stands the three monsters apart in the street, puts one bullet inside one monster's box, and runs the game's own bullet routine (<code>$9E68</code>) on the site's 6502. The last column is the hit flag the game set.</p>
   </div>
-  <p>Once a pass, the game draws an invisible box round each monster and tests every bullet against the three boxes in turn. A bullet inside a box is removed, and a flag is set for that box's monster. The three tests are the same piece of code written out three times, and the third copy was not finished: it sets the second monster's flag (<code>$9F66</code>) where it should set the third's.</p>
+  <p>About five times a second, on each pass of its main loop, the game works out an invisible box round each monster and tests every bullet against the three boxes in turn. A bullet inside a box is removed, and a flag is set for that box's monster. A flag is a byte that is 0 or 1, and this one means "hit". The three tests are the same piece of code written out three times, and the third copy was not finished: it sets the second monster's flag (<code>$9F66</code>) where it should set the third's.</p>
   <p>The third monster is Ralph unless the players have swapped characters on the newspaper screen. Bullets pass nothing on to Ralph, and each one that would have hit him counts against Lizzie. Falls, punches from the other monsters, and the hole in the road still hurt him.</p>
   <p>In the emulator, a bullet inside the third monster's box set the second monster's flag while the second monster stood nine columns away.</p>
 </section>
@@ -110,7 +110,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The list of things to eat and the newspaper each ask for a tune of their own. Both get the title tune, because the other two are mostly gone.</p>
   <div class="plate"><div id="rp-d-sid"></div>
   <p class="cap">The page runs the game's own music player on the site's 6502, started the way the screens meant to start it: with the tune's number. The first button plays the one voice of the second tune that is still in the game, alone, and stops where its data stops. The second button plays all three voices as the game would, with two of them reading the scenery as if it were notes. The filter is modelled on a 6581 chip.</p></div>
-  <p>The music player has a table of three tunes (<code>$0298</code>), and each of the three text screens loads a different tune number before it starts the music. The routine that starts the music (<code>$AD0B</code>) begins by setting that number to 0, so every screen plays the first tune.</p>
+  <p>The music player has a table of three tunes (<code>$0298</code>). A tune is three lists of notes, one for each of the three voices the sound chip can play at once. Each of the three text screens loads a different tune number before it starts the music. The routine that starts the music (<code>$AD0B</code>) begins by setting that number to 0, so every screen plays the first tune.</p>
   <p>The table shows why. The first tune's three voices sit in memory from <code>$0576</code> to <code>$09E6</code>, and the second tune's first voice follows at <code>$09E7</code>. At <code>$0B00</code> the scenery begins: the rows of characters that draw the skyline and the street. The second tune's first voice runs into the scenery in the middle of a note, about 65 seconds in. Its other two voices, and all three voices of the third tune, have addresses inside the scenery, so nothing of them is left.</p>
   <p>What is left of the second tune is a melody line with no accompaniment. Whether the tunes were dropped to make room for the scenery, or were never finished, the code does not say.</p>
 </section>
@@ -126,8 +126,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <p class="cap">Both players run the game's own code on the site's 6502. The left one starts an effect and does nothing more, as the game does. The right one also runs the unused routine (<code>$82AC</code>), which slides the pitch and the filter and switches the voice off when the effect's time is up. The page runs it once a frame, from the frame after an effect starts. How often the game was meant to run it is not known.</p>
   </div>
-  <p>An effect's record holds eight numbers (<code>$82EC</code>). The game uses five of them when it starts the effect. The other three, a length and two slides, are read only by a second routine, which was meant to run again and again while the effect sounds. That routine is complete and nothing calls it, so every effect is one burst of noise that fades by itself, and a long one is cut off by the next. With the routine running, each effect is a short, sharp sound of a few frames.</p>
-  <p>The interrupt that runs once a frame has a gap of twenty empty bytes in it (<code>$7953</code>). A call to the missing routine would fit there. What the gap once held is not known.</p>
+  <p>Each effect is described by a record of eight numbers (<code>$82EC</code>). The game uses five of them when it starts the effect. The other three, a length and two slides, are read only by a second routine, which was meant to run again and again while the effect sounds. That routine is complete and nothing calls it, so every effect is one burst of noise that fades by itself, and a long one is cut off by the next. With the routine running, each effect is a short, sharp sound of a few frames.</p>
+  <p>The game has a routine that the machine runs once a frame, whatever else is going on, called an interrupt. That routine has a gap of twenty empty bytes in it (<code>$7953</code>). A call to the missing routine would fit there. What the gap once held is not known.</p>
   <p>Two of the five effects are never started. One of them is the only effect that is a tone, not noise.</p>
 </section>
 
@@ -168,7 +168,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">Top: the first and the last entry of the vehicle list (<code>$8CC7</code>-<code>$8D06</code>), moved as the game moves them, 2 pixels a frame. Bottom: the four pictures a wreck goes through, each made of a left and a right sprite shape (<code>$8C9B</code>, <code>$8CA2</code>).</p>
   </div>
   <p>The game picks each new vehicle at random from a list of sixteen. Each entry names a picture, the edge of the screen to start from, and a speed. The last entry pairs the car that faces right with a start at the right-hand edge and a speed to the left, so that car crosses the whole street in reverse.</p>
-  <p>A wrecked car or tank goes through four pictures. Each picture is two sprite shapes side by side, and the second picture's entries are both wrong. Its left half is the right half of the first picture. Its right half is shape number <code>$BB</code>, which is not a sprite shape at all: that address is inside the character set the game draws its text screens with. For a moment the wreck's right half is eight of those characters, read as if they were a sprite.</p>
+  <p>A wrecked car or tank goes through four pictures. Each picture is two sprite shapes side by side, a sprite being a small picture the video chip can place anywhere on the screen. The second picture's entries are both wrong. Its left half is the right half of the first picture. Its right half is shape number <code>$BB</code>, which is not a sprite shape at all: that address is inside the character set, the collection of letters and small tiles that the game draws its text screens with. For a moment the wreck's right half is eight of those characters, read as if they were a sprite.</p>
 </section>
 
 <section id="shake">
@@ -181,8 +181,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="rp-out" id="rp-d-shake-out"></p>
     <p class="cap">The first level, with the game's own code for a falling building run on the site's 6502 at the game's speed. The black strip that opens at the left edge is the shift.</p>
   </div>
-  <p>The video chip can slide the whole picture to the right by 0 to 7 pixels (register <code>$D016</code>). On each pass that a building has no strength left, the game puts a different number there (<code>$B2DF</code>), and the city jumps about. Nothing puts the 0 back when the building has gone, so the picture, the status lines included, stays up to 7 pixels to the right until the next level sets the screen up again.</p>
-  <p>In the emulator the register held <code>$D8</code> before any building fell, and <code>$DB</code> and <code>$DF</code> after two different falls: 3 and 7 pixels across.</p>
+  <p>The video chip can slide the whole picture to the right by 0 to 7 pixels. The program asks for this by writing a number to one of the chip's registers, <code>$D016</code>. On each pass that a building has no strength left, the game puts a different number there (<code>$B2DF</code>), and the city jumps about. Nothing puts the 0 back when the building has gone, so the picture, the status lines included, stays up to 7 pixels to the right until the next level sets the screen up again.</p>
+  <p>In the emulator the register held <code>$D8</code> before any building fell, and <code>$DB</code> and <code>$DF</code> after two different falls. The last digit is the slide: 0, then 3 and 7 pixels.</p>
 </section>
 
 <section id="saved">
@@ -234,7 +234,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="rp-out" id="rp-d-boom-out"></p>
     <p class="cap">The explosion's route from the game's tables (<code>$8D21</code>), drawn from its sprite shapes at a fifth of the game's speed so that each picture can be seen.</p>
   </div>
-  <p>A helicopter's picture is a shape number plus the rotor's frame, which counts 0, 1, 2, 3, 2, 1 so that the blades appear to turn. Each of a helicopter's six poses has four shapes in a row for that reason. A punched helicopter follows a ninth route of three moves, which name the explosion's shapes <code>$C0</code>, <code>$C1</code>, and <code>$C2</code> in turn.</p>
+  <p>A helicopter's picture is the number of a sprite shape plus the rotor's frame, which counts 0, 1, 2, 3, 2, 1 so that the blades appear to turn. Each of a helicopter's six poses has four shapes in a row for that reason. A punched helicopter follows a ninth route of three moves, which name the explosion's shapes <code>$C0</code>, <code>$C1</code>, and <code>$C2</code> in turn.</p>
   <p>The rotor's frame is still added during the explosion. The first move runs up and down through all four explosion shapes. The second and third start further along and run on into shapes <code>$C4</code> and <code>$C5</code>, which are empty, so the explosion blinks out and comes back. In the emulator the shapes went <code>C1 C2 C2 C3 C3 C2 C2 C1 C1 C0</code>, then <code>C0 C2 C2 C3 C3 C4 C4 C3 C3 C2 C2</code>, then <code>C2 C2 C3 C3 C4 C4 C5 C5 C4 C4 C3 C3</code>.</p>
   <p>Whether the blinking was meant is not known. The table of moves has an entry for the fourth shape, <code>$C3</code>, and the route never uses it: the fourth shape is seen only because the rotor's frame is added.</p>
 </section>
@@ -266,7 +266,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="rp-out" id="rp-d-fist-out"></p>
     <p class="cap">George punching upwards, facing left. Left: the picture as its tiles give it. Right: the picture after the game's own copying routine (<code>$B520</code>), run on the site's 6502. The outlined pixels differ.</p>
   </div>
-  <p><b>The fist.</b> The routine that copies a monster's picture into its sprites is 288 loads and 336 stores written out by hand, and one load is wrong: the fourth byte of the picture's second line is read from the first byte of that line (<code>$B556</code>). The same slip is in all three monsters' copies. The two bytes are equal in every frame except the two with a fist raised to the left, where a byte of the fist's top edge is replaced and three of its four pixels change.</p>
+  <p><b>The fist.</b> The routine that copies a monster's picture into its sprites is 288 instructions that read a byte and 336 that write one, written out by hand, and one of the reads is wrong: the fourth byte of the picture's second line is read from the first byte of that line (<code>$B556</code>). The same slip is in all three monsters' copies. The two bytes are equal in every frame except the two with a fist raised to the left, where a byte of the fist's top edge is replaced and three of its four pixels change.</p>
   <p><b>Roof corners.</b> The table that says what a punched block becomes gives three values to the ends of a roof (<code>$A73F</code>), and the punch routine keeps only part of each value. A punched roof end turns into a piece of wall and window where a broken roof end was meant.</p>
   <p><b>Holes.</b> A new hole in a wall joins up with a hole above it, never with one below. The code for the hole below is there, and the address it would use is only half set up.</p>
   <p><b>Reaching for food.</b> A monster's grab was meant to test a square of four characters for something to eat. An instruction is missing, and the test covers three characters in a row.</p>
