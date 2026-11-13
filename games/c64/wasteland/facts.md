@@ -382,6 +382,65 @@ lines into view for a moment, and the programs load from `$7E00`.
   `$B50B-$B589`, as above), the automatic-fire chance growing with the
   characters who are not conscious: `$B4F8` = `$FF 9 7 5 3 0 0 0`.
 
+## The monsters
+
+Run on the game's code by `test_bestiary.js` (the engine's, the game's
+and a map's listing on the kit's 6502), not in the emulator.
+
+- A map's record lists its monsters: 398 records with a number in them
+  on 39 of the 42 maps, 371 when records with the same name and the same
+  eight bytes are counted once. Bytes 0/1 are a 16-bit number that sets
+  the hit points, the mark for running and the experience; byte 2 the
+  skill (attacks a round in melee, added to the two dice of a shot);
+  byte 3 the d6 of damage; byte 4 the most in a wandering group (high
+  nibble) and the armour (low); byte 5 the damage bonus (high nibble)
+  and the weapon class (low, 1 hand to hand, 2-13 guns); byte 6 the kind
+  1-5; byte 7 the portrait and pronoun (game `$9EA4`).
+- Hit points are number / 4 + a roll of 1 to its low byte + 256 x a roll
+  of 1 to its high byte, a roll of "1 to 0" being 0 (game `$9483-$94B9`,
+  engine `$24C4`). Experience for a kill is the number x (armour + 1)
+  (game `$A9E8`).
+- A wandering group: after each step a group appears on 1 roll in the
+  header's byte `+$2F`, of a kind from 1 to byte `+$31`, in one of the
+  first `+$32` entries of the class-15 list (game `$B015`). 23 maps have
+  a chance above 0.
+- Three maps change those bytes from their own code. Map 43 (mine):
+  `$3E39` adds 1 to the kinds, from 13 up to 16, after silver is taken
+  from the vein at (2,3), and `$3E2A` takes 2 off the 70, down to 2,
+  after the vein at (26,21); `$3E48` refills either bag. Kinds 14-16,
+  the Gecko, the Skink and the Shell Cougar, are in no meeting of any
+  map. Map 20 (reactor): the panel at (21,24) runs `$405C` on a pass
+  (one kind fewer, down to 1) and `$404D` on a failure (one more, from 6
+  up to 11); the screen at (28,22) runs `$403C` on a pass (2 added to
+  the 70, up to 98, with "Interval Reduced.") and `$402B` on a failure
+  (2 off, down to 2, with "Interval Increased."). Map 19 (assembly): 22
+  security monitor panels in three sorts, 8 adding a group (`$3CEE`), 9
+  taking 2 off the 60 (`$3CFD`) and 5 adding a kind (`$3D0C`, from 5 up
+  to 10); 12 command consoles behind cage doors, 4 each undoing one step
+  of each (`$3D1B`, `$3D2A`, `$3D37`). The engine writes the map back
+  when the party leaves (engine `$2856`).
+- Hit points are not kept with the map. The scan before a round drops a
+  group the party can no longer reach (game `$94CC`), and the next scan
+  that finds it rolls hit points for every monster the map counts as
+  alive (game `$936E`); the counts are written back after each round
+  (game `$B9F2`).
+- A hostile, moving line of hand-to-hand monsters that are not animals
+  plans to run when its average hit points are below half the number
+  (game `$8448-$8461`). A lone monster rolls below that on a roll under
+  a quarter of its number: 63 of the Pit Ghoul's 255 rolls. The line's
+  sum goes through engine `$079D`, which reads its addend as signed and
+  holds the sum at 0, so hit points of 32,768 or more count as 0. Only
+  the Night Terror (map 23, number 32,000, 8,256 to 40,000 hit points)
+  can roll so high: 31 of its 125 rolls are under 16,000 and 29 are
+  32,768 or more.
+- The Night Terror's meeting is peaceful (record byte 9, bit 1), and a
+  peaceful group gets no plan and makes no attack; a Ranger's attack
+  clears the bit.
+- Eleven meetings are in a map's list with no square, change or routine
+  that names them (maps 12, 18, 25, 34, 35, 41 and 49), and 18 monster
+  records are used by no meeting of their map and cannot wander there;
+  the Bestiary tab lists both.
+
 ## Live tests
 
 - Side 3 booted on its own; side 3's start-up run over side 1's engine
