@@ -108,3 +108,11 @@ the kit CPU with file bytes supplied at its reader. A live loader stop at
 file `11` output; all 23552 output bytes matched. Files `23` and `61`
 begin as unpacked level-1-2 images rather than compressed sections; their
 selection and remaining bytes still require attribution.
+
+## Continued level analysis
+
+Level 1-2 reached 100% measured coverage over its exact packed-load extents, with a stopping read watchpoint proving the boss pose arrays share map storage. Corrected the separate ground-walker fall and flattened-motion allocations to thirteen and twenty-seven bytes in both first-world listings. Level 2-1 reached 100% over 29362 tracked bytes, including its patched swimming entry. An instruction trace proved its split boss action directory lives inside nominal map rows. Kept the unresolved table at $9C80 explicitly open.
+
+Level 2-2 reached complete coverage over its physical load extents. Its map holds executable glyph helpers as well as data; all helper targets from the phase directory were seeded explicitly after typing the map. Traced original instructions for the embedded initialization glyphs and boss action dispatch. Distinguished the boss X matrices and animation sources from ordinary sprite slots.
+
+Level 3-1 reached complete coverage over 34706 tracked bytes, including its music driver, dedicated flight weapons and player callback. A stopping map read watchpoint resolved the misleading retained height/count fields. The spawn streams occupy reserved glyph positions in four character banks. Traced the music instruction readers on the kit CPU to separate instrument, modulation and pattern allocations. No optional playthrough or combined-mechanics proof was added.
