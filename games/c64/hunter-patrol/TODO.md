@@ -4,7 +4,7 @@ Tier: **bronze**, with every Silver requirement met but one. Coverage is 100 % (
 
 ## For Gold
 
-- Euan's Gold pass has been through every tab (Overview, Gameplay, Controls, Levels, Graphics, Music, and Discoveries) and `copy` is `human-edited`. The game becomes Gold as soon as it is Silver: Gold sits on top of Silver, so the tier stays bronze until the audit below is done.
+- The contributor's Gold pass has been through every tab (Overview, Gameplay, Controls, Levels, Graphics, Music, and Discoveries) and `copy` is `human-edited`. The game becomes Gold as soon as it is Silver: Gold sits on top of Silver, so the tier stays bronze until the audit below is done.
 
 ## For Silver
 
