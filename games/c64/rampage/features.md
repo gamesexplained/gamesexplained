@@ -63,7 +63,7 @@ Found in the code, not in the manual.
 - **The third monster cannot be shot.** A bullet that reaches the third
   monster sets the second monster's hit flag (`bullet_hits_third`,
   `$9F66`).
-- **Hidden names.** On level 19 with no player joined, the status lines
+- **Hidden names.** On the nineteenth level (`level` = `$12`) with no player joined, the status lines
   read `RHONA`, `I LOVE`, `YOU` (`secret_names`, `$90E4`).
 - **Unused text and code.** `MISS YOU`, `CUDDLE WHUMP FLUMP DUNKS`, `THEN
   PRESS FIRE`, `ONE`/`TWO`/`THREE`, `HIGH SCORE`, `GAME SCORE`; a

@@ -410,6 +410,23 @@ never started.
 
 ## The listing's error rate
 
+A sample of 80 of the listing's 1,122 comments, drawn with seed 131126,
+was checked one by one against the code by a fresh agent on
+`claude-fable-5-2` that had written none of them: 60 from the 832 written
+by hand and 20 from the 290 a script wrote from templates for the scenery
+rows, the monsters' frames and tiles, the pictures and the sprite shapes.
+It found 2 wrong, both in a detail and both among the hand-written ones,
+and both findings held when read against the code. `target_col` (`$22`)
+listed the routines that store the monster's column there and left out
+`eat_or_damage`, which stores it at `$A5D9`. `heli_a_move` (`$25`) gave
+the kinds of move as 0-12 and called 8 and up the explosion: the nine
+paths hold kinds 0-10 only, and kind 12 is the blank shape. Both were
+corrected, and `move_records` (`$8D21`) now says that no path holds kind
+11 or 12. That is 2.5 % of the sample (95 % interval 0.7 % to 8.7 %),
+the same when weighted by the two groups' sizes, and within the mark of
+one in 30. It is a lower bound: a checker misses some. The listing has
+not had a full audit.
+
 ## Live tests
 
 All on VICE 3.14.0 (vice-mcp), 13 November 2026, from `work/entry.vsf`

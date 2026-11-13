@@ -64,14 +64,15 @@ PAL.
    the loading picture (the three monsters over the Rampage logo), and
    the load goes on for about two minutes at normal speed.
 4. The game starts on a black screen headed `COLLECT ITEMS`, a list of
-   what the windows hold. It stays there until fire is pressed on the
-   joystick in port 2.
-5. Fire on port 2 brings the newspaper screen: a strip each for George,
+   what the windows hold. It stays there until fire is pressed on
+   either joystick or the `=` key.
+5. Fire brings the newspaper screen: a strip each for George,
    Lizzie and Ralph, each reading `READY FOR ACTION`, and `PRESS FIRE TO
    JOIN THE ACTION`. Fire on port 2 joins as George, fire on port 1 as
    Lizzie and the `=` key as Ralph; a joined strip shows a headline and
-   the monster's face. A few seconds after the first player joins, play
-   begins: the monsters drop in from a blimp on day 1.
+   the monster's face. The screen stays up for a fixed count of turns of
+   its loop, whoever joins, and then play begins: the monsters
+   drop in from a blimp on the first level.
 6. Snapshots, all saved without ROMs:
    - `work/loading-presents.vsf`: the load a moment after the protection
      passed, with `ACTIVISION PRESENTS` on screen. With the G64 attached,
@@ -87,16 +88,20 @@ PAL.
 
 ## Steady state
 
-- **Banking:** `$01` = `$35` in play: all RAM, with the I/O chips visible
+- **Banking:** `$01` reads `$35` in play (the game writes `$25`): all RAM, with the I/O chips visible
   at `$D000`-`$DFFF` and both ROMs out. The game owns the processor's
   hardware vectors in RAM at `$FFFA`-`$FFFF`: NMI `$7800`, reset `$785C`,
   IRQ `$789A` at the top of the frame.
-- **Interrupts:** the raster IRQ is a chain of five handlers, each
-  writing the next one's address into `$FFFE`: `$789A` → `$7979` →
-  `$7A15` → `$7AB1` → `$7B4A` → `$789A`, recorded with `kit/c64/frame.py
-  capture` on `work/play-day1.vsf` (the vector is written on lines 46,
-  216, 233, 248 and 292). The handlers reuse sprites 2 to 7 for the three
-  monsters, two sprites side by side in each of several rows, and switch
+- **Interrupts:** the raster IRQ is a chain of handlers, each writing
+  the next one's address into `$FFFE`: `$789A` at the top of the frame,
+  then up to nine row handlers from `$7979`, then `$7B4A` near the
+  bottom, which sorts the row handlers' lines for the next frame. A row
+  handler whose line is within two of the next one's runs both, so a
+  frame takes fewer interrupts when the monsters are level: `kit/c64/frame.py
+  capture` on `work/play-day1.vsf` recorded five (`$789A` → `$7979` →
+  `$7A15` → `$7AB1` → `$7B4A`, the vector written on lines 46, 216, 233,
+  248 and 292). The handlers reuse sprites 2 to 7 for the three
+  monsters, two sprites side by side in each of three rows, and switch
   the character set between the status lines and the city.
 - **Video:** bank `$C000`-`$FFFF` (`$DD00` = `$94`). Two screens, `$F400`
   and `$F800`, with sprite pointers written to both `$F7F8` and `$FBF8`.
