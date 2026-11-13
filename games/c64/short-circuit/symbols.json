@@ -13175,27 +13175,27 @@
   {
    "address": 1024,
    "type": "line",
-   "text": "Entry point of the game proper (the loader's jump at $9548 runs the start-up at $95xx, which falls into here). Sets the CIA2 VIC bank, switches sprites 0 and 1 on with sprite 2 and 3 colours, copies 17 bytes of initial sprite registers from $15EA, builds the opening screen with $0B3B and falls into the main loop."
+   "text": "Entry point of part one. The attract mode jumps here at $95BC and the end of the intro sequence at $9740. It runs part_one_prepare ($9762), sets the CIA2 VIC bank ($94), clears sprite expansion and priority and the scroll column $02AE, switches sprites 0 and 1 on, sets the colour of sprites 0 to 3 to 3 and of sprites 4 to 7 to 8, copies 17 bytes of initial sprite registers from $15EA, sets Johnny's sprite pointers to $C4 and $C5, builds the opening screen with $0B3B, silences the SID, starts tune $1A and falls into the main loop."
   },
   {
    "address": 1109,
    "type": "line",
-   "text": "Top of the main loop. Runs once per pass: it first checks whether the energy or clock has run out (the flag at $0206), then whether Johnny has walked far enough right to leave the room, then does the per-frame work (scroll, input, messages, mode handler) and loops back here."
+   "text": "Top of the main loop. Each time round it first checks the out-of-energy flag at $0206 (set when the energy or shield bar is empty): while walking (mode 0) that ends the game with MALFUNCTION and TOTAL POWER LOSS. Then it checks whether Johnny has reached the exit at the left end of the map ($047B), then does the per-frame work (scroll, input, messages, mode handler) and loops back here."
   },
   {
    "address": 1147,
    "type": "line",
-   "text": "Not out of energy: tests whether the scroll position has reached the room's exit column ($FC) with the sprite inside the exit area and the right screen set; if so the room is left, otherwise it carries on to the scroll and sprite update below."
+   "text": "Not out of energy: tests whether the scroll column $02AE has reached $FC (the left end of the map, reached by scrolling left from column 0) with sprite 0 at X $39 or less, Y from $50 to $63 and Johnny facing left ($0296 = 3); if so the room is left (1,000 points, the picture screen, then the ending checks), otherwise it carries on to the per-frame body at $04E8."
   },
   {
    "address": 1256,
    "type": "line",
-   "text": "Per-frame body of the main loop: if the frame flag at $02BE is clear it only runs $0580 and loops; otherwise it clears the flag, checks for a scroll step, runs the per-pass subsystems in turn (energy and timer checks, input, jump, messages, enemies) and finally dispatches to the handler for the current mode through the table at $43E8, or to the action handler when fire is pressed in mode 0."
+   "text": "Per-frame body of the main loop: if the frame flag at $02BE is clear it only runs $0580 and loops. Otherwise it clears the flag and, if the interrupt made a scroll step ($02BF), clears that flag and the scroll request $21. It checks F5 ($9B3A, back to the attract mode); while the frame counter $0306 is non-zero it decrements it and, in mode 0, runs the alarm, laser pickup, time and countdown checks ($1F94, $1FBD, $1FD8, $1F72, $201A, $2436); then it runs the input, enemy, column bonus, action select, column, jump, message, pause and guard routines in turn. Finally, when fire is pressed in mode 0, it runs the handler of the selected action through the table at $0675, which returns into the dispatch of the current mode's handler through the table at $43E8; otherwise it dispatches straight to the mode handler. Both return to $0580."
   },
   {
    "address": 1408,
    "type": "line",
-   "text": "Idle branch of the main loop: runs the keyboard/action poll at $203A and goes back to the top of the loop."
+   "text": "Return point of every pass and the idle branch: the mode handlers return here (the main loop pushes $057F), and the loop comes here directly while the frame flag is clear. It runs timed_event at $203A, which, while bit 3 of $0299 and $0212 are set and fewer than four messages wait, counts $02F8 down and ends the game at zero, and goes back to the top of the loop."
   },
   {
    "address": 1414,
@@ -13210,22 +13210,22 @@
   {
    "address": 1488,
    "type": "line",
-   "text": "Moves Johnny's two sprites up one pixel, or does nothing at the top limit ($40), and updates the scroll flag; one of the four per-direction steps the walk code calls through the table at $1C2E."
+   "text": "Moves Johnny's two sprites up one pixel and decrements his saved height $0301, or does nothing when sprite 0's Y is below $40; it clears the scroll request $21. Every third step up (counted in $0205) it also runs walk_right_step, so the step goes up on a slant. It is one of the four per-direction steps the walk code calls through the table at $1C2E."
   },
   {
    "address": 1528,
    "type": "line",
-   "text": "Moves Johnny's two sprites down one pixel (limit tested in the caller), part of the per-direction walk steps."
+   "text": "Moves Johnny's two sprites down one pixel, increments $0301 and clears the scroll request $21 (there is no limit test here: the floor probe in walk_collision_check decides whether the step runs). Every third step down (counted down in $0205) it also runs player_move_left, so the step goes down on a slant. Part of the per-direction walk steps."
   },
   {
    "address": 1555,
    "type": "line",
-   "text": "Moves Johnny's sprites left one pixel unless he is at X $84; if he is at the left limit it sets the scroll direction to left ($FF) instead."
+   "text": "Moves Johnny's sprites left one pixel, clearing the scroll request $21 and $0207, while sprite 0's X is $84 or more. Below $84 it still moves him when the scroll column $02AE is $FC (the left end of the map, where the exit is); otherwise it sets the scroll direction $21 to $01 (scroll the screen content right) instead of moving him."
   },
   {
    "address": 1594,
    "type": "line",
-   "text": "Moves the player sprite pair one pixel to the right when it is left of $E0 (setting the scroll direction to right); at the right edge it either stops (clears a flag) or asks the scroller to start moving."
+   "text": "Moves the player sprite pair one pixel to the right when sprite 0's X is below $E0, clearing the scroll request $21 and setting $0207 to 1; at the right edge it either stops (clears the walking flag $02ED, when the scroll column $02AE is $F3, the right end of the map) or sets $21 to $FF to have the screen scroll."
   },
   {
    "address": 1629,
@@ -13245,7 +13245,7 @@
   {
    "address": 1661,
    "type": "line",
-   "text": "Polls the keyboard for the SPACE key (key $3C) and, when pressed and no message is being shown, steps the selected action ($02FC) down through JUMP, LASER, SEARCH, UTILISE, rewrites the action label and queues the beep message."
+   "text": "Polls the keyboard for the SPACE key (key $3C) and, when it is newly pressed ($02FD holds it until release) and no message is being typed ($0209), steps the selected action ($02FC) down by one, wrapping from JUMP to UTILISE, rewrites the action label, queues message 7 (SWITCH), sets the mode to 0 and queues the prompt."
   },
   {
    "address": 1713,
@@ -13260,7 +13260,7 @@
   {
    "address": 1793,
    "type": "line",
-   "text": "Sets up the raster interrupt system: sets the time-of-day clock to 3:00, disables the CIA interrupts, enables the raster interrupt, points the IRQ vector at $0738 and starts the three-handler chain."
+   "text": "Sets up the raster interrupt system: sets the time-of-day clock to 3:00, disables CIA1's interrupts, writes $80 to both CIAs' control registers A (timer A stopped, time-of-day clock at 50 Hz), enables the raster interrupt, points the IRQ vector at $0738, sets the scroll value $22 to $10, acknowledges any pending VIC interrupt and enables interrupts."
   },
   {
    "address": 1848,
@@ -13270,12 +13270,12 @@
   {
    "address": 1895,
    "type": "line",
-   "text": "Part one's raster handler for the band that starts at line $A3, where the status panel begins (the previous handler set that line). Selects screen 0 and the character set, sets the multicolour colours and the fixed horizontal scroll $18, sets the next interrupt line to $F3, raises the frame flag at $02BE, types the next message character when $0294 is set, and then runs the scroll step if one is wanted."
+   "text": "Part one's raster handler for the band that starts at line $A3, where the status panel begins (the previous handler set that line). Selects screen 0 and the character set, sets the multicolour colours and the fixed horizontal scroll $18, sets the next interrupt line to $F3, raises the frame flag at $02BE, runs one step of the message printer $0E48 when $0294 is set, and then runs the scroll step if one is wanted."
   },
   {
    "address": 1933,
    "type": "line",
-   "text": "Common tail of the raster handlers: when the scroll direction $21 is non-zero it runs the scroll step $087B and sets $02BF to 1, then restores X, Y and A and returns."
+   "text": "Tail of the $A3 handler (irq_panel_band): when the scroll direction $21 is non-zero it runs the scroll step $087B and sets $02BF to 1, then falls into the common exit at $0799, which every raster handler uses to restore X, Y and A and return."
   },
   {
    "address": 1952,
@@ -13290,7 +13290,7 @@
   {
    "address": 2000,
    "type": "line",
-   "text": "Raster handler that updates the on-screen clock: when the CIA1 time-of-day seconds changed it redraws the digits, otherwise it only flips the colon blink."
+   "text": "Part of irq_frame_bottom ($07A0), reached when the game is not paused: updates the on-screen clock. When the CIA1 time-of-day seconds differ from the last value drawn ($02BD) it redraws the digits and the colon, otherwise it only sets the colon's blink."
   },
   {
    "address": 2020,
@@ -13300,7 +13300,7 @@
   {
    "address": 2095,
    "type": "line",
-   "text": "Sets the clock's colon characters at $C2FD and $C325 to one of two tile values depending on bit 3 of the tenths of seconds, making it blink."
+   "text": "Sets the clock's colon characters at $C2FD and $C325 to character $F8 or $38 depending on bit 3 of the tenths of seconds, making it blink."
   },
   {
    "address": 2116,
@@ -13335,7 +13335,7 @@
   {
    "address": 2611,
    "type": "line",
-   "text": "After a scroll the new edge column is filled from the room's tile map: chooses the tile column to draw by the scroll phase and calls the tile draw at $0A92 and the column write at $0B00."
+   "text": "After a scroll the new edge column is filled from the room's tile map. Scrolling left ($21 negative) it draws character column $02C1 (the scroll phase plus one) of tile column $02AE+10 into screen column 39, moving the scroll column on when the phase wraps past 3; scrolling right it draws character column $02AD of tile column $02AE into screen column 0 and steps the phase back, moving the scroll column back when it passes 0. It calls the tile draw at $0A92 and the column write at $0B00."
   },
   {
    "address": 2706,
@@ -13355,7 +13355,7 @@
   {
    "address": 2816,
    "type": "line",
-   "text": "Writes the twelve characters in the column buffer to the screen map at $C050 and the matching colours (looked up from the table at $8448) to the colour copy at $D850, one column of the playfield."
+   "text": "Writes the twelve characters in the column buffer at $02AF down one column of the screen map from $C050 (the column is A minus 1: A is 1 for the left edge and $28 for the right) and the matching colours, looked up in the table at $8448, down the same column of colour memory from $D850."
   },
   {
    "address": 2875,
@@ -13385,12 +13385,12 @@
   {
    "address": 3062,
    "type": "line",
-   "text": "Handler for the SEARCH action (entry 2 of the table at $0675, run when fire is pressed). Does nothing unless mode 0 is active and no message is queued; otherwise finds what is at the player's position with $0D62, and unless the player is too low queues message 0 (EXAMINE) and message 11 (PROCESSING), sets a delay of 100 passes and starts mode 1."
+   "text": "Handler for the SEARCH action (entry 2 of the table at $0675, run when fire is pressed). Does nothing unless mode 0 is active and no message is queued; otherwise it finds what is at the player's position with $0D62 and, unless the search is refused ($02D6 negative: Johnny too low on the screen, not facing up, or no searchable tile there), queues message 0 (EXAMINE) and message 11 (PROCESSING), sets a delay of 100 passes and starts mode 1."
   },
   {
    "address": 3117,
    "type": "line",
-   "text": "Second half of the mode 1 handler (search in progress): counts the delay at $02D4 down; at zero it reports the result: a locked container ($0DCA) gives LOCKED and ABORT, nothing found gives FOUND NOTHING and clears the mode, otherwise it queues FOUND and the name of each object found and moves to mode 2."
+   "text": "Second half of the mode 1 handler (search in progress; the first half at $0C20 aborts on a stick press): counts the delay at $02D4 down; at zero it reports the result: a locked container ($0DCA) gives MALFUNCTION and LOCKED and clears the mode, nothing found gives FOUND NOTHING and clears the mode, otherwise it queues FOUND and the name of each object found, moves to mode 2 and queues the prompt."
   },
   {
    "address": 3364,
@@ -13410,7 +13410,7 @@
   {
    "address": 3426,
    "type": "line",
-   "text": "Looks up what is at the player's map column: checks the tile at that column against the table at $153D, then the object table at $1568, collecting each matching object's number into the list at $02D7 and its name into $02DB; the count goes in $02D6 (negative if the player is too low)."
+   "text": "Looks up what is at the player's map column. The search is refused ($02D6 = $FF) when sprite 0's Y is $62 or more (too low), when Johnny is not facing up ($0297 not 0), or when the tile in the map's middle row at that column is not one of the 43 in the table at $153D. Otherwise it clears the scroll request $21, sets the layer $02D5 to 3 and scans the object table at $1568 for records with that column and layer, collecting each one's object number into the list at $02D7 and its description number into $02DB; the count goes in $02D6."
   },
   {
    "address": 3530,
@@ -13450,17 +13450,17 @@
   {
    "address": 3656,
    "type": "line",
-   "text": "Per-pass message printer: if nothing is printing it starts the next queued message; otherwise every third pass it types one more character, handling the control characters (newline, pause, end)."
+   "text": "Per-pass message printer: if nothing is printing it starts the next queued message; otherwise every third call it handles one more character of the text: '!' ends the message, '2' scrolls the window up a line and goes on at its second column, a space only moves on, '3' draws the prompt arrow (characters $7B and $7C at $C360) and ends the message, and any other character is written to the window's bottom row at $C360 with $20 added."
   },
   {
    "address": 3727,
    "type": "line",
-   "text": "Ends the current message: shifts the queue down one entry, clears the printing flag and clears the window, unless the message was the blank prompt."
+   "text": "Ends the current message: shifts the queue at $02C4 down one entry, clears the printing flag $0209, scrolls the message window up a line ($1C90) unless the message was 10 (the prompt), and decrements the queue length."
   },
   {
    "address": 3775,
    "type": "line",
-   "text": "Game text, messages 0 to 52, each ended by '!' ($21). Letters are A to Z as 1 to 26, '2' is a line break, '3' is a short pause marker, digits and space are as ASCII. Messages 0 to 9 are the action menu words, 10 is the prompt arrow, 11 onwards the system messages, 48 to 52 the endings and part headings."
+   "text": "Game text, messages 0 to 52, each ended by '!' ($21). Letters, digits and space are plain ASCII ($41 to $5A for A to Z); the printer adds $20 to reach the panel font. '2' ($32) is a line break and '3' ($33) draws the prompt arrow and ends the message. Messages 0 to 9 are the menu words (EXAMINE to NO), 10 is the prompt arrow, 11 onwards the system messages, 45 to 48 the endings, 49 the copyright, 50 and 51 the part headings and 52 the high-score prompt."
   },
   {
    "address": 4096,
@@ -13480,12 +13480,12 @@
   {
    "address": 5480,
    "type": "line",
-   "text": "The 21 objects, four bytes each: map column, layer (3 for the floor), object number and description number. Taking an object zeroes its column and layer; hiding one writes the container's column and layer back."
+   "text": "The 21 objects, four bytes each: map column, layer (3 in every record, the layer the search sets in $02D5), object number and description number. Taking an object zeroes its column and layer; hiding one writes the player's map column ($021B) and layer ($02D5) into it; reset_game_state ($2421) rewrites every column from $260F and every layer as 3."
   },
   {
    "address": 5481,
    "type": "line",
-   "text": "Data at $1569 (f_1569): written by mode_search_finish, mode_hide_do, reset_game_state; read by find_objects_here."
+   "text": "The layer byte of each object record (see $1568), reached by index: zeroed when an object is taken (the take step of modes 3 and 4, $0CED), written by mode_hide_do ($17C3) and reset_game_state ($2429); read by find_objects_here ($0DAD)."
   },
   {
    "address": 5482,
@@ -13505,7 +13505,7 @@
   {
    "address": 5560,
    "type": "line",
-   "text": "Data at $15B8 (a_15B8): read by read_tenths."
+   "text": "The map column of object 20, the IGNITION KEY (the first byte of its record in $1568), $0D at the start. check_time_limit reads it at $1F82: once it is no longer $0D (the key has been taken or hidden elsewhere), the truck driver's message and the alarm follow."
   },
   {
    "address": 5564,
@@ -13630,7 +13630,7 @@
   {
    "address": 6602,
    "type": "line",
-   "text": "Fifteen vertical steps (rise then fall) of a jump, added to or subtracted from the player sprites' Y."
+   "text": "Fifteen vertical steps of the rise of a jump (20 pixels in all): jump_step subtracts them from the player sprites' Y in order on the way up and adds them back in reverse order on the way down."
   },
   {
    "address": 6617,
@@ -13645,7 +13645,7 @@
   {
    "address": 6683,
    "type": "line",
-   "text": "Sixteen entries indexed by the inverted stick bits; the low bits hold the direction number 0 to 10, and $FF marks impossible combinations such as left plus right."
+   "text": "Thirty-two entries indexed by the inverted stick and fire bits (bits 0 to 4 of CIA1 port A): each holds the direction number 0 to 10 in its low bits plus $10 for fire, and $FF for impossible combinations such as up plus down or left plus right, which read_joystick turns into 0."
   },
   {
    "address": 6715,
@@ -13665,12 +13665,12 @@
   {
    "address": 6943,
    "type": "line",
-   "text": "Advances Johnny's walk animation unless the walk flag is set."
+   "text": "Advances Johnny's walk animation while the walking flag $02ED is set: it counts the timer $0298 down and every fourth call steps the walk frame $0303 (1, 0, 1, ...) and rewrites the sprite pointers from the frame table for direction Y. While the flag is clear it only selects the frame table for direction Y and shows its current frame."
   },
   {
    "address": 6975,
    "type": "line",
-   "text": "Selects the frame table for direction Y and starts it."
+   "text": "Points $2C/$2D at the frame table for direction Y (Y is twice the stick value minus one; the pointers are at $1C4C) and writes its current frame $0303 into the sprite pointers through $1B51; it does not reset the frame."
   },
   {
    "address": 6993,
@@ -13680,12 +13680,12 @@
   {
    "address": 7009,
    "type": "line",
-   "text": "Looks up the map character one cell ahead of Johnny's feet and stops him when it is a wall (character $76 twice in a row), and after that tests sprite overlaps against sprite 2."
+   "text": "Looks up the screen character at Johnny's feet probe (offset from sprite 1's X and the saved height $0301 by the pair for direction Y in $1BC1) and lets him step only when that character and the one to its right are both $76; otherwise it clears the scroll request $21 and the walking flag $02ED and returns. When the floor is there it goes on to the contact test against sprite 2 ($1BD5), which, unless it stops him, runs the walk step for direction Y through the table at $1C2E and sets $02ED."
   },
   {
    "address": 7105,
    "type": "line",
-   "text": "Pairs of X and Y offsets, one pair for each of the eight directions, that place the feet probe relative to the sprite."
+   "text": "Ten pairs of X and Y offsets (20 bytes), indexed by twice the stick value minus one, that place the feet probe relative to sprite 1's X and the saved height $0301; the pairs for the unused stick values 3 and 7 are zero."
   },
   {
    "address": 7106,
@@ -13705,17 +13705,17 @@
   {
    "address": 7214,
    "type": "line",
-   "text": "Eight words (address minus one) of the walk steps, indexed by direction: up, down, left, right and the diagonals use $05D0, $05F8, $0613 and $063A."
+   "text": "Ten words (address minus one) of the walk steps, indexed by twice the stick value minus one: up $05D0, down $05F8, left $0613, right $063A, and for the diagonals the stubs at $065D to $066F that combine them. The entries for the unused stick values 3 and 7 are $0000."
   },
   {
    "address": 7215,
    "type": "line",
-   "text": "Data at $1C2F (f_1C2F): read by sprite_height_difference."
+   "text": "The high bytes of the walk_step_table words at $1C2E, read at $1C20 by the walk-step dispatch at the end of sprite_contact_check."
   },
   {
    "address": 7234,
    "type": "line",
-   "text": "Johnny's walk frame data: direction codes ($1C42), pointers to the frame tables ($1C4C, $1C60) and the sprite pointer pairs of each frame ($1C60 onwards) that $1AF0 and $1B51 write into the sprite pointers at $C3F8."
+   "text": "Johnny's walk frame data: the facing (0 to 7, $FF for the unused stick values) for each stick direction at $1C42, which mode_walk turns towards; the pointers to the walk frame tables of each direction at $1C4C; the sprite pointer pairs of the eight facings at $1C60, which $1AF0 writes into $C3F8 and $C3F9; and the four-byte walk frame tables at $1C70 to $1C8F, which $1B51 writes."
   },
   {
    "address": 7244,
@@ -13745,7 +13745,7 @@
   {
    "address": 7302,
    "type": "line",
-   "text": "Data at $1C86 (f_1C86): read by actor_0231_update, move_pair_b5."
+   "text": "Data at $1C86 (f_1C86): read by actor_0231_update and move_pair_right through their shared tail at $323E ($324A), and by move_pair_b5 ($3276)."
   },
   {
    "address": 7312,
@@ -13760,17 +13760,17 @@
   {
    "address": 7418,
    "type": "line",
-   "text": "Shared lock check: finds the container at the player's column in $15BC; the right key object opens it (sets its bit in $020B, adds a score bonus and queues the opened message), a repeat says it is already open, and the other key jams it."
+   "text": "Shared lock check: finds the container at the player's column in $15BC. The right key ($02F0) opens it (sets its bit in $020B, adds 1,500 points and queues the opened message $02F1), unless it is already open (message $02F2) or jammed (MALFUNCTION and LOCK JAMMED). The other key ($02F3) jams the lock (sets its bit in $020C), is removed from the inventory and gives MALFUNCTION and KEY MESHED IN LOCK; any other object gives NO EFFECT."
   },
   {
    "address": 7573,
    "type": "line",
-   "text": "INPUT handler for the first terminal column: the PASSCARD (object 14) gives SECURITY CLEARANCE GIVEN and sets $0210 to $11; any other object sets the alarm flag $0211, queues ALARM HAS GONE OFF and, when the decoy has not been built, sets $0219 to 1."
+   "text": "INPUT handler of the terminal at map column $55: the PASSCARD (object 14) gives SECURITY CLEARANCE GIVEN and sets $0210 to $11; any other object takes the alarm path at $1DAC (shared with the time, position and exit checks): it sets the alarm flag $0211, queues ALARM HAS GONE OFF and, while $0212 is clear, sets the guard state $0219 to 1."
   },
   {
    "address": 7619,
    "type": "line",
-   "text": "INPUT handler of the computer terminal columns: the object number picks the step - PASSWORD logs on, COMPUTER PROTOCOLS links up, SECURITY DOCUMENT toggles the alarm override, FIRE SYSTEM MANUAL toggles the sprinkler system."
+   "text": "INPUT handler of the computer terminal at map column $6B: the object number picks the step. PASSWORD logs on (bit 0 of $0299), COMPUTER PROTOCOLS links up when logged on (bit 1), and once linked the SECURITY DOCUMENT toggles the general alarm (bit 2; 3,000 points the first time it is overridden) and the FIRE SYSTEM MANUAL toggles the sprinkler system (bit 3; 5,000 points the first time it is switched off), each followed by LOG OFF, which clears bits 0 and 1. Anything else, or a step out of order, gives NO EFFECT."
   },
   {
    "address": 7832,
@@ -13785,7 +13785,7 @@
   {
    "address": 7908,
    "type": "line",
-   "text": "Drains the energy bar by one step: increments the character in the bar's cell and rolls to the next cell, setting the out-of-energy flag at $0206 when the bar is empty."
+   "text": "Drains the energy bar ($029A) by Y steps (none when Y is 0): each step increments the character of the bar's current cell (it goes $35, $36, $37) and, when it reaches $38, blanks the cell and moves to the next cell down; when the last cell empties it sets the out-of-energy flag at $0206."
   },
   {
    "address": 7976,
@@ -13795,7 +13795,7 @@
   {
    "address": 8050,
    "type": "line",
-   "text": "Called once a pass while the alarm flag $0211 is clear: when the clock's minutes digit is zero (each ten minutes) and the byte at $15B8 is not $0D it queues message 32 and jumps to the alarm path at $1DAC."
+   "text": "Called from the main loop in mode 0 when the frame counter $0306 allows, while the alarm flag $0211 is clear: when the units digit of the clock's minutes is zero and the IGNITION KEY's column at $15B8 is no longer $0D (it has been moved), it queues message 43 (DRIVER LOOKING FOR TRUCK KEY), reads the tenths register ($1F7E) and jumps to the alarm path at $1DAC."
   },
   {
    "address": 8062,
