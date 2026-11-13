@@ -25,7 +25,7 @@ screen's bottom line reads `PRESS FIRE TO JOIN THE ACTION`.
 | Zero page variables: controls, the monsters' positions, frames and states, helicopters, pointers | `$02`-`$A5` |
 | Music driver: entries, variables, the tune table, the code | `$0200`-`$0575` |
 | Tune 0, three voices | `$0576`-`$09E6` |
-| The first voice of a second tune, never played | `$09E7`-`$0AFF` |
+| The first voice of a second tune, never played, cut off by the scenery | `$09E7`-`$0AFF` |
 | Scenery: 25 rows of 79 characters (two skylines, the ground, the street and the weak road's pieces) | `$0B00`-`$12B6` |
 | Colour of every character: the city's set, the text set | `$1300`, `$1400` |
 | Tile address tables for the monsters' pictures | `$1500`-`$1BFF` |
@@ -388,9 +388,12 @@ register or a driver variable. A 0 sends the voice back to its start.
 - `tune_pointers` (`$0298`) lists three tunes. `start_tune` (`$AD0B`)
   starts with `LDX #$00`, so tune 0 always plays. *Live:* the COLLECT
   ITEMS screen called it with X = 1 and the newspaper with X = 2.
-- Tune 1's first voice is whole at `$09E7`-`$0AFF`. Its other voices
-  (`$0B0B`, `$0BF8`) and tune 2's three (`$0CF3`, `$0E12`, `$0F51`) point
-  into the scenery rows.
+- Tune 1's first voice starts at `$09E7` and is cut off at `$0AFF`, in
+  the middle of a pair, where the scenery rows begin: 1,082 ticks of it
+  are left, 3,246 frames, about 65 seconds. Its other voices (`$0B0B`,
+  `$0BF8`) and tune 2's three (`$0CF3`, `$0E12`, `$0F51`) point into the
+  scenery rows. The commands `$FE` and `$FC` each take the byte after
+  them.
 
 **Effects.** `start_sound` (`$822F`) starts effect A on voice X from an
 eight-byte record (`sfx_records`, `$82EC`): one write of the frequency,

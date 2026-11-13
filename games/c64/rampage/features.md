@@ -53,9 +53,10 @@ Found in the code, not in the manual.
 
 - **A second tune that is never played.** The COLLECT ITEMS screen asks
   for tune 1 and the newspaper for tune 2, and `start_tune` begins with
-  `LDX #$00`, so both get tune 0. Tune 1's first voice is still in the
-  file at `$09E7`-`$0AFF`; the rest of it and all of tune 2 would be read
-  from the scenery tables that begin at `$0B00`.
+  `LDX #$00`, so both get tune 0. The first 65 seconds of tune 1's
+  first voice are still in the file at `$09E7`-`$0AFF`; the rest of it
+  and all of tune 2 would be read from the scenery tables that begin at
+  `$0B00`.
 - **Sound effects that never develop.** `update_sound` (`$82AC`), which
   would sweep and end each effect, is never called: twenty `NOP`s sit in
   `irq_top` where the call would go. Effects 3 and 4 of `sfx_records` are
