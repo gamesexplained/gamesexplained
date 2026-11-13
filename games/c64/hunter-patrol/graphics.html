@@ -14,7 +14,7 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Distance is faked with sprites stored at ten sizes each, and a raster interrupt splits the screen so the same eight hardware sprites serve the sky and the ground.</p>
+  <p class="sub">Nothing is scaled: every enemy is stored at ten sizes, and the screen is split so eight sprites can serve both the sky and the ground.</p>
 </header>
 <main class="wrap">
 <section id="cast">
@@ -22,11 +22,11 @@
   <h2 class="t">The cast, drawn from the game's own bytes</h2>
   <p class="lede">The game has no 3D arithmetic. A tank far away is a small picture of a tank, and the same tank near the plane is a bigger one, so every enemy is stored as a run of sizes. Each row below runs from the farthest size to the nearest.</p>
   <div class="plate" id="hp-cast"><p class="cap">Loading the shapes…</p></div>
-  <p class="cap">Every sprite shape in the area <code>$5000</code> to <code>$7FFF</code> and the four target sets, drawn from the bytes on the <a href="source.html#5000">Source tab</a> in the colours the game's register images give them (<a href="source.html#8060"><code>$8060</code></a> for the sky, <a href="source.html#8090"><code>$8090</code></a> for the ground). Each shape is labelled with its sprite pointer, the number the game stores; the shape sits at pointer × 64 + <code>$4000</code>. The animated ones play at about 75 passes of the main loop a second, the rate measured in the emulator on 13 November 2026 (it varies from 67 to 88 with the number of things on screen, because the loop does not wait for the screen).</p>
-  <p>The plane (<a href="source.html#1990"><code>move_plane</code></a>, <code>$1990</code>) shows picture <code>$42</code> plus the scroll speed, so it banks into a turn in five steps as the stick is held left or right. Its shadow on the ground (<a href="source.html#22b0"><code>plane_shadow</code></a>, <code>$22B0</code>) is one of 25 pictures: five sizes by the plane's height, each in the same five banks. The crash test uses the shadow too: while the plane is low, the shadow touching a ground object ends the life.</p>
-  <p>The enemy aircraft fly away from the plane: a new one starts near, at picture <code>$49</code>, and its templates (<a href="source.html#8570"><code>$8570</code></a>) shrink it through to <code>$52</code> as its depth falls; one heading left uses the ten pictures after them. The ground objects come towards the plane through twelve templates (<a href="source.html#8400"><code>$8400</code></a>) that take them from picture <code>$5D</code> to <code>$66</code>, speeding up as they near, and <a href="source.html#17a3"><code>sort_ground</code></a> adds 10 for each kind, so the tanks, the lorries, the guns and the buildings share the same twelve templates. The shot shrinks as it flies away (<a href="source.html#86a0"><code>$86A0</code></a>), and the flak climbs as a dot until its burst time, then bursts in three steps.</p>
-  <p>A hit swaps the picture for an explosion that flickers between two shapes every four passes: for a ground object <code>$C0</code> + 2 × (picture − <code>$5D</code>), so the explosion keeps the object's size as it comes on, and for an aircraft <code>$A2</code> and <code>$A3</code>. When the plane crashes, <a href="source.html#2400"><code>plane_crash</code></a> (<code>$2400</code>) shows <code>$9E</code> plus the top four bits of its crash counter <code>$3F</code>, ten pictures from a fireball to a ring that breaks up.</p>
-  <p>The targets of the <a href="gameplay.html">strafing runs</a> are too wide for one sprite. Each is three sprites side by side, in ten sizes, 30 shapes to a set. <a href="source.html#2b00"><code>start_run</code></a> copies the level's set from <a href="source.html#3000"><code>$3000</code></a>, <a href="source.html#3800"><code>$3800</code></a>, <a href="source.html#9800"><code>$9800</code></a> or <a href="source.html#9000"><code>$9000</code></a> into the sprite area at <code>$7800</code>, and <a href="source.html#2c00"><code>place_target</code></a> shows part <i>n</i> as picture <code>$E0</code> + 3 × (size) + <i>n</i>.</p>
+  <p class="cap">Every sprite shape and the four targets, drawn from the bytes on the <a href="source.html#5000">Source tab</a> in the game's own colours, each labelled with the number the game stores for it. The moving ones play at the game's own speed, measured in the emulator.</p>
+  <p>The plane never moves sideways, so all it needs is a picture for each bank: <a href="source.html#1990"><code>move_plane</code></a> (<code>$1990</code>) picks one of five from the scroll speed as the stick is held left or right. Its shadow (<a href="source.html#22b0"><code>plane_shadow</code></a>, <code>$22B0</code>) has the same five banks at five sizes, smaller the higher the plane flies, and the crash test uses it: a low plane whose shadow touches a ground object is lost.</p>
+  <p>Distance is nothing but size. An enemy aircraft starts big, near the plane, and steps down through ten pictures as it flies away (<a href="source.html#8570"><code>$8570</code></a>). A ground object does the opposite: it appears as a speck on the horizon and steps up through ten pictures as it comes on, speeding up as it nears (<a href="source.html#8400"><code>$8400</code></a>). The tanks, the lorries, the guns, and the buildings all share the same steps, each kind ten pictures further along. The shot shrinks as it flies away, and the flak climbs as a dot and then bursts.</p>
+  <p>A hit swaps the picture for an explosion that flickers between two shapes every four passes. A ground object's explosion keeps the size the object had, and grows with it as it comes on; an aircraft's is always the same pair. When the plane itself is lost, <a href="source.html#2400"><code>plane_crash</code></a> (<code>$2400</code>) plays ten pictures, from a fireball to a ring that breaks up.</p>
+  <p>The targets of the <a href="gameplay.html#target">strafing runs</a> are too wide for one sprite, so each is three sprites side by side, in ten sizes. Before each run <a href="source.html#2b00"><code>start_run</code></a> copies the level's set of shapes into the sprite area, so all four targets share the same 32 slots.</p>
 </section>
 
 <section id="bands">
@@ -95,6 +95,7 @@ const HP_LOADING = 'VVVVVFJSSijwxRRSSkoqqioqKioqKigoqqihhYUUU1MBoYwyMsooKAAQUEw8
       const draw = (pass) => {
         ctx.fillStyle = P[bg]; ctx.fillRect(0, 0, cv.width, cv.height);
         for (const c of cells) {
+          if (c.text) { ctx.fillStyle = P[bg === 0 ? 1 : 0]; ctx.font = 'bold 11px "IBM Plex Mono", monospace'; ctx.fillText(c.text, c.x, c.y + 34); continue; }
           const f = c.every ? Math.floor(pass / c.every) % c.pics.length : 0;
           const p = c.pics[f], base = c.base || 0x4000;
           const parts = c.parts || [p];
@@ -123,7 +124,7 @@ const HP_LOADING = 'VVVVVFJSSijwxRRSSkoqqioqKioqKigoqqihhYUUU1MBoYwyMsooKAAQUEw8
       [seq(0x49, 10, p => Object.assign({ pics: [p] }, skyHi(sky(0xD02B)))), seq(0x53, 10, p => Object.assign({ pics: [p] }, skyHi(sky(0xD02B))))], bgSky);
     const KINDS = ['tanks', 'lorries', 'guns', 'buildings'];
     group('Ground objects, far to near', 'Four kinds of ten sizes: $5D to $66 plus 10 for each kind. Multicolour, white with the ground\'s yellow and red. Rows: ' + KINDS.join(', ') + '.',
-      seq(0, 4, k => seq(0x5D + 10 * k, 10, p => Object.assign({ pics: [p] }, gMC(gnd(0xD02B))))), bgGnd);
+      seq(0, 4, k => [{ text: KINDS[k], w: 1.4 }].concat(seq(0x5D + 10 * k, 10, p => Object.assign({ pics: [p] }, gMC(gnd(0xD02B)))))), bgGnd);
     group('The shot and the flak', 'The shot $A8 to $B1 as it flies away (hires, black); the flak\'s dot $45 and its burst $46, $47, $48, 32 passes a step (multicolour, yellow).',
       [seq(0xA8, 10, p => Object.assign({ pics: [p] }, { hi: true, col: gnd(0xD028) })).concat([Object.assign({ pics: [0x45, 0x46, 0x47, 0x48], every: 32, label: 'flak' }, gMC(gnd(0xD029)))])], bgGnd);
     group('Explosions', 'A hit ground object, at its sizes $5D to $65: $C0 + 2 × size and the next, every 4 passes. At its nearest size, $66, the formula would give $D2, a filled block, which a live test never showed.',
