@@ -9659,7 +9659,7 @@
   },
   {
    "address": 40977,
-   "name": "v1_cmd_set_transpose",
+   "name": "v1_cmd_call_transposed",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -9815,7 +9815,7 @@
   },
   {
    "address": 41362,
-   "name": "v2_cmd_set_two",
+   "name": "v2_cmd_set_sweep_word",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -9875,7 +9875,7 @@
   },
   {
    "address": 41465,
-   "name": "v2_cmd_set_transpose",
+   "name": "v2_cmd_goto_transposed",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -9941,7 +9941,7 @@
   },
   {
    "address": 41661,
-   "name": "v3_cmd_set_two",
+   "name": "v3_cmd_set_sweep_word",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -16810,7 +16810,7 @@
   {
    "address": 40977,
    "type": "line",
-   "text": "Voice 1 command: sets voice 1's transposition (zero page $EC) from the next script byte."
+   "text": "Voice 1 command $C6: call a subroutine of the script with a transposition. Sets voice 1's transposition (zero page $EC) from the next script byte, loads 4, the command's length, and runs on into the call at $A01B (the BIT at $A018 skips the call entry's LDA #$03), which pushes the address after the four-byte command on voice 1's return stack and continues at the address in the script's third and fourth bytes."
   },
   {
    "address": 40985,
@@ -16820,7 +16820,7 @@
   {
    "address": 41017,
    "type": "line",
-   "text": "Voice 1 command: pushes the return address $98A5 and jumps to the machine-code routine whose address follows in the script."
+   "text": "Voice 1 command $D8: pushes the return address $A498 and jumps, through the pointer at $EF and $F0, to the machine-code routine whose address follows in the script. The routine's RTS returns to $A499, which steps the script on three bytes and reads the next event. The scripts call $B186, $B189, $B18C and $B198 this way, code inside the music data."
   },
   {
    "address": 41035,
@@ -16880,7 +16880,7 @@
   {
    "address": 41193,
    "type": "line",
-   "text": "Voice 1 command with two entries: $A0E9 loads 5 and the entry at $A0EC loads 7 (the other is hidden behind a BIT, see $07A9); both store the number in $9CAD, the byte that switches the voice's pitch sweep on (bits 0 to 2 choose how it repeats), and go on."
+   "text": "Voice 1 command with two entries: $A0E9 (command $E8) loads 5 and $A0EC (command $EA) loads 7, the LDA #$07 hidden in the operand of the BIT at $A0EB; both store the number in $9CAD, voice 1's pitch-sweep mode, which switches the sweep on when it is not 0, and go on one byte later. Of the mode's bits, bit 0 starts the four slopes again when they have run out (bit 7 would restart them from the note's pitch), bit 1 runs the fourth slope during the starting delay and bit 3 changes how the note path ($A5A3) starts the sweep; bit 2, set in both values, is not tested by voice 1's code."
   },
   {
    "address": 41205,
@@ -16915,7 +16915,7 @@
   {
    "address": 41362,
    "type": "line",
-   "text": "Voice 2 command: stores the next two script bytes in the parameter block at $9D88, indexed by the first byte."
+   "text": "Voice 2 command $DE: stores two script bytes in voice 2's pitch-sweep parameters at $9D88 and $9D89, indexed by the first byte, as $A05F does for voice 1, and goes on four bytes later."
   },
   {
    "address": 41382,
@@ -16955,7 +16955,7 @@
   {
    "address": 41465,
    "type": "line",
-   "text": "Voice 2 command: sets voice 2's transposition (zero page $ED) from the next script byte."
+   "text": "Voice 2 command $C8: go to with a transposition. Sets voice 2's transposition (zero page $ED) from the next script byte and runs on into the go-to at $A1FE, which continues at the address in the script's third and fourth bytes."
   },
   {
    "address": 41470,
@@ -17110,12 +17110,12 @@
   {
    "address": 42161,
    "type": "line",
-   "text": "The operand of the jump through voice 1's command table; the byte at $A4AD stores the command number here."
+   "text": "The operand of the JMP ($9C00) at $A4B0, voice 1's jump through its command table; the store at $A4AD writes its low byte, the command byte minus $C0, which is the byte offset of the command's word in the table."
   },
   {
    "address": 42166,
    "type": "line",
-   "text": "The note path of voice 1's event reader: the byte is a note number (less $60 when it is a rest-length variant, and $5F means a rest). The routine adds the transposition, sets the gate bit in the control register, looks the note up in the frequency tables at $9DF9 and $9E4A, writes the frequency, pulse width and envelope to the SID's voice 1 registers and copies the pulse-width, pitch and filter sweep parameters of the voice into their working copies."
+   "text": "The note path of voice 1's event reader. A byte of $60 or more has $60 taken off, and its second byte is then a duration in ticks; below $60 the second byte indexes the duration table at $9DD6. $5F means a rest, which only sets the duration. Otherwise the routine adds the transposition, writes $08 to the control register (test bit set, gate off), restarts the filter sweep ($A474) when voice 1 drives it ($9DCE is 0), looks the note up in the frequency tables at $9DF9 and $9E4A, writes the frequency, pulse width and envelope to the SID's voice 1 registers and the waveform byte $9CB8 with the test bit cleared, and copies the pulse-width sweep (when $9CB1 is not 0) and the pitch sweep (when the mode $9CAD is not 0) into their working copies."
   },
   {
    "address": 42466,
@@ -17160,17 +17160,17 @@
   {
    "address": 43160,
    "type": "line",
-   "text": "Per-tick effects of voice 1: gate-off timing, pulse-width sweep and pitch sweep, writing $D402 to $D404 and $D400 and $D401."
+   "text": "Per-tick effects of voice 1, skipped while $9D81 is 0. Gate-off timing: with bit 3 set in the control byte $9D7F the gate is cleared once the note's remaining duration $E6 falls below $9D80; otherwise $9D80 counts the ticks to the gate-off and then $9D81 the ticks to silence ($FF in either holds it), when it writes 0 to $D400 to $D406 and, if voice 1 drives the filter sweep ($9DCE is 0), stops that sweep ($9D5C). The gate-off writes $D404. Then the pulse-width sweep, writing $D402 and $D403, and the pitch sweep, writing $D400 and $D401."
   },
   {
    "address": 43478,
    "type": "line",
-   "text": "Per-tick effects of voice 2: gate-off timing, pulse width and pitch sweeps, to $D409, $D40A, $D40B, $D407, $D408."
+   "text": "Per-tick effects of voice 2, skipped while $9DA4 is 0: the same gate-off timing as voice 1's ($9DA2, $9DA3, $9DA4, writing $D40B, and 0 to $D407 to $D40D when the voice falls silent, stopping the filter sweep when $9DCE is 1), the pulse-width sweep (writing $D409 and $D40A) and the pitch sweep (writing $D407 and $D408). With bit 3 of the mode $9D95 set the pitch sweep is an arpeggio instead: every $9D8E ticks it plays the next note, the base note $9D92 plus a byte of the table at the address in $9D90 and $9D91, stepping the index $9D94 down to 0 and starting again from $9D93."
   },
   {
    "address": 43848,
    "type": "line",
-   "text": "Per-tick effects of voice 3, to $D410, $D411, $D412 and $D40E, $D40F."
+   "text": "Per-tick effects of voice 3, skipped while $9DC7 is 0: the same gate-off timing as voice 1's ($9DC5, $9DC6, $9DC7, writing $D412, and 0 to $D40E to $D414 when the voice falls silent, stopping the filter sweep when $9DCE is 2), then the pulse-width sweep (writing $D410 and $D411) and the pitch sweep (writing $D40E and $D40F), both skipped while the voice's frequency ($FB and $FC) is 0."
   },
   {
    "address": 44173,
@@ -17190,12 +17190,12 @@
   {
    "address": 44257,
    "type": "line",
-   "text": "Continues tune_pointers ($ACA0 to $ACE1) at offset 65: Start addresses of the voices' scripts of each tune, three words per tune; $9EB1 reads them by tune number. No instruction names this address, the data is reached through an index or pointer."
+   "text": "The second byte of a 29-byte note-parameter block at $ACE0 to $ACFC, which the $D2 copy commands of all three voices read through their rewritten operands. The tune table ends at $ACC2; $ACC3 to $ACDF is another 29-byte block of the same kind."
   },
   {
    "address": 44258,
    "type": "line",
-   "text": "The voices' scripts of every tune: notes, durations and command bytes that the driver at $A48B interprets."
+   "text": "The voices' scripts of every tune (notes, durations and command bytes that the interpreters at $A4A2, $A5F9 and $A752 read), with the parameter blocks their copy commands read placed among them (this byte is inside the 29-byte block at $ACE0; the first script starts at $ACFD), and two pieces of machine code: $B186 to $B1A5, called by voice 1's command $D8, and $B60A to $B614, voice 2's commands $F4 and $F6."
   },
   {
    "address": 45282,
@@ -17225,7 +17225,7 @@
   {
    "address": 50176,
    "type": "line",
-   "text": "Bytes $C400 to $C7FF of screen_buffers (part 2 of 2, 2048 bytes in all): Screen memory for the video bank at $C000."
+   "text": "Bytes $C400 to $C7FF of screen_buffers (part 2 of 2, 2048 bytes in all). Not a screen the game shows: part two's raster interrupt at $282E (line $F3) writes $00 to $D018, so down to line $61 the character set is at $C000, and the codes $80 to $FF on the top rows of part two's screen take their shapes from these bytes. Only the $1B that install_part_two_irq writes at $2772 points the screen here, until the first raster interrupt replaces it."
   },
   {
    "address": 51200,
@@ -17240,7 +17240,7 @@
   {
    "address": 52424,
    "type": "line",
-   "text": "Data at $CCC8 (a_CCC8): written by draw_picture_colours."
+   "text": "Part of character_set_a at $C800. No instruction reads or writes it: the \"ASL $CCC8\" at $1EDC is a misreading of the bytes 0E C8 CC, the end of STA ($0E),Y, the INY and the start of CPY $02F5 in draw_picture_colours. Only the VIC-II reads it, as character shapes."
   },
   {
    "address": 52488,
@@ -17250,352 +17250,352 @@
   {
    "address": 53248,
    "type": "line",
-   "text": "A character set that the panel band and the pictures use."
+   "text": "A character set of 256 characters, in the RAM under the I/O area. The raster interrupt at $07A0 (line $F3) copies $029C into $D018, and $04 there selects this set for the rows above the panel: it is $029C's start value (reset_game_state copies it from $2609) and its value in play, so part one's playfield is drawn with it. draw_picture_screen ($2462) sets $029C to $04 while it draws a picture and to $06, the set at $D800, when it has finished. The panel band below line $A3 always uses the set at $D800."
   },
   {
    "address": 53448,
    "type": "line",
-   "text": "Data at $D0C8 (a_D0C8): written by playfield_colour_fill, draw_picture_colours, part_two_colour_fill."
+   "text": "Part of character_set_b at $D000. No instruction reads or writes it: the \"ASL $D0C8\" at $0BD5, $1ECE and $2AFA (in playfield_colour_fill, draw_picture_colours and part_two_colour_fill) is a misreading of STA ($0E),Y, INY and BNE in loops that start with the undocumented LAX ($06),Y. Only the VIC-II reads it, as character shapes."
   },
   {
    "address": 53512,
    "type": "line",
-   "text": "Continues character_set_b ($D000 to $D7FF) at offset 264: A character set that the panel band and the pictures use. No instruction names this address, the data is reached through an index or pointer."
+   "text": "Continues character_set_b ($D000 to $D7FF) at offset 264: part of the character set, in the RAM under the I/O area. No instruction reads or writes it; only the VIC-II reads it, as character shapes."
   },
   {
    "address": 54272,
    "type": "line",
-   "text": "Bytes $D400 to $D7FF of character_set_b (part 2 of 2, 2048 bytes in all): A character set that the panel band and the pictures use.."
+   "text": "Bytes $D400 to $D7FF of character_set_b (part 2 of 2, 2048 bytes in all): the character set of part one's playfield (see $D000)."
   },
   {
    "address": 55296,
    "type": "line",
-   "text": "The main 2,048-byte character set of part one: tiles' characters, the font and the panel characters."
+   "text": "The 2,048-byte character set of the panel band in both parts (the raster interrupts at $0767 and $2804 write $06 to $D018 on line $A3): the panel's characters and the font of the message window. The code at $9AC0 also selects it ($D018 = $06), and the rows above the panel use it after draw_picture_screen sets $029C to $06; part one's playfield tiles are in the set at $D000. It lies in the RAM under the I/O area, which only the VIC-II reads."
   },
   {
    "address": 55375,
    "type": "line",
-   "text": "Data at $D84F (f_D84F): written by shift_map_left, part_two_scroll_rows_irq; read by shift_map_right."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D84F (written by shift_map_left, part_two_scroll_rows_irq; read by shift_map_right) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55376,
    "type": "line",
-   "text": "Data at $D850 (f_D850): written by shift_map_right, part_one_prepare; read by shift_map_left, part_two_scroll_rows_irq."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D850 (written by shift_map_right, part_one_prepare; read by shift_map_left, part_two_scroll_rows_irq) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55386,
    "type": "line",
-   "text": "Data at $D85A (f_D85A): written by attract_colour_fill."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D85A (written by attract_colour_fill) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55415,
    "type": "line",
-   "text": "Data at $D877 (f_D877): written by shift_map_left, part_two_scroll_rows_irq; read by shift_map_right."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D877 (written by shift_map_left, part_two_scroll_rows_irq; read by shift_map_right) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55416,
    "type": "line",
-   "text": "Data at $D878 (f_D878): written by shift_map_right; read by shift_map_left, part_two_scroll_rows_irq."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D878 (written by shift_map_right; read by shift_map_left, part_two_scroll_rows_irq) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55455,
    "type": "line",
-   "text": "Data at $D89F (f_D89F): written by shift_map_left, part_two_scroll_rows_irq; read by shift_map_right."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D89F (written by shift_map_left, part_two_scroll_rows_irq; read by shift_map_right) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55456,
    "type": "line",
-   "text": "Data at $D8A0 (f_D8A0): written by shift_map_right; read by shift_map_left, part_two_scroll_rows_irq."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D8A0 (written by shift_map_right; read by shift_map_left, part_two_scroll_rows_irq) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55466,
    "type": "line",
-   "text": "Data at $D8AA (f_D8AA): written by attract_colour_fill."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D8AA (written by attract_colour_fill) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55495,
    "type": "line",
-   "text": "Data at $D8C7 (f_D8C7): written by shift_map_left, part_two_scroll_rows_irq; read by shift_map_right."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D8C7 (written by shift_map_left, part_two_scroll_rows_irq; read by shift_map_right) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55496,
    "type": "line",
-   "text": "Data at $D8C8 (f_D8C8): written by shift_map_right; read by shift_map_left, part_two_scroll_rows_irq."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D8C8 (written by shift_map_right; read by shift_map_left, part_two_scroll_rows_irq) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55535,
    "type": "line",
-   "text": "Data at $D8EF (f_D8EF): written by shift_map_left, part_two_nmi, part_two_scroll_rows_irq; read by shift_map_right."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D8EF (written by shift_map_left, part_two_nmi, part_two_scroll_rows_irq; read by shift_map_right) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55536,
    "type": "line",
-   "text": "Data at $D8F0 (f_D8F0): written by shift_map_right; read by shift_map_left, part_two_nmi."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D8F0 (written by shift_map_right; read by shift_map_left, part_two_nmi) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55546,
    "type": "line",
-   "text": "Data at $D8FA (f_D8FA): written by attract_screen_setup, attract_bitmap_show, attract_colour_fill."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D8FA (written by attract_screen_setup, attract_bitmap_show, attract_colour_fill) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55575,
    "type": "line",
-   "text": "Data at $D917 (f_D917): written by shift_map_left, part_two_nmi; read by shift_map_right."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D917 (written by shift_map_left, part_two_nmi; read by shift_map_right) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55576,
    "type": "line",
-   "text": "Data at $D918 (f_D918): written by shift_map_right; read by shift_map_left, part_two_nmi."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D918 (written by shift_map_right; read by shift_map_left, part_two_nmi) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55611,
    "type": "line",
-   "text": "Data at $D93B (f_D93B): written by draw_ending_block."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D93B (written by draw_ending_block) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55615,
    "type": "line",
-   "text": "Data at $D93F (f_D93F): written by shift_map_left, part_two_nmi; read by shift_map_right."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D93F (written by shift_map_left, part_two_nmi; read by shift_map_right) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55616,
    "type": "line",
-   "text": "Data at $D940 (f_D940): written by shift_map_right, part_one_prepare; read by shift_map_left, part_two_nmi."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D940 (written by shift_map_right, part_one_prepare; read by shift_map_left, part_two_nmi) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55626,
    "type": "line",
-   "text": "Data at $D94A (f_D94A): written by attract_colour_fill."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D94A (written by attract_colour_fill) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55655,
    "type": "line",
-   "text": "Data at $D967 (f_D967): written by shift_map_left, part_two_nmi; read by shift_map_right."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D967 (written by shift_map_left, part_two_nmi; read by shift_map_right) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55656,
    "type": "line",
-   "text": "Data at $D968 (f_D968): written by shift_map_right; read by shift_map_left, part_two_nmi."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D968 (written by shift_map_right; read by shift_map_left, part_two_nmi) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55695,
    "type": "line",
-   "text": "Data at $D98F (f_D98F): written by shift_map_left, part_two_nmi; read by shift_map_right."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D98F (written by shift_map_left, part_two_nmi; read by shift_map_right) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55696,
    "type": "line",
-   "text": "Data at $D990 (f_D990): written by shift_map_right; read by shift_map_left, part_two_nmi."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D990 (written by shift_map_right; read by shift_map_left, part_two_nmi) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55706,
    "type": "line",
-   "text": "Data at $D99A (f_D99A): written by attract_colour_fill."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D99A (written by attract_colour_fill) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55735,
    "type": "line",
-   "text": "Data at $D9B7 (f_D9B7): written by shift_map_left, part_two_nmi; read by shift_map_right."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D9B7 (written by shift_map_left, part_two_nmi; read by shift_map_right) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55736,
    "type": "line",
-   "text": "Data at $D9B8 (f_D9B8): written by shift_map_right; read by shift_map_left, part_two_nmi."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D9B8 (written by shift_map_right; read by shift_map_left, part_two_nmi) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55775,
    "type": "line",
-   "text": "Data at $D9DF (f_D9DF): written by shift_map_left, part_two_nmi; read by shift_map_right."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D9DF (written by shift_map_left, part_two_nmi; read by shift_map_right) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55776,
    "type": "line",
-   "text": "Data at $D9E0 (f_D9E0): written by shift_map_right; read by shift_map_left, part_two_nmi."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D9E0 (written by shift_map_right; read by shift_map_left, part_two_nmi) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55786,
    "type": "line",
-   "text": "Data at $D9EA (f_D9EA): written by attract_colour_fill."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D9EA (written by attract_colour_fill) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55796,
    "type": "line",
-   "text": "Data at $D9F4 (f_D9F4): written by attract_screen_setup, attract_bitmap_show."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $D9F4 (written by attract_screen_setup, attract_bitmap_show) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55815,
    "type": "line",
-   "text": "Data at $DA07 (f_DA07): written by shift_map_left, part_two_nmi; read by shift_map_right."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $DA07 (written by shift_map_left, part_two_nmi; read by shift_map_right) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55816,
    "type": "line",
-   "text": "Data at $DA08 (f_DA08): written by shift_map_right; read by shift_map_left, part_two_nmi."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $DA08 (written by shift_map_right; read by shift_map_left, part_two_nmi) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55866,
    "type": "line",
-   "text": "Data at $DA3A (f_DA3A): written by attract_colour_fill."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $DA3A (written by attract_colour_fill) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 55930,
    "type": "line",
-   "text": "Continues character_set_main ($D800 to $DFFF) at offset 634: The main 2,048-byte character set of part one: tiles' characters, the font and the panel characters. No instruction names this address, the data is reached through an index or pointer."
+   "text": "Continues character_set_main ($D800 to $DFFF) at offset 634: part of the character set, in the RAM under the I/O area. No instruction reads or writes it; only the VIC-II reads it, as character shapes."
   },
   {
    "address": 55946,
    "type": "line",
-   "text": "Data at $DA8A (f_DA8A): written by attract_colour_fill."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $DA8A (written by attract_colour_fill) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 56010,
    "type": "line",
-   "text": "Continues character_set_main ($D800 to $DFFF) at offset 714: The main 2,048-byte character set of part one: tiles' characters, the font and the panel characters. No instruction names this address, the data is reached through an index or pointer."
+   "text": "Continues character_set_main ($D800 to $DFFF) at offset 714: part of the character set, in the RAM under the I/O area. No instruction reads or writes it; only the VIC-II reads it, as character shapes."
   },
   {
    "address": 56026,
    "type": "line",
-   "text": "Data at $DADA (f_DADA): written by attract_colour_fill."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $DADA (written by attract_colour_fill) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 56046,
    "type": "line",
-   "text": "Data at $DAEE (f_DAEE): written by attract_screen_setup, attract_bitmap_show."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $DAEE (written by attract_screen_setup, attract_bitmap_show) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 56106,
    "type": "line",
-   "text": "Data at $DB2A (f_DB2A): written by attract_colour_fill."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $DB2A (written by attract_colour_fill) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 56170,
    "type": "line",
-   "text": "Continues character_set_main ($D800 to $DFFF) at offset 874: The main 2,048-byte character set of part one: tiles' characters, the font and the panel characters. No instruction names this address, the data is reached through an index or pointer."
+   "text": "Continues character_set_main ($D800 to $DFFF) at offset 874: part of the character set, in the RAM under the I/O area. No instruction reads or writes it; only the VIC-II reads it, as character shapes."
   },
   {
    "address": 56186,
    "type": "line",
-   "text": "Data at $DB7A (f_DB7A): written by attract_colour_fill."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads or writes this byte: I/O is switched in throughout the game ($01 is $35 from $954B), so the instructions that name $DB7A (written by attract_colour_fill) reach the colour memory at that address instead. Only the VIC-II reads this byte, as part of a character's shape."
   },
   {
    "address": 56250,
    "type": "line",
-   "text": "Continues character_set_main ($D800 to $DFFF) at offset 954: The main 2,048-byte character set of part one: tiles' characters, the font and the panel characters. No instruction names this address, the data is reached through an index or pointer."
+   "text": "Continues character_set_main ($D800 to $DFFF) at offset 954: part of the character set, in the RAM under the I/O area. No instruction reads or writes it; only the VIC-II reads it, as character shapes."
   },
   {
    "address": 56320,
    "type": "line",
-   "text": "Bytes $DC00 to $DFFF of character_set_main (part 2 of 2, 2048 bytes in all): The main 2,048-byte character set of part one."
+   "text": "Bytes $DC00 to $DFFF of character_set_main (part 2 of 2, 2048 bytes in all): the character set of the panel band (see $D800)."
   },
   {
    "address": 56797,
    "type": "line",
-   "text": "Data at $DDDD (f_DDDD): read by v1_cmd_copy_block, v1_cmd_copy_block_14, v2_cmd_copy_block, v2_cmd_copy_block_14 and 3 more."
+   "text": "Part of character_set_main at $D800, in the RAM under the I/O area. No instruction reads it: $DDDD is only the placeholder operand of LDA $DDDD,X in the seven copy loops of the voice commands ($A082, $A0BA, $A1B5, $A1ED, $A2DE, $A2F9 and $A331), each of which writes the address from the script into that operand before the loop runs. Only the VIC-II reads this byte, as character shapes."
   },
   {
    "address": 56861,
    "type": "line",
-   "text": "Continues character_set_main ($D800 to $DFFF) at offset 1565: The main 2,048-byte character set of part one: tiles' characters, the font and the panel characters. No instruction names this address, the data is reached through an index or pointer."
+   "text": "Continues character_set_main ($D800 to $DFFF) at offset 1565: part of the character set, in the RAM under the I/O area. No instruction reads or writes it; only the VIC-II reads it, as character shapes."
   },
   {
    "address": 57344,
    "type": "line",
-   "text": "Sprite shapes and further character data of video bank 3, 64 bytes per shape."
+   "text": "Sprite shapes of video bank 3, 64 bytes per shape, for the sprite pointers $80 to $FF ($E000 is shape $80). Shapes $B2 and $B3 ($EC80 and $ECC0) are filled at run time by copy_sprite_block for sinking_animation ($3950). Its last two bytes, $FFFA and $FFFB, are the processor's NMI vector, which install_part_two_irq sets ($2785)."
   },
   {
    "address": 58368,
    "type": "line",
-   "text": "Bytes $E400 to $E7FF of sprite_shapes (part 2 of 8, 8188 bytes in all): Sprite shapes and further character data of video bank 3, 64 bytes per shape.."
+   "text": "Bytes $E400 to $E7FF of sprite_shapes (part 2 of 8, 8188 bytes in all): Sprite shapes of video bank 3, 64 bytes per shape, for the sprite pointers $80 to $FF."
   },
   {
    "address": 59392,
    "type": "line",
-   "text": "Bytes $E800 to $EBFF of sprite_shapes (part 3 of 8, 8188 bytes in all): Sprite shapes and further character data of video bank 3, 64 bytes per shape.."
+   "text": "Bytes $E800 to $EBFF of sprite_shapes (part 3 of 8, 8188 bytes in all): Sprite shapes of video bank 3, 64 bytes per shape, for the sprite pointers $80 to $FF."
   },
   {
    "address": 60416,
    "type": "line",
-   "text": "Bytes $EC00 to $EFFF of sprite_shapes (part 4 of 8, 8188 bytes in all): Sprite shapes and further character data of video bank 3, 64 bytes per shape.."
+   "text": "Bytes $EC00 to $EFFF of sprite_shapes (part 4 of 8, 8188 bytes in all): Sprite shapes of video bank 3, 64 bytes per shape, for the sprite pointers $80 to $FF."
   },
   {
    "address": 60543,
    "type": "line",
-   "text": "Data at $EC7F (f_EC7F): read by sinking_animation."
+   "text": "$EC7F is the last byte of shape $B1, which nothing names. $EC80 and $EC81 are the first bytes of shape $B2: written by copy_sprite_block and read by sinking_animation's loop at $3990 (LDA $EC7F,X with X from $3C down to 1). sinking_animation ($3950) copies Johnny's two shapes into $EC80 to $ECBF (shape $B2) and $ECC0 to $ECFF (shape $B3) with copy_sprite_block (the store at $39EC, its operand rewritten), then on each step moves both down one row: LDA $EC7F,X / STA $EC82,X and LDA $ECBF,X / STA $ECC2,X for X = $3C down to 1, and carries the bottom row of $B2 ($ECBC to $ECBE, pushed) to the top row of $B3 ($ECC0 to $ECC2)."
   },
   {
    "address": 60546,
    "type": "line",
-   "text": "Data at $EC82 (f_EC82): written by sinking_animation."
+   "text": "Bytes $EC82 to $ECBB of shape $B2: written by copy_sprite_block and by sinking_animation (STA $EC82,X at $3993, from $EC83), and read by sinking_animation (LDA $EC7F,X at $3990). sinking_animation ($3950) copies Johnny's two shapes into $EC80 to $ECBF (shape $B2) and $ECC0 to $ECFF (shape $B3) with copy_sprite_block (the store at $39EC, its operand rewritten), then on each step moves both down one row: LDA $EC7F,X / STA $EC82,X and LDA $ECBF,X / STA $ECC2,X for X = $3C down to 1, and carries the bottom row of $B2 ($ECBC to $ECBE, pushed) to the top row of $B3 ($ECC0 to $ECC2)."
   },
   {
    "address": 60604,
    "type": "line",
-   "text": "Data at $ECBC (a_ECBC): read by sinking_animation."
+   "text": "Part of the bottom row of shape $B2: read by sinking_animation ($397C), which carries it to $ECC0, and written by copy_sprite_block and by sinking_animation's STA $EC82,X at $3993. sinking_animation ($3950) copies Johnny's two shapes into $EC80 to $ECBF (shape $B2) and $ECC0 to $ECFF (shape $B3) with copy_sprite_block (the store at $39EC, its operand rewritten), then on each step moves both down one row: LDA $EC7F,X / STA $EC82,X and LDA $ECBF,X / STA $ECC2,X for X = $3C down to 1, and carries the bottom row of $B2 ($ECBC to $ECBE, pushed) to the top row of $B3 ($ECC0 to $ECC2)."
   },
   {
    "address": 60605,
    "type": "line",
-   "text": "Data at $ECBD (a_ECBD): read by sinking_animation."
+   "text": "Part of the bottom row of shape $B2: read by sinking_animation ($3980), which carries it to $ECC1, and written by copy_sprite_block and by sinking_animation's STA $EC82,X at $3993. sinking_animation ($3950) copies Johnny's two shapes into $EC80 to $ECBF (shape $B2) and $ECC0 to $ECFF (shape $B3) with copy_sprite_block (the store at $39EC, its operand rewritten), then on each step moves both down one row: LDA $EC7F,X / STA $EC82,X and LDA $ECBF,X / STA $ECC2,X for X = $3C down to 1, and carries the bottom row of $B2 ($ECBC to $ECBE, pushed) to the top row of $B3 ($ECC0 to $ECC2)."
   },
   {
    "address": 60606,
    "type": "line",
-   "text": "Data at $ECBE (a_ECBE): read by sinking_animation."
+   "text": "Part of the bottom row of shape $B2: read by sinking_animation ($3984), which carries it to $ECC2, and written by copy_sprite_block and by sinking_animation's STA $EC82,X at $3993. sinking_animation ($3950) copies Johnny's two shapes into $EC80 to $ECBF (shape $B2) and $ECC0 to $ECFF (shape $B3) with copy_sprite_block (the store at $39EC, its operand rewritten), then on each step moves both down one row: LDA $EC7F,X / STA $EC82,X and LDA $ECBF,X / STA $ECC2,X for X = $3C down to 1, and carries the bottom row of $B2 ($ECBC to $ECBE, pushed) to the top row of $B3 ($ECC0 to $ECC2)."
   },
   {
    "address": 60607,
    "type": "line",
-   "text": "Data at $ECBF (f_ECBF): read by sinking_animation."
+   "text": "The last byte of shape $B2: only copy_sprite_block writes it. sinking_animation's LDA $ECBF,X at $398A uses it as a base, with X from $3C down to 1, and reads $ECC0 to $ECFB. sinking_animation ($3950) copies Johnny's two shapes into $EC80 to $ECBF (shape $B2) and $ECC0 to $ECFF (shape $B3) with copy_sprite_block (the store at $39EC, its operand rewritten), then on each step moves both down one row: LDA $EC7F,X / STA $EC82,X and LDA $ECBF,X / STA $ECC2,X for X = $3C down to 1, and carries the bottom row of $B2 ($ECBC to $ECBE, pushed) to the top row of $B3 ($ECC0 to $ECC2)."
   },
   {
    "address": 60608,
    "type": "line",
-   "text": "Data at $ECC0 (a_ECC0): written by sinking_animation."
+   "text": "The first byte of shape $B3: written by copy_sprite_block and by sinking_animation ($39A2, from $ECBC), and read by sinking_animation's LDA $ECBF,X at $398A. sinking_animation ($3950) copies Johnny's two shapes into $EC80 to $ECBF (shape $B2) and $ECC0 to $ECFF (shape $B3) with copy_sprite_block (the store at $39EC, its operand rewritten), then on each step moves both down one row: LDA $EC7F,X / STA $EC82,X and LDA $ECBF,X / STA $ECC2,X for X = $3C down to 1, and carries the bottom row of $B2 ($ECBC to $ECBE, pushed) to the top row of $B3 ($ECC0 to $ECC2)."
   },
   {
    "address": 60609,
    "type": "line",
-   "text": "Data at $ECC1 (a_ECC1): written by sinking_animation."
+   "text": "The second byte of shape $B3: written by copy_sprite_block and by sinking_animation ($399E, from $ECBD), and read by sinking_animation's LDA $ECBF,X at $398A. sinking_animation ($3950) copies Johnny's two shapes into $EC80 to $ECBF (shape $B2) and $ECC0 to $ECFF (shape $B3) with copy_sprite_block (the store at $39EC, its operand rewritten), then on each step moves both down one row: LDA $EC7F,X / STA $EC82,X and LDA $ECBF,X / STA $ECC2,X for X = $3C down to 1, and carries the bottom row of $B2 ($ECBC to $ECBE, pushed) to the top row of $B3 ($ECC0 to $ECC2)."
   },
   {
    "address": 60610,
    "type": "line",
-   "text": "Data at $ECC2 (f_ECC2): written by sinking_animation."
+   "text": "Bytes $ECC2 onwards of shape $B3: written by copy_sprite_block and by sinking_animation ($399A from $ECBE, and STA $ECC2,X at $398D), and read by sinking_animation (LDA $ECBF,X at $398A). sinking_animation ($3950) copies Johnny's two shapes into $EC80 to $ECBF (shape $B2) and $ECC0 to $ECFF (shape $B3) with copy_sprite_block (the store at $39EC, its operand rewritten), then on each step moves both down one row: LDA $EC7F,X / STA $EC82,X and LDA $ECBF,X / STA $ECC2,X for X = $3C down to 1, and carries the bottom row of $B2 ($ECBC to $ECBE, pushed) to the top row of $B3 ($ECC0 to $ECC2)."
   },
   {
    "address": 60674,
    "type": "line",
-   "text": "Continues sprite_shapes ($E000 to $FFFB) at offset 3330: Sprite shapes and further character data of video bank 3, 64 bytes per shape. No instruction names this address, the data is reached through an index or pointer."
+   "text": "Continues sprite_shapes ($E000 to $FFFB) at offset 3330: Sprite shapes of video bank 3, 64 bytes per shape, for the sprite pointers $80 to $FF. No instruction names this address; it is the end of shape $B3 ($ECC0 to $ECFF), which copy_sprite_block and sinking_animation write through indexes."
   },
   {
    "address": 61440,
    "type": "line",
-   "text": "Bytes $F000 to $F3FF of sprite_shapes (part 5 of 8, 8188 bytes in all): Sprite shapes and further character data of video bank 3, 64 bytes per shape.."
+   "text": "Bytes $F000 to $F3FF of sprite_shapes (part 5 of 8, 8188 bytes in all): Sprite shapes of video bank 3, 64 bytes per shape, for the sprite pointers $80 to $FF."
   },
   {
    "address": 61856,
    "type": "line",
-   "text": "Data at $F1A0 (a_F1A0): read by v1_cmd_goto."
+   "text": "Part of sprite shape $C6 ($F180 to $F1BF). The BIT $F1A0 at $A0DB, in voice 1's command $E4 ($A0D3), uses this address only to skip the LDY #$F1 hidden in its operand at $A0DC; the value it reads is not used."
   },
   {
    "address": 61920,
    "type": "line",
-   "text": "Continues sprite_shapes ($E000 to $FFFB) at offset 4576: Sprite shapes and further character data of video bank 3, 64 bytes per shape. No instruction names this address, the data is reached through an index or pointer."
+   "text": "Continues sprite_shapes ($E000 to $FFFB) at offset 4576: Sprite shapes of video bank 3, 64 bytes per shape, for the sprite pointers $80 to $FF. No instruction names this address; the VIC-II reads it through the sprite pointers."
   },
   {
    "address": 62464,
    "type": "line",
-   "text": "Bytes $F400 to $F7FF of sprite_shapes (part 6 of 8, 8188 bytes in all): Sprite shapes and further character data of video bank 3, 64 bytes per shape.."
+   "text": "Bytes $F400 to $F7FF of sprite_shapes (part 6 of 8, 8188 bytes in all): Sprite shapes of video bank 3, 64 bytes per shape, for the sprite pointers $80 to $FF."
   },
   {
    "address": 63488,
    "type": "line",
-   "text": "Bytes $F800 to $FBFF of sprite_shapes (part 7 of 8, 8188 bytes in all): Sprite shapes and further character data of video bank 3, 64 bytes per shape.."
+   "text": "Bytes $F800 to $FBFF of sprite_shapes (part 7 of 8, 8188 bytes in all): Sprite shapes of video bank 3, 64 bytes per shape, for the sprite pointers $80 to $FF."
   },
   {
    "address": 64512,
    "type": "line",
-   "text": "Bytes $FC00 to $FFFB of sprite_shapes (part 8 of 8, 8188 bytes in all): Sprite shapes and further character data of video bank 3, 64 bytes per shape.."
+   "text": "Bytes $FC00 to $FFFB of sprite_shapes (part 8 of 8, 8188 bytes in all): Sprite shapes of video bank 3, 64 bytes per shape, for the sprite pointers $80 to $FF. $FFFA and $FFFB are also the processor's NMI vector, which install_part_two_irq sets ($2785)."
   }
  ]
 }
