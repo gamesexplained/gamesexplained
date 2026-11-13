@@ -4,7 +4,7 @@ Current truth for this game. The workflow lives in `kit/skills/`; how this under
 
 ## Build
 
-A G64 of a cracked original on a 1541 disk: a boot program at `$0316`, a second stage `F` at `$4000` and the game `SHORT` at `$0400` of 64,508 bytes, loaded whole by a fast loader (`orientation.md`). Both parts of the game, all graphics and the music are in that one load.
+The original Ocean cassette: a boot program at `$0316` in the KERNAL's format, then Ocean's turbo loader reads 275 pages of 256 bytes. The first are the loading tune (`$A000`-`$AFFF`) and the loading picture, which shows while the rest of memory up to `$FFFF` loads; the last 16 pages are the game's own `$A000`-`$AFFF` (`orientation.md`, `media.json`). Both parts of the game, all graphics and the music are in that one load. A cracked disk version hands the same bytes to the game from `$0334` to `$FFF9`.
 
 ## Memory layout
 
