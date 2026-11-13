@@ -81,7 +81,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <table class="sc-tab" id="sc-c-tab"></table></section>
 
 <section id="bank"><p class="fig">05 · The whole bank</p><h2 class="t">All 128 shapes</h2>
-<p class="lede">Every sprite shape is in one place: <code>$E000</code>-<code>$FFFF</code>, 64 bytes each, sprite pointers <code>$80</code> to <code>$FF</code> in video bank 3. Hover or tap a shape to see who uses it. For six of them (<code>$EB</code>, <code>$EE</code>, <code>$EF</code>, <code>$FA</code>, <code>$FB</code> and <code>$FF</code>) no instruction or table that sets a sprite pointer was found to name them; two are clouds of dots, two are pieces of a snake, and <code>$FF</code> is a block of stripes.</p>
+<p class="lede">Every sprite shape is in one place: <code>$E000</code>-<code>$FFFF</code>, 64 bytes each, sprite pointers <code>$80</code> to <code>$FF</code> in video bank 3. Hover or tap a shape to see who uses it. For five of them (<code>$EB</code>, <code>$EE</code>, <code>$EF</code>, <code>$FA</code> and <code>$FB</code>) no instruction or table that sets a sprite pointer was found to name them; two are clouds of dots and two are pieces of a snake. The last slot, <code>$FF</code>, is no picture: its 64 bytes, <code>$FFC0</code>-<code>$FFFF</code>, run into the processor's vectors at <code>$FFFA</code>, and nothing points a sprite at it.</p>
 <div class="plate"><canvas class="sc-cv sc-spr" id="sc-b-cv" width="416" height="704" role="img" aria-label="All 128 sprite shapes of the game in a grid"></canvas>
 <p class="cap" id="sc-b-info">Shapes drawn in cyan with the game's shared dark grey and black.</p></div></section>
 </main>
@@ -152,14 +152,14 @@ const SC_PART2 = [['A0', 'A1'], ['A2', 'A3'], ['F5', 'F6'], ['F7', 'F6'], ['AE',
 const SC_CREATURES = [
   [1, 'a bird', '$8F9A', 1, [['DA'], ['DB'], ['DC'], ['DA']]],
   [2, 'a rabbit', '$8F9E', 1, [['99'], ['9A'], ['9B']]],
-  [3, 'an orange animal, running', '$8FA9', 8, [['E9'], ['EA']]],
-  [4, 'a small animal low on the ground', '$8FA7', 8, [['E0'], ['E8']]],
+  [3, 'a squirrel', '$8FA9', 8, [['E9'], ['EA']]],
+  [4, 'a mouse', '$8FA7', 8, [['E0'], ['E8']]],
   [5, 'a fin in the water', '$8FB9', 3, [['93'], ['94'], ['95']]],
   [6, 'a log, two sprites long', '$8FAB, $8FAD', 9, [['83', '85'], ['84', '86']]],
   [7, 'a snake', '$8FA1, $8FA4', 7, [['FC', 'FD'], ['FE', '80'], ['81', '82']]],
   [8, 'a grey robot, Number 5\'s own shapes', '$1C84', 15, [['C4/C5'], ['C4/C7']]],
   [9, 'a soldier with a gun', '$23FC', 8, [['E1/E2'], ['E1/E3'], ['E1/E4'], ['E1/E5']]],
-  [11, 'two figures on shapes $A8-$A9 and $AA, $B4', '$8FBC, $8FBE', 1, [['A8', 'AA'], ['A9', 'B4']]],
+  [11, 'a flying elephant, two sprites long', '$8FBC, $8FBE', 1, [['A8', 'AA'], ['A9', 'B4']]],
   [12, 'a rolling ball', '$8FC0', 14, [['BA'], ['BB']]],
   [13, 'a small cyan machine', '$8FC2', 3, [['B8'], ['B9']]],
   [14, 'a duck', '$8FC4', 1, [['BE'], ['BF']]],
@@ -190,6 +190,7 @@ function scUsers(ram) {
   [0x92, 0xAB, 0xAC, 0xAD].forEach((p) => add(p, 'part two\'s soldiers, other poses ($3137-$3195)'));
   add(0xB5, 'part two ($3261)');
   [0xBC, 0xBD].forEach((p) => add(p, 'part two ($3C45)'));
+  add(0xFF, 'no sprite: $FFC0-$FFFF holds the end of memory and the processor\'s vectors at $FFFA');
   SC_CREATURES.forEach(([e, name, , , frames]) => frames.forEach((f) => f.forEach((s) => s.split('/').forEach((p) =>
     add(parseInt(p, 16), e ? 'event ' + e + ': ' + name : name)))));
   for (const k in u) u[k] = [...new Set(u[k])];
