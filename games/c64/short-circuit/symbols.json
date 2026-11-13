@@ -15435,7 +15435,7 @@
   {
    "address": 39357,
    "type": "line",
-   "text": "Waits for the stick and fire to enter the three initials of a new high score: left and right change the letter, fire accepts it and moves on, with a time-out of 40 ticks."
+   "text": "Waits for the stick and fire to enter the three initials of a new high score into the screen cells at $C33C, letters $61 to $7A: left steps the letter forward ($9A0C), right steps it back ($9A20), and fire accepts it and moves to the next of the three ($0317). It acts once every ten frames (the frame counter $0306) and gives up after 40 of these steps with neither stick nor fire, about 400 frames."
   },
   {
    "address": 39436,
@@ -15450,7 +15450,7 @@
   {
    "address": 39476,
    "type": "line",
-   "text": "Draws the high-score screen: the headline from $99B1, ten rows each with its rank, six score digits and three initials from the table at $83E8, and the coloured cells."
+   "text": "Draws the high-score screen's text: the heading from $99B1 (twelve characters at $C05E), the rank numbers from $8424 to $8437 in columns 10 and 11 of rows 4 to 22, and for each of the ten six-byte entries of the table at $83E8 its six score digits (draw_score_pair) and three initials (copy_table_byte) from column 15, on every second row from row 4. It writes no colours; attract_colour_fill ($9968) colours the rows."
   },
   {
    "address": 39651,
@@ -15465,17 +15465,17 @@
   {
    "address": 39743,
    "type": "line",
-   "text": "Starts a hit-flash effect on sprite slot X: if the effect flag at $0283,X is clear it sets it and colours the sprite white."
+   "text": "Starts a hit-flash effect on sprite slot X: if the effect flag at $0283,X is clear it sets it and colours the sprite yellow (colour 7). Keeps the caller's flags (PHP and PLP)."
   },
   {
    "address": 39759,
    "type": "line",
-   "text": "The music driver's variables, copied tables and per-voice state, and its note-to-frequency tables ($9DF9 and $9E4A)."
+   "text": "Not used: no instruction reads or writes $9B4F to $9BFF. The bytes are left over from an earlier build: $9B4F to $9BBC are a copy of the end of the attract-screen set-up and of attract_sprites (calling $3926 where the live copy calls $3697), $9BBD to $9BF8 a high-score table in the format of $83E8 (ten entries of three score bytes and three initials) and $9BF9 to $9BFF seven character codes. The music driver's command tables start at $9C00, its variables at $9CA0 and its note-to-frequency tables at $9DF9 and $9E4A."
   },
   {
    "address": 39936,
    "type": "line",
-   "text": "Jump table of voice 1's script commands (26 entries); the command byte minus $C0 chooses the entry."
+   "text": "Jump table of voice 1's script commands: 26 words for the command bytes $C0 to $F2, two apart; the command byte minus $C0 is the byte offset of its word (the dispatch at $A4A6 stores it as the low byte of the JMP ($9C00) operand at $A4B1). $C0 return ($A11B), $C2 call ($A019), $C4 go to ($A0C6), $C6 call with a transposition ($A011), $CA set one note parameter ($A0F5), $CC loop start ($A090), $CE loop end ($A101), $D2 copy note parameters ($A073), $D4 copy the waveform and envelope ($A140), $D6 set one working copy ($A134), $D8 run machine code ($A039), $DC set two note parameters ($A04B), $DE set two working copies ($A05F), $E4 no voice through the filter ($A0D3), $E8 and $EA pitch-sweep mode 5 or 7 ($A0E9, $A0EC), $F0 copy the pitch-sweep parameters ($A0AD). The other nine words hold $08FA, an address inside shift_map_left, and are not commands."
   },
   {
    "address": 39988,
@@ -15485,157 +15485,157 @@
   {
    "address": 40040,
    "type": "line",
-   "text": "Four bytes before voice 3's command table: the words $B60A and $B60D, which no code was found to read."
+   "text": "Entries 27 and 28 of voice 2's command table at $9C34, read by its dispatch at $A607: the command $F4 jumps to $B60A and $F6 to $B60D, code in the music data that stores $41 (pulse waveform, gate on) or $11 (triangle, gate on) in voice 2's control byte $9CED and goes on one byte later. No command of voice 3 reaches them, since its dispatch starts at $9C6C."
   },
   {
    "address": 40044,
    "type": "line",
-   "text": "Jump table of voice 3's script commands (26 entries); the command byte minus $C0 chooses the entry (the reader at $A752 adds $AC to the command to get the low byte of the pointer)."
+   "text": "Jump table of voice 3's script commands: 26 words for the command bytes $C0 to $F2, two apart; the reader at $A752 adds $AC to the command to get the low byte of the pointer, so the command byte minus $C0 is the byte offset of its word. $C0 return ($A38F), $C2 call ($A289), $C4 go to ($A342), $C6 call with a transposition ($A281), $C8 go to with a transposition ($A33D), $CA set one note parameter ($A369), $CC loop start ($A307), $CE loop end ($A375), $D2 copy note parameters ($A2EA), $D4 copy the waveform and envelope ($A3BD), $D6 set one working copy ($A3A8), $DA set the transposition ($A3B4), $DC set two note parameters ($A2A9), $DE set two working copies ($A2BD), $E0 voice 3 through the filter ($A35C), $E2 copy the filter sweep's parameters ($A2D1), $E8 pitch-sweep mode 5 ($A360), $F0 copy the pitch-sweep parameters ($A324). The other eight words hold $0900, inside shift_map_left, and are not commands."
   },
   {
    "address": 40096,
    "type": "line",
-   "text": "Data at $9CA0 (f_9CA0): written by v1_cmd_set_two, v1_copy_source_high, v1_copy14_source_high, v1_cmd_set_one; read by v1_play_note."
+   "text": "Voice 1's note parameters, 29 bytes from $9CA0 to $9CBC that its script sets and its note path copies into the working copies at $9D65 at each note (not at a rest). Byte 0: low byte of the first pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D65 when the mode $9CAD is not 0."
   },
   {
    "address": 40097,
    "type": "line",
-   "text": "Data at $9CA1 (f_9CA1): written by v1_cmd_set_two; read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 1: high byte of the first pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D66 when the mode $9CAD is not 0."
   },
   {
    "address": 40098,
    "type": "line",
-   "text": "Data at $9CA2 (a_9CA2): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 2: low byte of the second pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D67 when the mode $9CAD is not 0."
   },
   {
    "address": 40099,
    "type": "line",
-   "text": "Data at $9CA3 (a_9CA3): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 3: high byte of the second pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D68 when the mode $9CAD is not 0."
   },
   {
    "address": 40100,
    "type": "line",
-   "text": "Data at $9CA4 (a_9CA4): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 4: low byte of the third pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D69 when the mode $9CAD is not 0."
   },
   {
    "address": 40101,
    "type": "line",
-   "text": "Data at $9CA5 (a_9CA5): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 5: high byte of the third pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D6A when the mode $9CAD is not 0."
   },
   {
    "address": 40102,
    "type": "line",
-   "text": "Data at $9CA6 (a_9CA6): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 6: low byte of the fourth pitch slope's step, added to the frequency on each tick of that slope (and on each tick of the delay when bit 1 of the mode is set). Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D6B when the mode $9CAD is not 0."
   },
   {
    "address": 40103,
    "type": "line",
-   "text": "Data at $9CA7 (a_9CA7): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 7: high byte of the fourth pitch slope's step, added to the frequency on each tick of that slope (and on each tick of the delay when bit 1 of the mode is set). Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D6C when the mode $9CAD is not 0."
   },
   {
    "address": 40104,
    "type": "line",
-   "text": "Data at $9CA8 (a_9CA8): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 8: length in ticks of the first pitch slope. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D6D when the mode $9CAD is not 0."
   },
   {
    "address": 40105,
    "type": "line",
-   "text": "Data at $9CA9 (a_9CA9): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 9: length in ticks of the second pitch slope. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D6E when the mode $9CAD is not 0."
   },
   {
    "address": 40106,
    "type": "line",
-   "text": "Data at $9CAA (a_9CAA): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 10: length in ticks of the third pitch slope. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D6F when the mode $9CAD is not 0."
   },
   {
    "address": 40107,
    "type": "line",
-   "text": "Data at $9CAB (a_9CAB): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 11: length in ticks of the fourth pitch slope. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D70 when the mode $9CAD is not 0."
   },
   {
    "address": 40108,
    "type": "line",
-   "text": "Data at $9CAC (a_9CAC): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 12: the pitch sweep's delay, in ticks before the slopes start. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13). The note path at $A4B6 copies it to $9D71 when the mode $9CAD is not 0."
   },
   {
    "address": 40109,
    "type": "line",
-   "text": "Data at $9CAD (f_9CAD): written by start_tune, v1_cmd_goto; read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 13: the pitch sweep's mode: 0 is off; after the fourth slope bit 7 restarts the sweep from the note's frequency, bit 0 repeats the slopes from where it is, and neither holds; bit 1 slides by the fourth step during the delay; bit 3 makes the note path store the note number in $9D6F and skip restarting the sweep. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A0AD, bytes 0 to 13), $E8 and $EA ($A0E9 and $A0EC, which store 5 and 7), and start_tune at $9EB1, which clears it. The note path at $A4B6 copies it to $9D72 at each note."
   },
   {
    "address": 40110,
    "type": "line",
-   "text": "Data at $9CAE (a_9CAE): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 14: length in ticks of the first pulse-width slope. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A4B6 copies it to $9D73 and to the slope counter $9D86 when the pulse-width mode $9CB1 is not 0."
   },
   {
    "address": 40111,
    "type": "line",
-   "text": "Data at $9CAF (a_9CAF): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 15: length in ticks of the second pulse-width slope. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A4B6 copies it to $9D74 and to the slope counter $9D87 when the pulse-width mode $9CB1 is not 0."
   },
   {
    "address": 40112,
    "type": "line",
-   "text": "Data at $9CB0 (a_9CB0): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 16: the pulse-width sweep's delay, in ticks. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A4B6 copies it to $9D75 when the pulse-width mode $9CB1 is not 0."
   },
   {
    "address": 40113,
    "type": "line",
-   "text": "Data at $9CB1 (f_9CB1): written by start_tune; read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 17: the pulse-width sweep's mode: 0 is off; after the second slope bit 7 restarts the sweep from the note's pulse width, bit 0 repeats the slopes from where it is, and neither holds. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), and start_tune at $9EB1, which clears it. The note path at $A4B6 copies it to $9D76 at each note."
   },
   {
    "address": 40114,
    "type": "line",
-   "text": "Data at $9CB2 (a_9CB2): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 18: low byte of the first pulse-width slope's step. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A4B6 copies it to $9D77 when the pulse-width mode $9CB1 is not 0."
   },
   {
    "address": 40115,
    "type": "line",
-   "text": "Data at $9CB3 (a_9CB3): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 19: high byte of the first pulse-width slope's step. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A4B6 copies it to $9D78 when the pulse-width mode $9CB1 is not 0."
   },
   {
    "address": 40116,
    "type": "line",
-   "text": "Data at $9CB4 (a_9CB4): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 20: low byte of the second pulse-width slope's step. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A4B6 copies it to $9D79 when the pulse-width mode $9CB1 is not 0."
   },
   {
    "address": 40117,
    "type": "line",
-   "text": "Data at $9CB5 (a_9CB5): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 21: high byte of the second pulse-width slope's step. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A4B6 copies it to $9D7A when the pulse-width mode $9CB1 is not 0."
   },
   {
    "address": 40118,
    "type": "line",
-   "text": "Data at $9CB6 (a_9CB6): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 22: low byte of the pulse width, written to $D402 at each note and the start of the pulse-width sweep. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes). When the pulse-width mode $9CB1 is not 0 the note path at $A4B6 also copies it to $9D7B."
   },
   {
    "address": 40119,
    "type": "line",
-   "text": "Data at $9CB7 (a_9CB7): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 23: high byte of the pulse width, written to $D403 at each note and the start of the pulse-width sweep. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes). When the pulse-width mode $9CB1 is not 0 the note path at $A4B6 also copies it to $9D7C."
   },
   {
    "address": 40120,
    "type": "line",
-   "text": "Data at $9CB8 (f_9CB8): written by v1_cmd_load_envelope; read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 24: the control byte (waveform and gate), written to $D404 at each note after the oscillator has been reset with the test bit (bit 3); bit 3 of the byte itself makes the gate time count against the note's remaining duration. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A140, bytes 24 to 28). The note path at $A4B6 also copies it to $9D7F."
   },
   {
    "address": 40121,
    "type": "line",
-   "text": "Data at $9CB9 (a_9CB9): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 25: attack and decay, written to $D405 at each note. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A140, bytes 24 to 28). Read by the note path at $A4B6."
   },
   {
    "address": 40122,
    "type": "line",
-   "text": "Data at $9CBA (a_9CBA): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 26: sustain and release, written to $D406 at each note. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A140, bytes 24 to 28). Read by the note path at $A4B6."
   },
   {
    "address": 40123,
    "type": "line",
-   "text": "Data at $9CBB (a_9CBB): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 27: the gate time, copied to $9D80 at each note. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A140, bytes 24 to 28). Read by the note path at $A4B6."
   },
   {
    "address": 40124,
    "type": "line",
-   "text": "Data at $9CBC (a_9CBC): read by v1_play_note."
+   "text": "Voice 1's note parameters, byte 28: the release time, copied to $9D81 at each note. Set by the voice's commands $CA ($A0F5, one byte) and $DC ($A04B, two bytes) at an index the script gives, $D2 ($A073, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A140, bytes 24 to 28). Read by the note path at $A4B6."
   },
   {
    "address": 40125,
@@ -15645,7 +15645,7 @@
   {
    "address": 40126,
    "type": "line",
-   "text": "Data at $9CBE (f_9CBE): read by v1_cmd_loop_end, v1_cmd_return."
+   "text": "Entries 1 to 7 ($9CBE to $9CC4) of voice 1's script stack, low bytes of the return addresses: eight entries $9CBD to $9CC4, indexed by the stack depth in $E9, which start_tune sets to 7 and each push counts down. A call ($C2 at $A019, or $C6 at $A011 after setting the transposition) pushes the address after the command, and a loop start ($CC at $A090) the address of the loop's first event, at the depth; a return ($C0 at $A11B) and a loop end ($CE at $A101) read the entry above the depth ($9CBE plus the depth). A return with the depth at 7 stops the voice."
   },
   {
    "address": 40133,
@@ -15655,7 +15655,7 @@
   {
    "address": 40134,
    "type": "line",
-   "text": "Data at $9CC6 (f_9CC6): read by v1_cmd_loop_end, v1_cmd_return."
+   "text": "Entries 1 to 7 ($9CC6 to $9CCC) of voice 1's script stack, high bytes of the return addresses: eight entries $9CC5 to $9CCC, indexed by the stack depth in $E9, which start_tune sets to 7 and each push counts down. A call ($C2 at $A019, or $C6 at $A011 after setting the transposition) pushes the address after the command, and a loop start ($CC at $A090) the address of the loop's first event, at the depth; a return ($C0 at $A11B) and a loop end ($CE at $A101) read the entry above the depth ($9CC6 plus the depth). A return with the depth at 7 stops the voice."
   },
   {
    "address": 40141,
@@ -15665,152 +15665,152 @@
   {
    "address": 40142,
    "type": "line",
-   "text": "Data at $9CCE (f_9CCE): written by v1_cmd_loop_end."
+   "text": "Entries 1 to 7 ($9CCE to $9CD4) of voice 1's script stack, repeat counts: eight entries $9CCD to $9CD4, indexed by the stack depth in $E9, which start_tune sets to 7 and each push counts down. A loop start ($CC at $A090) stores the count from the script at the depth; the loop end ($CE at $A101) counts the entry above the depth down ($9CCE plus the depth) and goes back to the loop's start until it reaches 0, so the loop plays that many times (0 plays it 256 times)."
   },
   {
    "address": 40149,
    "type": "line",
-   "text": "Data at $9CD5 (f_9CD5): written by v2_cmd_call, v2_copy_source_high, v2_copy14_source_high, v2_cmd_set_one; read by v2_play_note."
+   "text": "Voice 2's note parameters, 29 bytes from $9CD5 to $9CF1 that its script sets and its note path copies into the working copies at $9D88 at each note (not at a rest). Byte 0: low byte of the first pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D88 when the mode $9CE2 is not 0."
   },
   {
    "address": 40150,
    "type": "line",
-   "text": "Data at $9CD6 (f_9CD6): written by v2_cmd_call; read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 1: high byte of the first pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D89 when the mode $9CE2 is not 0."
   },
   {
    "address": 40151,
    "type": "line",
-   "text": "Data at $9CD7 (a_9CD7): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 2: low byte of the second pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D8A when the mode $9CE2 is not 0."
   },
   {
    "address": 40152,
    "type": "line",
-   "text": "Data at $9CD8 (a_9CD8): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 3: high byte of the second pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D8B when the mode $9CE2 is not 0."
   },
   {
    "address": 40153,
    "type": "line",
-   "text": "Data at $9CD9 (a_9CD9): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 4: low byte of the third pitch slope's step, added to the frequency on each tick of that slope; in arpeggio mode the first count of ticks between the arpeggio's steps. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D8C when the mode $9CE2 is not 0."
   },
   {
    "address": 40154,
    "type": "line",
-   "text": "Data at $9CDA (a_9CDA): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 5: high byte of the third pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D8D when the mode $9CE2 is not 0."
   },
   {
    "address": 40155,
    "type": "line",
-   "text": "Data at $9CDB (a_9CDB): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 6: low byte of the fourth pitch slope's step, added to the frequency on each tick of that slope (and on each tick of the delay when bit 1 of the mode is set); in arpeggio mode the number of ticks between the arpeggio's steps. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D8E when the mode $9CE2 is not 0."
   },
   {
    "address": 40156,
    "type": "line",
-   "text": "Data at $9CDC (a_9CDC): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 7: high byte of the fourth pitch slope's step, added to the frequency on each tick of that slope (and on each tick of the delay when bit 1 of the mode is set). Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D8F when the mode $9CE2 is not 0."
   },
   {
    "address": 40157,
    "type": "line",
-   "text": "Data at $9CDD (a_9CDD): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 8: length in ticks of the first pitch slope; in arpeggio mode the low byte of the address of the arpeggio's table of note offsets. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D90 when the mode $9CE2 is not 0."
   },
   {
    "address": 40158,
    "type": "line",
-   "text": "Data at $9CDE (a_9CDE): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 9: length in ticks of the second pitch slope; in arpeggio mode the high byte of that address. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D91 when the mode $9CE2 is not 0."
   },
   {
    "address": 40159,
    "type": "line",
-   "text": "Data at $9CDF (a_9CDF): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 10: length in ticks of the third pitch slope. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D92 when the mode $9CE2 is not 0."
   },
   {
    "address": 40160,
    "type": "line",
-   "text": "Data at $9CE0 (a_9CE0): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 11: length in ticks of the fourth pitch slope; in arpeggio mode the index the arpeggio restarts from. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D93 when the mode $9CE2 is not 0."
   },
   {
    "address": 40161,
    "type": "line",
-   "text": "Data at $9CE1 (a_9CE1): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 12: the pitch sweep's delay, in ticks before the slopes start; in arpeggio mode the index of the arpeggio's first step. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13). The note path at $A60D copies it to $9D94 when the mode $9CE2 is not 0."
   },
   {
    "address": 40162,
    "type": "line",
-   "text": "Data at $9CE2 (a_9CE2): written by v2_cmd_goto; read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 13: the pitch sweep's mode: 0 is off; after the fourth slope bit 7 restarts the sweep from the note's frequency, bit 0 repeats the slopes from where it is, and neither holds; bit 1 slides by the fourth step during the delay; bit 3 turns the sweep into an arpeggio instead (see $9D95). Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A1E0, bytes 0 to 13), $E8 and $EA ($A20E and $A20B, which store 5 and 7), and start_tune at $9EB1, which clears it. The note path at $A60D copies it to $9D95 at each note."
   },
   {
    "address": 40163,
    "type": "line",
-   "text": "Data at $9CE3 (a_9CE3): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 14: length in ticks of the first pulse-width slope. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A60D copies it to $9D96 and to the slope counter $9DA9 when the pulse-width mode $9CE6 is not 0."
   },
   {
    "address": 40164,
    "type": "line",
-   "text": "Data at $9CE4 (a_9CE4): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 15: length in ticks of the second pulse-width slope. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A60D copies it to $9D97 and to the slope counter $9DAA when the pulse-width mode $9CE6 is not 0."
   },
   {
    "address": 40165,
    "type": "line",
-   "text": "Data at $9CE5 (a_9CE5): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 16: the pulse-width sweep's delay, in ticks. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A60D copies it to $9D98 when the pulse-width mode $9CE6 is not 0."
   },
   {
    "address": 40166,
    "type": "line",
-   "text": "Data at $9CE6 (a_9CE6): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 17: the pulse-width sweep's mode: 0 is off; after the second slope bit 7 restarts the sweep from the note's pulse width, bit 0 repeats the slopes from where it is, and neither holds. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), and start_tune at $9EB1, which clears it. The note path at $A60D copies it to $9D99 at each note."
   },
   {
    "address": 40167,
    "type": "line",
-   "text": "Data at $9CE7 (a_9CE7): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 18: low byte of the first pulse-width slope's step. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A60D copies it to $9D9A when the pulse-width mode $9CE6 is not 0."
   },
   {
    "address": 40168,
    "type": "line",
-   "text": "Data at $9CE8 (a_9CE8): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 19: high byte of the first pulse-width slope's step. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A60D copies it to $9D9B when the pulse-width mode $9CE6 is not 0."
   },
   {
    "address": 40169,
    "type": "line",
-   "text": "Data at $9CE9 (a_9CE9): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 20: low byte of the second pulse-width slope's step. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A60D copies it to $9D9C when the pulse-width mode $9CE6 is not 0."
   },
   {
    "address": 40170,
    "type": "line",
-   "text": "Data at $9CEA (a_9CEA): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 21: high byte of the second pulse-width slope's step. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A60D copies it to $9D9D when the pulse-width mode $9CE6 is not 0."
   },
   {
    "address": 40171,
    "type": "line",
-   "text": "Data at $9CEB (a_9CEB): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 22: low byte of the pulse width, written to $D409 at each note and the start of the pulse-width sweep. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes). When the pulse-width mode $9CE6 is not 0 the note path at $A60D also copies it to $9D9E."
   },
   {
    "address": 40172,
    "type": "line",
-   "text": "Data at $9CEC (a_9CEC): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 23: high byte of the pulse width, written to $D40A at each note and the start of the pulse-width sweep. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes). When the pulse-width mode $9CE6 is not 0 the note path at $A60D also copies it to $9D9F."
   },
   {
    "address": 40173,
    "type": "line",
-   "text": "Data at $9CED (f_9CED): written by v2_cmd_set_sweep_byte; read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 24: the control byte (waveform and gate), written to $D40B at each note after the oscillator has been reset with the test bit (bit 3); bit 3 of the byte itself makes the gate time count against the note's remaining duration. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A26B, bytes 24 to 28), and the routines at $B60A and $B60D in the music data, reached as voice 2's commands $F4 and $F6 through $9C68, which store $41 and $11. The note path at $A60D also copies it to $9DA2."
   },
   {
    "address": 40174,
    "type": "line",
-   "text": "Data at $9CEE (a_9CEE): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 25: attack and decay, written to $D40C at each note. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A26B, bytes 24 to 28). Read by the note path at $A60D."
   },
   {
    "address": 40175,
    "type": "line",
-   "text": "Data at $9CEF (a_9CEF): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 26: sustain and release, written to $D40D at each note. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A26B, bytes 24 to 28). Read by the note path at $A60D."
   },
   {
    "address": 40176,
    "type": "line",
-   "text": "Data at $9CF0 (a_9CF0): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 27: the gate time, copied to $9DA3 at each note. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A26B, bytes 24 to 28). Read by the note path at $A60D."
   },
   {
    "address": 40177,
    "type": "line",
-   "text": "Data at $9CF1 (a_9CF1): read by v2_play_note."
+   "text": "Voice 2's note parameters, byte 28: the release time, copied to $9DA4 at each note. Set by the voice's commands $CA ($A217, one byte) and $DC ($A17E, two bytes) at an index the script gives, $D2 ($A1A6, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A26B, bytes 24 to 28). Read by the note path at $A60D."
   },
   {
    "address": 40178,
@@ -15820,7 +15820,7 @@
   {
    "address": 40179,
    "type": "line",
-   "text": "Data at $9CF3 (f_9CF3): read by v2_cmd_loop_end, v2_cmd_return."
+   "text": "Entries 1 to 7 ($9CF3 to $9CF9) of voice 2's script stack, low bytes of the return addresses: eight entries $9CF2 to $9CF9, indexed by the stack depth in $EA, which start_tune sets to 7 and each push counts down. A call ($C2 at $A15E, or $C6 at $A156 after setting the transposition) pushes the address after the command, and a loop start ($CC at $A1C3) the address of the loop's first event, at the depth; a return ($C0 at $A23D) and a loop end ($CE at $A223) read the entry above the depth ($9CF3 plus the depth). A return with the depth at 7 stops the voice."
   },
   {
    "address": 40186,
@@ -15830,7 +15830,7 @@
   {
    "address": 40187,
    "type": "line",
-   "text": "Data at $9CFB (f_9CFB): read by v2_cmd_loop_end, v2_cmd_return."
+   "text": "Entries 1 to 7 ($9CFB to $9D01) of voice 2's script stack, high bytes of the return addresses: eight entries $9CFA to $9D01, indexed by the stack depth in $EA, which start_tune sets to 7 and each push counts down. A call ($C2 at $A15E, or $C6 at $A156 after setting the transposition) pushes the address after the command, and a loop start ($CC at $A1C3) the address of the loop's first event, at the depth; a return ($C0 at $A23D) and a loop end ($CE at $A223) read the entry above the depth ($9CFB plus the depth). A return with the depth at 7 stops the voice."
   },
   {
    "address": 40194,
@@ -15840,152 +15840,152 @@
   {
    "address": 40195,
    "type": "line",
-   "text": "Data at $9D03 (f_9D03): written by v2_cmd_loop_end."
+   "text": "Entries 1 to 7 ($9D03 to $9D09) of voice 2's script stack, repeat counts: eight entries $9D02 to $9D09, indexed by the stack depth in $EA, which start_tune sets to 7 and each push counts down. A loop start ($CC at $A1C3) stores the count from the script at the depth; the loop end ($CE at $A223) counts the entry above the depth down ($9D03 plus the depth) and goes back to the loop's start until it reaches 0, so the loop plays that many times (0 plays it 256 times)."
   },
   {
    "address": 40202,
    "type": "line",
-   "text": "Data at $9D0A (f_9D0A): written by v3_cmd_call, v3_copy_source_high, v3_copy14_source_high, v3_cmd_set_one; read by v3_play_note."
+   "text": "Voice 3's note parameters, 29 bytes from $9D0A to $9D26 that its script sets and its note path copies into the working copies at $9DAB at each note (not at a rest). Byte 0: low byte of the first pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DAB when the mode $9D17 is not 0."
   },
   {
    "address": 40203,
    "type": "line",
-   "text": "Data at $9D0B (f_9D0B): written by v3_cmd_call; read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 1: high byte of the first pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DAC when the mode $9D17 is not 0."
   },
   {
    "address": 40204,
    "type": "line",
-   "text": "Data at $9D0C (a_9D0C): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 2: low byte of the second pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DAD when the mode $9D17 is not 0."
   },
   {
    "address": 40205,
    "type": "line",
-   "text": "Data at $9D0D (a_9D0D): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 3: high byte of the second pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DAE when the mode $9D17 is not 0."
   },
   {
    "address": 40206,
    "type": "line",
-   "text": "Data at $9D0E (a_9D0E): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 4: low byte of the third pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DAF when the mode $9D17 is not 0."
   },
   {
    "address": 40207,
    "type": "line",
-   "text": "Data at $9D0F (a_9D0F): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 5: high byte of the third pitch slope's step, added to the frequency on each tick of that slope. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DB0 when the mode $9D17 is not 0."
   },
   {
    "address": 40208,
    "type": "line",
-   "text": "Data at $9D10 (a_9D10): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 6: low byte of the fourth pitch slope's step, added to the frequency on each tick of that slope (and on each tick of the delay when bit 1 of the mode is set). Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DB1 when the mode $9D17 is not 0."
   },
   {
    "address": 40209,
    "type": "line",
-   "text": "Data at $9D11 (a_9D11): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 7: high byte of the fourth pitch slope's step, added to the frequency on each tick of that slope (and on each tick of the delay when bit 1 of the mode is set). Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DB2 when the mode $9D17 is not 0."
   },
   {
    "address": 40210,
    "type": "line",
-   "text": "Data at $9D12 (a_9D12): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 8: length in ticks of the first pitch slope. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DB3 when the mode $9D17 is not 0."
   },
   {
    "address": 40211,
    "type": "line",
-   "text": "Data at $9D13 (a_9D13): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 9: length in ticks of the second pitch slope. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DB4 when the mode $9D17 is not 0."
   },
   {
    "address": 40212,
    "type": "line",
-   "text": "Data at $9D14 (a_9D14): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 10: length in ticks of the third pitch slope. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DB5 when the mode $9D17 is not 0."
   },
   {
    "address": 40213,
    "type": "line",
-   "text": "Data at $9D15 (a_9D15): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 11: length in ticks of the fourth pitch slope. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DB6 when the mode $9D17 is not 0."
   },
   {
    "address": 40214,
    "type": "line",
-   "text": "Data at $9D16 (a_9D16): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 12: the pitch sweep's delay, in ticks before the slopes start. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13). The note path at $A766 copies it to $9DB7 when the mode $9D17 is not 0."
   },
   {
    "address": 40215,
    "type": "line",
-   "text": "Data at $9D17 (a_9D17): written by v3_cmd_filter_route; read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 13: the pitch sweep's mode: 0 is off; after the fourth slope bit 7 restarts the sweep from the note's frequency, bit 0 repeats the slopes from where it is, and neither holds; bit 1 slides by the fourth step during the delay; bit 3 makes the note path store the note number in $9DB5 and skip restarting the sweep. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $F0 ($A324, bytes 0 to 13), $E8 ($A360, which stores 5), and start_tune at $9EB1, which clears it. The note path at $A766 copies it to $9DB8 at each note."
   },
   {
    "address": 40216,
    "type": "line",
-   "text": "Data at $9D18 (a_9D18): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 14: length in ticks of the first pulse-width slope. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A766 copies it to $9DB9 and to the slope counter $9DCC when the pulse-width mode $9D1B is not 0."
   },
   {
    "address": 40217,
    "type": "line",
-   "text": "Data at $9D19 (a_9D19): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 15: length in ticks of the second pulse-width slope. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A766 copies it to $9DBA and to the slope counter $9DCD when the pulse-width mode $9D1B is not 0."
   },
   {
    "address": 40218,
    "type": "line",
-   "text": "Data at $9D1A (a_9D1A): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 16: the pulse-width sweep's delay, in ticks. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A766 copies it to $9DBB when the pulse-width mode $9D1B is not 0."
   },
   {
    "address": 40219,
    "type": "line",
-   "text": "Data at $9D1B (a_9D1B): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 17: the pulse-width sweep's mode: 0 is off; after the second slope bit 7 restarts the sweep from the note's pulse width, bit 0 repeats the slopes from where it is, and neither holds. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), and start_tune at $9EB1, which clears it. The note path at $A766 copies it to $9DBC at each note."
   },
   {
    "address": 40220,
    "type": "line",
-   "text": "Data at $9D1C (a_9D1C): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 18: low byte of the first pulse-width slope's step. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A766 copies it to $9DBD when the pulse-width mode $9D1B is not 0."
   },
   {
    "address": 40221,
    "type": "line",
-   "text": "Data at $9D1D (a_9D1D): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 19: high byte of the first pulse-width slope's step. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A766 copies it to $9DBE when the pulse-width mode $9D1B is not 0."
   },
   {
    "address": 40222,
    "type": "line",
-   "text": "Data at $9D1E (a_9D1E): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 20: low byte of the second pulse-width slope's step. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A766 copies it to $9DBF when the pulse-width mode $9D1B is not 0."
   },
   {
    "address": 40223,
    "type": "line",
-   "text": "Data at $9D1F (a_9D1F): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 21: high byte of the second pulse-width slope's step. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes). The note path at $A766 copies it to $9DC0 when the pulse-width mode $9D1B is not 0."
   },
   {
    "address": 40224,
    "type": "line",
-   "text": "Data at $9D20 (a_9D20): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 22: low byte of the pulse width, written to $D410 at each note and the start of the pulse-width sweep. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes). When the pulse-width mode $9D1B is not 0 the note path at $A766 also copies it to $9DC1."
   },
   {
    "address": 40225,
    "type": "line",
-   "text": "Data at $9D21 (a_9D21): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 23: high byte of the pulse width, written to $D411 at each note and the start of the pulse-width sweep. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes). When the pulse-width mode $9D1B is not 0 the note path at $A766 also copies it to $9DC2."
   },
   {
    "address": 40226,
    "type": "line",
-   "text": "Data at $9D22 (f_9D22): written by v3_cmd_load_envelope; read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 24: the control byte (waveform and gate), written to $D412 at each note after the oscillator has been reset with the test bit (bit 3); bit 3 of the byte itself makes the gate time count against the note's remaining duration. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A3BD, bytes 24 to 28). The note path at $A766 also copies it to $9DC5."
   },
   {
    "address": 40227,
    "type": "line",
-   "text": "Data at $9D23 (a_9D23): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 25: attack and decay, written to $D413 at each note. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A3BD, bytes 24 to 28). Read by the note path at $A766."
   },
   {
    "address": 40228,
    "type": "line",
-   "text": "Data at $9D24 (a_9D24): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 26: sustain and release, written to $D414 at each note. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A3BD, bytes 24 to 28). Read by the note path at $A766."
   },
   {
    "address": 40229,
    "type": "line",
-   "text": "Data at $9D25 (a_9D25): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 27: the gate time, copied to $9DC6 at each note. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A3BD, bytes 24 to 28). Read by the note path at $A766."
   },
   {
    "address": 40230,
    "type": "line",
-   "text": "Data at $9D26 (a_9D26): read by v3_play_note."
+   "text": "Voice 3's note parameters, byte 28: the release time, copied to $9DC7 at each note. Set by the voice's commands $CA ($A369, one byte) and $DC ($A2A9, two bytes) at an index the script gives, $D2 ($A2EA, the block from byte 0 to an index; the scripts copy all 29 bytes), $D4 ($A3BD, bytes 24 to 28). Read by the note path at $A766."
   },
   {
    "address": 40231,
@@ -15995,7 +15995,7 @@
   {
    "address": 40232,
    "type": "line",
-   "text": "Data at $9D28 (f_9D28): read by v3_cmd_loop_end, v3_cmd_return."
+   "text": "Entries 1 to 7 ($9D28 to $9D2E) of voice 3's script stack, low bytes of the return addresses: eight entries $9D27 to $9D2E, indexed by the stack depth in $EB, which start_tune sets to 7 and each push counts down. A call ($C2 at $A289, or $C6 at $A281 after setting the transposition) pushes the address after the command, and a loop start ($CC at $A307) the address of the loop's first event, at the depth; a return ($C0 at $A38F) and a loop end ($CE at $A375) read the entry above the depth ($9D28 plus the depth). A return with the depth at 7 stops the voice."
   },
   {
    "address": 40239,
@@ -16005,7 +16005,7 @@
   {
    "address": 40240,
    "type": "line",
-   "text": "Data at $9D30 (f_9D30): read by v3_cmd_loop_end, v3_cmd_return."
+   "text": "Entries 1 to 7 ($9D30 to $9D36) of voice 3's script stack, high bytes of the return addresses: eight entries $9D2F to $9D36, indexed by the stack depth in $EB, which start_tune sets to 7 and each push counts down. A call ($C2 at $A289, or $C6 at $A281 after setting the transposition) pushes the address after the command, and a loop start ($CC at $A307) the address of the loop's first event, at the depth; a return ($C0 at $A38F) and a loop end ($CE at $A375) read the entry above the depth ($9D30 plus the depth). A return with the depth at 7 stops the voice."
   },
   {
    "address": 40247,
@@ -16015,17 +16015,17 @@
   {
    "address": 40248,
    "type": "line",
-   "text": "Data at $9D38 (f_9D38): written by v3_cmd_loop_end."
+   "text": "Entries 1 to 7 ($9D38 to $9D3E) of voice 3's script stack, repeat counts: eight entries $9D37 to $9D3E, indexed by the stack depth in $EB, which start_tune sets to 7 and each push counts down. A loop start ($CC at $A307) stores the count from the script at the depth; the loop end ($CE at $A375) counts the entry above the depth down ($9D38 plus the depth) and goes back to the loop's start until it reaches 0, so the loop plays that many times (0 plays it 256 times)."
   },
   {
    "address": 40255,
    "type": "line",
-   "text": "Data at $9D3F (f_9D3F): written by v3_copy16_source_high; read by reset_sweeps."
+   "text": "The filter sweep's stored parameters: 16 bytes, $9D3F to $9D4E, that voice 3's command $E2 ($A2D1) copies from the address its script gives; reset_sweeps ($A474) copies them into the working copies at $9D4F to $9D5E whenever a note of the voice in $9DCE starts. These first eight are the four slopes' steps, low and high byte each, copied to $9D4F to $9D56."
   },
   {
    "address": 40263,
    "type": "line",
-   "text": "Data at $9D47 (f_9D47): read by reset_sweeps."
+   "text": "The second eight of the filter sweep's stored parameters (see $9D3F): the four slopes' lengths ($9D47 to $9D4A), the delay ($9D4B), the mode ($9D4C) and the start cutoff, low and high ($9D4D, $9D4E). Written by voice 3's command $E2 ($A2D1); reset_sweeps ($A474) copies them to $9D57 to $9D5E."
   },
   {
    "address": 40271,
@@ -16035,37 +16035,37 @@
   {
    "address": 40272,
    "type": "line",
-   "text": "Data at $9D50 (a_9D50): read by filter_sweep_step."
+   "text": "The filter sweep's working high byte of the first slope's step, which filter_sweep_step ($A3D3) adds to the cutoff on each tick while the counter $9D61 counts down. Written by reset_sweeps ($A474), from $9D40."
   },
   {
    "address": 40273,
    "type": "line",
-   "text": "Data at $9D51 (a_9D51): read by filter_sweep_step."
+   "text": "The filter sweep's working low byte of the second slope's step, which filter_sweep_step ($A3D3) adds to the cutoff on each tick while the counter $9D62 counts down. Written by reset_sweeps ($A474), from $9D41."
   },
   {
    "address": 40274,
    "type": "line",
-   "text": "Data at $9D52 (a_9D52): read by filter_sweep_step."
+   "text": "The filter sweep's working high byte of the second slope's step, which filter_sweep_step ($A3D3) adds to the cutoff on each tick while the counter $9D62 counts down. Written by reset_sweeps ($A474), from $9D42."
   },
   {
    "address": 40275,
    "type": "line",
-   "text": "Data at $9D53 (a_9D53): read by filter_sweep_step."
+   "text": "The filter sweep's working low byte of the third slope's step, which filter_sweep_step ($A3D3) adds to the cutoff on each tick while the counter $9D63 counts down. Written by reset_sweeps ($A474), from $9D43."
   },
   {
    "address": 40276,
    "type": "line",
-   "text": "Data at $9D54 (a_9D54): read by filter_sweep_step."
+   "text": "The filter sweep's working high byte of the third slope's step, which filter_sweep_step ($A3D3) adds to the cutoff on each tick while the counter $9D63 counts down. Written by reset_sweeps ($A474), from $9D44."
   },
   {
    "address": 40277,
    "type": "line",
-   "text": "Data at $9D55 (a_9D55): read by filter_sweep_step."
+   "text": "The filter sweep's working low byte of the fourth slope's step, which filter_sweep_step ($A3D3) adds to the cutoff on each tick while the counter $9D64 counts down and during the delay when bit 1 of the mode $9D5C is set. Written by reset_sweeps ($A474), from $9D45."
   },
   {
    "address": 40278,
    "type": "line",
-   "text": "Data at $9D56 (a_9D56): read by filter_sweep_step."
+   "text": "The filter sweep's working high byte of the fourth slope's step, which filter_sweep_step ($A3D3) adds to the cutoff on each tick while the counter $9D64 counts down and during the delay when bit 1 of the mode $9D5C is set. Written by reset_sweeps ($A474), from $9D46."
   },
   {
    "address": 40279,
@@ -16075,37 +16075,37 @@
   {
    "address": 40280,
    "type": "line",
-   "text": "Data at $9D58 (a_9D58): read by voice1_filter_reset_b."
+   "text": "The filter sweep's length in ticks of the second slope, which the reset at $9F67 loads into the counter $9D62. Written by reset_sweeps ($A474), from $9D48."
   },
   {
    "address": 40281,
    "type": "line",
-   "text": "Data at $9D59 (a_9D59): read by voice1_filter_reset_b."
+   "text": "The filter sweep's length in ticks of the third slope, which the reset at $9F67 loads into the counter $9D63. Written by reset_sweeps ($A474), from $9D49."
   },
   {
    "address": 40282,
    "type": "line",
-   "text": "Data at $9D5A (a_9D5A): read by voice1_filter_reset_b."
+   "text": "The filter sweep's length in ticks of the fourth slope, which the reset at $9F67 loads into the counter $9D64. Written by reset_sweeps ($A474), from $9D4A."
   },
   {
    "address": 40283,
    "type": "line",
-   "text": "Data at $9D5B (a_9D5B): written by filter_sweep_step; read by filter_sweep_step."
+   "text": "The filter sweep's delay: filter_sweep_step ($A3D3) counts it down before the slopes start, sliding the cutoff by the fourth slope's step meanwhile when bit 1 of the mode $9D5C is set. Written by reset_sweeps ($A474), from $9D4B."
   },
   {
    "address": 40284,
    "type": "line",
-   "text": "Data at $9D5C (a_9D5C): written by silence_sid, v1_cmd_goto, voice1_effects; read by filter_sweep_step."
+   "text": "The filter sweep's mode: 0 is off; after the fourth slope bit 7 restarts the sweep from the start cutoff $9D5D, bit 0 repeats the slopes from where it is and neither holds; bit 1 slides by the fourth step during the delay. Written by reset_sweeps ($A474, from $9D4C), and set to 0 by silence_sid ($9FBB), by voice 1's command $E4 ($A0D4) and by the tail at $A8D2 that the three effects routines share when they silence the voice in $9DCE; read by filter_sweep_step ($A3D3)."
   },
   {
    "address": 40285,
    "type": "line",
-   "text": "Data at $9D5D (a_9D5D): read by voice1_filter_reset."
+   "text": "The filter sweep's start cutoff, low byte, which the reset at $9F5B copies into the current cutoff $9D5F. Written by reset_sweeps ($A474), from $9D4D."
   },
   {
    "address": 40286,
    "type": "line",
-   "text": "Data at $9D5E (a_9D5E): read by voice1_filter_reset."
+   "text": "The filter sweep's start cutoff, high byte, which the reset at $9F5B copies into the current cutoff $9D60. Written by reset_sweeps ($A474), from $9D4E."
   },
   {
    "address": 40287,
@@ -16140,72 +16140,72 @@
   {
    "address": 40293,
    "type": "line",
-   "text": "Data at $9D65 (f_9D65): written by v1_cmd_set_sweep_word, v1_cmd_set_sweep_byte, v1_play_note; read by voice1_effects."
+   "text": "Voice 1's working copies, 35 bytes from $9D65 to $9D87, that its effects routine at $A898 uses each tick. Byte 0: low byte of the first pitch slope's step, added to the frequency on each tick of that slope (copied from $9CA0). Written by the note path at $A4B6 (from $9CA0, when the mode is not 0), the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72) and the script's command $DE ($A05F) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40294,
    "type": "line",
-   "text": "Data at $9D66 (f_9D66): written by v1_cmd_set_sweep_word, v1_play_note; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 1: the working copy of byte 1 of the note parameters ($9CA1): high byte of the first pitch slope's step, added to the frequency on each tick of that slope. Written by the note path at $A4B6 (from $9CA1, when the mode is not 0), the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72) and the script's command $DE ($A05F) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40295,
    "type": "line",
-   "text": "Data at $9D67 (a_9D67): written by v1_play_note; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 2: the working copy of byte 2 of the note parameters ($9CA2): low byte of the second pitch slope's step, added to the frequency on each tick of that slope. Written by the note path at $A4B6 (from $9CA2, when the mode is not 0) and the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72); read by the effects routine at $A898."
   },
   {
    "address": 40296,
    "type": "line",
-   "text": "Data at $9D68 (a_9D68): written by v1_play_note; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 3: the working copy of byte 3 of the note parameters ($9CA3): high byte of the second pitch slope's step, added to the frequency on each tick of that slope. Written by the note path at $A4B6 (from $9CA3, when the mode is not 0) and the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72); read by the effects routine at $A898."
   },
   {
    "address": 40297,
    "type": "line",
-   "text": "Data at $9D69 (a_9D69): written by v1_play_note; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 4: the working copy of byte 4 of the note parameters ($9CA4): low byte of the third pitch slope's step, added to the frequency on each tick of that slope. Written by the note path at $A4B6 (from $9CA4, when the mode is not 0), the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72) and the script's command $DE ($A05F) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40298,
    "type": "line",
-   "text": "Data at $9D6A (a_9D6A): written by v1_play_note; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 5: the working copy of byte 5 of the note parameters ($9CA5): high byte of the third pitch slope's step, added to the frequency on each tick of that slope. Written by the note path at $A4B6 (from $9CA5, when the mode is not 0), the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72) and the script's command $DE ($A05F) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40299,
    "type": "line",
-   "text": "Data at $9D6B (a_9D6B): written by v1_play_note; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 6: the working copy of byte 6 of the note parameters ($9CA6): low byte of the fourth pitch slope's step, added to the frequency on each tick of that slope (and on each tick of the delay when bit 1 of the mode is set). Written by the note path at $A4B6 (from $9CA6, when the mode is not 0), the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72) and the script's command $DE ($A05F) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40300,
    "type": "line",
-   "text": "Data at $9D6C (a_9D6C): written by v1_play_note; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 7: the working copy of byte 7 of the note parameters ($9CA7): high byte of the fourth pitch slope's step, added to the frequency on each tick of that slope (and on each tick of the delay when bit 1 of the mode is set). Written by the note path at $A4B6 (from $9CA7, when the mode is not 0), the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72) and the script's command $DE ($A05F) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40301,
    "type": "line",
-   "text": "Data at $9D6D (a_9D6D): written by v1_play_note; read by voice1_pitch_reset_b."
+   "text": "Voice 1's working copies, byte 8: the working copy of byte 8 of the note parameters ($9CA8): length in ticks of the first pitch slope. Written by the note path at $A4B6 (from $9CA8, when the mode is not 0) and the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72); read by the reset at $9F8A."
   },
   {
    "address": 40302,
    "type": "line",
-   "text": "Data at $9D6E (a_9D6E): written by v1_play_note; read by voice1_pitch_reset_b."
+   "text": "Voice 1's working copies, byte 9: the working copy of byte 9 of the note parameters ($9CA9): length in ticks of the second pitch slope. Written by the note path at $A4B6 (from $9CA9, when the mode is not 0) and the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72); read by the reset at $9F8A."
   },
   {
    "address": 40303,
    "type": "line",
-   "text": "Data at $9D6F (a_9D6F): written by v1_play_note; read by voice1_pitch_reset_b."
+   "text": "Voice 1's working copies, byte 10: the working copy of byte 10 of the note parameters ($9CAA): length in ticks of the third pitch slope. Written by the note path at $A4B6 (from $9CAA when the mode is not 0, or the note number when bit 3 of the mode is set) and the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72); read by the reset at $9F8A."
   },
   {
    "address": 40304,
    "type": "line",
-   "text": "Data at $9D70 (a_9D70): written by v1_play_note; read by voice1_pitch_reset_b."
+   "text": "Voice 1's working copies, byte 11: the working copy of byte 11 of the note parameters ($9CAB): length in ticks of the fourth pitch slope. Written by the note path at $A4B6 (from $9CAB, when the mode is not 0) and the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72); read by the reset at $9F8A."
   },
   {
    "address": 40305,
    "type": "line",
-   "text": "Data at $9D71 (a_9D71): written by v1_play_note, voice1_effects; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 12: the pitch sweep's delay, counted down by the effects routine before the slopes start. Written by the note path at $A4B6 at each note, the effects routine as it counts, the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72) and the script's command $D6 ($A134) and $DE ($A05F) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40306,
    "type": "line",
-   "text": "Data at $9D72 (a_9D72): written by v1_play_note; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 13: the pitch sweep's mode (see $9CAD); 0 stops the effects routine's pitch sweep. Written by the note path at $A4B6 at each note, the routine at $B198 in the music data (run by voice 1's command $D8 in the attract tune; it copies 14 bytes from $AEE2 into $9D65 to $9D72) and the script's command $D6 ($A134) and $DE ($A05F) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40307,
@@ -16275,32 +16275,32 @@
   {
    "address": 40320,
    "type": "line",
-   "text": "Data at $9D80 (a_9D80): written by v1_play_note, voice1_effects; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 27: the gate time: the effects routine counts it down and, when it reaches 0, writes the control byte with the gate off to $D404; $FF never ends; with bit 3 of $9D7F set it is instead the duration count at which the gate goes off. Once it is 0 the release time $9D81 counts. Written by the note path at $A4B6 at each note, the effects routine as it counts and the script's command $D6 ($A134) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40321,
    "type": "line",
-   "text": "Data at $9D81 (a_9D81): written by silence_sid, v1_play_note, voice1_effects; read by voice1_effects, any_voice_playing."
+   "text": "Voice 1's working copies, byte 28: the release time and the voice's busy flag: 0 means the effects routine does nothing for the voice; otherwise, once the gate time is 0, it is counted down and at 0 the effects routine clears $D400 to $D406 (and stops the filter sweep when the filter belongs to this voice, $9DCE); $FF never ends. Written by the note path at $A4B6 at each note, the effects routine as it counts, silence_sid at $9FA3 (with 0) and the script's command $D6 ($A134) at this index; read by the effects routine at $A898 and any_voice_playing at $AC8D."
   },
   {
    "address": 40322,
    "type": "line",
-   "text": "Data at $9D82 (a_9D82): written by voice1_pitch_reset_b, voice1_effects; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 29: the counter of the first pitch slope: the effects routine adds that slope's step while it counts down, and the reset at $9F8A reloads it from $9D6D. Written by the reset at $9F8A, the effects routine as it counts and the script's command $D6 ($A134) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40323,
    "type": "line",
-   "text": "Data at $9D83 (a_9D83): written by voice1_pitch_reset_b, voice1_effects; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 30: the counter of the second pitch slope: the effects routine adds that slope's step while it counts down, and the reset at $9F8A reloads it from $9D6E. Written by the reset at $9F8A, the effects routine as it counts and the script's command $D6 ($A134) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40324,
    "type": "line",
-   "text": "Data at $9D84 (a_9D84): written by voice1_pitch_reset_b, voice1_effects; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 31: the counter of the third pitch slope: the effects routine adds that slope's step while it counts down, and the reset at $9F8A reloads it from $9D6F. Written by the reset at $9F8A, the effects routine as it counts and the script's command $D6 ($A134) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40325,
    "type": "line",
-   "text": "Data at $9D85 (a_9D85): written by voice1_pitch_reset_b, voice1_effects; read by voice1_effects."
+   "text": "Voice 1's working copies, byte 32: the counter of the fourth pitch slope: the effects routine adds that slope's step while it counts down, and the reset at $9F8A reloads it from $9D70. Written by the reset at $9F8A, the effects routine as it counts and the script's command $D6 ($A134) at this index; read by the effects routine at $A898."
   },
   {
    "address": 40326,
@@ -16345,12 +16345,12 @@
   {
    "address": 40334,
    "type": "line",
-   "text": "Data at $9D8E (a_9D8E): written by v2_play_note; read by voice2_effects."
+   "text": "Voice 2's working copies, byte 6: the working copy of byte 6 of the note parameters ($9CDB): low byte of the fourth pitch slope's step, added to the frequency on each tick of that slope (and on each tick of the delay when bit 1 of the mode is set). In arpeggio mode it is the number of ticks between steps, reloaded into $9D8C. Written by the note path at $A60D (from $9CDB, when the mode is not 0) and the script's command $DE ($A192) at this index; read by the effects routine at $A9D6."
   },
   {
    "address": 40335,
    "type": "line",
-   "text": "Data at $9D8F (a_9D8F): written by v2_play_note; read by voice2_effects."
+   "text": "Voice 2's working copies, byte 7: the working copy of byte 7 of the note parameters ($9CDC): high byte of the fourth pitch slope's step, added to the frequency on each tick of that slope (and on each tick of the delay when bit 1 of the mode is set). Written by the note path at $A60D (from $9CDC, when the mode is not 0) and the script's command $DE ($A192) at this index; read by the effects routine at $A9D6."
   },
   {
    "address": 40336,
@@ -16375,7 +16375,7 @@
   {
    "address": 40340,
    "type": "line",
-   "text": "Data at $9D94 (a_9D94): written by v2_play_note, voice2_effects; read by voice2_effects."
+   "text": "Voice 2's working copies, byte 12: the pitch sweep's delay, counted down by the effects routine before the slopes start. In arpeggio mode it is the arpeggio's index into its table instead, counted down by one at each step. Written by the note path at $A60D at each note, the effects routine as it counts, the arpeggio step in the effects routine and the script's command $D6 ($A25F) at this index; read by the effects routine at $A9D6."
   },
   {
    "address": 40341,
@@ -16450,12 +16450,12 @@
   {
    "address": 40355,
    "type": "line",
-   "text": "Data at $9DA3 (a_9DA3): written by v2_play_note, voice2_effects; read by voice2_effects."
+   "text": "Voice 2's working copies, byte 27: the gate time: the effects routine counts it down and, when it reaches 0, writes the control byte with the gate off to $D40B; $FF never ends; with bit 3 of $9DA2 set it is instead the duration count at which the gate goes off. Once it is 0 the release time $9DA4 counts. Written by the note path at $A60D at each note, the effects routine as it counts and the script's command $D6 ($A25F) at this index; read by the effects routine at $A9D6."
   },
   {
    "address": 40356,
    "type": "line",
-   "text": "Data at $9DA4 (a_9DA4): written by silence_sid, v2_play_note, voice2_effects; read by voice2_effects, any_voice_playing."
+   "text": "Voice 2's working copies, byte 28: the release time and the voice's busy flag: 0 means the effects routine does nothing for the voice; otherwise, once the gate time is 0, it is counted down and at 0 the effects routine clears $D407 to $D40D (and stops the filter sweep when the filter belongs to this voice, $9DCE); $FF never ends. Written by the note path at $A60D at each note, the effects routine as it counts, silence_sid at $9FA3 (with 0) and the script's command $D6 ($A25F) at this index; read by the effects routine at $A9D6 and any_voice_playing at $AC8D."
   },
   {
    "address": 40357,
@@ -16520,12 +16520,12 @@
   {
    "address": 40369,
    "type": "line",
-   "text": "Data at $9DB1 (a_9DB1): written by v3_play_note; read by voice3_effects."
+   "text": "Voice 3's working copies, byte 6: the working copy of byte 6 of the note parameters ($9D10): low byte of the fourth pitch slope's step, added to the frequency on each tick of that slope (and on each tick of the delay when bit 1 of the mode is set). Written by the note path at $A766 (from $9D10, when the mode is not 0) and the script's command $DE ($A2BD) at this index; read by the effects routine at $AB48."
   },
   {
    "address": 40370,
    "type": "line",
-   "text": "Data at $9DB2 (a_9DB2): written by v3_play_note; read by voice3_effects."
+   "text": "Voice 3's working copies, byte 7: the working copy of byte 7 of the note parameters ($9D11): high byte of the fourth pitch slope's step, added to the frequency on each tick of that slope (and on each tick of the delay when bit 1 of the mode is set). Written by the note path at $A766 (from $9D11, when the mode is not 0) and the script's command $DE ($A2BD) at this index; read by the effects routine at $AB48."
   },
   {
    "address": 40371,
@@ -16550,7 +16550,7 @@
   {
    "address": 40375,
    "type": "line",
-   "text": "Data at $9DB7 (a_9DB7): written by v3_play_note, voice3_effects; read by voice3_effects."
+   "text": "Voice 3's working copies, byte 12: the pitch sweep's delay, counted down by the effects routine before the slopes start. Written by the note path at $A766 at each note, the effects routine as it counts and the script's command $D6 ($A3A8) at this index; read by the effects routine at $AB48."
   },
   {
    "address": 40376,
@@ -16625,12 +16625,12 @@
   {
    "address": 40390,
    "type": "line",
-   "text": "Data at $9DC6 (a_9DC6): written by v3_play_note, voice3_effects; read by voice3_effects."
+   "text": "Voice 3's working copies, byte 27: the gate time: the effects routine counts it down and, when it reaches 0, writes the control byte with the gate off to $D412; $FF never ends; with bit 3 of $9DC5 set it is instead the duration count at which the gate goes off. Once it is 0 the release time $9DC7 counts. Written by the note path at $A766 at each note, the effects routine as it counts and the script's command $D6 ($A3A8) at this index; read by the effects routine at $AB48."
   },
   {
    "address": 40391,
    "type": "line",
-   "text": "Data at $9DC7 (a_9DC7): written by silence_sid, v3_play_note, voice3_effects; read by voice3_effects, any_voice_playing."
+   "text": "Voice 3's working copies, byte 28: the release time and the voice's busy flag: 0 means the effects routine does nothing for the voice; otherwise, once the gate time is 0, it is counted down and at 0 the effects routine clears $D40E to $D414 (and stops the filter sweep when the filter belongs to this voice, $9DCE); $FF never ends. Written by the note path at $A766 at each note, the effects routine as it counts, silence_sid at $9FA3 (with 0) and the script's command $D6 ($A3A8) at this index; read by the effects routine at $AB48 and any_voice_playing at $AC8D."
   },
   {
    "address": 40392,
@@ -16665,7 +16665,7 @@
   {
    "address": 40398,
    "type": "line",
-   "text": "Data at $9DCE (a_9DCE): written by silence_sid, v1_cmd_goto, v3_cmd_filter_route; read by v1_play_note, v2_play_note, v3_play_note, voice1_effects."
+   "text": "The number of the voice the filter sweep follows, 0 to 2 for voices 1 to 3: when that voice's note path starts a note ($A4CA, $A621, $A77E) it calls reset_sweeps ($A474) to restart the filter sweep, and when the tail at $A8D2 that the three effects routines share silences that voice it sets the sweep's mode $9D5C to 0. Voice 3's command $E0 ($A35C, through $A34F) sets it to 2; voice 1's command $E4 ($A0D3) sets it to 3 and silence_sid ($9FA3) to $FF, which match no voice."
   },
   {
    "address": 40399,
@@ -16685,12 +16685,12 @@
   {
    "address": 40402,
    "type": "line",
-   "text": "Data at $9DD2 (a_9DD2): written by silence_sid, v2_cmd_return; read by voice2_step, any_voice_playing."
+   "text": "Voice 2's script-running flag: start_tune ($9EF6) sets it to 1 when the tune gives the voice a script, a return with the stack empty ($A252) counts it to 0, and silence_sid clears it. voice2_step reads nothing while it is 0, and any_voice_playing ($AC8D) ORs it in."
   },
   {
    "address": 40403,
    "type": "line",
-   "text": "Data at $9DD3 (a_9DD3): written by silence_sid, v3_cmd_return; read by voice3_step, any_voice_playing."
+   "text": "Voice 3's script-running flag: start_tune ($9EF6) sets it to 1 when the tune gives the voice a script, a return with the stack empty ($A3A4) counts it to 0, and silence_sid clears it. voice3_step reads nothing while it is 0, and any_voice_playing ($AC8D) ORs it in."
   },
   {
    "address": 40404,
@@ -16705,7 +16705,7 @@
   {
    "address": 40406,
    "type": "line",
-   "text": "Data at $9DD6 (f_9DD6): written by music_work_byte."
+   "text": "The duration table: 32 entries, $9DD6 to $9DF5, entry n (from 1) holding n times the tune's tempo, the low four bits of the last byte of its record at $ACA0 (6, 3, 1, 3 and 6 for the five tunes), counted modulo 256. start_tune builds it ($9F08 to $9F13). A note byte below $60 is followed by a duration code d, which the note paths look up as $9DD5 plus d ($A5D0, $A729, $A886); a note byte of $60 or more is followed by the duration itself."
   },
   {
    "address": 40438,
@@ -16725,12 +16725,12 @@
   {
    "address": 40625,
    "type": "line",
-   "text": "Starts the tune whose seven-byte record in the table at $ACA0 ends at offset Y (Y is 5, 12, 19, 26 or 33): reads the three voice script addresses, the flag byte and clears each voice's sweep state, sets each voice's duration counter to 1, its transposition to 0 and its stack depth to 7."
+   "text": "Starts the tune whose seven-byte record at $ACA0 is at offset Y minus 5 (Y is 5, 12, 19, 26 or 33, so LDA $ACA1,Y reads the record's last byte): keeps that byte in $9DD0 and its low four bits, the tempo, in the operand at $9F0C. For each voice whose script address is not 0 it sets the script pointer ($E0, $E2 or $E4), clears the transposition ($EC to $EE) and the pitch-sweep and pulse-width-sweep modes of the voice's note parameters (through the offsets at $9DF6), and sets the stack depth ($E9 to $EB) to 7, the duration counter ($E6 to $E8) to 1 and the script-running flag ($9DD1 to $9DD3) to 1. Last it builds the duration table at $9DD6, 32 multiples of the tempo."
   },
   {
    "address": 40716,
    "type": "line",
-   "text": "A music driver variable written by $9EB9: the low four bits of the tune's first byte."
+   "text": "Not a variable of its own: the operand of the ADC # at $9F0B, which start_tune sets ($9EB9) to the low four bits of the last byte of the tune's record, the tempo. The loop at $9F0B to $9F13 adds it 32 times to build the duration table at $9DD6."
   },
   {
    "address": 40726,
@@ -16785,7 +16785,7 @@
   {
    "address": 40867,
    "type": "line",
-   "text": "Clears all 23 SID registers and the voices' active flags, stopping all sound."
+   "text": "Stops all sound: writes 8 (the test bit) and then 0 to the 23 SID registers $D400 to $D416 (the three voices and the filter cutoff, leaving $D417 and the volume $D418 alone), clears each voice's busy flag ($9D81, $9DA4, $9DC7) and script-running flag ($9DD1 to $9DD3) and the filter sweep's mode $9D5C, and sets $9DCE to $FF so that no voice owns the filter sweep."
   },
   {
    "address": 40907,
