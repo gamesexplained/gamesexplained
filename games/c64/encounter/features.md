@@ -34,7 +34,7 @@ level; the manual says eight levels. Each is a claim to check, not a fact.
 | Title screen: ENCOUNTER, BY PAUL WOAKES, © 1984 NOVAGEN SOFTWARE, SCORE / LAST SCORE / HIGH SCORE, F5 NOVICE, F7 BEGIN GAME | live | title loop at $9CBA (orientation) |
 | F5 cycles skill level: Novice, Advanced, Expert (wiki); the title shows the current one | traced | $9D2B-$9D4B: F5 ($C5 = 6) steps $62 through 2 NOVICE (default), 1 ADVANCED, 0 EXPERT and copies the name from hidden title rows 20-21 ($6B20 + 16 × skill) to $6B88; skill picks a column of the tables at $8F80 |
 | F7 begins the game | live | $9D27 `cmp #$03` (F7's $C5 code) → $9D68 |
-| Number keys restart at a level already completed in this session (manual, wiki: 1–8) | differs (live) | $9CD4 maps keys 8..1 through the table at $6931 to $A8 = index × 16; the comparison with the highest level reached ($68CB) at $9CE3 is followed by two `NOP`s instead of a branch, so any level can be chosen at any time |
+| Number keys restart at a level already completed in this session (manual, wiki: 1–8) | differs in this copy (live) | $9CD4 maps keys 8..1 through the table at $6931 to $A8 = index × 16; the comparison with the highest level reached ($68CB) at $9CE3 is followed by two `NOP`s instead of a branch, so any level can be chosen at any time. Novagen's cassette has the branch, `BCC $9CFA`, and keeps to the manual (live, facts.md) |
 | Attract / demo mode when the title is left alone: the game plays itself | live | title loop counts $F7/$F8/$F9 down and jumps to $9D7A, which sets $A8 = $70 and starts play through $9E46; seen at level 2 with $A8 = $70 and no input given (reference/demo-level2.png) |
 | Last score and high score kept across games | traced | $ABED copies the SCORE line of the title screen to LAST SCORE ($6AC2), compares $8BA0-$8BA3 with the high score $8BA4-$8BA7 in BCD and rewrites the HIGH SCORE digits at $6B12 |
 
@@ -96,5 +96,6 @@ Found in the code, not in the manual.
 
 ## Open questions
 
-- Whether this copy is the original Novagen release or a crack: the
-  cruncher is scene-style but no cracktro or trainer appears.
+- Who changed this copy: it differs from Novagen's cassette in the level
+  keys' branch and the call at $9FF9 (facts.md, Loading), and the
+  cruncher is scene-style, but no cracktro or trainer appears.

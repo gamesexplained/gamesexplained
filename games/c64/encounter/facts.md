@@ -9,13 +9,15 @@ from reading the code in the snapshot named in `orientation.md`.
 
 No build identifier or version string exists in the image. The program
 is Novagen's C64 release (the title screen says © 1984 NOVAGEN SOFTWARE
-and BY PAUL WOAKES); whether this particular file is a crack is
-unknown. The image carries a cartridge-style signature: $8000-$8003 hold the vector $9C3E twice and $8004 the text CBM80, so a hardware RESET restarts the game instead of returning to BASIC. Signs that the copy was worked on: the "only levels already
-reached" test at $9CE3 is followed by two `NOP`s where a branch would
-be, and seven unexplained bytes at $9FF9 are executed on every game
-start (see Oddities). The loader residue at $097D programs a CIA timer
-and points the IRQ at $0A5E, which reads like the remains of a tape
-loader; nothing in the game references it.
+and BY PAUL WOAKES), in a copy someone has changed: Novagen's 1984
+cassette (the Ultimate Tape Archive's Encounter!.tap, loaded in VICE on
+12 November 2026) differs from it in code in two places, the level keys'
+branch at $9CE6 and a call at $9FF9 (see Loading). The image carries a cartridge-style signature: $8000-$8003 hold the vector $9C3E twice and $8004 the text CBM80, so a hardware RESET restarts the game instead of returning to BASIC. In this copy the "only levels
+already reached" test at $9CE3 is followed by two `NOP`s where the
+cassette has its branch, and seven bytes at $9FF9 that the cassette
+holds as a call read `KSTA:*` (see Oddities). The loader residue at
+$097D is the cassette's own loader, left in memory (see Loading);
+nothing in the game references it.
 
 ## Memory layout
 
@@ -562,6 +564,46 @@ Pass timing, as observed in VICE on 30 October 2026: the main loop makes a
 pass every 2 frames on an empty plain and every 3 while an explosion runs;
 a missile's passes and the warp's came 1 to 4 frames apart.
 
+## Loading
+
+Novagen's 1984 cassette, the Ultimate Tape Archive's Encounter!.tap
+(335,762 bytes, SHA-256
+a1f6a9c318dca0814701b09c35575512d6f732c64cc81dbfe1f2e6b086f2d458), in VICE 3.10 on 12 November
+2026.
+
+- The screen comes up 41.4 seconds in, printed through the KERNAL
+  ($EA20): LOADING ENCOUNTER! in a yellow frame on red, BLOCKS TO LOAD
+  with the count 128 at $0673-$0675, and COPYRIGHT 1984 NOVAGEN SOFTWARE
+  LTD.; the ROM's upper-case set ($D018 = $15).
+- The loader at $098C sets $D400 = $F0, $D406 = $F0, $D418 = $0F, $D404,
+  $D405, $D40B, $D412 = 0, then $D404 = $21: voice 1 a sawtooth, gate on,
+  attack and decay 0, sustain 15. It reads the tape from CIA 1's FLAG
+  interrupt at $0A5E, a bit a pulse, timed with timer A (latch $03F4).
+- It waits for $AA and $55, then reads 128 blocks to $3E00-$BDFF. Each
+  byte goes to memory ($09F1) and to $D401 ($09F3), the voice's pitch
+  high byte. After each 256 a sum byte must equal the block's bytes added
+  modulo 256 ($0A01), or it jumps through ($FFFC) ($0A05): forced wrong at
+  120 seconds, the machine went through $FCE2 to a blank READY. screen.
+  Then it counts the digits at $0673-$0675 down ($0A08-$0A22).
+- After the last block two more bytes give the start, $9C00 ($AC/$AD);
+  $0A4D waits, $D011 = $1B, and it jumps there ($0A3F). The game copies
+  $4000-$5FFF down to $2000 when it starts.
+- Timing: the first byte's store came 1.75 seconds after the sound
+  chip's set-up; from it to the 32,768th, 117,481,909 cycles (119.2
+  seconds). Byte to byte the time fits 311 cycles for each 0 bit and 690
+  for each 1 (600 stores from $9323 timed singly; the sum bytes add their
+  own time and no store). The count dropped 866,212 cycles after the
+  first byte. From the last byte, 1,668,777 cycles to the jump and
+  148,107 more to the KERNAL's `STX $D418` (X = 0, $FDC4): the last note
+  holds 1.84 seconds.
+- The bytes at the jump differ from the listing in 332 places in
+  $3E00-$BDFF, besides 1,898 the listing does not hold: game variables
+  and tables, $3E00-$3FFF (which the game's copy from $5E00 replaces), and
+  two pieces of code: $9CE6 `90 12` where the listing has `EA EA`, and
+  $9FFA-$9FFF `02 A2 00 20 70 AA` where it has `KSTA:*`. $8000 and $8002
+  load as $48 and the game rewrites them to $3E.
+- How it works plays the load (test_loading_sound.js).
+
 ## Oddities to settle
 
 - **Seven executed junk bytes.** $9FF9-$9FFF hold `A9 4B 53 54 41 3A 2A`
@@ -569,7 +611,10 @@ a missile's passes and the warp's came 1 to 4 frames apart.
   non-stopping checkpoint on $9FF9 and on $A000 each counted one hit on
   the F7 press, so the CPU runs through them: `LDA #$4B`, then the
   undocumented `SRE ($54),Y`, `EOR ($3A,X)`, `ROL A`. As ASCII the bytes
-  read `KSTA:*`. Whether this is a crack patch or original is unknown.
+  read `KSTA:*`. Novagen's cassette loads `A9 02 A2 00 20 70 AA` there:
+  `LDA #$02`, `LDX #$00`, `JSR $AA70`, which colours the console's top
+  row of lamps (row 19) red as each game starts, before $A000 colours the
+  next row orange. The copy has the text written over the call.
 - **A raster wait through $CFF9,X.** $9DEC reads `$CFF9,X` with X = $19,
   which is `$D012`, the raster line, while $C000-$CFFF itself is
   uninitialised RAM. The loop spins until the raster low byte reads zero,
@@ -599,8 +644,9 @@ a missile's passes and the warp's came 1 to 4 frames apart.
 - **Calls into the title screen.** `JSR $6A0B`, `$6A0E`, `$6A11`, `$6A17`
   land in row 13 of the title screen data, which holds `JMP $6A1D`
   repeated seven times followed by `RTS` at $6A1D. Every one of these
-  calls is therefore a no-op. Whether that row once held code (a tape
-  loader hook, a protection check) is unknown.
+  calls is therefore a no-op. Novagen's cassette loads the same bytes
+  there, so the jumps are not the copy's doing. Whether that row once held
+  code (a loader hook, a protection check) is unknown.
 
 ## Live tests
 
@@ -636,6 +682,12 @@ a missile's passes and the warp's came 1 to 4 frames apart.
 - 2026-09-20, fresh boot: key 5 on the title then F7 gave $A8 = $30 and
   a status row reading L5 (reference/play-level5-selected.png): any level
   is selectable without having reached it.
+- 2026-11-12, Novagen's cassette in VICE, its title screen just after
+  the load ($68CB = $70, level 1 reached): keys 5 and 1 held for ten
+  frames left $A8 at $70, and no sound; with $68CB set to $30 (level 5
+  reached), key 5 set $A8 = $30 and key 8 left it there. The cassette's
+  $9CE6 holds `BCC $9CFA` (`90 12`), which ignores a key for a level past
+  the highest reached.
 - 2026-09-20: SPACE sent through the emulator's key-press tool (the
   matrix tool's SPACE never reached the game) put the CPU in the pause
   loop ($A13B counted 250,000 iterations); a second SPACE left it there;

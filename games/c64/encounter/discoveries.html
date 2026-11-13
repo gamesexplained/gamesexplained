@@ -82,8 +82,8 @@ td.m{font-family:var(--fm);font-size:13px}
 
 <section id="level-keys">
   <p class="fig">01 · The level keys</p>
-  <h2 class="t">Secret: any level can be picked from the title screen</h2>
-  <p>On the title screen the number keys 1 to 8 pick a level. The manual says only levels already reached can be picked; in the code the comparison with the highest level reached is still there at <code>$9CE3</code> but the branch after it has been replaced by two <code>NOP</code>s, so any level is available at once. Pressing 5 on a fresh boot starts level 5.</p>
+  <h2 class="t">Secret: in this copy, any level can be picked from the title screen</h2>
+  <p>On the title screen the number keys 1 to 8 pick a level. The manual says only levels already reached can be picked, and Novagen's cassette keeps to it: the code at <code>$9CE3</code> compares the key's level with the highest level reached, and the branch after it ignores a key for a level further on. In the copy these pages describe, that branch has been replaced by two <code>NOP</code>s, so any level is available at once. Pressing 5 on a fresh boot starts level 5. On the cassette it does nothing until level 5 has been reached.</p>
   <p>The highest level reached is kept at <code>$68CB</code>, in one of the title screen's rows painted in the background colour (<a href="index.html#the-title-screen">How it works</a>).</p>
 </section>
 
@@ -104,9 +104,9 @@ td.m{font-family:var(--fm);font-size:13px}
   <h3>RESET restarts the game</h3>
   <p><code>$8000</code> holds the vector <code>$9C3E</code> twice and <code>$8004</code> the text <code>CBM80</code>, the signature the KERNAL looks for in a cartridge. A hardware reset or RESTORE therefore lands in the game's own init instead of BASIC.</p>
   <h3>Seven bytes that should not be executed</h3>
-  <p>Between the game-start setup and the level start, <code>$9FF9</code> holds <code>A9 4B 53 54 41 3A 2A</code>. A checkpoint counted one pass through them on every F7. The processor reads them as <code>LDA #$4B</code>, then the undocumented <code>SRE ($54),Y</code>, <code>EOR ($3A,X)</code> and <code>ROL A</code>, none of which matters to what follows. As text they read <code>KSTA:*</code>. Whether this is a patch or original is unknown.</p>
+  <p>Between the game-start setup and the level start, <code>$9FF9</code> holds <code>A9 4B 53 54 41 3A 2A</code>. A checkpoint counted one pass through them on every F7. The processor reads them as <code>LDA #$4B</code>, then the undocumented <code>SRE ($54),Y</code>, <code>EOR ($3A,X)</code> and <code>ROL A</code>, none of which matters to what follows. As text they read <code>KSTA:*</code>. On Novagen's cassette the same bytes are <code>A9 02 A2 00 20 70 AA</code>: <code>LDA #$02</code>, <code>LDX #$00</code>, <code>JSR $AA70</code>, a call that colours the console's top row of lamps red as each game starts. In this copy the text has been written over the call.</p>
   <h3>Calls into the title screen</h3>
-  <p>Six routines, including the main loop's wait for the raster, call addresses inside row 13 of the title screen, where seven <code>JMP $6A1D</code> lead to an <code>RTS</code>. Something once lived there. What it was, whether a loader hook or a protection check, is unknown.</p>
+  <p>Six routines, including the main loop's wait for the raster, call addresses inside row 13 of the title screen, where seven <code>JMP $6A1D</code> lead to an <code>RTS</code>. Something once lived there. Novagen's cassette has the same jumps, so they are not this copy's doing. What lived there, whether a loader hook or a protection check, is unknown.</p>
 </section>
 
 </main>

@@ -379,6 +379,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .eng-regs td:nth-child(3){color:var(--ink-soft);font-family:var(--fb);font-size:12.5px}
 .eng-regs .eng-quiet td:nth-child(3){color:var(--coral);font-weight:700}
 </style>
+<style>.me-l-cv{width:100%;max-width:768px;image-rendering:pixelated;display:block;background:#000;border-radius:6px}.me-l-cv{margin:0 0 14px}</style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
@@ -694,8 +695,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Below a speed of 1 the sustain and release byte is 0 and the engine is silent. The other silence comes from the arithmetic. The level is the speed's exponent byte less <code>$0C</code>, and bit 0 of that byte is the sign. Going forward at 8 to 16 units a pass the byte is <code>$0C</code>, the difference is 0, and the code replaces it with the minimum, level 1. Reversing at the same speeds the byte is <code>$0D</code> and the difference is 1, which the code keeps: shifted into place it becomes <code>$0C</code>, sustain 0 and a three-second release. The engine falls silent between −8 and −16, SPEED −3 to −5 on the panel, and comes back at −16.</p>
 </section>
 
+<section id="loading-tune">
+  <p class="fig">09 · The loading tune</p>
+  <h2 class="t">Music: the cassette plays a tune while the city loads</h2>
+  <p class="lede">Novagen's 1985 cassette has the music the game lacks. When its title screen comes up, 43 seconds into the tape, it starts a three-voice tune and plays it over and over until the last block is in, about three and a quarter minutes later, while the screen counts down the 205 blocks still to come.</p>
+  <div class="plate">
+    <canvas class="me-l-cv" id="me-l-cv" width="384" height="272" role="img" aria-label="LOADING: BLOCKS TO GO with the count, MERCENARY in big letters of yellow, black and grey triangles, ESCAPE FROM TARG BY PAUL WOAKES in a black box, and COPYRIGHT(C) 1985 NOVAGEN SOFTWARE LTD, on black with a red border"></canvas>
+    <div id="me-load"></div>
+    <p class="cap">The cassette's screen, recorded in VICE and drawn as the video chip draws it, with the count of blocks as it stood at that moment of the tune. The player runs the cassette's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette does: after each of the tune's first 6,100 frames, two minutes of it, the sound chip's registers are those the cassette set in VICE, from the second frame on. The screen is built from the C64's own character set in ROM, and the page carries only the characters it shows and the ten digits, 464 bytes of Commodore's character ROM 901225-01, from its upper-case set at offsets <code>$0008</code>-<code>$0507</code>.</p>
+  </div>
+  <p>The tune lasts 53 seconds, at full volume from start to end, and then starts again, so the load hears it more than three and a half times. Voice 1 plays its notes with the pulse and triangle waves, voice 2 with the triangle and sawtooth, and voice 3 with the triangle, and none of them goes through the filter.</p>
+  <p>The code that plays it, the loader's interrupt from <code>$E114</code>, is the same as on Elite's 1985 Commando cassette, which uses the same loader, Novaload. The list it plays, notes and register settings read a byte at a time from <code>$EF80</code>, is Mercenary's own.</p>
+</section>
+
 <section id="frame">
-  <p class="fig">09 · The screen</p>
+  <p class="fig">10 · The screen</p>
   <h2 class="t">The double buffer gives 4 or 5 fps</h2>
   <p class="lede">The view is a bitmap of 160 by 136 wide pixels, and there are two of them: the game draws into one while you look at the other.</p>
   <div class="plate">
@@ -708,7 +722,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="benson-store">
-  <p class="fig">10 · How a message is stored</p>
+  <p class="fig">11 · How a message is stored</p>
   <h2 class="t">How a message is stored</h2>
   <p class="lede">A message is a list of one-byte tokens, most of them numbers of words in a dictionary.</p>
   <div class="plate benson-plate">
@@ -730,7 +744,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="benson-scripts">
-  <p class="fig">11 · The event scripts</p>
+  <p class="fig">12 · The event scripts</p>
   <h2 class="t">The event scripts</h2>
   <p class="lede">What Benson says, and when, comes from 51 scripts in a small byte code, run one operation per pass of the main loop.</p>
   <div class="plate benson-plate">
@@ -746,7 +760,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="benson-money">
-  <p class="fig">12 · Money in BCD</p>
+  <p class="fig">13 · Money in BCD</p>
   <h2 class="t">Money in BCD, and a purchase without subtraction</h2>
   <p class="lede">The credits are eight decimal digits in four bytes, and the scripts have no way to subtract: a purchase adds the price's ten's complement.</p>
   <div class="plate benson-plate">
@@ -772,7 +786,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="math-lines">
-  <p class="fig">13 · Lines</p>
+  <p class="fig">14 · Lines</p>
   <h2 class="t">Drawing a line: eight routines, one per octant</h2>
   <p class="lede">Each edge in the view is drawn by one of eight short routines that step along the longer axis, add a slope byte to an 8-bit counter (or subtract it), and step sideways whenever the counter wraps.</p>
   <div class="plate math-lineplate">
@@ -815,7 +829,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="keys">
-  <p class="fig">14 · Controls</p>
+  <p class="fig">15 · Controls</p>
   <h2 class="t">The keys, as the game reads them</h2>
   <p class="lede">The game scans the keyboard itself and turns each key into a number, row × 8 + column, with 64 added for SHIFT and 128 for CTRL. The joystick goes in port 2.</p>
   <div class="plate tablewrap">
@@ -841,7 +855,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="odd">
-  <p class="fig">15 · Odds and ends</p>
+  <p class="fig">16 · Odds and ends</p>
   <h2 class="t">Things a pilot would not know</h2>
   <p class="lede">Small things found in the code and checked in the emulator.</p>
   <div class="plate">
@@ -4268,5 +4282,66 @@ function engineStep(ex, m, old, tbl24) {
     el('circle', { cx: xOf(n), cy: yOf(0), r: 4, fill: css('--violet') }, svg);
     text(svg, xOf(n) - 6, yOf(0) - 10, 'down, pass 779', 'npc-sub', 'end');
   }
+})();
+</script>
+<script src="../../lib/cpu6502.js"></script>
+<script type="application/json" id="me-loader-data">{"about":"The cassette's loading tune as the cassette leaves it in memory: its settings at $E003-$E007 and its player at $E114-$E360 when the tune starts, and the list of notes and register settings it reads from $EF80 once the tape has brought in the whole list ($EF80-$F320)","blocks":[[57347,"QUFBAQA="],[57620,"rVbj8AONBNStV+PwA40L1K1Y4/ADjRLUqQCNVuONV+ONWOPOVePwA0zn4a0G4I1V485Z49AxIFDirV/jqjALrQPgjVbjKfCNBNSK0AWNVuPwDwqqvbHi6I0A1L2x4o0B1K1g441Z485a49AxIFDirV/jqjALrQTgjVfjKfCNC9SK0AWNV+PwDwqqvbHi6I0H1L2x4o0I1K1g441a485b49AxIFDirV/jqjALrQXgjVjjKfCNEtSK0AWNWOPwDwqqvbHi6I0O1L2x4o0P1K1g441b46AGOCCN4oggjeKIiCCN4oggjeKIiCCN4qWr8Aqlp81T4/AYjVPjTJDgqQCiE53/08rQ+qkIjRbQYID/eKASuTDimR8AiND3TCIAAAGRIMjQ++Yh0PepN4UBbPz/IIHiqiCB4o6C4o2D4iCB4sn+8Ayw6o1f4yCB4o1g42AggeKNeeIggeKNeuIggeKoogAggeKdeOLoiND28M+tgO/uguLQA+6D4mCxZGkByTqQBqkwkWQYYJFkwALQBMk28PBoaEz/4QoMAQMFBggAAFoEnATiBCwFewXPBScGhQboBlEHwAc2CLMIAAAAADYIswg4CcQJWQr2Cp0LTgwJDdANog6BD20QZxEAAAAAbRBnEXASiBOyFO0VOhecGBMaoBtEHQEf2SDOIgAAAADZIM4i3yQRJ2Mp2St1LjgxJTQ/N4g6Az6zQZtFAAAAALNBm0W/SSFOx1KzV+pccGJKaH5uEHUGfGaDNosAAAAAADIYcQEAAAABAQECAAAAAA=="],[61312,"/gPgBUEhEQ4AAAEAAQAB/gDUGQAAAAIQAPYAAAACEFD2AAAAABAApgAAAA/+9QMDTABQIwITAhMBIwEjAhMCEwEjASUCFQIVASUBIwITAhMBIwEhAREBEQEhAREBIQEqARoBAAEoARgBAAEmARYBAAEoAxgDIQERASEBKAEYAREBKgEaAQABKAEYAQABJgEWAQABIwITAhMBIwEjAhMCEwEjAQABAAETASoBGgEAASoBGgEAASsBGwEAASoBGgEAASgBGAEhASEBEQERASECEQIhAREBJgQWBCYBFgEmARYBKAQYBCgBGAEoARgBKgQaBCoBGgEqARoBKgEaASoBKgEaARoBKwEbAQABKgEaAQABKAEYAQABMQEhASEBMQIhAhEBIQEmBBYEFgEmARYBJgEoBBgEGAEoARgBKAEqBBoEGgGqAZoBqgEqBBoEmgEqARoBKgEsBBwEHAEsARwBLAEsARwBHAExASEBEQEzBiMGEwEjARMBIwETASMBMwIjAhMBIwEzAiMCEwEjATUCJQIVASUBMwIjAhMBIwExASEBEQExASEBIQEqARoBAAEoARgBAAEmARYBAAH+pwIJAAAAAAAAAAAAKAQYBBgBKAEYASgBKgEaAQABKAEYAQAB/rcCDAAAAAAAAAAAAAAAACYBFgEAAf7nAgwAAAAAAAAAAAAAAAAjBBMEEwEjARMBIwEAAQABEwEjAhMCIwETAf7HAgwAAAAAAAAAAAAAAAAjAhMCIwETAf7XAgwAAAAAAAAAAAAAAAAlAhUCFQElASMCEwITASMBIQERAREBIQERASEBKgEaAQABKAEYAQABJgEWAQABKAQYBBgBKAEYASgBKgEaAQABKAEYAQABJgEWAQABIwMTAxMBIwETAQABAAEjASoBGgEAASoBGgEAASsBGwEAASoBGgEAASgBGAEhATEBIQExATECIQIhATEBNgQmBCYBNgEmATYBOAQoBCgBOAEoATgBOgQqBCoBugGqAboBAAEAAaoBKgQaBDoBKgE6ASoBLAQcBDwBLAE8ASwBMQEhATEBMwYjBiMBMwEjATMBIwEzAQABAAEjATMCIwIjATMBMwIjAiMBMwE1AiUCJQE1ATMCIwIjATMBMQEhAQABOgEqAQABOAEoAQABNgEmATYBOAMoAyEBMQEhATgBKAExAToBKgEAATgBKAEAATYBJgEAATMCIwJDATMBMwIjAjMBIwEAAQABMwH/s+8="]],"play":57620,"until":57831}</script>
+<script type="application/json" id="me-loading-data">{"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"Novagen's 1985 cassette 100 seconds in, the Ultimate Tape Archive's Mercenary-_Escape_from_Targ.tap, with 143 blocks to go: kit/c64/frame.py capture, then trim, in VICE 3.10 (vice-mcp 3.14.0) on 12 November 2026","vic":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27,0,0,0,0,200,0,21,113,240,0,0,0,0,0,242,240,241,242,243,244,240,241,242,243,244,245,246,247,252],"cia2":[151,63],"cpu":[47,5],"writes":[],"colour":"AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwCAgICAgICAgICAgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMAgICAgICAgICAgIMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcCAgIHAgcHBwIHBwcCBwcHAgcHBwIHAgIHAgcHBwIHBwcCBwIHAgIHBwIHBwIHAgICBwIHAgcCAgIHAgICBwcCBwIHAgcCBwIHAgcCBwICDwIPAg8CDwcCAg8PAgIPAgICDwcCAg8CBw8CDw8HAg8PAgIPDw8CAg8CAgIPAg8CAgIPAgcCDwICAg8CAgIPAgIPAg8CDwIPAgcCAgcCAgIHAgICBwIHBwcCBwIHAgcHBwIHBwcCBwICBwIHAgcCBwIHAgIHAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCAgICAgICAgICCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgICAgICAgICAgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIPCAcADwQPBA8FDwMOAAsECwIPAAcFDA==","ram":[{"a":1024,"b":"oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgT3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d1CgoKCgoKCgoKCgoGUMDwEECQ4HOiACDA8DCxMgFA8gBw8gPiAxNDNqoKCgoKCgoKCgoKBMb29vb29vb29vb29vb29vb29vb29vb29vb29veqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoF+goKBfoF9fX6BfX1+gX19foF9fX6BfoKBfoF9fX6BfX1+gX6BfoKBfX6BfX6BfoKCgX6BfoF+goKBfoKCgX1+gX6BfoF+gX6BfoF+gX6CgX6BfoF+gX1+goF9foKBfoKCgX1+goF+gX1+gX19foF9foKBfX1+goF+goKBfoF+goKBfoF+gX6CgoF+goKBfoKBfoF+gX6BfoF+goF+goKBfoKCgX6BfX1+gX6BfoF9fX6BfX1+gX6CgX6BfoF+gX6BfoKBfoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgb29vb29vb29vb29vb29vb29vb29vb29vb29vb28goKCgoKCgoKCgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIKCgoKCgoKCgoCAFIBMgAyABIBAgBSAgBiASIA8gDSAgFCABIBIgByCgoKCgoKCgoKAgeXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXkgoKCgoKCgoKCgIKCgoKCgoKCggpmgkIGVjKCXj4GLhZOgoKCgoKCgIKCgoKCgoKCgoCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICADDxAZEgkHCBQoAykgMTk4NSAODxYBBwUOIBMPBhQXARIFIAwUBCAgICCgoKCgoKCgoCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoA=="},{"a":16383,"b":"AA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19656,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":15,"colour_cells_changed_during_frame":0},"rom_excerpt":{"rom":"chargen 901225-01","ranges":[{"a":8,"b":"GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHhgYGAAPGZgbmZmPABmZmZ+ZmZmADwYGBgYGDwA"},{"a":88,"b":"Zmx4cHhsZgBgYGBgYGB+AGN3f2tjY2MAZnZ+fm5mZgA8ZmZmZmY8AHxmZnxgYGAA"},{"a":144,"b":"fGZmfHhsZgA8ZmA8BmY8AH4YGBgYGBgA"},{"a":176,"b":"ZmZmZmY8GABjY2Nrf3djAA=="},{"a":200,"b":"ZmZmPBgYGAA="},{"a":256,"b":"AAAAAAAAAAA="},{"a":320,"b":"DBgwMDAYDAAwGAwMDBgwAA=="},{"a":384,"b":"PGZudmZmPAAYGDgYGBh+ADxmBgwwYH4APGYGHAZmPAAGDh5mfwYGAH5gfAYGZjwAPGZgfGZmPAB+ZgwYGBgYADxmZjxmZjwAPGZmPgZmPAAAABgAABgAAA=="},{"a":496,"b":"cBgMBgwYcAA="},{"a":608,"b":"wMDAwMDA//8="},{"a":632,"b":"///AwMDAwMD//wMDAwMDAw=="},{"a":760,"b":"/38/Hw8HAwE="},{"a":808,"b":"wMDAwMDAwMA="},{"a":848,"b":"AwMDAwMDAwM="},{"a":888,"b":"AAAAAAAA//8="},{"a":952,"b":"//8AAAAAAAA="},{"a":968,"b":"AAAAAAD///8DAwMDAwP//w=="},{"a":1032,"b":"58OZgZmZmf+DmZmDmZmD/w=="},{"a":1064,"b":"gZ+fh5+fgf8="},{"a":1112,"b":"mZOHj4eTmf+fn5+fn5+B/w=="},{"a":1144,"b":"w5mZmZmZw/+DmZmDn5+f/w=="},{"a":1176,"b":"w5mfw/mZw/8="},{"a":1192,"b":"mZmZmZmZw/8="},{"a":1208,"b":"nJyclICInP8="},{"a":1224,"b":"mZmZw+fn5/8="},{"a":1280,"b":"//////////8="}]}}</script>
+<script>
+/* me-loader-tune */
+// createNovaloadTune for C64Sid: the cassette's loading tune on the kit's 6502 over the bytes the cassette
+// leaves in memory (D.blocks, the block me-loader-data). Once a frame the cassette's interrupt runs the
+// stretch from $E114 to $E1E7 (D.play, D.until), which plays the tune: so does the page. The player reads
+// its list of notes and settings from $EF80 through the pointer at $E282. Only the SID's registers are
+// I/O; the tune reads none of them.
+function createNovaloadTune(D, C64Cpu) {
+  const mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
+  const image = D.blocks.map(([a, s]) => [a, Uint8Array.from(atob(s), (c) => c.charCodeAt(0))]);
+  let writes = [], on = false;
+  const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: {
+    read: (a) => (a >= 0xD400 && a <= 0xD41F ? 0 : mem[a]),
+    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); } else mem[a] = v; },
+  } });
+  return {
+    init() { mem.fill(0); for (const [a, b] of image) mem.set(b, a); sid.fill(0); writes = []; cpu.sp = 0xFF; on = true; },
+    stop() { on = false; },
+    play() { writes = []; if (on) { cpu.pc = D.play; cpu.run({ until: D.until, maxSteps: 200000 }); } },
+    sid, get writes() { return writes; }, playing: () => on, mem,
+  };
+}
+// end of me-loader-tune
+/* me-loading */
+// The cassette's screen as the tune plays over it. F is the frame recorded in VICE (the block me-loading-data),
+// with the characters of the C64's ROM it shows in F.rom_excerpt (meFont). The count of blocks to go is three
+// screen codes at $046E-$0470. ME_BLOCKS holds the tune's call after which each block went, read in VICE from the
+// cassette: the count starts at 205 with the tune's first call and reaches 000 with the last.
+const ME_BLOCKS = [38,79,121,166,216,265,314,361,408,455,503,551,598,646,694,743,791,841,891,940,987,1033,1078,1126,1171,1218,1264,1311,1359,1404,1451,1503,1549,1597,1642,1678,1730,1786,1833,1875,1923,1966,2006,2052,2092,2139,2182,2223,2265,2306,2347,2389,2431,2472,2514,2556,2598,2643,2689,2737,2785,2829,2876,2923,2971,3017,3066,3115,3162,3212,3261,3310,3358,3406,3456,3504,3552,3600,3651,3704,3756,3809,3861,3914,3966,4018,4071,4122,4176,4235,4288,4340,4390,4440,4488,4537,4585,4634,4682,4731,4778,4827,4874,4923,4971,5020,5070,5118,5167,5213,5259,5301,5351,5399,5448,5495,5540,5588,5635,5688,5737,5779,5837,5890,5947,6004,6050,6100,6150,6197,6246,6293,6344,6394,6443,6493,6544,6595,6645,6696,6747,6797,6847,6895,6941,6988,7037,7086,7133,7182,7231,7281,7329,7377,7427,7474,7520,7569,7618,7666,7716,7764,7812,7860,7909,7958,8006,8055,8103,8152,8199,8247,8299,8348,8395,8446,8497,8546,8597,8646,8697,8752,8804,8852,8902,8949,8987,9027,9066,9100,9149,9197,9246,9295,9343,9392,9441,9489,9538,9586,9634,9683,9731,9778,9826];
+function meFont(F) {
+  const font = new Uint8Array(4096);
+  for (const r of F.rom_excerpt.ranges) font.set(Uint8Array.from(atob(r.b), (c) => c.charCodeAt(0)), r.a);
+  return Object.assign({}, F, { charrom: btoa(String.fromCharCode(...font)) });
+}
+function meLeft(call) {
+  let gone = 0;
+  while (gone < ME_BLOCKS.length && ME_BLOCKS[gone] <= call) gone++;
+  return ME_BLOCKS.length - gone;
+}
+function meScreen(F, mem, call) {
+  const m = mem.slice(), s = String(meLeft(call)).padStart(3, '0');
+  for (let i = 0; i < 3; i++) m[0x46E + i] = 0x30 + +s[i];
+  return Object.assign({}, F, { mem: m });
+}
+// end of me-loading
+(() => {
+  const el = document.getElementById('me-load'), cv = document.getElementById('me-l-cv');
+  if (typeof C64Sid === 'undefined' || typeof C64Cpu === 'undefined' || typeof C64 === 'undefined') { el.textContent = 'The player needs the site\'s shared scripts, which the built site serves.'; return; }
+  const F = meFont(JSON.parse(document.getElementById('me-loading-data').textContent));
+  const mem = new Uint8Array(0x10000);
+  for (const r of F.ram) mem.set(Uint8Array.from(atob(r.b), (c) => c.charCodeAt(0)), r.a);
+  let shown = -1;
+  const draw = (call) => { const left = meLeft(call); if (left !== shown) { C64.drawFrame(cv, meScreen(F, mem, call), 1); shown = left; } };
+  draw(0);
+  C64Sid.mount(el, { driver: createNovaloadTune, data: JSON.parse(document.getElementById('me-loader-data').textContent),
+    tunes: ['The loading tune'], loops: [{ from: 2, period: 2674 }], onFrame: (frame) => draw(frame) });
 })();
 </script>
