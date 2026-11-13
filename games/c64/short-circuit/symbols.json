@@ -3935,7 +3935,7 @@
   },
   {
    "address": 8152,
-   "name": "check_laser_pickup",
+   "name": "check_cigarette_in_bin",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -12295,7 +12295,7 @@
   {
    "address": 530,
    "type": "line",
-   "text": "Set to 1 by check_laser_pickup the first time the object entry at $15A8 reads $F8 (the object has been taken). Once it is set, check_countdown counts four minutes towards sending a guard, the timed event can fire, input_terminal_a sends no guard with the alarm, and main_loop_scroll_check runs the end-of-part decoy check."
+   "text": "Set to 1 by check_cigarette_in_bin the first time the object entry at $15A8, the LIGHTED CIGARETTE, reads $F8: the cigarette has been put down at map column $F8, the bin. Once it is set, check_countdown counts four minutes towards sending a guard, the timed event can fire, input_terminal_a sends no guard with the alarm, and main_loop_scroll_check runs the end-of-part decoy check."
   },
   {
    "address": 531,
@@ -12985,12 +12985,12 @@
   {
    "address": 758,
    "type": "line",
-   "text": "Data at $02F6 (a_02F6): written by check_laser_pickup, check_countdown; read by check_countdown."
+   "text": "Data at $02F6 (a_02F6): written by check_cigarette_in_bin, check_countdown; read by check_countdown."
   },
   {
    "address": 759,
    "type": "line",
-   "text": "Data at $02F7 (a_02F7): written by check_laser_pickup, check_countdown; read by check_countdown."
+   "text": "Data at $02F7 (a_02F7): written by check_cigarette_in_bin, check_countdown; read by check_countdown."
   },
   {
    "address": 760,
@@ -13500,7 +13500,7 @@
   {
    "address": 5544,
    "type": "line",
-   "text": "Data at $15A8 (a_15A8): read by check_laser_pickup."
+   "text": "The map column of object 16, the LIGHTED CIGARETTE (0 while Johnny holds it), the first byte of its entry in the object table at $1568: check_cigarette_in_bin reads it."
   },
   {
    "address": 5560,
@@ -13805,7 +13805,7 @@
   {
    "address": 8084,
    "type": "line",
-   "text": "Compares the player's column with $63: crossing it sets or clears a flag in $0210; on a first crossing with the right flag it jumps to $1DAC."
+   "text": "Checks the security clearance at map column $63, while the alarm flag $0211 is clear and the column $021B is not $FF. Below column $63 it clears $0210 unless bit 0 is set. At or beyond $63 it keeps only bit 4 of $0210 (so a clearance, $11 from the PASSCARD at $1DA6, is spent on the first crossing); if bit 4 is clear, Johnny has crossed without clearance and it jumps to the alarm path at $1DAC."
   },
   {
    "address": 8125,
@@ -13815,7 +13815,7 @@
   {
    "address": 8152,
    "type": "line",
-   "text": "Awards 5000 points and sets a flag the first time the object at $15A8 is gone from the table."
+   "text": "The first time object 16, the LIGHTED CIGARETTE, has been left at map column $F8 (its column in the object table at $15A8 reads $F8; it starts at $D6), it awards 5000 points, sets $0212 and queues BIN IS ON FIRE and ALARM HAS GONE OFF. With the sprinkler system on (bit 3 of $0299) it also queues SPRINKLER SYSTEM ACTIVATED and FAULT IN CIRCUITRY, and timed_event will end the game; otherwise it zeroes $02F7 and records the clock's minutes in $02F6 so that check_countdown can count four minutes."
   },
   {
    "address": 8218,
@@ -13850,12 +13850,12 @@
   {
    "address": 8559,
    "type": "line",
-   "text": "Switches the enemy sprites on or off at a map column listed in $21CB when Johnny's scroll position matches."
+   "text": "Brings the enemy robot pair (sprites 2 and 3) on when both are off and the scroll column $02AE has just changed to a column listed at $21CB: when the column went up (walking right) it compares $02AE plus 10 and places the pair at the right edge (X $160); when it went down it compares $02AE and places them at the left edge (X 4). It never switches them off; enemy_walk does that at $2148."
   },
   {
    "address": 8651,
    "type": "line",
-   "text": "The four scroll columns at which the enemy robot pair is switched on or off by $216F."
+   "text": "The four scroll columns at which $216F brings the enemy robot pair on (compared with $02AE, or $02AE plus 10 when walking right)."
   },
   {
    "address": 8655,
@@ -13875,7 +13875,7 @@
   {
    "address": 8798,
    "type": "line",
-   "text": "Waits in a busy loop (about 0.04 s per pass) draining the energy bar and the shield bar one step each until the out-of-energy flag at $0206 is set. Used by the failure endings."
+   "text": "Waits in a busy loop (about 0.06 s per pass, longer with the interrupts) draining the energy bar and the shield bar one step each until the out-of-energy flag at $0206 is set. It sets $0294 so the message printer runs from the interrupt meanwhile. Used by the failure endings."
   },
   {
    "address": 8828,
@@ -13885,7 +13885,7 @@
   {
    "address": 8912,
    "type": "line",
-   "text": "Brings on sprites 4 and 5 (a guard and its shadow) at the right and walks them left towards Johnny; when they overlap Johnny they trigger the capture ending."
+   "text": "Brings on sprites 4 and 5, drawn together as a guard, at the right (X $160 and $164) and walks them left towards Johnny. When sprite 4 is less than $20 pixels to the right of Johnny's sprite 0 the guard catches him, whatever the height: it shows the capture frames ($EC and $ED when sprite 4 is $10 or more below him, otherwise $F0 and $F4) and jumps to the capture ending."
   },
   {
    "address": 9011,
@@ -13930,7 +13930,7 @@
   {
    "address": 9314,
    "type": "line",
-   "text": "Copies two blocks of 240 bytes from $9268 and $9358 into the screen and colour maps and runs the picture expander at $1EC6, with the VIC set to screen 4 while it does so."
+   "text": "Draws the picture screen: copies two blocks of 240 characters from $9268 and $9358 into the screen map at $C050 and $C140, then runs $1EC6 to fill the colour map from $D850 for those 480 characters through the colour table at $9000. While it does so the playfield's video memory value $029C is $04 (character set at $D000); it sets it back to $06 at the end."
   },
   {
    "address": 9368,
@@ -13990,17 +13990,17 @@
   {
    "address": 9764,
    "type": "line",
-   "text": "Entry of part two: clears the state, sets sprite colours, positions the player and the lorry, resets the clock to 6:00, draws the panel, programs CIA2 timer A, shows the PART TWO text and falls into the part-two main loop."
+   "text": "Entry of part two: resets the game state, sets the VIC bank, colours Johnny's two sprites and places them (slots 0 and 1, X $80, Y $74 and $89), clears the scroll column, the screen and the event column, draws the upper scenery and the starting scenery, installs the interrupts, sets the clock to 6:00 and draws it and the panel, refills the shield bar, selects the LASER action, programs CIA2 timer A ($0DD0) and enables its NMI, sets the music speed flag $031B, starts tune $21 and falls into the part-two main loop."
   },
   {
    "address": 9916,
    "type": "line",
-   "text": "Main loop of part two: handles the energy-out ending, then waits for the frame counter, and each frame runs the scroller, the character, the objects and the obstacles in turn."
+   "text": "Main loop of part two. When the energy is out ($0206) it starts the ending once (tune $13, the player's frames, YOUR ENERGY HAS RUN OUT) and about 255 frames later goes to the scores. It checks F5, waits for the frame counter $0306, and each frame runs the ground check, the walk and fire (unless the energy is out or $030E holds them), the actors, the frame tail, the scenery animations, the chase trigger, the blocking check and the pause key; at scroll column $F6 with Johnny's X at $FF it goes to the win sequence at $39F5."
   },
   {
    "address": 10054,
    "type": "line",
-   "text": "Frame tail of part two: runs the animators, the sound driver call at $8930 and the message printer."
+   "text": "Frame tail of part two: moves the jump paths ($2D3C), runs the hit flashes ($3BF1), the column events at $8930 (unless the chase pair has started), the animation counters, copies the sprite slots to the VIC and runs the message printer."
   },
   {
    "address": 10073,
@@ -14015,7 +14015,7 @@
   {
    "address": 10184,
    "type": "line",
-   "text": "Three words (address minus one) of the part-two raster handlers: $27CE, $2804, $282E, indexed by the band counter."
+   "text": "Three words (address minus one) of the part-two raster handlers, indexed by twice the band counter: 0 is $282E (line $F3), 1 is $2804 (line $A3), 2 is $27CE (line $61)."
   },
   {
    "address": 10185,
@@ -14055,17 +14055,17 @@
   {
    "address": 10372,
    "type": "line",
-   "text": "Moves the active sprite slots one pixel to the left with the scroll, and at the end of each character shifts the eight rows of the screen map and colour map one place to the left."
+   "text": "From slot X to slot 7, moves each active sprite slot one pixel to the left with the scroll, freeing a slot that leaves the left edge ($2873). Then it counts the lower band's fine scroll $02A0 down; when it reaches a character boundary it resets it to 7, starts CIA2 timer A (the NMI at $2956 shifts the colour rows and draws the new column) and shifts the eight screen rows from $C0F0 one place to the left."
   },
   {
    "address": 10476,
    "type": "line",
-   "text": "Called from the NMI: advances the scroll position by one pixel step (phase $02AD, column $02AE) and, each time the phase wraps, draws the next 4-by-4 tile column of the scenery into the screen and colour maps through the row pointers in zero page $10 and $30, taking the tile numbers from the map rows at $4400 and $4500."
+   "text": "Called from the NMI after each character of scroll: steps the scroll phase $02AD (the character column within a tile, 0 to 3, moving the scroll column $02AE on when it wraps) and draws the new right-hand character column: column $02AD of the tiles at map column $02AE plus 10 in the map rows at $4400 and $4500, through the row pointers in zero page $10 and $30."
   },
   {
    "address": 10521,
    "type": "line",
-   "text": "Writes one tile column (tile number in A) of part two's scenery: for each of the characters of the tile it stores the character and its colour (from $9448) through the row pointer tables."
+   "text": "Writes one character column of a tile of part two's scenery (tile number in A, column $02AD): its four characters, and their colours from $9448, go into four rows through the row pointers in zero page $10 and $30, starting at the row $02AB, which it then leaves at the next row."
   },
   {
    "address": 10559,
@@ -14075,17 +14075,17 @@
   {
    "address": 10582,
    "type": "line",
-   "text": "Non-maskable interrupt handler of part two, driven by CIA2 timer A. If the serial-port bit is set it goes to $2B25; otherwise on a timer underflow it re-arms the timer, enables interrupts, shifts seven rows of the colour map one cell left and calls $28EC for the new column."
+   "text": "Non-maskable interrupt handler of part two, driven by CIA2 timer A. If the serial-port bit is set it goes to $2B25; otherwise on a timer underflow it stops the timer (scroll_sprite_slots starts it again at the next character), enables interrupts, shifts the eight colour rows from $D8F0 one cell left and calls $28EC for the new column."
   },
   {
    "address": 10679,
    "type": "line",
-   "text": "Shifts eight rows of the part-two screen and colour maps one character to the left, wrapping the first column to the end, to scroll the lower band of the picture by a character."
+   "text": "Scrolls the upper band of part two's scenery by a pixel: decrements its fine scroll $029F, and at a character boundary resets it to 7 and shifts the four screen rows from $C050 (rows 2 to 5) and their colour rows one character to the left, wrapping the first column to the end. Called from the line-$61 handler once for every two scroll steps, so the upper band moves at half the speed of the lower one."
   },
   {
    "address": 10818,
    "type": "line",
-   "text": "Builds part two's whole starting scenery: expands ten tile columns of two rows of tiles each from the map rows at $2B21 into the screen map at $C0F0 and then copies the screen and colour maps for the lower rows from the tile data."
+   "text": "Builds part two's whole starting scenery: expands ten tile columns, two tiles high, from the map rows at $4400 and $4500 (through the pointers at $2B21) into the screen map from $C0F0, sets the scroll phase $02AD to 0 and falls into the colour fill at $2AD4."
   },
   {
    "address": 10964,
@@ -14130,7 +14130,7 @@
   {
    "address": 11139,
    "type": "line",
-   "text": "Part two's player movement: continues a started walk step, or reads the stick and starts a new one, selecting the movement routine from the table at $8FE8 by the stick bits."
+   "text": "Part two's player movement: finishes a turn in progress ($020F), or else takes the stick (the last bits in $20 while Johnny's jump path is active, otherwise read_joystick): no direction stops the walk; a sideways push that differs from his facing starts a turn; otherwise it dispatches through the table at $8FE8 by the four stick bits to the jump, duck and walk actions."
   },
   {
    "address": 11265,
@@ -14155,17 +14155,17 @@
   {
    "address": 11393,
    "type": "line",
-   "text": "Moves the player's two sprites one pixel left, down to X $40, or ends the walk at the limit."
+   "text": "Moves the player's two sprites one pixel left while slot 0's X is $40 or more (so down to $3F); below that it ends the walk (clears $02ED)."
   },
   {
    "address": 11414,
    "type": "line",
-   "text": "Part two's action for the stick pushed right: if the walking flag $02ED is set, takes a right step ($2CA4) and advances the walk frame with the table at $0E."
+   "text": "Part two's action for the stick pushed right: if the walking flag $02ED is set, takes a right step ($2CA4) and advances the walk frame for direction $0E (right) through walk_frame_advance."
   },
   {
    "address": 11428,
    "type": "line",
-   "text": "Moves the player's two sprites one pixel right, up to X $B0, once per call."
+   "text": "Moves the player's two sprites one pixel right while slot 0's X is below $B0. Further right, from scroll column $F6 on it still moves him; before that it asks for a scroll step instead (increments $21), and while $030B is set (check_exit_blocked) and no jump path is active it also pushes him one pixel right."
   },
   {
    "address": 11469,
@@ -14175,17 +14175,17 @@
   {
    "address": 11488,
    "type": "line",
-   "text": "Part two's stick action for down and left: turns Johnny to face left, then runs the duck step and the left walk."
+   "text": "Part two's stick action for down and left: if Johnny is not facing left it starts the turn to the left and does nothing else; otherwise it runs the duck step and then a left step (the walk at $2C73 once $0221 is set, the bare step $2C81 before)."
   },
   {
    "address": 11515,
    "type": "line",
-   "text": "Part two's stick action for up and right: turns Johnny to face right, then runs the jump start and the right walk."
+   "text": "Part two's stick action for up and right: if Johnny is not facing right it starts the turn to the right and does nothing else; otherwise it takes a right step ($2CA4) and runs the jump start."
   },
   {
    "address": 11534,
    "type": "line",
-   "text": "Part two's stick action for down and right: turns Johnny to face right, then runs the duck step and the right walk."
+   "text": "Part two's stick action for down and right: if Johnny is not facing right it starts the turn to the right and does nothing else; otherwise it runs the duck step and then a right step (the walk at $2C96 once $0221 is set, the bare step $2CA4 before)."
   },
   {
    "address": 11558,
@@ -14200,12 +14200,12 @@
   {
    "address": 11666,
    "type": "line",
-   "text": "Chooses the second sprite's pointer from the table at $2DBE (the walk or the duck frame, by the animation phase) and writes it to $C3F9."
+   "text": "Chooses the duck frame of Johnny's second sprite from the table at $2DBE, at Y (0 facing right, 2 facing left) plus the phase in $0220, and writes it to $C3F9. While the walking flag is set the phase toggles every fourth call ($0298); otherwise it stays as part_two_duck_start chose it."
   },
   {
    "address": 11710,
    "type": "line",
-   "text": "Sprite pointers of the player's second sprite for the walk and duck frames, indexed by the animation phase."
+   "text": "Pointers of Johnny's second sprite while he ducks in part two: $F6 and $87 facing right, $F8 and $88 facing left, the two of each pair alternated by the phase in $0220."
   },
   {
    "address": 11714,
@@ -14215,7 +14215,7 @@
   {
    "address": 11732,
    "type": "line",
-   "text": "Event 1's creature (sprite slot in $0222; it enters from the left at height $70). Each pass it moves 3 pixels right ($3618 with carry set); when it leaves the world the slot variable is cleared and 80 points are added. While Johnny is not ducking ($0243 is 0) it hurts him when its X is 0 to 15 pixels beyond his: the shield (carry set at $32C7) loses 3 steps and the creature is removed. Its frame comes from $8F9A and the animation counter $02A7."
+   "text": "Event 1's creature (sprite slot in $0222; it enters from the left at height $70). Each pass it moves 3 pixels right ($3618 with carry set); when it leaves the world the slot variable is cleared and 80 points are added. While Johnny is not ducking ($0243 is 0) it hurts him when its X is 0 to 31 pixels beyond his (0 to 15 in the halved positions slot_x_position returns): the shield (carry set at $32C7) loses 3 steps, its slot variable is cleared and the hit flash frees its sprite later. Its frame comes from $8F9A and the animation counter $02A7."
   },
   {
    "address": 11801,
@@ -14225,7 +14225,7 @@
   {
    "address": 11819,
    "type": "line",
-   "text": "Event 4's creature (slot in $0223; it enters from the right at height $98). Each pass it moves 1 pixel left; leaving the world clears the slot variable and adds 35 points. It hurts Johnny when its X is 4 pixels behind to 7 pixels beyond his and Johnny's second sprite is at height $87 or lower: the shield loses 4 steps. Its frame comes from $8FA7 and the counter $02A5."
+   "text": "Event 4's creature (slot in $0223; it enters from the right at height $98). Each pass it moves 1 pixel left; leaving the world clears the slot variable and adds 35 points. It hurts Johnny when its X is about 8 pixels behind to 15 pixels beyond his (-4 to 7 in the halved positions slot_x_position returns) and Johnny's second sprite is at height $87 or lower: the shield loses 4 steps. Its frame comes from $8FA7 and the counter $02A5."
   },
   {
    "address": 11898,
@@ -14235,7 +14235,7 @@
   {
    "address": 11916,
    "type": "line",
-   "text": "Event 2's creature (slot in $0225; it enters from the right at height $8A). Each pass it moves 3 pixels left; leaving the world clears the slot variable and adds 100 points. It hurts Johnny when its X is 1 to 16 pixels behind his and his second sprite is at height $7C or lower: the shield loses 6 steps. Its frame comes from $8F9E and the counter $02A6."
+   "text": "Event 2's creature (slot in $0225; it enters from the right at height $8A). Each pass it moves 3 pixels left; leaving the world clears the slot variable and adds 100 points. It hurts Johnny when its X is 2 to 32 pixels behind his (1 to 16 in the halved positions slot_x_position returns) and his second sprite is at height $7C or lower: the shield loses 6 steps. Its frame comes from $8F9E and the counter $02A6."
   },
   {
    "address": 11988,
@@ -14245,7 +14245,7 @@
   {
    "address": 12011,
    "type": "line",
-   "text": "Event 7's pair of sprites (slots in $0227 and $0228; enters from the right at height $8D). The second sprite is started when the first has come in past X $9A; after that both move 2 pixels left a pass. Leaving the world adds 85 points. When the first is 1 to 12 pixels behind Johnny and his second sprite is at height $85 or lower, the shield loses 5 steps and both are freed."
+   "text": "Event 7's pair of sprites (slots in $0227 and $0228; enters from the right at height $8D). The second sprite is started (pointer $A4) when the first has scrolled in past X $134 (halved $9A, as slot_x_position returns it); neither moves by itself until the second is below X $10C (halved $86), after which both move 2 pixels left a pass. The second leaving the world adds 85 points. When the first is 2 to 24 pixels behind Johnny (1 to 12 halved) and his second sprite is at height $85 or lower, the shield loses 5 steps, both slot variables are cleared and the second's sprite slot is freed (the first flashes and is freed by the hit flash)."
   },
   {
    "address": 12160,
@@ -14255,7 +14255,7 @@
   {
    "address": 12180,
    "type": "line",
-   "text": "Event 6's pair of sprites (slots in $0229 and $022A; enters from the right at height $8C). Each pass both move one pixel, left or right as the flag at $0234 says ($3032); the second is started when the first has come in past X $9C. When the scroll column reaches $A2 both are removed and 1,500 points are added."
+   "text": "Event 6's pair of sprites (slots in $0229 and $022A; enters from the right at height $8C). Each pass both move one pixel ($3032), left while $0234 is set; once the first has reached a point fixed in the scenery (worked out from the scroll column and phase) $0234 is cleared and they walk right. While walking left the second is started when the first has come in past X $138 (halved $9C). When the scroll column reaches $A2 their slot variables are cleared (the sprites stay and drift off with the scroll) and 1,500 points are added."
   },
   {
    "address": 12338,
@@ -14280,17 +14280,17 @@
   {
    "address": 12457,
    "type": "line",
-   "text": "Spawns the group's members, one after another, once the first has crossed column $9C."
+   "text": "Once slot X (a member already on screen) has come in past X $138 (halved $9C), spawns the next two members of the group through $3090, the second only when the count has not reached 7."
   },
   {
    "address": 12476,
    "type": "line",
-   "text": "The sprite pointers $8B, $8A, $8C of the group."
+   "text": "Base of the group's sprite pointer table, indexed by sprite slot: slots 2 to 6 read $89, $8B, $8A, $8C and $90 from $30BE to $30C2. The two bytes here are code (the end of JMP $3090 and an RTS)."
   },
   {
    "address": 12478,
    "type": "line",
-   "text": "Sprite pointers ($30BE) and Y positions ($30C1) of the members of the group spawned by $30A9."
+   "text": "Sprite pointers and heights of the group spawned by $30A9: the pointers are read at $30BC plus the sprite slot ($89, $8B, $8A, $8C, $90 for slots 2 to 6, from $30BE), the heights at $30C1 plus the member index 2 to 6 ($50, $65, $50, $65, $50, from $30C3)."
   },
   {
    "address": 12481,
@@ -14305,22 +14305,22 @@
   {
    "address": 12525,
    "type": "line",
-   "text": "Event 9's enemy pair (slot in $0230; enters from the left at height $72). It moves with its shadow ($315C) and, when no shot of its own is in flight, starts one ($327D). If Johnny's laser shot is already beyond it, the enemy is shot: 1,000 points are added, the pair's pictures change to $AC and $AB and the pair is removed a few frames later."
+   "text": "Event 9's enemy (slot in $0230 and the next one, a figure in two halves at heights $72 and $87; enters from the left). It walks right ($315C) until it reaches X $28 (halved $14), then stands. When no shot of its own is in flight, no hit flash is running and the energy is not out, it starts one ($327D). If Johnny's laser shot has gone past it to the left, the enemy is shot: the laser's slot is freed, 1,000 points are added, its pictures change to $AC and $AB, its slot variable is cleared, and the routine waits until the frame counter $0306 reaches 4 before showing $AD."
   },
   {
    "address": 12636,
    "type": "line",
-   "text": "Moves an entity and its shadow sprite one step left, or right, together."
+   "text": "Moves a two-sprite figure (slot X and the slot after it) one pixel to the right and gives the lower sprite its walking-leg frame from $23FC by the counter $02A7. When the lower sprite leaves the world it clears both $0230 and $0232."
   },
   {
    "address": 12668,
    "type": "line",
-   "text": "Starts a pair of entities that chase the player: allocates sprites on the left and right edges once, and sets their colour and pointer."
+   "text": "Starts the chasing figure, once ($024A): allocates two sprites at the left edge, at heights $72 and $87 (its two halves), records the first in $0232, colours both 8 and gives the first the pointer $92."
   },
   {
    "address": 12705,
    "type": "line",
-   "text": "The chasing pair's first member (slot in $0232): moves it with its shadow and, when it is 16 or more pixels from Johnny and no effects are active, starts the second member at $32DA."
+   "text": "The chasing figure (slot in $0232): moves it right with its lower half ($315C) and, once it is in from the left past X $20 (halved $10) while no second member and no hit flash exist, sets its lower half to $E3 and starts the second member at $32DA, which takes its position and clears $0232."
   },
   {
    "address": 12737,
@@ -14330,17 +14330,17 @@
   {
    "address": 12765,
    "type": "line",
-   "text": "Event 8's figure (slots in $0231 and the one after it; enters from the left at height $74, colour 15). Each pass both move 3 pixels right. When the figure is within 12 pixels of Johnny the energy loses 24 steps and the message CAPTURED AND DEACTIVATED is queued; if Johnny's laser shot reaches it first the figure is removed and 3,000 points are added."
+   "text": "Event 8's figure (slots in $0231 and the one after it; enters from the left at heights $74 and $89, colour 15). Each pass both move 3 pixels right. When Johnny is 0 to 23 pixels ahead of it (0 to 11 in halved positions) the energy loses 24 steps, CAPTURED AND DEACTIVATED is queued and its slot variable is cleared; otherwise, if Johnny's laser shot is 0 to 11 pixels ahead of it, the laser is freed, the figure's slot variable is cleared and 3,000 points are added."
   },
   {
    "address": 12881,
    "type": "line",
-   "text": "Moves sprite slot X and the slot after it one pixel to the right, then jumps to $323E to set the second sprite's frame pointer."
+   "text": "Moves sprite slot X and the slot after it one pixel to the right, then jumps to $323E, which sets the pointers of the pair whose slot is in $0231: $C4 for the first and the frame from $1C86 (by $02A5) for the second. The carry from the second move is returned."
   },
   {
    "address": 12897,
    "type": "line",
-   "text": "Moves a sprite pair one step left, setting the first sprite pointer to $B5."
+   "text": "Moves sprite slot X and the slot after it one pixel to the right, setting the first's pointer to $B5 and the second's to the frame from $1C86 by $02A5."
   },
   {
    "address": 12925,
@@ -14355,7 +14355,7 @@
   {
    "address": 12999,
    "type": "line",
-   "text": "Plays the hit sound ($9B3F), then drains the player's energy bar by Y steps when carry is clear, or the shield bar when carry is set."
+   "text": "Starts the hit flash on sprite slot X ($9B3F, which slot_animations later frees), then drains the player's energy bar by Y steps when carry is clear, or the shield bar when carry is set."
   },
   {
    "address": 13010,
@@ -14375,12 +14375,12 @@
   {
    "address": 13103,
    "type": "line",
-   "text": "Allocates two sprites and starts the overlay sprite pair at $0293."
+   "text": "Used in the ending ($3A65) and in the intro ($97A1): sets the flag $0293, which makes run_actors move sprite slots 0 and 1 (Johnny's pair in the ending) through $3345, gives slot 0 the pointer $C2, and allocates two more sprites at the right edge (heights $72 and $87)."
   },
   {
    "address": 13125,
    "type": "line",
-   "text": "Per-pass routine of the overlay pair started by $332F."
+   "text": "Per-pass routine while $0293 is set: moves sprite slots 0 and 1 one pixel to the left and sets slot 1's frame from $1C7A by $02A5."
   },
   {
    "address": 13148,
@@ -14410,7 +14410,7 @@
   {
    "address": 13283,
    "type": "line",
-   "text": "Event 11's pair of sprites (slots in $023D and $023E; enters from the right at height $6A). The second is started when the first is past X $9C; both move 3 pixels left a pass. While Johnny is not ducking, if the first is 1 to 16 pixels behind his X, the shield loses 8 steps and both are removed. The second leaving the world adds 100 points."
+   "text": "Event 11's pair of sprites (slots in $023D and $023E; enters from the right at height $6A). The second is started when the first is past X $138 (halved $9C, as slot_x_position returns it); both move 3 pixels left a pass. While Johnny is not ducking, if the first is 2 to 32 pixels behind his X (1 to 16 halved), the shield loses 8 steps and both are removed. The second leaving the world adds 100 points."
   },
   {
    "address": 13424,
@@ -14420,7 +14420,7 @@
   {
    "address": 13442,
    "type": "line",
-   "text": "Event 3's creature (slot in $0226; enters from the right at height $94). Each pass it moves 2 pixels left; leaving the world adds 50 points. It hurts Johnny when it is 1 to 16 pixels behind his X and his second sprite is at height $85 or lower: the shield loses 5 steps."
+   "text": "Event 3's creature (slot in $0226; enters from the right at height $94). Each pass it moves 2 pixels left; leaving the world adds 50 points. It hurts Johnny when it is 2 to 32 pixels behind his X (1 to 16 in the halved positions slot_x_position returns) and his second sprite is at height $85 or lower: the shield loses 5 steps."
   },
   {
    "address": 13514,
@@ -14430,7 +14430,7 @@
   {
    "address": 13532,
    "type": "line",
-   "text": "Event 12's creature (slot in $023F; enters from the left at height $8C). Each pass it moves 2 pixels right; leaving the world adds 500 points. It hurts Johnny when it is 0 to 7 pixels beyond his X and his second sprite is at height $7B or lower: the energy loses 16 steps."
+   "text": "Event 12's creature (slot in $023F; enters from the left at height $8C). Each pass it moves 2 pixels right; leaving the world adds 500 points. It hurts Johnny when it is 0 to 15 pixels beyond his X (0 to 7 in the halved positions slot_x_position returns) and his second sprite is at height $7B or lower: the energy loses 16 steps."
   },
   {
    "address": 13603,
@@ -14440,7 +14440,7 @@
   {
    "address": 13621,
    "type": "line",
-   "text": "Event 13's creature (slot in $0240; enters from the left at height $8C). Each pass it moves 3 pixels right; leaving the world adds 500 points. It hurts Johnny when it is 0 to 7 pixels beyond his X and his second sprite is at height $7B or lower: the energy loses 20 steps."
+   "text": "Event 13's creature (slot in $0240; enters from the left at height $8C). Each pass it moves 3 pixels right; leaving the world adds 500 points. It hurts Johnny when it is 0 to 15 pixels beyond his X (0 to 7 in the halved positions slot_x_position returns) and his second sprite is at height $7B or lower: the energy loses 20 steps."
   },
   {
    "address": 13692,
@@ -14460,7 +14460,7 @@
   {
    "address": 13747,
    "type": "line",
-   "text": "Event 15's creature (slot in $0242; enters from the right at height $8A), which hops: every 48th pass of its walk it starts a jump on its own path ($2D26). Each pass it moves 1 pixel left. When it is within 8 pixels behind to 5 pixels beyond Johnny's X and Johnny is not jumping ($026B is 0) the shield loses 5 steps and it is removed; if Johnny is in the air it goes under him."
+   "text": "Event 15's creature (slot in $0242; enters from the right at height $8A), which hops: it waits 48 passes on the ground ($030A), then starts a jump on its own path ($2D26) and moves 1 pixel left a pass while in the air. When it is about 16 pixels behind to 11 pixels beyond Johnny's X (-8 to 5 in halved positions) it hurts him if he is not jumping ($026B is 0), or, when it is behind him, if both are in the air: the shield loses 5 steps and its slot variable is cleared."
   },
   {
    "address": 13848,
@@ -14500,7 +14500,7 @@
   {
    "address": 14331,
    "type": "line",
-   "text": "Draws one frame of the animated scenery tile $59 at the column given by Y."
+   "text": "Draws one frame of the animated scenery tile $59 for the tile column offset passed in A: at screen offset 4 times A minus the phase $02AD (nothing when it is $25 or more) it writes a 2-by-2 block of characters at $C119 and $C141, the frame chosen by the counter $02A9 through $3832."
   },
   {
    "address": 14374,
@@ -14535,7 +14535,7 @@
   {
    "address": 14424,
    "type": "line",
-   "text": "Draws one frame of the animated scenery tile $5A at the column given by Y."
+   "text": "Draws one frame of the animated scenery tile $5A for the tile column offset passed in A: at screen offset 4 times A minus the phase $02AD (nothing when it is 0, or $25 or more) it writes a 2-by-2 block of characters at $C13F and $C167, the frame chosen by the counter $02A9 through $3891."
   },
   {
    "address": 14469,
@@ -14565,7 +14565,7 @@
   {
    "address": 14489,
    "type": "line",
-   "text": "Tests whether the two entities in slots $0229 and $022A are close to the player and sets $030B and the walk-stop flag when the scroll column is under $A3."
+   "text": "Tests whether Johnny is between event 6's pair: the first ($0229) 2 to 32 pixels behind him (1 to 16 halved) and the second ($022A) level with him or ahead. If so, while the scroll column is below $A3, it sets the scroll request $21 to 1 and $030B, which makes part_two_walk_right_step push him along and maybe_stop_walk skip the ground check; otherwise it clears $030B."
   },
   {
    "address": 14547,
@@ -14575,17 +14575,17 @@
   {
    "address": 14662,
    "type": "line",
-   "text": "Returns in A the column of the character cell under the player's feet: the player's Y minus $78, divided by 8."
+   "text": "Returns in A how many character rows the feet are below line $78: the Y of Johnny's second sprite ($0254) minus $78, divided by 8. The ground handlers compare it with 1 or 2."
   },
   {
    "address": 14672,
    "type": "line",
-   "text": "Part two's terrain effect that sinks Johnny: unless it is already running, copies the player's shapes to $E000, switches the sprite pointers to $B2 and $B3 and shifts the two shapes down one row 22 times, five frames apart, draining two steps of energy each time."
+   "text": "Part two's terrain effect that sinks Johnny: unless it is already running ($023B), copies his two current shapes to $EC80 and $ECC0, switches the sprite pointers to them ($B2 and $B3) and shifts the two shapes, as one column, down one row 22 times, five frames apart (running the frame tail and the actors meanwhile), draining two steps of energy each time."
   },
   {
    "address": 14799,
    "type": "line",
-   "text": "Copies 64 bytes of sprite shape number A to $E000 and onwards, to change the shape of the sprite set aside for the player."
+   "text": "Copies the 64 bytes of sprite shape number A (from $C000 plus 64 times A) to the address given in X (high byte) and Y (low byte), which it writes into the store of its copy loop at $39EC. sinking_animation uses it to copy Johnny's shapes to $EC80 and $ECC0."
   },
   {
    "address": 14826,
@@ -14595,17 +14595,17 @@
   {
    "address": 14829,
    "type": "line",
-   "text": "The operand of the copy loop in $39CF: its source address low byte."
+   "text": "The operand of the store in the copy loop of $39CF: its destination address low byte, set from Y."
   },
   {
    "address": 14830,
    "type": "line",
-   "text": "The operand of the copy loop in $39CF: its source address high byte."
+   "text": "The operand of the store in the copy loop of $39CF: its destination address high byte, set from X."
   },
   {
    "address": 14837,
    "type": "line",
-   "text": "Reached at the end of the escape: scores bonus points, frees sprite slots 2 to 5 and runs the end-of-game sequence through the table at $3AE0, one step per frame."
+   "text": "Reached at the end of the escape: sets the score's top two digits to 05 (STA $02E7, so the score becomes 50,000 plus its last four digits) and redraws it, frees sprite slots 2 to 5 and runs part two's ending sequence: each frame it runs the step that $0310 selects through the table at $3AE0, and each step moves on to the next when its condition is met."
   },
   {
    "address": 14862,
@@ -14635,7 +14635,7 @@
   {
    "address": 15119,
    "type": "line",
-   "text": "Allocates a sprite slot for Johnny's laser shot at the left edge, at the height in the table, and copies Johnny's X to it."
+   "text": "Allocates a sprite slot for Johnny's laser shot at the left edge at height $87, records it in $023C, colours it 1 with the pointer $A7 and copies Johnny's X (slot 0, low byte) to it."
   },
   {
    "address": 15147,
@@ -14645,7 +14645,7 @@
   {
    "address": 15163,
    "type": "line",
-   "text": "Fills two rows of the screen map with the character $C8 and draws a block of 4 columns by 6 rows of characters from $3B71 with colour 15, used in the ending."
+   "text": "Fills the 320 cells of the screen map from $C0EF to $C22E with the character $C8, copies the upper band's fine scroll $029F to the lower band's $02A0, and draws a block of 4 columns by 6 rows of characters from $3B71 at $C13B with colour 15; used in the ending (it expects X = 0, which the caller sets)."
   },
   {
    "address": 15217,
@@ -14655,12 +14655,12 @@
   {
    "address": 15241,
    "type": "line",
-   "text": "Converts the clock to seconds ($02A2), subtracts the scroll column and, when the player is a set distance ahead, starts the chasing pair at $317C or $32DA depending on the number of free slots."
+   "text": "Works out a seconds count from the clock into $02A2 (the minutes register used as a loop count times 60, plus the seconds, in one byte), subtracts the scroll column $02AE and, when the result is $2F or more (the clock has run ahead of Johnny's progress), starts a chaser: below column $8A the figure at $317C if three or more of sprite slots 2 to 7 are in use, otherwise the runner at $32DA; from column $8A to $BA the runner at $32DA; from $BB the figure at $317C. It ends by reading a clock register to release the latch."
   },
   {
    "address": 15345,
    "type": "line",
-   "text": "When the walk animation frame changes, advances the animation of each active effect slot ($0283) and frees the slot after nine frames."
+   "text": "Each time the animation counter $02A5 changes (every fourth pass), steps the hit flash of every slot whose flag $0283 is set: it counts $028B up, shows frame $8F90 plus the count and flips the colour (EOR 5); at the tenth step it clears the flash and frees the slot, after nine frames shown."
   },
   {
    "address": 15414,
@@ -14670,7 +14670,7 @@
   {
    "address": 15429,
    "type": "line",
-   "text": "Allocates two sprites at the left of the screen with sprite pointers $BC and $BD and colour 3."
+   "text": "Allocates two sprites at the right edge (X $14B), at heights $80 and $95, with sprite pointers $BC and $BD and colour 3."
   },
   {
    "address": 15462,
@@ -14680,17 +14680,17 @@
   {
    "address": 15475,
    "type": "line",
-   "text": "Runs the sound timer step four times when the tune is playing."
+   "text": "Runs the sound timer step four times while the music speed flag $031B is set (part two); while it is clear it calls the sound driver at $3C9E once."
   },
   {
    "address": 15493,
    "type": "line",
-   "text": "Adds $B0 to the sound tick counter $031A and runs the sound driver on each carry."
+   "text": "Adds $B0 to the sound tick counter $031A; on a carry it runs the whole sound driver ($3C9E), otherwise only voice 3's effects ($AB48) and the filter sweep ($A3D3)."
   },
   {
    "address": 15507,
    "type": "line",
-   "text": "Adds $E4 to a fractional counter at $031A and, on each carry, runs the music and sound effect drivers ($A898, $A9D6, $A48B, $A5E2, $A73B), then the common driver tail ($AB48)."
+   "text": "Adds $E4 to a fractional counter at $031A and, on each carry, runs voice 1's and voice 2's effects ($A898, $A9D6) and the three voices' script steps ($A48B, $A5E2, $A73B); on every call it then runs voice 3's effects ($AB48) and the filter sweep ($A3D3)."
   },
   {
    "address": 15518,
@@ -14700,12 +14700,12 @@
   {
    "address": 15583,
    "type": "line",
-   "text": "Raster handler that cycles the multicolour background colour $D023 through the table at $8438 line by line, 24 times, then hands the interrupt to the vector at $3D2E and calls the sound driver."
+   "text": "Raster handler of the attract mode's colour bars: each interrupt sets the multicolour background colour $D023 from the 16-entry table at $8438 and asks for the next interrupt two lines further down; on the 24th it points the IRQ vector at $3D2E, sets the next line to $E1 and calls the sound step $3C93."
   },
   {
    "address": 15840,
    "type": "line",
-   "text": "544 bytes that decode as an older build of part two's ending sequence: its variable accesses use zero-page addresses where the live code uses page-3 addresses, and its calls point at routines that are not there. No instruction refers to it and no recorded run executes it."
+   "text": "544 bytes that are an older build of the code from the end of sinking_animation to chase_trigger ($39C4 to $3BE3, here shifted up by $41C bytes): the same instructions and the same page-2 and page-3 variables, but its calls point at that build's addresses (JSR $1F87 where the live code calls $1EE4, JSR $3341 for $3251), which hold other code in this one. No instruction refers to it."
   },
   {
    "address": 16384,
