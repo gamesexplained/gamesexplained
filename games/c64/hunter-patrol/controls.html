@@ -14,30 +14,30 @@
 <section id="stick">
   <p class="fig">01 · The joystick</p>
   <h2 class="t">Up is down: the stick works like a flight controller</h2>
-  <p class="lede">Port one only. The instructions on the disk say so, and the game reads the stick from <code>$DC01</code>, the port-one register.<sup class="fn"><a href="about.html#src-1" title="The documents on the disk">1</a></sup></p>
+  <p class="lede">Port one only. The game reads the stick from <code>$DC01</code>, the port-one register (<a href="source.html#0d14"><code>read_joystick</code></a>, <a href="source.html#0d14"><code>$0D14</code></a>).</p>
   <div class="plate"><table class="t">
-    <tr><th>Stick</th><th>What happens</th><th>Where</th></tr>
-    <tr><td>Up</td><td>the plane dives: its height value rises, which puts it lower on the screen</td><td><code>$193C</code> sets the climb rate <code>$37</code> to <code>$FF</code>; <code>$1990</code> adds it to the plane's sprite position <code>$8061</code></td></tr>
-    <tr><td>Down</td><td>the plane climbs, up to its highest position, <code>$52</code></td><td><code>$193C</code> sets <code>$37</code> to <code>1</code></td></tr>
-    <tr><td>Left</td><td>the ground scrolls the other way, at up to two steps</td><td><code>$193C</code> takes the scroll speed <code>$22</code> down to <code>$FE</code></td></tr>
-    <tr><td>Right</td><td>the ground scrolls at up to two steps</td><td><code>$193C</code> takes <code>$22</code> up to <code>$02</code></td></tr>
-    <tr><td>Fire</td><td>a shot leaves the plane</td><td><code>$193C</code> calls <code>$1E40</code> when the fire bit is clear, and that takes a free shot record</td></tr>
-  </table><p class="cap">Live test on 13 November 2026: from a snapshot of steady play, each direction held for 24 frames through the emulator's port-one joystick. Up moved the height value from <code>$51</code> to <code>$5E</code>, left and right set <code>$22</code> to <code>$FE</code> and <code>$02</code>, and the plane's sideways position <code>$8060</code> stayed at <code>$A0</code> in all four tests.</p></div>
-  <p>The stick is read once a frame and acted on every eighth frame (<code>$1920</code>, <code>$193C</code>), so the plane answers in steps. Holding right does not make the plane move right. The plane stays where it is and the landscape moves (<a href="discoveries.html#sideways">more</a>).</p>
+    <tr><th>Stick</th><th>What happens</th></tr>
+    <tr><td>Up</td><td>the plane dives: it moves down the screen, towards the ground</td></tr>
+    <tr><td>Down</td><td>the plane climbs, up to the top of its range</td></tr>
+    <tr><td>Left</td><td>the plane banks left and the ground slides right, at up to two steps</td></tr>
+    <tr><td>Right</td><td>the plane banks right and the ground slides left</td></tr>
+    <tr><td>Fire</td><td>a shot leaves the plane, when the last one has gone</td></tr>
+  </table><p class="cap">Live test on 13 November 2026, from a snapshot of play with the plane at the top of its range: up held for 40 frames set the climb rate <code>$37</code> to <code>$FF</code> and moved the plane's y from <code>$51</code> to <code>$67</code>, and it went on down to <code>$88</code> in the next 40 frames with the stick let go. Down set the rate back to 1.</p></div>
+  <p><a href="source.html#193c"><code>steer_plane</code></a> (<a href="source.html#193c"><code>$193C</code></a>) looks at the stick every eighth pass of the main loop. Each push moves a rate one step, and the rate stays where the stick left it, so the plane keeps climbing or diving with the stick let go, and the turn holds. Left and right move the scroll speed <code>$22</code> between −2 and 2. The plane itself never moves sideways: its x stays at <code>$A0</code>, its picture banks, and everything else slides past it (<a href="discoveries.html#sideways">more</a>). Only one shot flies at a time (<a href="source.html#1e40"><code>fire_shot</code></a>, <a href="source.html#1e40"><code>$1E40</code></a>).</p>
 </section>
 
 <section id="fire">
   <p class="fig">02 · Fire</p>
   <h2 class="t">Fire to start, to continue, and to shoot</h2>
   <p class="lede">The same button does three jobs, and two of them wait for it to be released first.</p>
-  <p>Fire starts a game from the title screen. After a strafing run, <code>$2E30</code> puts up a message and waits for the button to be let go, pressed, and let go again before it continues (<code>$2E80</code> to <code>$2E9D</code>). A button held down from the last pass does not skip the message.</p>
+  <p>Fire starts a game from the title screen. Before each strafing run, and after the last, the game puts up "PRESS FIRE TO CONTINUE" and waits for the button to be let go, pressed, and let go again (<a href="source.html#2b83"><code>$2B83</code></a>, <a href="source.html#2e80"><code>$2E80</code></a>), so a button held down from the last pass does not skip the message.</p>
 </section>
 
 <section id="keys">
   <p class="fig">03 · Keys</p>
   <h2 class="t">RESTORE restarts the game</h2>
-  <p class="lede">Only one key is documented, and it is the cracker's.</p>
-  <p>The cracker's instructions list one in-game key: <b>RESTORE</b> restarts the game. The instructions are the cracker's, not Mastertronic's. The restart was not tried.<sup class="fn"><a href="about.html#src-1" title="The documents on the disk">1</a></sup></p>
+  <p class="lede">The cracker's documents name one key, and the game does what they say.<sup class="fn"><a href="about.html#src-1" title="The documents on the disk">1</a></sup></p>
+  <p>RESTORE starts the game again from the title screen. The bytes at <a href="source.html#8000"><code>$8000</code></a> hold the signature a cartridge would ("CBM80"), and the KERNAL's RESTORE routine, finding it, jumps to the address they give, <a href="source.html#2f30"><code>restore_restart</code></a> (<a href="source.html#2f30"><code>$2F30</code></a>). In a live test on 13 November 2026 a press of RESTORE in play reached <code>$2F30</code>. With the cracker's level-skip trainer on, the C= key ends the level as if the target had been destroyed (<a href="discoveries.html#trainer">Discoveries</a>).</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

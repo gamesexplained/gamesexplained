@@ -13,43 +13,43 @@
 <main class="wrap">
 <section id="defences">
   <p class="fig">01 · The ground defences</p>
-  <h2 class="t">Four kinds of defence, and each takes more hits at higher levels</h2>
-  <p class="lede">The first half of a level is a count: destroy every installation of four kinds.</p>
-  <p>The instructions say the player must destroy four types of ground defence before reaching the target.<sup class="fn"><a href="about.html#src-1" title="The documents on the disk">1</a></sup> The program keeps that count in <code>$41</code>, and <code>$29E0</code> adds one each time the hits needed for a kind, kept in <code>$42</code>, reach zero. At four, the program starts the target run (<code>$2A4C</code> sets <code>$41</code> to <code>$80</code>). In a test run, <code>$41</code> went 1, 2, 3 and then <code>$80</code> as the score rose from 450 to 1,400.</p>
-  <p>The hits needed for a kind come from <code>$0F60</code>: 5 on the first level, 10 on the second, 20 on the third, and 20 again on the fourth. A hit scores 50 or 100 points (<code>$22D0</code>).</p>
-  <p>Installations are sprites that slide down the screen towards the plane and sideways with the scroll. They come in several sizes for the several distances, which the <a href="graphics.html#sizes">Graphics tab</a> shows. The game starts a new installation every 32 frames (<code>$2900</code>).</p>
+  <h2 class="t">Four kinds of defence, one after another</h2>
+  <p class="lede">The first half of a level is a count. The ground sends one kind of defence at a time, and the next kind comes when the plane has made enough hits on the first.</p>
+  <p>The kinds come in a fixed order: tanks, then lorries, then guns, then buildings, the four rows on the <a href="graphics.html#cast">Graphics tab</a>. The kind is kept in <code>$41</code>, and <a href="source.html#1670"><code>spawn_ground</code></a> (<a href="source.html#1670"><code>$1670</code></a>) starts a new object of that kind in a free record when a random number from the sound chip's noise voice has its low seven bits clear, about one pass in 128. An object appears on the horizon and comes down the screen towards the plane, growing and speeding up through twelve templates, and slides sideways as the plane turns.</p>
+  <p>The hits needed for a kind are kept in <code>$42</code>, and <a href="source.html#0f60"><code>set_hits_needed</code></a> (<a href="source.html#0f60"><code>$0F60</code></a>) sets them by the level: 5 on the first, 10 on the second, and 20 on the third and the fourth. A hit on a ground object scores 100 points, and a hit on an enemy aircraft scores 50; both count towards the kind on the ground (<a href="source.html#22d0"><code>hits_play</code></a>, <a href="source.html#22d0"><code>$22D0</code></a>). When the count reaches zero, <a href="source.html#29e0"><code>draw_distance_bar</code></a> (<a href="source.html#29e0"><code>$29E0</code></a>) moves on to the next kind. The bar along the bottom of the screen shows the progress: each kind has a section of it, filled as the hits are made.</p>
 </section>
 
 <section id="air">
   <p class="fig">02 · The air</p>
-  <h2 class="t">Enemy aircraft and flak</h2>
-  <p class="lede">The top of the screen belongs to other aircraft, and flak bursts there too.</p>
-  <p>Aircraft cross the sky in the top part of the picture. The game keeps them in a table of records at <code>$8880</code>, and <code>$2680</code> starts one in a free record with a random position taken from the sound chip's third voice, which the game runs as a noise source (<code>$1900</code>).</p>
-  <p>The instructions say to climb to shoot them down for extra score, and that the flak will knock the plane from the sky. A crash starts an explosion that lasts <code>$A0</code> steps, and then a life goes (<code>$2400</code>).</p>
+  <h2 class="t">Enemy aircraft, flak, and three ways to crash</h2>
+  <p class="lede">The sky has its own enemies, and only some of them can be shot.</p>
+  <p>Enemy aircraft appear near the plane and fly away from it, shrinking as they go, and turn round at random every 32 passes (<a href="source.html#1a10"><code>spawn_aircraft</code></a>, <a href="source.html#1a10"><code>$1A10</code></a>; <a href="source.html#1ad9"><code>move_aircraft</code></a>, <a href="source.html#1ad9"><code>$1AD9</code></a>). There are four aircraft records, as there are four ground records, because each band of the screen has four sprites for enemies (<a href="graphics.html#bands">how the bands work</a>).</p>
+  <p>The flak is a single record (<a href="source.html#8880"><code>$8880</code></a>). <a href="source.html#2680"><code>spawn_flak</code></a> (<a href="source.html#2680"><code>$2680</code></a>) starts it from the horizon at a random place, climbing towards the plane, with a random burst time. When the time comes the dot bursts in three steps (<a href="source.html#2700"><code>move_flak</code></a>, <a href="source.html#2700"><code>$2700</code></a>). The shot cannot hit the flak.</p>
+  <p>The plane crashes in three ways: touching the flak, touching a near enemy aircraft (<a href="source.html#0f00"><code>hits_sky_crash</code></a>, <a href="source.html#0f00"><code>$0F00</code></a>), or flying low enough that its shadow touches a ground object. A crash sets <code>$3F</code> to 1, and <a href="source.html#2400"><code>plane_crash</code></a> (<a href="source.html#2400"><code>$2400</code></a>) counts it up every other pass through ten explosion pictures; at <code>$A0</code> a life goes, the ground is cleared and play starts again. The game begins with four lives.</p>
 </section>
 
 <section id="target">
   <p class="fig">03 · The target</p>
-  <h2 class="t">One plane for each pass at the target</h2>
-  <p class="lede">After the fourth kind, the game stops to announce a strafing run, and every pass uses up a plane.</p>
-  <figure class="overview-shot"><img src="reference/strafing-prompt.png" width="384" height="272" alt="The screen reads PRESS FIRE TO CONTINUE above the plane, and the status line reads STRAFING RUN AIRCRAFT NO.3"><figcaption>Before each pass the plane waits and the status line names the aircraft: "STRAFING RUN AIRCRAFT NO.3". Fire, released and pressed again, continues.</figcaption></figure>
-  <p>In the test run the prompt read "NO.3", then "NO.2", then "NO.1" as the lives on the status line fell from 3 to 1. The instructions put it this way: the player has one strafing run for each remaining life.<sup class="fn"><a href="about.html#src-1" title="The documents on the disk">1</a></sup></p>
-  <figure class="overview-shot"><img src="reference/strafing-run.png" width="384" height="272" alt="A long white building crosses the screen under the plane"><figcaption>The target, a long white building, crosses the ground during a pass. The HIT figure on the status line counts the plane's hits on it.</figcaption></figure>
-  <p>When the passes are over, <code>$2E30</code> shows a message chosen by the hits on the target, counted in <code>$45</code> and drawn as the HIT figure by <code>$2DE1</code>. The thresholds are in hexadecimal in the code and in decimal on the screen:</p>
+  <h2 class="t">A strafing run for every plane in reserve, and one more</h2>
+  <p class="lede">After the fourth kind, the level ends at its target, a different one on each level and three sprites wide.</p>
+  <figure class="overview-shot"><img src="reference/strafing-prompt.png" width="384" height="272" alt="The screen reads PRESS FIRE TO CONTINUE above the plane, and the status line reads STRAFFING RUN AIRCRAFT NO.3"><figcaption>Before each run the plane waits, and the status line names the aircraft: "STRAFFING RUN AIRCRAFT NO.3", with the game's own spelling. Fire, released and pressed again, starts the run.</figcaption></figure>
+  <p><a href="source.html#2a4c"><code>strafing_runs</code></a> (<a href="source.html#2a4c"><code>$2A4C</code></a>) copies the lives into <code>$43</code> and gives one run for each number from there down to 0, so four lives in reserve buy five runs. A run costs no life: only a crash does, and a crash ends the run. <a href="source.html#2b00"><code>start_run</code></a> (<a href="source.html#2b00"><code>$2B00</code></a>) clears the sky and the ground, copies the level's target into the sprite shapes, and sends the three parts down the screen like a ground object. Each hit on any part counts one in <code>$45</code> and scores 100 points (<a href="source.html#2cd0"><code>hits_strafing</code></a>, <a href="source.html#2cd0"><code>$2CD0</code></a>), and the count shows as HIT on the status line.</p>
+  <figure class="overview-shot"><img src="reference/strafing-run.png" width="384" height="272" alt="A long white building crosses the screen under the plane"><figcaption>The first level's target, a long white building, during a run.</figcaption></figure>
+  <p>When the runs are over, <a href="source.html#2e30"><code>run_result</code></a> (<a href="source.html#2e30"><code>$2E30</code></a>) picks a message by the hits:</p>
   <div class="plate"><table class="t">
     <tr><th>Hits</th><th>Message</th><th>Result</th></tr>
-    <tr><td>64 or more (<code>$40</code>)</td><td>"WELL DONE, TARGET DESTROYED"</td><td>an extra life and the next level</td></tr>
-    <tr><td>48 to 63 (<code>$30</code>)</td><td>"TARGET SUSTAINED HEAVY DAMAGE"</td><td>an extra life and the next level</td></tr>
-    <tr><td>16 to 47 (<code>$10</code>)</td><td>"TARGET PARTIALLY DAMAGED"</td><td>an extra life and the next level</td></tr>
-    <tr><td>under 16</td><td>"TARGET UNDAMAGED, TRY AGAIN"</td><td>the level starts again with the planes that are left</td></tr>
-  </table><p class="cap">The messages are at <code>$8BA0</code>, <code>$8BC0</code>, <code>$8BE0</code> and <code>$8C00</code>, chosen through the pointers at <code>$8B90</code> (read from the program, not from play). The extra life stops at 9 lives (<code>$2EA5</code>).</p></div>
-  </section>
+    <tr><td>64 or more</td><td>"WELL DONE - TARGET DESTROYED"</td><td>an extra life and the next level</td></tr>
+    <tr><td>48 to 63</td><td>"TARGET SUSTAINED HEAVY DAMAGE"</td><td>an extra life and the next level</td></tr>
+    <tr><td>16 to 47</td><td>"TARGET PARTIALLY DAMAGED"</td><td>an extra life and the next level</td></tr>
+    <tr><td>under 16</td><td>"TARTARGET UNDAMAGED-TRY AGAIN"</td><td>the same level again</td></tr>
+  </table><p class="cap">The thresholds are <code>$40</code>, <code>$30</code> and <code>$10</code> in the code (<a href="source.html#2e41"><code>$2E41</code></a>), and the messages are chosen through the pointers at <a href="source.html#8b90"><code>$8B90</code></a>. The extra life stops at 9 lives. "TARTARGET" is the game's own slip (<a href="discoveries.html#typos">Discoveries</a>).</p></div>
+</section>
 
 <section id="levels">
   <p class="fig">04 · The levels</p>
-  <h2 class="t">Four difficulty steps, then round again</h2>
-  <p class="lede">The level number does not change the picture: it changes how hard the installations are to destroy.</p>
-  <p>The level is kept in <code>$44</code>, and <code>$2EA1</code> to <code>$2EB7</code> add one after a won target. At the fourth level the value is set to <code>$FF</code> and then incremented, so it returns to the first. The instructions say that later levels get faster and the flak meaner;<sup class="fn"><a href="about.html#src-1" title="The documents on the disk">1</a></sup> the one change the code shows is the hit count of <a href="#defences">the defences</a>. The speed and the flak are open questions in the game's notes.</p>
+  <h2 class="t">Four levels, then round again</h2>
+  <p class="lede">The level, kept in <code>$44</code>, changes the target and the number of hits each kind of defence takes.</p>
+  <p>After a target that took 16 hits or more, the level goes up by one, and after the fourth it goes back to the first (<a href="source.html#2ead"><code>$2EAD</code></a>). Each level has its own target, from the sets at <a href="source.html#3000"><code>$3000</code></a>, <a href="source.html#3800"><code>$3800</code></a>, <a href="source.html#9800"><code>$9800</code></a> and <a href="source.html#9000"><code>$9000</code></a>. The cracker's documents say later levels are faster and the flak meaner;<sup class="fn"><a href="about.html#src-1" title="The documents on the disk">1</a></sup> the code shows only the hit counts and the targets changing with the level.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
