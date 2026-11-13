@@ -7,10 +7,7 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `10-orient`: "a stopping checkpoint on the game's first instruction (the loader's jump into it)": the first stop, at `$4000`, was the loader's second stage; the KERNAL load log then showed the last file loading over the stage, and the stop at its return, `$40E2`, gave the hand-over.
 
 ## What was changed in the kit
 
