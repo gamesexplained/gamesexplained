@@ -46,7 +46,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   last.
 -->
 <!-- tabs -->
-<header class="hero"><p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">Part one is one long strip of 256 tiles that you scroll through; part two is a strip of 256 columns with a creature sown along it by a table.</p></header>
+<header class="hero"><p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">Both parts are long strips of tiles that scroll past: the laboratory, three tiles high, and the countryside, two tiles high, with a creature sown along it by a table.</p></header>
 <main class="wrap">
 <style>
 .sc-btn{font:500 14px/1.2 var(--fm);padding:8px 12px;border:1px solid var(--ink-mute);border-radius:8px;background:var(--surface-2);color:var(--ink);cursor:pointer}
@@ -64,7 +64,11 @@ table.sc th{font-family:var(--fm);font-size:12px;text-transform:uppercase;letter
 <p class="lede">256 columns of 4 by 4 characters, three tiles high: <code>$4000</code>, <code>$4100</code> and <code>$4200</code>. Scroll sideways; each numbered badge is one of the 21 objects at its column from the table at <code>$1568</code>.</p>
 <div class="plate"><div class="sc-map" id="sc-map"><div class="in" id="sc-in"></div></div><p id="sc-objinfo">Loading the map from the listing…</p>
 <p class="cap">Drawn by this page from the listing's bytes: tile numbers, the tiles at <code>$5000</code>, the character set at <code>$D000</code> (the playfield's: <code>$029C</code> starts at <code>$04</code>, and the panel below it uses <code>$D800</code>) and each character's colour from <code>$8448</code>, in the multicolour mode the game uses, with brown and light blue as the two shared colours that the raster handler sets for the playfield. The 40 by 12 characters on screen at any moment are 10 tile columns; <code>test_levels.js</code> finds the first frame's screen inside this strip, character for character. The three rows are scenery: an object lies in a column of the middle row, and a locked drawer or cabinet is one of the eight columns at <code>$15BC</code>.</p></div></section>
-<section id="part-two"><p class="fig">02 · Part two</p><h2 class="t">Where the creatures come from</h2>
+<section id="part-two-map"><p class="fig">02 · Part two</p><h2 class="t">The countryside, drawn from the tile map</h2>
+<p class="lede">Part two is a strip as well, of two rows of 256 tile numbers (<code>$4400</code> above, <code>$4500</code> below) built from 160 tiles of 4 by 4 characters at <code>$4600</code>: eight rows of characters: the grass, the hedges and the stone wall Johnny runs along. Each numbered badge is a column where a creature starts; press one to see which.</p>
+<div class="plate"><div class="sc-map" id="sc-map2"><div class="in" id="sc-in2"></div></div><p id="sc-evinfo">Loading the map from the listing…</p>
+<p class="cap">Drawn by this page from the listing's bytes as the game draws a column (<code>$2919</code>): the tile numbers, the tiles at <code>$4600</code>, the character set at <code>$C800</code> and each character's colour from <code>$9448</code>, in multicolour with brown (<code>$D022</code> = 9) and green (<code>$D023</code> = 5) on black, the values the raster interrupt sets on line 98, where this band of the screen begins. These are screen rows 6 to 13; the mountains and trees above them are a fixed picture (<code>$4300</code>), and the panel is below. The game draws each new column at the right edge, ten tiles on from the scroll column <code>$02AE</code>, and a creature starts when the scroll column reaches its badge (<code>$8936</code>). <code>test_levels.js</code> finds the recorded frame of part two in this strip, character for character and colour for colour.</p></div></section>
+<section id="part-two"><p class="fig">03 · Part two's events</p><h2 class="t">Where the creatures come from</h2>
 <p class="lede">A table of 256 event numbers, one for each scroll column of part two (<code>$896E</code>), says what starts there. 156 of the columns hold nothing; the rest start one of fourteen creatures: numbers 1 to 15 but 10, which has no routine and no column.</p>
 <div class="plate"><canvas id="sc-ev" height="150"></canvas>
 <p class="cap">One row for each event number and one dot for each column that starts it. The routine behind each number allocates a sprite at the left or right edge of the screen (<code>$3663</code>) and gives it a colour. The <a href="graphics.html#creatures">Graphics</a> tab draws each of them: a bird, a rabbit, a squirrel, a mouse, a fin in the water, a log, a snake, a grey robot, a soldier, a flying elephant, a rolling ball, a small cyan machine, a duck and a frog.</p>
@@ -78,6 +82,13 @@ function mapChar(ram, col, row, i, j) { return ram[0x5000 + 16 * ram[0x4000 + 25
 // The character at screen position x (0 up) and y (0 to 11) when the left edge is the character at offset first of the strip.
 function stripChar(ram, first, x, y) { const c = first + x; return mapChar(ram, c >> 2, y >> 2, c & 3, y & 3); }
 // end of mapchars
+/* map2chars */
+// Part two: the character at strip column c (0 to 1023) and row y (0 to 7): rows 0-3 from the top map row
+// at $4400, rows 4-7 from the bottom one at $4500, each a 4 by 4 tile at $4600 read across ($2919).
+function p2Char(ram, c, y) { const t = ram[(y < 4 ? 0x4400 : 0x4500) + (c >> 2)]; return ram[0x4600 + 16 * t + 4 * (y & 3) + (c & 3)]; }
+// The band's character set and colours: $D018 = $02 in bank 3 (set $C800), $D021 0, $D022 9, $D023 5.
+const P2_SET = 0xC800, P2_COLOURS = [0, 9, 5];
+// end of map2chars
 (function () {
   const S = 2, W = 256 * 4 * 8 * S, H = 12 * 8 * S;
   C64.load('listing.json').then(M => {
@@ -102,6 +113,27 @@ function stripChar(ram, first, x, y) { const c = first + x; return mapChar(ram, 
       inner.appendChild(b); btns.push(b);
     }
     info.innerHTML = 'Press a badge to see which object it is.';
+    // part two's strip
+    const in2 = document.getElementById('sc-in2'), info2 = document.getElementById('sc-evinfo');
+    const cv2 = document.createElement('canvas'); cv2.width = W; cv2.height = 8 * 8 * S; in2.appendChild(cv2);
+    const c3 = cv2.getContext('2d'), set2 = ram.subarray(P2_SET, P2_SET + 0x800);
+    c3.fillStyle = P[0]; c3.fillRect(0, 0, cv2.width, cv2.height);
+    for (let c = 0; c < 1024; c++) for (let y = 0; y < 8; y++) {
+      const code = p2Char(ram, c, y), col = ram[0x9448 + code];
+      if (col & 8) C64.drawGlyphMC(c3, set2, code, c * 8 * S, y * 8 * S, S, [P[P2_COLOURS[0]], P[P2_COLOURS[1]], P[P2_COLOURS[2]], P[col & 7]]);
+      else C64.drawGlyph(c3, set2, code, c * 8 * S, y * 8 * S, S, P[col & 7], P[P2_COLOURS[0]]);
+    }
+    const WHO = ['', 'a bird', 'a rabbit', 'a squirrel', 'a mouse', 'a fin in the water', 'a log', 'a snake', 'a grey robot', 'a soldier', '', 'a flying elephant', 'a rolling ball', 'a small cyan machine', 'a duck', 'a frog'];
+    const b2s = [];
+    for (let c = 0; c < 256; c++) {
+      const e = ram[0x896E + c]; if (!e) continue;
+      const b = document.createElement('button'); b.className = 'sc-obj'; b.textContent = e; b.style.left = (c * 32 * S + 4 * S) + 'px';
+      b.setAttribute('aria-pressed', 'false'); b.title = 'Event ' + e + ', ' + WHO[e] + ', column ' + c;
+      b.onclick = () => { b2s.forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true');
+        info2.innerHTML = '<b>Event ' + e + ' · ' + WHO[e] + '</b>, at map column ' + c + ' (<code>$' + c.toString(16).toUpperCase().padStart(2, '0') + '</code>). <a href="graphics.html#creatures">Graphics</a> draws it.'; };
+      in2.appendChild(b); b2s.push(b);
+    }
+    info2.innerHTML = b2s.length + ' columns start a creature. Press a badge to see which.';
     const ev = document.getElementById('sc-ev'); ev.width = 256 * 4 + 40; const c2 = ev.getContext('2d');
     c2.fillStyle = '#fff'; c2.fillRect(0, 0, ev.width, ev.height); c2.font = '10px monospace';
     for (let k = 1; k <= 15; k++) {
