@@ -147,3 +147,10 @@ The manual’s rope instruction is up to close the hands and down to open them. 
 The beam tests at `$8D0D/$93B4` clear and recalculate only their own hit flags `$A318/$A319`. Turning a beam off at `$99F0/$A080` clears its active flag, but leaves its hit flag untouched. The weapon dispatchers then skip that beam’s test, preserving the previous hit. In VICE, registering the first hit, calling the real off toggle, and updating the second hit test four times left the first beam inactive but advanced the strength source from `$42C0` to `$42C6`. The intended two-beam rule therefore admits a stale-flag exception.
 
 The second-player proton toggle at `$A080` tests `$9486`, the first player’s pickup/placement suppression byte. The second player’s interaction sets `$9487`; its slime path correctly consumes that byte, while the proton toggle does not. A VICE call with `$9486=0`, `$9487=1` and the second beam inactive enabled that beam and left `$9487` set. This is a verified state-path asymmetry; it is not evidence of a complete winning exploit route.
+
+
+## Traced equipment-slot image
+
+The 64 zero bytes at `$0FC0–$0FFF` form the blank equipment-slot sprite. In a normal panel interaction, moving the cursor left for 88 frames and picking up the first item changed `$CA8F` from `$3C` to `$3F`. A VICE breakpoint then stopped at `$CCC1` with A=`$3F`, `$DD00=$C7` (VIC bank 0) and `$D018=$1B` (pointer table `$07F8`). The store therefore selects `$3F × 64 = $0FC0` for the slot image. A CPU read watch on this image is silent because the VIC fetches it.
+
+The scoped VICE trace logs the twelve CPU instructions preceding each watched access, including registers and cycle counts. Its executed read and write of `$02F0` both fired as positive controls. Raw traces and snapshots remain private in `work/`. A scripted floor/panel run did not enter `$B72D–$B747`; its watched neighbouring up-input wrapper did execute, so that observation is bounded to these tested movements rather than a claim of universal unreachability.

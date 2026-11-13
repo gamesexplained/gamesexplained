@@ -29,3 +29,6 @@ The host was Linux x86_64. VICE release v3.13.1 and the installed regenerator200
 
 
 The uncertainty pass benefited from `60-verify`’s instruction to check every reader and writer before making a claim about the whole game. Two hit flags looked like a simultaneous-beam requirement until the independent checker followed the off toggle and the skipped update branch. The prescribed second reading caught it. The input-recording guidance also exposed a banked-memory mistake in the VICE replay helper: writing the recording below I/O needed the CPU port set to RAM first. The positive-control breakpoint showed zero hits in the failed attempt, so it was discarded as an instrument failure. Both failures were covered by existing guidance; no additional kit rule was needed.
+
+
+`tool-vice-mcp`’s warning about an undrained monitor connection applied to scoped tracepoints too: closing a one-command connection while trace output was pending wedged this build with broken-pipe errors. The sustained trace used one connection with a reader that drained it to a private file; watchpoints were removed before closing it. The existing warning identified the failure, so no broader tracing rule was added. Headless runs unset display variables only for the kit launcher’s child environment, preserving the contributor’s desktop settings.

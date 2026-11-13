@@ -211,3 +211,6 @@ The independent mechanics checker found the strict simultaneous-beam claim wrong
 
 
 The same corrections were propagated through the generated listing records: all 153 map rows and their six-byte tails, the Broadway script segments and wave records, carrying-sprite descriptions, and shared sound-effect records. A complete winning-route read trace had positive controls (9,502 read addresses, including 1,960 in the map range) and no reads of the six-byte tails. Complete music cycles selected pitch-sequence indices 0, 2, 3, 6 and 8. Effect records now name their literal-number call sites across the three episodes rather than leaving all 26 event mappings open.
+
+
+Following the contributor’s suggestion, sustained headless VICE runs used scoped load/store tracepoints with CPU-history context, rather than only routine fixtures. A drained persistent monitor connection avoided the old server’s broken-pipe trap. The museum trace and a focused selector stop identified the blank equipment sprite at `$0FC0`; a CPU data-read watch alone had missed the VIC’s use. An artificial Broadway run with resource bypass reached `$C9D5` and exposed the preliminary scroll reset. A normal numbered airshaft load produced eleven watched stores at `$088C–$0896`, including the match source `$0B14–$0B18`. All raw logs remain in `work/traces/`.
