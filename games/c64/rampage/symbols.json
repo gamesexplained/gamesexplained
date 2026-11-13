@@ -19,7 +19,7 @@
    [
     62080,
     62463,
-    "the sprite shapes of the first monster, drawn at run time by compose_monster_0; the bytes PART7 loads here are cleared by game_start"
+    "the sprite shapes of the first monster, drawn at run time by compose_0; the bytes PART7 loads here are cleared by game_start"
    ],
    [
     62464,
@@ -2436,7 +2436,7 @@
   },
   {
    "address": 29952,
-   "name": "map_2",
+   "name": "map_0",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2448,37 +2448,43 @@
   },
   {
    "address": 30016,
-   "name": "map_3",
-   "type": "UserDefined",
-   "kind": "user"
-  },
-  {
-   "address": 30080,
-   "name": "map_0",
-   "type": "Field",
-   "kind": "user"
-  },
-  {
-   "address": 30144,
    "name": "map_1",
    "type": "UserDefined",
    "kind": "user"
   },
   {
-   "address": 30208,
-   "name": "unused_7600",
+   "address": 30080,
+   "name": "map_2",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 30144,
+   "name": "map_3",
    "type": "UserDefined",
    "kind": "user"
   },
   {
-   "address": 30336,
+   "address": 30208,
    "name": "map_4",
    "type": "UserDefined",
    "kind": "user"
   },
   {
-   "address": 30400,
+   "address": 30272,
    "name": "map_5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 30336,
+   "name": "unused_7680",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 30400,
+   "name": "unused_76c0",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -23025,42 +23031,47 @@
   {
    "address": 29952,
    "type": "line",
-   "text": "The map of the level's third building: its block codes, a row of the building's width at a time from the roof down, copied from a template by setup_buildings and changed by every punch. map_lo and map_hi give its address. What the file holds is not blank: it is the map as a game left it before the program was saved, with lit windows ($39, $3A) and broken blocks in it. setup_buildings overwrites it when a level starts."
+   "text": "The map of the level's first building: its block codes, a row of the building's width at a time from the roof down, copied from a template by setup_buildings and changed by every punch. map_lo and map_hi give its address, and each map has 64 bytes. What the file holds is not blank: it is the map as a game left it before the program was saved, a building four blocks wide with lit windows ($39, $3A) and a broken one ($56), and after its 20 bytes the start of the templates that follow template_0, which setup_buildings copies along with it and random_window lights windows in all the same. setup_buildings overwrites it when a level starts."
   },
   {
    "address": 29972,
    "type": "line",
-   "text": "Not a table of its own: $7514 is the address the file leaves in the LDA at $9566, which draw_buildings rewrites for every building (map_src_lo, map_src_hi). It is 20 bytes into map_2."
+   "text": "Not a table of its own: $7514 is the address the file leaves in the LDA at $9566, which draw_buildings rewrites for every building (map_src_lo, map_src_hi). It is 20 bytes into map_0."
   },
   {
    "address": 30016,
    "type": "line",
-   "text": "The map of the level's fourth building, 64 bytes as map_2 is. The file holds a five-block-wide building here, left from the last game played before the program was saved."
+   "text": "The map of the level's second building, 64 bytes. The file holds a building five blocks wide here, with lit windows, left from the last game played before the program was saved."
   },
   {
    "address": 30080,
    "type": "line",
-   "text": "The map of the level's first building, 64 bytes. Left in the file: a building four blocks wide with lit windows, and the start of another."
+   "text": "The map of the level's third building, 64 bytes. Left in the file: a building four blocks wide with lit windows, and after it part of another."
   },
   {
    "address": 30144,
    "type": "line",
-   "text": "The map of the level's second building, 64 bytes. Left in the file: codes of $64 and up, the ruined forms collapse_cells writes, so the last building to fall before the program was saved was this one."
+   "text": "The map of the level's fourth building, 64 bytes. Left in the file: codes of $64 and up, the ruined forms collapse_cells writes, so this building had fallen in the last game played before the program was saved."
   },
   {
    "address": 30208,
    "type": "line",
-   "text": "128 bytes no table points at, between map_1 and map_4. map_hi gives maps 2 and 3 the page $75 where a table in step with map_lo would have $76, so they sit at $7500 and $7540 and this stretch is never written. Its first 64 bytes hold ruined block codes all the same, left from before the program was saved."
+   "text": "The map of the level's fifth building, 64 bytes. Left in the file: another fallen building, every code $64 or more."
+  },
+  {
+   "address": 30272,
+   "type": "line",
+   "text": "The map of the level's sixth building, the most any level has: 64 bytes, all 0 in the file."
   },
   {
    "address": 30336,
    "type": "line",
-   "text": "The map of the level's fifth building, 64 bytes, all 0 in the file."
+   "text": "128 bytes of 0 after the six maps. Nothing reads them: map_lo has entries for two more maps here, but map_hi stops at six."
   },
   {
    "address": 30400,
    "type": "line",
-   "text": "The map of the level's sixth building, the most any level has: 64 bytes, all 0 in the file."
+   "text": "64 more bytes of 0, where an eighth map would be."
   },
   {
    "address": 30464,
@@ -23170,7 +23181,7 @@
   {
    "address": 31059,
    "type": "line",
-   "text": "Twenty NOPs where a call or two once stood. The routine that keeps a sound effect going, update_sound, is called from nowhere, and a gap in the once-a-frame handler is where such a call would sit."
+   "text": "Twenty NOPs in the once-a-frame handler: room for several instructions that are not there. What stood here is not known. update_sound, the routine that would keep a sound effect going, is called from nowhere, and a handler that runs once a frame is where such a call would sit."
   },
   {
    "address": 31090,
@@ -24045,7 +24056,7 @@
   {
    "address": 33927,
    "type": "line",
-   "text": "One pass of play: read the controls, run each monster's state routine, give a helicopter that has finished its path a new one, send a new street vehicle when vehicle_step is 0, do the pass's drawing and rules in frame_work, then wait for irq_top to change frame_count. frame_work runs the monsters twice more, so each pass moves them three times."
+   "text": "One pass of play: read the controls, run each monster's state routine, give a helicopter that has finished its path a new one, send a new street vehicle when vehicle_step is 0, do the pass's drawing and rules in frame_work, then wait for irq_top to change frame_count. frame_work runs the monsters twice more, so each pass moves them three times. A pass redraws the whole screen and takes about ten frames."
   },
   {
    "address": 33970,
@@ -24430,12 +24441,12 @@
   {
    "address": 35995,
    "type": "line",
-   "text": "The left sprite's shape for each frame of a vehicle's wreck. Frame 0 is skipped; frames 1 to 6 are $78, $79, $7A, $7C, $7C and $FC, blank."
+   "text": "The left sprite's shape for each frame of a vehicle's wreck: $76, $78, $79, $7A, $7C, $7C and $FC, blank. wreck_vehicle adds one to wreck_frame before it reads the table, so the first entry, $76, is never shown. The third, $79, is the right half of the frame before it."
   },
   {
    "address": 36002,
    "type": "line",
-   "text": "The right sprite's shape for each frame of the wreck: $79, $BB, $7B, $7D, $7D, $FC. $BB is not a sprite shape at all: it points at $EEC0, inside the text character set, so the second frame's right half is drawn from eight characters of the font."
+   "text": "The right sprite's shape for each frame of the wreck: $77, which is skipped, then $79, $BB, $7B, $7D, $7D, $FC. $BB is not a sprite shape at all: it points at $EEC0, inside the text character set, so the wreck's second frame shows the first frame's right half on the left and a block made of eight characters of the font on the right."
   },
   {
    "address": 36009,
@@ -24475,7 +24486,7 @@
   {
    "address": 36129,
    "type": "line",
-   "text": "Thirteen kinds of helicopter move, three bytes each: X step, Y step and sprite shape. 0 up, 1 left, 2 left and down, 3 up facing the other way, 4 right, 5 right and down, 6 and 7 hover; 8 to 11 stand still showing the explosion shapes $C0 to $C3, and 12 is the blank shape."
+   "text": "Thirteen kinds of helicopter move, three bytes each: X step, Y step and sprite shape. 0 up, 1 left, 2 left and down, 3 up facing the other way, 4 right, 5 right and down, 6 and 7 hover; 8 to 11 stand still showing the explosion shapes $C0 to $C3, and 12 is the blank shape. move_heli_a and move_heli_b add rotor_phase to every shape, the explosion's too, so an exploding helicopter shows its shapes out of order and, when the sum passes $C3, the blank shapes $C4 and $C5."
   },
   {
    "address": 36166,
@@ -24755,12 +24766,12 @@
   {
    "address": 37052,
    "type": "line",
-   "text": "Low bytes of the eight building maps' addresses, 64 bytes apart from $7580."
+   "text": "Low bytes of the eight building maps' addresses, 64 bytes apart from $7500: 00, 40, 80, C0, twice over."
   },
   {
    "address": 37060,
    "type": "line",
-   "text": "High bytes of the building maps' addresses. There are only six: maps 0-3 in page $75, 4 and 5 in $76. Indexes 6 and 7, which random_window reaches, read $29 and $32 from the start of skyline_start."
+   "text": "High bytes of the building maps' addresses. There are only six: maps 0 to 3 in page $75, 4 and 5 in $76. Indexes 6 and 7, which random_window reaches, read $29 and $32 from the start of skyline_start."
   },
   {
    "address": 37066,
@@ -25020,7 +25031,7 @@
   {
    "address": 39379,
    "type": "line",
-   "text": "Lights a window. Takes the next of eight buildings in turn and a random cell of its 64-byte map; if the cell is a dark window half ($2D, $2E, $35 or $36) it becomes the lit one ($59, $5A, $39 or $3A) and carry is clear, otherwise carry is set. There are maps for six buildings only: turns 6 and 7 use addresses built from the wrong table, $2980 and $32C0, which lie in the monsters' frame tables, and a byte there that happens to hold one of the four codes is changed too."
+   "text": "Lights a window. Takes the next of eight buildings in turn and a random cell of its 64-byte map; if the cell is a dark window half ($2D, $2E, $35 or $36) it becomes the lit one ($59, $5A, $39 or $3A) and carry is clear, otherwise carry is set. There are maps for six buildings only: turns 6 and 7 use addresses built from the bytes after map_hi, $2980 and $32C0, which lie in lizzie_left_frames and ralph_right_frames. None of the 64 bytes at either address holds one of the four codes, so nothing there is ever changed."
   },
   {
    "address": 39437,
@@ -27075,12 +27086,12 @@
   {
    "address": 56704,
    "type": "line",
-   "text": "Sprite shape $76. Scattered sparks, the left half of a pair no table names: nothing shows it."
+   "text": "Sprite shape $76. Scattered sparks, left half: the first entry of wreck_shapes_l, which wreck_vehicle skips, so it is never shown."
   },
   {
    "address": 56768,
    "type": "line",
-   "text": "Sprite shape $77. The right half of the pair of sparks that nothing shows."
+   "text": "Sprite shape $77. The right half of the sparks, the first entry of wreck_shapes_r, never shown either."
   },
   {
    "address": 56832,
