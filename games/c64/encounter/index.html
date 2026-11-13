@@ -64,6 +64,7 @@ td.m{font-family:var(--fm);font-size:13px}
 .transport{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
 .transport input[type=range]{flex:1;min-width:140px;width:auto}
 </style>
+<style>.en-l-cv{width:100%;max-width:768px;image-rendering:pixelated;display:block;background:#000;border-radius:6px}.en-l-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0;font-family:var(--fm);font-size:13px}.en-l-bar button{font:inherit;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;color:var(--ink)}.en-l-bar button[aria-pressed=true]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}.en-l-bar input{flex:1 1 160px;min-width:120px}.en-l-bar span{flex:1 1 100%;color:var(--ink-2);overflow-wrap:anywhere}</style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1984 · Novagen Software</p>
@@ -211,8 +212,26 @@ td.m{font-family:var(--fm);font-size:13px}
   <p>The volume is 15 throughout: the title's set-up (<code>$9D8A</code>) clears the chip and sets it, and each life's set-up (<code>$A043</code>) sets it again. No voice is ever routed through the filter.</p>
 </section>
 
+<section id="loading">
+  <p class="fig">07 · The loading sound</p>
+  <h2 class="t">Sound: the cassette plays the game out loud as it loads</h2>
+  <p class="lede">Novagen's 1984 cassette is never quiet. Its loader sends every byte it reads from the tape to the sound chip as a pitch, so the two minutes of loading are the game itself, heard as a sawtooth buzz that changes note about 275 times a second.</p>
+  <div class="plate">
+    <canvas class="en-l-cv" id="en-l-cv" width="384" height="272" role="img" aria-label="LOADING ENCOUNTER! in a yellow frame on red, a purple bar reading BLOCKS TO LOAD with the count beside it, and COPYRIGHT 1984 NOVAGEN SOFTWARE LTD. beneath"></canvas>
+    <div class="en-l-bar">
+      <button type="button" id="en-l-run" aria-pressed="false">Play</button>
+      <input type="range" id="en-l-seek" min="0" max="128" step="1" value="0" aria-label="Blocks loaded">
+      <span id="en-l-stat" aria-live="polite"></span>
+    </div>
+    <p class="cap">The cassette's screen, recorded in VICE and drawn as the video chip draws it, with the count as it stood at each moment of the load, and the load played through the site's model of the sound chip: the 32,768 bytes in the order the tape brings them, each sounding until the next arrives, for as long as its bits take on the tape. The slider starts the load at any block. The screen is built from the C64's own character set in ROM, and the page carries only the characters it shows and the ten digits, 400 bytes of Commodore's character ROM 901225-01, from its upper-case set at offsets <code>$0008</code>-<code>$0507</code>.</p>
+  </div>
+  <p>Before the first byte the loader sets up voice 1: a sawtooth, at full volume, with nothing in its envelope to soften it. Then each byte it takes from the tape goes to two places, to memory and to <code>$D401</code>, the high byte of the voice's pitch. The low byte stays at <code>$F0</code>, so a 0 is a 14-hertz rattle and <code>$FF</code> a 3,848-hertz whistle.</p>
+  <p>A byte sounds for as long as the next one takes to arrive. The tape gives each bit one pulse, a short one of 311 cycles for a 0 and a long one of 690 for a 1, so a byte of zeros takes two and a half thousandths of a second and a byte of eight 1s more than twice that. Code is a blur of notes. A run of one value holds a single note: at 93 and again at 89 blocks to go the tape brings 276 bytes of <code>$FF</code> in a row, and the load whistles for a second and a half each time.</p>
+  <p>After every 256 bytes the tape sends one more, their sum, and the loader checks it before it takes the block off the counter. A block that does not add up sends the C64 to its reset routine, and the load is over. After the last block the final note holds for nearly two seconds, until the game starts and turns the volume down.</p>
+</section>
+
 <section>
-  <p class="fig">07 · Controls</p>
+  <p class="fig">08 · Controls</p>
   <h2 class="t">One routine reads the stick and plays back the demo</h2>
   <div class="plate">
     <table>
@@ -231,7 +250,7 @@ td.m{font-family:var(--fm);font-size:13px}
 </section>
 
 <section>
-  <p class="fig">08 · Scoring and shields</p>
+  <p class="fig">09 · Scoring and shields</p>
   <h2 class="t">The shield count is kept only on the screen</h2>
   <div class="plate">
     <table id="ptsTable"><tr><th>Saucer type</th><th>Points</th><th>× level 1</th><th>× level 8</th></tr></table>
@@ -242,7 +261,7 @@ td.m{font-family:var(--fm);font-size:13px}
 </section>
 
 <section>
-  <p class="fig">09 · The title screen</p>
+  <p class="fig">10 · The title screen</p>
   <h2 class="t">Data hidden in plain sight</h2>
   <p class="lede">The title screen is a complete 1000-byte screen stored at <code>$6800</code>. Five of its rows are painted in the background colour, and those rows hold the level-key table, a colour table, sprite colours, three variables, seven stub routines and the skill names.</p>
   <div class="plate">
@@ -260,7 +279,7 @@ td.m{font-family:var(--fm);font-size:13px}
 </section>
 
 <section>
-  <p class="fig">10 · Where it lives</p>
+  <p class="fig">11 · Where it lives</p>
   <h2 class="t">Where everything sits in memory</h2>
   <div class="plate"><table>
     <tr><th>Range</th><th class="n">Bytes</th><th>What</th></tr>
@@ -844,5 +863,144 @@ function plainPlayer(o){
         for(let y=0;y<8;y++){ const b=FONT[code*8+y]; for(let x=0;x<8;x++) if(b&(0x80>>x)) ctx.fillRect((c*8+x)*S,(r*8+y)*S,S,S); } } } }
   document.getElementById('titleReveal').onclick=function(){ reveal=!reveal; this.classList.toggle('on',reveal); draw(); };
   draw();
+})();
+</script>
+<script src="../../lib/c64.js"></script>
+<script type="application/json" id="en-loading-data">{"frame":{"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"Novagen's 1984 cassette 100 seconds in, the Ultimate Tape Archive's Encounter!.tap, with 67 blocks to load: kit/c64/frame.py capture, then trim, in VICE 3.10 (vice-mcp 3.14.0) on 12 November 2026","vic":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27,0,0,0,0,200,0,21,113,240,0,0,0,246,255,242,242,241,242,243,244,240,241,242,243,244,245,246,247,252],"cia2":[151,63],"cpu":[47,6],"writes":[],"colour":"Dg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4OBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcODg4ODg4ODg4ODg4ODgcODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4HDg4ODg4ODg4ODg4ODg4HDg4OAQEBAQEBAQEBAQEBAQEBAQEBDg4OBw4ODg4ODg4ODg4ODg4OBw4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODgcODg4ODg4ODg4ODg4ODgcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4EBAQEBAQEBAQEBAQEBAQEBAQEBAQEDg4ODg4ODg4ODg4ODg4ODg4OBAQEBAQEBAQEBAQEBAQEBAQEAQEBBA4ODg4ODg4ODg4ODg4ODg4ODgQEBAQEBAQEBAQEBAQEBAQEBAQEBAQODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4EDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODgIPCAcADwQPBA8FDwMOAAsECwIPAAcFDA==","ram":[{"a":1024,"b":"ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgICAgICAgICAgICAgIKAgICAgICAgICAgICAgICAgICAgICAgICCgICAgICAgICAgICAgICCgICAgDA8BBAkOByAFDgMPFQ4UBRIhICAgoCAgICAgICAgICAgICAgoCAgICAgICAgICAgICAgICAgICAgICAgIKAgICAgICAgICAgICAgIKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICCgoKCgoKCgoKCgoKCgoKCgoE93d3dQICAgICAgICAgICAgICAgICAgoIKMj4OLk6CUj6CMj4GEoKB0MDY3ZyAgICAgICAgICAgICAgICAgIKCgoKCgoKCgoKCgoKCgoKCgTG9vb3ogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAMPEBkSCQcIFCAxOTg0IA4PFgEHBQ4gEw8GFBcBEgUgDBQELiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA=="},{"a":16383,"b":"VA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19656,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":14,"colour_cells_changed_during_frame":0},"rom_excerpt":{"rom":"chargen 901225-01","ranges":[{"a":8,"b":"GDxmfmZmZgA="},{"a":24,"b":"PGZgYGBmPAB4bGZmZmx4AH5gYHhgYH4AfmBgeGBgYAA8ZmBuZmY8AGZmZn5mZmYAPBgYGBgYPAA="},{"a":96,"b":"YGBgYGBgfgA="},{"a":112,"b":"ZnZ+fm5mZgA8ZmZmZmY8AHxmZnxgYGAA"},{"a":144,"b":"fGZmfHhsZgA8ZmA8BmY8AH4YGBgYGBgAZmZmZmZmPABmZmZmZjwYAGNjY2t/d2MA"},{"a":200,"b":"ZmZmPBgYGAA="},{"a":256,"b":"AAAAAAAAAAAYGBgYAAAYAA=="},{"a":368,"b":"AAAAAAAYGAA="},{"a":384,"b":"PGZudmZmPAAYGDgYGBh+ADxmBgwwYH4APGYGHAZmPAAGDh5mfwYGAH5gfAYGZjwAPGZgfGZmPAB+ZgwYGBgYADxmZjxmZjwAPGZmPgZmPAA="},{"a":608,"b":"wMDAwMDA//8="},{"a":632,"b":"///AwMDAwMD//wMDAwMDAw=="},{"a":824,"b":"AwMDAwMDAwM="},{"a":888,"b":"AAAAAAAA//8="},{"a":928,"b":"wMDAwMDAwMA="},{"a":952,"b":"//8AAAAAAAA="},{"a":976,"b":"AwMDAwMD//8="},{"a":1032,"b":"58OZgZmZmf+DmZmDmZmD/8OZn5+fmcP/h5OZmZmTh/8="},{"a":1112,"b":"mZOHj4eTmf+fn5+fn5+B/w=="},{"a":1144,"b":"w5mZmZmZw/8="},{"a":1176,"b":"w5mfw/mZw/+B5+fn5+fn/w=="},{"a":1280,"b":"//////////8="}]}},"from":15872,"moved":[16384,8192,8192],"patch":[[15872,"UAUBIEAAASBBANAPCwcBIEIAASBD"],[15894,"ASBEAAJFIEUAUAUBIEYAAkcgSADQEQwIASBJSgABIEsAAkogTAACTSBNAFAGAk4gTwACUCBRAEYLAg=="],[15953,"IFNBAlQhVQACViBXAlghAEYLAlkgWlsCWCFUAAJcIF1FAiJVAEYJAl4hXwIiWAADSmAgYWIDVSJUADwNAmMgZFYDVSMDVSMAA0FlIGZSA1QiWA=="],[16036,"VCJYADwRA2doIGlqawNUI1UDVCNVAANsbSBpbgNYIwNYIwAyEwJvIFdwA3EjYgNYI1QDWCNUAAJyIHNBA3QiYUoDJFUDJFUAMhMDdXYgd3hSA2EjeQMkWAMkWAADencgd3tBBHwkfQRVJFQEVSRUADISA35tIGlofwRVJQRVJQRVJQAEa1xpIGlqgARUJFgEVCRYBFQkWAAoGQJvIIFwBGeCI4NrBFQlVQRUJVUEVCVVAAKBIIFBBIRgImGFBFglBFglBFglACgZA2N2IHd4VgRxJWIEWCVUBFglVARYJVQABEFldyB3e1IEdCRhSgQmVQQmVQQmVQAoGASAaoYgh4hcawSJJYoEJlgEJlgEJlgABH9oTyCHbX4FTiaLBVUmVAVVJlQFVSZUAB4bA0FXIFNzBUGMYSNgjQVVJwVVJwVVJwVVJwADcFMgU44Fj4MkgpAFVCZYBVQmWAVU"],[24300,"MAJSIB8IQQRSnGEhnX5BBlKcYSWdfkEIUpxhKZ1+QQpSnGEtnX5BDFKcYTGdfkEAAnUgmAR1oSKimAZ1oSaimAh1oSqimAp1oS6imAx1oTKimAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"],[24596,"hIU="],[24604,"hIWKiw=="],[24656,"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOABIQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgYEEAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAoMAAAAAAAAD/n5++//////////////////9//////////////////18//////////x/+3v///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////w=="],[25594,"sLCwsLCw"],[25664,"AH0AfQAAAAAAAAAAAAAAfQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgASEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYGBBAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAKDAAAAAAAAA/5+fvv//////////////////f/////////////////9fP/////////8f/t7///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAA="],[26618,"sLCwsLCw"],[26824,"EA=="],[26826,"AA=="],[32768,"SA=="],[32770,"SA=="],[33378,"LQ=="],[33383,"FMQ="],[33474,"hw=="],[33479,"vjY="],[33570,"8g=="],[33575,"EBM="],[33666,"Bg=="],[33671,"2q4="],[33762,"AA=="],[33768,"AA=="],[33954,"BA=="],[33958,"BA=="],[33960,"Bw=="],[33986,"2Q=="],[33990,"Hw=="],[33992,"VA=="],[35752,"FA=="],[36672,"sLCwsLCwsLCwsLA="],[36684,"sLCw"],[36688,"sLCw"],[36692,"sLCw"],[36700,"ARoBKA=="],[36705,"gA=="],[36707,"kg=="],[36712,"UFBQUFBQUFBQUFA="],[36724,"UFBQ"],[36728,"UFBQ"],[36732,"UFBQAA=="],[39939,"AQ=="],[40166,"kBI="],[40954,"AqIAIHCq"],[48638,"AEA="]],"short":311,"long":690,"hold":1816884,"period":63,"counter":1651}</script>
+<script>
+/* en-loading */
+// The cassette's load, as the screen and the sound chip have it. D is the block en-loading-data: D.frame is the
+// screen recorded in VICE, with the characters of the C64's ROM it shows in D.frame.rom_excerpt (enFont).
+// enTape(ram, D) is the 32,768 bytes the tape brings, $3E00-$BDFF in the order they come, made from ram, the
+// listing's 64 KB (C64.load): the game copies $4000-$5FFF down to $2000 when it starts (D.moved), and D.patch
+// holds the bytes the listing does not have as the tape brings them, the ones the game changes or clears.
+// Each byte takes as long as its eight bits take on the tape, a short pulse (D.short cycles) for a 0 and a long
+// one (D.long) for a 1 (enByteTime). After each 256 comes one more, their sum, which the loader checks before it
+// takes a block off the counter. enTimes(B, D) gives T[k], the cycle at which byte k arrives counted from the
+// first, C[j], the cycle at which the counter drops after block j, and end, the cycle at which the game turns the
+// volume down, D.hold after the last byte.
+function enFont(F) {
+  const font = new Uint8Array(4096);
+  for (const r of F.rom_excerpt.ranges) font.set(Uint8Array.from(atob(r.b), (c) => c.charCodeAt(0)), r.a);
+  return Object.assign({}, F, { charrom: btoa(String.fromCharCode(...font)) });
+}
+function enTape(ram, D) {
+  const B = new Uint8Array(0x8000), [mv, to, n] = D.moved;
+  for (let a = D.from; a < D.from + B.length; a++) B[a - D.from] = ram[a >= mv && a < mv + n ? a - mv + to : a];
+  for (const [a, s] of D.patch) B.set(Uint8Array.from(atob(s), (c) => c.charCodeAt(0)), a - D.from);
+  return B;
+}
+function enByteTime(b, D) {
+  let ones = 0;
+  for (let x = b; x; x >>= 1) ones += x & 1;
+  return 8 * D.short + ones * (D.long - D.short);
+}
+function enTimes(B, D) {
+  const T = new Float64Array(B.length), C = new Float64Array(B.length / 256);
+  let t = 0, sum = 0;
+  for (let k = 0; k < B.length; k++) {
+    if (k) {
+      if (k % 256 === 0) { t += enByteTime(sum, D); C[k / 256 - 1] = t; sum = 0; }
+      t += enByteTime(B[k], D);
+    }
+    sum = (sum + B[k]) & 255;
+    T[k] = t;
+  }
+  C[C.length - 1] = t + enByteTime(sum, D);
+  return { T, C, end: t + D.hold };
+}
+// createDriver for C64Sid (../../lib/sid.js), called every data.period cycles. init sets the sound chip as the
+// loader does before the tape's first byte: voice 1 a sawtooth with its gate on, its pitch's low byte $F0, attack
+// and decay 0, sustain 15, the volume 15. Each byte then goes to $D401, the pitch's high byte, as it arrives,
+// timed as enTimes times it; D.hold after the last the volume goes to 0 and the load is over.
+function enLoadDriver(data) {
+  const B = data.bytes, sid = new Uint8Array(25);
+  const time = (b) => { let ones = 0; for (let x = b; x; x >>= 1) ones += x & 1; return 8 * data.short + ones * (data.long - data.short); };
+  let on = false, now = 0, next = 0, k = 0, sum = 0, set = [];
+  const d = { sid, writes: [],
+    init() {
+      set = [0, 0xF0, 6, 0xF0, 24, 0x0F, 4, 0, 5, 0, 11, 0, 18, 0, 4, 0x21];
+      sid.fill(0);
+      for (let i = 0; i < set.length; i += 2) sid[set[i]] = set[i + 1];
+      on = true; now = 0; next = 0; k = 0; sum = 0;
+    },
+    stop() { on = false; sid[24] = 0; set = [24, 0]; },
+    play() {
+      d.writes = set; set = [];
+      while (on && next <= now) {
+        if (k === B.length) { sid[24] = 0; d.writes.push(24, 0); on = false; break; }
+        sid[1] = B[k]; d.writes.push(1, B[k]);
+        sum = (sum + B[k]) & 255; k++;
+        if (k === B.length) next += data.hold;
+        else {
+          if (k % 256 === 0) { next += time(sum); sum = 0; }
+          next += time(B[k]);
+        }
+      }
+      now += data.period;
+    },
+    playing: () => on };
+  return d;
+}
+// end of en-loading
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const cv = $('en-l-cv'), stat = $('en-l-stat'), run = $('en-l-run'), seek = $('en-l-seek');
+  if (typeof C64 === 'undefined' || typeof C64Sid === 'undefined') { stat.textContent = 'The screen and the sound need the site\'s shared scripts, which the built site serves.'; return; }
+  const D = JSON.parse($('en-loading-data').textContent), F = enFont(D.frame), HZ = 985248;
+  const mem = new Uint8Array(0x10000);
+  for (const r of F.ram) mem.set(Uint8Array.from(atob(r.b), (c) => c.charCodeAt(0)), r.a);
+  let B = null, Q = null, host = null, ctx = null, loading = null, t0 = 0, from = 0, raf = 0, shown = -1, playing = false;
+  const hex = (v, n) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
+  const draw = (left) => {
+    if (left === shown) return;
+    const m = mem.slice(), s = String(left).padStart(3, '0');
+    for (let i = 0; i < 3; i++) m[D.counter + i] = 0x30 + +s[i];
+    C64.drawFrame(cv, Object.assign({}, F, { mem: m }), 1);
+    shown = left;
+  };
+  const blocksAt = (t) => { let j = 0; while (j < Q.C.length && Q.C[j] <= t) j++; return j; };
+  const byteAt = (t) => { let lo = 0, hi = Q.T.length - 1; while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (Q.T[mid] <= t) lo = mid; else hi = mid - 1; } return lo; };
+  const say = (t) => {
+    if (t >= Q.end) { stat.textContent = 'Loaded: 32,768 bytes in ' + (Q.T[Q.T.length - 1] / HZ).toFixed(1) + ' seconds'; return; }
+    const k = byteAt(t);
+    stat.textContent = hex(D.from + k, 4) + ' ' + hex(B[k], 2) + ', a pitch of ' + Math.round(((B[k] << 8) | 0xF0) * HZ / 16777216).toLocaleString('en') + ' Hz';
+  };
+  const stopAt = (t) => { playing = false; run.textContent = 'Play'; run.setAttribute('aria-pressed', 'false'); cancelAnimationFrame(raf); raf = 0; if (t != null) say(t); };
+  const tick = () => {
+    const t = from + Math.max(0, ctx.currentTime - t0) * HZ, done = blocksAt(t);
+    draw(128 - done); seek.value = String(done); say(t);
+    if (t >= Q.end) { stopAt(t); return; }
+    raf = requestAnimationFrame(tick);
+  };
+  const ready = () => {
+    if (!loading) loading = C64.load('listing.json').then((L) => { B = enTape(L.ram, D); Q = enTimes(B, D); });
+    return loading;
+  };
+  const play = (block) => {
+    if (!B) { stat.textContent = 'Fetching the listing'; ready().then(() => play(block), () => { stat.textContent = 'The listing did not load.'; }); return; }
+    // the sound starts inside the click, where browsers allow it
+    if (!host) host = C64Sid.host({ driver: enLoadDriver, data: { bytes: B, short: D.short, long: D.long, hold: D.hold, period: D.period }, period: D.period, gain: 0.5 });
+    host.then((h) => {
+      if (h.ctx.state !== 'running') h.ctx.resume();
+      const at = Math.ceil(Q.T[256 * block] / D.period);
+      from = at * D.period; t0 = h.ctx.currentTime + (h.ctx.outputLatency || 0) + 0.01; ctx = h.ctx;
+      h.send({ cmd: 'start', tune: 0, at });
+      playing = true; run.textContent = 'Stop'; run.setAttribute('aria-pressed', 'true');
+      cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
+    }, (e) => { stat.textContent = e.message || 'The sound could not start.'; });
+  };
+  run.addEventListener('click', () => {
+    if (playing) { host.then((h) => h.send({ cmd: 'stop' })); stopAt(null); }
+    else play(+seek.value >= 128 ? 0 : +seek.value);
+  });
+  seek.addEventListener('input', () => { draw(128 - +seek.value); if (!playing) stat.textContent = (128 - +seek.value) + ' blocks to load'; });
+  seek.addEventListener('change', () => { if (playing) play(Math.min(127, +seek.value)); });
+  draw(128);
+  // fetch the listing as the screen comes near, so Play can start the sound at once
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); ready().catch(() => {}); } }, { rootMargin: '400px' });
+    io.observe(cv);
+  } else ready().catch(() => {});
 })();
 </script>

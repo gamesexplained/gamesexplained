@@ -87,6 +87,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gx-panels .gx-tile span{min-width:0}
 #gx-room{display:block;width:100%;max-width:600px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px;margin:0 0 12px}
 </style>
+<style>.sd-l-cv{width:100%;max-width:768px;image-rendering:pixelated;display:block;background:#000;border-radius:6px}.sd-l-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0;font-family:var(--fm);font-size:13px}.sd-l-bar button{font:inherit;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;color:var(--ink)}.sd-l-bar button[aria-pressed=true]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}.sd-l-bar span{color:var(--ink-2);overflow-wrap:anywhere}</style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">1986 · Electric Dreams Software</p>
@@ -128,6 +129,23 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p><code>draw_object</code> then ANDs each byte of his frame with the mask on its way into the sprite. Which rows and which three of the four bytes it reads depend on the fine part of his row and column, so the mask lines up with where he is drawn. The jewels and the lifts are cut the same way, by the same mask routine.</p>
   <p>Nearer is a number. <code>project</code> gives Gerald a depth from his X and Y doubled plus his height, and each tile in a place's list carries one too, set when the room was drawn. A larger depth is nearer the viewer. <code>sort_sprites</code> (<code>$A2F2</code>) uses the same depths to choose which sprite the video chip draws in front when two overlap: it hands the lowest-numbered sprites, which the chip draws on top, to the deepest.</p>
 </section>
+
+<section id="loading">
+  <p class="fig">03 · The loading picture</p>
+  <h2 class="t">The stripes in the letters are the tape's bits</h2>
+  <p class="lede">Electric Dreams' 1986 cassette puts up this screen 41 seconds in and keeps it up, in silence, for three minutes while the game loads. The stripes that run through the big letters are the tape itself. Each time the loader reads a bit, it moves the letters' colour on to the next of the C64's sixteen. A 0 is a short pulse on the tape and paints a thin stripe; a 1 is a long pulse and paints a thick one.</p>
+  <div class="plate">
+    <canvas class="sd-l-cv" id="sd-l-cv" width="384" height="272" role="img" aria-label="SPINDIZZY and LOADING in big letters full of thin and thick stripes in every colour, with copyright Electric Dreams 1986 by Paul Shirley between them, on black"></canvas>
+    <div class="sd-l-bar">
+      <button type="button" id="sd-l-run" aria-pressed="false">Pause</button>
+      <span id="sd-l-stat"></span>
+    </div>
+    <p class="cap">The cassette's own screen, recorded in VICE and drawn as the video chip draws it. The first picture is the recorded frame. After it, each frame's stripes come from the bytes the tape was loading at that moment, the records of the game's rooms, with a short pulse of 273 cycles for a 0 and a long one of 497 for a 1, the lengths the recorded load measured.</p>
+  </div>
+  <p>Each byte comes as ten pulses: two long ones that mark its start, then its eight bits, highest first. So the stripes come in tens, two thick ones and then the byte. Pause shows the bits of the frame on the screen, in the order the beam meets their stripes.</p>
+  <p>Electric Dreams' disk shows the same screen for six seconds while it loads, with its letters plain red: the disk's loader leaves their colour alone.</p>
+</section>
+
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
@@ -519,5 +537,85 @@ function spPaint(px, w, h, mem, sprites, x0, y0, rgb, mc0, mc1) {
   }
   drawAll();
   requestAnimationFrame(loop);
+})();
+</script>
+<script type="application/json" id="sd-loading-data">{"frame":{"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"Electric Dreams' 1986 cassette about 100 seconds in, the Ultimate Tape Archive's Spindizzy.tap: kit/c64/frame.py capture, then trim, in VICE 3.10 (vice-mcp 3.14.0) on 12 November 2026","vic":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27,0,0,0,0,216,0,169,113,240,0,0,0,0,0,240,240,244,249,243,244,240,241,242,243,244,245,246,247,252],"cia2":[148,63],"cpu":[47,7],"writes":[[4,21,53283,250,250],[12,17,53283,251,251],[16,34,53283,252,252],[20,51,53283,253,253],[25,5,53283,254,254],[29,29,53283,255,255],[33,46,53283,240,0],[37,63,53283,241,241],[42,17,53283,242,242],[46,34,53283,243,243],[54,25,53283,244,244],[62,15,53283,245,245],[70,5,53283,246,246],[74,22,53283,247,247],[82,12,53283,248,248],[86,30,53283,249,249],[90,54,53283,250,250],[95,9,53283,251,251],[102,62,53283,252,252],[107,59,53283,253,253],[115,7,53283,254,254],[122,60,53283,255,255],[127,15,53283,240,0],[135,5,53283,241,241],[142,58,53283,242,242],[147,12,53283,243,243],[151,29,53283,244,244],[156,26,53283,245,245],[164,16,53283,246,246],[172,6,53283,247,247],[179,60,53283,248,248],[187,7,53283,249,249],[191,25,53283,250,250],[199,15,53283,251,251],[207,5,53283,252,252],[212,2,53283,253,253],[215,40,53283,254,254],[220,30,53283,255,255],[224,12,53283,240,0],[228,37,53283,241,241],[236,28,53283,242,242],[244,32,53283,243,243],[248,35,53283,244,244],[252,52,53283,245,245],[257,6,53283,246,246],[261,23,53283,247,247],[265,40,53283,248,248],[270,1,53283,249,249],[277,53,53283,250,250],[282,7,53283,251,251],[289,60,53283,252,252],[297,49,53283,253,253],[305,38,53283,254,254]],"colour":"CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJDg4ODg4ODg4ODg4ODg4ODgMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4OCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODgIPCAcADwQPBA8FDwMOAAsECwIPAAcFDA==","ram":[{"a":57344,"b":"Kqqqqqqqq6mkpampqampqampqamprf/8qqqqqqqqvz+qqqqqqqr//6mpqampqamppKWpqamt//ypqampqa3/PCqqqqqqqr8/JKWpqampqak="},{"a":57600,"b":"AAAAAAAAAAA="},{"a":57664,"b":"DBgwMDAYDAAwGAwMDBgwAA=="},{"a":57712,"b":"AAAAAAAYGAA="},{"a":57736,"b":"GBg4GBgYfgA="},{"a":57776,"b":"PGZgfGZmPAA="},{"a":57792,"b":"PGZmPGZmPAA8ZmY+BmY8AA=="},{"a":57864,"b":"GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AA=="},{"a":57920,"b":"ZmZmfmZmZgA8GBgYGBg8AA=="},{"a":57952,"b":"YGBgYGBgfgBjd39rY2NjAA=="},{"a":57984,"b":"fGZmfGBgYAA="},{"a":58000,"b":"fGZmfHhsZgA8ZmA8BmY8AH4YGBgYGBgAZmZmZmZmPAA="},{"a":58056,"b":"ZmZmPBgYGAA="},{"a":59392,"b":"ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgAAQEBgAEBAEJAAQEAQAEASAJCAQEAQgEBAEJICAJICAgICAgICAgIAUgICAFICAFBQUgIAUFIAMBBSAgIAUgICAFBSAgBSAgICAgICAgICAFICAgBSAgBQUFICAFBSAgBQUgIAACICAAAgUgIAUgICAgICAgICAgAwQEAQUEBAIFBSAgBQUgIAUFIAACICAAAiADBAQFICAgICAgICAgICAgIAUFICAgBQUgIAUFICAFBQACICAAAiAgICAgBSAgICAgICAgICAgICAFBSAgIAUFICAFBSAAAgUFICAgBSAgICAgIAUgICAgICAgICAgCAQEAgcgICAHByAgBwMEAiAHAwQEBgMEBAYIBAQCICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKEMpIEVMRUNUUklDIERSRUFNUyAxOTg2ICAgICAgICAgICAgICAgICAgICBCWSBQQVVMIFNISVJMRVkuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAJICAgIAAEASAgIAkgIAAEASAJAAQEASAABAEgICAgICAgICAgICAgBSAgIAACIAMBIAAEASAFIAMBBQUgIAUAAiADBiAgICAgICAgICAgIAUgICAFICAgBQACIAMBBSAgBQUFICAFBSAgICAgICAgICAgICAgICAFICAgBSAgIAUFICAgBQUgIAUFBSAgBQUgIAgBICAgICAgICAgICAgBSAgIAUgICAFBQQEBAUFICAFBQUgIAUFICAgBSAgICAgICAgICAgIAUgICADASAAAgUgICAFBSAAAgUFICAFAwEgAAIgICAgICAgICAgICADBAQGIAMEAiAHICAgBwMEAiAHByAgByADBAIgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA=="},{"a":65535,"b":"/w=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19655,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":7,"colour_cells_changed_during_frame":0}},"at":16984,"p0":0,"short":273,"long":497,"b64":"AKJjYALsHwIEAQIMAgIsBQJsBQKsBWIEf2KkfwIDBAAAAB47VglAAEKof0IIf+KNbuJubgKDCAJjCAAAgZG0ABc8VgpAAGIES0JITEIoMWFmAAABZrUAFTlVCEAAomBVAucHAssHAvcGAAAAGDxUCEAAYrNvYqtuYsR+AhsGAAABt7cAJTpUCGEAAgAiIuAiAiQjAiwfIswhYsMYIgMEcxtnuwAAAZi2ACY7VAhhACIDBCIzAmKjF3h3YtMXHHtn9wLAIyLsIQLoIUAAAAAAGjtTCEAAAjgFYrQWIqQWAiAFRcBiJAIAAAAjO1IIQAAiBAEi5AEiyAFHaGJwG4MMRcACxBoC1BoB3AAAACY7UQhAACJMAQJkAiLQAwLIAWJoGyKAGwIUZUcQQiABArQBAAAALTpSCUAAg8yDjINMg+wiZFUiwAECKFWiIAIEmAJsVSKsVQKoVQOwArQBAAAAHTlSD0AAg+yCaFuigAMi4ARE5OCsxqyiIAQAAAAoOFIPQAAG7GJkA2IAAgKEAaIwAtd4YVpCqgJFRmFCAACBmLi6eCEAFDhQD0AAAkaAQiIew8EAAAHOuwAjOE8PQABhxdfFgsklgtkkYd1izgdiTgdnqgKuBwAAutUjAC83SA9AAOJABoJkOlSIgkdBglNBIqICIkICAm4BgnA6w5ThnNfUAACBlKACiAgAKTZID0AAYkICgsdBgtNBIloBYbYCugFhaiKmAUUuYTICNgMAAAHWugAVOE4PQAACSoCFtYXFw8EAAAHKvAAZOE0EQACCwScCwCoC3CrFwcXdAAALaEAAIThRD0AAUF4CUkJQToJoSCKOQlDOAsJCgqhXAACBkLkAFzlRCkAAgghX4XCCjFeCgFeCIAEAAAAqOU4KYQLCA3eCDwoCACMCGCMiQB8ioB8iyB8i6CAiCCAiKB9CoQsAAAAdOU8KQACHQCL6BoIkV4LYBoKYBqKwBoKsBwAAACI5UApAAII4BoIMV4IkAYK0V8ecgswGgoBXxPgAAIEkvgAXOlAIQACCFFeiTAiCrAaCZFfhYAAAABI6TwhAAMKADIJgDIJMPQAAACc6TgpAAILhCYLFBoLVBgIGCAISCILNbgKuFoJOPULOFoJgCQAAABw4Sw9AACIqBwKKByKqB2HKYdqilAMAAIKsIQAfOEwEQABiZgdkbuEugtUmAkFVAmFVAACBLr0C0SIAITlID0AAgjgGokQC05CDjOFvoq8IopcIAACajCGCjzwAFjtJC0AAiOyIzeiuxI/ic0HEDwAAAB46SQ9AAKKDBuZP4e/kz4KDB4KTBqJLBoIzBgAAABU6SA9AAIKTQcefgY+ih0HEDwAAACM5Sw9AAMWAxA=="}</script>
+<script>
+/* sd-stripes */
+// The letters' colour, $D023, as the cassette's loader moves it on: one step at the end of every pulse it reads.
+// D.bytes are the bytes the tape was loading, from D.at; each comes as ten pulses, two long ones and then its eight
+// bits, highest first, a short pulse (D.short cycles) for a 0 and a long one (D.long) for a 1. sdBit(D, p) is the
+// bit of pulse p of that stream. sdNext(D, s, start, len) gives the writes of the frame from cycle start, and moves
+// s on: s.p is the pulse whose end comes next, at cycle s.t, and s.v the colour $D023 holds.
+function sdBit(D, p) {
+  const i = p % 10, b = D.bytes[Math.floor(p / 10) % D.bytes.length];
+  return i < 2 ? 1 : (b >> (9 - i)) & 1;
+}
+function sdNext(D, s, start, len) {
+  const w = [];
+  while (s.t < start + len) {
+    const c = s.t - start;
+    s.v = (s.v + 1) & 15;
+    w.push([Math.floor(c / 63), c % 63, 0xD023, 0xF0 | s.v, s.v ? 0xF0 | s.v : 0]);
+    s.p++;
+    s.t += sdBit(D, s.p) ? D.long : D.short;
+  }
+  return w;
+}
+// end of sd-stripes
+(() => {
+  const $ = (id) => document.getElementById(id);
+  if (typeof C64 === 'undefined') { $('sd-l-stat').textContent = 'The picture is drawn by the site\'s shared scripts, which the built site serves.'; return; }
+  const D = JSON.parse($('sd-loading-data').textContent), F = D.frame, cv = $('sd-l-cv'), run = $('sd-l-run');
+  const bytes = (s) => Uint8Array.from(atob(s), (ch) => ch.charCodeAt(0));
+  D.bytes = bytes(D.b64);
+  const mem = new Uint8Array(0x10000), colourMem = bytes(F.colour);
+  for (const r of F.ram) mem.set(bytes(r.b), r.a);
+  const LEN = F.lines * F.cycles, HZ = 985248 / LEN;
+  const last = F.writes[F.writes.length - 1];
+  const fresh = () => ({ p: D.p0 + F.writes.length, v: last[3] & 15, t: 0 });
+  let s, k, shown, writes, paused = false, seen = false, raf = 0, t0 = 0, k0 = 0;
+  const reset = () => { s = fresh(); s.t = last[0] * F.cycles + last[1] + (sdBit(D, s.p) ? D.long : D.short); k = 0; shown = F; writes = F.writes; };
+  const draw = () => C64.drawFrame(cv, Object.assign({}, shown, { mem, colourMem }), 1);
+  const bits = () => {
+    // the pulses this frame read, top to bottom, in their tens: the two long ones, then the byte
+    const p1 = s.p - 1, p0 = p1 - writes.length + 1;
+    let out = '';
+    for (let p = p0; p <= p1; p++) out += (p % 10 === 0 && p > p0 ? '  ' : p % 10 === 2 ? ' ' : '') + sdBit(D, p);
+    return out;
+  };
+  const say = () => {
+    $('sd-l-stat').textContent = paused || !seen
+      ? 'This frame: ' + writes.length + ' bits read, ' + bits()
+      : '';
+  };
+  const step = () => {
+    const vic = shown.vic.slice();
+    vic[0x23] = 0xF0 | s.v;
+    k++;
+    writes = sdNext(D, s, k * LEN, LEN);
+    shown = Object.assign({}, F, { vic, writes });
+  };
+  const tick = (now) => {
+    const want = k0 + Math.floor((now - t0) / 1000 * HZ);
+    if (want - k > 50) { t0 = now; k0 = k; }
+    else if (want > k) { while (k < want) step(); draw(); }
+    raf = requestAnimationFrame(tick);
+  };
+  const play = () => { if (raf || paused) return; t0 = performance.now(); k0 = k; raf = requestAnimationFrame(tick); say(); };
+  const stop = () => { cancelAnimationFrame(raf); raf = 0; say(); };
+  run.addEventListener('click', () => {
+    paused = !paused;
+    run.textContent = paused ? 'Play' : 'Pause';
+    run.setAttribute('aria-pressed', String(paused));
+    if (paused) stop(); else { seen = true; play(); }
+  });
+  reset(); draw(); say();
+  if (typeof IntersectionObserver !== 'undefined') {
+    const io = new IntersectionObserver((es) => {
+      if (es.some((e) => e.isIntersecting)) { seen = true; play(); } else stop();
+    }, { threshold: 0.4 });
+    io.observe(cv);
+  } else { seen = true; play(); }
 })();
 </script>

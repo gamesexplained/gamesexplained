@@ -12,10 +12,12 @@ PRG loading at $0801 ending at $5726. The BASIC stub is one line,
 crunched: the loader at $0812 installs a decruncher in the stack page
 ($00FA–$01A0) and the tape buffer ($0333–$03D9) and jumps to $0100. No
 trainer, cracktro or menu appears; the title screen credits "Paul Woakes",
-"© 1984 Novagen Software". Whether this is the original release or a
-cracked copy is unknown: the cruncher is scene-style (self-modifying
-page copy, `$01 = $30` all-RAM during depack) and the title screen shows
-nothing beyond the publisher's own credits.
+"© 1984 Novagen Software". It is a changed copy: Novagen's 1984
+cassette (`facts.md`, "Loading") has a branch at $9CE6 and a call at
+$9FF9 where this file has two NOPs and the text `KSTA:*`. Who changed it
+is unknown; the cruncher is scene-style (self-modifying page copy,
+`$01 = $30` all-RAM during depack) and the title screen shows nothing
+beyond the publisher's own credits.
 
 The kit works from `work/encounter.prg` (the PRG with the P00 header
 removed: `tail -c +27 encounter_0_original.p00 > encounter.prg`).

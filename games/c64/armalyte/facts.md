@@ -23,8 +23,8 @@ engine's routine at `$B3CC`.
   Armalyte, 2 Loading picture, 3 Walker's Warbles"
   (`reference/disk-menu.png`). The first loads the engine and the third
   a music demo of Martin Walker's, a part of its own
-  (`parts/warbles/facts.md`); the second, the loading picture on its
-  own, was not followed.
+  (`parts/warbles/facts.md`); the second shows the cassette's loading
+  picture to the demo's tune ("Loading picture", below).
 - The credits are title strings 8-18 (engine `$90B9`): programming and
   game design Dan Phillips; system programming and game design John
   Kemp; graphics, level and game design Robin Levy; music and sound
@@ -175,6 +175,36 @@ screen codes:
   Walker's Warbles". The boot files are not in any part. The third
   entry's own text, and the one string left in its memory above it, are
   in `parts/warbles/facts.md`.
+
+## Loading picture
+
+*Live*, in VICE 3.10 (vice-mcp 3.14.0) on 12 November 2026, from the
+Ultimate Tape Archive's `Armalyte_Side_1.tap` (395,637 bytes, SHA-256
+`1116f44d75d91cf8e7ef2d908eb8556c4080c74a55bb60c75f2872c7e22eb3a9`),
+Thalamus's 1988 cassette, and side 1 of the disk named in
+`orientation.md`:
+
+- The cassette shows ARMALYTE over COPYRIGHT 1988 THALAMUS LTD in text,
+  starts a tune 53 seconds into the tape, and puts the picture up whole
+  at about 100 seconds: a multicolour bitmap in bank 3, screen `$CC00`,
+  bitmap `$E000` (`$D018` = `$39`, `$DD00` = `$C0`), black border and
+  background. It goes at 218 seconds; the game's own sound starts at
+  224.6. Times from the video chip and sound chip read every 10 frames.
+- The tune is played by a copy of the engine's music driver at `$B000`
+  (init) and `$B059` (play), called from the loader's raster interrupt
+  (`$C15C`); its code is the engine's `$C000` driver moved down `$1000`,
+  with its zero-page pointers at `$3B`-`$3C`. It carries one tune, the
+  engine's tune 1, the demo's: run from init in the kit's 6502 simulator,
+  it makes the same SID registers as the engine's tune 1 in all 26,000
+  frames once the one variable init leaves alone (engine `$C525`, tape
+  `$B525`) holds the same value in both.
+- When the load ends the interrupt sets the volume to 15 and takes one
+  off every 16 frames (`$C1BA`-`$C1D7`): silent at 212 seconds.
+- The disk's menu entry 2 shows the same bitmap, screen and colour bytes
+  (bank 1, `$D018` = `$81`, `$DD00` = `$C2`), drawn the same in all
+  104,448 pixels, with the same driver at `$B000` playing the same tune.
+- The page's frame, drawn by `site/lib/c64.js`, equals VICE's own
+  picture in all 104,448 pixels (`kit/c64/frame.py compare`).
 
 ## Hardware registers
 
