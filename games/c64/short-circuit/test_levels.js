@@ -5,6 +5,7 @@
 //      $C050) inside the strip, character for character: the strip's left edge is at some character offset;
 //   2. counts the event table's columns as the page's text says (the quiet columns and 15 starters);
 //   3. checks the page's object badges: 21 objects, each at the column the listing's table holds.
+//   4. checks that the page draws the strip with the character set the frame's $D018 selects ($D000).
 //   node games/c64/short-circuit/test_levels.js [page.html]
 const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '../../..');
@@ -26,6 +27,12 @@ for (let first = 0; first < 1024 - 40 && found < 0; first++) {
   if (ok) found = first;
 }
 if (found < 0) fail('the first frame’s screen is nowhere in the strip');
+// the character set: the frame's $D018 as the playfield begins selects it in video bank 3, and the page
+// must draw with that one ($D018 bits 1-3 are the set's place in the bank, in units of $0800)
+const set = 0xC000 + ((SC_FRAME1.vic[0x18] & 0x0E) << 10);
+if (set !== 0xD000) fail('the frame draws its playfield from', set.toString(16), 'not $D000');
+if (!html.includes('charset = ram.subarray(0x' + set.toString(16).toUpperCase() + ', 0x' + (set + 0x800).toString(16).toUpperCase() + ')'))
+  fail('the page does not draw the strip with the character set at $' + set.toString(16).toUpperCase());
 // the events
 const ev = Array.from({ length: 256 }, (_, i) => ram[0x896E + i]);
 const quiet = ev.filter(v => v === 0).length;
