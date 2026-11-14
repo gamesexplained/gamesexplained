@@ -1,0 +1,369 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/wasteland-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The booklet in the box holds 162 numbered paragraphs, and the game sends the player to 89 of them. The other 73 are bait, and <a href="#wl-bait">ten passwords printed in them spring traps the game has ready</a>. Below the traps are <a href="#wl-staff">the two Bloodstaffs</a>, <a href="#wl-all">every paragraph and what cites it</a>, and <a href="#wl-ask">every word the game takes at the keyboard</a>.</p>
+</header>
+<main class="wrap">
+<style>
+.wl-pg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:4px;margin:0 0 14px}
+.wl-pg-n{font:inherit;font-family:var(--fm);font-size:13px;padding:5px 0;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.wl-pg-n.wl-pg-twin{background:#f6d3cd;border-color:#e4a79e}
+.wl-pg-n.wl-pg-mars{background:#f6dcc2;border-color:#e2bb8f}
+.wl-pg-n.wl-pg-other{background:#efe3b0;border-color:#d9c777}
+.wl-pg-n.wl-pg-off{opacity:.25}
+.wl-pg-n[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px;font-weight:700}
+.wl-pg-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;margin:0 0 12px;padding:0;list-style:none}
+.wl-pg-key span{display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid var(--line);vertical-align:-2px;margin-right:5px}
+.wl-pg-words{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.wl-pg-w{font:inherit;font-family:var(--fm);font-size:12.5px;padding:3px 9px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.wl-pg-w.wl-pg-false{background:#f6d3cd;border-color:#e4a79e}
+.wl-pg-w.wl-pg-true{background:#d3e8da;border-color:#9fcbb0}
+.wl-pg-w small{font-family:var(--fb);color:var(--ink-soft)}
+.wl-pg-say{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 0}
+.wl-pg-reply td{background:#15161a;color:#d7d9de;font-family:var(--fm);font-size:12.5px;line-height:1.55}
+.wl-pg-reply p{margin:0;overflow-wrap:anywhere}
+.wl-pg-reply p.wl-fi-dim{color:#8b8f99}
+.wl-pg-q td:first-child{white-space:nowrap}
+@media (max-width:640px){.wl-t.wl-pg-q{min-width:0}.wl-pg-q thead{display:none}.wl-pg-q,.wl-pg-q tbody,.wl-pg-q tr,.wl-pg-q td{display:block;width:auto}.wl-pg-q td{border:0;padding:2px 0}.wl-pg-q td:first-child{white-space:normal;font-size:13.5px}.wl-pg-q tr{border-bottom:1px solid var(--line-soft);padding:8px 0}.wl-pg-q tr.wl-pg-reply td{padding:8px 10px}}
+</style>
+<section id="wl-bait" data-part="game">
+  <p class="fig">01 · False passwords</p>
+  <h2 class="t">Secret: the booklet's ten false passwords each spring a trap in the game</h2>
+  <p class="lede">When the screen says "Read paragraph 49", the player turns to the booklet and reads it. The booklet also holds paragraphs that no screen ever names, and ten of them hand over a password. The game's guards know all ten words. A party that gives one is let through, or seems to be, and pays for it.</p>
+
+  <div class="plate wl-be" id="wl-pg-bait">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">Who is asking</p>
+        <p><select class="wl-fi-sel" id="wl-pg-who" aria-label="Who is asking"></select></p>
+        <p class="wl-fi-h">The party afterwards</p>
+        <ol class="wl-be-types" id="wl-pg-party" aria-label="The Rangers after the answer"></ol>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">Pick a word. The game's text appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <div class="wl-pg-words" id="wl-pg-words"></div>
+      <div class="wl-pg-say"><input type="text" class="wl-fi-sel" id="wl-pg-own" maxlength="16" size="18" placeholder="or type a word" aria-label="A word of your own"> <button type="button" class="wl-xp-btn wl-xp-ghost" id="wl-pg-go">Say it</button></div>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">Four Rangers stand on the question's square on the game's own code. Each press types the word into the game's input line and runs the square (<code>$ACC1</code>). The page shows what the game printed and reads the Rangers' records afterwards. Green words come from paragraphs the game cites, and red words from paragraphs it never cites.</p>
+  </div>
+
+  <div class="wl-tw"><table class="wl-t">
+    <thead><tr><th>False word</th><th>Paragraph</th><th>Who asks</th><th>True word</th><th>What the game does with the false word</th></tr></thead>
+    <tbody>
+      <tr><td>AZRAEL<br>MORS</td><td>5<br>161</td><td>The guard at Ugly's hideout in <a href="levels.html#map-4">Quartz</a></td><td>KAPUT (paragraph 49)</td><td>Lets the party in, and swaps the sex of every Ranger without a word.</td></tr>
+      <tr><td>PHOENIX<br>CLOVER</td><td>33<br>149</td><td>The door of Faran Brygo's hideout in <a href="levels.html#map-39">Las Vegas</a></td><td>KESTREL (paragraph 71)</td><td>Lets the party in, and gives every Ranger Wasteland Herpes.</td></tr>
+      <tr><td>MORTAR<br>ATOM</td><td>50<br>154</td><td>The prisoner in the <a href="levels.html#map-27">Temple of Blood</a></td><td>MOTEKIM (paragraph 124)</td><td>Sets off the self destruct: every Ranger takes 20 dice of damage.</td></tr>
+      <tr><td>LADYBUG<br>LIZARD</td><td>75<br>92</td><td>The guard at the Atchisons' tent, with the <a href="levels.html#map-8">Desert Nomads</a></td><td>CATERPILLAR (paragraph 57)</td><td>Sends the party to paragraph 42, a page of the booklet's false story, and gives nothing.</td></tr>
+      <tr><td>BUZZARD<br>PASTEL</td><td>18<br>73</td><td>The bishop in <a href="levels.html#map-34">Needles</a></td><td>DIPSTICK (paragraph 129)</td><td>Hands over a Bloodstaff that is not the Bloodstaff. See <a href="#wl-staff">section 02</a>.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>Each false paragraph is a copy of a true one with the word changed. Paragraph 49 is a torn note on which THANATOS has been scratched out and KAPUT written under it. Paragraph 161 is the same note with MORS written under it, and paragraph 5 is a third torn note that ends in AZRAEL. A player who was sent to paragraph 49 has the right word. A player who went looking through the booklet has three notes and no way to tell them apart.</p>
+
+  <p>A question square holds a list of words, and each word names what the square turns into when the party types it (<code>$88E3</code>). The game compares the typed line with each word, letter for letter (<code>$8944</code>). At Ugly's hideout the list has four words. KAPUT turns the square into one that sets the gang's guards at peace (<span data-part="map-04"><code>$419B</code></span>). AZRAEL and MORS turn it into a square that first runs a routine of the map's own (<span data-part="map-04"><code>$4206</code></span>), and then does what KAPUT does. The routine goes through every character in use and flips the bit that says whether the Ranger is a man or a woman. The guard says the same line for all three words, and nothing on the screen marks the swap. It shows later, in fight messages that say "her" where they said "him".</p>
+
+  <p>THANATOS, the word the true note shows scratched out, is on the list too. The guard answers "That is the old password." and asks for the party's section leader, and takes STINGER, PIGFACE, MADWOLF, SKULKER, or GRUNT.</p>
+
+  <p>Faran Brygo's door works the same way. KESTREL opens it. PHOENIX and CLOVER open it after a routine (<span data-part="map-39"><code>$3C58</code></span>) has set one bit in every Ranger's record: the bit for the disease the doctor calls Wasteland Herpes. A Ranger with any disease stops getting CON back over time (<code>$B854</code>), and stays that way until a doctor is paid to cure it.</p>
+
+  <p>In the Temple of Blood a prisoner begs for a launch code. MOTEKIM frees him. MORTAR and ATOM print "You've entered the self destruct code by mistake." and take 20 six-sided dice of CON from every Ranger. That is 20 to 120 points each, and a Ranger who falls to −50 is dead.</p>
+
+  <p>The nomads' guard does no harm. For LADYBUG or LIZARD the guard says "Read paragraph 42." Paragraph 42 is a page of the booklet's false story about raiders from Mars, and it is the only page of that story the game ever names. The true word, CATERPILLAR, leads to paragraph 39, which says where to dig, and to a bag with a Shovel in it.</p>
+</section>
+
+<section id="wl-staff" data-part="map-34">
+  <p class="fig">02 · The Bloodstaff</p>
+  <h2 class="t">Secret: there are two Bloodstaffs, alike in every byte, and only one is real</h2>
+  <p class="lede">The game's table of items lists the Bloodstaff twice, as items 62 and 63. The two have the same name and the same eight bytes. Item 62 is the staff the story is about. Item 63 is a fake, and seven bags hold one.</p>
+
+  <p>The bishop in Needles keeps the staff once the party has brought it back to him. He hands it out again to a party that says the right word. For DIPSTICK, the word in paragraph 129, his square becomes a bag that holds item 62. For BUZZARD or PASTEL, the words in the false paragraphs 18 and 73, it becomes a bag that holds item 63. He says "Please be careful with it." either way, and the two staffs look the same in a Ranger's pack.</p>
+
+  <p>Three squares tell them apart when a Ranger uses the staff on them.</p>
+
+  <div class="wl-tw"><table class="wl-t">
+    <thead><tr><th>Who tests it</th><th>With item 62</th><th>With item 63</th></tr></thead>
+    <tbody>
+      <tr><td>The Bloodstaff verification table in <a href="levels.html#map-33">downtown Needles</a></td><td>"Verification ok. Please remove bloodstaff." The table gives it back.</td><td>"Crunch crunch. Verification failed."</td></tr>
+      <tr><td>The bishop in <a href="levels.html#map-34">Needles</a>, when the party first returns the staff</td><td>He thanks the party and leaves a bag of gifts.</td><td>"What are you trying to pull? This isn't the real Bloodstaff." He breaks it over your heads and throws you out.</td></tr>
+      <tr><td>Charmaine in the <a href="levels.html#map-38">Mushroom Cloud temple</a> in Las Vegas</td><td>"Thank you for the Bloodstaff." Read paragraph 76.</td><td>"Imposters! That is not the true Bloodstaff." The temple turns on the party (<span data-part="map-38"><code>$3FB0</code></span>).</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The bags that hold a staff are these.</p>
+
+  <div class="wl-tw"><table class="wl-t">
+    <thead><tr><th>Staff</th><th>Where it is found</th></tr></thead>
+    <tbody>
+      <tr><td><b>Item 62, the true staff</b><br><small>3 bags</small></td><td><a href="levels.html#map-28">Under the Temple of Blood</a>, <a href="levels.html#map-33">Needles downtown, Hobo Dogs</a>, <a href="levels.html#map-34">Needles, police station, gas station, church</a></td></tr>
+      <tr><td><b>Item 63, the false staff</b><br><small>7 bags</small></td><td><a href="levels.html#map-27">Temple of Blood</a>, <a href="levels.html#map-28">Under the Temple of Blood</a> (2 bags), <a href="levels.html#map-31">Needles, waste pit and ammo bunker</a>, <a href="levels.html#map-32">Needles downtown, Leroy&#x27;s</a>, <a href="levels.html#map-33">Needles downtown, Hobo Dogs</a>, <a href="levels.html#map-34">Needles, police station, gas station, church</a></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="wl-all" data-part="game">
+  <p class="fig">03 · The booklet</p>
+  <h2 class="t">The game sends the player to 89 of the booklet's 162 paragraphs</h2>
+  <p class="lede">Every number below is a paragraph of the booklet. A white one is named somewhere in the game's text. A coloured one is named nowhere: the writers put it there for readers who skip ahead.</p>
+
+  <div class="plate wl-be-roster" id="wl-pg-all">
+    <ul class="wl-pg-key">
+      <li><span style="background:var(--surface)"></span><b id="wl-pg-c0"></b> the game cites</li>
+      <li><span style="background:#f6d3cd"></span><b id="wl-pg-c1"></b> false copies of a true paragraph</li>
+      <li><span style="background:#f6dcc2"></span><b id="wl-pg-c2"></b> the story about Mars</li>
+      <li><span style="background:#efe3b0"></span><b id="wl-pg-c3"></b> jokes and loose ends</li>
+    </ul>
+    <p><select class="wl-fi-sel" id="wl-pg-show" aria-label="Which paragraphs to show">
+      <option value="">every paragraph</option><option value="cited">the ones the game cites</option><option value="never">the ones it never cites</option><option value="twin">false copies</option><option value="mars">the story about Mars</option><option value="other">jokes and loose ends</option>
+    </select></p>
+    <div class="wl-pg-grid" id="wl-pg-grid"></div>
+    <div class="wl-be-about" id="wl-pg-about" hidden></div>
+    <p class="cap">Press a number. For a paragraph the game cites, the card shows the game's own message and the map it is on. For one it never cites, the card says in a line what the paragraph holds.</p>
+  </div>
+
+  <p>The game's text names a paragraph in 83 messages on 21 maps. They name 82 different paragraphs, because two messages in the Temple of Blood both name paragraph 124.</p>
+
+  <p>Seven more are cited without their number being in the sentence. On level 3 of the Sleeper Base a terminal offers seven personnel files. Each choice shows the message "Read paragraph" and then a second message that is only the number: 52, 40, 100, 63, 70, 91, and 101. That makes 89.</p>
+
+  <p>Of the 73 paragraphs the game never names, 22 are copies of a true paragraph with one thing changed: a password, a number on a bracelet, a direction to dig in. The true bomb code is 11-27-57-04-30 (paragraph 26), and paragraph 159 gives 31-17-54-07-99. The bracelets of Hewey, Dewey, and Louie read 11, 16, and 27 in paragraphs 147, 155, and 107, which is the combination of the safe in Ugly's hideout. In the false paragraphs 143, 9, and 27 they read 13, 27, and 99.</p>
+
+  <p>Another 32 tell one long story in which the robots come from Mars, Finster is a spy raised by aliens, and the Rangers die at the end. The game cites one page of it, paragraph 42, and only to a party that gives the nomads a false word. Two paragraphs speak to the reader directly. Paragraph 22 warns that nobody was told to read it, and paragraph 145 says of itself that it can be reached from no place in the adventure.</p>
+</section>
+
+<section id="wl-ask" data-part="game">
+  <p class="fig">04 · Questions</p>
+  <h2 class="t">Every question the game asks at the keyboard, and every word it takes</h2>
+  <p class="lede">The game asks 67 questions that are answered with a typed line, and between them their lists hold 186 words. Press a word to give it to the game.</p>
+
+  <p>The typed line can hold 16 characters (<span data-part="engine"><code>$1D06</code></span>), and a word only counts when the whole line matches it. One word on the lists is too long for that. In Finster's mind maze a voice says "Only I am allowed further", and the list takes five forms of his name. IRWIN JOHN FINSTER has 18 characters, so the line stops at IRWIN JOHN FINST and the game turns the party away. The other four forms fit.</p>
+
+  <div class="plate wl-be-roster" id="wl-pg-ask">
+    <p><select class="wl-fi-sel" id="wl-pg-map" aria-label="Map"><option value="">every map</option></select></p>
+    <div class="wl-tw wl-tall"><table class="wl-t wl-pg-q">
+      <thead><tr><th>Where</th><th>The question</th><th>Words the game takes</th></tr></thead>
+      <tbody id="wl-pg-rows"></tbody>
+    </table></div>
+    <p class="wl-xp-say wl-be-tally" role="status"></p>
+    <p class="cap">Each row is one question record of a map. A press puts the question under four Rangers on the game's own code, types the word, and shows what the game prints, up to the next question. Words in red are the false passwords of section 01.</p>
+  </div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script type="application/json" id="wl-paragraphs">{"maps":{"2":"Quartz, Scott's Bar","3":"Quartz, the Stagecoach Inn","4":"Quartz, Ugly's hideout","6":"Quartz, the courthouse","8":"Desert Nomads","9":"Agricultural Center","10":"Highpool","13":"Sleeper Base, level 2","15":"Sleeper Base, level 3","17":"Base Cochise, the computer","19":"Base Cochise, robot assembly","20":"Base Cochise, the reactor","21":"Darwin Village","22":"Darwin, the base","23":"Finster's mind maze","25":"Las Vegas sewers, the lab","27":"Temple of Blood","28":"Under the Temple of Blood","29":"Agricultural Center, the Root Cellar","31":"Needles, waste pit and ammo bunker","32":"Needles downtown, Leroy's","33":"Needles downtown, Hobo Dogs","34":"Needles, police station, gas station, church","35":"Guardian Citadel","36":"Guardian Citadel, the Outer Sanctum","38":"Las Vegas, the Mushroom Cloud temple","39":"Las Vegas, Faran Brygo's hideout","40":"Las Vegas, jail and Fat Freddy's","41":"Las Vegas, Spade's Casino","42":"Guardian Citadel, the Inner Sanctum","49":"Savage Village"},"cites":{"2":[{"m":8,"k":1,"t":"Read paragraph 2."}],"3":[{"m":8,"k":55,"t":"Read paragraph 3."}],"6":[{"m":29,"k":8,"t":"There is a diary under the console! It begins just after the Holocaust. Read paragraph 6."}],"7":[{"m":39,"k":30,"t":"Read paragraph 7."}],"10":[{"m":2,"k":111,"t":"Read paragraph 10."}],"11":[{"m":21,"k":75,"t":"Read paragraph 11."}],"14":[{"m":22,"k":25,"t":"You enter Finster's office. He rises to greet you. Read paragraph 14. He then leaves."}],"15":[{"m":25,"k":85,"t":"The android awakens. Read paragraph 15."}],"17":[{"m":8,"k":13,"t":"Read paragraph 17."}],"20":[{"m":35,"k":58,"t":"This wall is covered by the gloriously beautiful Premacorin mural \"The Cycle of Man.\" Read paragraph 20."}],"21":[{"m":40,"k":33,"t":"Read paragraph 21."}],"23":[{"m":2,"k":105,"t":"Read paragraph 23."}],"26":[{"m":4,"k":78,"t":"Ugly says, \"Read paragraph 26.\" He then flips a switch on the bomb and runs off."}],"28":[{"m":8,"k":70,"t":"Read paragraph 28."}],"29":[{"m":34,"k":80,"t":"Going back to his work, Sam says: \"I suppose you wanna know about the Bloodstaff.\" Read paragraph 29."}],"30":[{"m":49,"k":41,"t":"Read paragraph 30."}],"32":[{"m":21,"k":50,"t":"Read paragraph 32."}],"34":[{"m":21,"k":47,"t":"Read paragraph 34."}],"35":[{"m":4,"k":96,"t":"Read paragraph 35."}],"37":[{"m":27,"k":25,"t":"Read paragraph 37."}],"39":[{"m":8,"k":37,"t":"Read paragraph 39."}],"41":[{"m":21,"k":43,"t":"Read paragraph 41."}],"42":[{"m":8,"k":9,"t":"Read paragraph 42."}],"43":[{"m":8,"k":44,"t":"Read paragraph 43."}],"46":[{"m":8,"k":47,"t":"Read paragraph 46."}],"47":[{"m":20,"k":72,"t":"Read paragraph 47."}],"49":[{"m":6,"k":90,"t":"Read paragraph 49."}],"53":[{"m":21,"k":48,"t":"Read paragraph 53."}],"54":[{"m":8,"k":28,"t":"Read paragraph 54."}],"56":[{"m":9,"k":39,"t":"Read paragraph 56."}],"57":[{"m":2,"k":132,"t":"Read paragraph 57."}],"60":[{"m":28,"k":26,"t":"Read paragraph 60."}],"61":[{"m":34,"k":78,"t":"Spam Shade looks up at you. Read paragraph 61."}],"65":[{"m":40,"k":89,"t":"Read paragraph 65."}],"66":[{"m":27,"k":50,"t":"Read paragraph 66."}],"69":[{"m":21,"k":49,"t":"Read paragraph 69."}],"71":[{"m":41,"k":58,"t":"Read paragraph 71."}],"76":[{"m":38,"k":104,"t":"\"Thank you for the Bloodstaff.\" Read paragraph 76."}],"77":[{"m":27,"k":21,"t":"Read paragraph 77."}],"79":[{"m":20,"k":73,"t":"Read paragraph 79."}],"80":[{"m":21,"k":77,"t":"Read paragraph 80."}],"83":[{"m":41,"k":90,"t":"You stand at the bar hoping to get a drink and wait.. and wait... Finally a pit boss comes over to you. Read paragraph 83."}],"84":[{"m":9,"k":50,"t":"Read paragraph 84."}],"85":[{"m":35,"k":49,"t":"Carved into the side of a mountain you see a huge black structure you recognize as the Guardian Citadel. Read paragraph 85."}],"86":[{"m":8,"k":34,"t":"Read paragraph 86."}],"88":[{"m":21,"k":76,"t":"Read paragraph 88."}],"90":[{"m":13,"k":32,"t":"Read paragraph 90."}],"96":[{"m":41,"k":40,"t":"Would you like to play 3 card monty (Y/N)? Read paragraph 96."}],"99":[{"m":39,"k":24,"t":"Read paragraph 99."}],"103":[{"m":34,"k":9,"t":"Read paragraph 103."}],"104":[{"m":34,"k":47,"t":"It chucks you a Neighborhood Watch pamphlet and goes straight back to its work. Read paragraph 104."}],"107":[{"m":6,"k":50,"t":"Read paragraph 107."}],"109":[{"m":4,"k":65,"t":"There is a map of Quartz on the wall. Read paragraph 109."}],"110":[{"m":8,"k":48,"t":"Read paragraph 110."}],"111":[{"m":34,"k":53,"t":"The robotclerk writes something in his notebook and puts it away. Read paragraph 111."}],"112":[{"m":27,"k":16,"t":"Read paragraph 112."}],"114":[{"m":21,"k":46,"t":"Read paragraph 114."}],"117":[{"m":8,"k":52,"t":"Read paragraph 117."}],"118":[{"m":20,"k":75,"t":"Read paragraph 118."}],"119":[{"m":40,"k":41,"t":"\"I see that you have got the ring. Brygo must be dead. Good. You have served me well, fools.\" Read paragraph 119."}],"121":[{"m":21,"k":74,"t":"Read paragraph 121."}],"124":[{"m":27,"k":6,"t":"Read paragraph 124."},{"m":27,"k":70,"t":"You see a faintly carved message, \"Read paragraph 124.\""}],"126":[{"m":4,"k":85,"t":"Read paragraph 126."}],"127":[{"m":34,"k":62,"t":"A perch with a pigeon on it. Tied to the pigeon's leg is a message: Read paragraph 127."}],"128":[{"m":8,"k":54,"t":"Read paragraph 128."}],"129":[{"m":38,"k":103,"t":"Read paragraph 129."}],"130":[{"m":20,"k":74,"t":"Read paragraph 130."}],"136":[{"m":27,"k":14,"t":"Read paragraph 136."}],"137":[{"m":21,"k":44,"t":"Read paragraph 137."}],"139":[{"m":41,"k":41,"t":"Would you like to play High / Low (Y/N)? Read paragraph 139."}],"140":[{"m":21,"k":45,"t":"Read paragraph 140."}],"141":[{"m":8,"k":53,"t":"Read paragraph 141."}],"146":[{"m":21,"k":35,"t":"Read paragraph 146."}],"147":[{"m":6,"k":66,"t":"Read paragraph 147."}],"148":[{"m":8,"k":56,"t":"Read paragraph 148."}],"150":[{"m":34,"k":12,"t":"Read paragraph 150."}],"152":[{"m":8,"k":51,"t":"Read paragraph 152."}],"155":[{"m":6,"k":68,"t":"Read paragraph 155."}],"156":[{"m":8,"k":49,"t":"Read paragraph 156."}],"158":[{"m":34,"k":79,"t":"He sees your ruby ring. Read paragraph 158."}],"160":[{"m":8,"k":50,"t":"Read paragraph 160."}],"162":[{"m":36,"k":67,"t":"Read paragraph 162."}]},"files":[{"key":1,"name":"Col. John Smith","para":52,"msgs":[61,22]},{"key":2,"name":"Maj. Harrison Edsel","para":40,"msgs":[61,23]},{"key":3,"name":"Maj. Peregrine Cite","para":100,"msgs":[61,24]},{"key":4,"name":"Capt. Phil Thomas","para":63,"msgs":[61,25]},{"key":5,"name":"Capt. Andrea Mills","para":70,"msgs":[61,26]},{"key":6,"name":"Dr. Franklin Beams","para":91,"msgs":[61,27]},{"key":7,"name":"Lt. Russel Heller","para":101,"msgs":[61,28]}],"never":{"1":{"d":"A scene at a lit window that ends with a joke about asking for a transfer to a Bard's Tale game.","kind":"other"},"4":{"d":"The nomads' Engineer names four clans the game does not have and offers a Hobo oracle.","kind":"other"},"5":{"d":"The torn note with AZRAEL written under the old password. The true note is paragraph 49.","kind":"twin","twin":49},"8":{"d":"Fat Freddy says Faran Brygo is shipping diamonds east to wreck the world's economy, and asks the Rangers to kill him.","kind":"other"},"9":{"d":"Dewey's bracelet reads 27. In the true paragraph, 155, it reads 16.","kind":"twin","twin":155},"12":{"d":"The prisoner in the cell wants guards for a shipment going east. In the true paragraph, 35, he recruits fighters for Las Vegas.","kind":"twin","twin":35},"13":{"d":"A page of a romance titled Love Slave in Santa Fe.","kind":"other"},"16":{"d":"An old man under a satellite dish says Space Pirates from Phobos steal the food.","kind":"mars"},"18":{"d":"The Sonic Key story ending with the word BUZZARD for the bishop. The true paragraph, 129, ends with DIPSTICK.","kind":"twin","twin":129},"19":{"d":"Capt. Phil Thomas's file praises his strafing runs in an attack helicopter. The true file is paragraph 63.","kind":"twin","twin":63},"22":{"d":"A threat: the Wasteland Thought Police will call on anyone who reads this without being told to.","kind":"other"},"24":{"d":"A bartender asks, Hotspur or Falstaff?","kind":"other"},"25":{"d":"Charmaine twirls the Bloodstaff like a baton and asks for a baseball bat next. The true paragraph is 76.","kind":"twin","twin":76},"27":{"d":"Louie's bracelet reads 99. In the true paragraph, 107, it reads 27.","kind":"twin","twin":107},"31":{"d":"Says the Guardians admire the Rangers and mark their minefields with orange flags.","kind":"other"},"33":{"d":"Crumb, flirting, gives the password PHOENIX. The true paragraph, 71, gives KESTREL.","kind":"twin","twin":71},"36":{"d":"Capt. Andrea Mills's file says she doubts the clone pods are safe. The true file is paragraph 70.","kind":"twin","twin":70},"38":{"d":"Townspeople say the mayor's wife is held in the Temple of Blood.","kind":"other"},"44":{"d":"The nomads' Hobo oracle is found long dead among empty Snake Squeezins bottles.","kind":"other"},"45":{"d":"A wall map with three stars that mark hidden bases.","kind":"other"},"48":{"d":"Lt. Russel Heller's file calls him a discipline problem. The true file is paragraph 101.","kind":"twin","twin":101},"50":{"d":"Carved in wood: the launch code is MORTAR. The true paragraph, 124, gives MOTEKIM.","kind":"twin","twin":124},"51":{"d":"The rules of High/Low, a game played with two nuclear warheads.","kind":"other"},"55":{"d":"A parchment: at the Martian Base, type GWCD.","kind":"mars"},"58":{"d":"A Martian Commander gasses the Rangers and takes them as slaves.","kind":"mars"},"59":{"d":"On Mars the Rangers beat a Slavemaster and free the slaves.","kind":"mars"},"62":{"d":"In the Martian titanium mines a woman in a shimmering gown opens a secret door.","kind":"mars"},"64":{"d":"A Martian guide leads the Rangers to a sculpted city, where a voice asks for the name of their beloved.","kind":"mars"},"67":{"d":"The Atchison headman's directions to the cache: north rail, four paces east and seven south. The true paragraph, 39, says south rail and twelve paces south.","kind":"twin","twin":39},"68":{"d":"Farmers talk of Martians who cannot be killed and who steal their food.","kind":"mars"},"72":{"d":"The Martian Emperor asks for help against the Serpioids.","kind":"mars"},"73":{"d":"The Sonic Key story ending with the word PASTEL for the bishop. The true paragraph, 129, ends with DIPSTICK.","kind":"twin","twin":129},"74":{"d":"A Martian Warlord hands over a Firelance and regrets that it is not a Red Ryder air rifle.","kind":"mars"},"75":{"d":"Head Crusher sends the Rangers to the Atchisons' tent with the word LADYBUG. The true paragraph, 57, gives CATERPILLAR.","kind":"twin","twin":57},"78":{"d":"The Martian Warlord and his Firelance again, in other words.","kind":"mars"},"81":{"d":"Serpioid fighters shoot the Rangers' craft down over Phobos.","kind":"mars"},"82":{"d":"Irwin John Finster, in a white suit, opens the door of the crashed craft.","kind":"mars"},"87":{"d":"An empty room with an oval pattern on the floor like alien eggs.","kind":"other"},"89":{"d":"Finster says the Serpioids raised him as a spy, and that their queen is his sister.","kind":"mars"},"92":{"d":"Head Crusher sends the Rangers to the Atchisons' tent with the word LIZARD. The true paragraph, 57, gives CATERPILLAR.","kind":"twin","twin":57},"93":{"d":"A diary from the satellite station that ends with an invasion from Mars.","kind":"mars"},"94":{"d":"A recording from the Supreme Commander of Mushroom Forces opens an armoury for a raid on the Temple of Blood.","kind":"other"},"95":{"d":"A townsman of Quartz calls Pedros a bandit who styles himself Mayor.","kind":"other"},"97":{"d":"The Rangers leave a weeping Finster at the crash site.","kind":"mars"},"98":{"d":"The Brakeman's visa card with a skull and crossbones on it. In the true paragraph, 54, the hologram is a dove.","kind":"twin","twin":54},"102":{"d":"Finster breaks a Serpioid ambush with one kick.","kind":"mars"},"105":{"d":"Finster shouts that the password is TRAITOR.","kind":"mars"},"106":{"d":"The Rangers blast a pillbox and reach the heart of the Phobos defences.","kind":"mars"},"108":{"d":"Snipers open up from hidden panels, and Finster falls into a pit.","kind":"mars"},"113":{"d":"Someone demands to know where the Rangers found the thief.","kind":"other"},"115":{"d":"Finster is seen in a window of the Ministry of Genetic Rehabilitation.","kind":"mars"},"116":{"d":"The Rangers shoot the Master Geneticist and cut Finster loose.","kind":"mars"},"120":{"d":"A Serpioid pilot dives his fighter into the hangar.","kind":"mars"},"122":{"d":"The rules of Three Card Monty, played with three generals of the Second World War.","kind":"other"},"123":{"d":"A frightened man blurts that the password is THERMODYNAMISM.","kind":"other"},"125":{"d":"Finster's force shield holds off the fire in the hangar.","kind":"mars"},"131":{"d":"Faran Brygo's briefing with Finster as the missing man, a reward of $20,000, and grenades handed round. In the true paragraph, 7, the missing man is Max and the Big Boss hands round cigars.","kind":"twin","twin":7},"132":{"d":"A bartender says the Martians drove the sick out of town.","kind":"mars"},"133":{"d":"A dogfight in a stolen fighter that ends in a tractor beam.","kind":"mars"},"134":{"d":"The Rangers ram the Serpioid flagship.","kind":"mars"},"135":{"d":"Aboard the crippled flagship, Finster's sister is still alive.","kind":"mars"},"138":{"d":"A squad of Serpioids fills the hallway.","kind":"mars"},"142":{"d":"A Ranger pulls his throwing knives out of the Serpioid bodies.","kind":"mars"},"143":{"d":"Hewey's bracelet reads 13. In the true paragraph, 147, it reads 11.","kind":"twin","twin":147},"144":{"d":"On the fourth level of the Guardian Citadel the Rangers find the Titanic.","kind":"other"},"145":{"d":"It says of itself that no place in the adventure leads to it, and threatens the reader.","kind":"other"},"149":{"d":"Crumb gives the password CLOVER. The true paragraph, 71, gives KESTREL.","kind":"twin","twin":71},"151":{"d":"Finster's sister laughs at the Rangers from inside a bubble of blood.","kind":"mars"},"153":{"d":"The Rangers open fire on her with needle rifles.","kind":"mars"},"154":{"d":"A little black book: the launch code is ATOM. The true paragraph, 124, gives MOTEKIM.","kind":"twin","twin":124},"157":{"d":"The end of the false story: the rifles blow up, and Finster and his sister stand over the dead Rangers.","kind":"mars"},"159":{"d":"A whisper that Ugly's bomb code is 31-17-54-07-99. The true paragraph, 26, gives 11-27-57-04-30.","kind":"twin","twin":26},"161":{"d":"The torn note with MORS written under the old password. The true note is paragraph 49.","kind":"twin","twin":49}},"guards":[{"id":"ugly","map":4,"x":21,"y":2,"who":"The guard at Ugly’s hideout","words":[["KAPUT",49,"true"],["AZRAEL",5,"false"],["MORS",161,"false"],["THANATOS",49,"old"]]},{"id":"brygo","map":39,"x":16,"y":31,"who":"The door of Faran Brygo’s hideout","words":[["KESTREL",71,"true"],["PHOENIX",33,"false"],["CLOVER",149,"false"]]},{"id":"temple","map":27,"x":14,"y":3,"who":"The prisoner in the Temple of Blood","words":[["MOTEKIM",124,"true"],["MORTAR",50,"false"],["ATOM",154,"false"]]},{"id":"nomads","map":8,"x":7,"y":5,"who":"The guard at the Atchisons’ tent","words":[["CATERPILLAR",57,"true"],["LADYBUG",75,"false"],["LIZARD",92,"false"]]},{"id":"bishop","map":34,"x":1,"y":10,"pair":[8,8],"who":"The bishop in Needles","words":[["DIPSTICK",129,"true"],["BUZZARD",18,"false"],["PASTEL",73,"false"]]}],"questions":[{"m":2,"n":10,"at":[1,1],"q":"The barmaid Ellen is harried. \"You got something to say to me?\" she asks brusquely.","a":[["DRINK","becomes message square 37"],["CHAT","becomes message square 38"],["URABUTLN","becomes message square 39"]],"other":"becomes remote change square 5","none":"becomes remote change square 5","also":[]},{"m":2,"n":2,"at":[1,1],"q":"Sitting here is a mean looking wrestler-like thug, smiling vacuously as he drinks from an dirty glass. Want to pick a topic?","a":[["DANCER","becomes message square 27"],["BYE","becomes message square 23"],["GOODBYE","becomes message square 23"],["THANKS","becomes message square 23"],["THANK YOU","becomes message square 23"],["CHAT","becomes message square 28"]],"other":"becomes message square 24","none":"stays as it is","also":[]},{"m":2,"n":1,"at":[1,1],"q":"What do you want to talk about?","a":[["UGLY","becomes message square 16"],["GANG","becomes message square 17"],["MAYOR","becomes check square 31"],["RIDDLES","becomes message square 20"],["RIDDLER","becomes message square 20"],["CHAT","becomes message square 22"],["BYE","becomes remote change square 6"],["GOODBYE","becomes remote change square 6"],["THANKS","becomes remote change square 6"],["THANK YOU","becomes remote change square 6"],["COURTHOUSE","becomes check square 31"]],"other":"becomes message square 22","none":"stays as it is","also":[]},{"m":2,"n":5,"at":[1,1],"q":"\"What is often eaten for breakfast, sometimes eaten at lunch, but usually drunk only at dinner?\"","a":[["TOAST","becomes check square 6"]],"other":"becomes message square 34","none":"stays as it is","also":[]},{"m":2,"n":7,"at":[1,1],"q":"\"What is found in the center of both America and Australia?\"","a":[["R","becomes check square 7"],["LETTER R","becomes check square 7"],["THE LETTER R","becomes check square 7"]],"other":"becomes message square 34","none":"stays as it is","also":[]},{"m":2,"n":9,"at":[1,1],"q":"\"Last riddle\", he says, \"but important. In just 8 letters, how do you compliment the barmaid?\"","a":[["URABUTLN","becomes check square 8"]],"other":"becomes message square 36","none":"stays as it is","also":[]},{"m":3,"n":0,"at":[2,1],"q":"The clerk asks, \"Looking for INFO or a ROOM?\"","a":[["INFO","becomes message square 11"],["ROOM","becomes message square 12"]],"other":"becomes message square 13","none":"stays as it is","also":[]},{"m":3,"n":2,"at":[2,1],"q":"\"Whaddya want?\" he gawps. \"Don't hurt me, I am nice, I talk if you talk...\"","a":[["CHAT","becomes message square 59"],["MONEY","becomes message square 60"],["SNAKE SQUEEZINS","becomes check square 33"],["GANG","becomes message square 61"],["SECRET","becomes message square 61"],["MAYOR","becomes message square 62"],["COURTHOUSE","becomes message square 62"],["BACK WAY","becomes message square 62"]],"other":"becomes message square 57","none":"stays as it is","also":[]},{"m":3,"n":1,"at":[2,1],"q":"\"So I can be sure you are okay, tell me what you said to Mom, or what she said to you.\"","a":[["URAQT2","becomes message square 43"],["URABUTLN","becomes message square 43"]],"other":"becomes check square 11","none":"becomes question square 1","also":[]},{"m":4,"n":0,"at":[1,1],"q":"\"Hey Joe, no one gets in or out without the password.\"","a":[["AZRAEL","becomes action square 7"],["MORS","becomes action square 7"],["KAPUT","becomes action square 1"],["THANATOS","becomes message square 6"]],"other":"becomes action square 2","none":"becomes message square 3","also":[]},{"m":4,"n":5,"at":[1,1],"q":"There is a safe here. Try to O)pen it or enter combination (\"XX-XX-XX\").","a":[["11 16 27","becomes message square 14"],["11-16-27","becomes message square 14"],["O","becomes check square 21"]],"other":"becomes message square 22","none":"stays as it is","also":[]},{"m":4,"n":1,"at":[1,1],"q":"\"Who is your section leader?\"","a":[["STINGER","becomes action square 4"],["PIGFACE","becomes action square 4"],["MADWOLF","becomes action square 4"],["SKULKER","becomes action square 4"],["GRUNT","becomes action square 4"]],"other":"becomes remote change square 2","none":"becomes message square 7","also":[]},{"m":4,"n":3,"at":[1,1],"q":"Enter bomb code:","a":[["11-27-57-04-30","becomes message square 21"]],"other":"becomes message square 17","none":"stays as it is","also":[]},{"m":4,"n":4,"at":[1,1],"q":"Enter bomb code:","a":[["11-27-57-04-30","becomes message square 21"]],"other":"becomes action square 5","none":"stays as it is","also":[]},{"m":6,"n":0,"at":[1,1],"q":"Outlaws and guard dogs emerge from a secret hiding place. \"Who sent you?\"","a":[["MUERTE","becomes remote change square 0"],["UGLY","becomes message square 16"],["SQUINT","becomes check square 0"],["MULEFOOT","becomes check square 0"]],"other":"becomes message square 2","none":"becomes question square 0","also":[]},{"m":6,"n":3,"at":[1,1],"q":"\"Do you know today's password?\"","a":[["MUERTE","takes the class and number the last change replaced, and is not run"]],"other":"becomes remote change square 14","none":"becomes question square 3","also":[]},{"m":6,"n":2,"at":[1,1],"q":"\"I don't know you. What's the word?\"","a":[["MUERTE","becomes remote change square 15"]],"other":"becomes remote change square 11","none":"stays as it is","also":[]},{"m":6,"n":1,"at":[1,1],"q":"\"You're just troublemakers. What's the word?\"","a":[["MUERTE","becomes remote change square 0"],["UGLY","becomes message square 16"]],"other":"becomes remote change square 1","none":"becomes question square 1","also":[]},{"m":8,"n":7,"at":[1,1],"q":"The guard stops you at the entrance to the tent and requests that you state your business.","a":[["LADYBUG","becomes message square 2"],["LIZARD","becomes message square 2"],["CHAT","becomes message square 9"],["CATERPILLAR","becomes message square 10"]],"other":"becomes message square 33","none":"stays as it is","also":[]},{"m":8,"n":6,"at":[1,1],"q":"The guard stops you at the entrance to the tent and requests that you state your business.","a":[["CHAT","becomes message square 20"],["CATERPILLAR","becomes message square 21"],["ATCHISONS","becomes message square 22"]],"other":"becomes message square 33","none":"stays as it is","also":[]},{"m":8,"n":5,"at":[1,1],"q":"The guard stops you at the entrance to the tent and requests that you state your business.","a":[["CHAT","becomes message square 12"],["CATERPILLAR","becomes message square 13"],["ATCHISONS","becomes message square 14"]],"other":"becomes message square 33","none":"stays as it is","also":[]},{"m":8,"n":3,"at":[1,1],"q":"The engineer smiles and asks how he may be of assistance.","a":[["CHAT","becomes message square 23"],["CATERPILLAR","becomes message square 24"],["ATCHISONS","becomes message square 25"],["HOBO","becomes message square 26"],["TOPEKANS","becomes message square 27"],["SANTE FE","becomes message square 28"],["BRAKEMAN","becomes message square 29"],["VISA CARD","becomes message square 30"]],"other":"becomes message square 33","none":"stays as it is","also":[]},{"m":10,"n":1,"at":[30,1],"q":"What do you want to ask him about?","a":[["REX","becomes message square 18"],["DOG","becomes message square 18"],["BOBBY'S DOG","becomes message square 18"],["JACKIE","becomes message square 19"],["CAVE","becomes message square 20"]],"other":"becomes message square 21","none":"stays as it is","also":[]},{"m":10,"n":2,"at":[30,1],"q":"What do you want to ask him about?","a":[["REX","becomes message square 22"],["DOG","becomes message square 22"],["BOBBY'S DOG","becomes message square 22"],["JACKIE","becomes message square 19"],["BUSH","becomes message square 26"],["BUSHES","becomes message square 26"],["CAVE","becomes message square 26"]],"other":"becomes message square 21","none":"stays as it is","also":[]},{"m":10,"n":3,"at":[30,1],"q":"What do you want to ask him about?","a":[["REX","becomes message square 23"],["DOG","becomes message square 23"],["BOBBY'S DOG","becomes message square 23"],["JACKIE","becomes message square 24"],["BUSH","becomes message square 26"],["BUSHES","becomes message square 26"],["CAVE","becomes message square 26"]],"other":"becomes message square 21","none":"stays as it is","also":[]},{"m":17,"n":0,"at":[1,5],"q":"You may communicate with me if you wish, but understand, My mission will not fail.","a":[["FINSTER","becomes message square 5"],["MISSION","becomes message square 6"],["CHAT","becomes message square 7"],["BASE COCHISE","becomes message square 8"],["BREAK","becomes message square 9"]],"other":"becomes message square 10","none":"stays as it is","also":[]},{"m":17,"n":1,"at":[1,5],"q":"You know you cannot stop me. There is no way to break me. My mission will be completed.","a":[["MISSION","becomes message square 11"],["BASE COCHISE","becomes message square 12"],["BREAK","becomes message square 13"]],"other":"becomes message square 10","none":"stays as it is","also":[]},{"m":19,"n":0,"at":[1,1],"q":"On a small CRT you see the words \"Break in program\" blinking on and off.","a":[["RUN","becomes question square 1"]],"other":"becomes question square 2","none":"stays as it is","also":[]},{"m":19,"n":2,"at":[1,1],"q":"? SYNTAX ERROR","a":[["RUN","becomes question square 1"]],"other":"becomes question square 2","none":"stays as it is","also":[]},{"m":21,"n":4,"at":[1,18],"q":"\"Gimme the password.\"","a":[["CRETIN","becomes message square 26"]],"other":"becomes exit square 11","none":"becomes message square 27","also":[]},{"m":21,"n":5,"at":[1,18],"q":"\"What are you guys doing back here? You better have the correct password this time.\"","a":[["CRETIN","becomes message square 26"]],"other":"becomes remote change square 0","none":"becomes message square 27","also":[]},{"m":21,"n":1,"at":[1,18],"q":"The bartender, Cecil, lingers, waiting to see if you want anything else.","a":[["CHAT","becomes message square 11"],["PLAGUE","becomes message square 12"],["ISOLATE","becomes message square 13"],["FINSTER","becomes message square 14"],["BASE","becomes message square 15"],["DRINK","becomes question square 2"]],"other":"becomes message square 16","none":"becomes question square 0","also":[]},{"m":21,"n":3,"at":[1,18],"q":"\"I think you should look into these problems at the base. What can I help you with?\"","a":[["CHAT","becomes message square 17"],["METAL MANIAC","becomes message square 18"],["BRIAN THE FIST","becomes message square 19"],["PLAGUE","becomes message square 20"],["BASE","becomes message square 21"],["ISOLATE","becomes message square 22"],["FINSTER","becomes message square 23"],["PASSWORD","becomes message square 24"],["DRINK","becomes question square 2"]],"other":"becomes message square 16","none":"becomes question square 0","also":[]},{"m":22,"n":2,"at":[8,18],"q":"A keyboard pops out, \"Input security code.\"","a":[["PROTEUS","becomes exit square 3"]],"other":"becomes question square 4","none":"becomes question square 1","also":[]},{"m":22,"n":4,"at":[8,18],"q":"ACCESS DENIED.","a":[["PROTEUS","becomes exit square 3"]],"other":"becomes question square 5","none":"becomes question square 1","also":[]},{"m":22,"n":5,"at":[8,18],"q":"ACCESS DENIED.","a":[["PROTEUS","becomes exit square 3"]],"other":"becomes remote change square 5","none":"becomes question square 1","also":[]},{"m":22,"n":7,"at":[8,18],"q":"A keyboard pops out, \"Input security code.\"","a":[["PROTEUS","becomes exit square 3"]],"other":"becomes question square 8","none":"becomes question square 6","also":[]},{"m":22,"n":8,"at":[8,18],"q":"ACCESS DENIED.","a":[["PROTEUS","becomes exit square 3"]],"other":"becomes question square 6","none":"becomes question square 6","also":[]},{"m":23,"n":0,"at":[1,1],"q":"2, 4, 8, 16, ?","a":[["32","becomes remote change square 0"]],"other":"becomes message square 1","none":"becomes message square 1","also":[]},{"m":23,"n":1,"at":[1,1],"q":"4, 2, 8, 4, 32, 16, ?","a":[["512","becomes remote change square 1"]],"other":"becomes message square 1","none":"becomes message square 1","also":[]},{"m":23,"n":6,"at":[1,1],"q":"\"So, you think yourself good at baseball, eh? Then who won the 1936 world series?\"","a":[["NEW YORK YANKEES","becomes remote change square 14"]],"other":"becomes message square 1","none":"becomes message square 1","also":[]},{"m":23,"n":2,"at":[1,1],"q":"4, 6, 8, 12, ?","a":[["20","becomes remote change square 1"]],"other":"becomes check square 0","none":"becomes message square 1","also":[]},{"m":23,"n":5,"at":[1,1],"q":"\"You cannot be here. Nothing will get you beyond this point.\"","a":[["0","becomes remote change square 7"],["ZERO","becomes remote change square 7"],["NOTHING","becomes remote change square 7"]],"other":"becomes check square 10","none":"becomes message square 1","also":[]},{"m":23,"n":4,"at":[1,1],"q":"\"Are you still here? This is private. Only I am allowed further.\"","a":[["IRWIN FINSTER","becomes remote change square 6"],["IRWIN J FINSTER","becomes remote change square 6"],["IRWIN J. FINSTER","becomes remote change square 6"],["IRWIN JOHN FINSTER","becomes remote change square 6"],["FINSTER","becomes remote change square 6"]],"other":"becomes message square 1","none":"becomes message square 1","also":[]},{"m":23,"n":7,"at":[1,1],"q":"The plastic face drips with black blood. The eyes open, the head speaks. \"April 15, 1912 I killed a ship.\"\"What am I?\"","a":[["ICEBERG","becomes remote change square 17"]],"other":"becomes message square 1","none":"becomes message square 1","also":[]},{"m":23,"n":3,"at":[1,1],"q":"4, 6, 8, 12, ?","a":[["20","becomes check square 1"]],"other":"becomes check square 0","none":"becomes message square 1","also":[]},{"m":27,"n":5,"at":[1,13],"q":"\"Please help me! I have been trying to figure out the launch code for months. If you know what it is, please tell me.\"","a":[["MORTAR","becomes action square 2"],["ATOM","becomes action square 2"],["MOTEKIM","becomes remote change square 14"]],"other":"becomes message square 19","none":"stays as it is","also":[]},{"m":27,"n":1,"at":[1,13],"q":"The crowned robot powers up and says, \"How many steps is the one true path?\"","a":[["THIRTY","becomes remote change square 5"],["30","becomes remote change square 5"]],"other":"becomes exit square 7","none":"becomes question square 1","also":[]},{"m":32,"n":2,"at":[9,1],"q":"This looks like a private club. An eyeball appears in a hole in the wall and you hear, \"What's the password?\"","a":[["ACAPULCO","becomes exit square 3"]],"other":"becomes message square 13","none":"becomes message square 13","also":[]},{"m":34,"n":4,"at":[1,1],"q":"\"All right, who did it?\"","a":[["TODD","becomes message square 36"]],"other":"becomes message square 21","none":"becomes remote change square 3","also":[]},{"m":34,"n":5,"at":[1,1],"q":"\"What was stolen?\"","a":[["R","becomes question square 4"]],"other":"becomes question square 4","none":"becomes remote change square 3","also":[]},{"m":34,"n":8,"at":[1,1],"q":"\"What can I do for you, my child?\"","a":[["BUZZARD","becomes message square 9"],["PASTEL","becomes message square 9"],["DIPSTICK","becomes message square 4"]],"other":"becomes message square 5","none":"stays as it is","also":[]},{"m":34,"n":9,"at":[1,1],"q":"\"What can I do for you, my child?\"","a":[["DIPSTICK","becomes message square 7"]],"other":"becomes message square 5","none":"stays as it is","also":[]},{"m":38,"n":0,"at":[9,2],"q":"\"Speak the name of the Holy One.\"","a":[["EINSTEIN","becomes remote change square 2"],["OPPENHEIMER","becomes remote change square 2"]],"other":"becomes question square 2","none":"becomes message square 9","also":[]},{"m":38,"n":6,"at":[9,2],"q":"\"Who sent you?\"","a":[["FAT FREDDY","becomes action square 2"],["FARAN BRYGO","becomes message square 19"]],"other":"becomes message square 36","none":"becomes message square 36","also":[]},{"m":38,"n":3,"at":[9,2],"q":"\"What is your gift?\"","a":[["BLOODSTAFF","becomes remote change square 2"]],"other":"becomes message square 11","none":"becomes message square 10","also":[]},{"m":39,"n":0,"at":[16,1],"q":"\"What's the word?\"","a":[["PHOENIX","becomes action square 1"],["CLOVER","becomes action square 1"],["KESTREL","becomes exit square 3"]],"other":"becomes exit square 1","none":"becomes exit square 1","also":[]},{"m":39,"n":3,"at":[16,1],"q":"\"Who sent you?\"","a":[["CRUMB SENT ME","becomes message square 6"],["CRUMB","becomes message square 6"]],"other":"becomes remote change square 4","none":"becomes remote change square 0","also":[]},{"m":39,"n":1,"at":[16,1],"q":"\"Not you again? You better have the password this time.\"","a":[["PHOENIX","becomes action square 1"],["CLOVER","becomes action square 1"],["KESTREL","becomes exit square 3"]],"other":"becomes check square 0","none":"becomes exit square 1","also":[]},{"m":40,"n":0,"at":[3,1],"q":"The office door is heavy, oak, and closed. When you knock, a voice yells, \"What's the word?\"","a":[["BIRD","becomes remote change square 17"]],"other":"becomes check square 1","none":"stays as it is","also":[]},{"m":40,"n":7,"at":[3,1],"q":"\"Let me give you a tip.\" What do you ask about?","a":[["ROBOTS","becomes message square 20"],["DEATH MACHINES","becomes message square 20"],["MAX","becomes message square 21"],["ACE","becomes message square 22"],["FAT FREDDY","becomes message square 23"],["FARAN BRYGO","becomes message square 24"],["BIG BOSS","becomes message square 24"],["MUSHROOM CLOUD","becomes message square 25"],["HOSPITAL","becomes message square 26"],["LIBRARY","becomes message square 27"]],"other":"becomes message square 29","none":"stays as it is","also":[]},{"m":42,"n":0,"at":[1,1],"q":"Set into the wall is an alpha-numeric keyboard that looks like a computer lock for the gold doors in this wall.","a":[["ROSEBUD","becomes remote change square 0"]],"other":"becomes question square 1","none":"stays as it is","also":[]},{"m":42,"n":1,"at":[1,1],"q":"Set into the wall is an alpha-numeric keyboard that looks like a computer lock for the gold doors in this wall.","a":[["ROSEBUD","becomes remote change square 0"]],"other":"becomes question square 2","none":"stays as it is","also":[]},{"m":42,"n":3,"at":[1,1],"q":"Set into the wall is an alpha-numeric keyboard that looks like a computer lock for the gold doors in this wall.","a":[["ROSEBUD","becomes remote change square 1"]],"other":"stays as it is","none":"stays as it is","also":[]},{"m":42,"n":2,"at":[1,1],"q":"Set into the wall is an alpha-numeric keyboard that looks like a computer lock for the gold doors in this wall.","a":[["ROSEBUD","becomes remote change square 0"]],"other":"becomes check square 3","none":"stays as it is","also":[]},{"m":49,"n":2,"at":[1,1],"q":"\"Who's there?\"","a":[["REDHAWK","becomes remote change square 10"],["RED HAWK","becomes remote change square 10"]],"other":"becomes question square 3","none":"stays as it is","also":[]},{"m":49,"n":0,"at":[1,1],"q":"\"Halt\" shouts a voice from above. \"What is the password?\"","a":[["REDHAWK","becomes remote change square 0"],["RED HAWK","becomes remote change square 0"]],"other":"becomes message square 12","none":"stays as it is","also":[]}],"staff":{"bags":[{"m":27,"n":2,"item":63},{"m":28,"n":13,"item":63},{"m":28,"n":8,"item":63},{"m":28,"n":0,"item":62},{"m":31,"n":5,"item":63},{"m":32,"n":7,"item":63},{"m":33,"n":2,"item":63},{"m":33,"n":8,"item":62},{"m":34,"n":6,"item":63},{"m":34,"n":5,"item":62}],"tests":[{"m":33,"n":10,"t":"item 62, used on the square → the square becomes message square 23item 63, used on the square → the square becomes message square 24"},{"m":34,"n":1,"t":"item 62, used on the square → the square becomes remote change square 1item 63, used on the square → the square becomes message square 3"},{"m":38,"n":22,"t":"item 62, used on the square → the square becomes remote change square 22item 63, used on the square → the square becomes message square 40"}]}}</script>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="reference/wasteland-fight.js"></script>
+<script>
+/* paragraphs/ask.js */
+// Wasteland's question squares on the game's own code. WLAsk.attach(F) takes a fight harness
+// (reference/wasteland-fight.js: the engine's, the game's and a map's listing in one 6502) and
+// returns ask(x, y, word, pair): the party stands on the square, the word is typed into the game's
+// input line (engine $1D06, which reads its keys through read_key $2514), and run_square_action
+// (game $ACC1) runs the square's handler for as long as the square keeps changing. The run stops
+// when the game asks for a second typed line. `pair` puts a class and number on the square first,
+// for a question the map only shows after something else has happened. `keys` are pressed, before
+// RETURN six times, at the prompts that wait for one key.
+const WLAsk = (function () {
+  'use strict';
+  const A = { readKey: 0x2514, waitKey: 0x24F2, cursor: 0x1DA9, erase: 0x1DAC, blink: 0x1DA4, squareAction: 0xACC1,
+    silent: [0x055D, 0x26E7, 0x241C, 0x2422, 0x242B, 0x135A], classes: 0x3400 };
+  class Stuck extends Error {}
+  // the top line of the frame, which the game draws again after each page of text
+  const FRAME = /\u0001\u0003\u0004*\u0005[^\n]*?(?:~\[)+/g;
+  const lines = text => String(text).replace(FRAME, '\n').split('\n').map(s => s.replace(/[\u0000-\u001F]/g, '').replace(/\s+/g, ' ').trim()).filter(Boolean);
+  function attach(F) {
+    const m = F.m, h = F.hooks, w = F.width;
+    let typed = [], more = [];
+    const give = (c, k) => { c.a = k; m[0x18] = k; c.c = 0; c.rts(); };
+    h[A.readKey] = c => { if (!typed.length) throw new Stuck(); give(c, typed.shift()); };
+    h[A.waitKey] = c => { if (!more.length) throw new Stuck(); give(c, more.shift()); };
+    h[A.cursor] = c => { c.rts(); }; h[A.erase] = c => { c.rts(); }; h[A.blink] = c => { c.rts(); };
+    for (const a of A.silent) h[a] = c => { c.rts(); };
+    const base = F.save();
+    const at = (x, y) => [A.classes + y * (w >> 1) + (x >> 1), A.classes + (w * w >> 1) + y * w + x];
+    const square = (x, y) => { const [a, b] = at(x, y); return [x & 1 ? m[a] & 15 : m[a] >> 4, m[b]]; };
+    const put = (x, y, c, n) => { const [a, b] = at(x, y); m[a] = x & 1 ? (m[a] & 0xF0) | c : (m[a] & 0x0F) | c << 4; m[b] = n; };
+    const people = () => { const con = F.cons(); return [1, 2, 3, 4].map((i, k) => ({ name: F.name(i), sex: m[F.rec(i) + 0x18] & 1, diseases: m[F.rec(i) + 0x28], con: con[k] })); };
+    // what a loot record holds: item and count pairs to an $FF, the item with bit 7 set (loot_square, game $9194)
+    function bag(n) {
+      const rec = w > 32 ? 0x4C00 : 0x3A00, list = m[rec + 16] | m[rec + 17] << 8, r = m[list + 2 * n] | m[list + 2 * n + 1] << 8, out = [];
+      for (let o = 2; o < 64 && m[r + o] !== 0xFF; o += 2) { if (m[r + o] === 0x5E || m[r + o] === 0xDE) { o++; continue; } if (m[r + o] & 0x80) out.push(m[r + o] & 0x7F); }
+      return out;
+    }
+    function ask(x, y, word, pair, keys) {
+      F.load(base);
+      typed = [...String(word).toUpperCase().slice(0, 40)].map(c => c === ' ' ? 0xA0 : c.charCodeAt(0) | 0x80).concat([0x8D]);
+      more = [...(keys || '')].map(c => c.charCodeAt(0) | 0x80).concat([0x8D, 0x8D, 0x8D, 0x8D, 0x8D, 0x8D]);
+      if (pair) put(x, y, pair[0], pair[1]);
+      F.place(x, y);
+      const before = people();
+      let ended = true;
+      try { F.call(A.squareAction, {}, 6e6); } catch (e) { if (!(e instanceof Stuck) && !/step limit/.test(String(e.message))) throw e; ended = false; }
+      return { lines: lines(F.take()), ended, square: square(x, y), at: [m[0x57], m[0x58]], before, after: people() };
+    }
+    return { ask, square, people, bag };
+  }
+  return { attach, lines, A };
+})();
+// end of paragraphs/ask.js
+</script>
+<script>
+/* paragraphs/page.js */
+// The Paragraphs tab's widgets: the false passwords and every typed question on the game's own
+// code through WLAsk, and the booklet's 162 numbers from the embedded data.
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const pause = () => new Promise(r => setTimeout(r, 0));
+  const LOST = 'The game’s code did not load here. Open this page on the built site.';
+  const data = $('wl-paragraphs');
+  if (!data) return;
+  const D = JSON.parse(data.textContent);
+  const mapLink = n => '<a href="levels.html#map-' + n + '">' + esc(D.maps[n]) + '</a>';
+  const FALSE = {}; D.guards.forEach(g => g.words.forEach(w => { if (w[2] === 'false') FALSE[g.map + ':' + w[0]] = w[1]; }));
+
+  // ---- the game's code, loaded when a plate first needs it ----
+  const ready = typeof WLFight !== 'undefined' && typeof WLAsk !== 'undefined' && window.C64 && C64.load && window.C64Cpu;
+  const pool = new Uint8Array(256); let left = 0;
+  const rnd = () => { if (!left) { crypto.getRandomValues(pool); left = 256; } return pool[--left]; };
+  const parts = {}, maps = {};
+  const part = id => parts[id] || (parts[id] = C64.load('parts/' + id + '/listing.json').catch(e => { delete parts[id]; throw e; }));
+  const open = map => {
+    if (!ready) return Promise.reject(new Error('the scripts of this page did not load'));
+    return maps[map] || (maps[map] = Promise.all([part('engine'), part('game'), part('map-' + String(map).padStart(2, '0'))])
+      .then(([engine, game, m]) => WLAsk.attach(WLFight.create({ engine, game, map: m, mapNumber: map, CPU: C64Cpu.CPU, random: rnd, size: 4 })))
+      .catch(e => { delete maps[map]; throw e; }));
+  };
+  function guard(el, tally, fn) {
+    let busy = false;
+    return async function (a, b) {
+      if (busy) return;
+      busy = true; el.classList.add('wl-be-busy');
+      try { await fn(a, b); } catch (e) { tally.innerHTML = '<span class="wl-err">' + LOST + '</span>'; }
+      busy = false; el.classList.remove('wl-be-busy');
+    };
+  }
+  const STAFF = { 62: 'the true Bloodstaff (item 62)', 63: 'the false Bloodstaff (item 63)', 55: 'a Shovel' };
+  // what the game printed, and what the records say afterwards
+  const printed = r => r.lines.map(l => '<p' + (l.charAt(0) === '>' ? ' class="wl-fi-hot"' : '') + '>' + esc(l) + '</p>').join('') || '<p class="wl-fi-dim">Nothing was printed.</p>';
+  function changes(P, r) {
+    const out = [], n = k => k === 4 ? 'all four Rangers' : k + ' of the four Rangers';
+    const swapped = r.after.filter((p, i) => p.sex !== r.before[i].sex).length;
+    if (swapped) out.push('The game swapped the sex of ' + n(swapped) + '.');
+    const sick = r.after.filter((p, i) => p.diseases & 2 & ~r.before[i].diseases).length;
+    if (sick) out.push('The game gave Wasteland Herpes to ' + n(sick) + '.');
+    const hurt = r.after.filter((p, i) => p.con !== r.before[i].con).length;
+    if (hurt) { const dead = r.after.filter(p => p.con === 0).length; out.push('The blast hurt ' + n(hurt) + (dead ? ', and killed ' + dead : '') + '.'); }
+    if (r.square[0] === 5) { const b = P.bag(r.square[1]); if (b.length) out.push('The square is now a bag that holds ' + b.map(i => STAFF[i] || 'item ' + i).join(' and ') + '.'); }
+    if (r.square[0] === 8 && !r.ended) out.push('The game is asking again.');
+    return out;
+  }
+
+  // ---- section 01: the five guards ----
+  (function () {
+    const el = $('wl-pg-bait'); if (!el) return;
+    const who = $('wl-pg-who'), words = $('wl-pg-words'), party = $('wl-pg-party'), log = el.querySelector('.wl-fi-log'), tally = el.querySelector('.wl-be-tally'), own = $('wl-pg-own');
+    who.innerHTML = D.guards.map((g, i) => '<option value="' + i + '">' + esc(g.who) + '</option>').join('');
+    const KIND = { true: 'wl-pg-true', false: 'wl-pg-false', old: '' };
+    function draw(r) {
+      const g = D.guards[+who.value];
+      if (!r) {
+        words.innerHTML = g.words.map(w => '<button type="button" class="wl-pg-w ' + KIND[w[2]] + '" data-w="' + esc(w[0]) + '">' + esc(w[0]) + ' <small>paragraph ' + w[1] + '</small></button>').join('');
+        party.innerHTML = ''; log.innerHTML = '<p class="wl-fi-dim">Pick a word. The game’s text appears here.</p>'; tally.textContent = '';
+        return;
+      }
+      party.innerHTML = r.after.map((p, i) => {
+        const b = r.before[i], ch = p.sex !== b.sex || p.diseases !== b.diseases || p.con !== b.con;
+        return '<li class="wl-be-on' + (ch ? ' wl-be-new' : '') + '"><b>' + esc(p.name) + '</b><br>' + (p.sex ? 'woman' : 'man') + '<br>CON ' + (p.con === 0 && b.con ? '0, dead' : String(p.con).replace('-', '−')) + (p.diseases & 2 ? '<br>Wasteland Herpes' : '') + '</li>';
+      }).join('');
+    }
+    const say = guard(el, tally, async word => {
+      const g = D.guards[+who.value];
+      tally.textContent = 'Asking the game…'; await pause();
+      const P = await open(g.map), r = P.ask(g.x, g.y, word, g.pair);
+      log.innerHTML = printed(r); log.scrollTop = 0; draw(r);
+      const c = changes(P, r);
+      tally.innerHTML = c.length ? '<b>' + c.map(esc).join(' ') + '</b>' : 'Nothing in the Rangers’ records changed.';
+    });
+    who.addEventListener('change', () => draw(null));
+    words.addEventListener('click', e => { const b = e.target.closest('button[data-w]'); if (b) say(b.dataset.w); });
+    $('wl-pg-go').addEventListener('click', () => say(own.value));
+    own.addEventListener('keydown', e => { if (e.key === 'Enter') say(own.value); });
+    draw(null);
+  })();
+
+  // ---- section 03: the 162 numbers ----
+  (function () {
+    const grid = $('wl-pg-grid'); if (!grid) return;
+    const about = $('wl-pg-about'), show = $('wl-pg-show');
+    const file = {}; D.files.forEach(f => { file[f.para] = f; });
+    const kind = p => D.never[p] ? D.never[p].kind : 'cited';
+    let h = '';
+    for (let p = 1; p <= 162; p++) h += '<button type="button" class="wl-pg-n' + (D.never[p] ? ' wl-pg-' + D.never[p].kind : '') + '" data-p="' + p + '" aria-pressed="false">' + p + '</button>';
+    grid.innerHTML = h;
+    const count = k => { let n = 0; for (let p = 1; p <= 162; p++) if (kind(p) === k) n++; return n; };
+    $('wl-pg-c0').textContent = count('cited'); $('wl-pg-c1').textContent = count('twin'); $('wl-pg-c2').textContent = count('mars'); $('wl-pg-c3').textContent = count('other');
+    const go = p => '<a href="#wl-pg-grid" data-go="' + p + '">paragraph ' + p + '</a>';
+    function card(p) {
+      const nv = D.never[p];
+      let h = '<dl><dt>Paragraph</dt><dd><b>' + p + '</b></dd>';
+      if (nv) {
+        h += '<dt>Cited</dt><dd>Nowhere in the game.</dd><dt>It holds</dt><dd>' + esc(nv.d) + '</dd>';
+        if (nv.twin) h += '<dt>Copy of</dt><dd>' + go(nv.twin) + '</dd>';
+      } else {
+        const where = (D.cites[p] || []).map(c => '<li>' + mapLink(c.m) + ': <q>' + esc(c.t) + '</q> <span class="wl-mute">(message ' + c.k + ')</span></li>');
+        if (file[p]) where.push('<li>' + mapLink(15) + ': file ' + file[p].key + ' of the terminal, ' + esc(file[p].name) + '. The game shows <q>Read paragraph</q> and then <q>' + p + '</q> <span class="wl-mute">(messages ' + file[p].msgs.join(' and ') + ')</span></li>');
+        h += '<dt>Cited</dt><dd><ul>' + where.join('') + '</ul></dd>';
+        const twins = Object.keys(D.never).filter(k => D.never[k].twin === p);
+        if (twins.length) h += '<dt>False copies</dt><dd>' + twins.map(k => go(+k)).join(', ') + '</dd>';
+      }
+      about.innerHTML = h + '</dl>'; about.hidden = false;
+      grid.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.p === p)));
+    }
+    grid.addEventListener('click', e => { const b = e.target.closest('button[data-p]'); if (b) card(+b.dataset.p); });
+    about.addEventListener('click', e => { const a = e.target.closest('a[data-go]'); if (a) { e.preventDefault(); card(+a.dataset.go); } });
+    show.addEventListener('change', () => {
+      const v = show.value;
+      grid.querySelectorAll('button').forEach(b => { const k = kind(+b.dataset.p); b.classList.toggle('wl-pg-off', !!v && !(v === k || (v === 'never' && k !== 'cited'))); });
+    });
+  })();
+
+  // ---- section 04: every typed question ----
+  (function () {
+    const el = $('wl-pg-ask'); if (!el) return;
+    const rows = $('wl-pg-rows'), sel = $('wl-pg-map'), tally = el.querySelector('.wl-be-tally');
+    const ids = [...new Set(D.questions.map(q => q.m))];
+    sel.innerHTML += ids.map(n => '<option value="' + n + '">' + esc(D.maps[n]) + '</option>').join('');
+    function draw() {
+      const v = sel.value;
+      rows.innerHTML = D.questions.map((q, i) => v && +v !== q.m ? '' : '<tr data-q="' + i + '"><td>' + mapLink(q.m) + '</td><td>' + esc(q.q) + '</td><td><div class="wl-pg-words">'
+        + q.a.map(a => '<button type="button" class="wl-pg-w' + (FALSE[q.m + ':' + a[0]] ? ' wl-pg-false' : '') + '" data-w="' + esc(a[0]) + '">' + esc(a[0]) + '</button>').join('') + '</div></td></tr>').join('');
+      tally.textContent = '';
+    }
+    const say = guard(el, tally, async (i, word) => {
+      const q = D.questions[i];
+      tally.textContent = 'Asking the game…'; await pause();
+      const P = await open(q.m), r = P.ask(q.at[0], q.at[1], word, [8, q.n]);
+      const old = rows.querySelector('tr.wl-pg-reply'); if (old) old.remove();
+      const tr = document.createElement('tr'); tr.className = 'wl-pg-reply';
+      const c = changes(P, r);
+      tr.innerHTML = '<td colspan="3">' + printed(r) + (c.length ? '<p class="wl-fi-dim">' + c.map(esc).join(' ') + '</p>' : '') + '</td>';
+      rows.querySelector('tr[data-q="' + i + '"]').after(tr);
+      tally.textContent = '';
+    });
+    rows.addEventListener('click', e => { const b = e.target.closest('button[data-w]'); if (b) say(+b.closest('tr').dataset.q, b.dataset.w); });
+    sel.addEventListener('change', draw);
+    draw();
+  })();
+})();
+// end of paragraphs/page.js
+</script>

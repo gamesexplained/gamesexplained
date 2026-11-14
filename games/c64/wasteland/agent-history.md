@@ -319,6 +319,38 @@ text's lines are one a blow. A sweep of 179 rounds of gunfire in the
 Outer Sanctum never printed "a final shot" (message 34), so the page
 does not describe it.
 
+## 14 November 2026, the paragraphs
+
+The fourth of the six tabs, on its own branch from main while the Items
+tab waited for review.
+
+The paragraph book is not on the disks, so the first step was to read a
+scan of it (archive.org, the vgmuseum copy) and split its text into the
+162 paragraphs. Every message of the 42 maps was then searched for
+"paragraph" and a number. That gave 82 paragraphs, and the Sleeper
+Base's terminal, whose numbers are messages of their own, gave seven
+more.
+
+The 73 left over were read one by one. Many turned out to be a true
+paragraph with one detail changed, and ten of the changed details were
+passwords. The listings already named the routines those words lead to
+(`swap_everyones_sex`, `infect_every_character`, `self_destruct_blast`),
+but no page said that the words that reach them are printed in the
+booklet.
+
+A first pass looked only at the questions on a map's starting squares
+and concluded that the game did not take BUZZARD or PASTEL. A walk of
+every record a change can lead to found the bishop's question, which
+the map only shows after the staff has been returned, and with it the
+reason the item table holds the Bloodstaff twice.
+
+The questions were run on the game's code by hooking the two routines
+the input line reads keys through. The first try printed a row of frame
+glyphs for ever, because the harness's text hook does not move the
+cursor that the frame drawing waits on; the frame drawing is now
+skipped. The 18-character form of Finster's name came out of that
+harness by accident: the echo line showed the game cutting it short.
+
 ## 13 November 2026, the bestiary
 
 The second of the six pull requests: a Bestiary tab with a roster of

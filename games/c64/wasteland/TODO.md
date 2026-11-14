@@ -39,6 +39,13 @@ play. The ones a reader is likeliest to ask about:
 
 ## Article ideas
 
+- The Paragraphs tab's finds, tried in the emulator: AZRAEL at Ugly's
+  hideout, PHOENIX at Faran Brygo's door, ATOM in the Temple of Blood,
+  and PASTEL to the bishop. `test_paragraphs.js` runs each on the game's
+  code outside the emulator.
+- Whether a party can reach map 4's "Read paragraph 35." (check square
+  41) and map 36's "Read paragraph 162." (message 67): no square and no
+  change that was walked leads to either.
 - Map 11's wall square with no record, which may be the "buggy wall
   square" of Per Jorner's guide.
 - The older start-up on side 3, its credits and the sounds it does not
