@@ -8,15 +8,25 @@
   "developer": "Ian Gray; the Oliver Twins",
   "title_image": "reference/title.png",
   "build": "Dunex disk release, CSDb 200158",
-  "tier": "bronze",
-  "coverage_percent": 77.1,
+  "tier": "silver",
+  "coverage_percent": 100.0,
   "copy": "agent-draft",
   "steward": "",
-  "credits": [],
+  "credits": [
+    {
+      "by": "Ian Gray",
+      "role": "Commodore 64 conversion"
+    },
+    {
+      "by": "The Oliver Twins",
+      "role": "Original game design"
+    }
+  ],
   "tools": {
-    "emulator": "VICE vice-mcp v3.14.0 headless; local wrapper selects dummy audio; 56 emulator checks passed, keys-host and final quirk probe failed",
-    "disassembler": "regenerator2000",
-    "host": "macOS arm64"
+    "emulator": "VICE vice-mcp, preinstalled headless v3.14.0 package (MCP ping reports 3.10); local wrapper selects dummy audio; 56 emulator checks passed, host-key input and final quirk probe failed",
+    "disassembler": "regenerator2000 0.9.18",
+    "host": "macOS arm64",
+    "browser": "Firefox 160.0, installed application, isolated kit profile; WebDriver BiDi with Node 22.23.4 native WebSocket"
   },
   "model": "gpt-6.1-sol",
   "step_models": {
@@ -36,6 +46,13 @@
       "gpt-6.1-sol"
     ],
     "60-verify": [
+      "gpt-6.1-sol",
+      "gpt-6-astra"
+    ],
+    "70-minisite": [
+      "gpt-6.1-sol"
+    ],
+    "80-retro": [
       "gpt-6.1-sol"
     ]
   },
@@ -51,8 +68,18 @@
       "step": "annotate",
       "models": [
         "gpt-6.1-sol"
+      ]
+    },
+    {
+      "step": "sample",
+      "size": 120,
+      "wrong": 16,
+      "fixed": 16,
+      "seed": 20261114,
+      "models": [
+        "gpt-6-astra"
       ],
-      "note": "Annotation in progress; no independent sample."
+      "note": "Stratified sample: shapes 0/20, rooms 0/20, aliases 0/20, other comments 16/60. Weighted rate 14.0%. Related descriptions corrected together; full audit recommended."
     }
   ],
   "kit_version": "0.0.340",
@@ -62,17 +89,188 @@
     "charset": ""
   },
   "coverage": {
-    "exclude": [],
-    "extra": [],
+    "exclude": [
+      [
+        "$0000",
+        "$0004",
+        "Processor-port registers and unused null-pointer targets, not game RAM data."
+      ],
+      [
+        "$0007",
+        "$0034",
+        "System and loader zero-page workspace; game text pointer is $05/$06."
+      ],
+      [
+        "$0037",
+        "$00A6",
+        "System workspace; $4E was a false reference from RAM beneath the KERNAL IRQ entry."
+      ],
+      [
+        "$00AB",
+        "$00AF",
+        "System zero-page workspace between game pointer pairs."
+      ],
+      [
+        "$00B6",
+        "$00C4",
+        "KERNAL workspace before its key code at $C5."
+      ],
+      [
+        "$00C6",
+        "$00FA",
+        "KERNAL and loader workspace, outside the game pointer pairs."
+      ],
+      [
+        "$0400",
+        "$07FF",
+        "Generated backing colour and screen work buffers."
+      ],
+      [
+        "$0800",
+        "$0AFF",
+        "Retained loader and repeating KERNAL bytes, preceding the music at $0B00."
+      ],
+      [
+        "$3B97",
+        "$3FFF",
+        "Repeating KERNAL startup bytes; 974 overlapping 32-byte windows match the active ROM. Game code ends at $3B95."
+      ],
+      [
+        "$5180",
+        "$5BFF",
+        "Retained system bytes, generated backing buffers and collision attributes. The clear and renderer routines write the working allocations."
+      ],
+      [
+        "$5C00",
+        "$5FFF",
+        "Generated colour matrix and sprite pointers; colours for authored border pixels are retained separately for the frame reconstruction."
+      ],
+      [
+        "$67A8",
+        "$6897",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$68E8",
+        "$69D7",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$6A28",
+        "$6B17",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$6B68",
+        "$6C57",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$6CA8",
+        "$6D97",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$6DE8",
+        "$6ED7",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$6F28",
+        "$7017",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$7068",
+        "$7157",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$71A8",
+        "$7297",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$72E8",
+        "$73D7",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$7428",
+        "$7517",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$7568",
+        "$7657",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$76A8",
+        "$7797",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$77E8",
+        "$78D7",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$7928",
+        "$7A17",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$7A68",
+        "$7B57",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ],
+      [
+        "$7BA8",
+        "$7C97",
+        "Generated playfield interior, cleared by $3023 and drawn by $2B5B."
+      ]
+    ],
+    "extra": [
+      [
+        "$4000",
+        "$517F",
+        "Player, particle and appearance sprite frames."
+      ],
+      [
+        "$6000",
+        "$7FFF",
+        "Loaded bitmap frame outside the generated interior."
+      ]
+    ],
     "include": [
       [
         "$D000",
-        "$EFFF",
-        "Room and object name pointers, message pointers and text scripts in RAM beneath I/O and KERNAL."
+        "$DFFF",
+        "RAM name pointers and message scripts beneath I/O."
       ]
     ]
   },
-  "io": [],
+  "io": [
+    [
+      "$37D9",
+      "$37EC",
+      "ram",
+      "Room-name pointer reads with I/O banked out."
+    ],
+    [
+      "$3582",
+      "$3595",
+      "ram",
+      "Message pointer reads with I/O banked out."
+    ],
+    [
+      "$3710",
+      "$3738",
+      "ram",
+      "Inventory-name pointer reads with I/O banked out."
+    ]
+  ],
   "regions": [
     [
       "$8000",
@@ -112,5 +310,7 @@
       "title": "Dizzy Collection manual",
       "url": "https://worldofspectrum.net/pub/sinclair/games-info/d/DizzyCollection.pdf"
     }
-  }
+  },
+  "levels_tab": "Maps",
+  "graphics_tab": "Graphics"
 }

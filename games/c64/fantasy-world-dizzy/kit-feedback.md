@@ -1,6 +1,6 @@
 # Fantasy World Dizzy — kit feedback
 
-This records the work in progress; the final Silver retrospective remains outstanding.
+The Silver run completed with the kit unchanged.
 
 ## Skill text that changed what I did
 
