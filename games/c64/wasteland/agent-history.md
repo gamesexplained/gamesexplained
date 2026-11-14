@@ -318,3 +318,46 @@ hook on monster_takes_damage counted its retries on dead monsters; the
 text's lines are one a blow. A sweep of 179 rounds of gunfire in the
 Outer Sanctum never printed "a final shot" (message 34), so the page
 does not describe it.
+
+## 13 November 2026, the bestiary
+
+The second of the six pull requests: a Bestiary tab with a roster of
+every monster record and the things about monsters that the game does
+without saying.
+
+**The data.** A script read the 42 maps' listings into one table: each
+monster's eight bytes, its name's two forms, and for each map the
+meetings that use it. `test_bestiary.js` builds the same table again
+from the listings and compares.
+
+**Three monsters that looked unused.** The first pass called the mine's
+Gecko, Skink and Shell Cougar cut content: they have records, and no
+meeting on the map is made of them. The mine's own routines said
+otherwise. `$3E39` raises the count of kinds that a wandering group is
+picked from, and it runs when silver is taken from one of the two veins.
+The same reading of every map's routines turned up the reactor's light
+plates and the assembly floor's panels, which move the same byte. After
+that, a record was called unmet only when the map's code had been read
+too.
+
+**The Night Terror.** Its plate was meant to show hit points being
+rolled again. In the first try the group vanished after a round in
+which the Rangers only evaded, and a plan was never made for it. The
+planner's trace stopped at encounter_is_peaceful: byte 9 of its meeting
+is 3. A second surprise followed once it was attacked: a Night Terror
+with 38,720 hit points planned to run. A hook on the compare at `$845C`
+showed an average of 0. The sum is made with the engine's clamped add
+(`$079D`), which takes its addend as a signed number.
+
+**The pages' scripts.** The picture code was in two pages, byte for
+byte, and the fight code in one. Both moved to files in `reference/` so
+that the new tab could load them: `wasteland-pictures.js` and
+`wasteland-fight.js`.
+
+**Wrong turns.** A walk that looked at all 1,024 squares after every
+step through the CPU took minutes; reading the class-15 entries and the
+roll's own operands (`$B0E7`, `$B0E9`) took a fifth of a second for
+1,000 steps. The first table for the assembly floor gave each routine's
+limit from its code, 20 groups and 1 step in 2. The floor has only 8, 9
+and 5 panels of the three sorts, each of which breaks once, so the
+table gives what a party can reach.

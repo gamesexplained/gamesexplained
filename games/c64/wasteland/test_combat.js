@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// Hold the Dice and combat tab's fights to the game's own code. combat.html's two blocks, WLFight
-// (fight/fight.js: the engine's, the game's and one map's committed listing laid over each other,
-// the game's routines run on the kit's 6502) and WLScenes (fight/scenes.js: the fights the page
-// stages), run in node with fixed runs of random bytes, and every figure the page prints is made
+// Hold the Dice and combat tab's fights to the game's own code. Two blocks, WLFight
+// (reference/wasteland-fight.js: the engine's, the game's and one map's committed listing laid over
+// each other, the game's routines run on the kit's 6502) and WLScenes (combat.html's
+// fight/scenes.js: the fights the page stages), run in node with fixed runs of random bytes, and every figure the page prints is made
 // again here and looked for in the page's text:
 // - Rangers who are down: 400 rounds in the Outer Sanctum; the blows aimed at them cost no CON, the
 //   line the game takes for them is the 'but misses.' one ($A8A5) and its melee test ($A899) never
@@ -23,7 +23,7 @@ const ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname);
-const WLFight = g.run('combat.html', 'fight/fight.js', 'WLFight').WLFight;
+const WLFight = g.run('reference/wasteland-fight.js', 'fight/fight.js', 'WLFight').WLFight;
 const S = g.run('combat.html', 'fight/scenes.js', 'WLScenes').WLScenes;
 const page = g.read('combat.html').replace(/<\/?(?:td|th|tr|p|div|li|section|h2|table|thead|tbody)\b[^>]*>/g, ' ').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ');
 

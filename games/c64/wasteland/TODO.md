@@ -12,7 +12,7 @@ samples checked (`facts.md`, "Comment sample"), and the copy
 
 ## For Gold
 
-A human pass over every section of the seven authored tabs, from the
+A human pass over every section of the authored tabs, from the
 Overview to Disks and saves, and of the facts, rewriting, cutting and
 adding; `copy` then records what the pass did, and `steward` names
 whoever starts it (`silver-claimed` while it runs).
@@ -47,3 +47,7 @@ play. The ones a reader is likeliest to ask about:
   return point (game `$9C17`).
 - Pictures 37 and 75, which the disks hold and no code in the listings
   shows.
+- The Bestiary tab's finds, tried in the emulator: three digs at the
+  mine's north-west vein and a walk; a failure at the reactor's light
+  plates; a Night Terror attacked until one runs with full hit points.
+  `test_bestiary.js` runs each on the game's code outside the emulator.
