@@ -28,7 +28,8 @@ flags for the loader, the page's number and its 256 bytes, until a page numbered
 stream. Each run of pages that follow one another in memory is a block, its raw bytes the pages
 as the tape holds them, flags and number first. A row of kind "novaload" is a file with a name:
 a lead-in of 0 bits, a 1, $AA, the name, a header and pages, each checked by a checksum
-(novaload_blocks says how). A format with no checksum
+(novaload_blocks says how). A row of kind "ocean84" is a stream of pages after a lead-in, a 1
+and $AA, each page a header byte and 256 bytes (ocean84_blocks says how). A format with no checksum
 its loader reads gives this none either: what proves such a block is the game's listing holding
 the same bytes. A block is the item "turbo block 3", counted from the tape's start, or
 'turbo block 3 "NAME"' when its format names it, its place
@@ -81,6 +82,10 @@ TURBO = [
     # after the header and after each page (games/c64/mike-reads-computer-pop-quiz/orientation.md,
     # "The loader"). Before "pages", which has no checksum and would take a Novaload file for pages
     {"name": "Novaload", "kind": "novaload", "split": 500, "lsb": True, "least": 500},
+    # Ocean's loader of 1984 (Roland's Rat Race's boot file, its interrupt at $04B9): CIA 2's timer B
+    # restarted at $0380 by each pulse, so a pulse over 384 cycles is a 1. No checksum, so before
+    # "pages", which reads the same pulses with nothing to tell the two apart
+    {"name": "Ocean 1984, pages after $AA", "kind": "ocean84", "split": 384, "lsb": True, "least": 1000},
     {"name": "pages after a 1 bit", "kind": "pages", "split": 480, "lsb": True, "least": 500},
 ]
 
@@ -383,7 +388,57 @@ def novaload_blocks(W, taken, fmt):
     return out
 
 
-READERS = {"pages": page_blocks, "novaload": novaload_blocks}
+def ocean84_blocks(W, taken, fmt):
+    """The blocks of a format of kind "ocean84" outside the stretches already read, as turbo_blocks
+    gives them. After a lead-in of 0 bits and a 1, the loader skips a byte ($AA on the tape), then
+    reads blocks of a header byte and 256 bytes: a header of $05 or more is the page's high byte,
+    $00-$03 puts the page in colour RAM ($D8-$DB), $04 ends the stream. There is no checksum, so a
+    stream is taken only when it starts with $AA, ends with $04 before any gap in the recording,
+    has 4 pages or more, and loads at least half of them straight after the page before: random
+    bytes do that 1 time in 256. Each run of pages that follow one another in memory is a block,
+    its raw bytes the pages as the tape holds them, header first."""
+    bit = lambda k: W[k] >= fmt["split"]
+    byte = lambda k: sum(bit(k + j) << (j if fmt["lsb"] else 7 - j) for j in range(8))
+    out = []
+    for lo, hi in free(taken, len(W)):
+        i, zeros = lo, 0
+        while i < hi:
+            if not bit(i):
+                zeros, i = zeros + 1, i + 1
+                continue
+            if zeros < fmt["least"] or i + 9 + 8 > hi or byte(i + 1) != 0xAA:
+                zeros, i = 0, i + 1
+                continue
+            k, pages, ended = i + 9, [], False
+            while k + 8 <= hi:
+                head = byte(k)
+                if head == 4:
+                    ended, k = True, k + 8
+                    break
+                if k + 8 + 2048 > hi or any(x >= SILENCE for x in W[k:k + 8 + 2048]):
+                    break
+                pages.append((k, head, 0xD8 + head if head < 4 else head, bytes(byte(k + 8 + 8 * t) for t in range(256))))
+                k += 8 + 2048
+            runs = sum(1 for a, b in zip(pages, pages[1:]) if b[2] == a[2] + 1)
+            if not ended or len(pages) < 4 or runs * 2 < len(pages) - 1:
+                zeros, i = 0, i + 1
+                continue
+            groups = []
+            for p in pages:
+                if groups and p[2] == groups[-1][-1][2] + 1:
+                    groups[-1].append(p)
+                else:
+                    groups.append([p])
+            for n, g in enumerate(groups):
+                out.append({"at": i - zeros if n == 0 else g[0][0],
+                            "end": groups[n + 1][0][0] if n + 1 < len(groups) else k,
+                            "load": g[0][2] << 8, "data": b"".join(p[3] for p in g),
+                            "raw": b"".join(bytes([p[1]]) + p[3] for p in g), "problem": None})
+            i, zeros = k, 0
+    return out
+
+
+READERS = {"pages": page_blocks, "novaload": novaload_blocks, "ocean84": ocean84_blocks}
 
 
 def turbo_items(W, taken):
