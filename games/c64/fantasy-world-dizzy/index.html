@@ -1,0 +1,50 @@
+<!doctype html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fantasy World Dizzy</title>
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+</style>
+<!-- tabs -->
+<header class="hero"><p class="eyebrow">1990 · Codemasters · Commodore 64</p><h1>Fantasy World Dizzy</h1>
+<p class="sub">Dizzy's world is assembled from small pictures, object tables and dialogue scripts. A hidden keyboard sequence opens its room browser.</p></header>
+<main class="wrap">
+<section id="progress"><h2 class="t">The analysis is in progress</h2>
+<p>The requested Silver explanation is unfinished. The Source tab contains draft annotations; the memory ledger still has unresolved allocations, and the comments have not had an independent sample.</p>
+<div class="plate"><img src="reference/title.png" alt="Fantasy World Dizzy title and Yolkfolk cast" style="width:100%;image-rendering:pixelated"><p class="cap">The title in the Dunex disk release. The opening room is the Castle's Dungeon.</p></div></section>
+<section id="secret"><h2 class="t">Secret: ESPILCE opens a room browser</h2>
+<p>During play, enter <b>ESPILCE</b>, releasing each key as you move to the next. The game compares seven keyboard codes at <code>$3AE9</code>. The successful path hides the sprites, restores two spare lives and enters a room browser at <code>$3B23</code>.</p>
+<p>The input sequence was checked with real keyboard events. Execution stopped after each key changed, then instruction stepping followed the write of two to <code>$03B9</code>. The browser's navigation and room limits remain to be verified.</p>
+<p class="cap">Evidence: <a href="source.html#L3B00">$3B00–$3B58</a>. The trace summary is recorded with the analysis.</p></section>
+<section id="opening"><h2 class="t">The opening room</h2>
+<div class="plate"><img src="reference/play.png" alt="Dizzy standing in the Castle's Dungeon with a rat, water and bread" style="width:100%;image-rendering:pixelated"><p class="cap">A frame captured during play. Rebuilding the frame from its recorded memory and chip state matched all 104,448 pixels in VICE's picture.</p></div>
+<p>The player is a hardware sprite. The room is a bitmap assembled by the drawing routine at <code>$2B5B</code>. The room decoder has parsed 101 drawing streams with 2,783 records. This is a count of stored drawing streams; it does not establish that the player can visit every one.</p></section>
+</main>
