@@ -117,6 +117,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="slash"><p class="fig">07 · Quirk</p><h2 class="t">The bubble's font has no "/", and points into the other font instead</h2>
 <p>The speech bubble's table of glyph addresses gives the code for "/" the address <code>$AA39</code> (<code>$A82D</code>/<code>$A87B</code>, entry 76), which is inside the text panel's font. A "/" in the bubble would draw those bytes as a glyph; the <a href="graphics.html#bubble">Graphics</a> tab shows it, the jumble in the font's last row. No text the bubble shows uses "/".</p>
 </section>
+
+<section id="race" data-part="quiz"><p class="fig">08 · Quirk</p><h2 class="t">Starting a sound effect races the interrupt that plays it</h2>
+<p>The main program starts an effect with <code data-part="quiz">fx_start</code> (<code data-part="quiz">$4FCB</code>), which fills the voice tables at <code data-part="quiz">$50B5</code>-<code data-part="quiz">$50E1</code> and sets the filter. The raster interrupt plays the effect a frame at a time from the same tables, and <code data-part="quiz">fx_start</code> does not switch interrupts off while it writes them. When the interrupt falls in the middle, it plays the tables half written, and the SID's filter cutoff and volume registers (<code>$D416</code>, <code>$D418</code>) are left with other values than a whole start would leave. In one game on the kit's model of the C64 it happened 8 times in 132 starts. The <a href="play.html">Play</a> tab's port found it: its lockstep with the game's code allows this one difference and no other.</p>
+</section>
 </main>
 <script src="../../lib/c64.js"></script>
 <script>
