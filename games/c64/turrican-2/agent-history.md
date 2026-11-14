@@ -124,3 +124,11 @@ Level 3-2 reached 100% over 32190 tracked bytes. The lower terrain library ends 
 Completed level 3-3's code/data layout and listing at 25485 explained bytes, including the three generated mask banks and targeted traces of the collectible and actor-scan exit. Completed level 4-1 at 34994 explained bytes. Read its four indirect boss action targets and all pose matrices. A stopping store watchpoint caught the deferred bitmap exchange and verified one complete 128-byte pair; no optional playthrough was used.
 
 Completed level 4-2 at 22656 explained bytes, including the inherited-terrain ownership boundary, linked actors, shared support flags, four-band boss and the direct read of an actor-record coordinate for boss placement. Described both retained zero tails rather than treating them as absent loaded data.
+
+## World 5-1
+
+Completed 29362 explained bytes. Targeted read watchpoints resolved the support particle's preliminary curve lookup into the next routine opcode and its unindexed slot-zero speed read. Kept code typed as code at the curve boundary and left both the cross-slot read's visible consequence and the failed second capture allocation open. No combined-mechanics replay was recorded.
+
+## World 5-2
+
+Completed the 24064-byte final level listing. Its 1500-byte map ends before dedicated movement code, despite a retained count of 3000. Carried its byte-identical music driver from level 3-3 through an 816-instruction pairing. A store watchpoint established the initial sprite copies beneath I/O. A targeted instruction trace established the omitted comparison in one adjacent-cell boss hit test; it reads the second cell but retains the first comparison's clear carry and ignores the hit. No optional replay was recorded.
