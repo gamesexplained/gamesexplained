@@ -1,0 +1,43 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/hunter-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Push up to dive and down to climb, and the plane carries on after you let go: the stick sets a rate, not a position.</p>
+</header>
+<main class="wrap">
+<section id="stick">
+  <p class="fig">01 · The joystick</p>
+  <h2 class="t">Up is down: the stick works like a flight controller</h2>
+  <p class="lede">Port one only. The game reads the stick from <code>$DC01</code>, the port-one register (<a href="source.html#0d14"><code>read_joystick</code></a>, <a href="source.html#0d14"><code>$0D14</code></a>).</p>
+  <div class="plate"><table class="t">
+    <tr><th>Stick</th><th>What happens</th></tr>
+    <tr><td>Up</td><td>the plane dives: it moves down the screen, towards the ground</td></tr>
+    <tr><td>Down</td><td>the plane climbs, up to the top of its range</td></tr>
+    <tr><td>Left</td><td>the plane banks left and the ground slides right, at up to two steps</td></tr>
+    <tr><td>Right</td><td>the plane banks right and the ground slides left</td></tr>
+    <tr><td>Fire</td><td>a shot leaves the plane, when the last one has gone</td></tr>
+  </table><p class="cap">Tested in the emulator on 13 November 2026: holding up for under a second sent the plane down the screen, and it kept going with the stick released. The figures are in the game's notes.</p></div>
+  <p><a href="source.html#193c"><code>steer_plane</code></a> (<a href="source.html#193c"><code>$193C</code></a>) looks at the stick every eighth pass of the main loop, about nine times a second, so a very quick tap can fall between two looks and be missed, and the plane feels a little slow to answer. Each push moves a rate one step, and the rate stays where the stick left it, so the plane keeps climbing or diving with the stick let go, and the turn holds. Left and right move the scroll speed <code>$22</code> between −2 and 2. The plane itself never moves sideways: its x stays at <code>$A0</code>, its picture banks, and everything else slides past it (<a href="discoveries.html#sideways">more</a>). Only one shot flies at a time (<a href="source.html#1e40"><code>fire_shot</code></a>, <a href="source.html#1e40"><code>$1E40</code></a>).</p>
+</section>
+
+<section id="fire">
+  <p class="fig">02 · Fire</p>
+  <h2 class="t">Fire to start, to continue, and to shoot</h2>
+  <p class="lede">The same button does three jobs, and two of them wait for it to be released first.</p>
+  <p>Fire starts a game from the title screen. Before each strafing run, and after the last, the game puts up "PRESS FIRE TO CONTINUE" and waits for the button to be let go, pressed, and let go again (<a href="source.html#2b83"><code>$2B83</code></a>, <a href="source.html#2e80"><code>$2E80</code></a>), so a button held down from the last pass does not skip the message.</p>
+</section>
+
+<section id="keys">
+  <p class="fig">03 · Keys</p>
+  <h2 class="t">RESTORE restarts the game</h2>
+  <p class="lede">The cracker's documents name one key, and the game does what they say.<sup class="fn"><a href="about.html#src-1" title="The documents on the disk">1</a></sup></p>
+  <p>RESTORE starts the game again from the title screen. The bytes at <a href="source.html#8000"><code>$8000</code></a> hold the signature a cartridge would ("CBM80"), and the KERNAL's RESTORE routine, finding it, jumps to the address they give, <a href="source.html#2f30"><code>restore_restart</code></a> (<a href="source.html#2f30"><code>$2F30</code></a>). In a live test on 13 November 2026 a press of RESTORE in play reached <code>$2F30</code>. With the cracker's level-skip trainer on, the C= key ends the level as if the target had been destroyed (<a href="discoveries.html#trainer">Discoveries</a>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
