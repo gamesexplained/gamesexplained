@@ -148,3 +148,7 @@ Closed the media ledger by enumerating fixed and generated file names, rather th
 The independent gpt-6-astra sample found seven wrong details among 80 comments. Corrected those findings and repeated templates, removed later-engine annotations from the independent intro, rebuilt affected projects, and exported/listed their corrections. The sample remains a measurement of the original draw, rather than the corrected listing. A full audit is left for a requested follow-up.
 
 Built the required pages and listing-based tests. Sound testing found the second world-3-3 song selector silent; targeted CPU instruction hooks confirmed its instrument-zero path, and the player labels it silent. The run includes no Play tab, whole-game playthrough, route replay, or optional combined-mechanics proof.
+
+## Publication pass
+
+Committed the page draft before its separate rewrite and fifteen-year-old-reader pass. Explained sprites, character-sized tiles, music drivers, song selectors, and the comparison carry flag where they first appear. Corrected a boss evidence link to its actual entry at $7D45. The headless Firefox review exercised 63 graphics groups, 19 pictures, 195 ending text records, all eleven maps, and the instruction stepper on desktop and mobile widths. Node rendered ten seconds through the real AudioWorklet module for all sixty audio buttons. Required draft checks passed with 109 selected tests and eight unrelated missing-SkoolKit skips.

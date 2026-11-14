@@ -38,4 +38,4 @@ for(const choices of [I.tunes,I.sfx])for(let tune=0;tune<choices.length;tune++){
  const result={name:choices[tune].name,error:null,heard:false,vol:false,env:false,moves:hi-lo};for(const m of posted){if(m.driverError)result.error=m.driverError;for(const k of ['heard','vol','env'])if(m[k])result[k]=true;}
  assert.equal(verdict(result,10),null,JSON.stringify(result));
 }
-console.log('Worklet audio: all sixty buttons rendered ten seconds each; populated choices sounded and seven empty intro selectors stayed labelled silent');
+console.log('Worklet audio: all sixty buttons rendered ten seconds each; all populated choices sounded; every silent selector is labelled');
