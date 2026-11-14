@@ -14,7 +14,7 @@ How to get from the contributor's own copy to the analysed state.
 | 1 | `0` | `$1000`-`$3F3F` | 12,096 | — | the loading picture |
 | 2 | `3` | `$4200`-`$CFFF` | 36,352 | title | the program |
 | 3 | `4` | `$E000`-`$FF4A` | 8,011 | title | the program, in the RAM under the KERNAL |
-| 4 | `1` | `$2400`-`$2BFF` | 2,048 | title | the program |
+| 4 | `1` | `$2400`-`$2BFF` | 2,048 | title | the program's first pages: the second stage copies them to `$0400` (its loop at `$4099`) |
 | 5 | `2` | `$0C00`-`$3FFF` | 13,312 | title | the program; it loads over the second stage, and the game starts at the return |
 | 6, 10, 14, 18, 22 | `FX` | `$4F00`-`$53FF` | 1,280 | quiz | sound effects code, the same five times |
 | 7, 11, 15, 19, 23 | `A`, `D`, `G`, `J`, `M` | `$E000`-`$EFFF` | 4,096 | quiz | question block 1 to 5, its first file; the game copies it to `$D000` |
