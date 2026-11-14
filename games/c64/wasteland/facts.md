@@ -317,6 +317,54 @@ lines into view for a moment, and the programs load from `$7E00`.
   line, `$05` and `$06` wait for RETURN, space or back-arrow (wait_return,
   engine `$2501`).
 
+## The paragraphs
+
+Run on the game's code by `test_paragraphs.js` (the engine's, the game's
+and a map's listing on the kit's 6502), not in the emulator. What the
+booklet's paragraphs say was read from the scan of the paragraph book at
+archive.org (`vgmuseum_ea_wasteland-paragraphbook`); the booklet's text
+is in no listing and is not committed.
+
+- 83 messages on 21 maps name a paragraph by number, 82 different ones:
+  map 27 names paragraph 124 in messages 6 and 70. Map 15's terminal
+  cites seven more without the number in the sentence: its message 61 is
+  "Read paragraph" and messages 22 to 28 are the numbers 52, 40, 100,
+  63, 70, 91 and 101. So the game cites 89 of the booklet's 162
+  paragraphs, and 73 are named by no message.
+- A question square (class 8, game `$88E3`) of the typed kind holds a
+  list of words, and the square takes the pair of the first word the
+  typed line equals (`$8944-$8985`). The line holds 16 characters
+  (input_line, engine `$1D06`). The maps hold 67 such question records
+  with 186 words between them. Map 23's question 4 lists IRWIN JOHN
+  FINSTER, 18 characters: the line stops at IRWIN JOHN FINST and the
+  game takes it as a wrong answer.
+- Ten words on those lists come from paragraphs the game never cites.
+  Map 4 (21,2): AZRAEL (paragraph 5) and MORS (161) make the square
+  action square 7, which runs `swap_everyones_sex` (`$4206`: bit 0 of
+  `+$18` of every character record in use is flipped) and then does what
+  KAPUT (49) does. Map 39 (16,31): PHOENIX (33) and CLOVER (149) run
+  `infect_every_character` (`$3C58`: bit 1 of `+$28`, Wasteland Herpes)
+  and then open the door as KESTREL (71) does. Map 27 (14,3): MORTAR
+  (50) and ATOM (154) lead to check square 13, which prints "You've
+  entered the self destruct code by mistake." and takes 20d6 of CON from
+  every member; MOTEKIM (124) frees the prisoner. Map 8 (7,5): LADYBUG
+  (75) and LIZARD (92) show "Read paragraph 42." and no more;
+  CATERPILLAR (57) shows "Read paragraph 39." and leaves a bag with a
+  Shovel. Map 34, question 8: BUZZARD (18) and PASTEL (73) leave loot
+  bag 6, item 63; DIPSTICK (129) leaves loot bag 5, item 62.
+- Items 62 and 63 are both printed as "Bloodstaff" and their eight
+  bytes are the same. Three check squares tell them apart when one is
+  used on them: map 33's check 10 (the verification table), map 34's
+  check 1 (the bishop) and map 38's check 22 (Charmaine). Item 62 is in
+  loot bags 28:0, 33:8 and 34:5; item 63 in 27:2, 28:8, 28:13, 31:5,
+  32:7, 33:2 and 34:6. Map 33's bag 7 also holds item 62, and is only
+  the template `refill_bar_bag` (`$3E03`) copies into bag 8.
+- Three messages that name a paragraph were not traced to a square: map
+  4's 96 ("Read paragraph 35.", the success message of check square 41),
+  map 36's 67 ("Read paragraph 162.") and map 25's 85 (shown by the
+  map's own code, as the map's facts say). Whether a party can reach the
+  first two is open.
+
 ## Screen and controls
 
 - The screen is a multicolour bitmap at `$6000` with its colours at
