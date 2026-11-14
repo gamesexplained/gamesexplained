@@ -29,3 +29,5 @@ The raster reuses hardware sprites three through seven. At fine-scroll collision
 ## Open questions
 
 The intended visible identities of several hazards and the gate's departing sprite remain open. Fourteen retained bytes following terrain-property overrides have no established separate consumer. No optional playthrough or combined-mechanics replay was recorded.
+
+Type-six ordinary unprotected contact damages the player without forcing the particle burst. Weapon-health underflow, protected/wheel contact, or flash starts the burst. Expiring particles become resident collectible type two.

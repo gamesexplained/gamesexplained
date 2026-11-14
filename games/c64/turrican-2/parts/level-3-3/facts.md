@@ -37,3 +37,5 @@ The driver has two local songs, nineteen patterns, twenty instruments and twenty
 ## Open questions
 
 Several retained short table tails and the body bitmap-address arrays have no established separate reader. Visible identities of the flight variants remain open. No optional playthrough or combined-mechanics replay was recorded.
+
+Stored song selector one uses the three orders at `$781E/$7822/$7826`, each looping pattern zero. The original instrument-table read and note assignment select instrument zero, leaving that selector silent. The same music payload is retained in level 5-2.

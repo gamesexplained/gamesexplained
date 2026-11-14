@@ -1,41 +1,32 @@
-# Turrican 2 — kit feedback
-
-Written in the retrospective (`kit/skills/core/80-retro`). Which skill text
-changed what the run did, what the skills and kit got wrong or left out,
-what was changed, what needs a maintainer's decision, what cost the most
-time, operating system and tool versions.
+# Turrican II — kit feedback
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `12-media`: "A loader takes its one line": kept loader mechanics out of the article while recovering its story pictures, loading sprites, and music for the required viewers.
+- `60-verify`: "An `unused` answer in `media.json` is a negative result": enumerated fixed and constructed file names before answering the three retained files.
+- `70-minisite`: "A shape the game paints into the screen itself": ran the scene-frame producers and the intro picture decoder rather than treating their pre-initialization buffers as art.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/c64/project.py`: preserve exported block boundaries with splitters when rebuilding a regenerator2000 project, so adjacent code/data allocations retain the symbol map's types.
+- `kit/c64/test_project_splitters.py`: exercise adjacent code/data boundaries through the project round trip. The native disassembler can otherwise merge them and reinterpret data as code.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+An independent intro image can inherit misleading names when it is initially created as an overlay of the later resident engine. The sample found a later panel description on a boot-time space character. The intro is an independent part and its map now contains only its own program. The existing ownership rule covers this; no new skill text is needed.
+
+The animation and beam workspaces can also occupy nominal glyph or sprite slots. The independent sample found a beam described as environment animation. The corrected viewer separates source art, generated frames, and executable/control allocations. The existing Graphics and coverage rules cover this distinction.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+- #902: Preserve traced raw sectors in the media inventory, including saved sectors marked free in the disk allocation map.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+Preserving block boundaries during project reconstruction would have saved the most repeated type repair and comparison work.
+
+## Host and tool behaviour
+
+The run used macOS on ARM64, VICE MCP v3.14.0's official headless build with dummy audio, and regenerator2000 0.9.18. VICE's host-key check failed, while matrix input, exact instruction stops, watchpoints, and deterministic snapshots passed. The application stayed headless throughout the analysis. The page review used an already installed Playwright Firefox with a fresh profile under `tools/`; sound checks ran the site's AudioWorklet source and SID model without a browser audio device.
+
+The native disassembler's split low/high address type can misidentify unrelated targets. The run kept such directories as bytes and decoded the paired operands explicitly. The failure was visible during export, and the tool notes already cover it.

@@ -33,3 +33,5 @@ The bytes `$B358-$B757` contain retained fragments of another program, intersper
 Two stored songs have thirty patterns, fourteen instruments and twenty arpeggio selectors. Initialization selects song zero for the title and song one for score entry. The music core pairs all 816 instructions with the flight driver; its one immediate change makes the voice loop emit voices two, one and zero. All relocated data references were reviewed.
 
 The alternate pattern routines' trigger and the separate use of forty-one bytes after the bitmap source remain open. No optional playthrough or combined-mechanics replay was recorded.
+
+The score display also copies 768 bytes from `$96CF` to `$C800`. The first 520 bytes are sixty-five eight-row font slots; the copy continues into the next bitmap source. Its raster selects `$D018=$32`, choosing font `$C800` and screen `$CC00` in the `$C000` VIC bank.

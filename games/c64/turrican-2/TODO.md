@@ -1,23 +1,10 @@
-# Turrican II — remaining Silver work
+# Turrican II — follow-ups
 
-The agreed target is Silver. The contribution is in progress; no Silver
-claim is made. The shared resident engine, all eleven levels, title and
-ending have complete ledgers and listings with no uncounted loaded data.
+The agreed Silver scope includes all fifteen listings, the media ledger, measured sample, explanatory pages, complete level maps, graphics data, and music/effect players. Optional playthroughs, route replays, and integrated mechanics proofs are outside this contribution.
 
-- Recover and analyse the story intro from the boot program.
-- Finish media attribution, including the raw score block at side-one
-  sector 18/18, which is marked free in the allocation map. Files `23`,
-  `61` and `ST` need their selection or nonselection established.
-- Finish aggregate facts and feature statuses, take the independent
-  listing sample and record its measured result. An audit is a later
-  follow-up.
-- Build the explanatory pages, level maps, complete moving-shape viewer
-  and players for the music. Collect an external reference screenshot.
-- Complete the retrospective, required checks, contributor-authored
-  commits and authorized pull request.
-
-The feature ledger and part facts keep technical uncertainties explicit.
-Examples include visible creature names, retained header tails and the
-visible consequence of the final world's cross-slot particle speed read.
-The ending's consumer of the word at `$0A40` is resolved: a targeted
-instruction step reaches the resident title loader at `$53E4`.
+- Recommended: a requested full audit of the listing, then a fresh independent sample. The first sample found seven wrong-detail comments out of 80 (8.8%, weighted 8.1%); all seven and repeated descriptions were corrected. The remaining comments have not been audited.
+- For Gold, a human must curate every section and declare the copy pass. The copy is agent-draft.
+- Name the less obvious multipart creatures and identify the map regions players call hidden rooms. The source uses actor types where names remain uncertain.
+- Establish the visible consequence, if any, of the world-five particle side test reading slot zero's speed. The instruction-level finding is already recorded; an optional integrated proof is not part of Silver.
+- Resolve the retained title helper trigger and the unused ST file's identity. Their limits are explicit in the facts and media ledger.
+- If a later contribution requests Platinum, build and verify a full behavioural Play port.

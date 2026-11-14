@@ -1,8 +1,3 @@
-# Turrican 2 — cheats
+# Turrican II — controls and diagnostic changes
 
-Pokes that change the game within its own parameters. Each one names the
-variable it changes and whether it has been tested live. Untested pokes are
-labelled as candidates.
-
-| Effect | Poke | Status |
-|---|---|---|
+The article records the game's joystick and keyboard controls. No trainer or player-entered cheat is added by this contribution. The C64-Wiki pokes are documented for the tape version; they are not presented as verified pokes for this selected disk release. Diagnostic setups used for instruction traces remain in the private work directory.

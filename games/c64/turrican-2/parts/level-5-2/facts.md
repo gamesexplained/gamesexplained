@@ -35,3 +35,5 @@ The complete `$6C00-$794F` music payload is byte-identical to level 3-3, includi
 ## Open questions
 
 Visible names of the movement pickup, smaller hazards and final boss components remain open. The extra sixty-four-byte environment-glyph allocation has no established separate reader. No optional playthrough or combined-mechanics replay was recorded.
+
+The two counts at `$AB2A` are one and thirteen. The boss-position branch patches them into `$0698`, the last entry of the resident panel raster-delay table; `$0C8F` consumes that entry as a timing count.

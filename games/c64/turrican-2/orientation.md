@@ -65,8 +65,7 @@ Across the eleven level snapshots, `$0C00-$5FFF` and `$6400-$67FF` match
 byte for byte. Changes below `$6C00` are concentrated in state, pointers
 and self-modified operands. The resident engine is counted separately;
 each overlay owns `$6C00-$FF7F`. The title and ending also replace this
-upper region. An intro snapshot and complete load-to-memory attribution
-remain to be added before this orientation is complete.
+upper region. The intro handover is `parts/intro/work/entry.vsf`, captured at `$7B3D` after boot unpacking and drive-code upload. Its independent listing covers `$0800-$A817`; the media ledger attributes every selected file and the raw saved-score sector.
 
 ## Steady state
 
@@ -100,3 +99,7 @@ processor port. The game asks for the second disk before world three.
 The loader itself is outside the explanatory subject; its files, the
 pictures and music it presents, and all gameplay loads remain in the
 media inventory.
+
+## Recreating the intro entry
+
+Autostart the first Triangle disk with headless VICE and dummy audio. A stopping execution checkpoint at `$C000` catches the boot depacker return; a subsequent stop at `$7B3D` catches the story entry after the drive upload. Save that state as `parts/intro/work/entry.vsf`. The stored picture sources have not been unpacked yet. A read watchpoint on `$94C4` catches the encoded story reader; its first decoded byte is space `$20`. Other part handovers use the resident `$551B` checkpoint already described above. The title handover stops at `$7FF5`, before title/score initialization.

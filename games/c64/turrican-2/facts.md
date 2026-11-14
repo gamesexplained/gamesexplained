@@ -108,3 +108,21 @@ set. The auxiliary file `SA` unpacks to `$9000-$BF7F`; the engine copies
 that buffer under I/O and onward, so it also supplies the callback code
 at `$FD00-$FF7F`, alongside the sprite graphics. Auxiliary files cannot
 be classified as graphics alone.
+
+## Presentation and media
+
+The story intro is an independent image captured at its `$7B3D` entry, before the resident engine exists. It contains sixteen compressed pictures, a rolling-key story stream, a separate ROMUZAK music driver, and eight loading-display sprite pieces. The title and ending have their own facts and source listings. Their encrypted text readers were resolved through stopping read watchpoints and original-instruction stepping.
+
+The media inventory answers all 27 items: 21 part attributions, two side markers, one saved score sector, and three retained files outside the load selections. The raw high-score sector is side one, track 18/sector 18, marked free in the allocation map. Its block matches the bytes loaded at `$67FF`. The fixed load calls and constructed auxiliary names are listed in `media.json`.
+
+The sound viewer offers all seventeen stored song choices, including eight silent selectors. Seven intro headers have empty orders. The world-3-3/world-5-2 selector one loops pattern zero with instrument zero: targeted original-instruction hooks at `$6E47/$6ED3` confirmed the zero instrument assignment. Nine choices therefore supply populated music. The effects viewer offers 35 resident selectors and eight ending selectors, including their silent zero entries.
+
+## Page verification
+
+`test_pages.js` compares 379530 ordered SID writes from 28140 original driver calls, covering every music/effect button. It constructs each driver from its function source alone, as the AudioWorklet does. A second pass renders ten seconds per button through the site's actual worklet module and SID model; every populated choice sounds, and silent choices are named. The test uses the committed listings, including each part's inherited bytes, rather than private snapshots.
+
+The same test checks all eleven map rectangles and terrain definitions, all 1902 stored sprite pieces, 63 graphics groups, the sixteen intro decompressions, and the generated scene-frame banks. It compares 1792 walking-divider cases with the original controller prefix. The graphical preview explicitly schedules one controller call per PAL frame; this is the isolated animation rule, rather than a recorded gameplay route.
+
+## The listing's error rate
+
+Sample seed 20261114 drew 80 comments from a population of 11668: 20 of 3609 generated data descriptions and 60 of 8059 other comments. Independent checker gpt-6-astra found seven wrong-detail comments, all in the second stratum, and 73 right. The plain error rate was 8.8%, with Wilson 95% interval 4.3–17.0%; weighting by stratum sizes gives 8.1%. The findings concerned an intro/resident alias, colour RAM terminology, a beam workspace, actor contact/expiry paths, a raster-delay table, music-effect order, and score-font bytes. All seven findings and affected repeated descriptions were corrected. The listing has not had a full audit; a later audit is recommended.
