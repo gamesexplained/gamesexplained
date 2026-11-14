@@ -492,3 +492,45 @@ entries as pairs and reported bags naming several classes. Parsed
 properly, eleven bags name a class and all name ammunition, so the
 question the game notes left open, whether file 4's class-1 "Cash"
 record can be picked, has the answer no.
+
+## 14 November 2026, the solution
+
+A seventh tab, `solution.html`: what the game's code needs before it
+will run the ending, shown as one walk from the Ranger Center.
+
+**The walker.** `reference/wasteland-fight.js` runs one map's fights.
+The walk needed the rest of the game loop: a step, the square the party
+lands on, Use, a bag's prompts, a change of map, the clock. The page's
+block `solution/walk.js` lays the engine's, the game's and one map's
+listing in memory and calls those routines on the kit's 6502, with keys
+from a queue, and `solution/route.js` is the walk, 66 legs of a few
+calls each.
+
+**What the code wants.** Traced back from module 4: countdown_check,
+the flag at `$F4F9`, the four buttons, the four keys, the reactor's
+doors, and Base Cochise's square on the world map. That square led to
+`remote_01` and to Max. The helicopter looked like a second road until
+its skill turned out to be taught only on a map that the same square
+reveals.
+
+**Wrong turns.** The first walks handed the party what it needed, and
+each hand-out was replaced by a bag searched through its own prompts.
+The party stopped healing and KIT lay unconscious until the cause was
+found: a deadfall trap and Sewer rot. The countdown never fired until
+the walker ran countdown_check after every step, as the main loop does.
+The way out by the front door failed, because the inner door takes
+Secpass B from the inside too, and the rope under the weapons pod took
+its place. One party pressing the buttons sealed itself in, which
+became a finding. The party was first split by writing the party
+tables; the game's own Disband command ran on the walker with three
+keys, so the walk uses that, and its moves came out the same.
+
+**The dice.** With the game's real dice the starting party cannot do
+the walk: the rivers carry it off and the tests under Base Cochise
+would kill it. The page takes each throw as passed, says so, and gives
+a table of every throw with its chance from the engine's own dice.
+
+**A browser-only fault.** The page's script asked `globalThis` for the
+two blocks, which a `const` in another script does not put there. The
+node test could not see it, so `solution-browser.js` walks all 66 legs
+in Chromium.

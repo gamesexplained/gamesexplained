@@ -693,6 +693,56 @@ in record 94.
   eight bytes; 4 bags hold one and 7 the other, and the same three
   squares take either.
 
+## The walk to the ending
+
+What `solution.html` says, held by `test_solution.js`. The walk runs on
+the kit's 6502: the game's move, Use, Disband and countdown routines,
+with fights taken as won, throws of the dice taken as passed and noted,
+and no wandering monsters.
+
+- The ending is module 4, loaded by countdown_check (game `$82B5`) on
+  the main loop's pass when `$F4F9` is set and the clock has gone on 240
+  since the self-destruct was armed, whatever map the party is on. A
+  step on the reactor level is 1 count and a step on the world map 16.
+- Base Cochise's square on the world map, column 2, row 3, is class 4
+  number 1 (`tile_01`, map-00 `$4D4D`) as the map is stored, and so is
+  the Sleeper Base's, column 59, row 7. Two class 12 squares change
+  them: `remote_01` at (0,63) (`$4F21`), where map 25's exit lands a
+  party once Max is complete, makes them exits 33 and 32; `remote_03`
+  at (1,63) (`$4F35`) is where the Guardian Citadel's helicopter lands.
+  Both squares are walled in by class 11 squares.
+- The helicopter asks for skill 29, Helicopter pilot, twice (map 42
+  check_13 and check_14). One library of the eight teaches it, the
+  "Chopper Sim" on map 15, at IQ 19 (module 2 `$CC6C`), and none of the
+  14 NPC records holds it. So Max is on every road to Base Cochise.
+- The walk: 66 legs, 1,748 moves (1,732 steps and 16 turns on a
+  square), 21 fights, 12 of the 42 maps (0, 12, 38, 24, 25, 35, 36, 16,
+  17, 19, 18, 20), 12 charges of explosive, four ropes, and the same
+  moves on every run of random bytes tried. With every die at its
+  lowest the walk's bags hold 8 charges, and it stops at the glass wall
+  round the reactor's core.
+- The Temple of the Mushroom Cloud's inner doors open to EINSTEIN or
+  OPPENHEIMER. A deadfall trap (map 24 check_28, 4d6 of CON; map 25
+  check_10, 4 CON) asks for skill 37 and is sprung once. The river
+  squares of map 24 run sewage_infects_party (`$3DD4`): Sewer rot,
+  `+$28` = 8.
+- The dying Guardian's bed (map 36, column 1, row 8) gives a Nova key
+  whether its throw passes or fails.
+- Base Cochise's inner door (map 16 check_11, `$3B2F`) takes Secpass B
+  and nothing else. Two bags hold one, map 23 loot_03 and map 42
+  loot_11. The dome wall takes Climb at 4 or a Rope (6d6 of CON on a
+  slip), a weapons pod's cover takes five explosives (no Mangler), and
+  a Rope lowers the party into map 17 and stays hanging there.
+- The reactor: pressing a station's button with all four keys in shuts
+  four panels, and a party shut in has no path to another station or
+  to the escape pod. Four parties of one, made with Disband (game
+  `$99EE`), press red, yellow, green, blue and arm it. Two parties do
+  it too: the Cylinder Closing System (map 20 check_65, `$3E97`:
+  Electronics at 4, Luck at 7, IQ at 8) opens the panels again without
+  undoing a button.
+- Map 19 loot_00 (`$3CB9`) holds 2 Power armor, 10 LAW rockets, 10
+  RPG-7 and 20 Power packs, none of them thrown.
+
 ## Live tests
 
 - Side 3 booted on its own; side 3's start-up run over side 1's engine
