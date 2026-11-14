@@ -31,6 +31,10 @@ A separate targeted review of the new state-group and field descriptions found 2
 
 A subsequent targeted mechanics review on gpt-6-astra checked 42 selected comments and found eleven with wrong details; all eleven were corrected. Seven shared the false assumption that both beam endpoints must remain active, rather than testing stored hit flags. The other corrections concern second-player pickup suppression, bomb movement before versus after activation, an effect selector passed in X, and the zero command in the Broadway census. These selected results are not a random sample or a full audit.
 
+A continuation on gpt-6.1-sol drew 60 comments uniformly from all 5,159 comments across the eleven parts, seed 141126. The independent checker found one wrong detail (1.7%; Wilson 95% interval 0.3–8.9%): the voice writer's wording confused the decremented gate counter with the separately written control byte. The sampled comment and all twenty matching comments were corrected. Fifty-two comments passed every checkable detail. Seven included historical snapshot comparisons or read-watch observations whose original captures were unavailable; their static functional claims passed, but those historical observations were not independently reproduced. Twenty focused instruction-level CPU tests passed. The observed error count is a lower bound, and the seven evidence gaps are not verified passes.
+
+A separate generated-template supplement drew 20 comments from a population of 742, seed 141127, on gpt-6.1-sol. Sixteen passed and four retained historical map-tail read observations that were not independently reproduced; no wrong detail was demonstrated. Eleven matrix-copy CPU cases passed. This separate supplement has no combined population-weighted rate with the uniform sample. Neither review is a full audit; a full independent audit remains recommended.
+
 The analysis used model identifiers not recognised as proven by `kit/models.json`. The fresh checker's sample does not replace the maintainer's check required by `kit/CHECKING.md`; the published tier remains Bronze pending that review.
 
 ## Additional verification

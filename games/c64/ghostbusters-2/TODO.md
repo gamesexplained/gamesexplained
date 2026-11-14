@@ -1,6 +1,6 @@
 # Ghostbusters II — follow-up work
 
-The analysis has 100% annotation coverage across 11 parts, an answered media ledger, and an independent 80-comment sample. Its tier is Bronze because the analysis models are not recognised as proven.
+The analysis has 100% annotation coverage across 11 parts and an answered media ledger. A fresh gpt-6.1-sol review found one wrong detail in 60 uniformly drawn comments and none in a separate 20-comment generated supplement. The wrong detail and all 20 matching comments are corrected. Eleven sampled historical observations could not be independently reproduced; their static claims passed. Its tier is Bronze until this review can be recorded as the maintainer check required for the original analysis models.
 
 - A maintainer must carry out the review in `kit/CHECKING.md` before Silver. The sample found one wrong comment, which is corrected; the targeted state review corrected 26 additional comments. A full independent audit remains recommended.
 - Record a complete museum playthrough. The airshaft and Broadway each have a complete clean-play-to-win input recording, replayed in VICE. All formerly open feature rows now have traced or observed answers; controlled fixtures remain distinguished from ordinary input routes.

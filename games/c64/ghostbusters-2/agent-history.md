@@ -222,3 +222,9 @@ A search over ordinary Broadway controls found a winning route with the resource
 Five scoped VICE wait-to-load traces and a 1,220-instruction direct-control-flow walk bounded the retained engine helpers and data. The only hits in the first broad skipped-check watch were its live continuation at `$11B7/$11BA`; the skipped body stayed unentered. A first diagnostic accidentally watched the tight tick-read loop and generated an oversized log; it was stopped and discarded, and the valid run instead traced the tick-wait entry.
 
 The font investigation corrected earlier labels that treated the `$2000` title-logo artwork as an alphabet. The consecutive logo screen codes and measured frame fetches account for its first 240 patterns. Running all 122 stored title/story/ending rows through `$1A12` assigned punctuation in the actual `$3000` alphabet. Three title-frame pixels differ at raster boundaries; the result stays explicitly inexact.
+
+## Silver review continuation
+
+Used gpt-6.1-sol for an independent 60-comment uniform sample and a separate 20-comment generated-template supplement. The checker found one misleading gate/control detail; instruction bytes at airshaft $E1D2–$E1E1 confirm that X holds the control byte while DEC changes the gate counter. Corrected all 21 matching comments across seven parts, using listing.py --recomment without changing machine bytes. Twenty targeted CPU tests and eleven matrix-copy cases passed. Eleven historical observations remain explicitly unverified in this review.
+
+VICE was started through tools.py using the installed headless build and its existing dummy sound configuration. The original work snapshots were absent. At the contributor's explicit request, downloaded the three image releases named by orientation.md from CSDb into gitignored work/. No optional playthrough or replay was performed.

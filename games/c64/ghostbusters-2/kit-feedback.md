@@ -34,3 +34,7 @@ The uncertainty pass benefited from `60-verify`’s instruction to check every r
 `tool-vice-mcp`’s warning about an undrained monitor connection applied to scoped tracepoints too: closing a one-command connection while trace output was pending wedged this build with broken-pipe errors. The sustained trace used one connection with a reader that drained it to a private file; watchpoints were removed before closing it. The existing warning identified the failure, so no broader tracing rule was added. Headless runs unset display variables only for the kit launcher’s child environment, preserving the contributor’s desktop settings.
 
 `tool-vice-mcp` says to inspect the drive when a loader hangs, and gives the `DRIVECPU0` snapshot layout. That instruction exposed a filename-prefix search in the Jondi drive code and resolved the black-screen boot: the requested `00` prefix is absent from the directory. A later failed request filled memory with `$FF`, so a long wait at a BASIC ROM address alone had hidden the actual cause. The existing drive-inspection instruction covered the problem; another rule would repeat it.
+
+## Silver review continuation
+
+The 60-verify rule “For each wrong comment” prompted a search across every part for the same gate/control wording, finding 21 occurrences. The rule about comments written from templates prompted a separate 20-comment generated supplement. The installed emulator was reused headlessly with dummy audio as requested. No kit change was needed.
