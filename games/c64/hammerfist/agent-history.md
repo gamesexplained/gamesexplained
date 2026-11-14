@@ -90,3 +90,5 @@ Firefox 159.0 exercised 1188 viewer choices with no console/page errors. The sha
 After the required native checks and frame captures, the run stopped its VICE process through the kit launcher. The MCP port no longer had a listener.
 
 The authored pages were committed as a draft, then rewritten in a separate copy pass. The final pass explains display registers, sprites, character pictures, sound voices, and stored room sets at their first use on each tab. The sentence changes were checked against the facts and retained the numerical evidence and source links. Copy remains agent-draft for human curation.
+
+The final controls table names Space for the inward turn. The manual’s unverified three-fire gesture stays in the explicit open feature row rather than appearing as a confirmed article control.
