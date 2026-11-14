@@ -120,5 +120,421 @@
   <p>The fans counted the same ladder. Rangers had told the <a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#promotionslist">HQ-Grid's Underground</a> for years that there were 183 ranks, until K. Reimer showed (11 September 2010) that there are 181, as the C64's code has it. The site's list matches the C64 rank for rank, but for ranks 30 to 41: the C64 runs 2nd Lieutenant, 1st Lieutenant, Lieutenant, then Fireteam Lieutenant, and the list Lieutenant, 1st Lieutenant, Fireteam Lieutenant, then 2nd Lieutenant. K. Ballou (<a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#promotions">14 May 1998</a>) found the cost of the climb with the Night Terror's 64,000, which <q>will give each char several promotions the first time, but it gets to a point where you only get one promotion per 64000 exp</q>. On the C64 the first such kill takes a new Ranger from rank 1 to 11, and from rank 63 on a kill no longer pays for even one promotion every time.</p>
 </section>
 
+
+<style>
+.wl-ru-row{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;align-items:center;margin:0 0 12px;font-size:14px}
+.wl-ru-row>b{grid-column:1 / -1}
+.wl-ru-row select{min-width:0;width:100%}
+.wl-ru-con{font-family:var(--fm);font-size:13px}
+.wl-ru-con b.wl-ru-bad{color:var(--coral)}
+.wl-ru-sort th{cursor:pointer;user-select:none;white-space:nowrap}
+.wl-ru-sort th[aria-sort="ascending"]::after{content:" ▲";font-size:10px}
+.wl-ru-sort th[aria-sort="descending"]::after{content:" ▼";font-size:10px}
+.wl-ru-none td{color:var(--ink-mute)}
+.wl-ru-acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+</style>
+<section id="wl-shoot" data-part="engine">
+  <p class="fig">03 · Skills</p>
+  <h2 class="t">Secret: Combat shooting is on the skill list, and there is nowhere in the game to learn it</h2>
+  <p class="lede">The game has names for 35 skills, and the seventeenth is Combat shooting. A Ranger buys skills at the Ranger Center and in the libraries, and neither of them sells this one.</p>
+  <p>Every skill has one byte that holds the IQ it needs and the price of its first level. The Ranger Center and the library each carry a copy of the table (<span data-part="ranger"><code>$8502</code></span>, <span data-part="module-2"><code>$CC6C</code></span>). Combat shooting's byte is <code>$FF</code>, every bit set, which reads as IQ 31 and 7 skill points. The dearest skill on sale, Cyborg tech, needs IQ 24 and costs 3. The Ranger Center lists only the skills that a new Ranger's IQ allows, and a new Ranger's IQ is 18 at most. A library lists only the skills in its own record, and skill 17 is in none of the eight records (<a href="#wl-libraries">below</a>). Promotions can raise IQ to 31 in time, and the Ranger would still find no list to pick Combat shooting from.</p>
+  <p>A Ranger who had the skill would find nothing to do with it. A weapon's record names the skill that goes with the weapon, and Combat shooting is missing from all 95 item records. It is missing from every test on the maps and from the fourteen NPCs' records too. The engine did give it an attribute. Each skill adds one attribute to its throw (<code>$0DD8</code>), and Combat shooting is the only skill that adds Speed.</p>
+</section>
+
+<section id="wl-asked" data-part="game">
+  <p class="fig">04 · Skills</p>
+  <h2 class="t">What the maps ask of a Ranger, skill by skill</h2>
+  <p class="lede">A square can test a skill, an attribute, an item, the party's cash, or the party's size. Counting every test in the 42 maps shows what each skill is worth outside a fight. Perception is asked for 122 times on 33 maps, and six of the weapon skills are never asked for.</p>
+  <p>A test of a skill starts by looking for the skill. A Ranger who does not have it fails without a throw (<code>$8EA5</code>), so one level of Perception opens 122 tests that are shut to a Ranger without it. With the skill, the test is <a href="combat.html#wl-dice">the throw on the Dice and combat tab</a>, against 15 + 5 × the difficulty. A pass can raise the skill only while its level is below the difficulty, so the Hardest column is also the highest level that the squares can teach.</p>
+  <div class="plate">
+    <div class="wl-tw wl-tall"><table class="wl-t wl-ru-sort" id="wl-ru-skills">
+      <thead><tr><th data-k="n" aria-sort="ascending">Skill</th><th data-k="s">Throws with</th><th data-k="n">IQ to learn</th><th data-k="n">First level</th><th data-k="s">Sold at</th><th data-k="n">Tests</th><th data-k="n">Maps</th><th data-k="n">Hardest</th></tr></thead>
+      <tbody>
+        <tr data-n="1"><td data-v="1">Brawling</td><td>LK</td><td class="wl-n">3</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">15</td><td class="wl-n">1</td><td class="wl-n" data-v="8">8</td></tr>
+        <tr data-n="2"><td data-v="2">Climb</td><td>AGL</td><td class="wl-n">3</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">32</td><td class="wl-n">14</td><td class="wl-n" data-v="5">5</td></tr>
+        <tr data-n="3" class="wl-ru-none"><td data-v="3">Clip pistol</td><td>DEX</td><td class="wl-n">3</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">0</td><td class="wl-n">0</td><td class="wl-n" data-v="0">–</td></tr>
+        <tr data-n="4" class="wl-ru-none"><td data-v="4">Knife fight</td><td>DEX</td><td class="wl-n">3</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">0</td><td class="wl-n">0</td><td class="wl-n" data-v="0">–</td></tr>
+        <tr data-n="5"><td data-v="5">Pugilism</td><td>ST</td><td class="wl-n">3</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">18</td><td class="wl-n">2</td><td class="wl-n" data-v="8">8</td></tr>
+        <tr data-n="6" class="wl-ru-none"><td data-v="6">Rifle</td><td>DEX</td><td class="wl-n">3</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">0</td><td class="wl-n">0</td><td class="wl-n" data-v="0">–</td></tr>
+        <tr data-n="7"><td data-v="7">Swim</td><td>ST</td><td class="wl-n">3</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">21</td><td class="wl-n">5</td><td class="wl-n" data-v="6">6</td></tr>
+        <tr data-n="8"><td data-v="8">Knife throw</td><td>DEX</td><td class="wl-n">6</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">1</td><td class="wl-n">1</td><td class="wl-n" data-v="1">1</td></tr>
+        <tr data-n="9"><td data-v="9">Perception</td><td>IQ</td><td class="wl-n">6</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">122</td><td class="wl-n">33</td><td class="wl-n" data-v="8">8</td></tr>
+        <tr data-n="10" class="wl-ru-none"><td data-v="10">Assault rifle</td><td>DEX</td><td class="wl-n">9</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">0</td><td class="wl-n">0</td><td class="wl-n" data-v="0">–</td></tr>
+        <tr data-n="11"><td data-v="11">AT weapon</td><td>DEX</td><td class="wl-n">9</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">1</td><td class="wl-n">1</td><td class="wl-n" data-v="2">2</td></tr>
+        <tr data-n="12" class="wl-ru-none"><td data-v="12">SMG</td><td>DEX</td><td class="wl-n">9</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">0</td><td class="wl-n">0</td><td class="wl-n" data-v="0">–</td></tr>
+        <tr data-n="13"><td data-v="13">Acrobat</td><td>AGL</td><td class="wl-n">10</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">25</td><td class="wl-n">10</td><td class="wl-n" data-v="5">5</td></tr>
+        <tr data-n="14"><td data-v="14">Gamble</td><td>LK</td><td class="wl-n">10</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">21</td><td class="wl-n">4</td><td class="wl-n" data-v="25">25</td></tr>
+        <tr data-n="15"><td data-v="15">Picklock</td><td>DEX</td><td class="wl-n">10</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">69</td><td class="wl-n">25</td><td class="wl-n" data-v="10">10</td></tr>
+        <tr data-n="16"><td data-v="16">Silent move</td><td>AGL</td><td class="wl-n">10</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">11</td><td class="wl-n">5</td><td class="wl-n" data-v="4">4</td></tr>
+        <tr data-n="17" class="wl-ru-none"><td data-v="17">Combat shooting</td><td>SP</td><td class="wl-n">31</td><td class="wl-n">7</td><td data-v="0">Nowhere</td><td class="wl-n">0</td><td class="wl-n">0</td><td class="wl-n" data-v="0">–</td></tr>
+        <tr data-n="18"><td data-v="18">Confidence</td><td>CHR</td><td class="wl-n">11</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">9</td><td class="wl-n">4</td><td class="wl-n" data-v="2">2</td></tr>
+        <tr data-n="19"><td data-v="19">Sleight of hand</td><td>DEX</td><td class="wl-n">12</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">2</td><td class="wl-n">2</td><td class="wl-n" data-v="1">1</td></tr>
+        <tr data-n="20"><td data-v="20">Demolitions</td><td>IQ</td><td class="wl-n">13</td><td class="wl-n">1</td><td data-v="106">The Ranger Center and 6 libraries</td><td class="wl-n">6</td><td class="wl-n">5</td><td class="wl-n" data-v="7">7</td></tr>
+        <tr data-n="21"><td data-v="21">Forgery</td><td>DEX</td><td class="wl-n">13</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">1</td><td class="wl-n">1</td><td class="wl-n" data-v="2">2</td></tr>
+        <tr data-n="22"><td data-v="22">Alarm disarm</td><td>IQ</td><td class="wl-n">14</td><td class="wl-n">1</td><td data-v="106">The Ranger Center and 6 libraries</td><td class="wl-n">4</td><td class="wl-n">3</td><td class="wl-n" data-v="3">3</td></tr>
+        <tr data-n="23"><td data-v="23">Bureaucracy</td><td>CHR</td><td class="wl-n">14</td><td class="wl-n">1</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">6</td><td class="wl-n">3</td><td class="wl-n" data-v="4">4</td></tr>
+        <tr data-n="24"><td data-v="24">Bomb disarm</td><td>IQ</td><td class="wl-n">15</td><td class="wl-n">2</td><td data-v="106">The Ranger Center and 6 libraries</td><td class="wl-n">9</td><td class="wl-n">6</td><td class="wl-n" data-v="6">6</td></tr>
+        <tr data-n="25"><td data-v="25">Medic</td><td>IQ</td><td class="wl-n">15</td><td class="wl-n">2</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">2</td><td class="wl-n">1</td><td class="wl-n" data-v="10">10</td></tr>
+        <tr data-n="26"><td data-v="26">Safecrack</td><td>DEX</td><td class="wl-n">15</td><td class="wl-n">2</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">11</td><td class="wl-n">5</td><td class="wl-n" data-v="5">5</td></tr>
+        <tr data-n="27"><td data-v="27">Cryptology</td><td>IQ</td><td class="wl-n">16</td><td class="wl-n">2</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">2</td><td class="wl-n">2</td><td class="wl-n" data-v="4">4</td></tr>
+        <tr data-n="28"><td data-v="28">Metallurgy</td><td>IQ</td><td class="wl-n">17</td><td class="wl-n">2</td><td data-v="105">The Ranger Center and 5 libraries</td><td class="wl-n">2</td><td class="wl-n">1</td><td class="wl-n" data-v="2">2</td></tr>
+        <tr data-n="29"><td data-v="29">Helicopter pilot</td><td>DEX</td><td class="wl-n">19</td><td class="wl-n">3</td><td data-v="1">1 library</td><td class="wl-n">2</td><td class="wl-n">1</td><td class="wl-n" data-v="1">1</td></tr>
+        <tr data-n="30"><td data-v="30">Electronics</td><td>IQ</td><td class="wl-n">20</td><td class="wl-n">3</td><td data-v="5">5 libraries</td><td class="wl-n">13</td><td class="wl-n">4</td><td class="wl-n" data-v="6">6</td></tr>
+        <tr data-n="31"><td data-v="31">Toaster repair</td><td>IQ</td><td class="wl-n">20</td><td class="wl-n">3</td><td data-v="6">6 libraries</td><td class="wl-n">4</td><td class="wl-n">1</td><td class="wl-n" data-v="3">3</td></tr>
+        <tr data-n="32"><td data-v="32">Doctor</td><td>IQ</td><td class="wl-n">21</td><td class="wl-n">3</td><td data-v="5">5 libraries</td><td class="wl-n">2</td><td class="wl-n">1</td><td class="wl-n" data-v="5">5</td></tr>
+        <tr data-n="33"><td data-v="33">Clone tech</td><td>IQ</td><td class="wl-n">22</td><td class="wl-n">3</td><td data-v="3">3 libraries</td><td class="wl-n">1</td><td class="wl-n">1</td><td class="wl-n" data-v="2">2</td></tr>
+        <tr data-n="34" class="wl-ru-none"><td data-v="34">Energy weapon</td><td>DEX</td><td class="wl-n">23</td><td class="wl-n">3</td><td data-v="4">4 libraries</td><td class="wl-n">0</td><td class="wl-n">0</td><td class="wl-n" data-v="0">–</td></tr>
+        <tr data-n="35"><td data-v="35">Cyborg tech</td><td>IQ</td><td class="wl-n">24</td><td class="wl-n">3</td><td data-v="2">2 libraries</td><td class="wl-n">1</td><td class="wl-n">1</td><td class="wl-n" data-v="2">2</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">Every skill in the order the game lists them. <b>Throws with</b> is the attribute added to the skill's throw (<span data-part="engine"><code>$0DD8</code></span>). <b>First level</b> is the price in skill points. <b>Tests</b> counts the tests of the skill in the check records that a square of the 42 maps leads to, <b>Maps</b> the maps that hold them, and <b>Hardest</b> the highest difficulty among them. A heading sorts the table.</p>
+  </div>
+  <p>Five skills are asked for once in the whole game. Knife throw is one of the turns that gets a Ranger off the stage in <a href="levels.html#map-2">Scott's Bar</a>. AT weapon is one way to load the howitzer's shell in <a href="levels.html#map-33">Needles</a>, and Forgery is one way through the Webs of Deceit in <a href="levels.html#map-23">Finster's mind maze</a>. Clone tech sets the chemical levels in <a href="levels.html#map-13">Sleeper Base</a>, and Cyborg tech links a Ranger to the android's brain in <a href="levels.html#map-22">Darwin</a>. Brawling and Pugilism have squares of their own as well: fifteen robots rise from the floor of <a href="levels.html#map-20">Base Cochise's reactor</a> to wrestle, and each one tests Strength, Brawling, and Pugilism.</p>
+  <div class="plate">
+    <div class="wl-tw"><table class="wl-t">
+      <thead><tr><th>Attribute</th><th>Tests</th><th>Maps</th><th>Hardest</th></tr></thead>
+      <tbody>
+        <tr><td>Strength</td><td class="wl-n">138</td><td class="wl-n">32</td><td class="wl-n">30</td></tr>
+        <tr><td>IQ</td><td class="wl-n">35</td><td class="wl-n">14</td><td class="wl-n">9</td></tr>
+        <tr><td>Luck</td><td class="wl-n">128</td><td class="wl-n">24</td><td class="wl-n">30</td></tr>
+        <tr><td>Speed</td><td class="wl-n">5</td><td class="wl-n">2</td><td class="wl-n">6</td></tr>
+        <tr><td>Agility</td><td class="wl-n">51</td><td class="wl-n">15</td><td class="wl-n">7</td></tr>
+        <tr><td>Dexterity</td><td class="wl-n">30</td><td class="wl-n">10</td><td class="wl-n">15</td></tr>
+        <tr><td>Charisma</td><td class="wl-n">8</td><td class="wl-n">4</td><td class="wl-n">2</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">The same count for the seven attributes. A test of an attribute is the throw plus the attribute, against 15 + 5 × the difficulty (<span data-part="engine"><code>$0D0A</code></span>). The tests of Strength and Luck at difficulty 30 need a total of 165: the glass wall in front of the reactor's controls in Base Cochise, which also gives way to Plastic explosive or a rocket, and the top prize of the gambling game at Leroy's.</p>
+  </div>
+  <p>The other tests are 1,054 for an item, 30 for cash, and 25 for the party's size. A size test passes only on an exact number (<code>$8E85</code>). One square on <a href="levels.html#map-19">Base Cochise's assembly floor</a> wants a party of three or more, so its record spells out six tests, for 3, 4, 5, 6, 7, and 8, although a party has room for seven (<span data-part="map-19"><code>$3BE0</code></span>).</p>
+</section>
+
+<section id="wl-doors" data-part="game">
+  <p class="fig">05 · Squares</p>
+  <h2 class="t">Secret: some squares check whether a Ranger is a man or a woman, and one checks rank</h2>
+  <p class="lede">A test of an attribute names a byte of the character record, and a few squares name bytes that are not attributes. Three of them read the Ranger's sex, and a square outside the walls of the Guardian Citadel reads the rank.</p>
+  <div class="plate wl-be" id="wl-ru-doors">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">The party</p>
+        <div id="wl-ru-party"></div>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">Set the party and pick a square. The game's text appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <div class="wl-ru-acts">
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-scene="men">Scott's Bar: the men's door</button>
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-scene="women">Scott's Bar: the women's door</button>
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-scene="lady">Leroy's: the first Ranger goes alone</button>
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-scene="gate">Outside the Citadel's walls</button>
+      </div>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The four Rangers stand on the square on the game's own code, with the sex and rank set here written into their records, and the page shows what the game prints. At Leroy's the first Ranger goes alone with $200. The men's door, the lady, and the Citadel's square run when the party is on the square (<code>$ACC1</code>), and the women's door when the party tries to step onto it (<code>$8DEC</code>).</p>
+  </div>
+  <p>The sex byte is 0 for a man and 1 for a woman, and a test of it passes when the byte equals the test's number (<span data-part="engine"><code>$0D0A</code></span>). <a href="levels.html#map-2">Scott's Bar</a> in Quartz has two doors with a picture on each. The men's door lets anyone through, and when any Ranger is a woman a man walking out gives <q>the females among you a funny look</q> (<span data-part="map-02"><code>$3C35</code></span>). The women's door tests every conscious Ranger, and one man is enough for the bouncer to turn the whole party away (<span data-part="map-02"><code>$3C42</code></span>).</p>
+  <p>The third square is the three-legged lady at <a href="levels.html#map-32">Leroy's</a> in Needles, who asks for $50. She takes one visitor at a time, so the record first tests for a party of exactly one. Then it tests the visitor's sex, and a woman is told <q>Look, I just don't DO ladies.</q> (<span data-part="map-32"><code>$3C2D</code></span>). A man with $50 pays and leaves with Wasteland Herpes, which is one of only two ways to catch it (<a href="#wl-sick">below</a>).</p>
+  <p>The rank test passes when the rank is at least the test's number. On a square outside the <a href="levels.html#map-35">Guardian Citadel</a> the number is 10, the rank of Grenadier Major. A party with nobody of that rank is told <q>Leave, wasteland scum, you are not old enough to die here.</q> With one such Ranger the voice takes the party seriously: <q>You would be a fool to dream of assaulting the Citadel.</q> (<span data-part="map-35"><code>$3BC0</code></span>). Only the words change.</p>
+</section>
+
+<section id="wl-sick" data-part="game">
+  <p class="fig">06 · Diseases</p>
+  <h2 class="t">Secret: Sewer rot and Wasteland Herpes never cost a hit point</h2>
+  <p class="lede">A Ranger can catch six diseases, and the game names them only in a doctor's exam. Two of the six, Desert dust and Rabies, take hit points as time passes. The other four take none. What all six do is stop the Ranger from healing, and for a Ranger who is knocked out that is as deadly.</p>
+  <div class="plate wl-be" id="wl-ru-clock">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">The party</p>
+        <div id="wl-ru-sick"></div>
+      </div>
+      <div class="wl-fi-log wl-ru-con" role="log" aria-label="The Rangers' CON"><p class="wl-fi-dim">Give the Rangers a disease each and walk. Their CON appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <div class="wl-ru-acts">
+        <button type="button" class="wl-xp-btn" data-walk="120">Walk an hour</button>
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-walk="720">Walk six hours</button>
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-walk="0">Start again</button>
+      </div>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">Four Rangers walk the streets of Quartz on the game's own code, half a minute to a step (<code>$AF32</code>). Each starts at 20 CON of 30, knocked out at −5, or badly hurt at −15. The page reads their CON from the records after each walk.</p>
+  </div>
+  <p>Each disease is one bit of a byte in the character record. On most maps the game's clock runs a health check on every Ranger every four minutes of game time (<code>$B795</code>). A healthy Ranger gains a point from time to time, and a Ranger who is unconscious, with CON from −1 to −10, gains one at every check until they wake. With any bit of the disease byte set, the Ranger gains nothing (<code>$B854</code>). With one of the four high bits set, a conscious Ranger loses a point every 16 minutes and a Ranger who is down loses two (<code>$B816</code>). The last point is never taken from a Ranger who is awake: CON goes from 1 to −1, and the Ranger falls unconscious. From there the loss goes on until CON passes −50, where the Ranger dies. A Ranger with 20 CON and Desert dust falls after 5 hours and 20 minutes and is dead after 12 hours.</p>
+  <div class="plate">
+    <div class="wl-tw"><table class="wl-t">
+      <thead><tr><th>Disease</th><th>What gives it</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>Radiation poisoning</td><td>Every radiation square, to each Ranger who is not wearing a Rad suit. There are radiation squares on the world map, in Needles and its waste pit, in the Mushroom Cloud temple, and in Base Cochise.</td><td>Stops healing</td></tr>
+        <tr><td>Wasteland Herpes</td><td>The lady at <a href="levels.html#map-32">Leroy's</a>, to a man who visits alone and pays $50. The false passwords PHOENIX and CLOVER at <a href="levels.html#map-39">Faran Brygo's door</a>, to every character in the game.</td><td>Stops healing</td></tr>
+        <tr><td>Bug byte</td><td>The spiders, scorpions, and centipede in the <a href="levels.html#map-5">abandoned buildings of Quartz</a> and the <a href="levels.html#map-11">beat-up buildings of Las Vegas</a>, to the first Ranger in the party when a test of Perception and Luck fails.</td><td>Stops healing</td></tr>
+        <tr><td>Sewer rot</td><td>The sewage in the <a href="levels.html#map-24">Las Vegas sewers</a> and <a href="levels.html#map-25">the lab below them</a>, to the whole party.</td><td>Stops healing</td></tr>
+        <tr><td>Desert dust</td><td>The snakes in the same buildings of Quartz and Las Vegas, to the first Ranger. The poisoned needle in a chest in <a href="levels.html#map-49">Savage Village</a>, to the Ranger who tried to open it.</td><td>Stops healing, and takes 1 CON every 16 minutes</td></tr>
+        <tr><td>Rabies</td><td>The rabid rats in the same buildings of Quartz and Las Vegas, to the first Ranger.</td><td>Stops healing, and takes 1 CON every 16 minutes</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">The six diseases in the order of their bits, lowest first, with every routine in the 42 maps that sets a bit of the disease byte (character record +$28). The radiation squares set the lowest bit in the game program (<code>$8318</code>), and each of the others is a routine in its own map.</p>
+  </div>
+  <p>The roster gives one sign of all this. A Ranger with any disease has the MAXCON number drawn in reverse (<span data-part="engine"><code>$16AC</code></span>). The Medic and Doctor skills do not touch the disease byte, so the only cure is a doctor, who clears one bit for each payment (<a href="#wl-doctors">below</a>). The game also counts an unconscious Ranger with a disease as lost. The game goes on while one character is awake or will wake unaided, and a Ranger with a disease will not (<code>$7EE6</code>).</p>
+</section>
+
+<section id="wl-slow" data-part="game">
+  <p class="fig">07 · Diseases</p>
+  <h2 class="t">Bug: Rabies gives a badly wounded Ranger twice as long to live</h2>
+  <p class="lede">A Ranger whose CON has fallen to −11 or below is dying. That Ranger loses a point at every health check and dies when CON passes −50. A dying Ranger who also has Rabies or Desert dust loses the points half as fast.</p>
+  <p>The health check looks at the disease byte first. When one of the four high bits is set, the check takes the disease's branch and never reaches the code for a dying Ranger (<code>$B7A2</code>). The disease's branch acts only on every fourth check and takes two points from a Ranger who is down (<code>$B834</code>). The code it skipped takes one point at every check (<code>$B83C</code>), which is four points in the same time. From −15, a Ranger with no disease is dead after 2 hours and 24 minutes, and a Ranger with Rabies after 4 hours and 48 minutes. The plate above shows both when the Rangers start badly hurt.</p>
+</section>
+
+<section id="wl-d6" data-part="module-0">
+  <p class="fig">08 · Diseases</p>
+  <h2 class="t">Secret: the doctor can name two more diseases, D6 and D7, that nothing in the game gives</h2>
+  <p class="lede">The disease byte has eight bits, and the doctor's exam has a name for each. The names of the last two are <q>D6</q> and <q>D7</q> (<code>$CCC2</code>).</p>
+  <div class="plate wl-be" id="wl-ru-exam">
+    <div class="wl-fi-log wl-be-log-short" role="log" aria-label="The doctor's list" style="height:190px"><p class="wl-fi-dim">Press the button. The doctor's list appears here.</p></div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" id="wl-ru-exam-go">Examine a Ranger with all eight bits set</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The doctor's own routine prints the list for a disease byte of <code>$FF</code> (<code>$CC04</code>). The game cannot set the last two bits, so a doctor in play never prints lines 7 and 8.</p>
+  </div>
+  <p>The health check treats the two spare bits as it treats Desert dust and Rabies, because it tests the four high bits together (<span data-part="game"><code>$B7A2</code></span>). The doctor would list either one in an exam and cure it at the usual price. Every routine in the 42 maps that gives a disease takes the number of the disease from its record, and the records hold only the numbers 1 to 5. Radiation sets bit 0. So a Ranger never has D6 or D7, and the plate above is the one place to see what they would do.</p>
+</section>
+
+<section id="wl-doctors" data-part="module-0">
+  <p class="fig">09 · Doctors</p>
+  <h2 class="t">What each doctor charges, and why a cure always costs an exam first</h2>
+  <p class="lede">Seven doctors sell the same three things at their own prices: a point of CON, an exam, and a cure. The doctor in Darwin Village charges ten times what the doctor in Highpool charges for an exam.</p>
+  <div class="plate">
+    <div class="wl-tw"><table class="wl-t">
+      <thead><tr><th>Doctor</th><th>Where</th><th>One CON point</th><th>Exam</th><th>One cure</th></tr></thead>
+      <tbody>
+        <tr><td>Q Emergency <span data-part="map-01"><code>$3BC1</code></span></td><td><a href="levels.html#map-1">Quartz</a></td><td class="wl-n">$5</td><td class="wl-n">$30</td><td class="wl-n">$70</td></tr>
+        <tr><td>Infirmary <span data-part="map-10"><code>$3F5C</code></span></td><td><a href="levels.html#map-10">Highpool</a></td><td class="wl-n">$5</td><td class="wl-n">$25</td><td class="wl-n">$50</td></tr>
+        <tr><td>Infirmary <span data-part="map-12"><code>$4F0F</code></span></td><td><a href="levels.html#map-12">Las Vegas</a></td><td class="wl-n">$10</td><td class="wl-n">$100</td><td class="wl-n">$200</td></tr>
+        <tr><td>Sickbay <span data-part="map-13"><code>$3D8C</code></span></td><td><a href="levels.html#map-13">Sleeper Base, level 2</a></td><td class="wl-n">$25</td><td class="wl-n">$200</td><td class="wl-n">$200</td></tr>
+        <tr><td>Patch em up <span data-part="map-21"><code>$3C04</code></span></td><td><a href="levels.html#map-21">Darwin Village</a></td><td class="wl-n">$20</td><td class="wl-n">$250</td><td class="wl-n">$250</td></tr>
+        <tr><td>Old Doc Bob <span data-part="map-26"><code>$4CFE</code></span></td><td><a href="levels.html#map-26">Needles</a></td><td class="wl-n">$8</td><td class="wl-n">$50</td><td class="wl-n">$80</td></tr>
+        <tr><td>Nuclear Aid <span data-part="map-38"><code>$3F67</code></span></td><td><a href="levels.html#map-38">Las Vegas, the Mushroom Cloud temple</a></td><td class="wl-n">$15</td><td class="wl-n">$90</td><td class="wl-n">$150</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">Every doctor's record in the 42 maps, with the name on the picture's caption and the three prices, which are bytes 4, 5, and 6 of the record (<code>$CAE0</code>, <code>$CAA2</code>, <code>$CB6A</code>). Each price is one byte, so nothing a doctor sells costs more than $255.</p>
+  </div>
+  <p>A doctor treats one Ranger at a time and offers a cure only after that Ranger has paid for the exam (<code>$CA5A</code>). Picking a patient puts the exam back on offer, even the same patient again (<code>$CA1D</code>), so a Ranger who leaves the menu and comes back pays for a second exam before the next cure. The exam lists the diseases by number, and each payment for a cure clears one of them (<code>$CB84</code>). One disease cured in Quartz comes to $100 with its exam, and in Darwin Village to $500.</p>
+  <p>Healing is sold a point at a time, to any Ranger whose CON is not exactly 0. A Ranger at 0 is dead, and the doctor says so: <q>is beyond my help.</q> A Ranger below 0 can be bought back up, and the point that would land on 0 comes with a second point free (<code>$CB38</code>), so no patient is left on the skull.</p>
+</section>
+
+<section id="wl-libraries" data-part="module-2">
+  <p class="fig">10 · Libraries</p>
+  <h2 class="t">What each library teaches</h2>
+  <p class="lede">A library sells skill levels for skill points, and each library has its own list. Five of the eight sell every skill that the Ranger Center sells. Helicopter pilot is sold in one place in the whole game, the simulator on the third level of Sleeper Base.</p>
+  <div class="plate">
+    <div class="wl-tw"><table class="wl-t">
+      <thead><tr><th>Library</th><th>Where</th><th>Sells</th></tr></thead>
+      <tbody>
+        <tr><td>Clone prep. <span data-part="map-07"><code>$3BBC</code></span></td><td><a href="levels.html#map-7">Sleeper Base, level 1</a></td><td>Clone tech</td></tr>
+        <tr><td>Vegas Lib. <span data-part="map-12"><code>$4F22</code></span></td><td><a href="levels.html#map-12">Las Vegas</a></td><td><b>The Ranger Center's skills</b>, and Electronics, Toaster repair, Doctor, and Energy weapon</td></tr>
+        <tr><td>Books <span data-part="map-13"><code>$3D5B</code></span></td><td><a href="levels.html#map-13">Sleeper Base, level 2</a></td><td><b>The Ranger Center's skills</b>, and Electronics, Toaster repair, Doctor, Energy weapon, and Cyborg tech</td></tr>
+        <tr><td>Chopper Sim <span data-part="map-15"><code>$3C33</code></span></td><td><a href="levels.html#map-15">Sleeper Base, level 3</a></td><td>Helicopter pilot</td></tr>
+        <tr><td>Library <span data-part="map-21"><code>$3C50</code></span></td><td><a href="levels.html#map-21">Darwin Village</a></td><td><b>The Ranger Center's skills</b>, and Toaster repair, Doctor, and Clone tech</td></tr>
+        <tr><td>New Thought <span data-part="map-26"><code>$4D11</code></span></td><td><a href="levels.html#map-26">Needles</a></td><td><b>The Ranger Center's skills</b>, and Electronics, Toaster repair, and Doctor</td></tr>
+        <tr><td>Technical <span data-part="map-36"><code>$3F05</code></span></td><td><a href="levels.html#map-36">Guardian Citadel, the Outer Sanctum</a></td><td>Demolitions, Alarm disarm, Bomb disarm, Electronics, Toaster repair, Clone tech, Energy weapon, and Cyborg tech</td></tr>
+        <tr><td>Knowledge <span data-part="map-38"><code>$3F7A</code></span></td><td><a href="levels.html#map-38">Las Vegas, the Mushroom Cloud temple</a></td><td><b>The Ranger Center's skills</b>, and Electronics, Toaster repair, Doctor, and Energy weapon</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">Every library's record in the 42 maps, with the name on the picture's caption and the skills in its list. <b>The Ranger Center's skills</b> are the 27 that a new Ranger with IQ 18 is offered: skills 1 to 28 without Combat shooting.</p>
+  </div>
+  <p>A library shows a Ranger the skills on its list that the Ranger's IQ allows (<code>$CB95</code>). A new skill costs its first-level price and starts at level 1. Each further level costs double the one before, up to a price of 255 (<code>$CBF7</code>), and a level is sold only while the skill's level is below the Ranger's rank: <q>Need more experience.</q> The points come from IQ. A new Ranger has as many skill points as IQ, and each point of IQ added at a promotion adds one more (<span data-part="radio"><code>$809A</code></span>). The price that doubles has <a href="discoveries.html#wl-library">a bug of its own on the Discoveries tab</a>.</p>
+</section>
+
+<section id="wl-reset" data-part="ranger">
+  <p class="fig">11 · The Ranger Center</p>
+  <h2 class="t">Secret: the Ranger Center has a key that hands back every skill point, and the C64 keyboard has no way to press it</h2>
+  <p class="lede">A new Ranger spends skill points on a list of skills, and a point spent is spent. The program holds a way to start the list again. It wipes every skill bought and gives the points back, and it waits for a key that the C64 version cannot read.</p>
+  <p>The engine's lists take the digit of a line, RETURN, the left arrow, and one extra key that each list sets for itself. On the skills page in play the extra key is R, for reordering the skills. The Ranger Center sets the extra key of its skill list to the code <code>$92</code> (<code>$83FE</code>). When that key comes in, the program clears all 30 of the Ranger's skill slots, sets the skill points back to the Ranger's IQ, and shows the list again (<code>$80B5</code>).</p>
+  <p>The game's key codes are the ones an Apple II keyboard sends, where <code>$92</code> is the Control key held with R. The C64 version turns each key of its own keyboard into one of those codes through a table of 64 entries, one for each key (<span data-part="engine"><code>$C953</code></span>). In that table R alone gives <code>$D2</code>, the Control key gives nothing, and none of the 64 entries is <code>$92</code>. A player on the C64 who buys the wrong skill can only delete the Ranger and roll a new one.</p>
+  <p>The same list has a message that can never be shown. <q>You are not smart enough!</q> answers a pick of a skill that needs more IQ than the Ranger has (<code>$8179</code>). The list shows only the skills that the Ranger's IQ allows, and the engine takes only the digit of a line that is on the screen, so the pick that the message answers cannot be made.</p>
+</section>
+
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script type="application/json" id="wl-rules">{"rangers":["Hell Razor","Angela Deth","Thrasher","KIT"],"diseases":["Radiation poisoning","Wasteland Herpes","Bug byte","Sewer rot","Desert dust","Rabies","D6","D7"],"scenes":{"men":{"map":2,"x":19,"y":24},"women":{"map":2,"x":23,"y":25,"step":true},"lady":{"map":32,"x":12,"y":9},"gate":{"map":35,"x":8,"y":26}},"clock":{"map":1},"exam":52228}</script>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="reference/wasteland-fight.js"></script>
+<script>
+/* party/scene.js */
+// Runs one square of a map on the game's own code for the party in a WLFight machine: the square
+// the party stands on (run_square_action $ACC1) or the square it tries to step onto
+// (blocking_check_square $8DEC). Keys the game waits for come from the caller, then RETURN.
+const WLScene = (function () {
+  'use strict';
+  const A = { readKey: 0x2514, waitKey: 0x24F2, cursor: 0x1DA9, erase: 0x1DAC, blink: 0x1DA4, squareAction: 0xACC1,
+    blockingCheck: 0x8DEC, silent: [0x055D, 0x26E7, 0x241C, 0x2422, 0x242B, 0x135A] };
+  class Stuck extends Error {}
+  // the frame the engine draws round a message window, and the control codes in the text
+  const FRAME = /\u0001\u0003\u0004*\u0005[^\n]*?(?:~\[)+/g;
+  const lines = text => String(text).replace(FRAME, '\n').split('\n').map(s => s.replace(/[\u0000-\u001F]/g, '').replace(/\s+/g, ' ').trim()).filter(Boolean);
+  function attach(F) {
+    const m = F.m, h = F.hooks;
+    let keys = [];
+    const give = c => { if (!keys.length) throw new Stuck(); const k = keys.shift(); c.a = k; m[0x18] = k; c.c = 0; c.rts(); };
+    h[A.readKey] = give; h[A.waitKey] = give;
+    for (const a of [A.cursor, A.erase, A.blink].concat(A.silent)) h[a] = c => { c.rts(); };
+    const base = F.save();
+    // prep(m, rec) changes the Rangers' records before the square runs
+    function run(x, y, typed, prep, step) {
+      F.load(base); F.take();
+      if (prep) prep(m, F.rec);
+      keys = [...(typed || '')].map(c => c.charCodeAt(0) | 0x80).concat([0x8D, 0x8D, 0x8D, 0x8D, 0x8D, 0x8D]);
+      let refused = false;
+      try {
+        if (step) refused = !!F.call(A.blockingCheck, { x, y }, 6e6).c;
+        else { F.place(x, y); F.call(A.squareAction, {}, 6e6); }
+      } catch (e) { if (!(e instanceof Stuck) && !/step limit/.test(String(e.message))) throw e; }
+      return { lines: lines(F.take()), refused, at: [m[0x57], m[0x58]] };
+    }
+    return { run, F };
+  }
+  return { attach, A };
+})();
+// end of party/scene.js
+</script>
+<script>
+/* party/rules.js */
+// The party tab's widgets for the rules: the table of tests, the squares that read a Ranger's
+// sex and rank through WLScene, and the health clock on the game's own code.
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const pause = () => new Promise(r => setTimeout(r, 0));
+  const LOST = 'The game’s code did not load here. Open this page on the built site.';
+  const data = $('wl-rules');
+  if (!data) return;
+  const D = JSON.parse(data.textContent);
+
+  // ---- the table of skills: a heading sorts it ----
+  (function () {
+    const table = $('wl-ru-skills'); if (!table) return;
+    const body = table.tBodies[0], heads = [...table.tHead.rows[0].cells];
+    const key = (tr, i, num) => { const c = tr.cells[i], v = c.dataset.v !== undefined ? c.dataset.v : c.textContent; return num ? parseFloat(v) || 0 : v.trim().toLowerCase(); };
+    heads.forEach((th, i) => {
+      th.tabIndex = 0; th.setAttribute('role', 'button');
+      const sort = () => {
+        // a first press sorts numbers from the highest down, and the skills and words from the top
+        const num = th.dataset.k === 'n', cur = th.getAttribute('aria-sort');
+        const dir = cur === 'ascending' ? -1 : cur === 'descending' ? 1 : num && i ? -1 : 1;
+        const rows = [...body.rows].sort((a, b) => { const x = key(a, i, num), y = key(b, i, num); return (x < y ? -1 : x > y ? 1 : a.dataset.n - b.dataset.n) * dir; });
+        heads.forEach(h => h.removeAttribute('aria-sort')); th.setAttribute('aria-sort', dir > 0 ? 'ascending' : 'descending');
+        rows.forEach(r => body.appendChild(r));
+      };
+      th.addEventListener('click', sort);
+      th.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sort(); } });
+    });
+  })();
+
+  // ---- the game's code, loaded when a plate first needs it ----
+  const ready = typeof WLFight !== 'undefined' && typeof WLScene !== 'undefined' && window.C64 && C64.load && window.C64Cpu;
+  const pool = new Uint8Array(256); let left = 0;
+  const rnd = () => { if (!left) { crypto.getRandomValues(pool); left = 256; } return pool[--left]; };
+  const parts = {}, made = {};
+  const part = id => parts[id] || (parts[id] = C64.load('parts/' + id + '/listing.json').catch(e => { delete parts[id]; throw e; }));
+  const machine = (map, size) => {
+    if (!ready) return Promise.reject(new Error('the scripts of this page did not load'));
+    const k = map + ':' + size;
+    return made[k] || (made[k] = Promise.all([part('engine'), part('game'), part('map-' + String(map).padStart(2, '0'))])
+      .then(([engine, game, m]) => WLFight.create({ engine, game, map: m, mapNumber: map, CPU: C64Cpu.CPU, random: rnd, size }))
+      .catch(e => { delete made[k]; throw e; }));
+  };
+  const scenes = {};
+  const scene = (map, size) => scenes[map + ':' + size] || (scenes[map + ':' + size] = machine(map, size).then(F => WLScene.attach(F)));
+  function guard(el, tally, fn) {
+    let busy = false;
+    return async function (a) {
+      if (busy) return;
+      busy = true; el.classList.add('wl-be-busy');
+      try { await fn(a); } catch (e) { tally.innerHTML = '<span class="wl-err">' + LOST + '</span>'; }
+      busy = false; el.classList.remove('wl-be-busy');
+    };
+  }
+  const NAMES = D.rangers;
+  const pick = (id, opts, v) => '<select class="wl-fi-sel" id="' + id + '">' + opts.map((o, i) => '<option value="' + i + '"' + (i === v ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select>';
+
+  // ---- section 05: the squares that read sex and rank ----
+  (function () {
+    const el = $('wl-ru-doors'); if (!el) return;
+    const party = $('wl-ru-party'), log = el.querySelector('.wl-fi-log'), tally = el.querySelector('.wl-be-tally');
+    const ranks = []; for (let r = 1; r <= 12; r++) ranks.push('rank ' + r);
+    party.innerHTML = NAMES.map((n, i) => '<div class="wl-ru-row"><b>' + esc(n) + '</b>' + pick('wl-ru-sex' + i, ['a man', 'a woman'], i & 1) + pick('wl-ru-rank' + i, ranks, 0) + '</div>').join('');
+    const sex = i => +$('wl-ru-sex' + i).value, rank = i => +$('wl-ru-rank' + i).value + 1;
+    const prep = (m, rec) => { for (let i = 0; i < 4; i++) { m[rec(i + 1) + 0x18] = sex(i); m[rec(i + 1) + 0x24] = rank(i); } };
+    const S = D.scenes;
+    const run = guard(el, tally, async which => {
+      tally.textContent = 'Asking the game…'; await pause();
+      let r, note;
+      if (which === 'lady') {
+        const P = await scene(S.lady.map, 1), m = P.F.m, a = P.F.rec(1);
+        r = P.run(S.lady.x, S.lady.y, 'Y', (mm, rec) => { mm[rec(1) + 0x18] = sex(0); mm[rec(1) + 0x15] = 200; mm[rec(1) + 0x16] = 0; mm[rec(1) + 0x17] = 0; mm[rec(1) + 0x28] = 0; });
+        const cash = m[a + 0x15] | m[a + 0x16] << 8;
+        note = m[a + 0x28] & 2 ? NAMES[0] + ' paid $' + (200 - cash) + ' and now has Wasteland Herpes.' : NAMES[0] + ' keeps the $200 and catches nothing.';
+      } else {
+        const sc = S[which], P = await scene(sc.map, 4);
+        r = P.run(sc.x, sc.y, '', prep, !!sc.step);
+        const women = [0, 1, 2, 3].filter(i => sex(i)).length, top = Math.max(rank(0), rank(1), rank(2), rank(3));
+        note = which === 'women' ? (r.refused ? 'The game refuses the step: ' + (4 - women) + ' of the four Rangers ' + (women === 3 ? 'is a man.' : 'are men.') : 'The game lets the party step through: all four Rangers are women.')
+          : which === 'men' ? (women ? 'One woman in the party is enough for the look.' : 'All four Rangers are men, and the game prints only the door.')
+          : 'The highest rank in the party is ' + top + ', and the test asks for 10.';
+      }
+      log.innerHTML = r.lines.map(l => '<p>' + esc(l) + '</p>').join('') || '<p class="wl-fi-dim">Nothing was printed.</p>';
+      log.scrollTop = 0; tally.innerHTML = '<b>' + esc(note) + '</b>';
+    });
+    el.addEventListener('click', e => { const b = e.target.closest('button[data-scene]'); if (b) run(b.dataset.scene); });
+  })();
+
+  // ---- section 06: the health clock ----
+  (function () {
+    const el = $('wl-ru-clock'); if (!el) return;
+    const sick = $('wl-ru-sick'), log = el.querySelector('.wl-fi-log'), tally = el.querySelector('.wl-be-tally');
+    const DIS = ['No disease'].concat(D.diseases), START = [['20 CON', 20], ['Knocked out, −5', -5], ['Badly hurt, −15', -15]];
+    const first = [[0, 0], [4, 0], [5, 0], [6, 2]];
+    sick.innerHTML = NAMES.map((n, i) => '<div class="wl-ru-row"><b>' + esc(n) + '</b>' + pick('wl-ru-dis' + i, DIS, first[i][0]) + pick('wl-ru-con' + i, START.map(s => s[0]), first[i][1]) + '</div>').join('');
+    let F = null, base = null, steps = 0;
+    const dis = i => +$('wl-ru-dis' + i).value, con0 = i => START[+$('wl-ru-con' + i).value][1];
+    function begin() {
+      F.load(base); steps = 0;
+      for (let i = 0; i < 4; i++) { F.setMaxCon(i + 1, 30); F.setCon(i + 1, con0(i)); F.m[F.rec(i + 1) + 0x28] = dis(i) ? 1 << (dis(i) - 1) : 0; }
+    }
+    const state = c => c > 0 ? 'awake' : c === 0 ? 'dead' : c >= -10 ? 'unconscious' : 'dying';
+    function draw() {
+      log.innerHTML = NAMES.map((n, i) => { const c = F.con(i + 1), d = c - con0(i); return '<p><b' + (c <= 0 ? ' class="wl-ru-bad"' : '') + '>' + esc(n) + '</b>: CON ' + String(c).replace('-', '−') + ' of 30, ' + state(c) + (d && c ? ' (' + (d > 0 ? '+' : '−') + Math.abs(d) + ')' : '') + '<br><span class="wl-fi-dim">' + esc(DIS[dis(i)]) + '</span></p>'; }).join('');
+      const h = Math.floor(steps / 120), mnt = (steps % 120) / 2;
+      tally.innerHTML = steps ? '<b>' + h + (h === 1 ? ' hour' : ' hours') + (mnt ? ' and ' + mnt + ' minutes' : '') + ' walked.</b>' : 'The party has not moved.';
+    }
+    const walk = guard(el, tally, async n => {
+      if (!F) { tally.textContent = 'Loading the game’s code…'; await pause(); F = await machine(D.clock.map, 4); base = F.save(); begin(); }
+      if (!n) begin();
+      for (let s = 0; s < n; s++) { F.call(WLFight.A.advanceClock); steps++; }
+      F.take(); draw();
+    });
+    el.addEventListener('click', e => { const b = e.target.closest('button[data-walk]'); if (b) walk(+b.dataset.walk); });
+    sick.addEventListener('change', () => { if (F) walk(0); });
+  })();
+
+  // ---- section 08: the doctor's list for all eight bits ----
+  (function () {
+    const el = $('wl-ru-exam'); if (!el) return;
+    const log = el.querySelector('.wl-fi-log'), tally = el.querySelector('.wl-be-tally');
+    const go = guard(el, tally, async () => {
+      tally.textContent = 'Loading the doctor…'; await pause();
+      const [F, doc] = await Promise.all([machine(D.clock.map, 4), part('module-0')]);
+      // the doctor's module over the memory at $CA00, where the game loads it
+      const keep = F.save();
+      for (let a = 0xCA00; a < 0xCE00; a++) if (doc.has[a]) F.m[a] = doc.ram[a];
+      F.take(); F.call(D.exam, { a: 0xFF }); F.call(WLFight.A.flushLine);
+      const text = F.take(); F.load(keep);
+      log.innerHTML = text.split('\n').map(l => l.replace(/[\u0000-\u001F]/g, '').trim()).filter(Boolean).map(l => '<p' + (/D[67]$/.test(l) ? ' class="wl-fi-hot"' : '') + '>' + esc(l) + '</p>').join('');
+      tally.textContent = 'Lines 7 and 8 are the two diseases that nothing gives.';
+    });
+    $('wl-ru-exam-go').addEventListener('click', go);
+  })();
+})();
+// end of party/rules.js
+</script>
