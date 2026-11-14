@@ -254,6 +254,12 @@ its music or its maps can put that first instead.
   for a number, a dot on the map for a place. Put it in the row beside
   the text, as the terrain, creature and spell tables of
   `games/spectrum/lords-of-chaos/index.html` do (pull request #751).
+- A map or screen a page draws from the game's data takes its character
+  set, colour mode and shared colours from the registers the game sets for
+  that band of the screen, read off a recorded frame, not from the
+  comments: a test that matches only the screen codes passes with the
+  wrong font or mode. Hold the drawing's sources to the frame's registers
+  in its test, or compare its pixels with the emulator's picture.
 - A widget that runs a mechanic is a claim too. Port the routine, then
   test the port against the game itself before it goes on the page:
   against a pass-by-pass trace of the game's own variables recorded in

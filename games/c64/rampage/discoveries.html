@@ -1,0 +1,795 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rampage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.plate{margin:22px 0;overflow-x:auto}
+.plate canvas,.plate img{max-width:100%;height:auto;display:block}
+.rp-row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.rp-bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:0 0 14px;font-size:15px}
+.rp-bar label{display:inline-flex;gap:6px;align-items:center}
+.rp-bar select,.rp-bar button,.rp-bar input[type=range]{font:inherit}
+.rp-bar button{padding:4px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
+.rp-bar button[aria-pressed=true]{background:var(--chip);color:var(--chip-ink)}
+.rp-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.4em}
+.rp-tab{border-collapse:collapse;font-size:15px;margin:6px 0}
+.rp-tab th,.rp-tab td{border-bottom:1px solid var(--line-soft);padding:5px 12px 5px 0;text-align:left;vertical-align:middle}
+.rp-tab th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:500}
+.rp-tab td.n{font-family:var(--fm);font-size:13px}
+.rp-pics{display:flex;flex-wrap:wrap;gap:16px}
+.rp-pics figure{margin:0;flex:1 1 300px}
+.rp-pics img{width:100%;image-rendering:pixelated;border-radius:6px}
+.rp-pics figcaption{font-size:14px;color:var(--ink-mute);margin-top:6px}
+.rp-sheet{display:flex;flex-wrap:wrap;gap:12px}
+.rp-sheet figure{margin:0;text-align:center;font-family:var(--fm);font-size:11px;color:var(--ink-mute)}
+.rp-sheet canvas{margin:0 auto 4px;background:#3b3f48;border-radius:4px}
+.rp-miss{font-size:14px;color:var(--ink-mute);font-style:italic}
+@media (max-width:700px){:root{--gx:16px;--h1:34px;--h2:22px;--pp:14px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1987 · Activision</p>
+  <h1>Rampage</h1>
+  <p class="sub">The game tells the player to eat to survive, and eating does nothing. The third monster cannot be shot, two of the three tunes are gone, and the demonstration hides a message for someone called Rhona.</p>
+</header>
+<main class="wrap">
+
+<section id="eat">
+  <p class="fig">01 · Food</p>
+  <h2 class="t">Bug: eating does nothing, though the game says "you must eat food to survive"</h2>
+  <p class="lede">A monster that grabs something from a window chews it and gets nothing: no energy, no points, and no harm from the poison.</p>
+  <div class="plate">
+    <div class="rp-row"><canvas id="rp-d-over" width="640" height="400" aria-label="The screen that ends a game: YOU MUST EAT FOOD TO SURVIVE"></canvas><canvas id="rp-d-items" width="640" height="400" aria-label="The COLLECT ITEMS screen, with its three groups of things"></canvas></div>
+    <p class="cap">Two of the game's text screens, drawn by the game's own code, which the page runs on a copy of the C64's processor, the 6502. Left: the screen that ends a game. Right: the list shown before the first level, in three groups: things worth points in the arcade game, food, and things that hurt.</p>
+  </div>
+  <p>In the arcade game, food gives a monster energy back, and the manual of this version says the same: "edibles" increase your energy and electrical appliances give "nasty surprises". One of the newspaper's headlines is a hint about it: <code>WANT TO EAT. WELL PUNCH SLOWER</code>.</p>
+  <p>The code has one routine for eating (<code>$8BFF</code>; a number after a $ is an address in the game's memory, written in hexadecimal, and links to that place on the Source code tab). The routine plays 21 steps of a chewing animation and goes back to what the monster was doing. The routine never looks at which of the twelve things was grabbed, so a turkey, a toaster, and a bottle of poison are the same. Nothing in the program adds to a monster's energy (<code>$9B81</code>), and the only routine that adds to a score is the one for a punch on a building.</p>
+  <p>In the emulator, a monster chewed for 70 frames, a frame being a fiftieth of a second. Its energy was 40 before and 40 after, and its score did not change.</p>
+  <p>Energy therefore only ever goes down. A monster starts with 56 units and loses one for every second hit that counts, so each monster is out of the game after 112 counted hits, whatever it eats. A routine that adds 500 points sits in the code beside the one that adds 100 (<code>$98E2</code>), and nothing calls it.</p>
+</section>
+
+<section id="names">
+  <p class="fig">02 · A message</p>
+  <h2 class="t">Secret: on one level of the demonstration the monsters' names read RHONA, I LOVE, YOU</h2>
+  <p class="lede">The three names at the top of the screen are swapped for a message when nobody is playing and the game is on its nineteenth level.</p>
+  <div class="plate">
+    <div class="rp-bar"><button type="button" id="rp-d-names-go" aria-pressed="true">Nobody has joined</button></div>
+    <canvas id="rp-d-names" width="640" height="400" aria-label="The nineteenth level with its status lines"></canvas>
+    <p class="cap">The nineteenth level as the game's own code sets it up and draws it, run on the site's 6502. The button changes one byte of memory, the one that says whether anybody has joined (<code>$9C61</code>).</p>
+  </div>
+  <p>When a level starts, the game checks two things (<code>$90E4</code>): that nobody has joined, and that the level number is 18, which is the nineteenth level because the count starts at 0. When both are true the game reads the three names from a different place in its table of names (<code>$9AE2</code>).</p>
+  <p>The message is hard to reach by playing. The level number only goes up when a level is cleared, and with nobody playing, the computer's monsters would have to flatten eighteen levels alone. They punch at random: in a long unattended run in the emulator they brought down one of the first level's three buildings. The picture above comes from setting the level number by hand before the level begins.</p>
+</section>
+
+<section id="bullet">
+  <p class="fig">03 · Bullets</p>
+  <h2 class="t">Bug: the third monster cannot be shot, and the second is hurt in its place</h2>
+  <p class="lede">A bullet that reaches the third player's monster takes energy from the second player's monster, wherever that one is standing.</p>
+  <div class="plate">
+    <table class="rp-tab" id="rp-d-shots"></table>
+    <p class="cap">The page stands the three monsters apart in the street, puts one bullet inside one monster's box, and runs the game's own bullet routine (<code>$9E68</code>) on the site's 6502. The last column is the hit flag the game set.</p>
+  </div>
+  <p>About five times a second, on each pass of its main loop, the game works out an invisible box round each monster and tests every bullet against the three boxes in turn. A bullet inside a box is removed, and a flag is set for that box's monster. A flag is a byte that is 0 or 1, and this one means "hit". The three tests are the same piece of code written out three times, and the third copy was not finished: it sets the second monster's flag (<code>$9F66</code>) where it should set the third's.</p>
+  <p>The third monster is Ralph unless the players have swapped characters on the newspaper screen. Bullets pass nothing on to Ralph, and each one that would have hit him counts against Lizzie. Falls, punches from the other monsters, and the hole in the road still hurt him.</p>
+  <p>In the emulator, a bullet inside the third monster's box set the second monster's flag while the second monster stood nine columns away.</p>
+</section>
+
+<section id="tune">
+  <p class="fig">04 · Lost music</p>
+  <h2 class="t">Bug: the game asks for three tunes and has one and a bit</h2>
+  <p class="lede">The list of things to eat and the newspaper each ask for a tune of their own. Both get the title tune, because the other two are mostly gone.</p>
+  <div class="plate"><div id="rp-d-sid"></div>
+  <p class="cap">The page runs the game's own music player on the site's 6502, started the way the screens meant to start it: with the tune's number. The first button plays the one voice of the second tune that is still in the game, alone, and stops where its data stops. The second button plays all three voices as the game would, with two of them reading the scenery as if it were notes. The filter is modelled on a 6581 chip.</p></div>
+  <p>The music player has a table of three tunes (<code>$0298</code>). A tune is three lists of notes, one for each of the three voices the sound chip can play at once. Each of the three text screens loads a different tune number before it starts the music. The routine that starts the music (<code>$AD0B</code>) begins by setting that number to 0, so every screen plays the first tune.</p>
+  <p>The table shows why. The first tune's three voices sit in memory from <code>$0576</code> to <code>$09E6</code>, and the second tune's first voice follows at <code>$09E7</code>. At <code>$0B00</code> the scenery begins: the rows of characters that draw the skyline and the street. The second tune's first voice runs into the scenery in the middle of a note, about 65 seconds in. Its other two voices, and all three voices of the third tune, have addresses inside the scenery, so nothing of them is left.</p>
+  <p>What is left of the second tune is a melody line with no accompaniment. Whether the tunes were dropped to make room for the scenery, or were never finished, the code does not say.</p>
+</section>
+
+<section id="sfx">
+  <p class="fig">05 · Unfinished sound</p>
+  <h2 class="t">Bug: the sound effects never get to finish</h2>
+  <p class="lede">Each effect was written to slide in pitch and stop after a set time. The routine that does both is in the game, and nothing calls it.</p>
+  <div class="plate">
+    <div class="rp-row">
+      <div style="flex:1 1 320px"><p class="rp-out" style="margin:0 0 8px">As the game plays them</p><div id="rp-d-sfx-a"></div></div>
+      <div style="flex:1 1 320px"><p class="rp-out" style="margin:0 0 8px">With the unused routine running</p><div id="rp-d-sfx-b"></div></div>
+    </div>
+    <p class="cap">Both players run the game's own code on the site's 6502. The left one starts an effect and does nothing more, as the game does. The right one also runs the unused routine (<code>$82AC</code>), which slides the pitch and the filter and switches the voice off when the effect's time is up. The page runs it once a frame, from the frame after an effect starts. How often the game was meant to run it is not known.</p>
+  </div>
+  <p>Each effect is described by a record of eight numbers (<code>$82EC</code>). The game uses five of them when it starts the effect. The other three, a length and two slides, are read only by a second routine, which was meant to run again and again while the effect sounds. That routine is complete and nothing calls it, so every effect is one burst of noise that fades by itself, and a long one is cut off by the next. With the routine running, each effect is a short, sharp sound of a few frames.</p>
+  <p>The game has a routine that the machine runs once a frame, whatever else is going on, called an interrupt. That routine has a gap of twenty empty bytes in it (<code>$7953</code>). A call to the missing routine would fit there. What the gap once held is not known.</p>
+  <p>Two of the five effects are never started. One of them is the only effect that is a tone, not noise.</p>
+</section>
+
+<section id="fall">
+  <p class="fig">06 · Falling buildings</p>
+  <h2 class="t">Bug: a falling building hurts whoever climbed it last, wherever they are</h2>
+  <p class="lede">A monster that climbed a building and walked away is still thrown into a fall when that building comes down.</p>
+  <p>The manual warns that a building giving way hurts a monster still on it. The game does this by remembering, for each monster, the number of the building it last started to climb (<code>$8C80</code>). On every pass that a building sinks, each monster whose remembered number matches is thrown into a fall (<code>$B281</code>), and each step of a fall is a hit.</p>
+  <p>The remembered number is set when a climb starts and never cleared. Climbing down, jumping off, and even starting the next level leave it as it was. A monster standing in the street on the far side of the screen is knocked over again and again while its last building sinks, and on a new level a building can hurt a monster that has not touched it, if it has the same number as the last one the monster climbed.</p>
+  <p>In the emulator, George stood in the street while the first building fell. With that building as his remembered one he lost 5 units of energy. With another building remembered he lost 1.</p>
+</section>
+
+<section id="red">
+  <p class="fig">07 · The energy word</p>
+  <h2 class="t">Bug: when the first player is out, the second player's DAMAGE turns all red</h2>
+  <p class="lede">The second monster's energy word shows empty for the rest of the game once the first monster is gone, whatever energy the second one has.</p>
+  <div class="plate">
+    <div class="rp-bar">
+      <button type="button" id="rp-d-red-go" aria-pressed="true">George is out</button>
+      <label>Lizzie's energy <input type="range" id="rp-d-red-e" min="1" max="56" value="50"></label>
+    </div>
+    <canvas id="rp-d-red" width="960" height="72" aria-label="The three status lines"></canvas>
+    <p class="rp-out" id="rp-d-red-out"></p>
+    <p class="cap">The status lines as the game's own code colours and prints them, on the site's 6502.</p>
+  </div>
+  <p>The routine that colours the three words (<code>$9C62</code>) handles the monsters in order. When the first monster's energy is 0 it skips that monster's letters, and the jump that skips them lands too far on, past the second monster's letters as well. The second word keeps the red it was painted with before the letters are coloured. <a href="index.html#energy">How it works</a> explains the word.</p>
+  <p>The second monster's real energy is not changed. The player just cannot see it any more.</p>
+</section>
+
+<section id="car">
+  <p class="fig">08 · The street</p>
+  <h2 class="t">Bug: one car in sixteen drives backwards, and every wreck flashes a piece of the text screens</h2>
+  <p class="lede">Two slips in the tables for the street vehicle, both visible in play.</p>
+  <div class="plate">
+    <canvas id="rp-d-car" width="640" height="160" aria-label="Two cars crossing the street: the first entry of the list, and the last, which drives backwards"></canvas>
+    <p class="rp-out" id="rp-d-car-out"></p>
+    <canvas id="rp-d-wreck" width="640" height="84" aria-label="The four pictures of a wrecked vehicle"></canvas>
+    <p class="cap">Top: the first and the last entry of the vehicle list (<code>$8CC7</code>-<code>$8D06</code>), moved as the game moves them, 2 pixels a frame. Bottom: the four pictures a wreck goes through, each made of a left and a right sprite shape (<code>$8C9B</code>, <code>$8CA2</code>).</p>
+  </div>
+  <p>The game picks each new vehicle at random from a list of sixteen. Each entry names a picture, the edge of the screen to start from, and a speed. The last entry pairs the car that faces right with a start at the right-hand edge and a speed to the left, so that car crosses the whole street in reverse.</p>
+  <p>A wrecked car or tank goes through four pictures. Each picture is two sprite shapes side by side, a sprite being a small picture the video chip can place anywhere on the screen. The second picture's entries are both wrong. Its left half is the right half of the first picture. Its right half is shape number <code>$BB</code>, which is not a sprite shape at all: that address is inside the character set, the collection of letters and small tiles that the game draws its text screens with. For a moment the wreck's right half is eight of those characters, read as if they were a sprite.</p>
+</section>
+
+<section id="shake">
+  <p class="fig">09 · The shake</p>
+  <h2 class="t">Bug: the city stays shaken after a building falls</h2>
+  <p class="lede">A falling building shakes the screen from side to side. When the fall is over the screen stays wherever the last shake left it.</p>
+  <div class="plate">
+    <div class="rp-bar"><button type="button" id="rp-d-shake-go">Bring the tall building down</button></div>
+    <canvas id="rp-d-shake" width="640" height="400" aria-label="The first level; the button brings its tallest building down"></canvas>
+    <p class="rp-out" id="rp-d-shake-out"></p>
+    <p class="cap">The first level, with the game's own code for a falling building run on the site's 6502 at the game's speed. The black strip that opens at the left edge is the shift.</p>
+  </div>
+  <p>The video chip can slide the whole picture to the right by 0 to 7 pixels. The program asks for this by writing a number to one of the chip's registers, <code>$D016</code>. On each pass that a building has no strength left, the game puts a different number there (<code>$B2DF</code>), and the city jumps about. Nothing puts the 0 back when the building has gone, so the picture, the status lines included, stays up to 7 pixels to the right until the next level sets the screen up again.</p>
+  <p>In the emulator the register held <code>$D8</code> before any building fell, and <code>$DB</code> and <code>$DF</code> after two different falls. The last digit is the slide: 0, then 3 and 7 pixels.</p>
+</section>
+
+<section id="saved">
+  <p class="fig">10 · Left in memory</p>
+  <h2 class="t">Leftover: the last game somebody played before the program was saved</h2>
+  <p class="lede">The game's working memory for buildings went onto the disk as it was, with three punches landed on the first level and two wrecked buildings from other levels.</p>
+  <div class="plate">
+    <div class="rp-row">
+      <figure style="margin:0"><canvas id="rp-d-saved" width="320" height="200" aria-label="The first level with the punches the file holds"></canvas><figcaption class="rp-out">The first level as the file holds it</figcaption></figure>
+      <figure style="margin:0"><canvas id="rp-d-ruin3" width="320" height="200" aria-label="The fourth level with the fourth building's map from the file"></canvas><figcaption class="rp-out">The fourth map, on a level whose fourth building has that shape</figcaption></figure>
+      <figure style="margin:0"><canvas id="rp-d-ruin4" width="320" height="200" aria-label="The third level with the fifth building's map from the file"></canvas><figcaption class="rp-out">The fifth map, on a level whose fifth building has that shape</figcaption></figure>
+    </div>
+    <p class="cap">The game's own drawing code on the site's 6502, with the building maps (<code>$7500</code>) left as the file has them. A level normally copies fresh maps in before it starts. The two ruined buildings are drawn at full height; in the game they would have sunk into the ground.</p>
+  </div>
+  <p>A level keeps its buildings in six small working maps and copies a clean shape into each one when the level starts. The copies in the file are not clean. The first three maps hold the first level's buildings part of the way through a game. Some windows are lit and some dark, which the game changes as a level goes on, and three punches have landed: the first building's strength is 8 where a new level gives 10, and the second's is 11 where a new level gives 12.</p>
+  <p>The fourth and fifth maps hold two buildings in which every block has its ruined form, the form a block takes while its building falls. The first level has only three buildings, so these two are from a level with more, played earlier in the same sitting. The sixth map is empty.</p>
+</section>
+
+<section id="manual">
+  <p class="fig">11 · The manual</p>
+  <h2 class="t">Quirk: the manual promises 150 screens and the game has 20</h2>
+  <p class="lede">The inlay describes 50 cities of three days each. The program has twenty levels and then starts again.</p>
+  <p>Each level is two short lists, of building shapes and of columns. There are twenty pairs of lists in use, and when the twentieth level is cleared the level number goes back to 0 (<code>$926F</code>). There are no city names and there is no count of days. The <a href="levels.html">Levels</a> tab draws all twenty.</p>
+  <p>The level tables have two more entries after the twentieth, each a single building. The level number can never reach them.</p>
+  <p>The scoring is smaller than the manual's too. A punch that changes a block of a building scores 100 points, and nothing else scores: not a building falling, a helicopter, a vehicle, or a soldier. The last two digits of a score never change.</p>
+</section>
+
+<section id="headline">
+  <p class="fig">12 · Spelling</p>
+  <h2 class="t">Bug: one headline has a piece of a picture where its P should be</h2>
+  <p class="lede">The newspaper prints <code>EX?ERIMENTAL VITAMIN HAS ILL EFFECTS</code>, with a scrap of graphics in the middle of the first word.</p>
+  <div class="plate">
+    <canvas id="rp-d-news" width="640" height="400" aria-label="The newspaper screen with the misspelt headline"></canvas>
+    <p class="cap">The newspaper before the eighth level with George playing, drawn by the game's own code on the site's 6502. The headline is one of eight, chosen by the level and the player's place on the page.</p>
+  </div>
+  <p>The headline's text is stored as character numbers (<code>$AED1</code> leads to the eight headlines). The third character of this one is the byte <code>$FB</code>, where the letter P is <code>$18</code>. Character <code>$FB</code> is a piece of one of the screen's pictures, so the word has a scrap of a picture in it.</p>
+  <p>The lizard's name is spelt two ways. The newspaper says <code>LIZZIE</code>, as the manual does, and the name above her score in play says <code>LIZZY</code>.</p>
+</section>
+
+<section id="explosion">
+  <p class="fig">13 · Explosions</p>
+  <h2 class="t">Quirk: a helicopter's explosion is animated by its rotor, and twice goes blank</h2>
+  <p class="lede">The spinning rotor's frame number is added to the explosion's pictures as it is to every other helicopter picture, so the explosion runs back and forth through its pictures and on into two empty ones.</p>
+  <div class="plate">
+    <div class="rp-row">
+      <figure style="margin:0"><canvas id="rp-d-boom-a" width="192" height="168" aria-label="The explosion as its route lists it"></canvas><figcaption class="rp-out">As the route lists it</figcaption></figure>
+      <figure style="margin:0"><canvas id="rp-d-boom-b" width="192" height="168" aria-label="The explosion as the game shows it"></canvas><figcaption class="rp-out">As the game shows it</figcaption></figure>
+    </div>
+    <p class="rp-out" id="rp-d-boom-out"></p>
+    <p class="cap">The explosion's route from the game's tables (<code>$8D21</code>), drawn from its sprite shapes at a fifth of the game's speed so that each picture can be seen.</p>
+  </div>
+  <p>A helicopter's picture is the number of a sprite shape plus the rotor's frame, which counts 0, 1, 2, 3, 2, 1 so that the blades appear to turn. Each of a helicopter's six poses has four shapes in a row for that reason. A punched helicopter follows a ninth route of three moves, which name the explosion's shapes <code>$C0</code>, <code>$C1</code>, and <code>$C2</code> in turn.</p>
+  <p>The rotor's frame is still added during the explosion. The first move runs up and down through all four explosion shapes. The second and third start further along and run on into shapes <code>$C4</code> and <code>$C5</code>, which are empty, so the explosion blinks out and comes back. In the emulator the shapes went <code>C1 C2 C2 C3 C3 C2 C2 C1 C1 C0</code>, then <code>C0 C2 C2 C3 C3 C4 C4 C3 C3 C2 C2</code>, then <code>C2 C2 C3 C3 C4 C4 C5 C5 C4 C4 C3 C3</code>.</p>
+  <p>Whether the blinking was meant is not known. The table of moves has an entry for the fourth shape, <code>$C3</code>, and the route never uses it: the fourth shape is seen only because the rotor's frame is added.</p>
+</section>
+
+<section id="unused">
+  <p class="fig">14 · Never used</p>
+  <h2 class="t">Leftover: a high-score table, a pause, and words nothing prints</h2>
+  <p class="lede">Parts of a slightly bigger game are still in the code, with nothing that leads to them.</p>
+  <table class="rp-tab">
+    <tr><th>What</th><th>Where</th><th>What it would do</th></tr>
+    <tr><td>A high-score routine and the words <code>HIGH SCORE</code> and <code>GAME SCORE</code></td><td><code>$A9B0</code>, <code>$A9F8</code>, <code>$B197</code></td><td>Keep the best score and print it. The game shows only the three scores of the game just played.</td></tr>
+    <tr><td>A pause</td><td><code>$8FEC</code></td><td>Wait in a loop while a flag is set. Nothing sets the flag. The keyboard routine reads the Q key and the Commodore key on every pass and does nothing with either.</td></tr>
+    <tr><td><code>MISS YOU</code> and <code>CUDDLE WHUMP FLUMP DUNKS</code></td><td><code>$AEE7</code></td><td>Unknown. The words sit among the headlines and nothing prints them.</td></tr>
+    <tr><td><code>THEN PRESS FIRE</code>, and <code>ONE</code>, <code>TWO</code>, <code>THREE</code></td><td><code>$AF32</code>, <code>$AF5D</code></td><td>Unknown. The words read like a screen for choosing how many play; in the game, players join from the newspaper screen.</td></tr>
+    <tr><td>A second eating animation</td><td><code>$8BF5</code></td><td>Monster state 13. Nothing puts a monster in it.</td></tr>
+    <tr><td>A test of what is beside a climbing monster</td><td><code>$87DA</code></td><td>A list of wall characters that a jump placed in front of the list skips, so a climb is never refused for what is next to the monster.</td></tr>
+    <tr><td>A routine that prints a number in hexadecimal, with six test bytes</td><td><code>$A7F1</code></td><td>A programmer's tool for looking at memory on the screen.</td></tr>
+    <tr><td>A routine that flashes the border</td><td><code>$84D1</code></td><td>Runs when a monster's state number is out of range: an alarm for the programmer.</td></tr>
+  </table>
+  <p>The graphics have spares as well. Four of each monster's 38 frames are never asked for, one of the twenty small pictures on the text screens is never drawn, and four of the vehicle shapes are never shown. The <a href="graphics.html">Graphics</a> tab draws them with the rest.</p>
+</section>
+
+<section id="slips">
+  <p class="fig">15 · Small slips</p>
+  <h2 class="t">Bug: a raised fist with a notch in it, and other small slips</h2>
+  <p class="lede">Mistakes of a byte or an instruction, each with a small effect on the screen.</p>
+  <div class="plate">
+    <div class="rp-row"><canvas id="rp-d-fist-a" width="288" height="288" aria-label="George's raised fist as the tiles give it"></canvas><canvas id="rp-d-fist-b" width="288" height="288" aria-label="George's raised fist as the sprites show it"></canvas></div>
+    <p class="rp-out" id="rp-d-fist-out"></p>
+    <p class="cap">George punching upwards, facing left. Left: the picture as its tiles give it. Right: the picture after the game's own copying routine (<code>$B520</code>), run on the site's 6502. The outlined pixels differ.</p>
+  </div>
+  <p><b>The fist.</b> The routine that copies a monster's picture into its sprites is 288 instructions that read a byte and 336 that write one, written out by hand, and one of the reads is wrong: the fourth byte of the picture's second line is read from the first byte of that line (<code>$B556</code>). The same slip is in all three monsters' copies. The two bytes are equal in every frame except the two with a fist raised to the left, where a byte of the fist's top edge is replaced and three of its four pixels change.</p>
+  <p><b>Roof corners.</b> The table that says what a punched block becomes gives three values to the ends of a roof (<code>$A73F</code>), and the punch routine keeps only part of each value. A punched roof end turns into a piece of wall and window where a broken roof end was meant.</p>
+  <p><b>Holes.</b> A new hole in a wall joins up with a hole above it, never with one below. The code for the hole below is there, and the address it would use is only half set up.</p>
+  <p><b>Reaching for food.</b> A monster's grab was meant to test a square of four characters for something to eat. An instruction is missing, and the test covers three characters in a row.</p>
+  <p><b>One row of colours.</b> The game draws on two screens by turns. For one of the two, the copy of the colours for row 21 reads the other screen's characters, so that row's colours can be a pass out of date.</p>
+  <p><b>Lit windows.</b> The routine that lights and darkens windows takes eight buildings in turn, and a level has room for six. On the two extra turns the routine looks at memory that belongs to the monsters' pictures. No byte there has the value of a window, so nothing is changed.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="../../lib/sid.js"></script>
+<script>
+/* rp-music */
+// createDriver for C64Sid: runs the game's own sound code, taken from the listing over
+// RP_DRIVER_RANGES (the driver, its tunes and the scenery rows after them; the effects; start_tune),
+// on the kit's 6502 (C64Cpu, from ../../lib/cpu6502.js, which sid.js passes to
+// createDriver).
+// A tune's button runs start_tune ($AD0B) as the text screens call it, then music_play ($0200) once
+// a frame, as music_irq does. start_tune's first instruction, LDX #$00, throws the caller's tune
+// number away; a button with skip enters one instruction later, at $AD0D, with the tune in X, which
+// is the call the screens meant to make. With solo, the two voices whose data was lost are given an
+// empty voice (their pointers put on the 0 that ends tune 0's first voice, $071C), so that only the
+// voice still in the game is heard. Tune 0 repeats for ever. The remaining voice of tune 1 has no
+// end: its data stops at $0AFF, where the scenery was loaded over the rest, so its button ends when
+// the voice's pointer ($F7) gets there, before the driver plays the scenery as notes.
+// An effect's button calls start_sound ($822F) with the effect in A and the voice in X, as the
+// game's callers do, and then nothing, as in the game: the effect is one burst, and its button
+// ends after 150 frames. With sweep, update_sound ($82AC), which nothing in the game calls, runs
+// once a frame from the frame after the effect starts, and the button ends 50 frames after it has
+// gated the voice off (sfx_time back to 0). The three sfx_time counters ($8211) are cleared first: the file holds the values the last
+// effects left there, which a game that called update_sound would have counted down.
+const RP_DRIVER_RANGES = [[0x0200, 0x12FF], [0x8210, 0x8313], [0xAD0B, 0xAD32]];
+const RP_TUNES = [
+  { name: 'The tune of the text screens', tune: 0 },
+  { name: 'The second tune, never played: the one voice that is left', tune: 1, skip: true, solo: true },
+];
+// discoveries.html's player: tune 1's remaining voice alone, and tune 1 as start_tune would start
+// it with the caller's X kept, its second and third voices reading the scenery rows at $0B00.
+const RP_LOST = [
+  { name: 'The second tune: the one voice that is left', tune: 1, skip: true, solo: true },
+  { name: 'The second tune with all three voices, two of them reading the scenery', tune: 1, skip: true },
+];
+const RP_EFFECTS = [
+  { name: 'A punch breaks a wall (0)', sfx: 0, voice: 0 },
+  { name: 'A helicopter fires; a building falls (1)', sfx: 1, voice: 2 },
+  { name: 'A bullet hits a monster; a building falls (2)', sfx: 2, voice: 1 },
+  { name: 'Effect 3, never started', sfx: 3, voice: 0 },
+  { name: 'Effect 4, never started', sfx: 4, voice: 0 },
+];
+const RP_EFFECTS_SWEPT = RP_EFFECTS.map((e) => ({ name: e.name, sfx: e.sfx, voice: e.voice, sweep: true }));
+function createDriver(D, C64Cpu) {
+  const base = new Uint8Array(0x10000);
+  for (const [ad, bytes] of D.mem) base.set(bytes, ad);
+  const sid = new Uint8Array(25);
+  let m, cpu, c, writes = [], over = false, left = 0, first = false;
+  const io = {
+    read(ad) { throw new Error('read $' + ad.toString(16)); },
+    write(ad, val) {
+      if (ad >= 0xD400 && ad < 0xD419) { sid[ad - 0xD400] = val; writes.push(ad - 0xD400, val); return; }
+      if (ad >= 0xD419 && ad < 0xD41D) return;
+      throw new Error('write $' + ad.toString(16));
+    },
+  };
+  const run = (ad, regs) => cpu.call(ad, regs || {}, { maxSteps: 200000 });
+  return {
+    sid,
+    get writes() { return writes; },
+    get mem() { return m; },
+    init(t) {
+      c = D.list[t];
+      m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x35, io });
+      sid.fill(0); over = false; writes = [];
+      if (c.sfx === undefined) {
+        run(c.skip ? 0xAD0D : 0xAD0B, { x: c.tune });
+        if (c.solo) for (const x of [2, 4]) { m[0xF7 + x] = m[0x0227 + x] = 0x1B; m[0xF8 + x] = m[0x0228 + x] = 0x07; }
+      } else { if (c.sweep) m[0x8211] = m[0x8212] = m[0x8213] = 0; run(0x822F, { a: c.sfx, x: c.voice }); left = 150; first = true; }
+    },
+    stop() { over = true; writes = []; },
+    play() {
+      writes = [];
+      if (over) return;
+      if (c.sfx === undefined) { run(0x0200); if (c.solo && (m[0xF7] | m[0xF8] << 8) >= 0x0AFF) over = true; }
+      else {
+        if (c.sweep && first) { first = false; return; }
+        if (c.sweep) { const was = m[0x8211 + c.voice]; run(0x82AC); if (was && !m[0x8211 + c.voice]) left = 50; if (was) return; }
+        if (!--left) over = true;
+      }
+    },
+    playing() { return !over; },
+  };
+}
+// end of rp-music
+</script>
+<script>
+/* rp-city */
+// The city and the text screens, drawn by the game's own code on the kit's 6502 (Cpu, C64Cpu on a
+// page) over a copy of the listing's memory (ram). Each function returns what C64.renderFrame
+// draws: { mem, vic, colourMem, cia2, cpu, writes, lines, cycles }.
+//
+// rpCity(ram, Cpu, level, demo): a level as the game sets it up. game_start ($8314) runs up to its
+// call of level_intro ($8476), which sets the video chip and clears the screens; level ($9083) and
+// demo_mode ($9C61, 1 when nobody has joined) are set; level_init ($90DF) sets the level up. The
+// three monsters are put out of the game (monster_state 15) and their sprites are off: the picture
+// is the city.
+//   draw()            one pass's drawing, as frame_work ($921F) orders it: draw_scenery ($960E),
+//                     draw_buildings ($9533), draw_status ($994A), weak_road ($9858) and
+//                     flip_screens ($929D). The first call draws twice, once for each of the two
+//                     screens, as start_day does. The status lines' character set is in force at
+//                     the top of the frame and the city's from line 76, where the game's timer
+//                     interrupt changes it ($D018).
+//   punch(col, row)   a climbing monster's punch on the character at that screen column and row:
+//                     damage_building ($A62F) for the first monster, facing left, with cell_col
+//                     ($A585) the column and cell_row ($A586) the row plus one, as eat_or_damage
+//                     leaves them. A click on a building's first column is moved one to the right,
+//                     the first column the routine accepts. Returns true if the map changed.
+//   pass()            collapse_buildings ($B281), one pass of a building that has no strength
+//                     left, then draw().
+//   buildings()       [{ left, right, height, strength, type strength }] for the level's buildings.
+//   only(type, col)   replaces the level's buildings with one building of that type (0-5) at that
+//                     column: a list of one type and a list of one column are written into the
+//                     unused bytes at $CB20, setup_buildings' operands ($9498, $94AE) pointed at
+//                     them, and setup_buildings ($9493) run.
+//   energy([a, b, c]) gives the three monsters that energy (energy, $9B81) and runs energy_bars
+//                     ($9C62). For 0, the monster is given 1 and one counted hit, and
+//                     apply_damage_one ($9B9B) runs, as when it loses its last unit in play.
+//   saved()           puts back the three building maps and strengths the file holds for level 0,
+//                     the game in progress when the program was saved (discoveries.html).
+//   ruin(i)           puts back building map i (0-5) as the file holds it.
+//   weaken(b)         takes building b's strength to 0, so that pass() brings it down.
+//   road(stage)       sets road_stage ($9082), which weak_road draws from: 3 the weak stretch whole, 2
+//                     and 1 as it breaks, 0 the hole, 4 an ordinary street.
+//   shot(k)           stands the three monsters apart in the street, puts one bullet inside the
+//                     box move_bullets ($9E68) works out for monster k (0-2), and runs
+//                     move_bullets up to pay_bullet_hits ($9FAB). Returns the bullet's column and
+//                     row, the box [left, right, top, bottom], and flags, the three hit_by_bullet
+//                     bytes ($A580): which monster the game marked as hit.
+function rpCity(ram, Cpu, level, demo) {
+  const m = ram.slice(), vic = new Uint8Array(47), colour = new Uint8Array(1024);
+  const io = {
+    read(a) {
+      if (a >= 0xD000 && a < 0xD02F) return vic[a - 0xD000];
+      if (a >= 0xD800 && a < 0xDC00) return colour[a - 0xD800];
+      if (a === 0xDC00 || a === 0xDC01) return 0xFF;
+      return 0;
+    },
+    write(a, v) {
+      if (a >= 0xD000 && a < 0xD02F) vic[a - 0xD000] = v;
+      else if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15;
+    },
+  };
+  const cpu = new Cpu.CPU(m, { port: 0x35, io });
+  const call = (a, regs) => cpu.call(a, regs || {}, { maxSteps: 2e6 });
+  cpu.pc = 0x8314; cpu.run({ until: 0x8476, maxSteps: 1e6 });
+  m[0x9083] = level; m[0x9C61] = demo ? 1 : 0;
+  call(0x90DF);
+  m[0x56] = m[0x57] = m[0x58] = 15;
+  let drawn = false;
+  const C = {
+    mem: m, vic, colourMem: colour, cia2: [0x94, 0x3F], cpu: [47, 53], lines: 312, cycles: 63, writes: [],
+    call,
+    draw() {
+      for (let i = drawn ? 1 : 0; i < 2; i++) { call(0x960E); call(0x9533); call(0x994A); call(0x9858); call(0x929D); }
+      drawn = true;
+      vic[0x11] = 0x1B; vic[0x15] = 0;
+      vic[0x18] = m[0x904A] | 0x0B;
+      C.writes = [[76, 0, 0xD018, m[0x904A] | 0x09, m[0x904A] | 0x09]];
+      return C;
+    },
+    buildings() {
+      const out = [];
+      for (let b = 0; b <= m[0x95] && b < 8; b++) out.push({ left: m[0x8C68 + b], right: m[0x8C70 + b], height: m[0xA3A3 + b], strength: m[0xB353 + b] });
+      return out;
+    },
+    punch(col, row) {
+      const b = C.buildings().find((q) => q.height && col >= q.left && col <= q.right);
+      if (!b) return false;
+      const before = m.slice(0x7500, 0x7680).join();
+      m[0x50] = 0; m[0xA585] = Math.max(col, b.left + 1); m[0xA586] = row + 1;
+      call(0xA62F, { x: 0 });
+      return m.slice(0x7500, 0x7680).join() !== before;
+    },
+    pass() { call(0xB281); return C.draw(); },
+    only(type, col) {
+      m[0xCB20] = type; m[0xCB21] = 0xFF; m[0xCB28] = col;
+      m[0x9498] = 0x20; m[0x9499] = 0xCB; m[0x94AE] = 0x28; m[0x94AF] = 0xCB;
+      call(0x9493);
+      return C;
+    },
+    energy(e) {
+      e.forEach((v, k) => {
+        if (v) { m[0x9B81 + k] = v; return; }
+        m[0x9B81 + k] = 1; m[0x9B84 + k] = 1; m[0x9B87 + k] = 1; m[0x56 + k] = 1;
+        call(0x9B9B, { x: k });
+        m[0x56 + k] = 15;
+      });
+      call(0x9C62);
+      return C;
+    },
+    saved() {
+      m.set(ram.subarray(0x7500, 0x75C0), 0x7500); m.set(ram.subarray(0xB353, 0xB356), 0xB353);
+      return C;
+    },
+    ruin(i) { m.set(ram.subarray(0x7500 + 64 * i, 0x7540 + 64 * i), 0x7500 + 64 * i); return C; },
+    weaken(b) { m[0xB353 + b] = 0; return C; },
+    road(stage) { m[0x9082] = stage; return C; },
+    shot(k) {
+      [0x20, 0x50, 0x80].forEach((x, i) => { m[0x44 + i] = x; m[0x47 + i] = 0xA0; });
+      m.fill(0, 0xA1CB, 0xA1EB);
+      cpu.pc = 0x9E68; cpu.run({ until: 0x9FAB, maxSteps: 1e5 });
+      const col = m[0xA147 + k] + 1, row = m[0xA14A + k] + 1, at = row * 40 + col;
+      m[0xA1CB] = 1; m[0xA20B] = col; m[0xA22B] = row; m[0xA1AB] = at & 255; m[0xA18B] = at >> 8; m[0xA1EB] = 0;
+      cpu.pc = 0x9E68; cpu.run({ until: 0x9FAB, maxSteps: 1e5 });
+      return { col, row, box: [m[0xA147 + k], m[0xA141 + k], m[0xA14A + k], m[0xA144 + k]], flags: [m[0xA580], m[0xA581], m[0xA582]], live: m[0xA1CB] };
+    },
+  };
+  return C;
+}
+// rpText(ram, Cpu, which, o): one of the game's three text screens, drawn by the game's own code
+// in the same way. which is 'items' (items_screen, $AA48, run up to its wait for fire),
+// 'newspaper' (newspaper_screen, $AAD0, run up to join_wait; o.level and o.state, the three
+// players' player_state, $7F not joined, 6 playing, 0 out, choose its headlines and pictures) or
+// 'over' (instructions_screen, $A85E, run up to its wait for fire). The screen is the one at $F400
+// with the text character set, as music_irq shows it ($D018 = $DA).
+function rpText(ram, Cpu, which, o) {
+  o = o || {};
+  const m = ram.slice(), vic = new Uint8Array(47), colour = new Uint8Array(1024);
+  const io = {
+    read(a) { return a >= 0xD000 && a < 0xD02F ? vic[a - 0xD000] : a >= 0xD800 && a < 0xDC00 ? colour[a - 0xD800] : a === 0xDC00 || a === 0xDC01 ? 0xFF : 0; },
+    write(a, v) { if (a >= 0xD000 && a < 0xD02F) vic[a - 0xD000] = v; else if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15; },
+  };
+  const cpu = new Cpu.CPU(m, { port: 0x35, io });
+  const run = (from, to) => { cpu.pc = from; cpu.run({ until: to, maxSteps: 2e6 }); };
+  run(0x8314, 0x8476);
+  m[0x9083] = o.level || 0;
+  (o.state || [0x7F, 0x7F, 0x7F]).forEach((v, i) => { m[0xB1DB + i] = v; });
+  if (which === 'items') run(0xAA48, 0xAA81);
+  else if (which === 'newspaper') run(0xAAD0, 0xAAF8);
+  else run(0xA85E, 0xA932);
+  vic[0x18] = 0xDA; vic[0x15] = 0;
+  return { mem: m, vic, colourMem: colour, cia2: [0x94, 0x3F], cpu: [47, 53], lines: 312, cycles: 63, writes: [] };
+}
+// rpPaint(canvas, F, s, crop): draws a frame from rpCity or rpText with C64.renderFrame at s
+// canvas pixels to one of the screen's. crop [x, y, w, h], in the screen's pixels with the border
+// (the 320 by 200 picture starts at 32, 35), draws only that part.
+function rpPaint(el, F, s, crop) {
+  const r = C64.renderFrame(F), [cx, cy, cw, ch] = crop || [0, 0, r.w, r.h];
+  const ctx = C64.canvas(el, cw * s, ch * s), img = ctx.createImageData(cw * s, ch * s);
+  const rgb = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  for (let y = 0; y < ch * s; y++) for (let x = 0; x < cw * s; x++) {
+    const c = rgb[r.px[(cy + (y / s | 0)) * r.w + cx + (x / s | 0)]], o = (y * cw * s + x) * 4;
+    img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  return r;
+}
+// rpCells(F, set, cells): puts characters on the screen of a frame from rpCity or rpText, for a
+// sheet of the game's own characters. set is 'city' (the character set at $E000, colours from
+// city_colours, $1300) or 'text' ($E800, colours from $1400). The screen is cleared to the set's
+// first empty character, each cell [column, row, character] is written with the colour the
+// game's table gives that character, and the whole frame uses the one set.
+function rpCells(F, set, cells) {
+  const m = F.mem, base = 0xC000 + (F.vic[0x18] >> 4) * 0x400;
+  const chars = set === 'city' ? 0xE000 : 0xE800, table = set === 'city' ? 0x1300 : 0x1400;
+  let blank = 0;
+  for (let c = 0; c < 256; c++) if (m.subarray(chars + c * 8, chars + c * 8 + 8).every((v) => !v)) { blank = c; break; }
+  m.fill(blank, base, base + 1000);
+  for (const [col, row, ch] of cells) { m[base + row * 40 + col] = ch; F.colourMem[row * 40 + col] = m[table + ch] & 15; }
+  F.vic[0x18] = (F.vic[0x18] & 0xF0) | (set === 'city' ? 0x09 : 0x0B); F.writes = [];
+  return F;
+}
+// end of rp-city
+</script>
+<script>
+/* rp-monster */
+// rpMonsters(ram, Cpu): the monsters' pictures as the game builds them. On a copy of the listing's
+// memory the kit's 6502 (Cpu, C64Cpu on a page) runs the game's own build_monster_frame ($B3F6) for
+// the first monster, with its frame in monster_frame ($4A), its facing in facing ($50, bit 7 set
+// for right) and its character's set of frame tables in frame_set ($B3F2: 0 George, 2 Lizzie, 1
+// Ralph, as level_init sets it), and then compose_0 ($B520), which copies the picture buffer at
+// $CCA0 into the six sprite shapes at $F280-$F3FF. picture(character, right, frame) gives
+// { px, tiles, buf, shapes }: px is the picture as the six sprites show it, 24 pixels by 48, each 0
+// (clear), 1 (the shared colour $D025), 2 (the sprite's own colour) or 3 (the shared colour $D026):
+// rows 0-20 from the top pair of shapes, rows 21-37 from lines 0-16 of the middle pair, rows 38-41
+// from lines 17-20 of the bottom pair and rows 42-47 from its lines 0-5, the lines the raster
+// handlers show of each. tiles is the frame's 36 tile numbers, buf the buffer's 288 bytes and
+// shapes the six shapes' 384.
+const RP_SET = [0, 2, 1], RP_COLOUR = [8, 5, 14], RP_NAME = ['George', 'Lizzie', 'Ralph'];
+// What each of a set's 38 frames is, from the code that asks for it. '' marks the four frames
+// nothing in the game's code sets (3, $0E, $1D, $1E).
+const RP_FRAMES = ['standing, facing out of the screen', 'mouth open (only the state nothing sets shows it)', 'mouth wide open (only the state nothing sets shows it)', '',
+  'punching along the street', 'biting, on a wall', 'in the hole in the weak road', 'punching down from the street',
+  'walking, step 1', 'walking, step 2', 'walking, step 3', 'walking, step 4', 'falling', 'biting, on the level', '',
+  'chewing on a wall, 1', 'chewing on a wall, 2', 'chewing on a wall, 3', 'chewing on the level, 1', 'chewing on the level, 2', 'chewing on the level, 3',
+  'hanging on a wall', 'punching behind, on a wall', 'punching into the wall', 'punching up from the street', 'punching up on a wall, and hanging from the blimp',
+  'punching down on a wall', 'climbing, 1', 'climbing, 2', '', '', 'knocked back, and dropping from the blimp',
+  'jumping, and the first frame of shrinking', 'shrinking, 2', 'shrinking, 3', 'shrinking, 4', 'the human walking off, 1', 'the human walking off, 2'];
+function rpMonsters(ram, Cpu) {
+  const m = ram.slice();
+  const cpu = new Cpu.CPU(m, { port: 0x35, io: { read() { return 0; }, write() {} } });
+  return {
+    picture(character, right, frame) {
+      m[0x4A] = frame; m[0x50] = right ? 0x80 : 0; m[0xB3F2] = RP_SET[character];
+      cpu.call(0xB3F6, { x: 0 }, { maxSteps: 100000 });
+      cpu.call(0xB520, {}, { maxSteps: 100000 });
+      const set = RP_SET[character] + (right ? 3 : 0), table = m[0xB4B6 + set] | m[0xB4B0 + set] << 8;
+      const tiles = Array.from(m.subarray(table + 36 * frame, table + 36 * frame + 36));
+      const buf = m.slice(0xCCA0, 0xCCA0 + 288), shapes = m.slice(0xF280, 0xF400), px = new Uint8Array(24 * 48);
+      for (let row = 0; row < 48; row++) {
+        const pair = row < 21 ? 0 : row < 38 ? 1 : 2, line = row < 21 ? row : row < 38 ? row - 21 : row < 42 ? row - 21 : row - 42;
+        for (let b = 0; b < 6; b++) {
+          const v = shapes[(pair * 2 + (b / 3 | 0)) * 64 + line * 3 + b % 3];
+          for (let i = 0; i < 4; i++) px[row * 24 + b * 4 + i] = (v >> (6 - 2 * i)) & 3;
+        }
+      }
+      return { px, tiles, buf, shapes };
+    },
+  };
+}
+// end of rp-monster
+</script>
+<script>
+/* rp-path */
+// rpPath(ram, n): helicopter A flying route n (0-7, or 8, the explosion) from the game's tables,
+// one entry for each call of move_heli_a ($8E2B), which the game makes once a frame:
+// [{ x, y, shape, move }]. x is in the game's units of two pixels and y is the sprite's Y; shape is
+// the sprite shape of the move before the rotor's frame is added; move is the kind of move (0-10).
+// start_heli_a_path ($8DD5) puts the helicopter at the route's start and reads the first pair. A
+// call with steps left takes one and adds the move's X and Y steps; a call with none left reads
+// the next pair and does not move. $FF ends the route.
+function rpPath(ram, n) {
+  let p = ram[0x8DB7 + n] | ram[0x8DC0 + n] << 8, x = ram[0x8DAE + n], y = ram[0x8DA5 + n];
+  let steps = 0, dx = 0, dy = 0, shape = 0, move = 0, done = false;
+  const next = () => {
+    p += 2;
+    if (ram[p] === 0xFF) { done = true; return; }
+    move = ram[p]; steps = ram[p + 1];
+    const rec = ram[0x8D07 + move] | ram[0x8D14 + move] << 8;
+    dx = ram[rec]; dy = ram[rec + 1]; shape = ram[rec + 2];
+  };
+  const out = [];
+  next();
+  while (!done && out.length < 5000) {
+    if (!steps) { next(); if (done) break; } else { steps--; x = (x + dx) & 255; y = (y + dy) & 255; }
+    out.push({ x, y, shape, move });
+  }
+  return out;
+}
+// end of rp-path
+</script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const missing = (el, what) => { if (el) el.outerHTML = '<p class="rp-miss">' + (what || 'This drawing') + ' needs the site\'s shared scripts and the game\'s listing, which the built site serves.</p>'; };
+  const IDS = ['rp-d-over', 'rp-d-items', 'rp-d-names', 'rp-d-shots', 'rp-d-sid', 'rp-d-sfx-a', 'rp-d-sfx-b', 'rp-d-red', 'rp-d-car', 'rp-d-wreck', 'rp-d-shake', 'rp-d-saved', 'rp-d-ruin3', 'rp-d-ruin4', 'rp-d-news', 'rp-d-boom-a', 'rp-d-boom-b', 'rp-d-fist-a', 'rp-d-fist-b'];
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { IDS.forEach((id) => missing($(id))); return; }
+  const pressed = (b) => b.getAttribute('aria-pressed') === 'true';
+  const toggle = (b, f) => b.addEventListener('click', () => { b.setAttribute('aria-pressed', pressed(b) ? 'false' : 'true'); f(); });
+  const PIC = [32, 35, 320, 200];
+  // runs f on each animation frame while el is on the screen; dt is the time since the last run
+  const animate = (el, f) => {
+    let last = 0;
+    const tick = (now) => {
+      requestAnimationFrame(tick);
+      const q = el.getBoundingClientRect();
+      if (q.bottom < 0 || q.top > innerHeight) { last = now; return; }
+      f(Math.min(now - last, 200)); last = now;
+    };
+    requestAnimationFrame((now) => { last = now; tick(now); });
+  };
+  C64.load('listing.json').then((L) => {
+    const r = L.ram, shape = (n) => r.subarray(0xC000 + 64 * n, 0xC000 + 64 * n + 63);
+
+    // 01: the two text screens
+    rpPaint($('rp-d-over'), rpText(r, C64Cpu, 'over'), 2, PIC);
+    rpPaint($('rp-d-items'), rpText(r, C64Cpu, 'items'), 2, PIC);
+
+    // 02: the hidden names
+    (function () {
+      const b = $('rp-d-names-go');
+      const draw = () => {
+        b.textContent = pressed(b) ? 'Nobody has joined' : 'A player has joined';
+        rpPaint($('rp-d-names'), rpCity(r, C64Cpu, 0x12, pressed(b)).draw(), 2, PIC);
+      };
+      toggle(b, draw); draw();
+    })();
+
+    // 03: a bullet in each monster's box
+    (function () {
+      const WHO = ['the first monster (George)', 'the second monster (Lizzie)', 'the third monster (Ralph)'];
+      let t = '<tr><th>A bullet inside the box of</th><th>The game marks as hit</th></tr>';
+      for (let k = 0; k < 3; k++) {
+        const s = rpCity(r, C64Cpu, 0, false).shot(k), hit = s.flags.map((v, i) => v ? WHO[i] : '').filter(Boolean).join(', ') || 'nobody';
+        t += '<tr><td>' + WHO[k] + '</td><td>' + (s.flags[k] ? hit : '<b>' + hit + '</b>') + '</td></tr>';
+      }
+      $('rp-d-shots').innerHTML = t;
+    })();
+
+    // 04, 05: the lost tune, and the effects with and without update_sound
+    if (typeof C64Sid !== 'undefined') {
+      const mem = RP_DRIVER_RANGES.map(([a, b]) => [a, Array.from(r.subarray(a, b + 1))]);
+      const mount = (id, list, o) => C64Sid.mount($(id), Object.assign({ driver: createDriver, data: { mem, list }, tunes: list.map((t) => t.name), filter: '6581' }, o || {}));
+      mount('rp-d-sid', RP_LOST);
+      mount('rp-d-sfx-a', RP_EFFECTS, { rows: [], noise: true, bounce: false });
+      mount('rp-d-sfx-b', RP_EFFECTS_SWEPT, { rows: [], noise: true, bounce: false });
+    } else ['rp-d-sid', 'rp-d-sfx-a', 'rp-d-sfx-b'].forEach((id) => missing($(id), 'The player'));
+
+    // 07: the second word, with the first monster out
+    (function () {
+      const b = $('rp-d-red-go'), e = $('rp-d-red-e');
+      const draw = () => {
+        b.textContent = pressed(b) ? 'George is out' : 'George is in the game';
+        const C = rpCity(r, C64Cpu, 0, false).energy([pressed(b) ? 0 : 56, +e.value, 56]).draw();
+        rpPaint($('rp-d-red'), C, 3, [32, 35, 320, 24]);
+        const white = Math.min(6, (+e.value >> 3) + 1);
+        $('rp-d-red-out').textContent = 'Lizzie has ' + e.value + ' units of energy, which should show ' + white + ' white letter' + (white === 1 ? '' : 's') + '.';
+      };
+      toggle(b, draw); e.addEventListener('input', draw); draw();
+    })();
+
+    // 08: the car that reverses, and the wreck's pictures
+    (function () {
+      const S = 2, strip = document.createElement('canvas');
+      rpPaint(strip, rpCity(r, C64Cpu, 0, false).draw(), S, [32, 35 + 160, 320, 40]);
+      const ctx = C64.canvas($('rp-d-car'), 640, 160);
+      const V = [0, 15].map((v) => ({ l: r[0x8CC7 + v], rr: r[0x8CD7 + v], start: r[0x8CE7 + v], step: r[0x8CF7 + v] < 128 ? r[0x8CF7 + v] : r[0x8CF7 + v] - 256, x: 0, wait: 0 }));
+      V.forEach((v) => { v.x = v.start; });
+      // a sprite's X on the picture: the chip's X wraps at 504, and X 24 is the picture's left edge
+      const px = (X) => ((X & 511) >= 384 ? (X & 511) - 504 : (X & 511)) - 24;
+      let acc = 0;
+      ctx.drawImage(strip, 0, 0); ctx.drawImage(strip, 0, 80);
+      animate($('rp-d-car'), (dt) => {
+        acc += dt;
+        while (acc >= 20) {
+          acc -= 20;
+          V.forEach((v) => {
+            if (v.wait) { if (!--v.wait) v.x = v.start; return; }
+            v.x = (v.x + v.step) & 255;
+            if (v.x >= 0xAC && v.x <= 0xE7 && v.x !== v.start) v.wait = 50;   // the hidden stretch: the vehicle is over
+          });
+        }
+        V.forEach((v, i) => {
+          ctx.drawImage(strip, 0, i * 80);
+          if (v.wait) return;
+          ctx.save(); ctx.beginPath(); ctx.rect(0, i * 80, 640, 80); ctx.clip();
+          C64.drawSpriteMC(ctx, shape(v.l), px(v.x * 2) * S, i * 80 + (0xE4 - 50 - 160) * S, S, C64.PAL[6], C64.PAL[7], C64.PAL[11]);
+          C64.drawSpriteMC(ctx, shape(v.rr), px((v.x + 12) * 2) * S, i * 80 + (0xE4 - 50 - 160) * S, S, C64.PAL[6], C64.PAL[7], C64.PAL[11]);
+          ctx.restore();
+        });
+      });
+      $('rp-d-car-out').textContent = 'Top: entry 0, a car from the left. Bottom: entry 15, the same car from the right, moving left.';
+      const w = C64.canvas($('rp-d-wreck'), 640, 84);
+      w.fillStyle = '#3b3f48'; w.fillRect(0, 0, 640, 84);
+      w.font = '11px IBM Plex Mono, monospace'; w.textBaseline = 'top';
+      for (let i = 1; i < 5; i++) {
+        const l = r[0x8C9B + i], rr = r[0x8CA2 + i], ox = 16 + (i - 1) * 156;
+        C64.drawSpriteMC(w, shape(l), ox, 8, 2, C64.PAL[8], C64.PAL[7], C64.PAL[11]);
+        C64.drawSpriteMC(w, shape(rr), ox + 48, 8, 2, C64.PAL[8], C64.PAL[7], C64.PAL[11]);
+        w.fillStyle = '#c8cbd2'; w.fillText('$' + l.toString(16).toUpperCase() + ' + $' + rr.toString(16).toUpperCase(), ox, 60);
+      }
+    })();
+
+    // 09: the shake
+    (function () {
+      const cv = $('rp-d-shake'), out = $('rp-d-shake-out'), go = $('rp-d-shake-go');
+      let C, timer = null;
+      const show = (say) => { rpPaint(cv, C, 2, PIC); const x = C.vic[0x16] & 7; out.textContent = say + ' $D016 = $' + C.vic[0x16].toString(16).toUpperCase() + ': the picture is ' + x + ' pixel' + (x === 1 ? '' : 's') + ' to the right.'; };
+      const reset = () => { C = rpCity(r, C64Cpu, 0, false).draw(); show('Before the fall.'); };
+      go.addEventListener('click', () => {
+        if (timer) clearInterval(timer);
+        reset(); C.weaken(1);
+        timer = setInterval(() => {
+          if (!C.buildings()[1].height) { clearInterval(timer); timer = null; show('The building is down.'); return; }
+          C.pass(); show('Falling.');
+        }, 208);
+      });
+      reset();
+    })();
+
+    // 10: the maps the file holds
+    rpPaint($('rp-d-saved'), rpCity(r, C64Cpu, 0, false).saved().draw(), 1, PIC);
+    rpPaint($('rp-d-ruin3'), rpCity(r, C64Cpu, 3, false).ruin(3).draw(), 1, PIC);
+    rpPaint($('rp-d-ruin4'), rpCity(r, C64Cpu, 2, false).ruin(4).draw(), 1, PIC);
+
+    // 12: the headline
+    rpPaint($('rp-d-news'), rpText(r, C64Cpu, 'newspaper', { level: 7, state: [6, 0x7F, 0x7F] }), 2, PIC);
+
+    // 13: the explosion, as the route lists it and with the rotor's frame added
+    (function () {
+      const P = rpPath(r, 8), ROTOR = [0, 1, 2, 3, 2, 1];
+      const A = C64.canvas($('rp-d-boom-a'), 192, 168), B = C64.canvas($('rp-d-boom-b'), 192, 168);
+      let f = 0, acc = 0;
+      const hex = (n) => '$' + n.toString(16).toUpperCase();
+      const draw = () => {
+        const over = f >= P.length, a = over ? -1 : P[f].shape, b = over ? -1 : a + ROTOR[(f >> 1) % 6];
+        [[A, a], [B, b]].forEach(([ctx, sh]) => {
+          ctx.fillStyle = '#3b3f48'; ctx.fillRect(0, 0, 192, 168);
+          if (sh >= 0) C64.drawSpriteMC(ctx, shape(sh), 0, 0, 8, C64.PAL[8], C64.PAL[7], C64.PAL[11]);
+        });
+        $('rp-d-boom-out').textContent = over ? 'Over.' : 'Frame ' + (f + 1) + ' of ' + P.length + ': the route says shape ' + hex(a) + ', the game shows ' + hex(b) + (b > 0xC3 ? ', which is empty' : '') + '.';
+      };
+      animate($('rp-d-boom-b'), (dt) => { acc += dt; let moved = false; while (acc >= 100) { acc -= 100; f = (f + 1) % (P.length + 8); moved = true; } if (moved) draw(); });
+      draw();
+    })();
+
+    // 15: the fist
+    (function () {
+      const M = rpMonsters(r, C64Cpu), P = M.picture(0, false, 0x18);
+      const cols = [null, C64.PAL[7], C64.PAL[RP_COLOUR[0]], C64.PAL[11]];
+      const tiles = 0x4000 + 0x800 * RP_SET[0];
+      // the picture straight from the tiles: row y of the picture is line y & 7 of the tile in row y >> 3
+      const want = new Uint8Array(24 * 48);
+      for (let y = 0; y < 48; y++) for (let c = 0; c < 6; c++) { const b = r[tiles + P.tiles[(y >> 3) * 6 + c] * 8 + (y & 7)]; for (let x = 0; x < 4; x++) want[y * 24 + c * 4 + x] = (b >> (6 - 2 * x)) & 3; }
+      let n = 0;
+      [['rp-d-fist-a', want], ['rp-d-fist-b', P.px]].forEach(([id, px]) => {
+        const ctx = C64.canvas($(id), 288, 288);
+        ctx.fillStyle = '#3b3f48'; ctx.fillRect(0, 0, 288, 288);
+        for (let y = 0; y < 48; y++) for (let x = 0; x < 24; x++) { const c = cols[px[y * 24 + x]]; if (c) { ctx.fillStyle = c; ctx.fillRect(x * 12, y * 6, 12, 6); } }
+        ctx.strokeStyle = '#ff5050'; ctx.lineWidth = 1;
+        for (let y = 0; y < 48; y++) for (let x = 0; x < 24; x++) if (want[y * 24 + x] !== P.px[y * 24 + x]) { ctx.strokeRect(x * 12 + .5, y * 6 + .5, 11, 5); if (px === want) n++; }
+      });
+      $('rp-d-fist-out').textContent = n + ' pixels differ, all on the picture\'s second line.';
+    })();
+  }).catch((e) => { console.error(e); });
+})();
+</script>

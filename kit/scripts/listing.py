@@ -1057,6 +1057,9 @@ def main():
             continue
         span = f"${r['a']:04X}" if r["n"] == 1 else f"${r['a']:04X}-${r['a'] + r['n'] - 1:04X}"
         if prev["t"] == "code" and nxt["t"] == "code":
+            # bytes game.json excludes with a reason (padding no instruction reaches) were looked at
+            if all(L["excluded"](a) for a in range(r["a"], r["a"] + r["n"])):
+                continue
             print(f"  {span}: {r['n']} byte(s) with no type between code: likely a missed "
                   f"instruction; give it a type, or the page's interpreter reads a zero opcode there")
         elif (r["n"] < 8 and prev["t"] not in ("code", "gap") and nxt["t"] not in ("code", "gap")

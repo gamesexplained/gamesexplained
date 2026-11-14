@@ -20,9 +20,13 @@ header of type 4 and blocks of type 2 after it.
 Most games load a short program this way and that program reads the rest of the tape in a
 faster format of its own, a turbo format: nearly always a bit a pulse, a pulse longer than the
 loader's timer a 1. This reads the formats in TURBO, each read off a game's own loader
-(kit/lessons/2026-11-11-c64-tape-media.md), and every one of them is a block of this shape: a
+(kit/lessons/2026-11-11-c64-tape-media.md). A row of the first kind is a block of this shape: a
 pilot, one byte repeated, which the loader finds bit by bit; a sync byte; the block's first
-address and the address after its last, low byte first; and the bytes. A format with no checksum
+address and the address after its last, low byte first; and the bytes. A row of kind "pages" is
+a stream of pages instead: a lead-in of 0 bits, the first 1 bit, then for each page a byte of
+flags for the loader, the page's number and its 256 bytes, until a page numbered 0 ends the
+stream. Each run of pages that follow one another in memory is a block, its raw bytes the pages
+as the tape holds them, flags and number first. A format with no checksum
 its loader reads gives this none either: what proves such a block is the game's listing holding
 the same bytes. A block is the item "turbo block 3", counted from the tape's start, its place
 {"file": label, "type": "turbo, <the format's name>", "pulse": n}, n the first pulse of its
@@ -62,10 +66,15 @@ GAP = 20000                             # what a version 0 overflow byte is take
 
 # The turbo formats: a pulse of "split" cycles or more is a 1, a byte's bits come lowest first when
 # "lsb" is set, "pilot" is the byte the loader looks for bit by bit and "sync" the one that ends the
-# pilot. "least" is how many pilot bytes a block needs to be taken for one.
+# pilot. "least" is how many pilot bytes a block needs to be taken for one, or for kind "pages"
+# how many 0 bits must lead in to the 1 that starts the stream.
 TURBO = [
     # CIA 2's timer A at 384 cycles, restarted some 16 cycles after each pulse; no checksum
     {"name": "pilot $E3, sync $ED", "split": 400, "lsb": True, "pilot": 0xE3, "sync": 0xED, "least": 8},
+    # CIA 2's timer B restarted at $03E0 by each pulse's NMI, which reads its high byte first: a
+    # pulse of 480 cycles or more leaves it below 2 and is a 1; no checksum
+    # (games/c64/short-circuit/orientation.md, "The loader")
+    {"name": "pages after a 1 bit", "kind": "pages", "split": 480, "lsb": True, "least": 500},
 ]
 
 
@@ -255,12 +264,58 @@ def turbo_blocks(W, taken, fmt):
     return out
 
 
+def page_blocks(W, taken, fmt):
+    """The blocks of a format of kind "pages" outside the stretches already read, as turbo_blocks
+    gives them. A stream is taken only when its page 0 comes before the stretch ends and no gap in
+    the recording falls inside it: a lead-in and a 1 are on every tape, a stream that ends as its
+    loader ends it is not. "at" is the lead-in's first pulse for a stream's first block and the
+    page's own for the others."""
+    bit = lambda k: W[k] >= fmt["split"]
+    byte = lambda k: sum(bit(k + j) << (j if fmt["lsb"] else 7 - j) for j in range(8))
+    out = []
+    for lo, hi in free(taken, len(W)):
+        i, zeros = lo, 0
+        while i < hi:
+            if not bit(i):
+                zeros, i = zeros + 1, i + 1
+                continue
+            if zeros < fmt["least"]:
+                zeros, i = 0, i + 1
+                continue
+            k, pages, ended = i + 1, [], False
+            while k + 16 <= hi:
+                flags, page = byte(k), byte(k + 8)
+                if page == 0:
+                    ended = True
+                    break
+                if k + 16 + 2048 > hi:
+                    break
+                pages.append((k, flags, page, bytes(byte(k + 16 + 8 * t) for t in range(256))))
+                k += 16 + 2048
+            if not ended or not pages or any(x >= SILENCE for x in W[i:k + 16]):
+                zeros, i = 0, i + 1
+                continue
+            runs = []
+            for p in pages:
+                if runs and p[2] == runs[-1][-1][2] + 1:
+                    runs[-1].append(p)
+                else:
+                    runs.append([p])
+            for n, run in enumerate(runs):
+                out.append({"at": i - zeros if n == 0 else run[0][0],
+                            "end": runs[n + 1][0][0] if n + 1 < len(runs) else k + 16,
+                            "load": run[0][2] << 8, "data": b"".join(p[3] for p in run),
+                            "raw": b"".join(bytes(p[1:3]) + p[3] for p in run), "problem": None})
+            i, zeros = k + 16, 0
+    return out
+
+
 def turbo_items(W, taken):
     """([(first pulse, item)], [(first, end)]) of the blocks in every format of TURBO outside taken,
     numbered along the tape, and the stretches they take."""
     taken, blocks = sorted(taken), []
     for fmt in TURBO:
-        for b in turbo_blocks(W, taken, fmt):
+        for b in (page_blocks if fmt.get("kind") == "pages" else turbo_blocks)(W, taken, fmt):
             taken = sorted(taken + [(b["at"], b["end"])])
             blocks.append((b, fmt))
     out = []

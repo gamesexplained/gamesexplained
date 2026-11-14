@@ -1,0 +1,542 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rampage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.plate{margin:22px 0;overflow-x:auto}
+.plate canvas,.plate img{max-width:100%;height:auto;display:block}
+.rp-row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.rp-bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:0 0 14px;font-size:15px}
+.rp-bar label{display:inline-flex;gap:6px;align-items:center}
+.rp-bar select,.rp-bar button,.rp-bar input[type=range]{font:inherit}
+.rp-bar button{padding:4px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
+.rp-bar button[aria-pressed=true]{background:var(--chip);color:var(--chip-ink)}
+.rp-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.4em}
+.rp-tab{border-collapse:collapse;font-size:15px;margin:6px 0}
+.rp-tab th,.rp-tab td{border-bottom:1px solid var(--line-soft);padding:5px 12px 5px 0;text-align:left;vertical-align:middle}
+.rp-tab th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:500}
+.rp-tab td.n{font-family:var(--fm);font-size:13px}
+.rp-pics{display:flex;flex-wrap:wrap;gap:16px}
+.rp-pics figure{margin:0;flex:1 1 300px}
+.rp-pics img{width:100%;image-rendering:pixelated;border-radius:6px}
+.rp-pics figcaption{font-size:14px;color:var(--ink-mute);margin-top:6px}
+.rp-sheet{display:flex;flex-wrap:wrap;gap:12px}
+.rp-sheet figure{margin:0;text-align:center;font-family:var(--fm);font-size:11px;color:var(--ink-mute)}
+.rp-sheet canvas{margin:0 auto 4px;background:#3b3f48;border-radius:4px}
+.rp-miss{font-size:14px;color:var(--ink-mute);font-style:italic}
+@media (max-width:700px){:root{--gx:16px;--h1:34px;--h2:22px;--pp:14px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1987 · Activision</p>
+  <h1>Rampage</h1>
+  <p class="sub">Each monster is 38 pictures facing left and 38 facing right, every one assembled from 36 tiles. The helicopters, the vehicles, and the wrecks are sprite shapes, and the two loading pictures name the four people who made the conversion.</p>
+</header>
+<main class="wrap">
+
+<section id="monsters">
+  <p class="fig">01 · The monsters</p>
+  <h2 class="t">George, Lizzie, and Ralph in every pose</h2>
+  <p class="lede">Pick a character and an action. The animations run at the game's speed, about fourteen steps a second.</p>
+  <div class="plate">
+    <div class="rp-bar">
+      <label>Character <select id="rp-g-who"><option value="0">George</option><option value="1">Lizzie</option><option value="2">Ralph</option></select></label>
+      <label>Facing <select id="rp-g-face"><option value="0">left</option><option value="1">right</option></select></label>
+      <label>Show <select id="rp-g-act"></select></label>
+      <label>Frame <input type="range" id="rp-g-frame" min="0" max="37" value="0"></label>
+    </div>
+    <canvas id="rp-g-mon" width="288" height="288" aria-label="The chosen monster in the chosen pose"></canvas>
+    <p class="rp-out" id="rp-g-out"></p>
+    <p class="cap">Every picture is built by the game's own code, which the page runs on a copy of the C64's processor, the 6502, from the frame's 36 tile numbers to the six sprite shapes the screen shows. A test checks all 228 pictures against their tiles. The order of the frames in each animation is read from the game's tables (<code>$8C2A</code>, <code>$8C41</code>, <code>$89AF</code>; a number after a $ is an address in the game's memory, written in hexadecimal, and links to that place on the Source code tab).</p>
+  </div>
+  <p>A monster's picture is made of 36 small tiles, shown by six sprites, the movable pictures the video chip can place anywhere on the screen. The three characters share one list of 38 poses and differ in their tiles. Each has its own colour (orange, green, and light blue), and all three share yellow and dark grey. A monster facing right is a second set of pictures with tiles of its own. The pictures are not mirrored by the program. <a href="index.html#monster">How it works</a> shows the tiles of a frame.</p>
+  <p>Walking is four pictures, each held for four steps. Climbing is two, swapped on every step. A punch is one picture, held for as long as the fire button is down. A monster that runs out of energy plays the last animation in the list: it shrinks through four pictures and walks off as a human.</p>
+</section>
+
+<section id="army">
+  <p class="fig">02 · The army</p>
+  <h2 class="t">Helicopters, vehicles, and wrecks</h2>
+  <p class="lede">Everything that is not a monster or a building is a sprite shape, 24 pixels by 21, kept in memory as the disk supplied it.</p>
+  <div class="plate"><div class="rp-sheet" id="rp-g-army"></div>
+  <p class="cap">Each shape is drawn from the game's sprite data. The helicopters turn their rotors at the game's speed, a new rotor frame every second frame. The wreck is slowed to two pictures a second.</p></div>
+  <p>A helicopter among the buildings has six poses, and each pose is four shapes in a row for the four positions of the rotor. Two smaller helicopters cross the status lines at the top of the screen in single-colour shapes of their own. The blimp carries the monsters onto the screen. A vehicle is two shapes side by side, and so is each picture of its wreck.</p>
+  <p>The wreck's second picture is a mistake in the game's tables, and the explosion is shown in an odd order. <a href="discoveries.html#car">Discoveries</a> has both.</p>
+  <div class="plate"><div class="rp-sheet" id="rp-g-never"></div>
+  <p class="cap">Two pairs of shapes that the game never shows. The first pair heads the table of wreck pictures (<code>$8C9B</code>), and the game starts a wreck at the table's second entry. Nothing in the code names the second pair.</p></div>
+</section>
+
+<section id="spares">
+  <p class="fig">03 · Spare poses</p>
+  <h2 class="t">Four poses the game never asks for</h2>
+  <p class="lede">Each character's list of 38 has four pictures that no part of the program selects.</p>
+  <div class="plate"><div class="rp-sheet" id="rp-g-spare"></div>
+  <p class="cap">Frames 3, 14, 29, and 30 of each character, facing left, built by the game's own code on the site's 6502.</p></div>
+  <p>Two more poses, frames 1 and 2 with the mouth open, belong to a second eating animation. The animation is in the code as a monster state that nothing ever sets, so those two are never seen either.</p>
+</section>
+
+<section id="loading">
+  <p class="fig">04 · Loading pictures</p>
+  <h2 class="t">The pictures shown while the game loads</h2>
+  <p class="lede">The disk shows Activision's logo, then a title picture, and then a second picture with the credits.</p>
+  <div class="plate">
+    <div class="rp-row">
+      <img src="reference/activision-presents.png" alt="The first screen of the load: the Activision logo and the word PRESENTS" width="384" height="272" style="image-rendering:pixelated">
+      <canvas id="rp-g-load-2" width="384" height="272" aria-label="The first loading picture: the Rampage logo with the three monsters over a city skyline"></canvas>
+      <canvas id="rp-g-load-6" width="384" height="272" aria-label="The second loading picture: the credits, the logo, and portraits of George, Lizzie, and Ralph"></canvas>
+    </div>
+    <p class="cap">The first screen is a screenshot. The two pictures are drawn from the bytes of their files on the disk, <code>PART2</code> and <code>PART6</code>, with the video chip set as the loader sets it. A test holds the bytes on this page to the files by their checksums.</p>
+  </div>
+  <p>Each picture is a multicolour bitmap, a picture stored pixel by pixel: 160 by 200 double-width pixels in 8,000 bytes, with 2,000 more bytes that say which colours each 8 by 8 square may use. The second picture reads <code>CREATED ON THE 64 BY: M.ARCHER D.JOLLIFF M.JONES D.WAINWRIGHT OF CATALYST CODERS</code> and <code>A SOFTWARE STUDIOS PRODUCTION</code>. These are the only credits on the disk. The game itself names nobody.</p>
+</section>
+
+<section id="blocks">
+  <p class="fig">05 · Building blocks</p>
+  <h2 class="t">Two hundred blocks: a hundred whole and a hundred ruined</h2>
+  <p class="lede">Every building is made of blocks two characters wide and two tall, a character being one of the 8 by 8 pixel tiles the screen is made of. Every block has a ruined twin.</p>
+  <div class="plate">
+    <div class="rp-row">
+      <figure style="margin:0"><canvas id="rp-g-blocks-a" width="624" height="384" aria-label="Blocks 0 to 99"></canvas><figcaption class="rp-out">Blocks 0 to 99</figcaption></figure>
+      <figure style="margin:0"><canvas id="rp-g-blocks-b" width="624" height="384" aria-label="Blocks 100 to 199, the ruined forms"></canvas><figcaption class="rp-out">Blocks 100 to 199: the same blocks while their building falls</figcaption></figure>
+    </div>
+    <p class="cap">The blocks of the table at <code>$3C10</code>, drawn with the game's character set and its table of colours in the first level's colour scheme. Each block in the second picture is in the same place as its whole form in the first.</p>
+  </div>
+  <p>A building's map holds block numbers from 0 to 99. A punch swaps one number for another: a window for a broken window, a wall for a wall with a hole. When a building runs out of strength the game adds 100 to every number in its map, and the block 100 places further on in the table is the same block drawn as rubble. <a href="index.html#building">How it works</a> has a level to punch.</p>
+</section>
+
+<section id="pictures">
+  <p class="fig">06 · The text screens</p>
+  <h2 class="t">The newspaper's portraits are squares of 64 characters</h2>
+  <p class="lede">The pictures on the text screens are stored as twenty squares, each 8 characters by 8, or 64 pixels by 64.</p>
+  <div class="plate"><div class="rp-sheet" id="rp-g-pics"></div>
+  <p class="cap">The twenty pictures at <code>$7000</code>, each drawn from its 64 character numbers with the text screens' character set and colours. They are numbered from 0.</p></div>
+  <p>The first twelve squares are the ends of the newspaper's three strips, four for each character: the human, the monster, and two skylines. A strip shows the human and a skyline until somebody joins as that monster, and the monster's portrait after that. A monster that is out of the game gets the two skylines.</p>
+  <p>Squares 12 and 13 are blank newsprint, which fills the middle of each strip behind the headline. The last five lie side by side across the bottom of the screen that ends a game, where together they make three framed portraits. Square 14 is in neither screen's list, so it is never drawn.</p>
+</section>
+
+<section id="sets">
+  <p class="fig">07 · Character sets</p>
+  <h2 class="t">One character set for the city and one for the words</h2>
+  <p class="lede">A character set is the 256 tiles a screen can be built from. The game changes character set part of the way down every frame.</p>
+  <div class="plate">
+    <div class="rp-row">
+      <figure style="margin:0"><canvas id="rp-g-set-city" width="512" height="128" aria-label="The city's 256 characters"></canvas><figcaption class="rp-out">The city's set</figcaption></figure>
+      <figure style="margin:0"><canvas id="rp-g-set-text" width="512" height="128" aria-label="The 256 characters of the status lines and text screens"></canvas><figcaption class="rp-out">The set of the status lines and the text screens</figcaption></figure>
+    </div>
+    <p class="cap">Both sets of 256 characters (<code>$E000</code>, <code>$E800</code>), each character in the colour the game's tables give it (<code>$1300</code>, <code>$1400</code>).</p>
+  </div>
+  <p>The city's set holds the skyline, the hills, the street, the pieces of the building blocks, and the things that appear in the windows. The other set holds two alphabets, the digits, and the pieces of the twenty pictures. During play the top three rows of the screen use the second set, for the names and scores, and the rest uses the city's. <a href="index.html#frame">How it works</a> shows where in the frame the change happens.</p>
+  <p>A character's colour is fixed by its number. Whenever the game shows a freshly drawn screen it looks each character up in a table and writes that colour beside it, so a block of a building needs no colour information of its own.</p>
+</section>
+
+</main>
+<script type="application/json" id="rp-g-load-data">{"PART2":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAwAMAAAAAAAAAMwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUFBQUFBQUF//////////////////////////////////////////9VVVVVVVVVVVVVVVVVVUFB/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////1VVVVVVVVVV//////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAADAAADAAMAAwAAADDAAAAAAAzAAAAADMAAAAAAAAADAAAAAAAAADAAAAAAAAAAAAABQUFBQUFBQH/////////////////////VVVVVVVVVFRVVRUVFRUFBVFAQEBAQEBAQUFBAQEBAQH/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VVVVVVVVVVX//////////////////////////////////////////////////////////////////////////wAAAAAAAAAAAAAAAAAAAAAAAQAABAAEAAMAAwDAAwAAEQAQAAAQABAMAAwAAAAMAMAAwADAAAAAAAAAAAAAAAABAAAAAAAAAFVVVRUVFRUV//////////9UVFRUVFRUVAEBAAAAAAAAQEBAQAAAAAABAQEBAAAAAFVVVVUAAAAAVVVVVVVVVVRVVVVVVVVVFf///////////////////////////////1VVVVVVVVFR//////////////////////////////////////////9VVVVVVVVVVVVVVVVVVVVV//////////////////////////////////////////9VVVVVVVVVVf//////////////////////////////////////////////////////////////////////////AAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAwADAAAAAAAAAAAAAAAAAAAAADAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFRUVFRUVFRX//////////1RUVFRUVFRUAAwADAAAAAAAwADDAAAAAwAwAAAAMAAwAMwAzAAMAMBUVFBQQEAAABUVFRUVFRUVVQAAAAAAAABVVVUFBQEBAFVVVVVVVVVVUVERERERERH//////////1VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRUVFQEBARVVVUVFQUFAVVVVVVVVVVV/////////////////////1VVVVVVVVVV//////////////////////////////////////////////////////////////////////////8AAAAAAAAAAA8/P///v7+8AMBw3Pf9//8AAAAAA83//wAAAACjWFiWAAADMAqlVRUDMAAqlVVVmiIC/P9/X9f/AAAAAAAAwMAVFRUVFRUVFVVRUVFRUVFRVBQUFBQUFBQAAAAMAAAMAADDAMMAA8AAAAAAMAAwAAAADAAMAMwAAAAAAAAAAAAAFRUVAAAAAAAAMwAwADMAAwAwADAAMAAwVVVVVVVUVFQRAQEBAQEAAFVVVVVVVVVVVVVVVVVVVVUAAAAAAAAAAFVVVVVFRUREVVVVVVVVQEAEBAQEAAAAAAEAAAAAAAAAVVVVVRUVFRBVVVVVVVVVFVVVVVVVVVVVVVVVVVVVVVX//////////////////////////////////////////////////////////////////////////wMDAwMDAwMDvPz8/Pzw8PD/Pw8AAAAAAFUVFQUFAQAAXV1UVFAAAAADAAEBAQcHAPro4OD4uj/6Pw8Pjzzw/MzAwMDAEBCAABUVFRUVFRUVUVFAQEBAQEAUFAAAAAAAAAwAAAAAAAAAAwADAAAAAAAwADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADADMAMAAzADAAAAAwADBUVFRUVFRUAAAAAMwAzAAAFRUVFRQUFBRVVVVVAQEBAQAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQWCoIgAgiCIAA0tAIACAAAi3NMAAAAIAAgLAAKAAAAIgNXX/zyCKiAAUPzwAKCAAAMAAAAAAAAA8CAAAAAAAAABoACAAAAAD/8AAAAAAPz8/AAAAAADP39/AAAAA////zMAAA/88sLKPAU1M8/8D/zzzDPzPM8zDD/z/8z/PP/DMz///c8//c8z7rrr6qvsssr////rggAAAff///+/KsD/3ff///6oA/+ua6u8wiqqqrHJKqqqqqqo+vr6+rr6+vr///////////////DA8PDw//wAAAAAAA/AAAAAAADAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAAAAAA//AAAAAAAD//8AAAAAAP///wAAAAAAAPD8AAAAAAAAAAAEBQQEAwMLCwgAoP//////AID///////8AAPz8/P///wCAAAMDDw8PP39/f39/X1////////////Dw/Pz8////Aw8PDz4+Pj7///////////7+////////f39/f39/XF/MzDLAAsPLAhfP/PHF8TzPzDPDD3xTTD8w888/zPA88sz/zDDyClqazDLKKqqqqqoqqqqqqqqqqgEGhoaWpqamqqqqqqqqqqqrr6CAgICAgOr6/j8PAwMA/PDwwMAAAz/+/v4+Piqqqv//////////8P////////8///////////Dw8PD8/PzwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPPz8/v6+vr////////////////////////////uqqqP////9/V1UV/////////78AAMDw8Pz8/Csrq6urq6ur/////////////9fX19XV1f//////////AcHBwcHA8PBfX19fV1dXV//////////////////////r6+vr+/v///////////////////////9aWFpYmpiamj+MDyOIgCCi/zuMM/DwCir7OPAKoigqqg/PP///////urq6urr6+vr///////////+/v7+/r6+v/////////////////////8DAwMDAwPDwAAADAw8PDw////////+/v//////////+/////////7/////8///////wAAAAAADDAAAAAAADP/8AAAAAPPz//wAAAAAAAAA/AAAAAAAAAAAAAAAAAAAAAPo6Ojo6Ojs/////////f3///////////8AAAACAgICAAQEAAAAAAAB/X19fX19fX///////////q6urqqqqqqr//////////+rKysr6+vLy/7+/v7+/r6/w8Pz8/Pz8/1dXV1VVVRUVqqqqqqqqqqqqqqqqqqqqqqqqqqrq6jo6/9/f39/f31+qqqqqqqqqqu/v7+/v7/v7zMw////////Pz/P////w8M/////8AAAA/PzwwAAAAAz6+vr6+vr6+v//////////Pj4+Dw8Kqqr/////////////////////8PD8/P////8DAwMPDr6qqurqqqqqqqqq/v7+8vLy8MDq6urq6urq+v/////////////////////////////8AP//////8AAADIyMjAAAAADM/PzMzMwAAAAAAAAAAAAAPz8zAwMDAwNfX19fX19fX///////////wMDw8PDw8P8AAAADAwIqql9ff3////////z8/Pz88PD///////8/P6qqqqqqqqqqo6OgoKCgoKD6+vr+/v7+P///////////FRUV1dXV1dX///+/v7+/v///////////Dg4Cg4ODgID6+vr6+v7+/v//////////+/v7+/v7+/v///////////D8/Pz8/Pz8AAAADw8DAwAPAwAAAMDAAPr6+vr6+vr6/////////Pz/////8AAAAP///68rKwsK/////////////////+/DwP////////8///////z88ADAwAAAAAAAADo6CAAAAAAA/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwAAAF9fX1dXV1dXqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq///////////wwMDAAAAAwD8/Pz8/Pz8////////////w8PDz/////z8/Kqqqqqqq///////////6+vr6/v7+/urq6urq6vr6///////////AwMDAwMDA8P7+/v7+/v4+///////////////////+/v///////////Pz8/Pz///8AAAAAAAAAAAAAAAAAAAAA+vr6+vr6Ogr8/Pz8/Pz8wAAAAAAAAAAADwMAAAAAAAD//78wAAAAAPDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/v7+/v7//z//////////////////////////////r6v///////////D8////////Pz8/j4+vr6v//////7+/v////////vz8//7qqoICAgD/r6+vr6urq/7/////////+vr6+vq6urr///////////Dw8PDw8PDwPj4/Pz8/Pw////////////7+///////w////////wAD/////8AAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/Pz8/Pz8/P////////////////////////z8Pg4OAgP//v6+rq6oq/////////7/+/////////+rq6qqqqqqq/Pz8/Pz8/PwAAAAAAAAAAP7+/z8/Pw8P//////+/v7/////////8AP//////wAAA8PDw8AAAAAADAAAAAAAAAPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8/Dw8PDw8P6urq6urq6ur//////////8DAwMDAwPDwDw8DAwAAAADq+vr+/j8/D//////////w///////8wAD8/Pz88AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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","PART6":"lEBAQEBAlABYRERYREREAJRAQFBAQJQAmEREVERERABUEBAQEBAQAJRAQFBAQJQAWEREREREWAAmEREREREmABYREREREREABQEBAQEBAQBEBAQFBAQEAElEREVEREkASQQEBQQESQBEBASESUCAAAEBQUFBQUEAYRERYhAQYAAQERFgQUFAACYZEREREREAYJAQEBAQEQAmEREVERERABYRERYREREAJRAQEBAQJQAREREVERERACUQEBQQECUAFhERFhEREQAAAAAAAA4FBQAAAAD8u+6rAAAAAADp3XYAAAADDvru+wA/5plmqqqgAADAcHCcbJcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABYRERERERYAAUAAAAAAEUASUREREREiQCERERERESJAAQEBAQEBEkABAQEBAQERACUQEBQQEBAAJRAQFBAQEAANCQY3JBgcACZZkREREREAIBAQEBAQEQAVAQEBAQEWACYRERERESYAFhEREREREQAlEBAUEBAlACUQECYBARYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU1NTXV1dbVrqurqpantNSZZWZZVVXe2f7Mv2+frW9vD/Za2WrZ2XYJUbn+u+7uuwAAwPBwcFxcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFhERERERFgABAQEBAQGSQAEBERERGSYAJhERFREREQARURERERERACEREREREZJAAQEREREZJgAWEREWERERABJRERERERJAEQEBEVEREQARUFBQUFBQQDCAwMDAwMCAGIREREREWEAUAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAw4PDg8+qbrp6qrqqqpklOXm+u36/25vG0pQ0ZWQ2tjCPf351grAP9XVVdVV1bsuS7Ttu+7urKywsMDAsLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlEBAQEBAlACYRERUREREAFQQEBAQEBAAmEREVERERABBQUFCQECUABIREWJAQEEAUQAAYBAQYABQQEBAQEBAAJREQEBAQJQAmEREREREmABYRERERERYAJRAQFBAQJQAWEREWERERACUQECYBARYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwAAAAAAAAAAAAAAAA8/Oz/PPu7uu/7/O/7/f/f0+n77/9131P+rZ51mwMMPNzY6zrNQ9e/rZlvu+z/Av2qpaqlmu24bqbntuf3QQEAAAAAAAAAAAAAAAAA/AAAAAAAA//8AAAAAAPDw8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAD/8wAAMDAvLIKgMPj7+jP/PMqiqoiioiqopZRFVWVRVRBb+777+/7q++1ff9////64J3X5Vlqqqq6gfw3XeEVVVftyuKq/r4ow/09NND6vr6/qqqqqqqqqqq/////////PD//////8AAAPz8/PwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAAAAAP//AAAAAAAAAKAAAAAAAAAAAAAAAAAADw8PAAAAAAP///8AAAAA/////wAAAADAwPDwAAADCwsrq6oAAP///////wD8/Pz/////AAMDDw8+vr4A//////////Dy+vr+/v7+//z///z8/7P/zDAyygoOLCDK6KKI/j+M8zPDPzzMP8M/zDM/8/wC1v/MM8wyqqqq1F8P//////8AAwMOjr6urhX/////////UP/66sIAAAD///+/rysICPrKygoKAgM///+/v7+////8/Pz//////wADD///////APDw8PD8/PwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMLCgoKD///////////////////////////+urg/////19VBQD8//////9/fwAAwPDw/Pz/Dx9fX19fX1//////////////r6+vq6ur8Pz8/Pz8////Pz8/Pw8PD//////////////////////r6+vr+/v//////////////v7+/v/////o4ujg6uLq6gogK8gyAswzouKKIA8D//z/iAKqKoqqqjv7+/v76+vrVVVVVVVVVVWqurq6urq6jq6qqqqqqqqq//////////8AAAAAAADAwAADCwsrKyoK//////////+qqqqqqqq+vv////////////zAAMDA8P/wAAAAAAP//wAAAAA8/P//AAAAAAAAKgsAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwP/////66uqKv//////////QEBQUFBQUFQAAAAAAAAAAPU1NTU1NTUV//////////xfX1dXV1dXV////////////v6+vr+/j4///////////w+Pj4+Do6Oj//+/v7+/v7+qqqqqqqqqqv/////v78vD7+/v7++vr6+qqqqqqqqqquro6uq6urq6M/////////+qKqqgAAAAgKqqgAAAAAAAvj4+Pj6+vj5VVVVVVVVVVY6Oj4qqqqqqqqqqqqqqqqr//////////8Dw/P//////Dw46+qqqqqr///////z88L6+Pj4ODwMA/////////8D////////AAP/////8wAAA////8AAAAADGxgYCAAAAAKCgICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoqKioqKioq/////////7+oqKiqqqqqqgAAAFVVVVVV6uqqqqqqqqr8/Pzw8MDAwFdXVxcXFxcX//////////+Pj4+Dg4OCiurq6vr6+qqq8v7+/v7////6+vr6+vr6+v//////////wsLCwMDAwMD6+v7+/v7+/qqqqqqqqqqqurq6uqqqqqqqqqqqqqqqqoCAgICAgICAoKAoAAAAAAA+Pj4+Pj4+Pqqqqqqqqqqq//DAAAAAAACvKysKCgIAAP///////7wwqqrqAICAAAD////8AAAAAPDAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADw8PDw8PDw/q6urq6urq+qqqqqqqqqqq//////////+qqqqqqqqqqgAAwPD/////KysrKyvLy/r//////////6qqqqqqqqisqqqqqqu/Pz//////////v/r+vr6+vq6u///////////AwPDw8PDw8P7+Pj4/Pz8/qqqqqqqqqqqqrq6uqqqqqlVVVVVVVVVUoKCgoKCgAAAAAAAAAAAAAD4OAgAAAAAAqqqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgICAgICAvr6+vr6+vr6qqqqqqqqqqq/v7+Pg6CgoP+/v7+vqyoq/////////7/6+v7+/////6qqqqqqqqqq8PDw8PDw8PAPDw8DAwMAAOrq+vr6/v7+rqqqqqqqqoBVVVVVVVAAAKCgoKCgAAAADwMAAAAAAACqoAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAA/f39/f39/f1VVVVVVVVVVfDw8PDw/Pz8DwMDAAAAAADq+v7+Pz8DAKqqqqqqqoAAqqqqqqAAAACgoKCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVBQEAAAAAAP//8AAAAAAA/PwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgMDAwMDAwD4DAz8DAwMAA4ICA4ACAgA4jMD4zMzMwD4DAwMDAwMAL/AwPzAwMAAFQEBAQEBAQCiAgICAgICAAEBAREREVUAJRAQFRAQEACFRERFREREAGIREWEREREAVAAAUAAAAAAJBAQJAAAEAGEQAGAQEBAAVRAQEBAQEAAQEBAQEBAQAEVEREREREQAYREREREREQAlEBAQEBAQAEfMzMfAwMwAYBAAYBAQEAAVEBAVEBAQAIVERIUEBAQAYhERYREREQBYBAQEBAQEAFdBQUFBQUEAEBAQEBAQEABJREREREREAGEQAAAAABAAVRAQEBAQEAASERERERERAFgEBAQEBAQAVkFBQUFBQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAADAAAAAAAAAALAAAAAAAAAOIAAAAAAAAA9AAAAAAAAADAAAAAAAAAAAEAAAAAAAAAAgAAAAAAAABGAAAAAAAAABAAAAAAAAAARAAAAAAAAAAyAAAAAAAAAFQAAAAAAAAACQAAAAAAAABgAAAAAAAAABAAAAAAAAAAJQAAAAAAAACFAAAAAAAAAGEAAAAAAAAAJQAAAAAAAADNAAAAAAAAAOAAAAAAAAAAEAAAAAAAAAAEAAAAAAAAABIAAAAAAAAAWAAAAAAAAABXAAAAAAAAADUAAAAAAAAAiQAAAAAAAACwAAAAAAAAABAAAAAAAAAAEgAAAAAAAABYAAAAAAAAAEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//////////////////////q5Wfm5mp1f/q5evl5+r1//p5+fn5+n3/vp6enp6eX/+/b2e3b2d3/6uVn5uZqdX/6uXr5efq9f//v/////+///////////8AAAAAAAAAAAAAAAAAAAAA//////////////////////+/n5+fm6nV/+r5+fn56vX/+n3+/vv6ff99b++/vX2v/1+be2/vX6v/q+Xn5+er1f/q5evl5+r1//+//////7///////////wAAAAAAAAAAAAAAAAAAAAD//////////////////////6+bma2bmd3/6ubm6ubm9//7eXl5eXp9//7+/v6+nl//r2dnp1d/f/+7mamZmZnd//7++/n97/f//7+/////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////////////////////////////z8////8Moplpr/8AmlVmmqqv8AplmmVVVV/z+DqFqZVlX///8/j6NomP///////////////////////////////wAAAAAAAAAAAAAAAAAAAAD///////////////////////////////////////////////////////////PzyMj/////////////////////////////////////////////////////AAAAAAAAAAAAAAAAAAAAAP////////////////////z///////8/j//////////////////////////////////////////////////////////////88v////////8///////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////////////////8vLxycrGJhnquqqq6qaplv////+/66rq///////+/+7+////99ddXe/+/u76fl5XPz8/j4+Po6P/////////////////////AAAAAAAAAAAAAAAAAAAAAP/////////////////////////////////////////w///88vHFKak/P/+/rm7q2j8/j1NTVFVV////////P4P///////////////////////////////8AAAAAAAAAAAAAAAAAAAAA///////////8/Pz8/P///+Ho6vr6Ojo+//8/j4+jqKr/////////MP///////z+M///////zyCj///zy8soqqskppaSklJSUPz8//////////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////////////8/Pz8/Pw/MPLA/ELwTAMw////8/DA676/7/v7/w+6rq66rqu6Irq77rrqqqiAv/+vq6sqCgjy8vR0dHR0dP////////////////////8AAAAAAAAAAAAAAAAAAAAA///////////////////////88vLyysrKDvrr//zwwAHq+r6uKwpSdOXl11+flURA+qqqq7988cbo/v+vigJCUj+Po2NjWFiY/////////////////////wAAAAAAAAAAAAAAAAAAAAD/////////////////////Pj5OTlJSVFSqqqIqiCqKqs///////w/DIqqqqqiqqKqigKqiiCCiiiqqqiqqKqq6sbExMQUVFRX/////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///////////y8fLx8vHGyfCP8YwxxDPND4NgpZd6rbbAwAOi+NtvvxA43dywZVVVDg4AN19f1/fCBGWlYRBEUe/7+/v7ezs+Pz8/Pz8/j4///////////wAAAAAAAAAAAAAAAAAAAAD///////////////////z8ysrKwsklJZby8Pzff/3///igD3/11FFVDP/7iAgqqqoOg6hqFgVRVeGBBdf1VVVV7PyMsKzv6/v//////z8Pj///////////AAAAAAAAAAAAAAAAAAAAAP/////////////////////8/Pz8/Pzy8qqqqKuvv6y/oAjy/P8DcAWqqiqq6voPMIsvs7DBxxEV/v7/Pw9PTz8/P4+Pj4+PQ/////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////8/Pzy8skWFmRamJqYOwwAww0GDcE5e7dkrJGTteuvm6rq9VZqq6vv7qqpqqr6vu7+8mlU9fD8PD+/v08vDg4OMg8DAwPKysryUlJ0dP//////////AAAAAAAAAAAAAAAAAAAAAP/////88srK8MgqKqmlVVXr+zs/T1NTFP/////88sLg/////wOIiqr///////8/AP/////zyCgo/////w+jo6D66uqvvLDzRMLEPD3P////////P4+jY2gAAAAAAAAAAAAAAAAAAAAA//////////////////zyyvLKyioqqqqqr6+/r6+goorA88/wCKIKKADACCqqqoAFAPD/P4+voAg/zM8zzPLyDMLQFRVVFRFF//8Po6OPIyj//////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMnJJSaWmRVZ4ujiiICCIogDzgLCMgLCAskFxy835//v///////////v7////7+//6urqqqqqqqqOnJ6omK6iqoMMwwDAAAMA+ru7js7Ps8+Pz+Pj6NjiGgAAAAAAAAAAAAAAAAAAAAAOurqqqqqqqr///88////PPz8//P/z///4Pg4ODrOzg48PM/PzzMzAAAAAAAAAzDAPD//8/P/zIDyzs7OPjw4OM/PMz8/z/z////////////6+v7//////wAAAAAAAAAAAAAAAAAAAAD///z88vLKKcIoopSUZVWVqoIKiIIAIMCoiIijI6OrKDy//8z/P/zxMACAgKKiADMPM//P/P8PI4DICvDy8vLCiAgooyMjDz+ouu667/77//8/P4+jY1iWAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+z//P/P/PM8wzzPP/M8MM8IyAsLAMMAw7//+/Pz8/P6q+v9RQQBAwf/6qqEREQAE///iIiAACIv/v7+/vry+vAAPDD8zzzPMzj/PP/w/A8/67/7M+/LPMwAAAAAAAAAAAAAAAAAAAAD////////8////8///z/z//P/z//z8zPPJycExwjLCMgMAQEFBQUVFM8zz8/9/VUAAwADg4KCoqDg48fDx4OHg//M//zMPM8//z/////M//P////8/////AAAAAAAAAAAAAAAAAAAAADvu67qqqiiq///8/8//8//////P/DzzzMgoKMrCwgLC8vLKysjICEAzMwAAAAAAADIyMjw8DAwMyMjI4eHhIKH////zPzzPM///P//z/8///vv+////PP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMM8wzzAMMM8wwzDMAMAwAAAzAAMwAADD//z8/Pz8/D/Orqvq/r6qqPP+rqur6+r/KqqlVVVVWWf788PDy+PDAAwAzDDAAA8AzzDPMA8wDDAPMM8wzDADMAAAAAAAAAAAAAAAAAAAAAP/z//z/8zzz/8z/88zzzDDMM8wzzAPMAMwwzDAAAMwAzLK7v68uLio/6qqu/////wyj//+/rq6qwMhCSEAIAAAzwDPMM8wzAP//z/8/wz/M///zP//P//wAAAAAAAAAAAAAAAAAAAAA8///zP/8z/z8z/Pww/wzwPPAMzAMz/PADAAwADAADADAwPAwMDwMDg8PDy8so4i7AAAAwMIy9sjAwMjACCAAAM8DzAww888DP/PPD8M/zAPP//8z/z/zPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMADwAAMMAAwwDAAMwAADAPDAAAMwAAMAA8PA4MDACAA/////////z/6//////////76qqqqqKig4sACAAAIAIgwAAAMMAADDDDMAMADAAAAMwAwAAPMA8wAAAAAAAAAAAAAAAAAAAAAzDPAMwAAADPMAAAwwAMAAwADwAAAMAADAAAAAMAADAA/Dw8PAwMAAP///////z8A//z8/PDwAAAAAAMAAAAAADAMADDDAAMAPwAzAAAAAwDP/wPMAAADDAAAAAAAAAAAAAAAAAAAAAAzzDDAMwAzwDDMAMADADMAAMwDADAAA8AwADPAAMAzAMkCAjAAAAAMwP+/v68qKgo4+OjgoICAEMwwzAMAMwwAADPAAAwAwAMMMwADwADMAMwzDAPMAMwDAAAAAAAAAADmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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"}</script>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* rp-city */
+// The city and the text screens, drawn by the game's own code on the kit's 6502 (Cpu, C64Cpu on a
+// page) over a copy of the listing's memory (ram). Each function returns what C64.renderFrame
+// draws: { mem, vic, colourMem, cia2, cpu, writes, lines, cycles }.
+//
+// rpCity(ram, Cpu, level, demo): a level as the game sets it up. game_start ($8314) runs up to its
+// call of level_intro ($8476), which sets the video chip and clears the screens; level ($9083) and
+// demo_mode ($9C61, 1 when nobody has joined) are set; level_init ($90DF) sets the level up. The
+// three monsters are put out of the game (monster_state 15) and their sprites are off: the picture
+// is the city.
+//   draw()            one pass's drawing, as frame_work ($921F) orders it: draw_scenery ($960E),
+//                     draw_buildings ($9533), draw_status ($994A), weak_road ($9858) and
+//                     flip_screens ($929D). The first call draws twice, once for each of the two
+//                     screens, as start_day does. The status lines' character set is in force at
+//                     the top of the frame and the city's from line 76, where the game's timer
+//                     interrupt changes it ($D018).
+//   punch(col, row)   a climbing monster's punch on the character at that screen column and row:
+//                     damage_building ($A62F) for the first monster, facing left, with cell_col
+//                     ($A585) the column and cell_row ($A586) the row plus one, as eat_or_damage
+//                     leaves them. A click on a building's first column is moved one to the right,
+//                     the first column the routine accepts. Returns true if the map changed.
+//   pass()            collapse_buildings ($B281), one pass of a building that has no strength
+//                     left, then draw().
+//   buildings()       [{ left, right, height, strength, type strength }] for the level's buildings.
+//   only(type, col)   replaces the level's buildings with one building of that type (0-5) at that
+//                     column: a list of one type and a list of one column are written into the
+//                     unused bytes at $CB20, setup_buildings' operands ($9498, $94AE) pointed at
+//                     them, and setup_buildings ($9493) run.
+//   energy([a, b, c]) gives the three monsters that energy (energy, $9B81) and runs energy_bars
+//                     ($9C62). For 0, the monster is given 1 and one counted hit, and
+//                     apply_damage_one ($9B9B) runs, as when it loses its last unit in play.
+//   saved()           puts back the three building maps and strengths the file holds for level 0,
+//                     the game in progress when the program was saved (discoveries.html).
+//   ruin(i)           puts back building map i (0-5) as the file holds it.
+//   weaken(b)         takes building b's strength to 0, so that pass() brings it down.
+//   road(stage)       sets road_stage ($9082), which weak_road draws from: 3 the weak stretch whole, 2
+//                     and 1 as it breaks, 0 the hole, 4 an ordinary street.
+//   shot(k)           stands the three monsters apart in the street, puts one bullet inside the
+//                     box move_bullets ($9E68) works out for monster k (0-2), and runs
+//                     move_bullets up to pay_bullet_hits ($9FAB). Returns the bullet's column and
+//                     row, the box [left, right, top, bottom], and flags, the three hit_by_bullet
+//                     bytes ($A580): which monster the game marked as hit.
+function rpCity(ram, Cpu, level, demo) {
+  const m = ram.slice(), vic = new Uint8Array(47), colour = new Uint8Array(1024);
+  const io = {
+    read(a) {
+      if (a >= 0xD000 && a < 0xD02F) return vic[a - 0xD000];
+      if (a >= 0xD800 && a < 0xDC00) return colour[a - 0xD800];
+      if (a === 0xDC00 || a === 0xDC01) return 0xFF;
+      return 0;
+    },
+    write(a, v) {
+      if (a >= 0xD000 && a < 0xD02F) vic[a - 0xD000] = v;
+      else if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15;
+    },
+  };
+  const cpu = new Cpu.CPU(m, { port: 0x35, io });
+  const call = (a, regs) => cpu.call(a, regs || {}, { maxSteps: 2e6 });
+  cpu.pc = 0x8314; cpu.run({ until: 0x8476, maxSteps: 1e6 });
+  m[0x9083] = level; m[0x9C61] = demo ? 1 : 0;
+  call(0x90DF);
+  m[0x56] = m[0x57] = m[0x58] = 15;
+  let drawn = false;
+  const C = {
+    mem: m, vic, colourMem: colour, cia2: [0x94, 0x3F], cpu: [47, 53], lines: 312, cycles: 63, writes: [],
+    call,
+    draw() {
+      for (let i = drawn ? 1 : 0; i < 2; i++) { call(0x960E); call(0x9533); call(0x994A); call(0x9858); call(0x929D); }
+      drawn = true;
+      vic[0x11] = 0x1B; vic[0x15] = 0;
+      vic[0x18] = m[0x904A] | 0x0B;
+      C.writes = [[76, 0, 0xD018, m[0x904A] | 0x09, m[0x904A] | 0x09]];
+      return C;
+    },
+    buildings() {
+      const out = [];
+      for (let b = 0; b <= m[0x95] && b < 8; b++) out.push({ left: m[0x8C68 + b], right: m[0x8C70 + b], height: m[0xA3A3 + b], strength: m[0xB353 + b] });
+      return out;
+    },
+    punch(col, row) {
+      const b = C.buildings().find((q) => q.height && col >= q.left && col <= q.right);
+      if (!b) return false;
+      const before = m.slice(0x7500, 0x7680).join();
+      m[0x50] = 0; m[0xA585] = Math.max(col, b.left + 1); m[0xA586] = row + 1;
+      call(0xA62F, { x: 0 });
+      return m.slice(0x7500, 0x7680).join() !== before;
+    },
+    pass() { call(0xB281); return C.draw(); },
+    only(type, col) {
+      m[0xCB20] = type; m[0xCB21] = 0xFF; m[0xCB28] = col;
+      m[0x9498] = 0x20; m[0x9499] = 0xCB; m[0x94AE] = 0x28; m[0x94AF] = 0xCB;
+      call(0x9493);
+      return C;
+    },
+    energy(e) {
+      e.forEach((v, k) => {
+        if (v) { m[0x9B81 + k] = v; return; }
+        m[0x9B81 + k] = 1; m[0x9B84 + k] = 1; m[0x9B87 + k] = 1; m[0x56 + k] = 1;
+        call(0x9B9B, { x: k });
+        m[0x56 + k] = 15;
+      });
+      call(0x9C62);
+      return C;
+    },
+    saved() {
+      m.set(ram.subarray(0x7500, 0x75C0), 0x7500); m.set(ram.subarray(0xB353, 0xB356), 0xB353);
+      return C;
+    },
+    ruin(i) { m.set(ram.subarray(0x7500 + 64 * i, 0x7540 + 64 * i), 0x7500 + 64 * i); return C; },
+    weaken(b) { m[0xB353 + b] = 0; return C; },
+    road(stage) { m[0x9082] = stage; return C; },
+    shot(k) {
+      [0x20, 0x50, 0x80].forEach((x, i) => { m[0x44 + i] = x; m[0x47 + i] = 0xA0; });
+      m.fill(0, 0xA1CB, 0xA1EB);
+      cpu.pc = 0x9E68; cpu.run({ until: 0x9FAB, maxSteps: 1e5 });
+      const col = m[0xA147 + k] + 1, row = m[0xA14A + k] + 1, at = row * 40 + col;
+      m[0xA1CB] = 1; m[0xA20B] = col; m[0xA22B] = row; m[0xA1AB] = at & 255; m[0xA18B] = at >> 8; m[0xA1EB] = 0;
+      cpu.pc = 0x9E68; cpu.run({ until: 0x9FAB, maxSteps: 1e5 });
+      return { col, row, box: [m[0xA147 + k], m[0xA141 + k], m[0xA14A + k], m[0xA144 + k]], flags: [m[0xA580], m[0xA581], m[0xA582]], live: m[0xA1CB] };
+    },
+  };
+  return C;
+}
+// rpText(ram, Cpu, which, o): one of the game's three text screens, drawn by the game's own code
+// in the same way. which is 'items' (items_screen, $AA48, run up to its wait for fire),
+// 'newspaper' (newspaper_screen, $AAD0, run up to join_wait; o.level and o.state, the three
+// players' player_state, $7F not joined, 6 playing, 0 out, choose its headlines and pictures) or
+// 'over' (instructions_screen, $A85E, run up to its wait for fire). The screen is the one at $F400
+// with the text character set, as music_irq shows it ($D018 = $DA).
+function rpText(ram, Cpu, which, o) {
+  o = o || {};
+  const m = ram.slice(), vic = new Uint8Array(47), colour = new Uint8Array(1024);
+  const io = {
+    read(a) { return a >= 0xD000 && a < 0xD02F ? vic[a - 0xD000] : a >= 0xD800 && a < 0xDC00 ? colour[a - 0xD800] : a === 0xDC00 || a === 0xDC01 ? 0xFF : 0; },
+    write(a, v) { if (a >= 0xD000 && a < 0xD02F) vic[a - 0xD000] = v; else if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15; },
+  };
+  const cpu = new Cpu.CPU(m, { port: 0x35, io });
+  const run = (from, to) => { cpu.pc = from; cpu.run({ until: to, maxSteps: 2e6 }); };
+  run(0x8314, 0x8476);
+  m[0x9083] = o.level || 0;
+  (o.state || [0x7F, 0x7F, 0x7F]).forEach((v, i) => { m[0xB1DB + i] = v; });
+  if (which === 'items') run(0xAA48, 0xAA81);
+  else if (which === 'newspaper') run(0xAAD0, 0xAAF8);
+  else run(0xA85E, 0xA932);
+  vic[0x18] = 0xDA; vic[0x15] = 0;
+  return { mem: m, vic, colourMem: colour, cia2: [0x94, 0x3F], cpu: [47, 53], lines: 312, cycles: 63, writes: [] };
+}
+// rpPaint(canvas, F, s, crop): draws a frame from rpCity or rpText with C64.renderFrame at s
+// canvas pixels to one of the screen's. crop [x, y, w, h], in the screen's pixels with the border
+// (the 320 by 200 picture starts at 32, 35), draws only that part.
+function rpPaint(el, F, s, crop) {
+  const r = C64.renderFrame(F), [cx, cy, cw, ch] = crop || [0, 0, r.w, r.h];
+  const ctx = C64.canvas(el, cw * s, ch * s), img = ctx.createImageData(cw * s, ch * s);
+  const rgb = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  for (let y = 0; y < ch * s; y++) for (let x = 0; x < cw * s; x++) {
+    const c = rgb[r.px[(cy + (y / s | 0)) * r.w + cx + (x / s | 0)]], o = (y * cw * s + x) * 4;
+    img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  return r;
+}
+// rpCells(F, set, cells): puts characters on the screen of a frame from rpCity or rpText, for a
+// sheet of the game's own characters. set is 'city' (the character set at $E000, colours from
+// city_colours, $1300) or 'text' ($E800, colours from $1400). The screen is cleared to the set's
+// first empty character, each cell [column, row, character] is written with the colour the
+// game's table gives that character, and the whole frame uses the one set.
+function rpCells(F, set, cells) {
+  const m = F.mem, base = 0xC000 + (F.vic[0x18] >> 4) * 0x400;
+  const chars = set === 'city' ? 0xE000 : 0xE800, table = set === 'city' ? 0x1300 : 0x1400;
+  let blank = 0;
+  for (let c = 0; c < 256; c++) if (m.subarray(chars + c * 8, chars + c * 8 + 8).every((v) => !v)) { blank = c; break; }
+  m.fill(blank, base, base + 1000);
+  for (const [col, row, ch] of cells) { m[base + row * 40 + col] = ch; F.colourMem[row * 40 + col] = m[table + ch] & 15; }
+  F.vic[0x18] = (F.vic[0x18] & 0xF0) | (set === 'city' ? 0x09 : 0x0B); F.writes = [];
+  return F;
+}
+// end of rp-city
+</script>
+<script>
+/* rp-monster */
+// rpMonsters(ram, Cpu): the monsters' pictures as the game builds them. On a copy of the listing's
+// memory the kit's 6502 (Cpu, C64Cpu on a page) runs the game's own build_monster_frame ($B3F6) for
+// the first monster, with its frame in monster_frame ($4A), its facing in facing ($50, bit 7 set
+// for right) and its character's set of frame tables in frame_set ($B3F2: 0 George, 2 Lizzie, 1
+// Ralph, as level_init sets it), and then compose_0 ($B520), which copies the picture buffer at
+// $CCA0 into the six sprite shapes at $F280-$F3FF. picture(character, right, frame) gives
+// { px, tiles, buf, shapes }: px is the picture as the six sprites show it, 24 pixels by 48, each 0
+// (clear), 1 (the shared colour $D025), 2 (the sprite's own colour) or 3 (the shared colour $D026):
+// rows 0-20 from the top pair of shapes, rows 21-37 from lines 0-16 of the middle pair, rows 38-41
+// from lines 17-20 of the bottom pair and rows 42-47 from its lines 0-5, the lines the raster
+// handlers show of each. tiles is the frame's 36 tile numbers, buf the buffer's 288 bytes and
+// shapes the six shapes' 384.
+const RP_SET = [0, 2, 1], RP_COLOUR = [8, 5, 14], RP_NAME = ['George', 'Lizzie', 'Ralph'];
+// What each of a set's 38 frames is, from the code that asks for it. '' marks the four frames
+// nothing in the game's code sets (3, $0E, $1D, $1E).
+const RP_FRAMES = ['standing, facing out of the screen', 'mouth open (only the state nothing sets shows it)', 'mouth wide open (only the state nothing sets shows it)', '',
+  'punching along the street', 'biting, on a wall', 'in the hole in the weak road', 'punching down from the street',
+  'walking, step 1', 'walking, step 2', 'walking, step 3', 'walking, step 4', 'falling', 'biting, on the level', '',
+  'chewing on a wall, 1', 'chewing on a wall, 2', 'chewing on a wall, 3', 'chewing on the level, 1', 'chewing on the level, 2', 'chewing on the level, 3',
+  'hanging on a wall', 'punching behind, on a wall', 'punching into the wall', 'punching up from the street', 'punching up on a wall, and hanging from the blimp',
+  'punching down on a wall', 'climbing, 1', 'climbing, 2', '', '', 'knocked back, and dropping from the blimp',
+  'jumping, and the first frame of shrinking', 'shrinking, 2', 'shrinking, 3', 'shrinking, 4', 'the human walking off, 1', 'the human walking off, 2'];
+function rpMonsters(ram, Cpu) {
+  const m = ram.slice();
+  const cpu = new Cpu.CPU(m, { port: 0x35, io: { read() { return 0; }, write() {} } });
+  return {
+    picture(character, right, frame) {
+      m[0x4A] = frame; m[0x50] = right ? 0x80 : 0; m[0xB3F2] = RP_SET[character];
+      cpu.call(0xB3F6, { x: 0 }, { maxSteps: 100000 });
+      cpu.call(0xB520, {}, { maxSteps: 100000 });
+      const set = RP_SET[character] + (right ? 3 : 0), table = m[0xB4B6 + set] | m[0xB4B0 + set] << 8;
+      const tiles = Array.from(m.subarray(table + 36 * frame, table + 36 * frame + 36));
+      const buf = m.slice(0xCCA0, 0xCCA0 + 288), shapes = m.slice(0xF280, 0xF400), px = new Uint8Array(24 * 48);
+      for (let row = 0; row < 48; row++) {
+        const pair = row < 21 ? 0 : row < 38 ? 1 : 2, line = row < 21 ? row : row < 38 ? row - 21 : row < 42 ? row - 21 : row - 42;
+        for (let b = 0; b < 6; b++) {
+          const v = shapes[(pair * 2 + (b / 3 | 0)) * 64 + line * 3 + b % 3];
+          for (let i = 0; i < 4; i++) px[row * 24 + b * 4 + i] = (v >> (6 - 2 * i)) & 3;
+        }
+      }
+      return { px, tiles, buf, shapes };
+    },
+  };
+}
+// end of rp-monster
+</script>
+<script>
+/* rp-loading */
+// rpLoading(bytes): one of the disk's two loading pictures as a frame for C64.renderFrame. bytes
+// is the file's 10,240 bytes, which load at $4000: a multicolour bitmap at $4000 (8,000 bytes),
+// its screen colours at $6000 (1,000) and its colour memory at $6400 (1,000), which the loader
+// copies to $D800. The video chip is as the loader sets it: bank $4000 ($DD00 = $96), bitmap at
+// $4000 and screen at $6000 ($D018 = $80), multicolour bitmap mode ($D011 = $3B, $D016 = $D8),
+// border and background black.
+function rpLoading(bytes) {
+  const mem = new Uint8Array(0x10000), vic = new Uint8Array(47), colour = new Uint8Array(1024);
+  mem.set(bytes, 0x4000);
+  for (let i = 0; i < 1000; i++) colour[i] = bytes[0x2400 + i] & 15;
+  vic[0x11] = 0x3B; vic[0x16] = 0xD8; vic[0x18] = 0x80; vic[0x20] = 0; vic[0x21] = 0;
+  return { mem, vic, colourMem: colour, cia2: [0x96, 0x3F], cpu: [47, 55], lines: 312, cycles: 63, writes: [] };
+}
+// end of rp-loading
+</script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const missing = (el) => { if (el) el.outerHTML = '<p class="rp-miss">This drawing needs the site\'s shared scripts and the game\'s listing, which the built site serves.</p>'; };
+  const IDS = ['rp-g-mon', 'rp-g-army', 'rp-g-never', 'rp-g-spare', 'rp-g-load-2', 'rp-g-load-6', 'rp-g-blocks-a', 'rp-g-blocks-b', 'rp-g-pics', 'rp-g-set-city', 'rp-g-set-text'];
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { IDS.forEach((id) => missing($(id))); return; }
+  const PIC = [32, 35, 320, 200], GREY = '#3b3f48';
+  const hex = (n) => '$' + n.toString(16).toUpperCase().padStart(2, '0');
+  // the things on the page that move: each is called with the time since its last call while it is on the screen
+  const movers = [];
+  let last = 0;
+  const tick = (now) => {
+    requestAnimationFrame(tick);
+    const dt = Math.min(now - last, 200); last = now;
+    for (const m of movers) { const q = m.el.getBoundingClientRect(); if (q.bottom >= 0 && q.top <= innerHeight) m.f(dt); }
+  };
+  requestAnimationFrame((now) => { last = now; tick(now); });
+  const figure = (parent, w, h, text) => {
+    const f = document.createElement('figure'), c = document.createElement('canvas'), cap = document.createElement('figcaption');
+    cap.textContent = text; f.appendChild(c); f.appendChild(cap); parent.appendChild(f);
+    return { c, ctx: C64.canvas(c, w, h), cap };
+  };
+
+  // 04: the loading pictures need only the page's own data
+  (function () {
+    const D = JSON.parse($('rp-g-load-data').textContent);
+    for (const [name, id] of [['PART2', 'rp-g-load-2'], ['PART6', 'rp-g-load-6']]) {
+      const b = Uint8Array.from(atob(D[name]), (ch) => ch.charCodeAt(0));
+      rpPaint($(id), rpLoading(b), 1, [0, 0, 384, 272]);
+    }
+  })();
+
+  C64.load('listing.json').then((L) => {
+    const r = L.ram, shape = (n) => r.subarray(0xC000 + 64 * n, 0xC000 + 64 * n + 63);
+
+    // 01: the monsters
+    const M = rpMonsters(r, C64Cpu), cache = {};
+    const picture = (ch, right, f) => cache[[ch, right, f]] || (cache[[ch, right, f]] = M.picture(ch, right, f).px);
+    const paint = (ctx, ch, right, f, sx, sy) => {
+      const px = picture(ch, right, f), cols = [null, C64.PAL[7], C64.PAL[RP_COLOUR[ch]], C64.PAL[11]];
+      ctx.fillStyle = GREY; ctx.fillRect(0, 0, 24 * sx, 48 * sy);
+      for (let y = 0; y < 48; y++) for (let x = 0; x < 24; x++) { const c = cols[px[y * 24 + x]]; if (c) { ctx.fillStyle = c; ctx.fillRect(x * sx, y * sy, sx, sy); } }
+    };
+    (function () {
+      const rep = (f, n) => Array(n).fill(f), table = (a, n) => Array.from(r.subarray(a + 1, a + 1 + n));
+      const shrink = []; for (let s = 0; s < 63; s++) shrink.push(r[0x89AF + (s >> 3)]);
+      for (let s = 0; s < 32; s++) shrink.push(0x24 + ((s >> 2) & 1));
+      const ACTS = [
+        ['Walking', [8, 9, 10, 11].flatMap((f) => rep(f, 4))],
+        ['Climbing', [0x1B, 0x1C]],
+        ['Eating on a wall', table(0x8C2A, 21)],
+        ['Eating in the street', table(0x8C41, 21)],
+        ['Changing back into a human', shrink],
+        ['One frame, chosen with the slider', null],
+      ];
+      const who = $('rp-g-who'), face = $('rp-g-face'), act = $('rp-g-act'), fr = $('rp-g-frame');
+      ACTS.forEach(([n], i) => act.add(new Option(n, i)));
+      const ctx = C64.canvas($('rp-g-mon'), 288, 288);
+      let step = 0, acc = 0, shown = -1;
+      const draw = () => {
+        const seq = ACTS[+act.value][1], f = seq ? seq[step % seq.length] : +fr.value;
+        fr.disabled = !!seq;
+        if (seq) fr.value = f;
+        const key = who.value + face.value + f;
+        if (key === shown) return;
+        shown = key;
+        paint(ctx, +who.value, +face.value === 1, f, 12, 6);
+        $('rp-g-out').textContent = 'Frame ' + f + ': ' + (RP_FRAMES[f] || 'never asked for') + '.';
+      };
+      [who, face, fr].forEach((e) => e.addEventListener('input', draw));
+      act.addEventListener('change', () => { step = 0; draw(); });
+      movers.push({ el: $('rp-g-mon'), f(dt) { if (!ACTS[+act.value][1]) return; acc += dt; while (acc >= 69) { acc -= 69; step++; } draw(); } });
+      draw();
+    })();
+
+    // 03: the four frames nothing asks for
+    for (const f of [3, 14, 29, 30]) for (let ch = 0; ch < 3; ch++) {
+      const g = figure($('rp-g-spare'), 144, 144, RP_NAME[ch] + ', frame ' + f);
+      paint(g.ctx, ch, false, f, 6, 3);
+    }
+
+    // 02: the sprite shapes
+    (function () {
+      const ROTOR = [0, 1, 2, 3, 2, 1], S = 3;
+      const cell = (parent, text, o) => {
+        const n = o.frames[0].length, g = figure(parent, 24 * n * S, 21 * S, text);
+        let i = 0, acc = 0;
+        const draw = () => {
+          g.ctx.fillStyle = o.bg || GREY; g.ctx.fillRect(0, 0, 24 * n * S, 21 * S);
+          o.frames[i].forEach((sh, k) => {
+            if (o.hires) C64.drawSprite(g.ctx, shape(sh), k * 24 * S, 0, S, C64.PAL[o.colour]);
+            else C64.drawSpriteMC(g.ctx, shape(sh), k * 24 * S, 0, S, C64.PAL[o.colour], C64.PAL[7], C64.PAL[11]);
+          });
+        };
+        if (o.frames.length > 1) movers.push({ el: g.c, f(dt) { acc += dt; let moved = false; while (acc >= o.ms) { acc -= o.ms; i = (i + 1) % o.frames.length; moved = true; } if (moved) draw(); } });
+        draw();
+      };
+      const army = $('rp-g-army'), rotor = (base) => ROTOR.map((k) => [base + k]);
+      [[0x40, 'Helicopter, nose on'], [0x44, 'Helicopter flying left'], [0x48, 'Helicopter diving left'], [0x4C, 'Helicopter, nose on, second copy'], [0x50, 'Helicopter flying right'], [0x54, 'Helicopter diving right']]
+        .forEach(([b, t]) => cell(army, t + ' (' + hex(b) + '-' + hex(b + 3) + ')', { frames: rotor(b), ms: 40, colour: 8, bg: C64.PAL[6] }));
+      [0x58, 0x5C, 0x60, 0x64].forEach((b) => cell(army, 'Small helicopter (' + hex(b) + '-' + hex(b + 3) + ')', { frames: rotor(b), ms: 40, colour: 0, hires: true, bg: C64.PAL[6] }));
+      cell(army, 'The blimp (' + hex(0x68) + ', ' + hex(0x69) + ')', { frames: [[0x68, 0x69]], colour: 1, bg: C64.PAL[6] });
+      [[0x6A, 'Car, facing right'], [0x6C, 'Car, facing left'], [0x6E, 'Tram, facing right'], [0x70, 'Tram, facing left'], [0x74, 'Tank, facing right'], [0x72, 'Tank, facing left']]
+        .forEach(([b, t]) => cell(army, t + ' (' + hex(b) + ', ' + hex(b + 1) + ')', { frames: [[b, b + 1]], colour: 6 }));
+      const wreck = []; for (let i = 1; i < 5; i++) wreck.push([r[0x8C9B + i], r[0x8CA2 + i]]);
+      cell(army, 'A wreck, as the game shows it', { frames: wreck, ms: 500, colour: 8 });
+      cell(army, 'A helicopter\'s explosion (' + hex(0xC0) + '-' + hex(0xC3) + ')', { frames: [[0xC0], [0xC1], [0xC2], [0xC3]], ms: 200, colour: 8, bg: C64.PAL[6] });
+      cell($('rp-g-never'), 'The wreck table\'s first entry (' + hex(r[0x8C9B]) + ', ' + hex(r[0x8CA2]) + ')', { frames: [[r[0x8C9B], r[0x8CA2]]], colour: 8 });
+      cell($('rp-g-never'), 'Shapes ' + hex(0x7E) + ' and ' + hex(0x7F), { frames: [[0x7E, 0x7F]], colour: 8 });
+    })();
+
+    // 05: the building blocks, whole and ruined, 13 to a row
+    for (const [id, first] of [['rp-g-blocks-a', 0], ['rp-g-blocks-b', 100]]) {
+      const cells = [];
+      for (let b = 0; b < 100; b++) for (let k = 0; k < 4; k++) cells.push([(b % 13) * 3 + (k & 1), (b / 13 | 0) * 3 + (k >> 1), r[0x3C10 + (first + b) * 4 + k]]);
+      rpPaint($(id), rpCells(rpCity(r, C64Cpu, 0, false).draw(), 'city', cells), 2, [32, 35, 312, 192]);
+    }
+
+    // 06: the twenty squares of the text screens
+    for (let p = 0; p < 20; p++) {
+      const cells = []; for (let i = 0; i < 64; i++) cells.push([i & 7, i >> 3, r[0x7000 + p * 64 + i]]);
+      const g = figure($('rp-g-pics'), 128, 128, p === 14 ? '14, never drawn' : String(p));
+      rpPaint(g.c, rpCells(rpText(r, C64Cpu, 'items'), 'text', cells), 2, [32, 35, 64, 64]);
+    }
+
+    // 07: the two character sets
+    for (const [id, set, F] of [['rp-g-set-city', 'city', rpCity(r, C64Cpu, 0, false).draw()], ['rp-g-set-text', 'text', rpText(r, C64Cpu, 'items')]]) {
+      const cells = []; for (let c = 0; c < 256; c++) cells.push([c % 32, c >> 5, c]);
+      rpPaint($(id), rpCells(F, set, cells), 2, [32, 35, 256, 64]);
+    }
+  }).catch((e) => { console.error(e); });
+})();
+</script>

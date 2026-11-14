@@ -1,24 +1,19 @@
 # Short Circuit — TODO
 
-Tier: `bronze` in `game.json`, because the run was made on `claude-sonnet-5-5`, which is not a proven model (`python3 kit/scripts/models.py`). The work was done to the Silver standard of the kit's definition (coverage 99.9 per cent, minisite built, facts written). It becomes Silver when a maintainer has sampled its listing on a proven model and, if the sample finds too many wrong, audited it (`kit/CHECKING.md`).
+Tier: `silver` in `game.json`. The first run (1 November 2026, claude-sonnet-5-5, unproven) reached a Silver standard of work; the Silver run of 13 November 2026 on claude-opus-5-5 built it again from the original cassette, audited every comment and every claim in `facts.md` on a proven model for a known contributor (`kit/CHECKING.md`), and sampled the listing again afterwards (`game.json`, `accuracy`).
 
-## Missing for Silver
+## Missing for Gold
 
-- The sample found 5 of 28 routine comments wrong in a detail (18 per cent), read by the author model. A full audit on a proven model is the next step after the maintainer's sample; part two's actors (`$2DD4`-`$35B3`) were corrected once against their code and are the next-weakest.
+- A human pass over every section of every tab (`AGENTS.md`, "Definition of done"): the copy is `agent-draft`.
 
-- A maintainer's sample of the listing's comments (`kit/skills/core/60-verify`). Part two's actor routines (`$2DD4`-`$35B3`) and the variable comments that only list references (from `$8B20`, `$9100` and the character-set areas) are the weakest.
-- Names for part two's creatures: the fifteen event routines allocate sprites whose pictures nobody has looked at (`$8A6E`).
+## Missing for Platinum
+
+- A Play tab that is the whole game, ported routine by routine and run in lockstep (`kit/skills/core/70-minisite/play.md`).
 
 ## Ideas
 
-- A map of part one, drawn from `$4000`-`$42FF` and the tiles at `$5000`, with every object marked from `$1568`.
-- A map of part two's two rows with the event columns from `$896E`.
-- A walkthrough: the order of objects that builds the decoy robot (the objects `$225A` names).
-- The Graphics tab holds only the title picture. It should also draw every shape the moving things use: Number 5 and part two's creatures (`kit/skills/core/70-minisite`).
-- The 1,192 bytes after the title picture's bitmap (`$7F40`-`$83E7`) and the 1,051 bytes at `$8B75`-`$8F8F`: what reads them, if anything.
-
-## More ideas
-
-- Name part two's creatures. The events were run by poking the scroll column (`agent-history.md`); a bird, a squirrel, a low animal, a log and a crouching figure appear, and a careful run with a checkpoint on each starter routine would match them to the event numbers.
-- A map of part two like part one's. Its tile colours come from two tables (`$4320` and `$9448`) whose use by the colour fill at `$2AD4` was not worked out.
-- A Play tab: part one's menu and part two's creatures are small enough to port, and the first would be the more interesting.
+- A map of part two like part one's. Its tile colours come from two tables (`$4320` and `$9448`) that the colour fill at `$2AD4` reads.
+- A walkthrough: the order of objects that builds the decoy robot (the objects `$225A` names), the drawers each key opens and the terminal steps.
+- Five sprite shapes no table names (`$EB`, `$EE`, `$EF`, `$FA`, `$FB`): a run of every event of part two for longer, and of part one's guard rooms, might show them in use.
+- The group of three sprites in part two (`$8FAF`, `$30BC`) and the frames at `$8FB5` and `$8FB7` were not seen on the screen; a run that reaches the part of the map where they start would name them.
+- The music player could also show the loading tune's voices beside the game's.
