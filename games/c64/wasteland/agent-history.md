@@ -362,6 +362,44 @@ limit from its code, 20 groups and 1 step in 2. The floor has only 8, 9
 and 5 panels of the three sorts, each of which breaks once, so the
 table gives what a party can reach.
 
+## 14 November 2026, the items
+
+The third of the six pull requests: an Items tab with every item's
+record, where it is found and who sells it, led by what the game does
+with items without saying.
+
+**The stock.** The item table in the game's listing is one of four
+files, and a shop loads its own. The other three were read from the
+master disks and differ only in the stock counts. Laying the seven shop
+records beside the four files showed that only Quartz and Needles share
+a file and deal in the same kinds, which is what makes a sale in one
+show up in the other.
+
+**The sort.** The engine notes say item_reorder counts a line for every
+key. Run with keys typed into the game's own item list, one RETURN
+before the suit's pick left the worn mark on the Canteen below it and
+the armour class at 14. The first try traded the suit and found the
+giver back at 0: the trade asks about the slot it empties, and without
+the stray key that slot is the worn one. With it, four Rangers ended at
+14 from one suit.
+
+**A wrong line.** The test for dropping the marked Canteen first typed
+the slot number as the line. The list closes the gap a traded item
+leaves, so the line is counted among the lines shown; the slot numbers
+keep the gap.
+
+**The two writes.** The shop's listing has two saves, and the page's
+stand-in for the disk drive logs each. Leaving the sell list writes the
+shelf; the party is saved on the way out of the shop. A reset between
+them gives a second suit for the suit's price, since the money from the
+sale is lost with the rest of memory.
+
+**Loot.** An earlier sweep of the bags read the three-byte money
+entries as pairs and reported bags naming several classes. Parsed
+properly, eleven bags name a class and all name ammunition, so the
+question the game notes left open, whether file 4's class-1 "Cash"
+record can be picked, has the answer no.
+
 ## 14 November 2026, the solution
 
 A seventh tab, `solution.html`: what the game's code needs before it

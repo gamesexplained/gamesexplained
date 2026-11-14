@@ -441,6 +441,67 @@ and a map's listing on the kit's 6502), not in the emulator.
   records are used by no meeting of their map and cannot wander there;
   the Bestiary tab lists both.
 
+## The items
+
+Run on the game's code by `test_items.js` (the engine's, the game's, a
+map's and module 1's listing on the kit's 6502), not in the emulator.
+The stock counts of item-table files 1, 2 and 4 were read from the
+master disks on 14 November 2026 (side 1 T26/L2, side 2 T33/L16, side 4
+T33/L16, three sectors each); file 0 is the table in the game's listing
+(`$3100-$33FF`), and the four differ only in each record's byte 2 and
+in record 94.
+
+- 95 records of eight bytes at `$3108`; the bytes are in
+  `parts/game/facts.md`. Kinds (byte 3 >> 3): 1 hand weapons, 2 pistols
+  and thrown weapons, 3 the Flamethrower and M17 carbine, 4 rifles, 6
+  submachine guns, 7 assault rifles, 8 and 9 rockets, 10-12 energy
+  weapons, 13 explosives, 14 ammunition, 15 armour, 16 gear, 17 Clay
+  pot, Fruit and Jewelry, 18 the quest items 58-90. No item is of kind
+  5, which three shops deal in and the fight code lets fire bursts
+  (game `$AC04`). Items 70-72 have prices and no names; item 70 holds 5,
+  rolls 3 dice and is loaded with Power packs.
+- Seven shop records on six maps (module 1, `$CA00`): map 1 `$3BD4`
+  Q. Emporium (file 2), map 8 `$3CE0` Trading car (0), map 9 `$3D12`
+  AG. store (0), map 10 `$3F6F` Store (1), map 21 `$3C17` Market and
+  `$3C2D` Blackmarket (4), map 32 `$3DF0` Thrift shop (2). All sell at
+  the price; maps 8, 9 and 10 pay three quarters and the rest half. A
+  shop offers to buy only the kinds in its record. Only maps 1 and 32
+  share both a file and kinds, so an item sold to one is listed by the
+  other.
+- A sale adds 1 to the item's count up to 255 (`$CB2C`), a purchase
+  takes 1 off with no floor (`$CC12`), and the buy list shows every
+  count that is not 0 (`$CC5D`). The shop writes the file when a member
+  leaves the buy or sell list (`$CB51`, `$CC38`, engine `$26D6`) and
+  saves the party only at "Who wants to enter?" (`$CA85`, engine
+  `$18EA`). Between the two the disk has the sale and the saved party
+  still has the item. A party of one leaves by `$CA98`, past the save.
+- Never stocked in any file: Proton ax, RPG-7, Red Ryder, the five
+  energy weapons, Power pack, Power armor and Pseudo-chitin armor.
+- item_reorder (engine `$1005`) counts a line for every key, RETURN,
+  space, R and back-arrow included (`$1015`), so the slots it notes for
+  the held weapon (`$1026`) and the worn armour (`$102C`) are one too
+  high for each such key pressed before the item is picked. It never
+  clears the two notes: a member with no weapon or no armour gets the
+  slot noted in the last sort that moved one. The armour class `+$1A`
+  is not touched, and unequip_slot (`$10D8`) clears it only when the
+  slot that leaves is the noted one. A suit of Power armor sorted with
+  a RETURN before its pick can be traded on while its armour class 14
+  stays; four members end at 14 from one suit. A fight reads only
+  `+$1A` (game `$A8B2`).
+- Anything that is not kind 15 can be held as the weapon (engine
+  `$10A2`). Crowbar, Pick ax, Shovel and Sledge hammer roll 3 dice with
+  no skill; with all skills at 0 four members with Crowbars fought as
+  four with Axes did, for the same dice.
+- Bags: 469 on the 42 maps. Eleven hold a class in place of an item,
+  all class 14: map 28's bags 1-10 (1-7 of the item) and map 24's bag 2
+  (1-10). loot_square (game `$9194`) picks the item evenly from the
+  class and writes it into the bag. A bag's money is two bytes, each
+  rolled from 1 to its value.
+- No check square, map code or shop asks for Book, Hand mirror, Map,
+  Toaster, Clay pot or Jewelry. Bloodstaffs 62 and 63 are the same
+  eight bytes; 4 bags hold one and 7 the other, and the same three
+  squares take either.
+
 ## The walk to the ending
 
 What `solution.html` says, held by `test_solution.js`. The walk runs on

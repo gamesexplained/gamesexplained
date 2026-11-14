@@ -67,3 +67,9 @@ play. The ones a reader is likeliest to ask about:
   mine's north-west vein and a walk; a failure at the reactor's light
   plates; a Night Terror attacked until one runs with full hit points.
   `test_bestiary.js` runs each on the game's code outside the emulator.
+- The Items tab's finds, tried in the emulator: a pack sorted with a
+  RETURN before the Power armor and the suit traded on; a sale in Quartz
+  looked for in Needles; the machine reset after leaving the sell list.
+  `test_items.js` runs each on the game's code outside the emulator. The
+  stock counts of item-table files 1, 2 and 4 are in no listing: a part
+  for each file would let the test hold them.
