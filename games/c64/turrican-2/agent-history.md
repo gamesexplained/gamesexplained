@@ -116,3 +116,11 @@ Level 1-2 reached 100% measured coverage over its exact packed-load extents, wit
 Level 2-2 reached complete coverage over its physical load extents. Its map holds executable glyph helpers as well as data; all helper targets from the phase directory were seeded explicitly after typing the map. Traced original instructions for the embedded initialization glyphs and boss action dispatch. Distinguished the boss X matrices and animation sources from ordinary sprite slots.
 
 Level 3-1 reached complete coverage over 34706 tracked bytes, including its music driver, dedicated flight weapons and player callback. A stopping map read watchpoint resolved the misleading retained height/count fields. The spawn streams occupy reserved glyph positions in four character banks. Traced the music instruction readers on the kit CPU to separate instrument, modulation and pattern allocations. No optional playthrough or combined-mechanics proof was added.
+
+Level 3-2 reached 100% over 32190 tracked bytes. The lower terrain library ends at $B81F; five beam bitmaps and glyph/raster code occupy the remaining pre-workspace addresses. Music data has twenty instruments and twenty-five patterns. A boss-stage store watch verified the $0128-to-$0100 side-counter reset. Following the auxiliary overcopy through initialization corrected the initial interpretation: $A720 overwrites the carried tail with sixteen generated scene frames before display. A store watch and the reader instruction verified that lifetime; the stale handover contents are not a display defect.
+
+## Flight world completed; world 4-1
+
+Completed level 3-3's code/data layout and listing at 25485 explained bytes, including the three generated mask banks and targeted traces of the collectible and actor-scan exit. Completed level 4-1 at 34994 explained bytes. Read its four indirect boss action targets and all pose matrices. A stopping store watchpoint caught the deferred bitmap exchange and verified one complete 128-byte pair; no optional playthrough was used.
+
+Completed level 4-2 at 22656 explained bytes, including the inherited-terrain ownership boundary, linked actors, shared support flags, four-band boss and the direct read of an actor-record coordinate for boss placement. Described both retained zero tails rather than treating them as absent loaded data.
