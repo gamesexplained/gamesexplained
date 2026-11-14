@@ -48,6 +48,11 @@ play. The ones a reader is likeliest to ask about:
   change that was walked leads to either.
 - Map 11's wall square with no record, which may be the "buggy wall
   square" of Per Jorner's guide.
+- The rules on The party tab, tried in the emulator: a Ranger at −15
+  with and without Rabies, timed to death; a second visit to a doctor
+  asking for a cure without a new exam; the three squares that read a
+  Ranger's sex; and Control with R at the Ranger Center's skill list on
+  an Apple II.
 - The older start-up on side 3, its credits and the sounds it does not
   make, beside side 1's.
 - The parties: how splitting the group keeps each party's square, map and

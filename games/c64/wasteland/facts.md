@@ -430,6 +430,68 @@ is in no listing and is not committed.
   `$B50B-$B589`, as above), the automatic-fire chance growing with the
   characters who are not conscious: `$B4F8` = `$FF 9 7 5 3 0 0 0`.
 
+## The rules
+
+Run on the game's code by `test_rules.js` (the engine's, the game's and
+a map's listing on the kit's 6502, with module 0's or the Ranger
+Center's laid over them where a routine of theirs runs), not in the
+emulator.
+
+- Tests in the check records that a square of the 42 maps leads to,
+  following every class and number a record's change names: Perception
+  122 on 33 maps; Picklock 69; Climb 32; Acrobat 25; Swim and Gamble 21;
+  Pugilism 18; Brawling 15, all on map 20; Electronics 13; Silent move
+  and Safecrack 11. Clip pistol, Knife fight, Rifle, Assault rifle, SMG,
+  Combat shooting and Energy weapon have none. Knife throw (map 2), AT
+  weapon (map 33), Forgery (map 23), Clone tech (map 13) and Cyborg tech
+  (map 22) have one each. Attributes: ST 138, LK 128, AGL 51, IQ 35, DEX
+  30, CHR 8, SP 5. Also 1,054 tests for an item, 30 for cash and 25 for
+  the party's size. Three records' lists have no end mark and are
+  counted up to the first pair that means nothing: map 3's check 5, map
+  18's check 15 and map 41's check 22.
+- A skill pair fails without a throw when the member's level is 0
+  (game `$8EA2-$8EA7`).
+- Skill 17, Combat shooting: `$FF` in both tables (ranger `$8513`,
+  module-2 `$CC7D`), IQ 31 and base cost 7; in no library's list, the
+  skill of no item (item record byte 5), in no check pair and in no NPC
+  record. It is the only skill whose attribute is SP (engine `$0DD8`).
+- The sex byte `+$18` is tested by map 2's checks 9 and 10 (map-02
+  `$3C35`, `$3C42`) and map 32's check 13 (map-32 `$3C2D`), each at
+  difficulty 1, which passes a woman (engine `$0D0A`). Map 35's check 12
+  (map-35 `$3BC0`) tests the rank `+$24` at 10. Run: the men's door of
+  map 2 at (19,24) prints its second message when any conscious member
+  is a woman; the women's door at (23,25) refuses the step for all 15
+  parties with a man in them; map 32's question at (12,9) answers a
+  party of four, a woman alone, a man alone with $30 and a man alone
+  with $200 with messages 21, 64, 22 and 20, the last taking $50 and
+  setting bit 1 of `+$28`.
+- The disease bits are set by game `$8318` (radiation, bit 0) and by one
+  routine in each of maps 5, 11, 24, 25, 32, 39 and 49, found as the
+  bytes `A0 28 11 66 91 66`. The action records that run them hold the
+  numbers 1 (maps 32, 39), 2 (5, 11), 3 (24, 25), 4 (5, 11, 49) and 5
+  (5, 11): nothing sets bits 6 and 7, which module 0 names "D6" and
+  "D7" (run: `$CC04` with A = `$FF` prints all eight).
+- The health clock, run on map 1 (2 units and half a minute a step) for
+  four members at MAXCON 30: a healthy member at 20 has 21 after 120
+  steps; bits 0 to 3 leave 20 at 20 after 1,440 steps and −5 at −5 after
+  2,400; bits 4 to 7 each take 4 in 128 steps; with bit 4, a member at
+  20 is below 0 after 640 steps and dead after 1,440, and CON goes from
+  1 to −1. A member at −15 is dead after 288 steps with no bit or bit 3,
+  and after 576 with bit 5 or bit 7: the branch for bits 4 to 7
+  (`$B7A8`) comes before the test for a CON below −10 (`$B7B3`) and
+  takes two points on every fourth tick (`$B834`), where the code it
+  skips takes one on every tick (`$B83C`).
+- The doctor, run on map 1's record (map-01 `$3BC1`, $5, $30, $70) with
+  bits 3 and 4 set and $500: C before the exam does nothing; E leaves
+  $470; C and 4 leave $400 and bit 4; back to "Who wants treatment?" and
+  the same member again, C does nothing until a second E. One Y on the
+  heal screen at CON −1 leaves CON 1 for $5.
+- The Ranger Center's skill list sets the list's extra key `$BE` to
+  `$92` (ranger `$83FE`); the skills page in play sets it to `$D2`, R
+  (engine `$1090`). The key table `$C953-$C992` has `$D2` and no `$92`.
+  Run: `$80B5` on a member with IQ 14 and 30 skill pairs leaves no pair
+  and 14 skill points.
+
 ## The monsters
 
 Run on the game's code by `test_bestiary.js` (the engine's, the game's

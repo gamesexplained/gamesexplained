@@ -274,6 +274,33 @@ square_action_record found no record and the check returned at once.
 "difficulty" in the listing comments, which also say "at a difficulty
 above 0" for Dan's marker; counting pairs from the bytes fixed it.
 
+## 14 November 2026, the rules
+
+The fifth of the six pull requests that break the hidden rules out into
+tabs. It grows The party tab with nine sections instead of adding a tab.
+
+- The audit's count of 136 Perception tests came from a sweep of
+  starting squares. Counting every record that a change leads to gave
+  137, and then 122: map 18's check 15 has a test list with no end mark,
+  and the reader ran on through 48 pairs of the next records' bytes,
+  fifteen of them reading as Perception. The count now stops a list at
+  the first pair that means nothing (item 0 or 255, skill 0, a party of
+  59).
+- The first idea for the skills section was a plate that rolls a test.
+  The Dice and combat tab already has one, so the section links to it
+  and keeps the table.
+- The disease clock was meant to show only that four diseases cost
+  nothing. Starting a Ranger at −15 to see how fast a disease kills
+  showed the opposite: Rabies halves the loss, because the branch for
+  the four high bits is taken before the test for a dying Ranger.
+- Leroy's lady first read as giving the whole party Wasteland Herpes,
+  from the routine that loops over the party. Following the question's
+  chain showed a test for a party of exactly one before it, then the
+  test of the sex byte, then the $50.
+- The doctor's module ran on the kit's 6502 with keys fed to wait_key,
+  which is how the exam rule and the free point are tested. The page
+  has no doctor plate: the table and the rule say it in less room.
+
 ## 12 November 2026, the fights
 
 Aaron asked what Wasteland still held after Pool of Radiance's tabs, and
