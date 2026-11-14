@@ -22,4 +22,3 @@ Tier: platinum. Coverage 100 % of all three parts (80,366 bytes); the Play tab i
 - A "One frame, rebuilt from memory" section on How it works: the question screen recorded with `kit/c64/frame.py capture` (bitmap, the 24-sprite text panel and the bubble sprites on a raster split) and drawn with `C64.renderFrame`.
 - Record the tune's sound-chip writes in VICE and hold the page's player to them as well as to the simulator.
 - Play Your Scene, the clue rounds, the Quickfire Round and the final Jukebox through in the emulator; they are traced in the code and their questions built on the kit's 6502, but not watched live.
-- Add Novaload to `kit/c64/tap.py` (`kit-feedback.md`, "Maintainer asks").

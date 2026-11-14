@@ -26,9 +26,12 @@ address and the address after its last, low byte first; and the bytes. A row of 
 a stream of pages instead: a lead-in of 0 bits, the first 1 bit, then for each page a byte of
 flags for the loader, the page's number and its 256 bytes, until a page numbered 0 ends the
 stream. Each run of pages that follow one another in memory is a block, its raw bytes the pages
-as the tape holds them, flags and number first. A format with no checksum
+as the tape holds them, flags and number first. A row of kind "novaload" is a file with a name:
+a lead-in of 0 bits, a 1, $AA, the name, a header and pages, each checked by a checksum
+(novaload_blocks says how). A format with no checksum
 its loader reads gives this none either: what proves such a block is the game's listing holding
-the same bytes. A block is the item "turbo block 3", counted from the tape's start, its place
+the same bytes. A block is the item "turbo block 3", counted from the tape's start, or
+'turbo block 3 "NAME"' when its format names it, its place
 {"file": label, "type": "turbo, <the format's name>", "pulse": n}, n the first pulse of its
 pilot, and its raw bytes run from its addresses to its last byte.
 
@@ -74,6 +77,10 @@ TURBO = [
     # CIA 2's timer B restarted at $03E0 by each pulse's NMI, which reads its high byte first: a
     # pulse of 480 cycles or more leaves it below 2 and is a 1; no checksum
     # (games/c64/short-circuit/orientation.md, "The loader")
+    # Novaload: CIA 1's timer A restarted at each pulse, a pulse over 500 cycles a 1; a checksum
+    # after the header and after each page (games/c64/mike-reads-computer-pop-quiz/orientation.md,
+    # "The loader"). Before "pages", which has no checksum and would take a Novaload file for pages
+    {"name": "Novaload", "kind": "novaload", "split": 500, "lsb": True, "least": 500},
     {"name": "pages after a 1 bit", "kind": "pages", "split": 480, "lsb": True, "least": 500},
 ]
 
@@ -310,17 +317,87 @@ def page_blocks(W, taken, fmt):
     return out
 
 
+def novaload_blocks(W, taken, fmt):
+    """The files of a format of kind "novaload" outside the stretches already read, as turbo_blocks
+    gives them, each with its "name". A file is a lead-in of 0 bits, a 1, $AA, the name's length,
+    the name, six bytes (the load address's low byte, the page before its first, the end address,
+    the bytes of the last page and the count of pages, the last one included), a checksum, then
+    each page and a checksum after it; the last page has the fifth byte's count, and none when that
+    is 0. A checksum is the sum, carries dropped, of every byte from the length on, the checksums
+    before it included, as the loader adds them. A $AA that does not follow the lead-in sends the
+    loader back to look for one, and this too."""
+    bit = lambda k: W[k] >= fmt["split"]
+    byte = lambda k: sum(bit(k + j) << (j if fmt["lsb"] else 7 - j) for j in range(8))
+    out = []
+    for lo, hi in free(taken, len(W)):
+        i, zeros = lo, 0
+        while i < hi:
+            if not bit(i):
+                zeros, i = zeros + 1, i + 1
+                continue
+            if zeros < fmt["least"] or i + 1 + 8 * 9 > hi or byte(i + 1) != 0xAA:
+                zeros, i = 0, i + 1
+                continue
+            k, raw, problem = i + 9, bytearray(), []
+
+            def take():
+                nonlocal k
+                if k + 8 > hi:
+                    raise EOFError
+                raw.append(byte(k))
+                k += 8
+                return raw[-1]
+
+            data, name, head, header = bytearray(), b"", [0] * 6, False
+            try:
+                name = bytes(take() for _ in range(take()))
+                head = [take() for _ in range(6)]
+                pages, last = head[5], head[4]
+                while True:
+                    want = sum(raw) & 255
+                    if take() != want:
+                        problem.append(f"its checksum is wrong after {len(data):,} bytes")
+                        break
+                    header = True
+                    if not pages:
+                        break
+                    pages -= 1
+                    n = 256 if pages else last
+                    if not n:
+                        break
+                    data += bytes(take() for _ in range(n))
+            except EOFError:
+                problem.append(f"the tape ends {len(data):,} bytes into it")
+            if not header:                                  # a header whose checksum is wrong is no file
+                zeros, i = 0, i + 1
+                continue
+            load = ((head[1] + 1) & 255) << 8 | head[0]
+            end = head[2] | head[3] << 8
+            if not problem and (load + len(data)) & 0xFFFF != end:
+                problem.append(f"its header says it ends at ${end:04X} and its bytes end at ${(load + len(data)) & 0xFFFF:04X}")
+            if any(x >= SILENCE for x in W[i:k]):
+                problem.append("a gap in the recording falls inside it")
+            out.append({"at": i - zeros, "end": k, "load": load, "data": bytes(data), "raw": bytes(raw),
+                        "name": name, "problem": "; ".join(problem) or None})
+            i, zeros = k, 0
+    return out
+
+
+READERS = {"pages": page_blocks, "novaload": novaload_blocks}
+
+
 def turbo_items(W, taken):
     """([(first pulse, item)], [(first, end)]) of the blocks in every format of TURBO outside taken,
-    numbered along the tape, and the stretches they take."""
+    numbered along the tape, and the stretches they take. A block whose format names its files is
+    labelled with the name too: turbo block 7 "FX"."""
     taken, blocks = sorted(taken), []
     for fmt in TURBO:
-        for b in (page_blocks if fmt.get("kind") == "pages" else turbo_blocks)(W, taken, fmt):
+        for b in READERS.get(fmt.get("kind"), turbo_blocks)(W, taken, fmt):
             taken = sorted(taken + [(b["at"], b["end"])])
             blocks.append((b, fmt))
     out = []
     for n, (b, fmt) in enumerate(sorted(blocks, key=lambda x: x[0]["at"]), 1):
-        label = f"turbo block {n}"
+        label = f"turbo block {n}" + (f' "{petscii(b["name"])}"' if "name" in b else "")
         item = {"label": label, "place": {"file": label, "type": f"turbo, {fmt['name']}", "pulse": b["at"]},
                 "load": b["load"], "data": b["data"], "raw": b["raw"]}
         if b["problem"]:

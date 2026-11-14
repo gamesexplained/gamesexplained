@@ -15,7 +15,8 @@ time, operating system and tool versions.
 
 ## What was changed in the kit
 
-- `kit/lessons/2026-11-14-mike-reads-computer-pop-quiz.md`: the run's lessons (the game's own text builders as the extractor, and a drawing routine run before a page section is named from a label).
+- `kit/lessons/2026-11-14-mike-reads-computer-pop-quiz.md`: the run's lessons (the game's own text builders as the extractor, a drawing routine run before a page section is named from a label, and a turbo format with a checksum tried before one without).
+- `kit/c64/tap.py` reads Novaload, a format of kind "novaload" in its table, and labels each file with its name (`turbo block 7 "FX"`); `kit/c64/test_tap_novaload.py` holds it to a made-up tape. Before it, `tap.py` listed this cassette as the boot program and one stretch of 799 seconds it could not decode, and once the "pages" format from the Short Circuit branch was merged it read about 220 false page blocks out of the Novaload files, because that format has no checksum and Novaload's files also start with a run of 0 bits and a 1. Novaload, whose files must pass a header checksum, is now tried first. Every other tape in this machine's game folders (Aaargh!, Aztec Challenge, Into the Eagle's Nest, North & South, Rick Dangerous, Short Circuit) lists the same items as before (`work/tapcmp.py`).
 
 ## Candidates
 
@@ -28,7 +29,7 @@ time, operating system and tool versions.
 
 ## Maintainer asks
 
-- **Add Novaload to `kit/c64/tap.py`.** `tap.py` reads this cassette's boot program and then reports 799 seconds of pulses "in a format it does not decode"; `work/novaload.py` in this game's folder reads them (a pulse over 500 cycles is a 1, bits lowest first, a run of 0 bits, a 1, `$AA`, the name, a six-byte header, a checksum before each page) and found all 26 files with every checksum right. It was not added on this branch because the Short Circuit branch changes `tap.py` too and the two would conflict; the next Novaload tape costs an hour of reading the loader without it.
+None.
 
 ## What cost the most time
 

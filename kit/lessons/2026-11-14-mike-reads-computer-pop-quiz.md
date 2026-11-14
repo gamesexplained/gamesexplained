@@ -22,3 +22,12 @@
   part of the title picture. A label written while annotating is a
   guess about purpose; the routine's output is the evidence, so draw
   it with the game's code before a section is titled from the label.
+- **Try a turbo format with a checksum before one without.** The tape
+  reader takes its formats in turn, each from the stretches the earlier
+  ones left. A format with no checksum (pages after a run of 0 bits and
+  a 1) found about 220 false blocks in this cassette's Novaload files,
+  which open the same way, because nothing told it they were not its
+  own. Novaload's header checksum rejects a stretch that is not
+  Novaload, so it goes first, and a format is added with the tapes the
+  kit's game folders hold read again beside it (`kit/c64/tap.py`,
+  `kit/c64/test_tap_novaload.py`).

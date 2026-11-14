@@ -6,7 +6,7 @@ How to get from the contributor's own copy to the analysed state.
 
 `work/Pop_Quiz.tap`, 1,530,784 bytes, SHA-256 `791efce1b4a875a4f4794e8bffdedcf56cdd987bfdee81345ae165fe480b9a1c`: a TAP of the original Elite cassette of 1988, entry 977 of the Ultimate Tape Archive V4.0, with scans of the inlay and the cassette and the archive's index (`.idx`), which names the stretches "Mike Read's Pop Quiz" and "Block 1" to "Block 5".
 
-`python3 kit/c64/tap.py work/Pop_Quiz.tap` reads one file in the KERNAL's format, `POP QUIZ` (a 512-byte boot program at `$02A7`), and 799 seconds of pulses in a format it does not decode, 312 and 712 cycles long. The boot program is Novaload ("(C)1984 NOVALOAD" in its last bytes). `work/novaload.py` reads that stretch as the loader reads it, and finds 26 files, every checksum right:
+The tape holds one file in the KERNAL's format, `POP QUIZ` (a 512-byte boot program at `$02A7`), then 799 seconds of pulses 312 and 712 cycles long. The boot program is Novaload ("(C)1984 NOVALOAD" in its last bytes). `work/novaload.py` was written to read that stretch as the loader reads it, and `kit/c64/tap.py` reads Novaload the same way (`python3 kit/c64/tap.py work/Pop_Quiz.tap`): 26 files, every checksum right:
 
 | # | Name | Loads at | Bytes | Part | Role |
 |---|---|---|---|---|---|
