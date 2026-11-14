@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}} — Discoveries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#23262d;--paper:#e9e7e1;--ink:#2f3136;--muted:#55585f;--line:#d5d3cc;--gx:68px;--pp:26px}
+*{box-sizing:border-box}html{background:var(--bg)}body{max-width:1080px;margin:auto;min-height:100vh;background:var(--paper);color:var(--ink);font:17px/1.6 Lato,system-ui,sans-serif;padding-bottom:4rem}
+.hero{padding:48px var(--gx) 8px}.wrap{padding:0 var(--gx)}h1,h2{line-height:1.2}h1{font-size:46px;margin:0 0 14px}.eyebrow{font:12px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}section{padding:48px 0 24px}.plate{background:white;border:1px solid var(--line);border-radius:10px;padding:var(--pp)}pre{overflow-x:auto;font:13px/1.5 'IBM Plex Mono',monospace;white-space:pre}code{font-family:'IBM Plex Mono',monospace;font-size:.85em}a{color:#1f5fa8}.cap{color:var(--muted);font-size:14px}@media(max-width:700px){:root{--gx:18px;--pp:14px}h1{font-size:36px}}
+</style>
+<!-- tabs -->
+<header class="hero"><p class="eyebrow">{{year}} · {{publisher}}</p><h1>Discoveries</h1></header>
+<main class="wrap">
+<section><h2>A disk-side message in the copied code</h2>
+<p>The Censor disk retains two copies of a three-row message in the story code:</p>
+<div class="plate"><pre>          please turn disk over
+
+      press fire button when ready</pre></div>
+<p>The <a href="source-resident-stash.html#D23E">message routine</a> copies 120 bytes to the screen area. Two routines use the filename <code>SIDE FLAG</code> and read a byte after a load. The checks at <a href="source-resident-stash.html#D1A2"><code>$11A2</code></a> and <a href="source-resident-stash.html#D1DE"><code>$11DE</code></a> would display the messages and repeat the read under their respective conditions.</p>
+<p>In the captured code, the two setup paths jump over those checks. This describes the Censor release examined here; it does not establish how other releases behave or whether another route reaches the checks.</p>
+<p class="cap">The source listing shows the stored bytes under I/O at <a href="source-resident-stash.html#D000"><code>$D000</code></a>. Before this code runs, the game copies them to the addresses beginning at <code>0x1000</code>.</p></section>
+<section><h2>A test row in the story code</h2>
+<p>The same stored block contains a 40-byte row with the words “this is just some test text!”, followed by a zero byte. The <a href="source-resident-stash.html#DAB7">listing</a> shows the row and its padding. Whether the game ever displays it remains open.</p></section>
+<section><h2>Museum movement skips eight overlap checks</h2>
+<p>The museum code contains blocks that compare two position records. When their comparisons match, the blocks return before a movement update. In the examined Jondi disk and the alternative Censor disk, each of eight movement paths contains an unconditional jump over one of these blocks. For example, <a href="source-museum.html#B7FB"><code>$B7FB</code></a> jumps to <a href="source-museum.html#B833"><code>$B833</code></a>, past the <a href="source-museum.html#B7FE">comparison at <code>$B7FE</code></a>.</p>
+<p>The two disks’ museum files are byte-for-byte identical, and the eight jumps are present in the museum entry snapshot and four later saved states. The first Censor image has an incomplete museum file. Other possible entries into the skipped blocks, the reason for the jumps and their behavior in other releases remain open.</p></section>
+<section><h2>Copying over the copy loop</h2>
+<p>A helper stored with the story engine copies memory into the region containing its own instructions. When the copy reaches its source-address operand, the incoming byte sends that operand backwards. The destination keeps advancing.</p>
+<p>A forced call to <a href="source-story-engine.html#1AE0"><code>$1AE0</code></a> visits 26 destination pages before returning. The apparent source range spans 16 pages, but some source pages are read twice.</p>
+<div class="plate"><table><thead><tr><th>Page passes</th><th>Source page at the start</th><th>Destination page</th></tr></thead><tbody><tr><td>1–10</td><td><code>$D0–$D9</code></td><td><code>$10–$19</code></td></tr><tr><td>11</td><td><code>$DA</code>; operand changes during the copy</td><td><code>$1A</code></td></tr><tr><td>12–26</td><td><code>$D1–$DF</code></td><td><code>$1B–$29</code></td></tr></tbody></table></div>
+<p class="cap">The processor model and VICE both returned with source high byte <code>$E0</code> and destination high byte <code>$2A</code>. A normal gameplay route into this helper has not been established; this is the measured behavior of the stored routine when called directly.</p>
+</section>
+<section><h2>A stored status word</h2>
+<p>Two museum sprite slots spell <strong>DAZED</strong> when placed side by side. The same area holds the <a href="graphics.html">OK and DEAD words the panel can select</a>. The stored DAZED bitmaps are at <a href="source-museum.html#0DC0"><code>$0DC0</code></a> and <a href="source-museum.html#0E00"><code>$0E00</code></a>; whether a game path selects them remains open.</p></section>
+<section id="stale-beam">
+<h2 class="t">A switched-off beam can keep its hit</h2>
+<p>The museum checks two hit flags before it drains the opponent’s strength. Each beam updates its own flag while running. Switching it off clears the beam’s active state but leaves the last hit flag in memory.</p>
+<p>Once the first beam has hit, switching it off can let the second beam continue doing damage alone. The <a href="source-museum.html#99F0">off toggle</a> leaves <code>$A318</code> set, and the <a href="source-museum.html#93B4">second hit test</a> accepts it. A controlled VICE test used the real toggle and then recorded four further damage calls with the first beam inactive.</p>
+<p class="cap">This verifies the stale-flag path; it is not a recorded winning playthrough. The opposite beam has the corresponding stored flag.</p>
+</section>
+</main>
