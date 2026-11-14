@@ -132,3 +132,9 @@ Completed 29362 explained bytes. Targeted read watchpoints resolved the support 
 ## World 5-2
 
 Completed the 24064-byte final level listing. Its 1500-byte map ends before dedicated movement code, despite a retained count of 3000. Carried its byte-identical music driver from level 3-3 through an 816-instruction pairing. A store watchpoint established the initial sprite copies beneath I/O. A targeted instruction trace established the omitted comparison in one adjacent-cell boss hit test; it reads the second cell but retains the first comparison's clear carry and ignores the hit. No optional replay was recorded.
+
+## Title, raw scores and ending
+
+Captured the title file before $7FF5 and established its actual $6C00-$B937 authored extent. Its upper display is copied/generated from that source. The encoded credit reader was traced; the transposed font was rendered. Traced the initial counter source byte and confirmed continue/life bytes one/three. Identified raw score sector 18/18, marked free in the supplied allocation map; the media reader therefore omits it and it needs an explicit ledger row after the final scan. Retained utility-program fragments beside the font resolve at original addresses $14A8 above their stored copy; they are data here, with the directly read counter byte separately explained.
+
+Completed the ending at 37760 explained bytes. A targeted instruction trace corrected the text decoder's preliminary model: it resets Y before reading the descending program-byte key. Decoded both completion stages through $FE04, including valid zero glyphs in a copyright row. Corrected the ending music table formatter's four-byte offset using actual instruction operands; an initial duplicate-label rejection exposed the mismatch. The four obsolete comment-only starts were relabelled by their real allocations. A targeted instruction step resolved $0A40 as the ending's return through $53E4 into title loading.
