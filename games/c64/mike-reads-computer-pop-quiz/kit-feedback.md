@@ -1,4 +1,4 @@
-# Mike Reads Computer Pop Quiz — kit feedback
+# Mike Read's Computer Pop Quiz — kit feedback
 
 Written in the retrospective (`kit/skills/core/80-retro`). Which skill text
 changed what the run did, what the skills and kit got wrong or left out,
@@ -7,32 +7,28 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
+- `70-minisite`: "A shape the game paints into the screen itself is drawn by the game's own routine": I drew the answer clock and the "frame tiles" by running `draw_clock` and `draw_frame_tiles` on the kit's 6502, and the second showed that the tiles the listing called the screen's frame are the speech bubble's outline; the page's section had been titled from the label.
+- `60-verify`: "Read every comment it marks wrong or doubtful": all eight findings of the sample were read against the code, and all held.
+- `60-verify`: "every other comment that says the same thing": the swap of screen colours and colour RAM at `$209A` was in four operand comments, and the missed `sta $5FF8,x` loops in all eight sprite pointer comments; 18 comments were corrected for 8 findings.
+- `c64/steps`: "Writes that match the game's frame by frame can still be silent": the effects code never writes the volume after a block loads; `fx_init`, which sets it, is run before each effect button.
 - `10-orient`: "a stopping checkpoint on the game's first instruction (the loader's jump into it)": the first stop, at `$4000`, was the loader's second stage; the KERNAL load log then showed the last file loading over the stage, and the stop at its return, `$40E2`, gave the hand-over.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/lessons/2026-11-14-mike-reads-computer-pop-quiz.md`: the run's lessons (the game's own text builders as the extractor, and a drawing routine run before a page section is named from a label).
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+- **A counter that bounds a retry loop counts draws, not distinct items.** `pick_question` (`$2C72`) stops checking its asked-question bits once a per-subject counter reaches 0, and it decrements the counter on every draw, the rejected ones too, so repeats start after about two thirds of a subject. The listing's comment said it right; what could have gone wrong was the page saying how long a subject lasts. It was measured by running the routine 200 times on the kit's 6502 and counting draws to the first repeat. A skill line would say: when a routine retries random picks against a used-set, run it on the simulator to the first repeat before describing how long the set lasts.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+- **Add Novaload to `kit/c64/tap.py`.** `tap.py` reads this cassette's boot program and then reports 799 seconds of pulses "in a format it does not decode"; `work/novaload.py` in this game's folder reads them (a pulse over 500 cycles is a 1, bits lowest first, a run of 0 bits, a 1, `$AA`, the name, a six-byte header, a checksum before each page) and found all 26 files with every checksum right. It was not added on this branch because the Short Circuit branch changes `tap.py` too and the two would conflict; the next Novaload tape costs an hour of reading the loader without it.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+Writing the page widgets' renderers for the faces, fonts and pictures by hand; a site library function that draws a block of multicolour cells from bitmap, screen-colour and colour-RAM bytes (the format every one of them shared) would have saved the most.
+
+## Operating system and tools
+
+Windows 11 Pro 10.0.26200 with WSL2 Ubuntu; VICE v3.13.2 built from vice-mcp commit `1e83aab134`, check-emulator 57 of 57; regenerator2000 0.9.20; node 24 and Python 3 from the kit's `tools/`. The browser checks used the contributor's Chrome in headless mode from Windows against the WSL preview server (`work/shoot.ps1`).

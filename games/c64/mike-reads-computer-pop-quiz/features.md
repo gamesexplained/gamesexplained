@@ -16,23 +16,24 @@ Sources:
 | A one-player game against the computer, or two players | live | menu "Select game options"; player one on joystick port 1 or the keyboard, player two on port 2 (`$1C9C`) |
 | Each team chooses a specialist subject: Pop, Rock, Rock 'n' Roll, Country & Folk, Classical, Mystery | live | the six icons; subject names at `$B32F` |
 | Each team picks a captain and two members from twelve stars | live | the face grid; team introduction "the members of ...'s team are ... and ..." (`$FEC0`) |
-| Five question blocks on the tape, one loaded for a game | live | "Question block 1" to "5" (`$1C3B`); four Novaload files a block (`orientation.md`) |
-| The Jukebox round: choose a number, answer a question on a subject, four answers against the clock | live | "The first round of the game is the Jukebox round" (`$AEF6`); the number grid 1-12; answers in four slots (`$3C3A`) |
-| A wrong answer is offered to the other team for a bonus point | traced | "Incorrect. A bonus point to ..." and "for a bonus point" (`$1E2B`, `$1E6A`) |
-| The Your Scene round: an easy question for one point or a hard one for two | open | announcement `$3E04`; "Your Scene round - ... will you please choose Easy or Hard" (`$B440`) |
-| Spot the Star: a picture and up to three clues, three points on the first, two on the second, one on the last | open | `$B204`-`$B277`; "Correct 1/2/3 points" (`$1DF2`-`$1E18`); clue texts in the block's third file |
-| Name the Year: events of one year, the team names it | open | `$B287`, `$B2AD`; event texts in the block's third file |
-| What happened next: a question with answers A to D | open | `$25F2` |
-| The Quickfire Round: as many questions as a team can answer | open | `$B2CF`, "End of Quickfire round" (`$1EA1`) |
-| The final round is the Jukebox again | open | `$AEB7` |
-| 1,275 subject questions, 255 a block | confirmed | built by the game's own `$3416` and `$3C3A` on the kit's 6502 from each block's snapshot (`work/allq.js`) |
+| Five question blocks on the tape, one loaded for a game | live | "Question block 1" to "5" (`$1C3B`); four Novaload files a block (`orientation.md`); a block lasts four games (`games_left` `$2B90`) |
+| The Jukebox round: choose a number, answer a question on a subject, four answers against the clock | live | "The first round of the game is the Jukebox round" (`$AEF6`); the number grid 1-12 shuffled over the subjects at `$287F`; answers in four slots (`$3C3A`) |
+| A wrong answer is offered to the other team for a bonus point | traced | "Incorrect. A bonus point to ..." and "for a bonus point" (`$1E2B`, `$1E6A`); the pass to the other team at `$3029`-`$3099` |
+| The Your Scene round: an easy question for one point or a hard one for two | traced | announcement `$3E04`; "Your Scene round - ... will you please choose Easy or Hard" (`$B440`); Easy asks the team's own subject, Hard another, `$3A84`-`$3AAB` |
+| Spot the Star: up to three clues, three points on the first, two on the second, one on the last | traced | `$B204`-`$B277`; "Correct 1/2/3 points" (`$1DF2`-`$1E18`); the next clue at each time-out, `$2FC6`-`$2FDD`; every item and clue of the five blocks built by `$262E` on the kit's 6502. The screen shows the team's captain, not the star (`$2DA4`-`$2DC4`) |
+| Name the Year: events of one year, the team names it | traced | `$B287`, `$B2AD`; built the same way as Spot the Star |
+| What happened next: a question with answers A to D | differs | the text (`$25F8`) and a routine to fill its answer buffers (`$2640`) are in the game, but no step of the show (`$338E`) and no call or pointer reaches them |
+| The Quickfire Round: as many questions as a team can answer | traced | `$B2CF`, "End of Quickfire round" (`$1EA1`); 9 questions on one clock at half speed, a wrong answer a point to the other team (`$0D88`, `$0DDD`, `$3125`-`$3162`) |
+| The final round is the Jukebox again | traced | `$AEB7`; show steps 25-30 run the Jukebox on the six numbers left (`$3362`, `$338E`) |
+| 1,275 subject questions, 255 a block | confirmed | built by the game's own `$3416` and `$3C3A` on the kit's 6502 from each block's snapshot (`work/allq.js`), block 1 again from the listing (`test_questions.js`) |
 
 ## Beyond the documentation
 
-- Credits in the game's own text (`$3E83`): designed by Ian Upton and Nick Acton, graphics by Dave Percival, music and sound effects by Mark Cooksey, programming by Richard Underhill.
+- Credits in the game's own text (`$3E83`): designed by Ian Upton and Nick Acton, graphics by Dave Percival, music and sound effects by Mark Cooksey, programming by Richard Underhill. The loading picture adds "in conjunction with MPC Games Ltd.". Unused panel credits in the menu (`$CC8E`-`$CD0A`) name Steve Beverley for the visuals.
 - The question text is compressed: each block carries a list of words, and a byte from `$80` up in a question or an answer stands for one of them (`$259C`).
+- The computer opponent is told the right answer's slot and takes it 192 times in 256 when it is behind, otherwise answers at random (`$0936`).
+- Sound effects 0, 7, 9 and 10 of the effects code every block loads are never played (`$4FCB`'s nine callers).
 
 ## Open questions
 
-- How the computer team chooses its answers, and how often it is right.
-- How the twelve numbers of the Jukebox round map to questions.
+- None of the features above is left open. Your Scene, the clue rounds, the Quickfire Round and the final Jukebox were read in the code and their questions built on the kit's 6502, but not played through in the emulator.

@@ -1,5 +1,17 @@
-# Mike Reads Computer Pop Quiz — agent history
+# Mike Read's Computer Pop Quiz — agent history
 
 Narrative of how the analysis went, including wrong turns, for the next
 agent's benefit. This is the only file that narrates; `facts.md` and
 `features.md` state current truth only.
+
+## 13-14 November 2026, Silver on claude-opus-5-5
+
+- **The tape.** `tap.py` read the KERNAL boot program and stopped at 799 seconds of turbo pulses. The boot program's last bytes said Novaload; reading its pulse routine gave the format, and `work/novaload.py` decoded all 26 files with every checksum right. The first stop on the loader's jump went to `$4000`, the second stage, not the game; the KERNAL load log showed file "2" loading over the stage, and the hand-over is the return at `$40E2`.
+- **Parts.** The program loads whole; choosing a question block loads the effects code over `$4F00`-`$53FF` and the block over `$B800`-`$FEFF`, where the menu's code was. The first layout had two parts; the menu's own bytes in those ranges were then split into a part of their own, so the listing shows both what the menu runs and what a block brings.
+- **Question blocks in VICE.** A snapshot does not keep the tape's place, so `work/fastload.py` serves each load from the decoded files at Novaload's entry (`$033C`) and resumes at its exit (`$03AF`). Stepping the machine while waiting for loads blocked the server at first; waits that let the machine run fixed it.
+- **The questions.** Rather than decode the compressed text, `work/allq.js` and `work/clues.js` call the game's own builders on the kit's 6502, once per record of each block, which is how the Questions tab got all 1,275 questions and 80 clue items. The contributor asked whether the brackets round song titles were real: the bubble's font draws "(" and ")" as quotation marks, checked live (`work/shots/bt-*.png`).
+- **Annotation.** Five helpers on claude-opus-5-5, one at a time, each on its own range or part (title `$0000`-`$1FFF`, `$2000`-`$3FFF`, `$4000`-`$B7FF`, the menu part, the quiz part). Helper 3 found the disassembler had decoded stretches of the title bitmap as code (`$6C50`-`$72E9`). Two of helper 1's names were wrong and fixed after helper 2 read their users (`$0DFC`, `$1845`).
+- **The sample.** Seed 77133, 60 comments, read by a fresh checker on claude-opus-5-5: 8 wrong, all of them held when read against the code, and 18 comments corrected for them.
+- **The pages.** The sound players run the game's own music driver and effects code. The effects were silent in the first try in node because nothing in the effects code sets the volume after a load; `fx_init`, which the block loader's `irq_setup` calls, does, and each effect button now runs it first. The Graphics tab drew the "frame tiles" as a sheet whose colours matched nothing on the screen; running `draw_frame_tiles` on the kit's 6502 showed they are the speech bubble's outline, and the section was rewritten. The panel font's wide letters drew as garbage until `draw_glyph` showed the second byte of a line is 8 bytes on, not the next byte.
+- **The repeat bug** was measured by running `pick_question` 200 times from different seeds: repeats start after 27.8 of 43 questions on average, and sooner after another block has been played, because the asked-question bits are never cleared.
+- **No Levels tab.** Every round is played on the same screen; the five question blocks are data of one layout, shown on the Questions tab.
