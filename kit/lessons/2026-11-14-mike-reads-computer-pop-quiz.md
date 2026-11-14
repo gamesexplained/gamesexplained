@@ -1,4 +1,4 @@
-## next · 2026-11-14 · Mike Read's Computer Pop Quiz (C64) · Nico-van-der-Zijden with Claude
+## 0.0.341 · 2026-11-14 · Mike Read's Computer Pop Quiz (C64) · Nico-van-der-Zijden with Claude
 
 - **Let the game's own text builder be the extractor.** The quiz keeps
   1,275 questions as compressed records (plain bytes, and `$80` + n for
