@@ -11674,7 +11674,7 @@
   {
    "address": 3464,
    "type": "line",
-   "text": "Show step 16 (from the step table at $338E/$33AE): the Quickfire Round. Builds its screen ($2072, $31F8, $324E, $28C0), sets both_teams_answer, the round type ($1DC0 = 3), clears the question count ($B1DF), prints its announcement ($B2CE, \"The next round is (The Quickfire Round)...\"), switches to display state 6 (the bubble) with 2 points a question ($30F4, $3102), runs the per-frame routine and waits for step_done, then ends the step ($2D33)."
+   "text": "Show step 16 (from the step table at $338E/$33AE): the Quickfire Round. Builds its screen ($2072, $31F8, $324E, $28C0), sets both_teams_answer, the round type ($1DC0 = 3), clears the question count ($B1DF), prints its announcement ($B2CE, \"The next round is (The Quickfire Round)...\"), switches to display state 6 (the bubble) with 2 points a question ($30F4, $3102), runs the per-frame routine and waits for step_done, then goes on to ask_question ($2D33) for the round's first question."
   },
   {
    "address": 3549,
@@ -11694,7 +11694,7 @@
   {
    "address": 3702,
    "type": "line",
-   "text": "Shared end of the two Name the Year steps (name_the_year $0E39 and name_the_year_2 $0DFC): round type 1, both_teams_answer off, picks one of the round's eight items not used yet (bit masks round_bits $1DA7 against items_used $1DB0) into question_number, 3 points ($30F4, $3102), $1DBF = 2, and ends the step ($2D33)."
+   "text": "Shared end of the two Name the Year steps (name_the_year $0E39 and name_the_year_2 $0DFC): round type 1, both_teams_answer off, picks one of the round's eight items not used yet (bit masks round_bits $1DA7 against items_used $1DB0) into question_number, 3 points ($30F4, $3102), $1DBF = 2, and goes on to ask_question ($2D33), which asks the item's first clue."
   },
   {
    "address": 3763,
@@ -13634,7 +13634,7 @@
   {
    "address": 11511,
    "type": "line",
-   "text": "Runs show step show_step ($0751, 0-31): display state 8, no state interrupt, bubble in its upper place, fire_held set, sprites off, 2 points ($30F4/$3102), team0_choice $FF; sets team from step_team ($3362) and jumps (self-modified `jmp` at $2D30) to the step's routine from step_routine_lo/hi ($338E/$33AE). A step ends at next_step, through ask_question and the answer."
+   "text": "Runs show step show_step ($0751, 0-31): display state 8, no state interrupt, bubble in its upper place, fire_held set, sprites off, 2 points ($30F4/$3102), team0_choice $FF; sets team from step_team ($3362) and jumps (self-modified `jmp` at $2D30) to the step's routine from step_routine_lo/hi ($338E/$33AE), with X = show_step, which quickfire_next passes on to pick_question. A step ends at next_step, through ask_question and the answer."
   },
   {
    "address": 11569,
@@ -13859,7 +13859,7 @@
   {
    "address": 13369,
    "type": "line",
-   "text": "Builds a question from its source (the operand at $343C) into $B500 for the bubble: plain bytes copied; a byte $80 + n inserts word n of the word list (find_word) with a space before it unless one is there, and a space after it; a space is put after \"(\" and before \")\"; at the source's $FF a space and the end character ($34E4: \"?\" or \".\" for a clue), the first letter made capital, 18 spaces (so the end scrolls out of the bubble) and $7F (end of text). 2 callers: build_question ($3429) and build_clue_question ($2793)."
+   "text": "Builds a question from its source (the operand at $343C) into $B500 for the bubble: plain bytes copied; a byte $80 + n inserts word n of the word list (find_word) with a space before it unless one is there, and a space after it; a space is put after \"(\" and before \")\" (inside a word the letter after \"(\" is overwritten with a space and written again after it, the `dey` at $3483; outside words $34A8-$34C1 moves the character after \"(\" on one place and puts the space before it); at the source's $FF a space and the end character ($34E4: \"?\" or \".\" for a clue), the first letter made capital, 18 spaces (so the end scrolls out of the bubble) and $7F (end of text). 2 callers: build_question ($3429) and build_clue_question ($2793)."
   },
   {
    "address": 13372,
@@ -14134,7 +14134,7 @@
   {
    "address": 14627,
    "type": "line",
-   "text": "Round type 2 (Spot the Star), both_teams_answer off; picks one of the section's 8 stars not yet used (a random bit of round_bits against items_used_2 $1DAF, which only block_choice clears: two stars a game, four games a block) into question_number; tries_left 2, 3 points, ask_question. The clues come one by one, a point less each ($2FC6-$2FDD)."
+   "text": "Round type 2 (Spot the Star), both_teams_answer off; picks one of the section's 8 stars not yet used (a random bit of round_bits against items_used_2 $1DAF, which only block_choice clears: two stars a game, four games a block) into question_number; tries_left 2, 3 points, step_done cleared ($3953), ask_question. The clues come one by one, a point less each ($2FC6-$2FDD)."
   },
   {
    "address": 14682,
