@@ -21,7 +21,7 @@ sys.path.insert(0, HERE)
 import tap as T  # noqa: E402
 
 FMT = next(f for f in T.TURBO if f.get("kind") == "novaload")
-PAGES = next(f for f in T.TURBO if f.get("kind") == "pages")
+PAGES = next(f for f in T.TURBO if f["name"] == "pages after a 1 bit")
 ZERO, ONE = 312, 712                                # the two pulses of the tape it was read from
 GAP = 300000
 
@@ -85,8 +85,23 @@ def main():
     # ("BAD": the lead-in and the 1, then $AA, the length, the name, 6 header bytes, a checksum, a page, a checksum)
     after_bad = nova[3]["place"]["pulse"] + 2064 + 1 + 8 * (1 + 1 + 3 + 6 + 1 + 256 + 1)
     assert len(rest) == 2 and rest[0].startswith(f"pulses {after_bad}-"), (rest, after_bad)
+    # Novaload Special: $AA $55, then a page byte, 256 bytes and the sum of the two per block, until page $00
+    def special(heads, spoil=None):
+        out = bytearray([0xAA, 0x55])
+        for n, h in enumerate(heads):
+            data = body(256, h)
+            out += bytes([h]) + data + bytes([(h + sum(data) + (1 if n == spoil else 0)) & 255])
+        return [ZERO] * 2064 + [ONE] + bits(bytes(out) + bytes([0, 0])) + [ZERO] * 300
+    S = [GAP] + special([0x20, 0x21, 0x22, 0x80, 0x81]) + [GAP] + special([0x30, 0x31, 0x32], spoil=1) + [GAP]
+    sp = [i for i in T.items(S) if i["place"].get("type") == "turbo, " + FMT["name"]]
+    assert [(b["load"], b["data"], b.get("problem")) for b in sp] == [
+        (0x2000, body(256, 0x20) + body(256, 0x21) + body(256, 0x22), None), (0x8000, body(256, 0x80) + body(256, 0x81), None),
+        (0x3000, body(256, 0x30) + body(256, 0x31) + body(256, 0x32), "the checksums of 1 of its 3 pages are wrong")], \
+        [(hex(b["load"]), len(b["data"]), b.get("problem")) for b in sp]
+    assert sp[0]["label"] == "turbo block 1" and sp[0]["raw"][:1] == b"\x20", (sp[0]["label"], sp[0]["raw"][:1])
     print(f"ok - c64 tap.py Novaload: {len(good)} files of a made-up tape read as they must, a wrong page checksum, "
-          "a gap and a cut-off file reported, a $AA stream left to \"pages\", and a short lead-in taken for none")
+          "a gap and a cut-off file reported, a $AA stream left to \"pages\", and a short lead-in taken for none; "
+          "Novaload Special in runs of pages, a wrong checksum reported")
 
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import tap as T  # noqa: E402
 
-FMT = next(f for f in T.TURBO if f.get("kind") == "pages")
+FMT = next(f for f in T.TURBO if f["name"] == "pages after a 1 bit")
 ZERO, ONE = 280, 648                                # the two pulses of the tape it was read from
 GAP = 300000
 

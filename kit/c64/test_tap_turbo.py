@@ -28,7 +28,7 @@ import media as M  # noqa: E402
 R = M.reader("c64")
 T = R.tap_mod
 S, MD, L = (x // 8 * 8 for x in (T.SHORT, T.MEDIUM, T.LONG))       # as a TAP's bytes hold them
-FMT = T.TURBO[0]
+FMT = next(f for f in T.TURBO if f["name"] == "pilot $E3, sync $ED")
 ZERO, ONE = 280, 528                                # the turbo format's two pulses
 GAP = 300000
 
