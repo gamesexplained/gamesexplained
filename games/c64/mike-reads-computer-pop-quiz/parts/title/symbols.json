@@ -10519,7 +10519,7 @@
   {
    "address": 29,
    "type": "line",
-   "text": "$FF while the number-grid cursor glides from one cell to the next (set $05E9), 0 when it arrives (cleared $05D5); grid_cursor_frame ($05EC) reads no stick while it is set."
+   "text": "$FF while the number-grid cursor glides from one cell to the next (set $05E9), 0 when it arrives (cleared $05D5, and by the menu's start-up at $E35B); grid_cursor_frame ($05EC) reads no stick while it is set."
   },
   {
    "address": 30,
@@ -10724,7 +10724,7 @@
   {
    "address": 118,
    "type": "line",
-   "text": "$76-$F3: no reference from the game's own code apart from the tape loader; the references the listing shows ($76 from $6C68-$72AE, $79, $91/$92 from $0004, $95, $A1/$A2, $AA) come from bitmap bytes at $6000-$7F3F decoded as instructions. The tape loader at $033C uses $90, $A3/$A4, $AA-$B1, $B7, $BA, $BB, $C0 as the KERNAL does."
+   "text": "$76-$F3: no reference from the game's own code apart from the tape loader; the references the listing shows ($76 from $6C68-$72AE, $79, $91/$92 from $0004, $95, $A1/$A2, $AA) come from bitmap bytes at $6000-$7F3F decoded as instructions. The tape loader at $033C uses $90, $A3/$A4, $AA and $AC-$B1 (the header copy `sta $FFB2,y` with Y = $FA-$FF writes $AC-$B1; it never touches $AB), $B7, $BA, $BB, $C0 as the KERNAL does."
   },
   {
    "address": 121,
@@ -11139,7 +11139,7 @@
   {
    "address": 1830,
    "type": "line",
-   "text": "Draws the two choices of state 11 (Easy or Hard): the colour of each from choice_colour ($0AF4, $0AF5) into the screen colours of a 17-cell bar at pixel (92, 19) and (92, 51), through fill_colour_block; then the sprite text panel (exit_to_sprites $0AD0)."
+   "text": "Draws the two choices of state 11 (Easy or Hard): the colour of each from choice_colour ($0AF4, $0AF5) into the colour RAM ($D800, colour_target set to $D8 at $0726 and $0740) of a 17-cell bar at pixel (92, 19) and (92, 51), through fill_colour_block; then the sprite text panel (exit_to_sprites $0AD0)."
   },
   {
    "address": 1873,
@@ -11479,7 +11479,7 @@
   {
    "address": 2826,
    "type": "line",
-   "text": "team_stars: team 1's captain (read by the menu at $CB9E); the round code reads team_subjects as $0B0A,Y with Y from 1."
+   "text": "team_stars: team 1's captain (read by the menu at $C93C, copy_captain_1, and $CB9E); the round code reads team_subjects as $0B0A,Y with Y from 1."
   },
   {
    "address": 2827,
@@ -12999,22 +12999,22 @@
   {
    "address": 8347,
    "type": "line",
-   "text": "Operand of `sta $FFFF,y` at $209A: the colour RAM address of the row's first cell (row_addr_lo/hi + clear_row_column + $D800), written at $2080/$208F."
+   "text": "Operand of the first `sta $FFFF,y` at $209A: the screen-colour address of the row's first cell (row_addr_lo/hi + clear_row_column + $5C00); low byte written at $2080, high byte at $208C."
   },
   {
    "address": 8348,
    "type": "line",
-   "text": "High byte of the colour RAM pointer at $209B ($D8 + row_addr_hi, with the carry of the low add, $2087-$208C)."
+   "text": "High byte of the screen-colour pointer at $209B ($5C + row_addr_hi, with the carry of the low add, $2087-$208C)."
   },
   {
    "address": 8350,
    "type": "line",
-   "text": "Operand of the second `sta $FFFF,y` at $209D: the screen-colour address of the same cell at $5C00, written at $2083/$2095."
+   "text": "Operand of the second `sta $FFFF,y` at $209D: the colour RAM address of the same cell at $D800; low byte written at $2083, high byte at $2095."
   },
   {
    "address": 8351,
    "type": "line",
-   "text": "High byte of the screen-colour pointer at $209E ($5C + row_addr_hi, $2090-$2095); the loop after it clears the row's cells from the right end down to the first."
+   "text": "High byte of the colour RAM pointer at $209E ($D8 + row_addr_hi, $2090-$2095); the loop after it clears the row's cells from the right end down to the first."
   },
   {
    "address": 8361,
@@ -13269,7 +13269,7 @@
   {
    "address": 9548,
    "type": "line",
-   "text": "Points zp_ptr_2A at string X of the block's list of spare wrong answers, which lies at $B800 + the offset in $B800 (high) / $B801 (low); for X = 0 the list's start. Also sets zp_2C/zp_2D to zp_ptr_2A + 1 as it was on entry (the next byte of the record's trailer). Used by build_answers when a trailer flag bit is set (3 callers, $3B3F, $3B8B, $3BD7). In block 1 $B800/$B801 are 0 and no flag bit is set in its 255 records (checked on the quiz snapshot)."
+   "text": "Points zp_ptr_2A at string X of the block's list of spare wrong answers, which lies at $B800 + the offset in $B800 (high) / $B801 (low); for X = 0 the list's start. Also sets zp_2C/zp_2D to zp_ptr_2A + 1 as it was on entry (the next byte of the record's trailer). Used by build_answers when a trailer flag bit is set (3 callers, $3B3F, $3B8B, $3BD7). In block 1 $B800/$B801 are 0 and no flag bit is set in its 256 records (question 255 is never asked) (checked on the quiz snapshot)."
   },
   {
    "address": 9590,
@@ -14864,42 +14864,42 @@
   {
    "address": 24568,
    "type": "line",
-   "text": "Sprite 0's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0422, $049F, $0B76, $0BAC, $0C15, $0C96. Also set by the panel and grid code (indexed stores at $0BAC, $0C15, $0C96 write all eight from here). The snapshot's value is a leftover from loading."
+   "text": "Sprite 0's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0422, $049F, $0B76, $0BAC, $0C15, $0C96. Also set by the panel and grid code (indexed stores at $0BAC, $0C15, $0C96 write all eight from here). The snapshot's value is a leftover from loading. The loops at $0BAC (the bubble's shapes), $0C15 (the score digits) and $0C96 (the text panel's shapes) also write all eight pointers through `sta $5FF8,x`."
   },
   {
    "address": 24569,
    "type": "line",
-   "text": "Sprite 1's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $042A, $04A7. The snapshot's value is a leftover from loading."
+   "text": "Sprite 1's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $042A, $04A7. The snapshot's value is a leftover from loading. The loops at $0BAC (the bubble's shapes), $0C15 (the score digits) and $0C96 (the text panel's shapes) also write all eight pointers through `sta $5FF8,x`."
   },
   {
    "address": 24570,
    "type": "line",
-   "text": "Sprite 2's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0432, $04AF. The snapshot's value is a leftover from loading."
+   "text": "Sprite 2's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0432, $04AF. The snapshot's value is a leftover from loading. The loops at $0BAC (the bubble's shapes), $0C15 (the score digits) and $0C96 (the text panel's shapes) also write all eight pointers through `sta $5FF8,x`."
   },
   {
    "address": 24571,
    "type": "line",
-   "text": "Sprite 3's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0440, $04B9. The snapshot's value is a leftover from loading."
+   "text": "Sprite 3's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0440, $04B9. The snapshot's value is a leftover from loading. The loops at $0BAC (the bubble's shapes), $0C15 (the score digits) and $0C96 (the text panel's shapes) also write all eight pointers through `sta $5FF8,x`."
   },
   {
    "address": 24572,
    "type": "line",
-   "text": "Sprite 4's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0448, $04C1. The snapshot's value is a leftover from loading."
+   "text": "Sprite 4's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0448, $04C1. The snapshot's value is a leftover from loading. The loops at $0BAC (the bubble's shapes), $0C15 (the score digits) and $0C96 (the text panel's shapes) also write all eight pointers through `sta $5FF8,x`."
   },
   {
    "address": 24573,
    "type": "line",
-   "text": "Sprite 5's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0450, $04C9. The snapshot's value is a leftover from loading."
+   "text": "Sprite 5's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0450, $04C9. The snapshot's value is a leftover from loading. The loops at $0BAC (the bubble's shapes), $0C15 (the score digits) and $0C96 (the text panel's shapes) also write all eight pointers through `sta $5FF8,x`."
   },
   {
    "address": 24574,
    "type": "line",
-   "text": "Sprite 6's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0458, $04D1. The snapshot's value is a leftover from loading."
+   "text": "Sprite 6's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0458, $04D1. The snapshot's value is a leftover from loading. The loops at $0BAC (the bubble's shapes), $0C15 (the score digits) and $0C96 (the text panel's shapes) also write all eight pointers through `sta $5FF8,x`."
   },
   {
    "address": 24575,
    "type": "line",
-   "text": "Sprite 7's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0461, $04DB. The snapshot's value is a leftover from loading."
+   "text": "Sprite 7's shape number (the VIC reads it as the last 8 bytes of the screen at $5C00, shape n at $4000 + 64 n). Rewritten by the raster chain for each band of sprites down the screen (the text panel's rows, the score digits): stores at $0461, $04DB. The snapshot's value is a leftover from loading. The loops at $0BAC (the bubble's shapes), $0C15 (the score digits) and $0C96 (the text panel's shapes) also write all eight pointers through `sta $5FF8,x`."
   },
   {
    "address": 24576,
@@ -16554,7 +16554,7 @@
   {
    "address": 46335,
    "type": "line",
-   "text": "The byte before the question buffer: build_question_text reads $B4FF + X, the character before the one it is writing (`lda $B4FF,x` at $3458, $3470, $34AF, $34B6), and writes there to replace a space ($349F, $34BE, $34DF, $34E5)."
+   "text": "The byte before the question buffer: build_question_text reads $B4FF + X, the character before the one it is writing (`lda $B4FF,x` at $3458, $3470, $34AF, $34B6). $349F, $34BE and $34DF write a space at $B4FF + X over the character just stored, to put a space before \")\" or \"?\" and after \"(\"; $34E5 writes the closing \"?\" or \".\" (the operand at $34E4)."
   },
   {
    "address": 46336,

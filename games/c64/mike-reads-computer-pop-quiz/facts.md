@@ -96,7 +96,7 @@ The game's texts use control bytes, read by the text printer (`$36B0`-`$3830`): 
 
 ## The listing's error rate
 
-(The sample's result goes here.)
+Seed 77133 drew 60 of the listing's 2,030 comments (31 of the title part, 14 of the menu, 15 of the quiz), and a fresh agent on claude-opus-5-5 that wrote none of them read each against the code. 8 were wrong, 13.3 % (95 % interval 6.9 % to 24.2 %, Wilson): three variable comments missed a reader or writer (the menu's start-up clearing `$1D`, the menu's read of the first captain at `$C93C`, the three loops that write every sprite pointer at `$5FF8`), two swapped the colour targets of the row-clear loop at `$209A` (screen colours at `$5C00` against colour RAM at `$D800`), one said the loader used `$AA`-`$B1` where it never touches `$AB`, one counted 255 question records for 256, and one misread which byte the question builder overwrites with a space. Every finding held when read against the code, and all 8 were corrected, with 10 more comments that said the same. The sample is over the kit's mark of 2 in 60, so the listing awaits an audit (`TODO.md`).
 
 ## Live tests
 
