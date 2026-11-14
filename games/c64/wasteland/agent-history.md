@@ -239,6 +239,40 @@ alone animated the same as from the whole buffer, and
 `test_portraits.js` reads them from the page. The generated comments,
 and the sample that checked them, went with the parts.
 
+## 14 November 2026, the leftovers and the ending
+
+Aaron picked six breakouts of the game's hidden rules. This is the
+sixth: ten sections at the end of the Discoveries tab, and the ending's
+three pictures in the picture browser.
+
+The ending came first, live. `work/end.py` set the countdown to its last
+step in a saved game and followed the prompts through three runs.
+Poking the current party's map byte alone did not hold, because the
+main loop writes it back from `$09`; poking both gave the third run. The
+pictures were dumped from `$3400` at a checkpoint on `$CCE2`. The page's
+port then ran module 4 with the engine's calls answered in JavaScript,
+for 98 mixes of parties, and the two agreed with the three live runs.
+
+The first renders of Base Cochise made the channel switch after 60
+steps and left debris on the picture. Making it after eight, when
+channel 0 has run its seven entries once, gave the ruin the emulator
+showed. The game's own moment depends on its waits and the shake, which
+the page does not model.
+
+The printer report was known from the Silver run's listing as code that
+nothing calls. Running it showed the sheet, "Kni", and "Fists".
+
+Needles came last and by accident. A count of plain squares with a
+number, made to check the audit's note of stray code on map 26, gave
+2,229 on that map and a handful on seven others. Printing the rows
+showed `JSR $FDED` and the Apple's soft switches, and a search for the
+first row's branch pattern in the C64 game found the same routine at
+`$9A65`.
+
+The blade storm's plate showed a Ranger with Agility 30 cut, which read
+as a fault in the plate. It was the throw: at difficulty 5 an Agility of
+30 passed 11 times in 20.
+
 ## 8 October 2026, the NPCs (claude-opus-5-5[1m])
 
 Aaron asked for the feature where NPCs refuse requests, then for a cast

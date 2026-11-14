@@ -29,6 +29,9 @@ on 5 October 2026 while driving the game through the states named in
 | radiation-message-22.png | the same step with the record's message byte poked to 22: "It's VERY hot!" |
 | melee-kill.png | map 1's graveyard, every member fighting with fists: "KIT hammers the Shambler Ghoul for 6 points of damage killing it." |
 | unlucky-throw.png | the same fight with Hell Razor's LK poked to 3 and a Throwing knife in hand, the knife's roll changed from 10 to 2 (a 1 and a 1) at game `$A7E7`: "Hell Razor attacks and hits 1 Shambler Ghoul for 65532 points of damage spinning it into a dance of death." |
+| ending-base.png, ending-blast.png | the ending in the emulator, 14 November 2026, the picture window cut from the screen: Base Cochise under its dome, and after the shake |
+| ending-killed.png | the same run with three Rangers on map 17: the figure shown as "Hell Razor was killed in the blast." is printed |
+| ending-hilltop.png | the run with everyone off the base: the hilltop and the logo, cut from the screen that prints "High on a neighboring hilltop..." |
 
 `web/` holds C64 screenshots from other sites, saved on 5 October 2026 for
 states this run has not reached in the emulator:

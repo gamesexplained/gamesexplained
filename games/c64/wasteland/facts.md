@@ -187,6 +187,87 @@ lines into view for a moment, and the programs load from `$7E00`.
   map change (engine `$2600`), by modules 1 and 3, by the Ranger
   Center's Start and by the utilities.
 
+## Leftovers and the ending
+
+Run on the committed listings by `test_leftovers.js` unless a line says
+live.
+
+- The countdown (game `$82B5-$82DF`) is tested on every pass of the main
+  loop: armed flag `$F4F9`, the 24-bit count `$04-$06` less its value at
+  arming `$F4FA-$F4FC`, at least 240. Then save_map and action `$84`,
+  which loads module 4. No map is tested. A step is worth the units in
+  byte `$36` of the map record and puts bytes `$34/$35` on the clock: 1
+  unit and 15 seconds on 28 indoor maps, 2 and 30 seconds on ten, 16 and
+  four minutes on the world map; maps 38 and 39 count 4 units for two
+  minutes, map 40 counts 4 for 30 seconds.
+- Module 4 (`$CA00`): sets bit 0 of byte `$4B` in every record
+  (`$CA00-$CA1C`), which the radio pays out (radio `$7EBC-$7EFD`).
+  Picture 0, the base, with channel 1 held (`$CA27`); the shake; channel
+  0 off and channel 1 on (`$CA54`); message 1 in four screens. The kill
+  loop (`$CA69-$CB16`) takes every party whose table byte `+$0A` is 16
+  to 20: picture 1 for each member, CON 0, "*name* was killed in the
+  blast.", remove_member, which closes the gap in the records. With
+  survivors: the hilltop (`$CB19`), picture 2, messages 6, 4, 5, and 3
+  only when `blast_victims` (`$CB9D`) is not 0. With nobody left:
+  messages 6 and 3 in the text window, then the death program. Either
+  way the world map's column 2, row 3 becomes class 4, number 2
+  (`$CBBA-$CBE2`), message 26. The party being led keeps the lead if it
+  lived; otherwise party 0 of the survivors takes it.
+- Live, 14 November 2026, from a saved game with `$F4FA-$F4FC` set to the
+  count less 240 and `$F4F9` to 1: everyone off the base (hilltop, no
+  deaths, play goes on under the picture until a key); three on map 17
+  and one in Quartz (three named, hilltop with message 3, play goes on);
+  everyone on map 17 (messages 6 and 3, then the Grim Reaper).
+- The ending's three pictures are unpacked at `$3400` (module-4 `$CCE5`),
+  not through the picture directory. `reference/wasteland-pictures.js`
+  carries the bytes found there at `$CCE2`: 3,309, 4,168, and 4,038 bytes.
+  The hilltop's header byte 2 is `$20` by then (`$CCD7`).
+- Map 17 holds check records 0 (`$3AB7`), 2 (`$3AD1`), and 7 (`$3B1A`),
+  and exit 11 (`$3C79`, two squares west of its square), which name each
+  other: check 2 passes a party of exactly 2 to check 7 (Acrobat at 3 or
+  AGL at 4, used; a fail is 4d6), and sends any other to check 0 (item
+  54, the rope, used). No square holds them and no record a square leads
+  to names them. Check 0's failure line, message 15 "That is not long
+  enough. You need another plan...", was not printed by a Use of another
+  item, which printed the game's "That doesn't seem to work."
+- Map 17's plain squares of rows 8 to 14, 154 of them, all carry the
+  number 255. Map 17's remote change 3 (`$3CE6`) is on column 31, row 0:
+  "A rope from above hangs down here.", through exit 7 to column 15, row
+  18. Whether a party can walk to it is not known. Exit 12 (`$3C7E`,
+  to map 20) and map 16's exit 9 (`$3D05`) are on no square.
+- Map 9's exit 5 (`$3D7C`): message 37, the Old Man's walk, to column
+  25, row 29 of the same map; on no square and named by no record.
+- Map 1: exits 21 to 84 enter map 5 as numbers `$80-$BF`; 30 are on
+  squares. Exits 2, 9, 12, and 15 lead to map 1 at columns 57 to 62, on a
+  map 32 across, and are on no square.
+- Messages that no record a square leads to names, and no `LDA #` in the
+  map's code loads: map 13's 20 and 45; 16's 4 and 28; 17's 10, 11, and
+  12; 20's 52; 29's 1; 49's 16, 39, 49, 50, and 59.
+- Map 23's check 25 (`$3CAD`), on columns 25 to 28 of row 11: flags
+  `$C0`, tests AGL at 5, cash below 16, Acrobat at 4, effect CON −8, for
+  the party's first member. A cash test passes or ends the member's
+  tests (game `$8E73-$8E83`), so Acrobat is never tried.
+- A fight's keys (game `$B4BD`): space, H, A, W, R, E, L, U, S. Space
+  shows the map view until a key (`$B489`); S is Attack with the group
+  list always shown (`$B4A0`). The prompt names neither.
+- The utilities' print_report (`$844A`) is the target of no instruction
+  or table word. Run with send_report (`$8602`) stopped, it builds 33
+  lines a character from `$9000`. An item's name stops at the plural
+  mark `$0A` (`$8704`), so "Knife" prints as "Kni"; a character with no
+  armour prints "Armor Equipped: Fists". Messages 9 and 42, about a
+  printer card's slot, are printed by nothing.
+- Map 26's number layer holds what its editor's memory held, wherever a
+  square is class 0: 2,200 non-zero bytes on the 2,345 such squares of
+  rows 1 to 47, columns 1 to 62. Row 1 from column 2 is the routine the
+  C64 game has at `$9A65` (Disband's question about an NPC), with its
+  absolute addresses `$2223` lower, its messages 4 higher, and other
+  entry points (`$6159` for game `$7F50`, `$0825` for `$022F`, `$089A`
+  for `$02C6`). From row 32 the code uses Apple II addresses: `$C000`,
+  `$C010`, `$C008`, `$C009`, `$C083`, `$C016`, and `JSR $FDED`.
+- Apple II leftovers in the C64 programs: `BIT $C010` at game `$88FF`
+  and `$8A31` and utils `$82B3`; game `$C5B3-$C5FF`, 77 bytes of Disk II
+  code that nothing reads or calls.
+
 ## The maps
 
 - A map in memory is two areas. From `$3400`: the class layer, a nibble
