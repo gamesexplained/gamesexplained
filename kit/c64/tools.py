@@ -441,7 +441,8 @@ def r2000(path):
 # scoped by path rather than anchored to the start of the command line: the launcher runs the
 # emulator through `script`, and on a macOS release build bin/x64sc is a shell wrapper that execs
 # VICE.app/Contents/Resources/bin/x64sc, so the process holding :6510 has neither of those as its
-# first word. Every match still has to lie under this clone's tools/, so no other clone is touched.
+# first word. Matches use this clone's tools/ or its resolved installation target; an external
+# shared target also requires this clone's MCP port, so other ports and clones are left alone.
 # The emulator alone is killed (kill_matching): its wrappers (script, xvfb-run) exit with it. Killing
 # xvfb-run as well stops it before it can shut its Xvfb down and delete its folder under /tmp,
 # which left one of each behind per start on Linux (2 October 2026). On macOS the release's two
@@ -449,7 +450,19 @@ def r2000(path):
 # and nothing was left (v3.13.2 dmg, 2 October 2026).
 R2000_NATIVE = "regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))   # on :3000, as it serves HTTP itself
 R2000_BRIDGED = re.escape(BRIDGE)                                                     # on any other port
-STOP_PATTERNS = {"vice": re.escape(VICE_DIR + os.sep) + ".*-mcpserver",
+def vice_stop_pattern(install_dir, port):
+    """Match a wrapper's real executable too; a shared external build also needs this clone's port."""
+    alias = re.escape(install_dir + os.sep) + ".*-mcpserver( |$)"
+    target = os.path.realpath(install_dir)
+    if target == install_dir:
+        return alias
+    real = re.escape(target + os.sep) + ".*-mcpserver( |$)"
+    if os.path.commonpath((os.path.realpath(TOOLS), target)) != os.path.realpath(TOOLS):
+        real += ".*-mcpserverport " + str(port) + "( |$)"
+    return "(" + alias + ")|(" + real + ")"
+
+
+STOP_PATTERNS = {"vice": vice_stop_pattern(VICE_DIR, VICE_PORT),
                  "r2000": "regenerator2000 --mcp-server(-stdio)? " + re.escape(os.path.join(ROOT, "")) + "|" + re.escape(os.path.join(ROOT, "kit", "c64", "stdio_bridge.py")) + "( |$)"}
 
 
