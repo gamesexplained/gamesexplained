@@ -88,3 +88,5 @@ That graphics comparison found 247 repeated descriptions of a lower vertical ima
 Firefox 159.0 exercised 1188 viewer choices with no console/page errors. The shared SID worklet checker rendered ten seconds of all 30 sound buttons; every non-silent label produced output. Effect 17 produced zero output as labelled. The blank dummy tile-animation record originally selected by default was replaced by the current room's first stream.
 
 After the required native checks and frame captures, the run stopped its VICE process through the kit launcher. The MCP port no longer had a listener.
+
+The authored pages were committed as a draft, then rewritten in a separate copy pass. The final pass explains display registers, sprites, character pictures, sound voices, and stored room sets at their first use on each tab. The sentence changes were checked against the facts and retained the numerical evidence and source links. Copy remains agent-draft for human curation.
