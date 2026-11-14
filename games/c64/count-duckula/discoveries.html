@@ -1,0 +1,38 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Count Duckula</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+</style>
+<style>.cd-img{image-rendering:pixelated;max-width:100%;height:auto}canvas{display:block;margin:12px 0;image-rendering:pixelated;max-width:100%;height:auto;background:#000}button,select,input{font:inherit}button{cursor:pointer}.cd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.cd-world{display:grid;grid-template-columns:repeat(13,1fr);gap:2px}.cd-world button{font-size:11px;padding:4px 0}.cd-world button[aria-pressed=true]{background:#185b91;color:white}.cd-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}table{border-collapse:collapse;width:100%}td,th{padding:8px;text-align:left;border-bottom:1px solid #ccc}@media(max-width:650px){.wrap,.hero{padding-left:20px;padding-right:20px}}</style><!-- tabs --><header class="hero"><p class="eyebrow">1989 · Alternative Software · Commodore 64</p><h1>Count Duckula</h1><p class="sub">A typed door bypass and the small differences hidden in pickup and animation code.</p></header><main class="wrap"><section id="cheat"><p class="fig">01 · Count Duckula</p><h2 class="t">Secret: BURN THE WITCH opens the way</h2><p>Typing <strong>BURN THE WITCH</strong> followed by a space sets the door-bypass flag. The keyboard reader ignores typing while a joystick direction or fire is held, so release the stick first. The phrase has fourteen bytes including the final space.</p><p>The flag skips the normal closed-door tests in left and right movement. The puzzle-item checks remain separate. The recogniser is at <code>$42D2</code>, its phrase at <code>$42C4</code>, and the movement checks at <code>$36E0</code> and <code>$372A</code>.</p></section><section id="ankh"><p class="fig">02 · Count Duckula</p><h2 class="t">The ankh adds two hours when collected</h2><p>The manual says the ankh turns time back three hours when used. The pickup handler instead adds two to the displayed hours digit, once. Starting at 4:23 gives 6:23. Starting at 8:23 reaches the cap, 9:59.</p><p>Stopping memory watchpoints observed the addition at <code>$4205</code> and the cap stores at <code>$41EF</code>, <code>$41F2</code>, and <code>$41F7</code>. The controlling routine is <code>$41DA</code>.</p></section><section id="mummy"><p class="fig">03 · Count Duckula</p><h2 class="t">Bug: the second mummy borrows the first mummy’s phase</h2><p>The two mummies each keep an animation countdown and phase. The second mummy updates its own phase, then calculates its picture using the first mummy’s phase. Its private phase therefore does not select the displayed frame.</p><p>At <code>$4A2B</code>, the addition reads <code>$4A38</code>, the first phase. The second phase lives at <code>$4A39</code>. A controlled watchpoint test set the first phase to four and let the second wrap; the displayed pair became <code>$4E</code> and <code>$4F</code>, following the first value. The two pointer writes stopped at <code>$4A31</code> and <code>$4A37</code>.</p><p>Animation normally advances after four calls, but a direction reversal reloads the countdown with one. The next animation call can therefore change the frame immediately.</p></section><section id="contact"><p class="fig">04 · Count Duckula</p><h2 class="t">Enemy contact goes straight to the clock</h2><p>The contact routine checks actor distance and calls the displayed-second decrement directly. Its colour-flash countdown controls the player’s colours; the clock call happens before that countdown is checked.</p><p>That separates the visible flash from the time penalty. A continued overlap can reach the decrement again while the colours are still flashing. The code path is <code>$BD63</code> into <code>$5801</code>, followed by the flash test at <code>$BD66</code>. This is a code-path finding, without a claim about the duration of a naturally occurring overlap.</p></section></main><footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
