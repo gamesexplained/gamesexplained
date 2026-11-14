@@ -29,13 +29,20 @@ known bug in the port.
 `features.md` holds 50 features traced in the code and not exercised in
 play. The ones a reader is likeliest to ask about:
 
+- The Leftovers sections of the Discoveries tab, apart from the ending,
+  which was run live: the blade storm with $15 and with $16, a Use of the
+  utilities' report with a printer on device 4, and space and S in a
+  fight. `test_leftovers.js` runs each on the game's code outside the
+  emulator. Open: what was to drop a party under map 17's railing, and
+  whether an Apple II disk of the game has the routines that map 26
+  carries at the addresses it names.
 - Start's N, which loads the side with the latest autosave (startup
   `$8228-$827C`).
 - The Ranger Center's entrance coming back after module 3 has saved it
   away (`parts/module-3/facts.md`).
 - The radio's promotion points after Base Cochise (radio `$7EBC-$7EFD`).
-- Map 23's blade storm, which a party passes with less than 16 in cash
-  (`parts/map-23/facts.md`).
+- Map 23's blade storm, which the party's first Ranger passes with less
+  than 16 in cash (`parts/map-23/facts.md`).
 
 ## Article ideas
 

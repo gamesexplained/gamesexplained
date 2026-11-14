@@ -313,12 +313,227 @@
   <p>The game does the same in the emulator. With the party at column 23, row 13, three presses of L each printed message 53 and left the party, the square, and the clock as they were, and the processor's port read <code>$2F</code> <code>$35</code> throughout.</p>
 </section>
 
+
+<style>
+.wl-le-row{display:grid;grid-template-columns:1fr;gap:4px;margin:0 0 12px;font-size:14px}
+.wl-le-row select{min-width:0;width:100%}
+.wl-le-acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.wl-le-pic{display:block;image-rendering:pixelated;margin:6px 0 10px;max-width:100%;height:auto}
+.wl-le-pics{display:flex;gap:8px;flex-wrap:wrap}
+.wl-le-sheet{margin:0;padding:12px 14px;background:#101216;color:#d6f5d6;font:12px/1.35 var(--fm,ui-monospace,Menlo,monospace);overflow:auto;max-height:420px;white-space:pre;border-radius:6px}
+.wl-le-map{display:block;image-rendering:pixelated;width:100%;max-width:384px;height:auto;background:#101216;border-radius:6px}
+.wl-le-two{display:grid;grid-template-columns:1fr;gap:16px}
+.wl-le-key{font-size:13px;color:var(--ink-mute);margin:8px 0 0}
+.wl-le-key i{display:inline-block;width:10px;height:10px;margin:0 4px 0 10px;vertical-align:-1px}
+</style>
+<section id="wl-ending" data-part="module-4">
+  <p class="fig">13 · The ending</p>
+  <h2 class="t">Secret: the ending kills every Ranger still on Base Cochise's grounds, and the others play on</h2>
+  <p class="lede">When the countdown at Base Cochise runs out, the game goes through every party, wherever it is. Rangers on any of the base's five maps die in the blast. Rangers anywhere else watch it from a hilltop, and then the game carries on.</p>
+  <div class="plate wl-be" id="wl-le-end">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">Where each Ranger is</p>
+        <div id="wl-le-where"></div>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The ending"><img class="wl-le-pic" src="reference/ending-hilltop.png" width="296" height="128" alt="The hilltop: a Ranger looks down on the smoking dome of Base Cochise, beside the Wasteland logo"><p class="wl-fi-dim">Place the four Rangers and run out the countdown. The ending appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" id="wl-le-end-go">Run out the countdown</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The page splits the four Rangers into parties by place and runs the ending's own program on them (<code>$CA00</code>), then shows the text it prints. The pictures are from the game in the emulator, and <a href="pictures.html#wl-pic">How it works</a> animates them.</p>
+  </div>
+  <p>The countdown is a length of time, and it holds wherever the party goes. Arming the self-destruct at the reactor notes the game's count of time, and the main loop compares the count with that note on every pass (<span data-part="game"><code>$82B5-$82DF</code></span>). When 240 units have gone by, the game saves the map and loads the ending, whichever map the party is on.</p>
+  <p>The ending shows Base Cochise under its dome, shakes the screen, and prints four screens of text while the dome falls in. Then it reads the map number of each party in turn (<code>$CA69-$CB16</code>). The base is maps 16 to 20, and map 16 is the ground outside the dome. A party that has walked out of the door and is still on that map dies with the ones inside. For each Ranger the game shows a dark figure against a white flash and prints <q>was killed in the blast.</q> after the name.</p>
+  <p>If anyone is left, the game shows the hilltop and an excerpt from a history of the Rangers, dated 2095. The excerpt has a last sentence that a party sees only when someone died (<code>$CB9D</code>): <q>But certainly most important of all were the rangers who gave their lives to destroy Base Cochise, the greatest threat that man has ever known.</q> If nobody is left, the game prints the book's title and that sentence alone beside the dark figure, and then loads the death screen.</p>
+  <p>With a survivor, play goes on. The world map's square for Base Cochise becomes a ruin that blocks the way: <q>The debris littered here is the fireblackened ruins of Base Cochise.</q> (<code>$CBBA-$CBE2</code>). The party that the player was leading keeps the lead if it lived, and otherwise the first party that lived takes it. Every character's record is marked on the way in (<code>$CA00-$CA1C</code>), and the next call on the radio pays the mark out as 10 points of MAXCON and 10 points to spend (<span data-part="radio"><code>$7EBC-$7EFD</code></span>).</p>
+  <p>The ending was run in the emulator three ways, from a saved game with the countdown set to its last step. With every Ranger away from the base, it showed the hilltop and nobody died. With three Rangers inside and one in Quartz, it named the three, then showed the hilltop with the last sentence, and the fourth Ranger walked on. With all of them inside, it ended at the Grim Reaper.</p>
+</section>
+
+<section id="wl-needles" data-part="map-26">
+  <p class="fig">14 · Needles</p>
+  <h2 class="t">Secret: the map of Needles carries Apple II code under its empty squares</h2>
+  <p class="lede">Every square of a map has a number, which says which message, shop, or fight the square uses. An empty square needs no number, and the game never reads it. On the map of Needles the empty squares hold 2,200 bytes that were never cleared, and they are pieces of the Apple II version's program.</p>
+  <div class="plate" id="wl-le-needles">
+    <div class="wl-le-two">
+      <div>
+        <canvas class="wl-le-map" id="wl-le-needles-cv" width="384" height="384" role="img" aria-label="The 64 by 64 squares of Needles: the empty squares that hold a leftover byte are lit, in rows 1 to 47"></canvas>
+        <p class="wl-le-key"><i style="background:#f2b84b;margin-left:0"></i>game code<i style="background:#57c7ff"></i>code for the Apple's hardware<i style="background:#3a3f4a"></i>something on the square</p>
+      </div>
+      <div class="wl-tw"><table class="wl-t wl-le-b">
+        <thead><tr><th>What the step does</th><th>The C64 game</th><th>Under Needles</th></tr></thead>
+        <tbody>
+        <tr><td>An NPC was picked, and fewer than two of the party are awake: skip the question</td><td><code>A9 00 C9 02 90 22</code></td><td><code>A9 00 C9 02 90 22</code></td></tr>
+        <tr><td>Print “Do you want to”</td><td><code>A9 4F 20 50 7F</code></td><td><code>A9 53 20 59 61</code></td></tr>
+        <tr><td>Print “dismiss”, the name, and “forever?”</td><td><code>A9 4D 20 50 7F</code></td><td><code>A9 51 20 59 61</code></td></tr>
+        <tr><td>Wait for a key</td><td><code>20 2F 02</code></td><td><code>20 25 08</code></td></tr>
+        <tr><td>N, the key that backs out, or Y</td><td><code>C9 CE F0 11 C9 9B F0 2F C9 D9 D0 F1</code></td><td><code>C9 CE F0 11 C9 9B F0 2F C9 D9 D0 F1</code></td></tr>
+        <tr><td>Fetch the member who was picked</td><td><code>AD 0E 9A</code></td><td><code>AD EB 77</code></td></tr>
+        <tr><td>Take the member out of the party</td><td><code>20 C6 02</code></td><td><code>20 9A 08</code></td></tr>
+        <tr><td>Carry on with the next choice</td><td><code>4C AF 9A</code></td><td><code>4C 8C 78</code></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <p class="cap">Above: Needles, with every empty square of rows 1 to 47 that holds a leftover byte lit, drawn from the map's listing. Below: the 40 bytes from column 2 of row 1 beside the C64 game's routine at <span data-part="game"><code>$9A65</code></span>. The instructions are the same, and only the addresses and the message numbers differ.</p>
+  </div>
+  <p>Rows 1 to 31 hold pieces of the game itself. The piece in the table is from Disband: when an NPC is picked, the game asks <q>Do you want to dismiss</q> the NPC <q>forever?</q> The C64 game has the same routine, and the two match step for step. The copy under Needles was built for other addresses: it sat <code>$2223</code> bytes lower in memory, its two messages are numbered four higher, and it calls its own routines for the keyboard and the party.</p>
+  <p>From row 32 down, the code talks to the Apple II's hardware. It waits for a key at <span data-part=""><code>$C000</code></span> and clears it at <span data-part=""><code>$C010</code></span>, throws the memory switches of a 128K Apple IIe (<span data-part=""><code>$C008</code></span>, <span data-part=""><code>$C009</code></span>, <span data-part=""><code>$C083</code></span>), and prints through the Apple's ROM (<span data-part=""><code>$FDED</code></span>). On a C64 the first five of those addresses are plain memory inside Wasteland's own program, so none of this code could do its job there.</p>
+  <p>The simplest reading is that the map was drawn on an Apple II, and the tool that saved it wrote out its work area as it stood. A square with something on it got its number. An empty square kept whatever the memory held before, and for Needles that was the game itself.</p>
+  <p>The C64 programs carry smaller leftovers of the same kind. Three instructions still read <span data-part=""><code>$C010</code></span> (<span data-part="game"><code>$88FF</code>, <code>$8A31</code></span>, <span data-part="utils"><code>$82B3</code></span>), which clears the last key on an Apple and does nothing useful on a C64. The last 77 bytes of the game program are code for the Apple's disk drive that nothing calls (<span data-part="game"><code>$C5B3-$C5FF</code></span>).</p>
+</section>
+
+<section id="wl-climb" data-part="map-17">
+  <p class="fig">15 · Cut from Base Cochise</p>
+  <h2 class="t">Base Cochise still holds a climb onto a comrade's shoulders that was cut from the map</h2>
+  <p class="lede">The map of the base's computer level has four records that tell one small story: a party under a damaged railing, with a rope or a pair of shoulders as the ways up. The records name each other, and no square of the map holds any of them.</p>
+  <div class="plate wl-be wl-le-scenes" id="wl-le-climb">
+    <div class="wl-fi-log wl-be-log-short" role="log" aria-label="The game's text" style="height:170px"><p class="wl-fi-dim">Pick a step. The game's text appears here.</p></div>
+    <div class="wl-xp-bar">
+      <div class="wl-le-acts">
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-le="arrive4">Four Rangers arrive</button>
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-le="arrive2">Two Rangers arrive</button>
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-le="rope">Use a rope</button>
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-le="crowbar">Use a crowbar</button>
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-le="agility">Use Agility</button>
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-le="acrobat">Use Acrobat</button>
+      </div>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The page writes each record onto a square of the map and runs the game's own code on it: an arrival (<span data-part="game"><code>$ACC1</code></span>), or a Use on the party's own square (<span data-part="game"><code>$8BEF</code></span>). The rope and the crowbar are used under the railing by a party of four, and Agility and Acrobat by a party of two. Both are thrown with the game's dice, so they go either way.</p>
+  </div>
+  <p>The first record tests the size of the party, and passes a party of exactly two (<code>$3AD1</code>): <q>There are enough of you that one could stand on another's shoulders and reach the rail.</q> Any other party, four Rangers included, is told <q>All alone you have no way to get out of here!</q> and is left under the railing (<code>$3AB7</code>). There the way up is a rope. Using one turns the square into an exit that sets the party down two squares to the west (<code>$3C79</code>), and using anything else gets <q>That doesn't seem to work.</q></p>
+  <p>A party of two gets the other record (<code>$3B1A</code>): <q>This feat requires good balance. Choose carefully.</q> The record takes Agility or Acrobat, and either is a throw. A pass prints <q>Up on your comrade's shoulders you reach the rail and help the others up.</q> A fail prints <q>You lose your balance and topple down to the floor.</q> and costs the Ranger 4d6 of CON.</p>
+  <p>What dropped the party under the railing is missing. No square of the map and no other record changes a square into one of these four.</p>
+</section>
+
+<section id="wl-blades" data-part="map-23">
+  <p class="fig">16 · Finster's mind maze</p>
+  <h2 class="t">Bug: Finster's blade storm lets a Ranger through for carrying less than $16</h2>
+  <p class="lede">In Finster's mind maze the ceiling bursts into a storm of steel blades. The square gives the Ranger at the head of the party three chances to get clear, and the second chance is a look in the Ranger's pocket.</p>
+  <div class="plate wl-be" id="wl-le-blades">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">The first Ranger</p>
+        <div id="wl-le-first"></div>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">Set the Ranger and step under the blades. The game's text appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" id="wl-le-blades-go">Step under the blades</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The party stands on one of the four squares of the blade storm, at column 25, row 11, on the game's own code (<span data-part="game"><code>$ACC1</code></span>), with the first Ranger's Agility, cash, and Acrobat written into the record. The Agility throw uses the game's dice.</p>
+  </div>
+  <p>The record lists three tests for the first Ranger (<code>$3CAD</code>): Agility at difficulty 5, cash below $16, and Acrobat at difficulty 4. The game takes them in order and stops at the first one that passes. A cash test ends the list either way: the game answers it at once and looks no further (<span data-part="game"><code>$8E73-$8E83</code></span>).</p>
+  <p>So a Ranger who misses the Agility throw is saved by carrying $15 or less, and the storm <q>is choked off as you duck and twist your way free</q>. With $16 or more the blades cut the Ranger for 8 CON. The Acrobat test comes after the cash test, and the game never reaches it. A Ranger with seven levels of Acrobat, an Agility of 1, and $16 is cut every time.</p>
+</section>
+
+<section id="wl-printer" data-part="utils">
+  <p class="fig">17 · The utilities</p>
+  <h2 class="t">Secret: the utilities can print every character's sheet, from a routine left off the menu</h2>
+  <p class="lede">The utilities program holds a routine that lays out a sheet for each character of the saved game and sends the sheets to a printer. No menu entry and no instruction in the program leads to it.</p>
+  <div class="plate wl-be" id="wl-le-print">
+    <pre class="wl-le-sheet" id="wl-le-sheet" aria-label="The printout">Press the button. The printout appears here.</pre>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" id="wl-le-print-go">Print the party</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The page runs the routine on the kit's 6502 for the four Rangers the game starts with, and shows the text it builds, stopped where the routine would send it to the printer. Each sheet is padded to 33 lines, and the page leaves the padding out.</p>
+  </div>
+  <p>The routine builds all the sheets as text in memory (<code>$844A</code>), then sends the text to device 4, the C64's printer (<code>$8602</code>). A sheet has the name and rank, the attributes, the money, the weapon and armour in use, the items in four columns, and the skills with their levels.</p>
+  <p>The sheet has two slips. A Ranger with no armour is listed with <q>Armor Equipped: Fists</q>. The knife prints as <q>Kni</q>, because an item's name holds a mark where its plural ending starts, and the routine stops at the mark (<code>$8704</code>).</p>
+  <p>The program also carries two messages for the printout that it never shows: <q>Setup printer to the top of form and enter the slot # the printer card is in. Default slot = 1.</q> and <q>There is no card in that slot.</q> Slots and printer cards belong to the Apple II.</p>
+</section>
+
+<section id="wl-hour" data-part="game">
+  <p class="fig">18 · The countdown</p>
+  <h2 class="t">The hour before the blast is 240 steps inside the base and 15 on the world map</h2>
+  <p class="lede">The reactor's terminal shows 1:00.0 when the self-destruct is armed. The game counts that hour in its own units of time, and a step is worth more units on some maps than on others.</p>
+  <div class="plate">
+    <div class="wl-tw"><table class="wl-t">
+      <thead><tr><th>Where the party walks</th><th>Units a step</th><th>Steps in the countdown</th><th>What the clock shows for them</th></tr></thead>
+      <tbody>
+        <tr><td>The 28 indoor maps, the four inside Base Cochise among them</td><td class="wl-n">1</td><td class="wl-n">240</td><td>1 hour</td></tr>
+        <tr><td>Ten towns and outdoor places, the ground outside the dome among them</td><td class="wl-n">2</td><td class="wl-n">120</td><td>1 hour</td></tr>
+        <tr><td>Las Vegas: the Mushroom Cloud temple, and Faran Brygo&#x27;s hideout</td><td class="wl-n">4</td><td class="wl-n">60</td><td>2 hours</td></tr>
+        <tr><td>Las Vegas: the jail and Fat Freddy&#x27;s</td><td class="wl-n">4</td><td class="wl-n">60</td><td>30 minutes</td></tr>
+        <tr><td>The world map</td><td class="wl-n">16</td><td class="wl-n">15</td><td>1 hour</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">Each map's record holds the units that a step is worth and the time that a step puts on the clock (bytes <span data-part=""><code>$34</code></span> to <span data-part=""><code>$36</code></span> of the record). The countdown is 240 units (<code>$82B5</code>).</p>
+  </div>
+  <p>The count moves without a step as well. Every round of a fight adds a step's worth (<code>$B393</code>), and so does a View that comes round to the first party (<code>$9BAE</code>). A fight of ten rounds at the reactor costs ten of the 240 steps.</p>
+  <p>On three maps of Las Vegas the units and the clock disagree. A step in the temple or in Faran Brygo's hideout puts two minutes on the clock and counts as four units, where four units are a minute everywhere else. A step in the jail counts the same four units and puts half a minute on the clock. The game's health check runs on the units too, so by the clock it comes round half as often on the first two maps and twice as often on the third.</p>
+</section>
+
+<section id="wl-keys" data-part="game">
+  <p class="fig">19 · Fights</p>
+  <h2 class="t">A fight takes two orders that its prompt leaves out</h2>
+  <p class="lede">The prompt in a fight lists seven orders: <q>R)un U)se H)ire E)vade A)ttack W)eapon L)oad/Unjam</q>. The game's list of keys for that prompt has nine (<code>$B4BD</code>).</p>
+  <p>The space bar shows the map in place of the portrait until the next key, so a player can see where the enemy stands before choosing an order (<code>$B489</code>). S is Attack with the list of enemy groups always shown (<code>$B4A0</code>). Plain Attack skips the list when only one group is in reach, and S asks even then.</p>
+</section>
+
+<section id="wl-oldman" data-part="map-09">
+  <p class="fig">20 · Cut from the Agricultural Center</p>
+  <h2 class="t">The Old Man was to walk the party to Veggie Center</h2>
+  <p class="lede">The Agricultural Center has an exit with a line of its own: <q>The Old Man nods and leads you to Veggie Center, communal living quarters of the Veggies, where he smiles and leaves.</q></p>
+  <div class="plate wl-be wl-le-scenes" id="wl-le-oldman">
+    <div class="wl-fi-log wl-be-log-short" role="log" aria-label="The game's text" style="height:110px"><p class="wl-fi-dim">Press the button. The game's text appears here.</p></div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-le="oldman">Follow the Old Man</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The page writes the exit onto a square of the map and runs the game's own code on it (<span data-part="game"><code>$ACC1</code></span>).</p>
+  </div>
+  <p>Run on the game's code, the exit prints the line and sets the party down at column 25, row 29 of the same map (<code>$3D7C</code>). No square of the map holds the exit, and no other record changes a square into it.</p>
+</section>
+
+<section id="wl-quartz" data-part="map-01">
+  <p class="fig">21 · Quartz</p>
+  <h2 class="t">Quartz has a door record for 64 abandoned buildings, and 30 of them are on the map</h2>
+  <p class="lede">Every abandoned building in Quartz opens onto the same map of empty rooms. The town's list of exits has a record for each door, and more records than doors.</p>
+  <p>Exits 21 to 84 all lead into <a href="levels.html#map-5">the abandoned buildings</a>. Thirty of them are on squares of the town. The other 34 are whole records that no square uses, each with one of the town's three lines for a door: <q>An old abandoned shack.</q>, <q>It looks dark in here.</q>, and <q>This doesn't look like a safe place to enter.</q></p>
+  <p>Four more exits that no square uses lead back into Quartz itself, three of them with the line <q>You crawl through the slimy underground.</q> They set the party down at columns 57 to 62, and Quartz is 32 squares across. The numbers would fit a town of 64 by 64 squares, the size of Needles.</p>
+</section>
+
+<section id="wl-unshown" data-part="">
+  <p class="fig">22 · Text</p>
+  <h2 class="t">Unused lines left in the maps' text</h2>
+  <p class="lede">Each map carries its own text, and a square names a line by its number. These lines have no square, record, or routine that names them.</p>
+  <div class="plate">
+    <div class="wl-tw"><table class="wl-t">
+      <thead><tr><th>Map</th><th>The line</th></tr></thead>
+      <tbody>
+        <tr><td><a href="levels.html#map-13">Sleeper Base, level 2</a></td><td><q>Clone processing in progress.</q></td></tr>
+        <tr><td><a href="levels.html#map-13">Sleeper Base, level 2</a></td><td><q>Unfortunately you were cut by some shards of crystal.</q></td></tr>
+        <tr><td><a href="levels.html#map-16">Base Cochise, outside</a></td><td><q>Chunks of concrete blown long ago from the base&#x27;s armored shell block easy access to the base itself.</q></td></tr>
+        <tr><td><a href="levels.html#map-16">Base Cochise, outside</a></td><td><q>You have found the hostile base. The territory around it seethes with metal warriors.</q></td></tr>
+        <tr><td><a href="levels.html#map-17">Base Cochise, the computer</a></td><td><q>Before you lies the blackened and burned remains of what was once a door.</q></td></tr>
+        <tr><td><a href="levels.html#map-17">Base Cochise, the computer</a></td><td><q>Before you lies the battered and beaten remains of a door.</q></td></tr>
+        <tr><td><a href="levels.html#map-17">Base Cochise, the computer</a></td><td><q>The door is open</q></td></tr>
+        <tr><td><a href="levels.html#map-20">Base Cochise, the reactor</a></td><td><q>As you tried to jam the belt you got caught by the machine and pulled on to the belt.</q></td></tr>
+        <tr><td><a href="levels.html#map-29">Agricultural Center, the Root Cellar</a></td><td><q>After descending a several hundred foot high stairway, you enter the Root Cellar.</q></td></tr>
+        <tr><td><a href="levels.html#map-49">Savage Village</a></td><td><q>Some gun-toting villagers stand before you.</q></td></tr>
+        <tr><td><a href="levels.html#map-49">Savage Village</a></td><td><q>The chest exploded in your face. What ever was inside is history now.</q></td></tr>
+        <tr><td><a href="levels.html#map-49">Savage Village</a></td><td><q>The door closes behind you.</q></td></tr>
+        <tr><td><a href="levels.html#map-49">Savage Village</a></td><td><q>The whole village has been alerted. You are in trouble now!</q></td></tr>
+        <tr><td><a href="levels.html#map-49">Savage Village</a></td><td><q>You got lucky and found an easy way out of the well.</q></td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">Read from the maps' listings with the decoder of <a href="pictures.html#wl-text">Five bits a letter</a>. Each map opens on the Maps tab.</p>
+  </div>
+  <p>Some of them read as an outcome that the map never reaches. Base Cochise has a door burned open and a door beaten open, and the map shows neither. The Savage Village has an alarm that never sounds and a chest that never explodes.</p>
+</section>
+
 </main>
 
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script type="application/json" id="wl-cr-texts">{"poster": "A computer software poster reads,\n             \"WASTELAND!\"\n\nPROGRAMMING: Alan \"T.J.\" Pavlish\nDESIGN:\nBrian Fargo..........Alan \"T.J.\" Pavlish\nKen St. Andre.......Michael A. Stackpole\nMAPS:\nBruce Balfour.........Jeff \"T.G.\" Berman\nChris Christensen..Elizabeth T. Danforth\nBill \"Weez\" Dugan.......Nishan Hossepian\nStance Nixon.........Alan \"T.J.\" Pavlish\nKen St. Andre.......Michael A. Stackpole\nMike Williams..Daniel \"Ugly John\" Carver\nGRAPHICS:\nTodd J. Camasta..........Charles Weidman\nBruce Schlickbernd\nGENERAL HELP:\nBill \"Burger\" Heineman........Troy Miles\nMichael Quarles\nPLAYTEST & DEVELOPMENT:\nBrian Fargo...................Tom Decker\nBruce \"Redbeard\" Schlickbernd\n\nRated PG-13.\nComing soon to a theatre near you.", "grave": "The gravestone is inscribed: Ken St.\nAndre, 4/28/47--4/28/87."}</script>
 <script src="../../lib/c64.js"></script>
 <script src="reference/wasteland-dice.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="reference/wasteland-fight.js"></script>
 <script>
 /* npcs/npcs.js */
 // Wasteland (C64): what a non-player character refuses. An NPC in the party can refuse a Use or a
@@ -752,4 +967,306 @@
     render();
   })();
 })();
+</script>
+<script type="application/json" id="wl-left">{"rangers":["Hell Razor","Angela Deth","Thrasher","KIT"],"places":[{"label":"Inside Base Cochise, at the reactor","map":20},{"label":"Outside the dome, on the base’s ground","map":16},{"label":"On the world map","map":0},{"label":"In Quartz","map":1}],"endingMap":16,"printMap":1,"climb":{"map":17,"x":10,"y":10,"arrive":2,"look":0,"balance":7,"exit":11,"ropeAt":207,"crowbarAt":211,"acrobat":13,"agl":18},"oldman":{"map":9,"x":10,"y":10,"exit":5},"blades":{"map":23,"x":25,"y":11,"n":25,"acrobat":13},"needles":{"map":26,"width":64,"first":1,"last":47,"hardware":32}}</script>
+<script>
+/* leftovers/code.js */
+// Wasteland (C64): what the Leftovers sections run on the game's own code, in a WLFight machine
+// (reference/wasteland-fight.js: the engine's, the game's and one map's listing on the kit's
+// 6502). WLScene runs one square of a map. WLEnding runs module 4, the end of Base Cochise, for
+// parties wherever they are. WLReport runs the utilities' printout up to the printer.
+// WLScene: the square the party stands on (run_square_action $ACC1), the square it tries to step
+// onto (blocking_check_square $8DEC), or a Use on the party's own square (use_on_square $8BEF).
+// Keys the game waits for come from the caller, then RETURN.
+const WLScene = (function () {
+  'use strict';
+  const A = { readKey: 0x2514, waitKey: 0x24F2, cursor: 0x1DA9, erase: 0x1DAC, blink: 0x1DA4, squareAction: 0xACC1,
+    blockingCheck: 0x8DEC, useOnSquare: 0x8BEF, silent: [0x055D, 0x26E7, 0x241C, 0x2422, 0x242B, 0x135A] };
+  class Stuck extends Error {}
+  // the frame the engine draws round a message window, and the control codes in the text
+  const FRAME = /\u0001\u0003\u0004*\u0005[^\n]*?(?:~\[)+/g;
+  const lines = text => String(text).replace(FRAME, '\n').split('\n').map(s => s.replace(/[\u0000-\u001F]/g, '').replace(/\s+/g, ' ').trim()).filter(Boolean);
+  function attach(F) {
+    const m = F.m, h = F.hooks;
+    let keys = [];
+    const give = c => { if (!keys.length) throw new Stuck(); const k = keys.shift(); c.a = k; m[0x18] = k; c.c = 0; c.rts(); };
+    h[A.readKey] = give; h[A.waitKey] = give;
+    for (const a of [A.cursor, A.erase, A.blink].concat(A.silent)) h[a] = c => { c.rts(); };
+    const base = F.save();
+    // prep(m, rec) changes the Rangers' records before the square runs
+    function run(x, y, typed, prep, step) {
+      F.load(base); F.take();
+      if (prep) prep(m, F.rec);
+      keys = [...(typed || '')].map(c => c.charCodeAt(0) | 0x80).concat([0x8D, 0x8D, 0x8D, 0x8D, 0x8D, 0x8D]);
+      let refused = false;
+      try {
+        if (step) refused = !!F.call(A.blockingCheck, { x, y }, 6e6).c;
+        else { F.place(x, y); F.call(A.squareAction, {}, 6e6); }
+      } catch (e) { if (!(e instanceof Stuck) && !/step limit/.test(String(e.message))) throw e; }
+      return { lines: lines(F.take()), refused, at: [m[0x57], m[0x58]] };
+    }
+    // A Use on the party's own square: kind 0 a skill, 1 an item, 2 an attribute; thing the skill's
+    // number, the item pair's offset in the record, or the attribute's offset; member 1 to 7.
+    function use(x, y, kind, thing, member, prep, typed) {
+      F.load(base); F.take();
+      if (prep) prep(m, F.rec);
+      keys = [...(typed || '')].map(c => c.charCodeAt(0) | 0x80).concat([0x8D, 0x8D, 0x8D, 0x8D, 0x8D, 0x8D]);
+      F.place(x, y);
+      m[0x12] = member;
+      try { F.call(A.useOnSquare, { a: kind, x: 4, y: thing }, 6e6); }
+      catch (e) { if (!(e instanceof Stuck) && !/step limit/.test(String(e.message))) throw e; }
+      return { lines: lines(F.take()), refused: false, at: [m[0x57], m[0x58]] };
+    }
+    return { run, use, F };
+  }
+  return { attach, A, lines };
+})();
+
+// Module 4 ($CA00): parties is [{ members: [record numbers], map }], current the index of the
+// party being led. The module's calls into the engine's jump table are answered here: text is
+// kept, a picture, the shake and the world map's changes are noted, RETURN answers each wait.
+// Returns the events in order, whether anyone is left (the module's carry), the party that is
+// led afterwards, how many parties are left, the four party tables, and each table's names.
+const WLEnding = (function () {
+  'use strict';
+  const API = { readKey: 0x022A, waitKey: 0x022F, delay: 0x0237, clearWindow: 0x025C, printAt: 0x0274, printCharDirect: 0x027F,
+    checkSide: 0x02DB, clearMessageArea: 0x0320, pictureWindow: 0x037D, drawFrame: 0x0398, readPages: 0x03B0, changeMap: 0x03B6,
+    saveMap: 0x03B9, unpackMap: 0x03C5, startPicture: 0x041F, cellWrite: 0x0434, shake: 0x044C, geiger: 0x04E1, unpack: 0x04F3, readSector: 0xFD19 };
+  const QUIET = ['delay', 'clearWindow', 'printAt', 'printCharDirect', 'checkSide', 'clearMessageArea', 'pictureWindow', 'drawFrame', 'readPages', 'saveMap', 'unpackMap', 'geiger', 'unpack', 'readSector'];
+  const START = 0xCA00, END = 0xD000, TABLES = 0xF400, ARMED = 0xF4F9, PICTURE = 0xCCC1;
+  function run(F, module4, parties, current) {
+    const m = F.m, hooks = F.hooks, keep = F.save(), old = {}, events = [];
+    for (let a = START; a < END; a++) if (module4.has[a]) m[a] = module4.ram[a];
+    m.fill(0, TABLES, TABLES + 56);
+    let records = 0;
+    parties.forEach((p, i) => {
+      const t = TABLES + 14 * i;
+      p.members.forEach((r, k) => { m[t + 1 + k] = r; records = Math.max(records, r); });
+      m[t + 8] = m[t + 11] = p.x || 5; m[t + 9] = m[t + 12] = p.y || 5; m[t + 10] = p.map;
+    });
+    m[0x08] = current; m[0x07] = parties[current].members.length; m[0x09] = parties[current].map;
+    m[0x0A] = records; m[0x0B] = parties.length - 1; m[ARMED] = 1;
+    const text = () => { const l = WLScene.lines(F.take()); if (l.length) events.push({ say: l }); };
+    const hook = (name, f) => { const a = API[name]; old[a] = hooks[a]; hooks[a] = c => { text(); if (f) f(c); c.rts(); }; };
+    for (const k of QUIET) hook(k, c => { c.c = 0; });
+    hook('changeMap', c => { events.push({ call: 'changeMap', a: c.a }); c.c = 0; });
+    hook('cellWrite', c => { events.push({ call: 'cellWrite', a: c.a, x: c.x, y: c.y }); c.c = 0; });
+    hook('shake', c => { events.push({ call: 'shake' }); c.c = 0; });
+    hook('startPicture', c => { events.push({ picture: m[PICTURE] }); c.c = 0; });
+    hook('readKey', c => { c.a = 0; c.c = 1; });                       // no key while a picture waits
+    hook('waitKey', c => { c.a = 0x8D; m[0x18] = 0x8D; c.c = 0; });
+    F.take();
+    let r;
+    try { r = F.call(START, {}, 5e7); text(); }
+    finally { for (const a of Object.keys(old)) { if (old[a]) hooks[a] = old[a]; else delete hooks[a]; } }
+    const tables = [];
+    for (let i = 0; i < 4; i++) tables.push(Array.from(m.subarray(TABLES + 14 * i, TABLES + 14 * i + 14)));
+    // remove_member closes the gap a dead character leaves in the records, so the names are read now
+    const names = tables.map(t => t.slice(1, 8).filter(Boolean).map(n => F.name(n)));
+    const out = { events, alive: !!r.c, current: m[0x08], parties: m[0x0B] + 1, armed: m[ARMED], tables, names };
+    F.load(keep);
+    return out;
+  }
+  return { run, API };
+})();
+
+// The utilities' printout (print_report): the sheets as the routine builds them in memory, up to
+// the call that would send them to the printer (send_report). The party is the machine's own.
+const WLReport = (function () {
+  'use strict';
+  class Done extends Error {}
+  function run(F, utils) {
+    const m = F.m, hooks = F.hooks, keep = F.save(), old = {}, at = n => utils.sym(n);
+    for (let a = 0x7E00; a < 0x9000; a++) if (utils.has[a]) m[a] = utils.ram[a];
+    const hook = (name, f) => { const a = at(name); old[a] = hooks[a]; hooks[a] = f; };
+    hook('load_party_side_1', c => { c.c = 0; c.rts(); });
+    hook('check_abort_key', c => { c.c = 0; c.rts(); });
+    hook('print_msg_wrapped', c => { c.rts(); });
+    hook('send_report', () => { throw new Done(); });
+    let sent = false;
+    try { F.call(at('print_report'), {}, 5e7); }
+    catch (e) { if (!(e instanceof Done)) throw e; sent = true; }
+    finally { for (const a of Object.keys(old)) { if (old[a]) hooks[a] = old[a]; else delete hooks[a]; } }
+    const from = 0x9000, end = m[at('report_write_lo')] | m[at('report_write_hi')] << 8;
+    let s = '';
+    for (let a = from; a < end; a++) { const c = m[a] & 0x7F; s += c === 0x0D ? '\n' : String.fromCharCode(c); }
+    F.load(keep);
+    return { text: s, sent, bytes: end - from };
+  }
+  return { run };
+})();
+// end of leftovers/code.js
+</script>
+<script>
+/* leftovers/page.js */
+// The plates of the Leftovers sections: the ending for Rangers wherever the reader puts them, the
+// cut squares and the blade storm through WLScene, the utilities' printout, and the map of
+// Needles with its leftover bytes.
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const pause = () => new Promise(r => setTimeout(r, 0));
+  const LOST = 'The game’s code did not load here. Open this page on the built site.';
+  const data = $('wl-left');
+  if (!data) return;
+  const D = JSON.parse(data.textContent);
+  const ready = typeof WLFight !== 'undefined' && typeof WLScene !== 'undefined' && window.C64 && C64.load && window.C64Cpu;
+  const pool = new Uint8Array(256); let left = 0;
+  const rnd = () => { if (!left) { crypto.getRandomValues(pool); left = 256; } return pool[--left]; };
+  const parts = {}, made = {};
+  const part = id => parts[id] || (parts[id] = C64.load('parts/' + id + '/listing.json').catch(e => { delete parts[id]; throw e; }));
+  const mapId = n => 'map-' + String(n).padStart(2, '0');
+  const machine = (map, size) => {
+    if (!ready) return Promise.reject(new Error('the scripts of this page did not load'));
+    const k = map + ':' + size;
+    return made[k] || (made[k] = Promise.all([part('engine'), part('game'), part(mapId(map))])
+      .then(([engine, game, m]) => WLFight.create({ engine, game, map: m, mapNumber: map, CPU: C64Cpu.CPU, random: rnd, size }))
+      .catch(e => { delete made[k]; throw e; }));
+  };
+  const scenes = {};
+  const scene = (map, size) => scenes[map + ':' + size] || (scenes[map + ':' + size] = machine(map, size).then(F => WLScene.attach(F)));
+  function guard(el, tally, fn) {
+    let busy = false;
+    return async function (a) {
+      if (busy) return;
+      busy = true; el.classList.add('wl-be-busy');
+      try { await fn(a); } catch (e) { tally.innerHTML = '<span class="wl-err">' + LOST + '</span>'; }
+      busy = false; el.classList.remove('wl-be-busy');
+    };
+  }
+  const NAMES = D.rangers;
+  const pick = (id, label, opts, v) => '<label class="wl-le-row"><b>' + esc(label) + '</b><select class="wl-fi-sel" id="' + id + '">' + opts.map((o, i) => '<option value="' + i + '"' + (i === v ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select></label>';
+  const say = lines => lines.map(l => '<p>' + esc(l) + '</p>').join('');
+  const list = xs => xs.length < 2 ? xs.join('') : xs.length === 2 ? xs.join(' and ') : xs.slice(0, -1).join(', ') + ', and ' + xs[xs.length - 1];
+  // a class and a number written onto one square of the map in memory
+  const put = (F, x, y, c, n) => m => {
+    const w = F.width, i = y * w + x, a = 0x3400 + (i >> 1);
+    m[a] = x & 1 ? (m[a] & 0xF0) | c : (m[a] & 0x0F) | (c << 4);
+    m[0x3400 + (w * w >> 1) + i] = n;
+  };
+  const square = (F, x, y) => { const w = F.width, i = y * w + x, b = F.m[0x3400 + (i >> 1)]; return [x & 1 ? b & 15 : b >> 4, F.m[0x3400 + (w * w >> 1) + i]]; };
+
+  // ---- the ending ----
+  (function () {
+    const el = $('wl-le-end'); if (!el) return;
+    const where = $('wl-le-where'), log = el.querySelector('.wl-fi-log'), tally = el.querySelector('.wl-be-tally');
+    const PL = D.places;
+    where.innerHTML = NAMES.map((n, i) => pick('wl-le-at' + i, n, PL.map(p => p.label), i)).join('');
+    const PIC = [
+      '<div class="wl-le-pics"><img class="wl-le-pic" src="reference/ending-base.png" width="176" height="168" alt="Base Cochise under its dome"><img class="wl-le-pic" src="reference/ending-blast.png" width="176" height="168" alt="The dome fallen in, and smoke rising"></div>',
+      '<img class="wl-le-pic" src="reference/ending-killed.png" width="176" height="168" alt="A dark figure with its hands raised against a white flash">',
+      '<img class="wl-le-pic" src="reference/ending-hilltop.png" width="296" height="128" alt="The hilltop: a Ranger looks down on the smoking dome of Base Cochise, beside the Wasteland logo">'];
+    const go = guard(el, tally, async () => {
+      tally.textContent = 'Loading the ending…'; await pause();
+      const [F, m4] = await Promise.all([machine(D.endingMap, 4), part('module-4')]);
+      // the Rangers in parties by place, in the order the places are first named
+      const parties = [], at = {};
+      NAMES.forEach((n, i) => { const p = +$('wl-le-at' + i).value; if (!(p in at)) { at[p] = parties.length; parties.push({ members: [], map: PL[p].map, place: p }); } parties[at[p]].members.push(i + 1); });
+      const r = WLEnding.run(F, m4, parties, 0);
+      let h = '', dead = [];
+      for (const e of r.events) {
+        if ('picture' in e) h += PIC[e.picture] || '';
+        else if (e.call === 'shake') h += '<p class="wl-fi-dim">The screen shakes.</p>';
+        else if (e.say) { h += say(e.say); for (const l of e.say) { const k = /^(.*) was killed in the blast\.$/.exec(l); if (k) dead.push(k[1]); } }
+      }
+      if (!r.alive) h += '<p class="wl-fi-dim">The game loads the death screen.</p>';
+      log.innerHTML = h; log.scrollTop = 0;
+      const lead = r.alive ? r.names[r.current][0] : '';
+      tally.innerHTML = '<b>' + esc(!dead.length ? 'Nobody died, and the excerpt leaves out its last sentence. Play goes on.'
+        : r.alive ? list(dead) + ' died in the blast. Play goes on with ' + lead + ' in the lead.'
+        : 'All four Rangers died in the blast, and the game is over.') + '</b>';
+    });
+    $('wl-le-end-go').addEventListener('click', go);
+  })();
+
+  // ---- the cut squares: a record written onto a square, and the game's code run on it ----
+  (function () {
+    const C = D.climb, O = D.oldman;
+    const what = sq => sq[0] === 10 ? 'an exit' : sq[0] === 2 ? 'a test' : 'plain';
+    const SC = {
+      arrive4: { map: C.map, size: 4, at: C, c: 2, n: C.arrive, note: r => 'A party of four is told that it is all alone. The square now holds the record that waits for a rope.' },
+      arrive2: { map: C.map, size: 2, at: C, c: 2, n: C.arrive, note: r => 'A party of two passes. The square now holds the record that waits for Agility or Acrobat.' },
+      rope: { map: C.map, size: 4, at: C, c: 2, n: C.look, use: [1, C.ropeAt], note: (r, sq) => sq[0] === 10 ? NAMES[0] + ' used the rope, and the square became an exit.' : 'The square did not change.' },
+      crowbar: { map: C.map, size: 4, at: C, c: 2, n: C.look, use: [1, C.crowbarAt], note: () => NAMES[0] + ' used the crowbar, and the party is still under the railing.' },
+      agility: { map: C.map, size: 2, at: C, c: 2, n: C.balance, use: [2, C.agl], note: (r, sq, lost) => sq[0] === 10 ? NAMES[0] + ' passed the throw, and the square became an exit.' : NAMES[0] + ' failed the throw and lost ' + lost + ' CON.' },
+      acrobat: { map: C.map, size: 2, at: C, c: 2, n: C.balance, use: [0, C.acrobat], note: (r, sq, lost) => sq[0] === 10 ? NAMES[0] + ' passed the throw, and the square became an exit.' : NAMES[0] + ' failed the throw and lost ' + lost + ' CON.' },
+      oldman: { map: O.map, size: 4, at: O, c: 10, n: O.exit, note: r => 'The party now stands at column ' + r.at[0] + ', row ' + r.at[1] + '.' },
+    };
+    document.querySelectorAll('.wl-le-scenes').forEach(el => {
+      const log = el.querySelector('.wl-fi-log'), tally = el.querySelector('.wl-be-tally');
+      const run = guard(el, tally, async key => {
+        const sc = SC[key]; if (!sc) return;
+        tally.textContent = 'Asking the game…'; await pause();
+        const P = await scene(sc.map, sc.size), F = P.F, prep = put(F, sc.at.x, sc.at.y, sc.c, sc.n);
+        let before = 0;
+        const r = sc.use ? P.use(sc.at.x, sc.at.y, sc.use[0], sc.use[1], 1, m => { prep(m); before = F.con(1); })
+          : P.run(sc.at.x, sc.at.y, '', m => { prep(m); before = F.con(1); });
+        log.innerHTML = say(r.lines) || '<p class="wl-fi-dim">Nothing was printed.</p>'; log.scrollTop = 0;
+        tally.innerHTML = '<b>' + esc(sc.note(r, square(F, sc.at.x, sc.at.y), before - F.con(1))) + '</b>';
+      });
+      el.addEventListener('click', e => { const b = e.target.closest('button[data-le]'); if (b) run(b.dataset.le); });
+    });
+  })();
+
+  // ---- the blade storm ----
+  (function () {
+    const el = $('wl-le-blades'); if (!el) return;
+    const side = $('wl-le-first'), log = el.querySelector('.wl-fi-log'), tally = el.querySelector('.wl-be-tally');
+    const B = D.blades, AGL = [1, 10, 20, 30], CASH = [0, 15, 16, 500], ACRO = [0, 3, 7];
+    side.innerHTML = pick('wl-le-agl', 'Agility', AGL.map(String), 0) + pick('wl-le-cash', 'Cash', CASH.map(c => '$' + c), 2) + pick('wl-le-acro', 'Acrobat', ACRO.map(a => a ? 'level ' + a : 'not learned'), 2);
+    const go = guard(el, tally, async () => {
+      tally.textContent = 'Asking the game…'; await pause();
+      const P = await scene(B.map, 4), F = P.F;
+      const agl = AGL[+$('wl-le-agl').value], cash = CASH[+$('wl-le-cash').value], acro = ACRO[+$('wl-le-acro').value];
+      let before = 0;
+      const r = P.run(B.x, B.y, '', (m, rec) => {
+        const a = rec(1);
+        m[a + 0x12] = agl; m[a + 0x15] = cash & 255; m[a + 0x16] = cash >> 8; m[a + 0x17] = 0;
+        for (let o = 0x80; o < 0x9E; o += 2) if (m[a + o] === B.acrobat) { m[a + o] = 0; m[a + o + 1] = 0; }   // Acrobat off the record
+        if (acro) for (let o = 0x80; o < 0x9E; o += 2) if (!m[a + o]) { m[a + o] = B.acrobat; m[a + o + 1] = acro; break; }
+        before = F.con(1);
+      });
+      const lost = before - F.con(1);
+      log.innerHTML = say(r.lines); log.scrollTop = 0;
+      tally.innerHTML = '<b>' + esc(lost ? NAMES[0] + ' lost ' + lost + ' CON' + (cash >= 16 ? ': the cash test failed, and the game looked no further.' : '.')
+        : cash < 16 ? NAMES[0] + ' came through: Agility or the cash test passed.' : NAMES[0] + ' came through on the Agility throw.') + '</b>';
+    });
+    $('wl-le-blades-go').addEventListener('click', go);
+  })();
+
+  // ---- the printout ----
+  (function () {
+    const el = $('wl-le-print'); if (!el) return;
+    const sheet = $('wl-le-sheet'), tally = el.querySelector('.wl-be-tally');
+    const go = guard(el, tally, async () => {
+      tally.textContent = 'Loading the utilities…'; await pause();
+      const [F, utils] = await Promise.all([machine(D.printMap, 4), part('utils')]);
+      const r = WLReport.run(F, utils);
+      // each sheet's padding of empty lines comes out
+      sheet.textContent = r.text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}(?=Name:)/g, '\n\n\n').replace(/\n+$/, '\n');
+      sheet.scrollTop = 0;
+      tally.innerHTML = '<b>' + esc(r.bytes.toLocaleString('en-GB') + ' characters, ready for the printer.') + '</b>';
+    });
+    $('wl-le-print-go').addEventListener('click', go);
+  })();
+
+  // ---- Needles: the empty squares that hold a leftover byte ----
+  (function () {
+    const cv = $('wl-le-needles-cv'); if (!cv || !window.C64 || !C64.load) return;
+    const N = D.needles;
+    part(mapId(N.map)).then(L => {
+      const w = N.width, s = cv.width / w, ctx = cv.getContext('2d'), numbers = 0x3400 + (w * w >> 1);
+      ctx.fillStyle = '#101216'; ctx.fillRect(0, 0, cv.width, cv.height);
+      for (let y = 0; y < w; y++) for (let x = 0; x < w; x++) {
+        const i = y * w + x, b = L.ram[0x3400 + (i >> 1)], cls = x & 1 ? b & 15 : b >> 4;
+        let c = null;
+        if (cls) c = '#3a3f4a';
+        else if (y >= N.first && y <= N.last && L.ram[numbers + i]) c = y < N.hardware ? '#f2b84b' : '#57c7ff';
+        if (c) { ctx.fillStyle = c; ctx.fillRect(x * s, y * s, s - 1, s - 1); }
+      }
+    }).catch(() => {});
+  })();
+})();
+// end of leftovers/page.js
 </script>
