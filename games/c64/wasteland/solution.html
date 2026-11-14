@@ -1,0 +1,847 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/wasteland-page.css">
+<style>
+/* the Solution tab's plate: the legs of the walk beside the map */
+.wl-so-grid{display:grid;grid-template-columns:minmax(0,330px) minmax(0,1fr);gap:16px 22px;align-items:start}
+@media (max-width:820px){.wl-so-grid{grid-template-columns:minmax(0,1fr)}}
+.wl-so-legs{position:relative;list-style:none;margin:0;padding:0;max-height:760px;overflow-y:auto;border:1px solid var(--line-soft);border-radius:8px}
+@media (max-width:820px){.wl-so-legs{max-height:230px}}
+.wl-so-legs li{border-bottom:1px solid var(--line-soft)}
+.wl-so-legs li:last-child{border-bottom:0}
+.wl-so-place{display:flex;justify-content:space-between;gap:10px;font-family:var(--fm);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);background:var(--surface-2);padding:6px 10px;position:sticky;top:0}
+.wl-so-place span{text-transform:none;letter-spacing:0}
+.wl-so-leg{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;font:inherit;font-size:14px;line-height:1.35;background:var(--surface);color:var(--ink-soft);border:0;padding:6px 10px;cursor:pointer}
+.wl-so-leg:hover{background:var(--surface-2)}
+.wl-so-leg.wl-so-done{color:var(--ink)}
+.wl-so-leg[aria-current=true]{background:var(--hl);color:var(--ink)}
+.wl-so-leg:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.wl-so-n{font-family:var(--fm);font-size:12px;color:var(--ink-mute);white-space:nowrap}
+.wl-so-stage{background:#15161a;border-radius:8px;padding:8px;line-height:0}
+.wl-so-stage canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px;background:#000}
+.wl-so-now{font-size:14px;line-height:1.5;color:var(--ink-soft);margin:10px 0;min-height:3em}
+.wl-so-log{height:170px}
+.wl-so-t td:first-child{font-weight:700;color:var(--ink)}
+.wl-so-t td div+div{margin-top:6px}
+.wl-so-t td{min-width:8.5em}
+main .plate+p{margin-top:22px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The ending of Wasteland <a href="#wl-so-walk">needs three places</a>: Las Vegas, the Guardian Citadel, and Base Cochise. The walk on this page reaches it in 1,748 moves on the game's own code, and it never sees Highpool, Quartz, Needles, or Darwin. On the way, <a href="#wl-so-max">Base Cochise is not on the map until a robot is rebuilt</a>, <a href="#wl-so-wall">a rope gets a party in without a pass and the door then keeps it in</a>, and <a href="#wl-so-four">one party cannot set the self-destruct</a>. The walk plays no fights and takes every throw of the dice as passed, and <a href="#wl-so-dice">what that hides</a> has a section of its own.</p>
+</header>
+<main class="wrap">
+<section id="wl-so-walk" data-part="game">
+  <p class="fig">01 · The walk</p>
+  <h2 class="t">The ending needs three places: Las Vegas, the Guardian Citadel, and Base Cochise</h2>
+  <p class="lede">Four Rangers leave the Ranger Center, put a robot together under Las Vegas, take four keys from the Guardian Citadel, and set Base Cochise to destroy itself. The walk below does all of it in 66 legs and 1,748 moves: 1,732 steps, and 16 turns spent standing on a square to search a bag or work a station. Everything the party uses comes out of a bag on the way, through the bag's own prompts.</p>
+
+  <div class="plate wl-so" id="wl-so-plate">
+    <div class="wl-so-grid">
+      <div class="wl-so-side">
+        <p class="wl-fi-h">The walk, leg by leg</p>
+        <ol class="wl-so-legs" aria-label="The legs of the walk"></ol>
+      </div>
+      <div class="wl-so-main">
+        <div class="wl-so-stage"><canvas width="1024" height="1024" aria-label="The map of the leg, drawn from the game's bytes, with the party's path"></canvas></div>
+        <p class="wl-so-now" role="status">Pick a leg, or walk it from the start. The path is drawn in yellow, from the white dot to the red one.</p>
+        <div class="wl-fi-log wl-so-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">The game's text appears here.</p></div>
+      </div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-act="walk">Walk it</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-act="prev">Back a leg</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-act="next">Next leg</button>
+      <p class="wl-xp-say" role="status"></p>
+    </div>
+    <p class="cap">The walk runs in this page on the game's own code. A step is the game's move routine (<code>$ADD1</code>), a Use is its Use routine (<code>$8BEF</code>), and a bag is searched, and the party split with Disband (<code>$99EE</code>), with the keys a player would press. The map is drawn as each leg leaves it, so a blown door stays open. Three things are not played. No wandering monsters turn up, a fight on the way is taken as won, and a throw of the dice is taken as passed. Lines in grey are the page's own notes.</p>
+  </div>
+
+  <p>The ending is a program that the game loads when a countdown runs out. The countdown starts when four buttons are pressed in Base Cochise's reactor, and each button's station first wants a key of its own. All four keys are in the Guardian Citadel. Base Cochise itself is not on the map until Max, a robot that lies in pieces under Las Vegas, has been put together. So the game asks for three places, and the walk visits them in that order.</p>
+
+  <p>The party is the four Rangers the game starts with, as they are: Hell Razor, Angela Deth, Thrasher, and KIT, with no skill added and no level gained. They carry what a new party carries. Each has a rope and a crowbar, and the walk uses all four ropes. It finds the rest: the Sonic key, the nine parts of Max, the four keys, a plasma coupler, and 12 charges of explosive (3 of plastic explosive, 5 of TNT, and 4 LAW rockets).</p>
+
+  <p>It is a short way through the game's locks. It is not a way a new party could play, because the walk <a href="#wl-so-dice">skips the fights and the dice</a>. What it shows is what the game's code checks before it will run the ending, and what it never checks.</p>
+</section>
+
+<section id="wl-so-max" data-part="map-00">
+  <p class="fig">02 · Max</p>
+  <h2 class="t">Base Cochise is not on the map until Max is rebuilt</h2>
+  <p class="lede">The square of desert where Base Cochise stands is an ordinary square at the start of the game. It becomes a way in when the party leaves the sewers by the door that Max opens. The only other road is the Guardians' helicopter, and the skill to fly it is taught in a place that the same door puts on the map.</p>
+
+  <p>Base Cochise is at column 2, row 3 of the world map. As the map is stored, that square has a record that draws desert and does nothing (<code>$4D4D</code>). Two squares of the world map change it into the trail to the base, <q>You come upon a little used trail which leads you to a place that you never knew existed before.</q> Both are in the bottom-left corner, at (0,63) and (1,63), walled in by squares that nothing can enter, so no party can walk to them. The first is where the party lands when it leaves the lab under Las Vegas by the exit that appears when Max is complete (<code>$4F21</code>). The second is where the Guardian Citadel's helicopter sets down (<code>$4F35</code>).</p>
+
+  <p>The helicopter is no way round Max. Flying it takes the Helicopter pilot skill, twice. None of the 14 people who can join the party has that skill, and one place teaches it: the <q>Chopper Sim</q> on the third level of the Sleeper Base, to a Ranger with an IQ of 19. The Sleeper Base is not on the map at the start either. The same square that reveals Base Cochise reveals it, at column 59, row 7. So every road to the ending goes through Max.</p>
+
+  <p>Max is built at four stations in a lab on the lower level of the sewers. They take two servo motors for the legs, one for the arms, a fusion cell, a power converter, a servo motor, and a Rom board for the body, and an android head and a second Rom board for the head. All nine parts lie in the sewers, each one under a fight. The lab's door takes the Sonic key and nothing else, and so do the two hidden doors of the Temple of the Mushroom Cloud, which is the way down. The walk wins its Sonic key in a fight on the Las Vegas street. The temple's inner doors open to a name, and the game takes <q>EINSTEIN</q> or <q>OPPENHEIMER</q>.</p>
+
+  <p>The sewers charge the party twice. Their doorways hold deadfall traps that take 4d6 of CON from every Ranger in the party, and the record asks for a skill that no Ranger can learn, so nothing avoids one. A trap is sprung once, though, and the walk has Thrasher disband and go through alone. The river of sewage is the short way down to the lab, and wading in it gives every Ranger Sewer rot (<span data-part="map-24"><code>$3DD4</code></span>). A Ranger with a disease does not heal with time. All four Rangers end the walk with it.</p>
+</section>
+
+<section id="wl-so-wall" data-part="map-16">
+  <p class="fig">03 · Base Cochise</p>
+  <h2 class="t">A rope and one explosive get a party into Base Cochise without a pass, and the door then keeps it in</h2>
+  <p class="lede">The front of Base Cochise is a gate and then a door that opens to Secpass B alone. The walk never has that pass. It goes over the dome wall on a rope, blows the cover off a weapons pod, and lets itself down inside. The door is as shut from the inside as from the outside.</p>
+
+  <p>The dome wall takes a throw of Climb or a rope, and a slip costs 6d6 of CON on the wall's barbs. Inside the wall are the base's weapons pods. <q>The weapons pod cover is jammed on the broken robots, so it cannot retract fully.</q> Any explosive but a Mangler opens it, and a second rope lowers the party into the dome. From there a wall panel that <q>sounds a bit hollow</q> gives way to a crowbar, and behind it is the robot assembly level. The panel is a way past the base's computer, which the walk never meets.</p>
+
+  <p>The game has two Secpass B cards, one in the Guardian Citadel's Inner Sanctum and one in Finster's mind maze, and the walk enters neither. Without a pass there is no leaving by the door. The inner door's record holds one key, the pass, and the door is that one record whichever side the party stands on (<code>$3B2F</code>). A party that came in over the wall leaves the way it came: up the rope it left hanging under the pod, which is a throw of Agility or Climb, and over the wall with its last rope.</p>
+
+  <p>Below the assembly level are four tests in a row: oil pipes that one Ranger must cross alone, a mine field, a weather room, and a combat simulator. Each ends at a control panel that opens a vault door to the next, and the fourth door opens the way down to the reactor. The reactor's doors are the hardest locks on the walk. Six of them open to plastic explosive, a LAW rocket, a Sabot rocket, or an RPG-7, and otherwise to a throw of Strength at difficulty 30, a target of 165.</p>
+</section>
+
+<section id="wl-so-four" data-part="map-20">
+  <p class="fig">04 · The self-destruct</p>
+  <h2 class="t">One party cannot set the self-destruct</h2>
+  <p class="lede">The reactor has a station in each corner, and each takes one key. When all four keys are in, pressing a station's button shuts a panel behind whoever pressed it. The buttons must be pressed red, yellow, green, blue, so the game needs a Ranger standing at each one.</p>
+
+  <p>The red station takes the Blackstar key, the blue one the Nova key, the yellow one the Pulsar key, and the green one the Quasar key. A party that then steps onto a station is told <q>Press button to activate safety procedure #1342-666.</q> Any key but RETURN does it: <q>You hear a hissing sound followed by a loud slam. You turn around and notice that the panel behind you has been sealed shut.</q> All four rooms are shut at once. One party of four, shut in at one station, has no way to the other three or to the escape pod.</p>
+
+  <p>The walk uses the game's Disband command. As each key goes in, three Rangers, then two, then one disband and step off the station, and the Ranger left behind stays on it. The last key leaves a Ranger at every corner. Four presses follow, and the fourth brings <q>ALERT! Self destruction sequence activated. All personnel evacuate the base.</q></p>
+
+  <p>Two parties are enough if one of them stays outside. A console in the south corridor, the Cylinder Closing System (<code>$3E97</code>), opens the panels again without undoing the buttons already pressed, so one Ranger can walk from station to station while the others work the console. It takes a throw of Electronics, Luck, or IQ. Run that way on the game's code, one Ranger pressed all four buttons and armed the base.</p>
+
+  <p>The countdown is 240 counts (<span data-part="game"><code>$82B5</code></span>), and on the reactor level a step is one count. Each Ranger walks back to the escape pod in the middle of the level, where they join into one party again. The last arrives at count 151. The pod lands inside the dome, the rope and the wall take the party outside by count 165, and it is off the base's grounds at 195. A step on the world map is 16 counts, so the ending loads three steps later with all four Rangers out.</p>
+</section>
+
+<section id="wl-so-skip" data-part="">
+  <p class="fig">05 · The map</p>
+  <h2 class="t">Most of the wasteland is not on the way</h2>
+  <p class="lede">The walk enters 12 of the game's 42 maps. No lock between the Ranger Center and the ending asks for anything from the others.</p>
+
+  <p>The 12 are the world map, the Las Vegas street, the Temple of the Mushroom Cloud, the two levels of the sewers, the Guardian Citadel and its Outer Sanctum, and the five maps of Base Cochise. The walk never enters Highpool, the Agricultural Center, Quartz, Needles, Darwin Village, the Sleeper Base, or the Citadel's Inner Sanctum, and in Las Vegas it passes Spade's Casino and Faran Brygo's hideout by. It never goes near Darwin, so Finster is still in his base when Base Cochise blows up.</p>
+
+  <p>Those places are where a real party grows strong enough for the last three. They hold the fights that raise a Ranger's rank, the libraries that sell skills, and the armour and guns that a new party lacks. The game does not check for any of it. It checks for one Sonic key, nine robot parts, four keys, a plasma coupler, four ropes, a crowbar, and 12 charges of explosive.</p>
+</section>
+
+<section id="wl-so-dice" data-part="engine">
+  <p class="fig">06 · The dice</p>
+  <h2 class="t">The walk plays no fights and takes every throw as passed</h2>
+  <p class="lede">The walk wins 21 fights without fighting them, and where a square throws the dice it takes the throw as made. This is what the four starting Rangers would face on those squares with the game's real dice.</p>
+
+  <p>A check has a difficulty, and its target is 15 plus five times the difficulty. The Ranger throws two dice, throws again on a double, and adds an attribute and four times the level of a skill (<code>$0C29</code>, <code>$0D0A</code>). A total on the dice under 5 always fails. The chances below come from the engine's own dice, thrown 200,000 times, and they are for one square.</p>
+
+  <div class="plate">
+    <div class="wl-tw"><table class="wl-t wl-so-t" id="wl-so-throws">
+      <thead><tr><th>Where</th><th>The throw</th><th>Who throws</th><th>The best Ranger's chance</th><th>What a failure costs</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p class="cap">Every throw the walk leaned on. A walk that could go round a throw went round it, and a square that an item answers, such as the desert heat with a canteen, is left out.</p>
+  </div>
+
+  <p>The tests under Base Cochise are where a new party would die. The oil pipes are 26 squares, each a throw that KIT passes about once in eight, and each slip costs 5d6 of CON. The weather room is crossed twice, and on its 12 squares each Ranger throws Luck against lightning for 3d6 of CON, wind for 1d6, and cold for 2d6. The mine field is kinder to a reader of this page than to a player. Its throws only show where the mines are, and the walk steps round them without being shown. A mine that goes off takes 12d6 of CON from every Ranger.</p>
+
+  <p>The explosives depend on dice of another kind. The walk blows 12 doors and covers, and the count in most of its bags is thrown when the bag is opened. The six bags that hold explosives are sure to hold 8 charges between them. On this walk they held 22. A party that finds too few has a sure supply inside Base Cochise: a bag on the robot assembly level holds 10 LAW rockets and 10 RPG-7 rockets, with no dice in its count (<span data-part="map-19"><code>$3CB9</code></span>). It is 107 steps from where the hollow panel lets the party in, behind a door that takes Picklock, Strength, or an explosive.</p>
+
+  <p>Two deadfall traps are the only things that hurt the party on the walk. The four Rangers finish with 24, 23, 17, and 19 CON out of 28, 27, 34, and 23, and with Sewer rot.</p>
+</section>
+
+<section id="wl-so-locks" data-part="">
+  <p class="fig">07 · The locks</p>
+  <h2 class="t">Every lock on the walk, with every key its record takes</h2>
+  <p class="lede">The game keeps a lock as a record on a square: a list of skills, attributes, and items, and any one of them opens it. A skill or an attribute is a throw of the dice at the difficulty shown, and an item is sure. This is each record as it stood when the walk reached it.</p>
+
+  <div class="plate">
+    <div class="wl-tw"><table class="wl-t wl-so-t">
+      <thead><tr><th>Lock</th><th>Where</th><th>What opens it</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p class="cap">Read from the game's records by the walk itself. Each place is a link to that square on the Maps tab.</p>
+  </div>
+
+  <p>Three of these rows are worth a second look. The reactor chamber's door is the one lock on the walk that takes Secpass B, and the walk blows it instead. The deadfall traps ask for skill 37, which no Ranger can have: it is the mark the game puts on Dan Citrine of Quartz, and <a href="party.html">the Party tab</a> has the rest of that story. And the weapons pod's cover takes five explosives where the temple's doors take six: a Mangler will not open it.</p>
+</section>
+</main>
+<script type="application/json" id="wl-solution">{"seed":1,"start":[55,62],"mapNames":{"0":"The world map","12":"Las Vegas","16":"Base Cochise, outside","17":"Base Cochise, the computer","18":"Base Cochise, the testing facility","19":"Base Cochise, robot assembly","20":"Base Cochise, the reactor","24":"Las Vegas sewers","25":"Las Vegas sewers, the lab","35":"Guardian Citadel","36":"Guardian Citadel, the Outer Sanctum","38":"Las Vegas, the Mushroom Cloud temple"},"legs":[["The wasteland","From the Ranger Center to Las Vegas",12,62,1,82,0,0],["Las Vegas","A fight on the street for the Sonic key",12,57,7,12,1,12],["Las Vegas","A tank on the street: LAW rockets and TNT",12,34,12,32,1,12],["Las Vegas","Death machines: LAW rockets and plastic explosive",12,36,37,27,1,12],["Las Vegas","More death machines: RPG-7 rockets and TNT",12,29,43,13,1,12],["Las Vegas","To the Temple of the Mushroom Cloud",38,17,30,46,0,12],["The temple","The password at the inner doors",38,16,27,4,0,38],["The temple","Two high security doors, blown open",38,10,15,16,0,38],["The temple","Two hidden doors, opened with the Sonic key",24,20,1,30,0,38],["The sewers","The power converter",24,29,1,15,1,24],["The sewers","One Ranger springs the deadfall trap",24,19,2,19,0,24],["The sewers","A servo motor",24,17,5,6,1,24],["The sewers","The fusion cell",24,28,15,37,1,24],["The sewers","A rope across the chasm",24,7,18,29,1,24],["The sewers","A second servo motor",24,1,25,13,1,24],["The sewers","Down the river of sewage",25,0,22,45,0,24],["The lab level","A third servo motor",25,30,8,66,1,25],["The lab level","A fourth servo motor",25,29,28,19,1,25],["The lab level","A Rom board",25,28,4,10,1,25],["The lab level","Sabot rockets",25,26,18,38,1,25],["The lab level","The android head",25,1,16,31,1,25],["The lab level","LAW rockets",25,14,1,72,1,25],["The lab level","The lab door, opened with the Sonic key",25,16,7,9,0,25],["The lab level","The second Rom board",25,15,11,5,1,25],["The lab level","Max: two servo motors for the legs",25,19,11,4,0,25],["The lab level","Max: a servo motor for the arms",25,19,10,3,0,25],["The lab level","Max: the body",25,19,9,3,0,25],["The lab level","Max: the head",25,19,8,3,0,25],["The lab level","Out by the way Max opens",0,25,17,5,0,25],["The wasteland","From Las Vegas to the Guardian Citadel",35,8,30,42,0,0],["The Guardian Citadel","The giant in the courtyard: the Pulsar key",35,16,19,20,1,35],["The Guardian Citadel","The bronze doors, blown open",35,11,11,12,0,35],["The Guardian Citadel","The museum case: the Quasar key",35,25,15,19,0,35],["The Guardian Citadel","The east stair",36,27,22,19,0,35],["The Guardian Citadel","Behind the chapel altar: the Blackstar key",36,23,22,14,0,36],["The Guardian Citadel","The Guardian in his bed: the Nova key",36,1,8,53,1,36],["The Guardian Citadel","Out to the wasteland",0,35,48,85,0,35],["The wasteland","From the Citadel to Base Cochise",16,16,30,80,0,0],["Base Cochise","Robots outside the dome: the plasma coupler",16,4,16,27,1,16],["Base Cochise","Over the dome wall with a rope",16,15,11,19,0,16],["Base Cochise","A weapons pod, blown open, and a rope down",17,14,17,2,1,16],["Base Cochise","The hollow wall panel",19,19,10,15,0,17],["Base Cochise","The ladder room door, blown open",18,3,1,14,0,19],["Base Cochise","Test 1: the oil pipes, one Ranger alone",18,4,3,35,0,18],["Base Cochise","Test 2: the mine field",18,1,10,64,0,18],["Base Cochise","Test 3: the weather room",18,4,16,41,0,18],["Base Cochise","Test 4: the simulator",18,1,26,47,0,18],["Base Cochise","Down to the reactor level",20,16,16,6,0,18],["The reactor","The chamber door, blown open",20,16,13,4,0,20],["The reactor","The west corridor's north door",20,5,14,15,0,20],["The reactor","The glass wall round the core",20,12,6,16,0,20],["The reactor","The plasma coupler, fitted",20,12,8,2,0,20],["The reactor","The Blackstar key in the red station, where one Ranger stays",20,1,2,28,0,20],["The reactor","The east corridor's north door",20,26,14,52,0,20],["The reactor","The conveyor belt, stopped with a crowbar",20,19,1,21,0,20],["The reactor","The Nova key in the blue station, where a second Ranger stays",20,30,2,13,0,20],["The reactor","The east corridor's south door",20,26,17,18,0,20],["The reactor","The Pulsar key in the yellow station, where a third Ranger stays",20,30,29,19,0,20],["The reactor","The west corridor's south door",20,5,17,46,0,20],["The reactor","The Quasar key in the green station",20,1,30,18,1,20],["The reactor","One Ranger onto each station",20,30,1,4,0,20],["The reactor","Red, yellow, green, blue",20,30,1,4,0,20],["The way out","All four to the escape pod",17,16,8,151,0,20],["The way out","Up the rope under the weapons pod",16,15,11,12,0,17],["The way out","Over the dome wall and off the grounds",0,1,3,14,0,16],["The way out","The last of the countdown",0,1,4,3,0,0]],"moves":1748,"stays":16,"fights":21,"ending":true,"endsOn":[0,1,4],"used":[["Plastic explosive",3],["TNT",5],["LAW rocket",4]],"charges":12,"maps":[0,12,38,24,25,35,36,16,17,19,18,20],"clock":{"pod":151,"dome":165,"off":195,"end":243},"locks":[{"label":"The temple's high security doors","map":38,"at":[16,20],"keys":["Strength at 9","Plastic explosive","LAW rocket","Mangler","Sabot rocket","RPG-7","TNT","Electronics at 6"]},{"label":"The temple's hidden doors, to find one","map":38,"at":[5,18],"keys":["Perception at 5"]},{"label":"The temple's hidden doors, to open one","map":38,"at":[4,18],"keys":["Sonic key"]},{"label":"The sewers' deadfall traps","map":24,"at":[18,2],"keys":["a skill no Ranger can learn"]},{"label":"The chasm in the sewers","map":24,"at":[7,18],"keys":["Rope"]},{"label":"The lab door","map":25,"at":[16,7],"keys":["Sonic key"]},{"label":"Max's legs","map":25,"at":[19,11],"keys":["Servo motor"]},{"label":"Max's arms","map":25,"at":[19,10],"keys":["Servo motor"]},{"label":"Max's body","map":25,"at":[19,9],"keys":["Fusion cell","Power converter","Servo motor","Rom board"]},{"label":"Max's head","map":25,"at":[19,8],"keys":["Android head","Rom board"]},{"label":"The Citadel's bronze doors","map":35,"at":[11,11],"keys":["Plastic explosive","LAW rocket","Mangler","Sabot rocket","RPG-7","TNT"]},{"label":"The museum case with the Quasar key","map":35,"at":[25,15],"keys":["Plastic explosive","LAW rocket","Mangler","Sabot rocket","RPG-7","TNT","Picklock at 1","Strength at 3","Crowbar","Sledge hammer","Ax","Pick ax"]},{"label":"The chapel door","map":36,"at":[25,16],"keys":["Plastic explosive","LAW rocket","Mangler","Sabot rocket","RPG-7","TNT","Picklock at 1","Strength at 3","Crowbar","Sledge hammer","Ax","Pick ax","Proton ax"]},{"label":"The chapel altar","map":36,"at":[23,22],"keys":["Perception at 3"]},{"label":"Base Cochise's dome wall","map":16,"at":[11,11],"keys":["Climb at 4","Rope"]},{"label":"A weapons pod's cover","map":16,"at":[16,11],"keys":["Plastic explosive","TNT","LAW rocket","Sabot rocket","RPG-7"]},{"label":"The drop under the pod","map":16,"at":[16,11],"keys":["Rope"]},{"label":"The hollow wall panel","map":17,"at":[0,17],"keys":["Strength at 6","Crowbar","Sledge hammer","Plastic explosive","TNT","LAW rocket","Mangler","Sabot rocket","RPG-7"]},{"label":"The ladder room door","map":19,"at":[16,5],"keys":["Picklock at 5","Strength at 10","Plastic explosive","TNT","LAW rocket","Sabot rocket","RPG-7"]},{"label":"The reactor chamber's door","map":20,"at":[16,13],"keys":["Secpass B","Strength at 30","Plastic explosive","LAW rocket","Sabot rocket","RPG-7"]},{"label":"The reactor's four corridor doors","map":20,"at":[5,14],"keys":["Strength at 30","Plastic explosive","LAW rocket","Sabot rocket","RPG-7"]},{"label":"The glass wall round the core","map":20,"at":[12,6],"keys":["Strength at 30","Plastic explosive","LAW rocket","Sabot rocket","RPG-7"]},{"label":"The reactor's power socket","map":20,"at":[12,8],"keys":["Plasma coupler"]},{"label":"The red station","map":20,"at":[1,1],"keys":["Blackstar key"]},{"label":"The conveyor belt","map":20,"at":[19,1],"keys":["Crowbar","Pick ax","Sledge hammer","Plastic explosive","Grenade","TNT","LAW rocket","Mangler","Sabot rocket","RPG-7"]},{"label":"The blue station","map":20,"at":[30,1],"keys":["Nova key"]},{"label":"The yellow station","map":20,"at":[30,30],"keys":["Pulsar key"]},{"label":"The green station","map":20,"at":[1,30],"keys":["Quasar key"]},{"label":"The rope left under the weapons pod","map":17,"at":[14,17],"keys":["Agility at 5","Climb at 4"]}],"rangers":[{"name":"Hell Razor","st":12,"iq":14,"lk":13,"agl":14,"dex":15,"maxcon":28},{"name":"Angela Deth","st":8,"iq":15,"lk":14,"agl":10,"dex":17,"maxcon":27},{"name":"Thrasher","st":17,"iq":10,"lk":11,"agl":16,"dex":9,"maxcon":34},{"name":"KIT","st":13,"iq":12,"lk":12,"agl":17,"dex":10,"maxcon":23}],"con":[24,23,17,19],"rot":[8,8,8,8],"left":[["LAW rocket",6],["Sabot rocket",3],["RPG-7",1]],"ropes":0,"crowbars":4,"dice":{"n":200000,"at":[[5,87.8],[8,52.5],[13,10.1],[14,8.7],[17,5.8],[18,3.6],[21,2.2],[24,0]]},"throws":[{"id":"hidden","where":"The temple's two hidden doors","who":"any","cost":"Nothing. The door stays hidden, and the party can step off the square and on again.","kinds":[{"asks":["Perception at 5"],"squares":2,"effect":null,"best":"Hell Razor","need":18,"bestPct":3.6,"partyPct":5.7}]},{"id":"wade","where":"Across the river in the sewers","who":"all","cost":"The current carries the whole party a square downstream, toward the lab level.","kinds":[{"asks":["Strength at 2","Swim at 2"],"squares":2,"effect":null,"best":"Thrasher","need":4,"bestPct":94.2,"partyPct":3.6},{"asks":["Strength at 3","Swim at 3"],"squares":1,"effect":null,"best":"Thrasher","need":9,"bestPct":43.1,"partyPct":0}]},{"id":"river","where":"Across the river on the lab level, three times","who":"all","cost":"The current carries the party a square east. At the east wall the river leaves the sewers for the wasteland.","kinds":[{"asks":["Strength at 2","Swim at 2"],"squares":4,"effect":null,"best":"Thrasher","need":4,"bestPct":94.2,"partyPct":3.6},{"asks":["Strength at 3","Swim at 3"],"squares":10,"effect":null,"best":"Thrasher","need":9,"bestPct":43.1,"partyPct":0},{"asks":["Strength at 4","Swim at 4"],"squares":10,"effect":null,"best":"Thrasher","need":14,"bestPct":12,"partyPct":0}]},{"id":"rods","where":"Two traps of steel rods on the lab level","who":"all","cost":null,"kinds":[{"asks":["Dexterity at 2","Perception at 2","Luck at 3"],"squares":2,"effect":{"field":29,"flat":true,"n":4,"minus":true},"best":"Hell Razor","need":3,"bestPct":91.1,"partyPct":8.5}]},{"id":"altar","where":"The chapel altar","who":"one","cost":"Nothing. The Ranger can try again.","kinds":[{"asks":["Perception at 3"],"squares":1,"effect":null,"best":"Hell Razor","need":8,"bestPct":52.5,"partyPct":52.5}]},{"id":"pipes","where":"Test 1, the oil pipes","who":"one","cost":null,"kinds":[{"asks":["Climb at 4","Agility at 4"],"squares":26,"effect":{"field":29,"flat":false,"n":5,"minus":true},"best":"KIT","need":14,"bestPct":12,"partyPct":12}]},{"id":"mines","where":"Test 2, seeing the mines","who":"any","cost":"Nothing. The mines stay hidden, and the walk steps round them anyway.","kinds":[{"asks":["Perception at 3"],"squares":3,"effect":null,"best":"Hell Razor","need":8,"bestPct":52.5,"partyPct":65.5},{"asks":["Perception at 4"],"squares":2,"effect":null,"best":"Hell Razor","need":13,"bestPct":10.1,"partyPct":21.9},{"asks":["Perception at 5"],"squares":2,"effect":null,"best":"Hell Razor","need":18,"bestPct":3.6,"partyPct":5.7},{"asks":["Perception at 6"],"squares":2,"effect":null,"best":"Hell Razor","need":23,"bestPct":0,"partyPct":0}]},{"id":"weather","where":"Test 3, the weather room, there and back","who":"all","cost":null,"kinds":[{"asks":["Luck at 4"],"squares":4,"effect":{"field":29,"flat":false,"n":3,"minus":true},"best":"Angela Deth","need":21,"bestPct":2.2,"partyPct":0},{"asks":["Luck at 3"],"squares":4,"effect":{"field":29,"flat":false,"n":1,"minus":true},"best":"Angela Deth","need":16,"bestPct":7.9,"partyPct":0},{"asks":["Luck at 3"],"squares":4,"effect":{"field":29,"flat":false,"n":2,"minus":true},"best":"Angela Deth","need":16,"bestPct":7.9,"partyPct":0}]},{"id":"rope","where":"The rope under the weapons pod","who":"one","cost":null,"kinds":[{"asks":["Agility at 5","Climb at 4"],"squares":1,"effect":{"field":29,"flat":true,"n":3,"minus":true},"best":"KIT","need":14,"bestPct":8.7,"partyPct":8.7}]}]}</script>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* solution/walk.js */
+// Wasteland (C64): a party walked through the maps on the game's own code. Nothing here is a
+// port. The engine's and the game's listing.json are laid in memory as they lie in the machine,
+// one map's listing at a time is laid over them, and the game's own routines run on the kit's
+// 6502 (../../lib/cpu6502.js): a step (try_move_party $ADD1, step_done $AE26), the square the
+// party lands on (after_move $AC72), Use of an item, a skill or an attribute on a square
+// (use_on_square $8BEF), the search of a loot bag with its own prompts, Disband with its own
+// prompts (disband_command $99EE), the change of party (select_party $9C17), two parties joined
+// on one square (merge_parties_here $9959), the clock and the self-destruct's countdown
+// (countdown_check $82B5). What is stood in for, since a page has no screen, keyboard or disk:
+// - random_byte ($24E3) takes its bytes from a seeded generator;
+// - the routines that put a glyph on the screen hand the character to this file, and those that
+//   draw, scroll or make a sound return at once, so the game's text arrives as text;
+// - a key the game waits for comes from a queue the caller fills, or from W.auto;
+// - enter_map ($25BD) lays the next map's listing in memory, keeping each map as the party left it;
+// - a fight is not fought: W.win makes the change the group's record makes when it is wiped out;
+// - a throw of the dice for a skill ($0C29) or an attribute ($0D0A) is taken as passed and noted
+//   in W.throws, unless the caller asks for the game's own dice (luck: false);
+// - random_encounter ($B015) returns at once: no wandering monsters.
+// The engine's listing is a snapshot of play, so its four Rangers (records 1 to 4) are the party.
+// test_solution.js runs this block in node and holds the page to it.
+const WLWalk = (function () {
+  'use strict';
+  const mapId = n => 'map-' + String(n).padStart(2, '0');
+  const DIRS = { n: 0, s: 1, w: 2, e: 3, stay: 4 };
+  const DX = [0, 0, -1, 1, 0], DY = [-1, 1, 0, 0, 0];
+  class Stuck extends Error {}
+
+// o: { part(id) giving a listing as C64.load does (engine, game, map-NN), CPU, seed, luck }
+function create(o) {
+  const part = o.part, CPU = o.CPU, E = part('engine'), G = part('game');
+  G.sym = n => { if (!G.byName.has(n)) throw new Error('no symbol ' + n); return G.byName.get(n); };
+  const m = new Uint8Array(0x10000);
+  for (const L of [E, G]) for (let a = 0; a < 0x10000; a++) if (L.has[a]) m[a] = L.ram[a];
+  const cpu = new CPU(m), hooks = {};
+  const W = { m, cpu, hooks, text: '', keys: [], log: [], cur: -1, states: {}, steps: 0, fights: 0, moves: 0, stays: 0 };
+  let seed = o.seed || 1;
+  W.random = () => { if (o.dice === 'low') return 0; seed = (seed * 1103515245 + 12345) >>> 0; return (seed >>> 16) & 0xFF; };
+  const rts = c => { c.rts(); };
+  const glyph = c => { W.text += String.fromCharCode(c.a & 0x7F); c.rts(); };
+  const line = c => { W.text += '\n'; c.rts(); };
+  hooks[0x24E3] = c => { c.a = W.random(); c.rts(); };
+  hooks[0x1FEA] = glyph; hooks[0x1F86] = glyph; hooks[0x1FFB] = line; hooks[0x20F9] = line;
+  for (const a of [0x200C, 0x2501, 0x1FC3, 0x12B0, 0x22A9, 0x2265, 0x253A, 0x17CA, 0x1622, 0x1625, 0x1628]) hooks[a] = rts;
+  for (const a of [0x1DA9, 0x1DAC, 0x1DA4, 0x055D, 0x26E7, 0x241C, 0x2422, 0x242B, 0x135A]) hooks[a] = rts;
+  const give = c => { if (!W.keys.length && W.auto) { const k = W.auto(W.peek()); if (k) W.keys.push(k.charCodeAt(0) | 0x80); }
+    if (!W.keys.length) throw new Stuck('key wanted: ' + JSON.stringify(W.peek())); const k = W.keys.shift(); c.a = k; m[0x18] = k; c.c = (k === 0x9B) ? 1 : 0; c.rts(); };
+  hooks[0x2514] = give; hooks[0x24F2] = give;
+  // the view: only its corner moves
+  hooks[G.sym('view_north')] = c => { m[3] = (m[3] - 1) & 0xFF; c.rts(); };
+  hooks[G.sym('view_south')] = c => { m[3] = (m[3] + 1) & 0xFF; c.rts(); };
+  hooks[G.sym('view_west')] = c => { m[2] = (m[2] - 1) & 0xFF; c.rts(); };
+  hooks[G.sym('view_east')] = c => { m[2] = (m[2] + 1) & 0xFF; c.rts(); };
+  for (const n of ['redraw_party_square', 'redraw_special_squares', 'draw_markers', 'restore_view_if_covered', 'draw_whole_view', 'random_encounter'])
+    hooks[G.sym(n)] = c => { c.c = 0; c.rts(); };
+  hooks[G.sym('encounter_if_engaged')] = c => { c.a = 1; c.c = 1; c.rts(); };
+  for (const a of [0x04D2, 0x0232, 0x044C, 0x0746, 0x0741, 0x04F0, 0x0237, 0x0416, 0x0419, 0x041C, 0x041F, 0x037D, 0x0398, 0x04E1, 0x02DB, 0x02D5, 0x03B9, 0x02D8])
+    hooks[a] = c => { if (a === 0x044C) W.log.push('shake'); c.c = 0; c.rts(); };
+  hooks[0x03BF] = c => { W.log.push('(the game loads module ' + c.a + ')'); throw new Stuck('module ' + c.a); };
+  // throws: noted, and taken as passed unless W.judge(t) says otherwise (false: failed; undefined: the game's own dice)
+  W.throws = [];
+  const thrown = (c, t) => {
+    if (W.onThrow) W.onThrow(t); W.throws.push(t);
+    const v = o.luck === false ? undefined : W.judge ? W.judge(t) : true;
+    if (v === undefined) return;
+    c.c = v ? 0 : 1; c.rts();
+  };
+  hooks[0x0C29] = c => thrown(c, { kind: 'skill', what: c.a, diff: c.x, who: m[0x67], map: W.cur, at: W.pos(), rec: m[0x5F] | m[0x60] << 8 });
+  hooks[0x0D0A] = c => { if (c.y === 0x18 || c.y === 0x24) return; thrown(c, { kind: 'attr', what: c.y, diff: c.a, who: m[0x67], map: W.cur, at: W.pos(), rec: m[0x5F] | m[0x60] << 8 }); };
+  // a bag is searched through its own prompts: the first member with room takes each item the run wants, and the rest stays
+  W.wanted = /key|explosive|TNT|rocket|RPG|Mangler|Servo|Fusion|converter|Rom board|Android head|Plasma|Secpass|Rope/;
+  let taker = 0, leave = false;
+  W.auto = t => {
+    const ESC = String.fromCharCode(0x1B);
+    if (/Enter new location \(Y\/N\)\?$/.test(t)) return 'Y';
+    if (/Who wants loot\?$/.test(t)) { if (leave) { leave = false; return ESC; } const mem = W.members(); for (let k = 0; k < mem.length; k++) if (W.items(mem[k]).length < 30) { taker = mem[k]; return String(k + 1); } return ESC; }
+    const at = t.lastIndexOf('take an item #');
+    if (at >= 0) {
+      const tail = t.slice(at), from = tail.lastIndexOf('1> '); if (from < 0) return null;
+      if (W.items(taker).length >= 30) return ESC;
+      const re = /(\d)> (\d+) (.+?)(?=\d> |$)/g; let mm;
+      while ((mm = re.exec(tail.slice(from)))) if (W.wanted.test(mm[3])) return mm[1];
+      leave = true; return ESC;
+    }
+    return null;
+  };
+  // maps
+  const LO = 0x3400, HI = 0x5A00, TLO = 0xDE00, THI = 0xEE00;
+  function swap(n) {
+    if (W.cur >= 0) W.states[W.cur] = [m.slice(LO, HI), m.slice(TLO, THI)];
+    if (W.states[n]) { m.set(W.states[n][0], LO); m.set(W.states[n][1], TLO); }
+    else {
+      const L = part(mapId(n)); m.fill(0, LO, HI); m.fill(0, TLO, THI);
+      for (let a = LO; a < HI; a++) if (L.has[a]) m[a] = L.ram[a];
+      for (let a = TLO; a < THI; a++) if (L.has[a]) m[a] = L.ram[a];
+    }
+    W.cur = n; W.L = part(mapId(n));
+    const hdr = W.L.byName.get('map_record');
+    m[0x09] = m[0x91] = m[0x8D] = n; m[0x61] = hdr & 0xFF; m[0x62] = hdr >> 8;
+    m[0x55] = m[0x56] = m[hdr + 0x2C]; m[0x63] = 0xFF; m[0xD2] = 0; m[0x54] = 0x13; m[0x59] = 9; m[0x5A] = 4;
+    W.width = m[0x55]; W.hdr = hdr;
+  }
+  hooks[0x25BD] = c => { const n = m[0x09]; if (n !== W.cur) { W.log.push('map ' + n); swap(n); } c.c = 0; c.rts(); };
+  const call = (at, regs, max) => { W.steps += cpu.call(at, regs || {}, { hooks, maxSteps: max || 8e6 }); return cpu; };
+  W.call = call;
+  const REC = 0xF400, rec = i => REC + 256 * i;
+  W.rec = rec;
+  W.size = o.size || 4;
+  m.fill(0, REC, REC + 56);
+  for (let i = 1; i <= W.size; i++) m[REC + i] = i;
+  for (let r = W.size + 1; r <= 7; r++) m.fill(0, rec(r), rec(r) + 256);
+  m[0x07] = W.size; m[0x08] = 0; m[0x0A] = W.size; m[0x0B] = 0;
+  W.name = i => { let s = ''; for (let a = rec(i); m[a]; a++) s += String.fromCharCode(m[a] & 0x7F); return s; };
+  W.con = i => { const v = m[rec(i) + 0x1D] | m[rec(i) + 0x1E] << 8; return v > 0x7FFF ? v - 0x10000 : v; };
+  W.peek = () => W.text.replace(/[\u0000-\u001F]+/g, ' ').replace(/\s+/g, ' ').trim();
+  W.take = () => { const t = W.peek(); W.text = ''; return t; };
+  W.pos = () => [m[0x57], m[0x58]];
+  W.cls = (x, y) => { const w = W.width, i = y * w + x, b = m[LO + (i >> 1)]; return (x & 1) ? b & 15 : b >> 4; };
+  W.num = (x, y) => m[LO + W.width * W.width / 2 + y * W.width + x];
+  W.sq = (x, y) => W.cls(x, y) + ':' + W.num(x, y);
+  W.place = (x, y) => { m[0x57] = x; m[0x58] = y; m[REC + 8] = x; m[REC + 9] = y; m[REC + 10] = W.cur; call(0x9C17, { a: 0 }); };
+  W.enter = (n, x, y) => { swap(n); W.place(x, y); };
+  W.type = s => { for (const ch of s) W.keys.push(ch === '\n' ? 0x8D : (ch.charCodeAt(0) | 0x80)); };
+  const say = t => { if (t) W.log.push(t); };
+  // one step; returns true when the party moved (or changed map)
+  W.step = d => {
+    if (typeof d === 'string') d = DIRS[d];
+    const before = [W.cur, ...W.pos()];
+    call(G.sym('try_move_party'), { a: d });
+    const refused = cpu.c;
+    if (!refused) { W.moves++; if (d === 4) W.stays++; call(G.sym('step_done')); }
+    say(W.take());
+    call(G.sym('countdown_check'));   // the main loop runs it on every pass
+    const after = [W.cur, ...W.pos()];
+    return !refused && (d === 4 || before.join() !== after.join());
+  };
+  // a path over squares the test allows, by breadth-first search; the target may be any class
+  W.path = (tx, ty, ok) => {
+    const w = W.width, [sx, sy] = W.pos(), prev = new Map(), dist = new Map(), key = (x, y) => y * w + x;
+    ok = ok || ((x, y) => W.cls(x, y) === 0);
+    const q = [[0, sx, sy]]; prev.set(key(sx, sy), null); dist.set(key(sx, sy), 0);
+    const done = new Set();
+    while (q.length) {
+      let bi = 0; for (let k = 1; k < q.length; k++) if (q[k][0] < q[bi][0]) bi = k;
+      const [c0, x, y] = q.splice(bi, 1)[0];
+      if (done.has(key(x, y))) continue; done.add(key(x, y));
+      if (x === tx && y === ty) { const out = []; let k = key(x, y); while (prev.get(k) !== null) { const p = prev.get(k); out.unshift(p[2]); k = key(p[0], p[1]); } return out; }
+      for (let d = 0; d < 4; d++) {
+        let nx = x + DX[d], ny = y + DY[d];
+        if (nx < 0 || ny < 0 || nx >= w || ny >= w) continue;
+        if (!(nx === tx && ny === ty) && !ok(nx, ny)) continue;
+        let c1 = c0 + 1 + ((W.cost && !(nx === tx && ny === ty)) ? W.cost(nx, ny) : 0);
+        // a relative exit carries the party on
+        for (let n = 0; n < 40 && W.cls(nx, ny) === 10; n++) {
+          const r = W.record(nx, ny); if ((m[r.at] & 0xC0) !== 0x80 || m[r.at + 3] !== W.cur) break;
+          const ex = (nx + ((m[r.at + 1] ^ 0x80) - 0x80)) & 0xFF, ey = (ny + ((m[r.at + 2] ^ 0x80) - 0x80)) & 0xFF;
+          if (ex >= w || ey >= w) break; nx = ex; ny = ey;
+        }
+        const kk = key(nx, ny);
+        if (done.has(kk) || (dist.has(kk) && dist.get(kk) <= c1)) continue;
+        dist.set(kk, c1); prev.set(kk, [x, y, d]); q.push([c1, nx, ny]);
+      }
+    }
+    return null;
+  };
+  // walk to a square; stops early when a step is refused or the map changes
+  W.go = (tx, ty, ok) => {
+    const map = W.cur;
+    for (let n = 0; n < 400; n++) {
+      const [cx, cy] = W.pos();
+      if (cx === tx && cy === ty) return true;
+      const p = W.path(tx, ty, ok);
+      if (!p) throw new Error('no path to ' + tx + ',' + ty + ' from ' + W.pos() + ' on map ' + W.cur);
+      const d = p[0], nx = cx + DX[d], ny = cy + DY[d], c = W.cls(nx, ny);
+      if (c === 3 || c === 15) W.win(nx, ny);
+      if (!W.step(d)) { say('(refused at ' + W.pos() + ' going ' + 'nswe'[d] + ')'); return false; }
+      if (W.cur !== map) return true;
+      const [ax, ay] = W.pos(); if (Math.abs(ax - nx) + Math.abs(ay - ny) > 0 && W.cls(nx, ny) === 10) { const r = W.record(nx, ny); if ((m[r.at] & 0x80) === 0) return true; }
+    }
+    throw new Error('walk too long');
+  };
+  // the square's record: class and address
+  W.record = (x, y) => { call(G.sym('square_action_record'), { x, y }); return { cls: cpu.a, at: m[0x5F] | m[0x60] << 8 }; };
+  // a fight taken as won: the change its record makes when the group is wiped out
+  W.win = (x, y) => {
+    const r = W.record(x, y); if (r.cls !== 3 && r.cls !== 15) throw new Error('no encounter at ' + x + ',' + y + ': ' + W.sq(x, y));
+    call(0x042E, { a: 0x0A, x, y }); W.fights++; say('(fight at ' + x + ',' + y + ' taken as won: now ' + W.sq(x, y) + ')');
+  };
+  // items: pairs from +$BD
+  W.items = i => { const out = []; for (let k = 0; k < 30; k++) { const b = m[rec(i) + 0xBD + 2 * k]; if (b) out.push([b & 0x7F, m[rec(i) + 0xBE + 2 * k], 0xBD + 2 * k]); } return out; };
+  W.has = n => { const mem = W.members(); for (let k = 0; k < mem.length; k++) for (const it of W.items(mem[k])) if (it[0] === n) return [k + 1, it[2], mem[k]]; return null; };
+  // Use: kind 0 skill, 1 item, 2 attribute; dir n/s/w/e/stay
+  W.use = (kind, thing, member, d) => {
+    if (typeof d === 'string') d = DIRS[d];
+    m[0x12] = member;
+    call(G.sym('use_on_square'), { a: kind, x: d, y: thing });
+    const ok = !cpu.c; if (ok) call(G.sym('after_move'));
+    say(W.take()); return ok;
+  };
+  W.useItem = (n, d) => { const h = W.has(n); if (!h) throw new Error('nobody carries item ' + n); W.use(1, h[1], h[0], d); };
+  W.knows = n => { const mem = W.members(); for (let j = 0; j < mem.length; j++) for (let k = 0; k < 30; k++) if (m[rec(mem[j]) + 0x80 + 2 * k] === n) return j + 1; return 0; };
+  W.useSkill = (n, d) => { const i = W.knows(n); if (!i) throw new Error('nobody knows skill ' + n); W.use(0, n, i, d); };
+  W.useAttr = (off, d, i) => W.use(2, off, i || 1, d);
+  // squares a walk may cross: not walls, loot, questions, exits or checks that stop a step
+  W.open = (x, y) => {
+    const c = W.cls(x, y);
+    if (c === 0 || c === 1 || c === 3 || c === 5 || c === 6 || c === 9 || c === 12) return true;
+    if (c === 2) { const r = W.record(x, y); return (m[r.at] & 0x80) !== 0; }
+    if (c === 4) { const r = W.record(x, y); return (m[r.at + 1] & 0x80) === 0; }
+    if (c === 10) { const r = W.record(x, y); return (m[r.at] & 0xC0) === 0x80; }
+    return false;
+  };
+  // Disband, the game's own command (disband_command $99EE) with the keys a player presses: the numbers of
+  // the Rangers who leave, RETURN, and the way they step off (I, J, K or L). The game makes them a party of
+  // their own, leads it, and moves it that one step. Returns the number of the party left behind.
+  W.disband = (list, d) => {
+    const mem = W.members(), old = m[0x08], before = W.pos().join();
+    const keys = list.map(r => { const k = mem.indexOf(r); if (k < 0) throw new Error('not in the party: ' + r); return String(k + 1); }).join('');
+    W.keys = []; W.type(keys + '\n' + { n: 'I', s: 'K', w: 'J', e: 'L' }[d]);
+    call(G.sym('disband_command')); say(W.take());
+    if (m[0x08] === old || W.members().slice().sort().join() !== list.slice().sort().join() || W.pos().join() === before) throw new Error('the game did not disband ' + list + ' going ' + d);
+    W.moves++; call(G.sym('countdown_check'));
+    return old;
+  };
+  // one Ranger walks on alone, a step in direction d; the others wait on the square
+  W.solo = (i, d) => W.disband([i], d);
+  // the listed Rangers stay on this square, and the others step off in direction d
+  W.leave = (list, d) => W.disband(W.members().filter(r => !list.includes(r)), d);
+  // the parties are one again: the game joins them when one steps onto the other's square
+  W.regroup = () => { if (m[0x0B]) throw new Error('still ' + (m[0x0B] + 1) + ' parties'); };
+  W.lead = p => { call(0x9C17, { a: p }); if (m[0x09] !== W.cur) { swap(m[0x09]); } say('(now leading ' + W.members().map(W.name).join(', ') + ' at ' + W.pos() + ')'); };
+  W.members = () => { const t = REC + 14 * m[0x08], out = []; for (let k = 1; k <= 7; k++) if (m[t + k]) out.push(m[t + k]); return out; };
+  W.show = (r) => {
+    const [px, py] = W.pos(); r = r || 8; const out = [];
+    for (let y = Math.max(0, py - r); y <= Math.min(W.width - 1, py + r); y++) {
+      let s = String(y).padStart(2) + ' ';
+      for (let x = Math.max(0, px - 2 * r); x <= Math.min(W.width - 1, px + 2 * r); x++) s += (x === px && y === py) ? '@' : (W.cls(x, y) ? W.cls(x, y).toString(16).toUpperCase() : '.');
+      out.push(s);
+    }
+    return 'map ' + W.cur + ' at ' + px + ',' + py + ' (columns from ' + Math.max(0, px - 2 * r) + ')\n' + out.join('\n');
+  };
+  // an engine message as text: 1 to 35 are the skills' names, 36 + n is item n's
+  W.engineText = n => { const keep = W.text; W.text = ''; m[0x38] = 1; call(0x0519, { a: n }); const t = W.peek(); W.text = keep; return t; };
+  return W;
+}
+  return { create, Stuck, DIRS, mapId };
+})();
+if (typeof module !== 'undefined') module.exports = WLWalk;
+/* /solution/walk.js */
+</script>
+<script>
+/* solution/route.js */
+// Wasteland (C64): one walk from the Ranger Center to the ending, as a list of legs for the walker
+// (WLWalk, solution/walk.js). Each leg is a few calls that the game's own code answers: walk to a
+// square, search a bag, use an item, a skill or an attribute on a square, type an answer. Nothing
+// is handed to the party: every item it uses comes out of a bag through the bag's own prompts.
+// A leg throws when the game does not answer as the page says it does, so a walk that reaches its
+// last leg has opened every lock on the way. test_solution.js runs it in node.
+const WLRoute = (function () {
+  'use strict';
+  const ITEM = { tnt: 8, mangler: 9, plastic: 7, law: 11, sabot: 10, rpg: 12, rope: 54, crowbar: 45, sonic: 89,
+    servo: 88, fusion: 68, converter: 77, rom: 80, head: 58, coupler: 76, blackstar: 61, nova: 73, pulsar: 78, quasar: 79 };
+  // explosives in the order the walk spends them: any of the six, the five a weapons pod takes, the four a
+  // reactor door takes
+  const ANY = [8, 9, 7, 11, 10, 12], POD = [8, 7, 11, 10, 12], HARD = [7, 11, 10, 12];
+  const SKILL = { climb: 2, perception: 9, picklock: 15 };
+
+  function start(W) {
+    const m = W.m, R = { W, done: 0, results: [], used: {}, ending: false };
+    const fail = t => { throw new Error(t); };
+    const count = n => { let c = 0; for (let i = 1; i <= W.size; i++) c += W.items(i).filter(it => it[0] === n).length; return c; };
+    R.count = count;
+    // a check record's pairs from +$0A: [kind, difficulty, value], kind 0 skill, 1 item, 2 attribute, 3 party size, 4 cash
+    const pairs = at => { const out = []; for (let i = at + 0x0A; m[i] !== 0xFF && out.length < 14; i += 2) out.push([m[i] >> 5, m[i] & 31, m[i + 1]]); return out; };
+    R.pairs = pairs;
+    const answered = at => pairs(at).some(p => p[0] === 1 && count(p[2] & 0x7F) > 0);
+    // what a square costs a walk beyond the step itself: a fight, a square with code of its own, a throw of the
+    // dice that nothing the party carries answers. The walk goes round them where that is shorter.
+    const costs = new Map();
+    W.cost = (x, y) => {
+      const c = W.cls(x, y); if (c === 3 || c === 15) return 40; if (c === 6) return 12; if (c !== 2) return 0;
+      const k = W.cur + ':' + x + ',' + y + ':' + W.num(x, y); if (costs.has(k)) return costs.get(k);
+      const r = W.record(x, y); let v = 0;
+      if (m[r.at] & 0x80) { const ps = pairs(r.at); if (ps.some(p => (p[0] === 0 || p[0] === 2) && !(p[0] === 2 && (p[2] === 0x18 || p[2] === 0x24))) && !answered(r.at)) v = 20 + 4 * Math.max(...ps.map(p => p[1])); }
+      costs.set(k, v); return v;
+    };
+    let leg = 0, trail = [];
+    W.onThrow = t => { t.answered = answered(t.rec); t.leg = leg; t.flags = m[t.rec]; t.use = W.using || 0; t.pairs = pairs(t.rec); t.effect = [m[t.rec + 8], m[t.rec + 9]]; t.onFail = [m[t.rec + 6], m[t.rec + 7]]; };
+    const note = () => { const p = [W.cur, ...W.pos()], l = trail[trail.length - 1]; if (!l || l.join() !== p.join()) trail.push(p); };
+    const step0 = W.step, use0 = W.use, disband0 = W.disband;
+    W.disband = (...a) => { const r = disband0(...a); note(); return r; };
+    W.step = d => { const r = step0(d); note(); return r; };
+    W.use = (...a) => { W.using = 1; let r; try { r = use0(...a); } finally { W.using = 0; } note(); return r; };
+
+    const safe = (x, y) => W.cls(x, y) !== 9 && W.open(x, y);
+    // the sewers: not into the chasm (checks 13, 21, 23 of map 24)
+    const dry = (x, y) => safe(x, y) && !(W.cls(x, y) === 2 && [13, 21, 23].includes(W.num(x, y)));
+    // the testing level: no mine (class 6) and no object (class 4) underfoot
+    const noMines = (x, y) => W.cls(x, y) !== 6 && W.cls(x, y) !== 4 && W.open(x, y);
+    const walk = (x, y, ok) => { if (!W.go(x, y, ok || safe)) fail('the step toward ' + x + ',' + y + ' was refused at ' + W.pos()); };
+    const on = n => { if (W.cur !== n) fail('on map ' + W.cur + ' at ' + W.pos() + ', not on map ' + n); };
+    const holds = (n, what) => { if (!count(n)) fail('no ' + what); };
+    const bag = (x, y, ok) => { walk(x, y, ok); if (W.cls(x, y) === 5) W.step('stay'); if (W.cls(x, y) === 3) fail('a fight still stands at ' + x + ',' + y); };
+    // blow the square in direction d with the first explosive on the list that the party carries and the square takes
+    const boom = (d, list) => {
+      const dd = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0], stay: [0, 0] }[d], [px, py] = W.pos(), x = px + dd[0], y = py + dd[1], was = W.sq(x, y);
+      for (const it of list) { if (!W.has(it)) continue; W.useItem(it, d); if (W.sq(x, y) !== was) { R.used[it] = (R.used[it] || 0) + 1; return it; } }
+      fail('nothing the party carries opens ' + x + ',' + y);
+    };
+    const DD = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0], stay: [0, 0] };
+    const door = (label, x, y, d, list) => { walk(x, y); W.step(d); lock(label, x + DD[d][0], y + DD[d][1]); boom(d, list || HARD); };
+    const keyAt = (label, item, x, y, d) => { walk(x, y); W.type('\n'); lock(label, x + DD[d][0], y + DD[d][1]); W.useItem(item, d); };
+    // Disband at a station: the Ranger who stays is the last in the party whose pockets the others can do without
+    const have = (mem, n) => mem.reduce((c, i) => c + W.items(i).filter(it => it[0] === n).length, 0);
+    const staysBehind = (keys, hard, crowbars, d) => {
+      const mem = W.members();
+      for (let k = mem.length - 1; k >= 0; k--) {
+        const rest = mem.filter(r => r !== mem[k]);
+        if (keys.every(n => have(rest, n)) && HARD.reduce((c, n) => c + have(rest, n), 0) >= hard && have(rest, ITEM.crowbar) >= crowbars) return W.leave([mem[k]], d);
+      }
+      fail('nobody can be spared here');
+    };
+    const at = {};
+    // a lock on the way: the square's record as it stands when the party reaches it, with every key it takes
+    const ATTR = { 0x0E: 'Strength', 0x0F: 'IQ', 0x10: 'Luck', 0x11: 'Speed', 0x12: 'Agility', 0x13: 'Dexterity', 0x14: 'Charisma' };
+    const keyName = p => p[0] === 0 ? (p[2] > 35 ? 'a skill no Ranger can learn' : W.engineText(p[2]) + (p[1] ? ' at ' + p[1] : ''))
+      : p[0] === 2 ? (ATTR[p[2]] || 'field ' + p[2]) + ' at ' + p[1] : p[0] === 3 ? 'a party of ' + p[2] : p[0] === 4 ? 'less than $' + p[2] : W.engineText(36 + (p[2] & 0x7F));
+    R.keyName = keyName; R.locks = [];
+    const lock = (label, x, y) => {
+      const r = W.record(x, y); if (r.cls !== 2) fail(label + ': no check at ' + x + ',' + y + ' (' + W.sq(x, y) + ')');
+      let L = R.locks.find(l => l.label === label); if (!L) { L = { label, leg, map: W.cur, at: [x, y], keys: [] }; R.locks.push(L); }
+      for (const p of pairs(r.at)) { const k = keyName(p); if (!L.keys.includes(k)) L.keys.push(k); }
+    };
+    const clock = () => m[4] | m[5] << 8 | m[6] << 16;
+    R.clock = clock;
+    let armedAt = 0;
+    // Max's assembly unit: the menu comes back after every part, so the walk answers it as the parts go in
+    const loot0 = W.auto;
+    W.auto = t => { if (/3\) Prep for assembly$/.test(t)) return /complete and successful\. Android assembly unit[^.]*$/.test(t) ? '3' : '2'; return loot0(t); };
+    const station = (label, y, items) => { walk(18, y); W.step('e'); for (const it of items) { if (W.cls(19, y) !== 2) fail('the assembly unit at row ' + y + ' asks for no part'); lock(label, 19, y); W.useItem(it, 'stay'); } };
+
+    // [place, name, what the leg does]
+    R.legs = [
+      ['The wasteland', 'From the Ranger Center to Las Vegas', () => { walk(23, 16); on(12); }],
+      ['Las Vegas', 'A fight on the street for the Sonic key', () => { bag(57, 7); holds(ITEM.sonic, 'Sonic key'); }],
+      ['Las Vegas', 'A tank on the street: LAW rockets and TNT', () => bag(34, 12)],
+      ['Las Vegas', 'Death machines: LAW rockets and plastic explosive', () => bag(36, 37)],
+      ['Las Vegas', 'More death machines: RPG-7 rockets and TNT', () => bag(29, 43)],
+      ['Las Vegas', 'To the Temple of the Mushroom Cloud', () => { walk(56, 24); on(38); }],
+      ['The temple', 'The password at the inner doors', () => { walk(16, 28); W.type('EINSTEIN\n'); W.step('n'); if (W.cls(16, 26) !== 4) fail('the inner doors are shut'); }],
+      ['The temple', 'Two high security doors, blown open', () => { door('The temple\'s high security doors', 16, 21, 'n', ANY); door('The temple\'s high security doors', 11, 15, 'w', ANY); }],
+      ['The temple', 'Two hidden doors, opened with the Sonic key', () => { W.go(6, 18, safe); lock('The temple\'s hidden doors, to find one', 5, 18); walk(5, 18); lock('The temple\'s hidden doors, to open one', 4, 18); W.useItem(ITEM.sonic, 'w'); walk(4, 3); lock('The temple\'s hidden doors, to open one', 3, 3); W.useItem(ITEM.sonic, 'w'); walk(1, 2); on(24); }],
+      ['The sewers', 'The power converter', () => { bag(29, 1); holds(ITEM.converter, 'power converter'); }],
+      ['The sewers', 'One Ranger springs the deadfall trap', () => { walk(19, 2); lock('The sewers\' deadfall traps', 18, 2); W.solo(3, 'w'); if (W.cls(18, 2) !== 4) fail('the trap is still set'); W.step('e'); W.regroup(); }],
+      ['The sewers', 'A servo motor', () => { bag(17, 5); holds(ITEM.servo, 'servo motor'); }],
+      ['The sewers', 'The fusion cell', () => { bag(28, 15); holds(ITEM.fusion, 'fusion cell'); }],
+      ['The sewers', 'A rope across the chasm', () => { walk(7, 17); lock('The chasm in the sewers', 7, 18); W.useItem(ITEM.rope, 's'); if (W.cls(7, 20) !== 4) fail('no bridge'); }],
+      ['The sewers', 'A second servo motor', () => { bag(1, 25, dry); if (count(ITEM.servo) < 2) fail('no second servo motor'); }],
+      ['The sewers', 'Down the river of sewage', () => { walk(7, 17, dry); walk(31, 10, dry); on(25); }],
+      ['The lab level', 'A third servo motor', () => bag(30, 8)],
+      ['The lab level', 'A fourth servo motor', () => { bag(29, 28); if (count(ITEM.servo) < 4) fail('fewer than four servo motors'); }],
+      ['The lab level', 'A Rom board', () => { walk(30, 29); bag(28, 4); holds(ITEM.rom, 'Rom board'); }],
+      ['The lab level', 'Sabot rockets', () => bag(26, 18)],
+      ['The lab level', 'The android head', () => { bag(1, 16); holds(ITEM.head, 'android head'); }],
+      ['The lab level', 'LAW rockets', () => bag(14, 1)],
+      ['The lab level', 'The lab door, opened with the Sonic key', () => { walk(16, 6); W.step('s'); lock('The lab door', 16, 7); W.useItem(ITEM.sonic, 's'); if (W.cls(16, 7) !== 4) fail('the lab is shut'); }],
+      ['The lab level', 'The second Rom board', () => { bag(15, 11); if (count(ITEM.rom) < 2) fail('no second Rom board'); }],
+      ['The lab level', 'Max: two servo motors for the legs', () => station('Max\'s legs', 11, [88, 88])],
+      ['The lab level', 'Max: a servo motor for the arms', () => station('Max\'s arms', 10, [88])],
+      ['The lab level', 'Max: the body', () => station('Max\'s body', 9, [68, 77, 88, 80])],
+      ['The lab level', 'Max: the head', () => { station('Max\'s head', 8, [58, 80]); if (W.cls(19, 13) !== 10) fail('Max has opened no way out'); }],
+      ['The lab level', 'Out by the way Max opens', () => { walk(19, 13); on(0); if (W.sq(2, 3) !== '10:33') fail('Base Cochise is not on the world map'); }],
+      ['The wasteland', 'From Las Vegas to the Guardian Citadel', () => { walk(36, 48); on(35); }],
+      ['The Guardian Citadel', 'The giant in the courtyard: the Pulsar key', () => { bag(16, 19); holds(ITEM.pulsar, 'Pulsar key'); }],
+      ['The Guardian Citadel', 'The bronze doors, blown open', () => { walk(11, 12); W.step('n'); lock('The Citadel\'s bronze doors', 11, 11); boom('n', ANY); lock('The Citadel\'s bronze doors', 11, 11); boom('n', ANY); if (W.cls(11, 11) !== 4) fail('the bronze doors stand'); }],
+      ['The Guardian Citadel', 'The museum case: the Quasar key', () => { walk(24, 15); W.step('e'); lock('The museum case with the Quasar key', 25, 15); W.useItem(ITEM.crowbar, 'e'); holds(ITEM.quasar, 'Quasar key'); }],
+      ['The Guardian Citadel', 'The east stair', () => { walk(23, 1); W.step('n'); on(36); }],
+      ['The Guardian Citadel', 'Behind the chapel altar: the Blackstar key', () => { walk(26, 16); W.step('w'); lock('The chapel door', 25, 16); W.useItem(ITEM.crowbar, 'w'); walk(23, 21); W.step('s'); lock('The chapel altar', 23, 22); W.useSkill(SKILL.perception, 's'); holds(ITEM.blackstar, 'Blackstar key'); }],
+      ['The Guardian Citadel', 'The Guardian in his bed: the Nova key', () => { walk(2, 8); W.step('w'); W.win(1, 8); for (let k = 0; k < 8 && !count(ITEM.nova); k++) W.step('stay'); holds(ITEM.nova, 'Nova key'); }],
+      ['The Guardian Citadel', 'Out to the wasteland', () => { walk(15, 22); W.step('s'); on(35); walk(0, 28); on(0); }],
+      ['The wasteland', 'From the Citadel to Base Cochise', () => { walk(2, 3); on(16); }],
+      ['Base Cochise', 'Robots outside the dome: the plasma coupler', () => { bag(4, 16); holds(ITEM.coupler, 'plasma coupler'); }],
+      ['Base Cochise', 'Over the dome wall with a rope', () => { walk(10, 11); W.step('e'); lock('Base Cochise\'s dome wall', 11, 11); W.useItem(ITEM.rope, 'e'); if (W.pos().join() !== '11,11') fail('still outside the wall'); walk(15, 11); }],
+      ['Base Cochise', 'A weapons pod, blown open, and a rope down', () => { W.win(16, 11); W.step('e'); lock('A weapons pod\'s cover', 16, 11); boom('stay', POD); lock('The drop under the pod', 16, 11); W.useItem(ITEM.rope, 'stay'); W.step('stay'); on(17); if (W.sq(14, 17) !== '2:5') fail('no rope hangs under the pod'); }],
+      ['Base Cochise', 'The hollow wall panel', () => { walk(1, 17); W.step('w'); lock('The hollow wall panel', 0, 17); W.useItem(ITEM.crowbar, 'w'); W.step('w'); W.step('w'); on(19); }],
+      ['Base Cochise', 'The ladder room door, blown open', () => { door('The ladder room door', 16, 6, 'n'); walk(19, 1); on(18); }],
+      ['Base Cochise', 'Test 1: the oil pipes, one Ranger alone', () => { walk(4, 3, W.open); W.solo(4, 'e'); W.type('O'); walk(30, 2, W.open); walk(15, 3, W.open); W.regroup(); if (W.cls(2, 6) === 11) fail('the way to test 2 is shut'); }],
+      ['Base Cochise', 'Test 2: the mine field', () => { walk(1, 10, W.open); W.step('w'); W.type('O'); walk(15, 10, noMines); walk(31, 11, noMines); if (W.cls(3, 13) === 11) fail('the way to test 3 is shut'); }],
+      ['Base Cochise', 'Test 3: the weather room', () => { walk(4, 16, W.open); W.step('e'); W.type('O'); walk(30, 17, W.open); walk(15, 18, W.open); if (W.cls(1, 20) === 11) fail('the way to test 4 is shut'); }],
+      ['Base Cochise', 'Test 4: the simulator', () => { walk(1, 26, W.open); W.step('w'); W.type('O'); walk(16, 25, W.open); walk(31, 27, W.open); }],
+      ['Base Cochise', 'Down to the reactor level', () => { walk(2, 31, W.open); on(20); }],
+      ['The reactor', 'The chamber door, blown open', () => door('The reactor chamber\'s door', 16, 14, 'n')],
+      ['The reactor', 'The west corridor\'s north door', () => door('The reactor\'s four corridor doors', 5, 15, 'n')],
+      ['The reactor', 'The glass wall round the core', () => door('The glass wall round the core', 12, 5, 's')],
+      ['The reactor', 'The plasma coupler, fitted', () => { walk(12, 8); lock('The reactor\'s power socket', 12, 8); W.useItem(ITEM.coupler, 'stay'); if (W.sq(23, 29) !== '2:65') fail('no power'); }],
+      ['The reactor', 'The Blackstar key in the red station, where one Ranger stays', () => { keyAt('The red station', ITEM.blackstar, 1, 2, 'n'); at.red = staysBehind([ITEM.nova, ITEM.pulsar, ITEM.quasar], 3, 1, 's'); }],
+      ['The reactor', 'The east corridor\'s north door', () => door('The reactor\'s four corridor doors', 26, 15, 'n')],
+      ['The reactor', 'The conveyor belt, stopped with a crowbar', () => { walk(18, 1); W.step('e'); lock('The conveyor belt', 19, 1); W.useItem(ITEM.crowbar, 'e'); }],
+      ['The reactor', 'The Nova key in the blue station, where a second Ranger stays', () => { keyAt('The blue station', ITEM.nova, 30, 2, 'n'); at.blue = staysBehind([ITEM.pulsar, ITEM.quasar], 2, 0, 's'); }],
+      ['The reactor', 'The east corridor\'s south door', () => door('The reactor\'s four corridor doors', 26, 16, 's')],
+      ['The reactor', 'The Pulsar key in the yellow station, where a third Ranger stays', () => { keyAt('The yellow station', ITEM.pulsar, 30, 29, 's'); at.yellow = staysBehind([ITEM.quasar], 1, 0, 'n'); }],
+      ['The reactor', 'The west corridor\'s south door', () => door('The reactor\'s four corridor doors', 5, 16, 's')],
+      ['The reactor', 'The Quasar key in the green station', () => { keyAt('The green station', ITEM.quasar, 1, 29, 's'); at.green = m[0x08]; if (W.sq(1, 1) !== '8:0') fail('the stations are not ready'); }],
+      ['The reactor', 'One Ranger onto each station', () => {
+        W.type('\n'); W.step('stay');
+        W.lead(at.red); W.type('\n'); W.step('stay');
+        W.lead(at.yellow); W.type('\n'); W.step('stay');
+        W.lead(at.blue); W.type('R'); W.step('stay');
+        if (W.sq(2, 3) !== '11:0') fail('the rooms are not sealed');
+      }],
+      ['The reactor', 'Red, yellow, green, blue', () => {
+        W.lead(at.red); W.type('R'); W.step('stay');
+        W.lead(at.yellow); W.type('Y'); W.step('stay');
+        W.lead(at.green); W.type('G'); W.step('stay');
+        W.lead(at.blue); W.type('B\n\n\n'); W.step('stay');
+        if (m[0xF4F9] !== 1) fail('the self-destruct is not armed'); armedAt = clock();
+      }],
+      ['The way out', 'All four to the escape pod', () => { W.lead(0); walk(16, 10); while (m[0x0B]) { W.lead(1); walk(16, 10); } W.step('n'); on(17); }],
+      ['The way out', 'Up the rope under the weapons pod', () => { walk(14, 17, W.open); lock('The rope left under the weapons pod', 14, 17); W.useSkill(SKILL.climb, 'stay'); W.step('stay'); on(16); }],
+      ['The way out', 'Over the dome wall and off the grounds', () => { walk(12, 11, W.open); lock('Base Cochise\'s dome wall', 11, 11); W.useItem(ITEM.rope, 'w'); walk(0, 11, W.open); on(0); }],
+      ['The way out', 'The last of the countdown', () => {
+        try { for (let k = 0; k < 40; k++) W.step(k % 2 ? 'n' : 's'); } catch (e) { if (!/module 4/.test(e.message)) throw e; R.ending = true; return; }
+        fail('the ending never ran');
+      }],
+    ];
+
+    // Runs the next leg. The result: where it ended, its moves and fights, the squares it crossed, the game's text.
+    R.next = () => {
+      const i = R.done; if (i >= R.legs.length) return null;
+      const [place, name, f] = R.legs[i], from = W.log.length, m0 = W.moves, f0 = W.fights, t0 = W.throws.length, c0 = clock();
+      leg = i; trail = [[W.cur, ...W.pos()]];
+      f(); W.keys = [];
+      const text = [], seen = new Set();
+      for (const t of W.log.slice(from)) if (!seen.has(t)) { seen.add(t); text.push(t); }
+      // the map most of the leg was walked on, as the leg left it
+      const tally = {}; for (const p of trail) tally[p[0]] = (tally[p[0]] || 0) + 1;
+      const view = +Object.keys(tally).sort((a, b) => tally[b] - tally[a])[0];
+      const st = view === W.cur ? [m.slice(0x3400, 0x5A00), m.slice(0xDE00, 0xEE00)] : W.states[view].map(a => a.slice());
+      const res = { n: i, place, name, map: W.cur, at: W.pos(), moves: W.moves - m0, fights: W.fights - f0, trail, text, view, state: st,
+        throws: W.throws.slice(t0), con: [1, 2, 3, 4].map(W.con), rot: [1, 2, 3, 4].map(k => m[W.rec(k) + 0x28]),
+        clock: armedAt ? clock() - armedAt : null, counted: clock() - c0 };
+      R.results.push(res); R.done++; return res;
+    };
+    R.all = () => { while (R.done < R.legs.length) R.next(); return R.results; };
+    return R;
+  }
+
+  // The engine's own open-ended throw of two dice ($0845), n times: tail[t] = how often the total was t or more
+  // and not under 5 (a total under 5 fails every check).
+  function tails(W, n) {
+    const hist = new Array(256).fill(0);
+    for (let k = 0; k < n; k++) hist[W.call(0x0845).a]++;
+    const tail = new Array(257).fill(0);
+    for (let t = 255; t >= 0; t--) tail[t] = tail[t + 1] + (t >= 5 ? hist[t] : 0);
+    return { n, hist, at: t => t > 255 ? 0 : tail[Math.max(0, t)] / n };
+  }
+
+  // The throws the walk leaned on, one row for each record and leg: what is thrown, at what difficulty, what the
+  // total on the dice must be for each Ranger, and how often the engine's dice give it.
+  function leaned(R, T) {
+    const W = R.W, m = W.m, rows = new Map();
+    for (const res of R.results) for (const t of res.throws) {
+      if (t.answered) continue;
+      const k = res.n + ':' + t.map + ':' + t.rec;
+      if (!rows.has(k)) rows.set(k, { leg: res.n, map: t.map, rec: t.rec, flags: t.flags, use: t.use, squares: new Set(), pairs: t.pairs, effect: t.effect, onFail: t.onFail });
+      rows.get(k).squares.add(t.at.join(','));
+    }
+    return [...rows.values()].map(r => ({ ...r, squares: r.squares.size }));
+  }
+
+  // What a check record asks of one Ranger: for each pair that is a throw, the total the dice must reach.
+  // rec: the Ranger's record address; ps: the record's pairs; attrOf(skill): the offset of the skill's attribute.
+  function needs(m, rec, ps, attrOf) {
+    const out = [];
+    for (const [kind, diff, what] of ps) {
+      const target = 15 + 5 * diff;
+      if (kind === 2) { if (what === 0x18 || what === 0x24) continue; out.push({ kind: 'attr', what, diff, need: target - m[rec + what] }); }
+      else if (kind === 0) {
+        let level = 0; for (let k = 0; k < 30; k++) if (m[rec + 0x80 + 2 * k] === what) level = m[rec + 0x81 + 2 * k];
+        if (!level) continue;
+        const off = attrOf(what);
+        out.push({ kind: 'skill', what, diff, level, need: target - (off ? m[rec + off] : 0) - 4 * level });
+      }
+    }
+    return out;
+  }
+  // The throws, gathered as the page tells them. Each group: the legs and map its rows come from, who throws
+  // (all: every Ranger must pass; any: one pass is enough; one: the Ranger who makes the Use), and what a failure costs.
+  const GROUPS = [
+    { id: 'hidden', where: 'The temple\'s two hidden doors', map: 38, who: 'any', cost: 'Nothing. The door stays hidden, and the party can step off the square and on again.' },
+    { id: 'wade', where: 'Across the river in the sewers', map: 24, legs: [12], who: 'all', cost: 'The current carries the whole party a square downstream, toward the lab level.' },
+    { id: 'river', where: 'Across the river on the lab level, three times', map: 25, pair: 0x0E, who: 'all', cost: 'The current carries the party a square east. At the east wall the river leaves the sewers for the wasteland.' },
+    { id: 'rods', where: 'Two traps of steel rods on the lab level', map: 25, pair: 0x13, who: 'all', cost: null },
+    { id: 'altar', where: 'The chapel altar', map: 36, legs: [34], who: 'one', cost: 'Nothing. The Ranger can try again.' },
+    { id: 'pipes', where: 'Test 1, the oil pipes', map: 18, legs: [43], who: 'one', cost: null },
+    { id: 'mines', where: 'Test 2, seeing the mines', map: 18, legs: [44], who: 'any', cost: 'Nothing. The mines stay hidden, and the walk steps round them anyway.' },
+    { id: 'weather', where: 'Test 3, the weather room, there and back', map: 18, legs: [45], who: 'all', cost: null },
+    { id: 'rope', where: 'The rope under the weapons pod', map: 17, who: 'one', cost: null },
+  ];
+  const effectOf = e => { const field = e[0] & 0x7F; if (!field) return null; return { field, flat: !!(e[0] & 0x80), n: e[1] & 0x7F, minus: !!(e[1] & 0x80) }; };
+
+  // Everything the page prints about the walk, from a walk that has run (R) and the dice (T, from tails()).
+  function report(R, T) {
+    const W = R.W, m = W.m, attrOf = s => m[0x0DD8 + s];
+    const rangers = [1, 2, 3, 4].map(i => ({ name: W.name(i), st: m[W.rec(i) + 0x0E], iq: m[W.rec(i) + 0x0F], lk: m[W.rec(i) + 0x10], agl: m[W.rec(i) + 0x12], dex: m[W.rec(i) + 0x13], maxcon: m[W.rec(i) + 0x1B] }));
+    const pct = p => Math.round(p * 1000) / 10;
+    const rows = leaned(R, T), throws = [];
+    for (const G of GROUPS) {
+      const mine = rows.filter(r => r.map === G.map && (!G.legs || G.legs.includes(r.leg)) && (!G.pair || r.pairs.some(p => p[0] === 2 && p[2] === G.pair && r.pairs[0][2] === G.pair)));
+      if (!mine.length) throw new Error('no throws for ' + G.id);
+      const kinds = new Map();
+      for (const r of mine) {
+        const k = r.pairs.map(p => p.join(',')).join(';') + '|' + r.effect.join(',');
+        if (!kinds.has(k)) kinds.set(k, { asks: r.pairs.map(R.keyName), pairs: r.pairs, effect: effectOf(r.effect), squares: 0 });
+        kinds.get(k).squares += r.squares;
+      }
+      const out = [];
+      for (const K of kinds.values()) {
+        const each = [1, 2, 3, 4].map(i => { const ns = needs(m, W.rec(i), K.pairs, attrOf); return { need: ns.map(n => n.need), p: 1 - ns.reduce((q, n) => q * (1 - T.at(n.need)), 1) }; });
+        const best = each.reduce((b, e, i) => e.p > each[b].p ? i : b, 0);
+        const party = G.who === 'all' ? each.reduce((q, e) => q * e.p, 1) : G.who === 'any' ? 1 - each.reduce((q, e) => q * (1 - e.p), 1) : each[best].p;
+        out.push({ asks: K.asks, squares: K.squares, effect: K.effect, best: rangers[best].name, need: Math.min(...each[best].need), bestPct: pct(each[best].p), partyPct: pct(party) });
+      }
+      out.sort((a, b) => b.partyPct - a.partyPct);
+      throws.push({ id: G.id, where: G.where, who: G.who, cost: G.cost, kinds: out });
+    }
+    const leg = s => R.results.find(x => x.name.includes(s));
+    return {
+      legs: R.results.map(x => [x.place, x.name, x.map, x.at[0], x.at[1], x.moves, x.fights, x.view]),
+      moves: W.moves, stays: W.stays, fights: W.fights, ending: R.ending, endsOn: [W.cur, ...W.pos()],
+      used: Object.keys(R.used).map(n => [W.engineText(36 + +n), R.used[n]]), charges: Object.values(R.used).reduce((a, b) => a + b, 0),
+      maps: [...new Set(R.results.map(x => x.view))],
+      clock: { pod: leg('escape pod').clock, dome: leg('Up the rope').clock, off: leg('off the grounds').clock, end: leg('last of the countdown').clock },
+      locks: R.locks.map(l => ({ label: l.label, map: l.map, at: l.at, keys: l.keys })),
+      rangers, con: R.results[R.results.length - 1].con, rot: R.results[R.results.length - 1].rot,
+      left: ANY.map(n => [W.engineText(36 + n), R.count(n)]).filter(x => x[1]), ropes: R.count(ITEM.rope), crowbars: R.count(ITEM.crowbar),
+      dice: { n: T.n, at: [5, 8, 13, 14, 17, 18, 21, 24].map(t => [t, pct(T.at(t))]) },
+      throws,
+    };
+  }
+  return { start, tails, leaned, needs, report, ITEM, ANY, POD, HARD };
+})();
+if (typeof module !== 'undefined') module.exports = WLRoute;
+/* /solution/route.js */
+</script>
+<script>
+/* solution/page.js */
+// The Solution tab: the tables drawn from the page's data (the walk as test_solution.js makes it), and the
+// plate that runs the walk again in the reader's browser on the game's own code and draws each leg on the map.
+(function () {
+  'use strict';
+  const el = document.getElementById('wl-solution'); if (!el) return;
+  const D = JSON.parse(el.textContent);
+  const $ = (s, r) => (r || document).querySelector(s);
+  const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const num = n => n.toLocaleString('en-GB');
+  const MAPS = D.mapNames;
+
+  // ---- the table of locks
+  const lt = $('#wl-so-locks tbody');
+  if (lt) for (const L of D.locks) {
+    const tr = h('tr'), a = h('a', null, MAPS[L.map] + ', ' + L.at.join(','));
+    a.href = 'levels.html#map-' + L.map + '-' + L.at[0] + '-' + L.at[1];
+    tr.append(h('td', null, L.label)); const td = h('td'); td.append(a); tr.append(td); tr.append(h('td', null, L.keys.join(', ')));
+    lt.append(tr);
+  }
+  // ---- the table of throws
+  const WHO = { all: 'Every Ranger in the party, and all must pass', any: 'Every Ranger who has the skill, and one pass is enough', one: 'The one Ranger who tries' };
+  const pc = p => p === 0 ? 'under 0.1%' : p + '%';
+  const tt = $('#wl-so-throws tbody');
+  if (tt) for (const T of D.throws) {
+    const tr = h('tr'); tr.append(h('td', null, T.where));
+    const asks = h('td'), odds = h('td'), cost = h('td');
+    for (const K of T.kinds) {
+      asks.append(h('div', null, K.asks.join(' or ') + (K.squares > 1 ? ', on ' + K.squares + ' squares' : '')));
+      odds.append(h('div', null, K.best + ' needs ' + K.need + ': ' + pc(K.bestPct) + (T.who === 'one' ? '' : T.who === 'all' ? '. All four: ' + pc(K.partyPct) : '. Any of them: ' + pc(K.partyPct))));
+    }
+    const fx = T.kinds.map(K => K.effect).filter(Boolean);
+    cost.textContent = T.cost || (fx.length ? [...new Set(fx.map(e => e.flat ? e.n + ' CON' : e.n + 'd6 of CON'))].join(', ') + (T.who === 'all' ? ' from each Ranger who fails, on each square' : ' on each failure') + '.' : '');
+    tr.append(asks, h('td', null, WHO[T.who]), odds, cost); tt.append(tr);
+  }
+
+  // ---- the plate
+  const root = document.getElementById('wl-so-plate'); if (!root) return;
+  const list = $('.wl-so-legs', root), cv = $('canvas', root), now = $('.wl-so-now', root), log = $('.wl-so-log', root), say = $('.wl-xp-say', root);
+  const bWalk = $('[data-act=walk]', root), bPrev = $('[data-act=prev]', root), bNext = $('[data-act=next]', root);
+  const buttons = [];
+  let place = null;
+  D.legs.forEach((L, i) => {
+    if (L[0] !== place) { place = L[0]; const li = h('li', 'wl-so-place', place); const n = D.legs.filter(x => x[0] === place).reduce((s, x) => s + x[5], 0); li.append(h('span', null, num(n) + ' moves')); list.append(li); }
+    const li = h('li'), b = h('button', 'wl-so-leg'); b.type = 'button';
+    b.append(h('span', 'wl-so-name', L[1]), h('span', 'wl-so-n', L[5] + (L[6] ? ' · ' + L[6] + (L[6] > 1 ? ' fights' : ' fight') : '')));
+    b.addEventListener('click', () => { stop(); show(i); });
+    li.append(b); list.append(li); buttons.push(b);
+  });
+
+  let R = null, WLMaps = null, booting = null, at = -1, timer = 0, busy = false;
+  const tiles = new Map(), listings = {};
+  const mapId = n => 'map-' + String(n).padStart(2, '0');
+  function boot() {
+    if (!booting) booting = (async () => {
+      say.textContent = 'Loading the engine, the game, and the walk\'s ' + D.maps.length + ' maps.';
+      const ids = ['engine', 'game', ...D.maps.map(mapId)];
+      const got = await Promise.all(ids.map(id => globalThis.C64.load('parts/' + id + '/listing.json')));
+      ids.forEach((id, i) => { listings[id] = got[i]; });
+      const W = WLWalk.create({ part: id => listings[id], CPU: globalThis.C64Cpu.CPU, seed: D.seed });
+      W.enter(0, D.start[0], D.start[1]);
+      R = WLRoute.start(W);
+      // the Maps tab's own decoder draws the squares: the block between its two markers in levels.html
+      try {
+        const src = await (await fetch('levels.html')).text(), a = src.indexOf('/* wl:maps.js'), b = src.indexOf('/* /wl:maps.js */');
+        if (a >= 0 && b > a) { const scope = {}; new Function('module', 'globalThis', src.slice(a, b))({ exports: {} }, Object.assign(scope, { C64: globalThis.C64 })); WLMaps = scope.WLMaps; }
+      } catch (e) { WLMaps = null; }
+      say.textContent = '';
+    })();
+    return booting;
+  }
+  const CLASS = ['#c9b98a', '#d8c68f', '#e2a23a', '#c0392b', '#8d8d86', '#7a5cc0', '#3d8bd0', '#c9b98a', '#3fae6a', '#b5d334', '#1f5fa8', '#3a3d45', '#d8c68f', '#c9b98a', '#c9b98a', '#c0392b'];
+  async function picture(res) {
+    const m = new Uint8Array(0x10000); m.set(res.state[0], 0x3400); m.set(res.state[1], 0xDE00);
+    if (WLMaps) {
+      try {
+        const M = WLMaps.mapOf(res.view, m, null);
+        if (!tiles.has(M.set)) tiles.set(M.set, await globalThis.C64.load('parts/tiles-' + M.set + '/listing.json').catch(() => null));
+        const T = tiles.get(M.set);
+        if (T) for (let a = 0xD000; a < 0xDD80; a++) if (T.has[a]) m[a] = T.ram[a];
+        M.tiles = !!T;
+        return { w: M.w, cv: WLMaps.renderMap(M, 12) };
+      } catch (e) { /* fall through to the plain squares */ }
+    }
+    const L = listings[mapId(res.view)], w = L.ram[L.byName.get('map_record') + 0x2C], c = document.createElement('canvas'); c.width = c.height = w * 16;
+    const g = c.getContext('2d');
+    for (let y = 0; y < w; y++) for (let x = 0; x < w; x++) { const i = y * w + x, b = m[0x3400 + (i >> 1)]; g.fillStyle = CLASS[(x & 1) ? b & 15 : b >> 4]; g.fillRect(x * 16, y * 16, 16, 16); }
+    return { w, cv: c };
+  }
+  let drawn = 0;
+  async function show(i) {
+    if (busy) return; busy = true;
+    try {
+      await boot();
+      while (R.done <= i) { say.textContent = 'Walking leg ' + (R.done + 1) + ' of ' + D.legs.length + '.'; R.next(); if (R.done % 6 === 0) await new Promise(r => setTimeout(r, 0)); }
+      say.textContent = '';
+      at = i; const res = R.results[i], ticket = ++drawn;
+      buttons.forEach((b, k) => { b.setAttribute('aria-current', k === i ? 'true' : 'false'); b.classList.toggle('wl-so-done', k < R.done); });
+      // keep the leg in view in its own list, without moving the page
+      { const b = buttons[i], top = b.parentNode.offsetTop, head = 30; if (top - head < list.scrollTop) list.scrollTop = top - head; else if (top + b.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = top + b.offsetHeight - list.clientHeight; }
+      const P = await picture(res); if (ticket !== drawn) return;
+      const g = cv.getContext('2d'), s = cv.width / (P.w * 16), q = 16 * s;
+      g.imageSmoothingEnabled = false; g.clearRect(0, 0, cv.width, cv.height); g.drawImage(P.cv, 0, 0, cv.width, cv.height);
+      const pts = res.trail.filter(p => p[0] === res.view);
+      const line = (width, colour) => {
+        g.lineWidth = width; g.strokeStyle = colour; g.lineJoin = g.lineCap = 'round'; g.beginPath();
+        pts.forEach((p, k) => { const x = (p[1] + 0.5) * q, y = (p[2] + 0.5) * q, l = pts[k - 1]; if (!k || Math.abs(l[1] - p[1]) + Math.abs(l[2] - p[2]) > 1) g.moveTo(x, y); else g.lineTo(x, y); });
+        g.stroke();
+      };
+      if (pts.length) {
+        line(Math.max(5, q * 0.55), 'rgba(0,0,0,.75)'); line(Math.max(2.5, q * 0.3), '#ffd84a');
+        const dot = (p, fill) => { g.beginPath(); g.arc((p[1] + 0.5) * q, (p[2] + 0.5) * q, Math.max(5, q * 0.42), 0, 7); g.fillStyle = fill; g.fill(); g.lineWidth = 2; g.strokeStyle = '#000'; g.stroke(); };
+        dot(pts[0], '#ffffff'); dot(pts[pts.length - 1], '#ff5a3c');
+      }
+      const sofar = R.results.slice(0, i + 1).reduce((t, x) => t + x.moves, 0);
+      now.textContent = 'Leg ' + (i + 1) + ' of ' + D.legs.length + ' · ' + res.place + ' · ' + res.name + ' · ' + res.moves + (res.moves === 1 ? ' move' : ' moves') + (res.fights ? ', ' + res.fights + (res.fights > 1 ? ' fights' : ' fight') : '') + ' · ' + num(sofar) + ' moves so far' + (res.clock == null ? '' : res.clock < 240 ? ' · countdown ' + res.clock + ' of 240' : ' · the countdown has run out') + ' · ' + MAPS[res.view];
+      log.textContent = '';
+      for (const t of res.text) log.append(h('p', /^\(/.test(t) ? 'wl-fi-dim' : null, t));
+      if (i === D.legs.length - 1 && R.ending) log.append(h('p', 'wl-fi-end', 'Module 4 is the ending. The countdown has run out with all four Rangers on the world map.'));
+      log.scrollTop = 0;
+      bPrev.disabled = i <= 0; bNext.disabled = i >= D.legs.length - 1; if (!timer) label();
+    } catch (e) { say.textContent = 'The walk stopped: ' + e.message; stop(); }
+    finally { busy = false; }
+  }
+  function label() { bWalk.textContent = at >= 0 && at < D.legs.length - 1 ? 'Walk on' : 'Walk it'; }
+  function stop() { if (timer) { clearTimeout(timer); timer = 0; } label(); }
+  function play() {
+    bWalk.textContent = 'Pause';
+    const tick = async () => { const n = at >= D.legs.length - 1 ? 0 : at + 1; await show(n); if (!timer) return; if (n >= D.legs.length - 1) { stop(); return; } timer = setTimeout(tick, 900); };
+    timer = setTimeout(tick, 0);
+  }
+  bWalk.addEventListener('click', () => { if (timer) stop(); else play(); });
+  bPrev.addEventListener('click', () => { stop(); if (at > 0) show(at - 1); });
+  bNext.addEventListener('click', () => { stop(); show(Math.min(D.legs.length - 1, at + 1)); });
+  bPrev.disabled = true;
+})();
+/* /solution/page.js */
+</script>

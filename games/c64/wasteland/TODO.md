@@ -37,6 +37,22 @@ play. The ones a reader is likeliest to ask about:
 - Map 23's blade storm, which a party passes with less than 16 in cash
   (`parts/map-23/facts.md`).
 
+## The Solution tab
+
+- A walk on the game's real dice. `solution.html` takes every throw as
+  passed, and its table gives each one's chance for the four starting
+  Rangers. A party that could pass them needs skills and levels from
+  the maps the walk leaves out, so that walk is a longer one, with its
+  fights played (`reference/wasteland-fight.js`).
+- Trade between Rangers. The walk never moves an item from one Ranger
+  to another, which is why it picks who stays at a station by what the
+  others still need.
+- The walk tried in the emulator: the rope over Base Cochise's dome
+  wall, the weapons pod, and four Rangers disbanded at the stations.
+  `test_solution.js` runs each on the game's code outside the emulator.
+- The shortest walk. This one is short and was not searched for: no
+  count says a shorter order of its legs does not exist.
+
 ## Article ideas
 
 - Map 11's wall square with no record, which may be the "buggy wall
