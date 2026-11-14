@@ -1,4 +1,4 @@
-## next · 2026-11-13 · Short Circuit (C64) · Nico-van-der-Zijden with Claude
+## 0.0.340 · 2026-11-13 · Short Circuit (C64) · Nico-van-der-Zijden with Claude
 
 - **A run's own samples on an unproven model said one comment in five
   was wrong; an audit on a proven model found two in five.** The first
