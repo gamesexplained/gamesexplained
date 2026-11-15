@@ -33,7 +33,10 @@ async function exerciseHammerfist(page,base){
  await page.locator('#hf-effects [data-tune="1"]').click();await page.waitForTimeout(200);await page.locator('#hf-effects [data-stop]').click();
  for(const file of ['index.html','discoveries.html','graphics.html','levels.html']){
   await page.goto(root+file);const canvases=page.locator('main canvas[id^="hf-"], main canvas.hf-msg');
-  for(let i=0;i<await canvases.count();i++){const c=canvases.nth(i);await c.scrollIntoViewIfNeeded();await page.waitForTimeout(50);const distinct=await c.evaluate(c=>{const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,s=new Set();for(let i=0;i<d.length;i+=4)s.add(d[i]+d[i+1]*256+d[i+2]*65536);return s.size;});if(distinct<2)throw Error(file+' blank canvas '+(await c.getAttribute('id')||i));}
+  // A message canvas clears and types itself again when it scrolls into view, so give it time to draw.
+  for(let i=0;i<await canvases.count();i++){const c=canvases.nth(i);await c.scrollIntoViewIfNeeded();let distinct=0;
+   for(let t=0;t<40&&distinct<2;t++){await page.waitForTimeout(100);distinct=await c.evaluate(c=>{const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,s=new Set();for(let i=0;i<d.length;i+=4)s.add(d[i]+d[i+1]*256+d[i+2]*65536);return s.size;});}
+   if(distinct<2)throw Error(file+' blank canvas '+(await c.getAttribute('id')||i));}
  }
  if(errors.length)throw Error(errors.join('\n'));return {choices,errors};
 }
