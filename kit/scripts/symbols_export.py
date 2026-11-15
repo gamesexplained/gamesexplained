@@ -74,6 +74,9 @@ PLATFORM_DEFAULTS = {
         # which is never reported as the game's data
         "hidden": [["$D000", "$DFFF", "the RAM under the I/O area",
                     "kit/skills/c64/c64-reference, \"RAM the CPU cannot see\""]],
+        # where the chips' registers lie over RAM: an access to one mints an automatic symbol
+        # in whatever RAM beneath the game counts, which kit/scripts/ledger.py passes over
+        "chips_over": [["$D000", "$DFFF", "the VIC-II, the SID, colour RAM and the CIAs"]],
         "system": [["$0000", "$03FF", "zero page, stack and the KERNAL's work area"]],
         # where BASIC's program starts: check_listing.py asks that a BASIC line's link there be named
         "basic_start": "$0801",
@@ -414,6 +417,22 @@ def regions(game):
             if hi > b: carved.append([b + 1, hi, n])
         exclude = carved
     out = {"exclude": exclude, "extra": extra, "edges": [hexint(e) for e in d.get("edges", [])]}
+    # the RAM beneath the chips' registers ("chips_over") that the game counts after all: an
+    # access to a register there mints an automatic symbol in the game's data, which the ledger
+    # and the listing pass over (kit/scripts/ledger.py, #869)
+    beneath = []
+    for lo, hi in [(hexint(r[0]), hexint(r[1])) for r in d.get("chips_over", [])]:
+        a = lo
+        for xlo, xhi, _ in sorted(exclude):
+            if xhi < a or xlo > hi:
+                continue
+            if xlo > a:
+                beneath.append([a, xlo - 1])
+            a = max(a, xhi + 1)
+        if a <= hi:
+            beneath.append([a, hi])
+    if beneath:
+        out["beneath"] = beneath
     if size_of(game) != 0x10000:
         out["size"] = size_of(game)
     # a part of a game that is several loads: the addresses another part owns are not this

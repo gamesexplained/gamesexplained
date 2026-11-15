@@ -42,7 +42,13 @@ These already read `platform` from `game.json` and need one entry each:
   `listing.py` picks one per instruction (on the C64,
   `kit/skills/c64/c64-reference`, "Code and tables under the I/O area"). `io_only` is where only the chips
   answer, with no RAM beneath (the BBC Micro's $FC00-$FEFF), so an operand
-  there always gets the register's name. A machine whose screen always
+  there always gets the register's name. `chips_over` is where chip
+  registers lie over RAM a game may count (the C64's $D000-$DFFF): the
+  disassembler names every register an instruction touches there, and
+  the ledger passes over those automatic names, outside code and with no
+  comment, so they never cut the description of the data beneath. A
+  machine whose RAM lies under ROMs, where a game's own code refers to
+  its tables, leaves it out. A machine whose screen always
   ends at the top of RAM gives `screen_top`, that address, in place of
   `screen_size`. `basic_start` is where BASIC's program starts, on a
   machine whose BASIC links each line to the next as Commodore's does:

@@ -747,6 +747,9 @@ def main():
     names = all_names(gdir, game, sym)
     names_for, bank_of = bank_view(gdir, game, names)
     regs, chips = register_names(game.get("platform")), io_meaning(game)
+    # the labels records carry: the automatic names the ledger passes over in the RAM beneath the
+    # chips (a colour RAM write's, among a sprite's pixels) neither label nor split a record (#869)
+    labels = {x: n for x, n in names.items() if x not in L["quiet"]}
     line = {c["address"]: c["text"] for c in sym["comments"] if c["type"] == "line"}
     side = {c["address"]: c["text"] for c in sym["comments"] if c["type"] == "side"}
     btype = bytearray(SIZE)
@@ -804,7 +807,7 @@ def main():
             records.append({"a": g, "t": "gap", "n": a - g, "note": LOST})
             continue
         rec = {"a": a}
-        if a in names: rec["l"] = names[a]
+        if a in labels: rec["l"] = labels[a]
         if a in line: rec["c"] = line[a]
         if a in side: rec["s"] = side[a]
         t = TYPES[btype[a]]
@@ -844,7 +847,7 @@ def main():
         def run_end(limit):
             e = a + 1
             while e < SIZE and e < a + limit and state[e] and have[e] and btype[e] == btype[a] \
-                    and e not in names and e not in line and e not in side:
+                    and e not in labels and e not in line and e not in side:
                 e += 1
             return e
         # a word or pointer is two bytes: a label on its second byte (the base of a table's high
@@ -854,7 +857,7 @@ def main():
             blk = next(b for b in sym["blocks"] if b["start"] <= a <= b["end"])
             e = a + 1
             while e < SIZE and e < a + limit and state[e] and have[e] and btype[e] == btype[a] \
-                    and ((e - blk["start"]) % 2 == 1 or (e not in names and e not in line and e not in side)):
+                    and ((e - blk["start"]) % 2 == 1 or (e not in labels and e not in line and e not in side)):
                 e += 1
             return e
         if t in ("Word", "Lo/Hi Word", "Hi/Lo Word"):
@@ -946,7 +949,7 @@ def main():
     index = []
     for s in sorted(sym["symbols"], key=lambda s: s["address"]):
         ad = s["address"]
-        if names.get(ad) != s["name"] or state[ad] == 0:
+        if names.get(ad) != s["name"] or state[ad] == 0 or ad in L["quiet"]:
             continue
         span = 1
         while ad + span < SIZE and owner.get(ad + span, (None, None))[1] == ad:
