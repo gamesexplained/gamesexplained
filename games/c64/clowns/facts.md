@@ -326,3 +326,30 @@ the game computes at `$F196` by stopping there and setting A.
 10. A one-player game played by an autopilot steering the see-saw under
     the clown, then a two-player game: the code map in `codemap.json`,
     5,004 bytes run, every one inside the code the static trace found.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- The title screen and the start of a game, in VICE.
+- Run on the kit's model of a C64 for 30,000 frames from power-on, through the title's demonstration, the menu and a game, it never read or wrote a byte of RAM above `$07FF`: its variables, the stack of the compiled program, the flying clown's sprite and the screen all fit in `$0000`-`$07FF`.
+- `test_music.js` holds the port against the game's own code on the kit's 6502 simulator: every tune, every write to the chip, tick by tick.
+- `test_sound.js` holds it against the game's own code, write for write.
+- One frame of play, drawn by this page from the game's memory, not a screenshot: the video chip's registers and the RAM it reads, recorded in VICE (x64sc, PAL) on 11 October 2026, with the cartridge's bytes from the Source tab.
+- It matches the emulator's picture of the same frame in every one of its 104,448 pixels.
+- A replay of a test in VICE.
+- The paths come from a port of the game's flight (`$E63C`), which `test_flight.js` holds against the game's own code: 320,389 ticks and 1,955 launches, every variable the same.
+- `test_collide.js` checks the port against the game's own routine on the kit's 6502 simulator over thousands of random screens, frames and positions.
+- `test_digits.js` checks it against the game's routine for every value from 0 to 65,535.
+- `test_paddle.js` checks it against the game's routine on the kit's 6502 simulator.
+- Measured in VICE, play ran 1.90 ticks a frame on a PAL machine, about 95 a second; 10,000 cycles alone would give 98.5.
+- A frame recorded with the balloons moving differed from the emulator's picture in 100 pixels, all of them in the row the game rewrote while the beam was drawing it.
+
+### play.html
+
+- `test_play.js` runs the port beside the cartridge's own code on the kit's model of the C64, from the reset vector on, with the same input: the title's demonstration, a one-player game steered by a program that keeps the see-saw under the clown until the game is over, then a two-player game.
+- At every tick, where the game restarts its timer (`$F717`), the two memories are compared, and so are colour RAM and every register written to the video chip and the SID.
+- Left out are the compiled program's own workings, which the port passes as JavaScript values instead: the runtime's scratch bytes at `$02`-`$10` and the frames of its software stack from `$0244`.
+- Each tick costs what it cost the game on the kit's machine, measured per loop: a tick of flight, of the run along a platform, of a tune, of the demonstration.

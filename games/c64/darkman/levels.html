@@ -111,27 +111,8 @@ details.dl-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;co
     <details class="dl-more" id="dl-objects-box"><summary>Every object of this level</summary><div class="dl-scroll"><table class="dl-table" id="dl-objects"></table></div></details>
   </div>
 </section>
-<section id="check">
-  <p class="fig">02 · The check</p>
-  <h2 class="t">The drawing matches the emulator's first screen, except under the sprites</h2>
-  <p class="lede">The page redraws the first screen of each level from the embedded bytes and compares it, pixel by pixel, with the emulator's picture of that frame.</p>
-  <div class="plate">
-    <div class="dl-bar"><div class="dl-pickwrap"><div class="pick">
-      <button type="button" class="step" data-step="-1" aria-label="Previous level">&#8249;</button>
-      <select id="dl-sel2" aria-label="Level"></select>
-      <button type="button" class="step" data-step="1" aria-label="Next level">&#8250;</button>
-    </div></div></div>
-    <div class="dl-trio" id="dl-trio">
-      <figure><canvas id="dl-c-draw" width="288" height="126" aria-label="The page's drawing of the first screen"></canvas><figcaption>This page's drawing</figcaption></figure>
-      <figure><canvas id="dl-c-emu" width="288" height="126" aria-label="The emulator's picture of the first screen"></canvas><figcaption>The emulator's picture</figcaption></figure>
-      <figure><canvas id="dl-c-diff" width="288" height="126" aria-label="The pixels where the two differ, in white"></canvas><figcaption>Differences in white, boxed</figcaption></figure>
-    </div>
-    <p class="cap" id="dl-checkcap"></p>
-    <div class="dl-scroll"><table class="dl-table" id="dl-checks"></table></div>
-  </div>
-</section>
 <section id="where">
-  <p class="fig">03 · The addresses</p>
+  <p class="fig">02 · The addresses</p>
   <h2 class="t">Where each map, table, and list sits in memory</h2>
   <p class="lede">Every byte the page draws from is in the listing of the level's own part. A test holds the page's copy against that listing.</p>
   <div class="plate">
@@ -318,7 +299,7 @@ if (typeof module !== 'undefined') module.exports = DM;
 </script>
 <script>
 (function () {
-  // The page: the picker, the map with its markers, the chase, the checks, and the addresses.
+  // The page: the picker, the map with its markers, the chase, and the addresses.
   const L = DM_LEVELS, P = L.map(l => l.kind === 'tiles' ? DM.prep(l) : null);
   const $ = id => document.getElementById(id);
   const PAL = DM.PAL, RGB = PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
@@ -326,7 +307,7 @@ if (typeof module !== 'undefined') module.exports = DM;
   const part = n => 'level' + n;
   // An address in a part's listing, linked the way site.js links a bare one (it runs before this draws).
   const A = (n, a) => `<a href="source-${part(n)}.html#${a.toString(16).toUpperCase().padStart(4, '0')}"><code>${hex(a)}</code></a>`;
-  const sel = [$('dl-sel'), $('dl-sel2')];
+  const sel = [$('dl-sel')];
   let cur = 0, zoom = 2; const show = { enemy: true, energy: true, score: true, other: true };
   const COPY = {
     1: {
@@ -470,48 +451,8 @@ if (typeof module !== 'undefined') module.exports = DM;
     $('dl-objects-box').classList.toggle('dl-hide', !h);
     t.innerHTML = h;
   }
-  // The checks, run on the page's own data.
-  const checks = [];
-  async function runChecks() {
-    for (let i = 0; i < L.length; i++) {
-      const l = L[i]; if (l.kind !== 'tiles') { checks.push(null); continue; }
-      const ref = await DM.unz(l.ref.px), pix = DM.windowPixels(l, P[i]), d = DM.diff(pix, ref), w = l.ref.win[2], h = l.ref.win[3];
-      checks.push({ ref, pix, d, w, h, boxes: DM.boxes(d.mask, w, h), });
-    }
-    renderChecks(); renderCaption(); renderWhere();
-  }
-  const pct = (a, b) => (100 * a / b).toFixed(1) + ' %';
-  function paint(cv, px, w, h, f) {
-    cv.width = w; cv.height = h; const g = cv.getContext('2d'), img = g.createImageData(w, h);
-    for (let i = 0; i < w * h; i++) { const c = f(i), o = i * 4; img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255; }
-    g.putImageData(img, 0, 0);
-  }
-  function renderChecks() {
-    const c = checks[cur], l = L[cur];
-    if (!c) {
-      ['dl-c-draw', 'dl-c-emu', 'dl-c-diff'].forEach(id => { const cv = $(id); cv.width = 288; cv.height = 126; cv.getContext('2d').clearRect(0, 0, 288, 126); });
-      $('dl-checkcap').innerHTML = 'Level 5 has no tile map, and the snapshot of it holds no frame of play, so there is no picture to compare.';
-    } else {
-      const col = v => v === 255 ? [128, 128, 128] : RGB[v];
-      paint($('dl-c-draw'), c.pix, c.w, c.h, i => col(c.pix[i]));
-      paint($('dl-c-emu'), c.ref, c.w, c.h, i => RGB[c.ref[i] & 15]);
-      paint($('dl-c-diff'), c.d.mask, c.w, c.h, i => c.d.mask[i] ? [255, 255, 255] : [24, 24, 24]);
-      const g = $('dl-c-diff').getContext('2d'); g.strokeStyle = '#fff'; g.lineWidth = 1;
-      c.boxes.forEach(b => { g.setLineDash([3, 2]); g.strokeRect(b.x - 1.5, b.y - 1.5, b.w + 3, b.h + 3); });
-      const big = c.boxes.reduce((a, b) => Math.max(a, b.w, b.h), 0);
-      $('dl-checkcap').innerHTML = `<b>Level ${l.n}:</b> ${c.d.n.toLocaleString('en')} of ${(c.w * c.h).toLocaleString('en')} pixels differ (${pct(c.d.n, c.w * c.h)}), in ${c.boxes.length} box${c.boxes.length === 1 ? '' : 'es'}, the largest ${big} pixels across. ${l.checkNote || ''}`;
-    }
-    const rows = L.map((m, i) => {
-      const k = checks[i];
-      if (!k) return `<tr><td>Level ${m.n}</td><td colspan="3">No tile map and no frame of play to compare</td></tr>`;
-      return `<tr><td>Level ${m.n}</td><td class="n">${k.w} × ${k.h}</td><td class="n">${k.d.n.toLocaleString('en')} (${pct(k.d.n, k.w * k.h)})</td><td class="n">${k.boxes.length} (${k.boxes.reduce((a, b) => Math.max(a, b.w, b.h), 0)} px)</td></tr>`;
-    });
-    $('dl-checks').innerHTML = '<tr><th>Level</th><th>Window</th><th>Pixels that differ</th><th>Boxes (largest)</th></tr>' + rows.join('');
-  }
   function renderCaption() {
-    const l = L[cur], c = checks[cur], cap = $('dl-cap');
-    if (!c) { cap.innerHTML = COPY[l.n].how; return; }
-    cap.innerHTML = COPY[l.n].how + ` <b>Checked:</b> the drawing of the first screen differs from the emulator's picture in ${c.d.n.toLocaleString('en')} of ${(c.w * c.h).toLocaleString('en')} pixels (${pct(c.d.n, c.w * c.h)}), in ${c.boxes.length} boxes, where sprites are.`;
+    $('dl-cap').innerHTML = COPY[L[cur].n].how;
   }
   function renderWhere() {
     const rows = L.map(l => {
@@ -596,10 +537,10 @@ if (typeof module !== 'undefined') module.exports = DM;
     if (tile) { drawMap(); drawOverlay(); $('dl-info').textContent = marks.length ? 'Click or tap a marker to read what it is.' : ''; goFirst(); }
     else { const tm = $('dl-time'); tm.max = DM.chopperFrames(l); drawChase(); }
     renderTexts(); objectsTable();
-    if (checks.length) { renderChecks(); renderCaption(); }
+    renderCaption();
   }
   buildToggles();
   setLevel(cur);
-  if (L.length) runChecks();
+  if (L.length) renderWhere();
 })();
 </script>

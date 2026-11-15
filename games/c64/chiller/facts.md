@@ -609,3 +609,32 @@ control.
 | Level settings on every screen | `settings10.py` | directions 0 0 1 1, gravity 1, scroll `$FF`, fall limit `$FF` |
 | What drains the bar standing still | `verify7.py` | an enemy: 69 hits each on `energy_down` and `poison_add`; control `music_irq` 1,799 in 30 s |
 | The keyboard scan runs | `verify5.py` | SCNKEY `$EA87` 61 in 1 s; the matrix tool left `$C5` at `$40`, the host-key path reached it |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+
+### play.html
+
+- How it was checked Each routine was first checked alone against the game's code, run in a 6502 simulator: two to four thousand random starting states each, with every instruction the routine can reach reached at least once.
+- Then the whole port ran beside the original, from 366 moments of play saved on all ten levels, with the same random joystick.
+- At the start of every pass of the main loop all 64 KB are compared, and so are colour RAM and the registers the game writes to the video and sound chips.
+- Only the stack is left out.
+- 366 sessions of up to 5,000 passes, 31 to 40 on each level, through deaths, crosses taken, the cards between levels and the game over: 1,739,834: identical at every pass in 357; the other 9 left in step at the same interrupt race (below).
+- A session that reaches the game over ends there, because the random joystick only changes at a pass and the game over waits for fire.
+- The 34 moments that were saved during that wait were left out, since the port starts a session at the main loop.
+- The costs were fitted by least squares on the game's timings in 46 of the sessions above, over a million stretches of code between two points of the main loop.
+- On 46 other sessions the fitted cycles came to within 0.14 % of the game's.
+- The interrupt's own time, 1,197 cycles on average, is added where it falls.
+- From a new game, 400 frames: Passes, original: Passes, this page.
+- The forest, standing: 6,179: 6,148.
+- The cinema, walking right: 5,508: 5,502.
+- The graveyard, walking left: 6,057: 6,078.
+- The house, going home, walking right: 5,948: 6,099.
+- The forest, going home, standing: 6,231: 6,155.
+- Over all ten levels, standing still and walking either way, the page's count of passes is within 4 % of the original's.
+- The page works them out as the beam draws, on the same clock, from the sprites and characters in memory, with the site's model of the chip's collisions (`collide.js`), which was held against VICE on 17 October 2026.

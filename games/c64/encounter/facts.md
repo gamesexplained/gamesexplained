@@ -698,3 +698,15 @@ a1f6a9c318dca0814701b09c35575512d6f732c64cc81dbfe1f2e6b086f2d458), in VICE 3.10 
   screenshot showed a saucer beside a pillar and the enemy counter
   dropped from E15 to E14 after fire was pressed, so a hit scored.
 
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Tested with the emulator set to NTSC: the title screen is drawn and the processor parks at `$DBE8` for good.
+
+### index.html
+
+- `test_sound.js` holds every write of every frame to the same code run on the whole listing.
+- Play The cassette's screen, recorded in VICE and drawn as the video chip draws it, with the count as it stood at each moment of the load, and the load played through the site's model of the sound chip: the 32,768 bytes in the order the tape brings them, each sounding until the next arrives, for as long as its bits take on the tape.

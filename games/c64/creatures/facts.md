@@ -313,3 +313,36 @@ All in VICE 3.9 through `kit/c64/vice.py`, from the snapshots named in
   of the scenes' frame loops, 2,452, and five whole frames with VICE's
   pictures of them (part `ending`, `test_end.js`, `test_end.json`).
 - A VICE reset from chamber 1 stopping at engine `memory_wipe`.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- A VICE reset in chamber 1 stopped at `$AF6A`.
+
+### graphics.html
+
+- The page runs the engine's own code for each scene, from the listings, on the kit's 6502 simulator (the `cr-clyde` block): `player_animate` chooses Clyde's frame, `player_fire` throws, charges and breathes the flame, `weapon_setup` gives each weapon its path and colour, `player_dead` plays his death, and `weapons_tablet`, `tablet_open` and `tablet_close` work the tablet.
+- `test_gallery.js` runs the engine's `animate_objects` and `object_colours` on a 6502 simulator beside the port for 3,000 frames of each script here and finds every frame and colour the same.
+- The cassette's own screen, recorded in VICE and drawn as the video chip draws it.
+
+### index.html
+
+- The page runs the game's own music player: its code and every tune's bytes, from the listings, on the kit's 6502 simulator, from the `cr-music` block, once a frame, through the site's model of the SID.
+- `test_music.js` calls the same code on the simulator directly and compares every write to the SID, frame by frame, for every tune: to its end, or for 20,000 frames where it repeats.
+- The page runs the engine's own sound effect code, its routines and tables from the listing, on the kit's 6502 simulator as the music is, once a frame.
+- `test_sfx.js` runs the same calls on the kit's 6502 simulator and compares every write to the SID, frame by frame.
+- The rest of the screen is two frames recorded in the emulator, before and after the weapons tablet opens, drawn line by line.
+- `test_shop.js` holds the page's message box against the emulator's, frame by frame, through the greeting before level 1.2, three clues bought and a fourth refused, and checks every byte against the listings.
+- `test_end.js` holds the run against the emulator's, all 2,452 passes of the scenes, and five frames against its pictures.
+- They match to the pixel, but for 4 pixels on the line where the village's cliff colours come in.
+
+### levels.html
+
+- Checked in the emulator: at the end of each stage's opening run the screen held the map's characters, all 960 of them, and in a run of each stage with the landscape kept scrolling to the end, every record was read with the screen where the map puts it: within a pixel once play had begun, and up to seven pixels behind during the opening run, when the landscape scrolls faster than the records are read.
+- The band colours were the map's at every record, and the 61 screens taken on the way held the map's characters (test_maps.js holds this page to those runs).
+- One frame of the chamber in play, drawn from memory by the site's renderer from what the emulator recorded; it matches the emulator's own picture of that frame to the pixel.
+- Drawn from memory as chamber 1 is, and the same to the pixel as the emulator's picture.
+- Drawn from memory as the others are, and the same to the pixel as the emulator's picture.

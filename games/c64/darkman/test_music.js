@@ -140,10 +140,11 @@ for (let n = 0; n <= 10; n++) {
   if (attr(row, 'data-frames') !== String(lengths[4 + n] || '')) fail('effect', n, 'lasts', lengths[4 + n], 'frames but the page says', row);
   if (attr(row, 'data-stray') !== strays[n]) fail('effect', n, 'writes outside the chip at', strays[n], 'but the page says', row);
 }
-const counts = (k) => { const m = new RegExp('data-count="' + k + '">([^<]*)<').exec(html); return m ? m[1] : null; };
-if (counts('tunes') !== comma(writesTunes)) fail('the page counts', counts('tunes'), 'tune writes, not', comma(writesTunes));
-if (counts('effects') !== comma(writesFx)) fail('the page counts', counts('effects'), 'effect writes, not', comma(writesFx));
-if (!html.includes('over ' + comma(FRAMES_TUNE) + ' frames of each tune') || !html.includes('over ' + comma(FRAMES_FX) + ' frames of each effect')) fail('the page does not give the frames compared');
+// the counts the check found are stated in facts.md, under "Checks behind the pages"
+const facts = fs.readFileSync(path.join(gameDir, 'facts.md'), 'utf8');
+for (const t of [comma(writesTunes) + ' writes to the sound chip over ' + comma(FRAMES_TUNE) + ' frames of each tune',
+                 comma(writesFx) + ' writes to the sound chip over ' + comma(FRAMES_FX) + ' frames of each effect'])
+  if (!facts.includes(t)) fail('facts.md does not say what the test measures:', t);
 
 // The page's player through sid.js's model: each tune and effect, started as the player starts it,
 // makes sound for the first two seconds and does not stop the driver with an error.

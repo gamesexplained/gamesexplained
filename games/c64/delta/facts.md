@@ -386,3 +386,40 @@ characters are found by reading the screen under each sprite (see Hits).
 | Ship placed on shop icon 5 with 2 credits | hit flag set |
 | Enemies shot in stage 1 | score up 5 per enemy (50 shown) |
 | Two-player game, deaths | turns alternated, lives kept per player |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- Stage 1 in an emulator: the score panel at the top, the first formation, and the seven weapon icons with the credit count along the bottom.
+- Rebuilt with the site's C64 renderer from a frame recorded in VICE: memory as the frame began and every write to the video chip and the sprite pointers, with the raster line it happened on.
+- Compared with VICE's own picture of the same frame, 0 pixels differ.
+
+### levels.html
+
+- The decoder was checked against all 32 banners read from the game; stage 2's banner was also brought up live in VICE.
+- Stage 2, ENTERING ROCKS OF DEATH, in an emulator.
+
+### mechanics.html
+
+- Checked against the game's code in the kit's 6502 simulator over 600 frames.
+- Checked against the game's code in the kit's 6502 simulator in 40 cases.
+- A port of `shop_try_buy` (`$2261`), checked against the game's code in the kit's 6502 simulator over all 280 combinations of icon, credits and shop state.
+- Icon 4 bought with 7 credits, and icon 5 touched with 2, were also tried live in VICE.
+
+### music.html
+
+- Every frame the page runs one pass of its main loop on the kit's 6502 simulator, music, joystick, flashing column, twinkle and scrolling message included, and draws the screen from the program's memory.
+- The buttons start each tune through `set_tune` at `$C357`, and every frame calls `music_play` at `$BDE4`, both executed by the kit's 6502 simulator over the bytes `$BC00`-`$CFFF` as the game loads them.
+- Both run on the kit's 6502 simulator over the bytes `$0400`-`$07FF`, plus the music's note table at `$C226`, which the effects read their pitches from.
+
+### waves.html
+
+- The attack waves of all 32 stages, played by the game's own code Every group of the 31 stages that match VICE (all but stage 29), each enemy drawn with its own sprite and colour, with the state the code keeps for it.
+- Delta's own code, the bytes on the Source code tab, was run in the kit's simulated C64 with nobody at the controls, and every enemy's position, sprite and state was written down once a frame from the start of the game (stages 1 to 32 less 29: 103,350 frames, about 34 minutes, 373 groups, 2,843 enemies).
+- Checked against VICE: each stage was also played in VICE from a snapshot with the same stand-ins, and every enemy's position, life and hit points matched the recording on every frame of every group, up to where the stand-in shots began, and leaving out enemies of a group the shots hit that are still exploding when the next group begins: 538,864 enemy-frames with no difference.
+- In the heaviest frames (56 times in these stages) the game's interrupts run past the main loop's once-a-frame call on a real C64, so VICE takes one sample fewer there while the enemies move on as usual; the kit's machine, which does not model the cycles the video chip takes from the processor, never runs late.
+- VICE's own play reached stages 14, 19, 20 and 25 with different game state, the random numbers the enemies use among it, so those were checked in VICE started from the recording machine's memory at a group's first frame.
+- Stage 29 is left out: even from the machine's own state, VICE drifts within one group, until an enemy enters a frame apart and in another slot.

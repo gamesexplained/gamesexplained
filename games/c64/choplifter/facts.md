@@ -484,3 +484,15 @@ shape and is dead code: no `20 68 8B` or `4C 68 8B` appears anywhere in
 | Forcing RUN/STOP | `$89` froze and `$D418` dropped to 0; a second press restored both |
 | Firing with `$59 = 0` | the new type-6 actor had `$0B77 = $FE` and its base row fell `$12, $10, $0C, $0A, $06, $04` |
 | Checkpoint on `$9B56` over 118 ticks of play | 0 hits; it runs once as the attract loop exits |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- The same moment out of the emulator, for comparison.
+
+### levels.html
+
+- The same end of the world in the emulator, with a shed and a tank on the ground.
