@@ -89,7 +89,11 @@ address links into the Source tab, and the house style in `kit/style.md`.
    with the site's library for the machine
    (`kit/skills/<platform>/steps`, "frame"). The comparison that counts
    the pixels that differ from the emulator's picture of the same frame
-   is the drawing's test: say in the caption how many differ and why. If the renderer lacks something the game does,
+   is the drawing's test, and its count goes in `facts.md`. The caption
+   says what the frame shows. Where the drawing differs from the game in
+   a way the reader would notice, it says what differs and why: a row the
+   game draws from the machine's ROM, a picture the game changes while the
+   screen is being drawn. If the renderer lacks something the game does,
    extend it in the site's library and in its test, so that the next game
    has it too.
 - **The player and the enemies.** What they are drawn with (character
@@ -122,8 +126,9 @@ address links into the Source tab, and the house style in `kit/style.md`.
    machine's own ROM plays for the game, from a queue the game fills, is
    recorded at the chip in the emulator. The platform's steps skill names
    the model and how its pages drive it (`kit/skills/<platform>/steps`,
-   "sound"). Say in the caption which it is and how it was checked
-   against the game. Say beside a sound below about 100 Hz that laptop
+   "sound"). Say in the caption what the reader hears: the game's own
+   tune, from its own driver. How it was checked against the game goes
+   in the test's header and `facts.md`. Say beside a sound below about 100 Hz that laptop
    and phone speakers barely play it: a reader who hears nothing reports
    it missing. Before believing such a report, render the writes through
    the model in node and measure the output.
@@ -268,8 +273,9 @@ its music or its maps can put that first instead.
   between waves passes any port (`60-verify`, "A test must contain cases
   that have to succeed"); or, for a routine that
   only computes, against the original code run in the kit's simulator
-  for the machine's processor on the snapshot's memory. Write node tests that do the comparison and say in
-  the caption how it was checked. A test that needs only the committed
+  for the machine's processor on the snapshot's memory. Write node tests that do the comparison, and say
+  in `facts.md` how it was checked; the caption says what the widget
+  shows, since the reader came for the game. A test that needs only the committed
   listing goes beside the page as `test_<what>.js`, where CI runs it, and
   takes the port from the page itself, so the two cannot drift apart:
   `kit/scripts/port_check.js` cuts the block out, runs it and gives the
@@ -292,8 +298,8 @@ its music or its maps can put that first instead.
   **Sweep the whole input space, not a few plausible values.** A port that
   is right on the game's own numbers can still be wrong at the edges of the
   arithmetic. Run the routine and the port over every boundary value of each
-  input register, plus a few hundred random ones, and say in the caption how
-  many cases there were. One port of a shift-and-add masked its accumulator
+  input register, plus a few hundred random ones, and record in `facts.md`
+  how many cases there were. One port of a shift-and-add masked its accumulator
   to 16 bits *before* taking the carry out of the top for the routine's
   final fold, so the carry was always zero: it agreed with the game on the
   page's own inputs and returned 29 where the routine returns 285. A sweep

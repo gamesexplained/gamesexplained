@@ -54,7 +54,12 @@ paragraph by paragraph, and a rewrite for a reader of fifteen.
   to a chamber. Once it is delivered, it gives him a power." but "... A
   delivered scroll gives the hero a power."
 - Do not describe the tooling or the process ("we pointed an AI at the
-  bytes"). The reader is here for the game.
+  bytes", "all 104,448 pixels match the emulator's picture", "checked
+  against the game's code on 6,400 cases"). The reader is here for the
+  game. A caption says what the reader is looking at or listening to;
+  how it was checked goes in its test and `facts.md`. When a widget
+  differs from the game in a way a reader would see or hear, say what
+  differs and why.
 
 ### Paragraphs
 

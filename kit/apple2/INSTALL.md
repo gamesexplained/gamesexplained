@@ -85,8 +85,8 @@ the switches, and `kit/apple2/test_frame.py` holds the site's drawing
 (`site/lib/apple2.js`) to it at every pixel, in eight modes and pages, with
 Node alone: on 19 October 2026 nothing differed. The hi-res colours are an
 approximation of what a TV shows. When a page's colours matter, compare
-them with a screenshot from MAME or AppleWin (below), and say in the page
-which was used.
+them with a screenshot from MAME or AppleWin (below), and say in
+`facts.md` which was used.
 
 **The Monitor's names and the 65C02.** `python3 kit/apple2/monitor.py
 --check` runs each Monitor routine the kit names, and makes the ROM go
