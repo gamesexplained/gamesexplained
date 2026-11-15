@@ -1,4 +1,4 @@
-## next · 2026-11-11 · Cuthbert in the Cooler (C16) · jankfoundry
+## 0.0.345 · 2026-11-11 · Cuthbert in the Cooler (C16) · jankfoundry
 
 - **A sample's error rate is an estimate, not a lower bound.** The kit
   said to report a sample's rate as a lower bound on the listing's,
