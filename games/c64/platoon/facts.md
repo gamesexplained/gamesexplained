@@ -43,3 +43,19 @@ and load4's sprite table `$0F16`-`$0F24`). At 15 in 60 the 95 % interval for the
   against the driver on `kit/cpu/cpu6502.js`: no difference.
 - 22 October 2026, load4: setting the program counter to `$28E2` from the jungle started the
   unused Space Invaders game, with its shields, rows and bombs (`reference/hidden-invaders.png`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Holding the five keys in the emulator changed `$2BC8` from `$EA` to `$60` (7 October 2026); N writes the `$EA` back.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE once the picture was in, and drawn as the video chip draws them.
+
+### music.html
+
+- `test_music.js` checks every tune: each write to the sound chip, over 3,000 frames, matches the game's own code.

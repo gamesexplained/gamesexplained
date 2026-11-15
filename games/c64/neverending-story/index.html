@@ -130,7 +130,7 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
   <p class="lede">The only sound in the game is the tune that plays over the opening, until a key is pressed. The player below runs the game's own music driver.</p>
   <div class="plate">
     <div id="nes-sid"></div>
-    <p class="cap" id="nes-sid-cap">The driver's code (<code>$9680-$9FEE</code>), its data (<code>$F000-$F768</code>) and its zero page run on the kit's 6502 simulator inside the page, called as the opening calls them: <code>MUSIC_STOP</code> and <code>MUSIC_INIT</code> once, then <code>MUSIC_PLAY</code> once a frame. <code>test_music.js</code> makes the same calls on the simulator directly and finds every SID write the same, in the same order.</p>
+    <p class="cap" id="nes-sid-cap">The driver's code (<code>$9680-$9FEE</code>), its data (<code>$F000-$F768</code>) and its zero page run inside the page, called as the opening calls them: <code>MUSIC_STOP</code> and <code>MUSIC_INIT</code> once, then <code>MUSIC_PLAY</code> once a frame.</p>
   </div>
   <p>The tune is three voices from three streams of notes and commands (<code>$F250</code>, <code>$F5F3</code> and <code>$F6BE</code>). Voice 1 has the melody, with a vibrato in four phases and a sweep of its pulse width; voices 2 and 3 play broken chords and a bass from short patterns that the stream calls again and again at different pitches (<code>$9BE4</code>, <code>$9E26</code>).</p>
   <p>Some of the tune is code. Stream command <code>$9C</code> calls a routine at an address inside the tune's own data (<code>$98DC</code>): the fade out near the end of each pass and the fade in at its start are two such routines (<code>$F406</code>, <code>$F400</code>), and two more flip a note of voice 1 and one of voice 2 between a rest and a pitch each time their phrase comes round, three times a pass (<code>$F495</code>, <code>$F553</code>). The tune therefore repeats exactly only every other pass. One pass is 11,328 frames, 3 minutes 46 seconds.</p>
@@ -144,7 +144,7 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
   <div class="plate">
     <div class="nes-bar"><label><input id="nes-split" type="checkbox" checked> Mark where the interrupt switches</label></div>
     <div class="nes-fwrap" id="nes-fwrap"><canvas id="nes-fcv" class="nes-cv" width="384" height="272" aria-label="The play screen in Part 2, drawn from memory"></canvas></div>
-    <p class="cap">Drawn by the page from one frame of Part 2's first room, recorded in the emulator after LOOK: memory as the frame began and the eight writes during it that change the picture, to <code>$D011</code>, <code>$D016</code>, <code>$D018</code> and <code>$D021</code>, with the line and cycle of each. The interrupt's other six writes only set the next line to stop at and acknowledge the interrupt. Drawn by the site's renderer, all 104,448 pixels are the same as the emulator's picture of that frame.</p>
+    <p class="cap">Drawn by the page from one frame of Part 2's first room after LOOK: memory as the frame began and the eight writes during it that change the picture, to <code>$D011</code>, <code>$D016</code>, <code>$D018</code> and <code>$D021</code>, with the line and cycle of each. The interrupt's other six writes only set the next line to stop at and acknowledge the interrupt.</p>
   </div>
   <p>The interrupt runs three times a frame (<code>$A7E0</code>, which picks its phase with a branch it rewrites). On line 49 it sets the background black and turns on the multicolour bitmap at <code>$E000</code> (<code>$A7E3</code>); on line 130 it sets the background grey and the text mode with the game's own character set at <code>$F800</code> (<code>$A80A</code>); on line 138 it only arms the next frame. The screen bytes at <code>$CC00</code> serve both: as colours for the bitmap above the switch and as characters below it.</p>
   <p>The band is built in layers. The backdrop, a sunset over the Ivory Tower, is copied back from a saved copy at <code>$BC00</code>; then come the icons of what Atreyu carries, at the right; then the picture of the room or the event, at the left (<code>RENDER_ROOM_GRAPHICS</code>, <code>$0570</code>).</p>
@@ -237,7 +237,7 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
       <canvas id="nes-ccv" class="nes-frame312" width="312" height="156" aria-label="The 312 lines of a frame, coloured by whether the test passes"></canvas>
       <div><p class="nes-big" id="nes-cbig"></p><p id="nes-ctext"></p></div>
     </div>
-    <p class="cap">The page's test is a port of <code>COND_RANDOM</code> (<code>$1222</code>); <code>test_chance.js</code> runs the game's routine for every number and every one of the 312 lines, 79,872 cases, and finds the same answer in each.</p>
+    <p class="cap">The page's test is a port of <code>COND_RANDOM</code> (<code>$1222</code>).</p>
   </div>
   <p>The test <code>$88 n</code> reads the raster register, <code>$D012</code>, and passes when n is at least the value it reads (<code>$0695</code>, <code>$1222</code>). The register holds the low eight bits of the line, and a PAL frame has 312 lines, so the values 0-55 come round twice a frame and the rest once. When the test can fall anywhere in the frame, a number n passes on n + 1 + min(n, 55) + 1 of the 312 lines: 102 for 50, a third, where 51 in 256, a fifth, is what the number suggests.</p>
   <p>At the sphinxes the game uses it twice. Each turn there, a test of 25 decides whether the sphinxes' eyes blink (52 lines of 312). Going south while the eyes are open, a test of 200 kills Atreyu on 257 lines; he survives only on the 55 lines whose low byte is 201-255, about one try in six, and then needs Auryn too. Going south on the turn the eyes have just blinked, with Auryn, always works.</p>
@@ -814,7 +814,7 @@ const NES_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"
       $('nes-pcap').innerHTML = `Record ${i} at <code>${hex(at)}</code>: row ${row}, column ${col}, ${h} rows of ${w} cells from <code>${hex(lo | hi << 8)}</code>, ${h * w * 10} bytes` +
         (i ? `, in Part ${partOfPic(i) + 1}` : ', in the engine') + '. ' +
         (rooms.length ? `The picture of room${rooms.length > 1 ? 's' : ''} ${rooms.length > 8 ? rooms.length + ' rooms' : rooms.join(', ')}.` : i === 49 ? 'No room has it as its picture, and no script shows it (<a href="discoveries.html#nes-unseen">Discoveries</a>).' : 'No room has it as its picture; a script shows it for an event.') +
-        ' Drawn by a port of <code>BLIT_ROOM_GRAPHIC</code>, which <code>test_pictures.js</code> holds to the game\'s routine on all 57 records, byte for byte.';
+        ' Drawn by a port of <code>BLIT_ROOM_GRAPHIC</code>.';
     }
     ['nes-pic', 'nes-back', 'nes-grid'].forEach((id) => $(id).addEventListener('change', drawPicture));
     // the icons, each drawn alone from its slot
@@ -883,7 +883,7 @@ const NES_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"
       $('nes-tbytes').innerHTML = words.join('');
       const len = q - start + 1;
       $('nes-tcap').innerHTML = `${len} bytes from <code>${hex(start)}</code>, ${ntok} of them words of the dictionary, for ${st.printed || 'the'} text above. ` +
-        `Printed by a port of the game's printer (<code>${k === 'room' ? 'PRINT_ROOM_TEXT' : k === 'event' ? 'PRINT_EVENT_TEXT' : 'PRINT_SENTENCE'}</code>), which <code>test_text.js</code> holds to the game's routines on every room, event and sentence of the three parts, screen and colour byte for byte; the screen shows the last 15 rows it printed.`;
+        `Printed by a port of the game's printer (<code>${k === 'room' ? 'PRINT_ROOM_TEXT' : k === 'event' ? 'PRINT_EVENT_TEXT' : 'PRINT_SENTENCE'}</code>); the screen shows the last 15 rows it printed.`;
     }
     tpart.addEventListener('change', fillTexts); tkind.addEventListener('change', fillTexts); tnum.addEventListener('change', drawText);
     fillTexts();
@@ -917,7 +917,7 @@ const NES_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"
         return `<li>Pair ${k}, ${esc(verbName(m0[rules + 2 * k]))} with ${esc(m0[rules + 2 * k + 1] === 0xFB ? 'any noun' : m0[rules + 2 * k + 1] === 0xFA ? 'no noun' : nounName(m0[rules + 2 * k + 1]))}, script at <code>${hex(p)}</code>:</li>` +
           nesProse(m0, 0, p).map((c) => `<li>${c.tests.length ? '<span class="nes-if">if ' + esc(c.tests.join(' and ')) + ':</span>' : ''}<span class="nes-do">${esc(c.acts.join(', '))}.</span></li>`).join('');
       }).join('');
-      $('nes-pcap2').innerHTML = 'Read by a port of <code>PARSE_INPUT</code>, <code>RESOLVE_VERB_NOUN</code> and <code>DISPATCH_COMMAND</code>, which <code>test_parser.js</code> holds to the game\'s routines on every word of the vocabulary and thousands of lines made from them.';
+      $('nes-pcap2').innerHTML = 'Read by a port of <code>PARSE_INPUT</code>, <code>RESOLVE_VERB_NOUN</code> and <code>DISPATCH_COMMAND</code>.';
     }
     $('nes-cmd').addEventListener('input', parse);
     parse();

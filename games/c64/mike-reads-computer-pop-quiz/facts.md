@@ -104,3 +104,40 @@ Seed 77133 drew 60 of the listing's 2,030 comments (31 of the title part, 14 of 
 - Joystick port 1 and SPACE drive player one's choices; port 2 did nothing for player one (13 November 2026).
 - The speech bubble drew the codes for "(" and ")" as quotation marks (13 November 2026, `work/shots/bt-*.png`).
 - Each question block loaded from the decoded files through Novaload's own entry and exit (`work/fastload.py`) and the game played on (13 November 2026).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The game's own `pick_question` (`$2C72`) run on the kit's 6502 over the listing, for block 1's Pop questions, 200 times from 200 seeds of the game's random generator, with the group sizes, masks and counters set as the block loader sets them (`$2AE8`-`$2B19`).
+- Built by the game's own build_question ($3416) and write_answer ($3C3A) on the kit's 6502, from each block as the game loads it.
+- In one game on the kit's model of the C64 it happened 8 times in 132 starts.
+- The Play tab's port found it: its lockstep with the game's code allows this one difference and no other.
+
+### graphics.html
+
+- Each face is drawn by the game's own routine, `draw_clock` at `$20DE`, run on the kit's 6502 over the listing's bytes, and then read out of the bitmap it drew.
+- Drawn by the game's own `draw_frame_tiles` (`$1265`) run on the kit's 6502 over the listing's bytes: it places the tiles listed at `frame_tiles` (`$11AC`, 54 entries) with `draw_tile` (`$13C9`), each tile 8 bytes at `$AF62` with its colour RAM from `$112C` and its screen colour from `$116B`.
+
+### index.html
+
+- Right, four answers and the clock (screenshots of the game in VICE).
+- The player runs the game's own music driver on the kit's 6502 over the listing's bytes, once a frame, as the raster interrupt calls it (`music_play`, `$4C03`, after `music_init` at `$4C00` with A = 0).
+- It was checked against the game's code run on the whole of its memory in the simulator: the same writes to the sound chip, in the same order, for 14,000 frames.
+- The effects code that every block loads at $4F00, run on the kit's 6502: fx_init ($5095), then fx_start ($4FCB) with the effect and voice the game's own calls load, then fx_frame ($4F00) once a frame.
+- The page runs the game's own build_question (from `$3416`) and the part of build_answers from `$3AF6` to `$3C02` on the kit's 6502, and shows what they write: the question at $B500 and the four answers at $1BBA.
+- `test_play.js` runs the port beside the game's code on the kit's model of the C64, for one player and for two, and compares the two memories and the chips at every step of the show. /* createDriver */ function createDriver(M, C64Cpu) { // Mike Read's Computer Pop Quiz's own sound code run on the kit's 6502 (C64Cpu, which sid.js hands to // createDriver).
+
+### questions.html
+
+- Built by running the game's own code on the kit's 6502: the question builder at `$3416` and the answer writer at `$3C3A`, once for every question number of each block, from a snapshot of the game with that block loaded.
+- Built by the game's own `build_round_question` ($262E) on the kit's 6502, for each item and clue, from each block's snapshot; the answer in bold, the three wrong answers the game offers beside it after it.
+
+### play.html
+
+- `test_play.js` runs the port beside the game's own code on the kit's model of the C64, from `$40E2`, where the cassette's loader hands over, with the same joysticks: through the menu, a block's four loads and the first steps of the show, for one player and for two.
+- Each stretch of the main program moves the clock on by the cycles the game's own code took there on the kit's machine, and the clock runs the raster interrupts on their lines, each with its own cost, and takes from the processor the cycles the video chip takes on its bad lines and for its sprites.
+- On 14 November 2026, given the same joystick and the same random seed, the page reached the show's first step 3,214 frames after the hand-over for one player and the kit's model of the C64 3,215.
+- The answers and the captions are rows of sprites, moved down the screen by the interrupts as the beam passes, so each of the interrupts' writes to the video chip, and to the sprites' shape pointers, is put at the line and cycle where the game's own handler makes it on the kit's model of the C64.

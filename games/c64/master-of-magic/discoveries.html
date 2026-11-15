@@ -100,7 +100,7 @@ ldx $03A7
 cmp $4DC7,x     <span class="c">; against the target's defence</span>
 bpl hit</div>
   <div class="plate"><div data-w="spells"></div>
-  <p class="cap">MAGIC MISSILE has power 20, FIREBALL and ENERGY DRAIN 60. Tested in the emulator: casting from six different random states gave the same result every time.</p></div>
+  <p class="cap">MAGIC MISSILE has power 20, FIREBALL and ENERGY DRAIN 60. Cast from six different random states, each gives the same result every time.</p></div>
   <p>So a spell either always hits a creature or always misses it. MAGIC MISSILE always hits everything but the first vampire and the minotaur, which it always misses; FIREBALL and ENERGY DRAIN miss only the minotaur. The cost in mind is paid before you pick a target, so choosing <code>-NOTHING-</code> still spends it. The Magical Shield takes 8 off every creature's roll and a point of mind every 100 passes, and while it is up the menu offers UNCAST instead of CAST, so no other spell can be cast.</p>
 </section>
 
@@ -139,7 +139,7 @@ bne $2B8C
   <h2 class="t">Bug: the monsters' homes are wiped, so they wander north</h2>
   <p class="lede">The instructions say most monsters patrol round their lair. The code gives every creature a home to walk back to when it is not hunting you, and the new-game routine wipes half of each address.</p>
   <div class="plate"><div data-w="creatures"></div>
-  <p class="cap">A port of the creature clock <code>$2205</code>, the decisions <code>$2308</code> and the move chooser <code>$2566</code>, checked pass by pass against the game running in the emulator.</p></div>
+  <p class="cap">A port of the creature clock <code>$2205</code>, the decisions <code>$2308</code> and the move chooser <code>$2566</code>.</p></div>
   <p>The home addresses live in two 31-byte tables at <code>$4CAE</code> and <code>$4CCD</code>. The set-up at <code>$0924</code> clears two flag tables next to them with a loop that runs for 64 entries, so the first store runs on through every home's high byte. A home of <code>$00ll</code> is a page-0 address above the top of the map, and an idle creature heads for it: first towards its start column, then due north, and then back and forth under the northernmost wall it can reach. The file was saved after the game had already run once, so the loaded homes are already wiped. Seven creatures ignore their homes and get a random destination every 50 passes. In the game, 53 seconds in, 17 of the 24 that do not wander were north of their starting row; the port above reaches the same 17 at the same moment.</p>
   <p>A creature that sees you re-arms a pursuit counter: bats give up at once, orcs after 6 decisions, skeletons 20, vampires 30, the wizard and the minotaur 60. Chasing, it walks to where it last saw you and carries straight on. Orcs, skeletons, vampires, the wizard and the minotaur open a shut door in their way and close it behind them; hellhounds, bats, spiders and snakes treat it as a wall. One snake is timid: it runs from you and never attacks.</p>
 </section>
@@ -150,7 +150,7 @@ bne $2B8C
   <p class="lede">After one pass of the title's story the game plays itself. It does it by replaying a recording of joystick input from <code>$A543</code>, with the random numbers reset to where they were when it was recorded.</p>
   <div class="plate"><div data-w="demo"></div>
   <p class="cap">The recording, one byte per run of identical input: the stick in the high four bits, the number of polls less one in the low four. <span data-demo-stats></span>. It ends with an idle stretch and the end mark the recorder writes when its buffer runs out.</p></div>
-  <p>CTRL with R on the title screen starts a recording. <code>$5BBA</code> saves the random state and starts a game in which every input is written over the demonstration, and F ends it. The next time the title's story runs out, the demonstration plays the new recording: in the emulator, a short walk recorded this way was replayed through the same cells to the same pixel.</p>
+  <p>CTRL with R on the title screen starts a recording. <code>$5BBA</code> saves the random state and starts a game in which every input is written over the demonstration, and F ends it. The next time the title's story runs out, the demonstration plays the new recording, through the same cells to the same pixel.</p>
   <p>The recording is also the best test there is of a port. The <a href="play.html">Play</a> tab runs the whole game in JavaScript; fed this recording poll by poll, it reproduces the real game's run through the demonstration, every one of its 2,371 world passes, byte for byte.</p>
 </section>
 

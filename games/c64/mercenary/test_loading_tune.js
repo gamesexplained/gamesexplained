@@ -114,7 +114,8 @@ check('the tune\'s length and the load\'s, in seconds', [(2674 * 19656 / 985248)
 
 check('the page says so', ['43 seconds into the tape', 'about three and a quarter minutes later', 'counts down the 205 blocks',
   'The tune lasts 53 seconds, at full volume', 'more than three and a half times', 'Elite\'s 1985 Commando cassette',
-  'from the second frame on', '464 bytes of Commodore\'s character ROM 901225-01'].filter((x) => !page.replace(/\s+/g, ' ').includes(x)).join(' | '), '');
+  '464 bytes of Commodore\'s character ROM 901225-01'].filter((x) => !page.replace(/\s+/g, ' ').includes(x)).join(' | '), '');
+check('facts.md says how the player was checked', g.read('facts.md').replace(/\s+/g, ' ').includes('from the second frame on'), true);
 
 console.log(bad ? bad + ' difference(s)' : "mercenary loading tune: the page's bytes are the cassette's, its calls 2 to 6100 sound as VICE recorded them, and its screen counts the blocks as the tape did");
 process.exit(bad ? 1 : 0);

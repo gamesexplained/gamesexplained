@@ -402,7 +402,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <div><img src="reference/intro-city-from-above.png" alt="The descent over the city"><p class="cap">The descent: the city's roads from above.</p></div>
       <div><img src="reference/intro-crash-imminent.png" alt="Crash imminent"><p class="cap">CRASH IMMINENT! Then manual control.</p></div>
     </div>
-    <p class="cap">From the emulator, about 75 seconds from the start of the game to standing at 08-08. The opening's messages were logged from the message window as they played.</p>
+    <p class="cap">About 75 seconds from the start of the game to standing at 08-08.</p>
   </div>
   <p>The opening is written in the same byte code as the rest of the game's events, at <code>$7001</code>, and it lives in memory that the second bitmap overwrites once play begins: after the opening it is gone. Its starfield speeds up (−32 a frame, then × 4.05 once, then × 1.012 a frame) and slows down again, and the planet grows as a disc of radius 1024 over the distance, from 1023 to 0 (<code>$74CA</code>). The descent starts at height <code>$7F0088</code>, looking straight down. Script 0 then takes over: CRASH IMMINENT!, one of four landing remarks picked at random ("WHERE AM I", "YOU CRASHED", "GOOD LANDING!", "OUCH!"), the status report ("CRASH LANDED ON TARG", "STATE OF WAR BETWEEN PALYARS AND MECHANOIDS") and the offer of the Dominion Dart for 5000.</p>
   <p>The first message on the original disk is NOVADRIVE COUNTDOWN. The copy this page was made from reads ABC UNLIMITED in its place, the cracking group's name, typed over the same bytes at <code>$7009</code>: it is the only change to the game's text.</p>
@@ -528,10 +528,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
         <div class="npc-where" id="npc-where"></div>
       </div>
     </div>
-    <p class="cap">The ship's step (<code>$85C5</code>): one surface pass adds 256 to its Y, 1/256 of a square southward, and the square number is ANDed with 15, so after row 15 comes row 0. A lap is 4,096 passes. How long that takes depends on how long each pass takes to draw, which depends on where you are: the frames a pass are the game's own, measured in the simulator over a whole lap from each place. Underground the step does not run, and the ship waits.</p>
+    <p class="cap">The ship's step (<code>$85C5</code>): one surface pass adds 256 to its Y, 1/256 of a square southward, and the square number is ANDed with 15, so after row 15 comes row 0. A lap is 4,096 passes. How long that takes depends on how long each pass takes to draw, which depends on where you are: the frames a pass are the game's own, averaged over a whole lap from each place. Underground the step does not run, and the ship waits.</p>
   </div>
   <div class="lift-grid npc-shots">
-    <figure><img src="reference/npc-brother-in-law-ship-beside.png" alt="The brother-in-law's ship seen from the side, a white wedge just above the horizon" width="384" height="264"><figcaption class="cap">The ship from 2,600 units west of it and 1,200 behind, from a Dart hovering just above its height. The game's code drew this frame in the simulator.</figcaption></figure>
+    <figure><img src="reference/npc-brother-in-law-ship-beside.png" alt="The brother-in-law's ship seen from the side, a white wedge just above the horizon" width="384" height="264"><figcaption class="cap">The ship from 2,600 units west of it and 1,200 behind, from a Dart hovering just above its height. The game's own code drew this frame.</figcaption></figure>
     <figure><img src="reference/npc-brother-in-law-ship-from-0808.png" alt="The view west from the landing site: the wreck's strut, and one pixel above the horizon in the middle" width="384" height="264"><figcaption class="cap">From the landing site, turned to face it: the single pixel above the horizon in the middle of the view is the ship, 530,623 units away over 00-09. The white wedge at the left is part of the wreck you stand in.</figcaption></figure>
   </div>
   <p>The ship is object 0, with the Dart's model (<code>$3B25</code>). Its X is always <code>$006F41</code>, 4,287 units west of column 00's centre line, and its height is always 32,769 units, which the panel would show as ALT 00500. Only the Y moves. When you land it is over 00-09.</p>
@@ -555,7 +555,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Hire the interstellar ship (the radio in room <code>$10</code>, which works with the Antenna, and a million credits) and Benson tells you it will be there in 2 MINS. The next pass puts object 7 over 08-08 at a height of 8,323,072 units, nearly twice the Colony Craft's, and each pass after that takes a 128th of the height's top two bytes off, and one more (<code>$863B</code>).</p>
   <div class="plate">
     <svg id="npc-hire" class="npc-chart" viewBox="0 0 680 240" role="img" aria-label="The hired ship's height, pass by pass, from 8,323,072 units down to the ground"></svg>
-    <p class="cap">The height pass by pass, from the step's own arithmetic; the simulator gives the same heights to the unit. It passes the Colony Craft's height after 86 passes and is down after 779. Standing at the landing site that took 7,893 frames, 2 minutes 38 seconds; in a room underground, where the step goes on, 1 minute 29. It lands 4,352 units east and 768 south of the wreck.</p>
+    <p class="cap">The height pass by pass, from the step's own arithmetic. It passes the Colony Craft's height after 86 passes and is down after 779. Standing at the landing site that took 7,893 frames, 2 minutes 38 seconds; in a room underground, where the step goes on, 1 minute 29. It lands 4,352 units east and 768 south of the wreck.</p>
   </div>
 
   <h3>Three Darts that never fly</h3>
@@ -573,7 +573,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <tr><td>15</td><td>Hexapod</td><td>the attack ship</td></tr>
     </tbody>
   </table>
-  <p>One of the three Darts can still turn up. CTRL+Q puts the craft you are in down in a random square of the city (<code>$85F5</code>), and it takes the craft's number from your mode, <code>$A9</code>, which is 9 while you are falling. Press CTRL+Q while you fall, after a hit or off the Colony Craft's deck, and object 9 appears on the ground somewhere in the city. It is a Dart you cannot board, since B takes only objects 0 to 7, and it never moves. In the simulator, from a fall, it landed at 12-15.</p>
+  <p>One of the three Darts can still turn up. CTRL+Q puts the craft you are in down in a random square of the city (<code>$85F5</code>), and it takes the craft's number from your mode, <code>$A9</code>, which is 9 while you are falling. Press CTRL+Q while you fall, after a hit or off the Colony Craft's deck, and object 9 appears on the ground somewhere in the city. It is a Dart you cannot board, since B takes only objects 0 to 7, and it never moves. From a fall, it lands at 12-15.</p>
 </section>
 
 <section id="blind">
@@ -587,9 +587,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" id="blind-run">Fire</button></div>
     <div class="blind-row"><div class="blind-sign"><img id="blind-img" src="reference/sign-commodore-1304.png" alt="The view at this pass"><p class="cap" id="blind-shot"></p></div>
       <table class="blind-tbl"><thead><tr><th>Pass</th><th><code>$F4</code></th><th><code>$B7</code> = <code>$F5</code>?</th><th>What runs</th></tr></thead><tbody id="blind-rows"></tbody></table></div>
-    <p class="cap" id="blind-cap">The hit and the sixteen passes after it (<code>$871B</code>, <code>$879B</code>), for a missile that reaches 13-04's Commodore sign. The table follows the code's tests pass by pass; the pictures are the emulator's, from the two live runs: the shot from inside the square, and the shot from next door.</p>
+    <p class="cap" id="blind-cap">The hit and the sixteen passes after it (<code>$871B</code>, <code>$879B</code>), for a missile that reaches 13-04's Commodore sign. The table follows the code's tests pass by pass; the pictures are the game's, from two shots: one from inside the square, and one from next door.</p>
   </div>
-  <p>When a missile gets within 4096 units of a square's centre below height 2048, <code>$871B</code> marks the square destroyed in <code>$2B00</code> at once and starts a countdown of 16 passes in <code>$F4</code> for square <code>$F5</code>. Everything else waits for the countdown: sinking the building, adding it to the count of Palyar or Mechanoid sites, and starting its script, which names it and sends the owner's ship after you. The routine that does all that returns straight away unless you are standing in that square (<code>$87A4</code>), so flying into it before the countdown ends still gets it counted. Otherwise the countdown runs out anyway, and a later hit finds the square already destroyed and does nothing (<code>$87C1</code>). In the emulator, a missile fired east from 12-04, 1024 units up, destroyed 13-04's sign: <code>$2B4D</code> went from <code>$51</code> to <code>$D1</code>, the Mechanoid count stayed 0, and Benson said nothing, then or later.</p>
+  <p>When a missile gets within 4096 units of a square's centre below height 2048, <code>$871B</code> marks the square destroyed in <code>$2B00</code> at once and starts a countdown of 16 passes in <code>$F4</code> for square <code>$F5</code>. Everything else waits for the countdown: sinking the building, adding it to the count of Palyar or Mechanoid sites, and starting its script, which names it and sends the owner's ship after you. The routine that does all that returns straight away unless you are standing in that square (<code>$87A4</code>), so flying into it before the countdown ends still gets it counted. Otherwise the countdown runs out anyway, and a later hit finds the square already destroyed and does nothing (<code>$87C1</code>). A missile fired east from 12-04, 1024 units up, destroys 13-04's sign: <code>$2B4D</code> goes from <code>$51</code> to <code>$D1</code>, the Mechanoid count stays 0, and Benson says nothing, then or later.</p>
   <p>Firing from the ground does not work: level flight still points the nose down by a sine of −0.003, so a missile launched 63 units up hits the ground within five passes, before it reaches the next square's centre. From a little higher it does.</p>
 </section>
 
@@ -630,7 +630,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <div class="bv-scopewrap"><canvas id="bv-scope" class="bv-scope" role="img" aria-label="The square wave voice 3 plays during one frame"></canvas><p class="bv-scopecap" id="bv-scopecap"></p></div>
     </div>
     <div class="benson-ctl"><label class="benson-field">Window colour <select id="benson-colour"></select></label></div>
-    <p class="cap">The window and its frame are rows 21-23 of the screen matrix at <code>$5C00</code>, drawn with the character set at <code>$7800</code> in the colours the code sets: ink from <code>$BBC2</code>, paper from <code>$BA3D</code>. The player is a port of the printer <code>$8DC3</code>. A test runs the game's own code in a 6502 simulator beside it and gets the same window, tick and state on every frame of all 219 messages; the finished "DO YOU WANT TO BUY?" matches the play snapshot byte for byte and the reference screenshot pixel for pixel. The sound is the site's model of the SID playing the printer's writes to <code>$D40F</code>, one a frame, and the window, the roll and the registers follow it. Typed text goes to the same port as a literal, as a script's print would feed it: letters, digits, spaces and <code>* + , - . / ? ! '</code> only, since the game's character set has nothing else.</p>
+    <p class="cap">The window and its frame are rows 21-23 of the screen matrix at <code>$5C00</code>, drawn with the character set at <code>$7800</code> in the colours the code sets: ink from <code>$BBC2</code>, paper from <code>$BA3D</code>. The player is a port of the printer <code>$8DC3</code>. The sound is the site's model of the SID playing the printer's writes to <code>$D40F</code>, one a frame, and the window, the roll and the registers follow it. Typed text goes to the same port as a literal, as a script's print would feed it: letters, digits, spaces and <code>* + , - . / ? ! '</code> only, since the game's character set has nothing else.</p>
     <p class="benson-need" hidden></p>
   </div>
   <p>Each character moves the window one cell left and enters at the right. After 25 characters the printer stops for 99 frames, so a line lasts 124 frames, about 2.5 seconds, and the next line pushes it out. The window is 23 cells wide, so the first two characters of every line scroll off before the pause: the author pads each line with blanks to centre it.</p>
@@ -659,7 +659,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The game has no music. Its sound effects are thirteen entries of four bytes in one table, each started on voice 1 or voice 2 by the same routine; only the doors' hum and Benson's tick come from elsewhere. The lift and the engine rewrite a register while they play.</p>
   <div class="plate">
     <div id="snd-player"></div>
-    <p class="cap">Each button plays the game's own register writes, frame by frame, through the site's model of the SID: the four bytes from the table at <code>$B987</code>, then whatever the game writes while the sound runs (the lift's pitch every frame, the wipes' two blocks, the opening's gate). The bytes are read from listing.json. A test runs the game's code in the kit's 6502 simulator and gets the same registers and the same gate changes on every frame, for every button. Voice 3 is Benson's (section 07) and stays silent here.</p>
+    <p class="cap">Each button plays the game's own register writes, frame by frame, through the site's model of the SID: the four bytes from the table at <code>$B987</code>, then whatever the game writes while the sound runs (the lift's pitch every frame, the wipes' two blocks, the opening's gate). The bytes are read from listing.json. Voice 3 is Benson's (section 07) and stays silent here.</p>
     <p class="snd-need" hidden></p>
   </div>
   <p><code>$B958</code> (voice 1) and <code>$B93A</code> (voice 2) share a tail at <code>$B961</code> that closes the voice's gate, then writes the frequency's high byte, the attack and decay, the sustain and release, and the control byte, which opens the gate again with a pulse or noise wave. The frequency's low byte is <code>$80</code> and the pulse width <code>$800</code>, as <code>$B910</code> sets them from <code>$B921</code>, so every pulse is square; only the doors' hum changes the low byte, until <code>$B910</code> runs again. Whatever the voice was playing is cut off.</p>
@@ -688,7 +688,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <canvas id="eng-chart" class="eng-chart" role="img" aria-label="The engine's sustain level at every speed, reversing on the left and forward on the right; the current speed is marked"></canvas>
     <div class="eng-regs" id="eng-regs" aria-live="polite"></div>
-    <p class="cap">The slider sets the speed as the game holds it, a two-byte float: <code>$27</code>, the exponent with the sign in bit 0, and <code>$26</code>, the mantissa. The page computes the engine's two registers the way <code>$B5D8</code> does, and a test that runs the game's own code in the simulator on every value of the two bytes, from eight different last levels, gets the same writes. The bars are the sustain level at each speed; the red band is the one where reversing is silent.</p>
+    <p class="cap">The slider sets the speed as the game holds it, a two-byte float: <code>$27</code>, the exponent with the sign in bit 0, and <code>$26</code>, the mantissa. The page computes the engine's two registers the way <code>$B5D8</code> does. The bars are the sustain level at each speed; the red band is the one where reversing is silent.</p>
     <p class="snd-need" hidden></p>
   </div>
   <p>On the surface, and not during the opening's descent, the panel's routine sets the engine note once a pass (<code>$B5D8</code>-<code>$B61C</code>). Voice 2 plays noise. The sustain level is the speed's power of two less 3, and at least 1, so from 32 units a pass the engine gets one step louder each time the speed doubles. The frequency's high byte takes the level in its top four bits and the top four bits of the speed's mantissa below them: the pitch climbs in 16 steps through each doubling and then jumps. When the level rises the game starts sound <code>$24</code> again, since the SID's envelope only falls to a new sustain level by itself. When the level falls, a write to <code>$D40D</code> is enough.</p>
@@ -702,7 +702,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <canvas class="me-l-cv" id="me-l-cv" width="384" height="272" role="img" aria-label="LOADING: BLOCKS TO GO with the count, MERCENARY in big letters of yellow, black and grey triangles, ESCAPE FROM TARG BY PAUL WOAKES in a black box, and COPYRIGHT(C) 1985 NOVAGEN SOFTWARE LTD, on black with a red border"></canvas>
     <div id="me-load"></div>
-    <p class="cap">The cassette's screen, recorded in VICE and drawn as the video chip draws it, with the count of blocks as it stood at that moment of the tune. The player runs the cassette's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette does: after each of the tune's first 6,100 frames, two minutes of it, the sound chip's registers are those the cassette set in VICE, from the second frame on. The screen is built from the C64's own character set in ROM, and the page carries only the characters it shows and the ten digits, 464 bytes of Commodore's character ROM 901225-01, from its upper-case set at offsets <code>$0008</code>-<code>$0507</code>.</p>
+    <p class="cap">The cassette's screen, drawn as the video chip draws it, with the count of blocks as it stood at that moment of the tune. The player runs the cassette's own code and notes, as the cassette leaves them in memory, once a frame as the cassette does. The screen is built from the C64's own character set in ROM, and the page carries only the characters it shows and the ten digits, 464 bytes of Commodore's character ROM 901225-01, from its upper-case set at offsets <code>$0008</code>-<code>$0507</code>.</p>
   </div>
   <p>The tune lasts 53 seconds, at full volume from start to end, and then starts again, so the load hears it more than three and a half times. Voice 1 plays its notes with the pulse and triangle waves, voice 2 with the triangle and sawtooth, and voice 3 with the triangle, and none of them goes through the filter.</p>
   <p>The code that plays it, the loader's interrupt from <code>$E114</code>, is the same as on Elite's 1985 Commando cassette, which uses the same loader, Novaload. The list it plays, notes and register settings read a byte at a time from <code>$EF80</code>, is Mercenary's own.</p>
@@ -715,7 +715,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="frame-wrap"><canvas id="frame-cv" width="768" height="544"></canvas></div>
     <div class="frame-ctl"><button id="frame-back" type="button" aria-pressed="false">Show the other bitmap</button><span id="frame-state" class="frame-state"></span></div>
-    <p class="cap" id="frame-cap">One frame of the opening descent, high over the city, drawn by the site's C64 renderer from the memory and video-chip writes recorded in the emulator: all 104,448 pixels match the emulator's own picture of that frame. The button points the view at the other bitmap, which is half drawn.</p>
+    <p class="cap" id="frame-cap">One frame of the opening descent, high over the city, drawn by the site's C64 renderer from the game's memory and video-chip writes. The button points the view at the other bitmap, which is half drawn.</p>
   </div>
   <p>Above the panel the screen is in multicolour bitmap mode: each byte holds four pixels of two bits, and each pixel is twice as wide as it is tall. Two bitmaps sit in the video chip's second bank, at <code>$4000</code> and <code>$6000</code>. On every pass the main loop swaps them (<code>$AF84</code>): the counter <code>$24</code> picks which one the game draws into (<code>$25</code>), and <code>$C7</code> holds the value the view's raster interrupt writes into <code>$D018</code> to show the other. At line 186 a second interrupt switches the screen to text for the panel (<code>$BA1E</code>).</p>
   <p>Seen from above the whole city, a view takes 13 frames to draw, so the picture changes about four times a second. On the ground, with one building to draw, the main loop runs five passes a second.</p>
@@ -779,7 +779,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <h3 class="benson-h3">What the rooms pay</h3>
     <div class="benson-tw"><table class="benson-t benson-sales" id="benson-sales"></table></div>
     <p class="benson-salenote" id="benson-salenote" aria-live="polite"></p>
-    <p class="cap">The addition is a port of operation 14 (<code>$8C73</code>): four decimal-mode additions from the least significant byte up, the carry out of the top byte dropped. It gives the same bytes as the game's code in a 6502 simulator on 10,000 random purchases and on the live test, 9000 + 99995000 = 4000. The prices are read from the sale rooms' scripts; a price in the table adds to the credits as operation 21 does at <code>$1041</code>.</p>
+    <p class="cap">The addition is a port of operation 14 (<code>$8C73</code>): four decimal-mode additions from the least significant byte up, the carry out of the top byte dropped. In play, 9000 + 99995000 = 4000. The prices are read from the sale rooms' scripts; a price in the table adds to the credits as operation 21 does at <code>$1041</code>.</p>
     <p class="benson-need" hidden></p>
   </div>
   <p>Credits start at 9000 (<code>$710C</code>). The Dart's script adds 99995000 (<code>$0A29</code>), which is 5000 short of 100000000; the carry out of the top digit is thrown away, leaving 4000. The Hertz ship costs 999,999 (99000001 at <code>$0E90</code>), but the check before it (<code>$0E6F</code>) only asks whether the top byte is above zero, so it wants 1,000,000.</p>
@@ -824,7 +824,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       </div>
       <pre class="math-asm" id="math-asm" aria-label="The routine that drew the last line"></pre>
     </div>
-    <p class="cap">The view's 160 × 136 pixels, each twice as wide as it is tall, over a sky and ground in the surface's colours from <code>$B27D</code>. Drag to draw; the end may leave the view. Each end is a whole pixel whose offset from the centre becomes a float; from there the port does what <code>$9A94</code>–<code>$9D95</code> do (the slope by logarithms, the octant through <code>$BBD0</code>, the routine through <code>$BC38</code>/<code>$BC40</code>, the corner from <code>$BBD8</code>/<code>$BBE0</code> for an end off the view) and runs the routine. <b>Checked:</b> every byte of the bitmap, and the slope, octant and end, match the game's code run in a 6502 simulator for 3,000 random drags and every row and column of the view, in both forms, and 6,000 direct calls of the eight routines.</p>
+    <p class="cap">The view's 160 × 136 pixels, each twice as wide as it is tall, over a sky and ground in the surface's colours from <code>$B27D</code>. Drag to draw; the end may leave the view. Each end is a whole pixel whose offset from the centre becomes a float; from there the port does what <code>$9A94</code>–<code>$9D95</code> do (the slope by logarithms, the octant through <code>$BBD0</code>, the routine through <code>$BC38</code>/<code>$BC40</code>, the corner from <code>$BBD8</code>/<code>$BBE0</code> for an end off the view) and runs the routine.</p>
   </div>
 </section>
 
@@ -857,7 +857,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="odd">
   <p class="fig">16 · Odds and ends</p>
   <h2 class="t">Things a pilot would not know</h2>
-  <p class="lede">Small things found in the code and checked in the emulator.</p>
+  <p class="lede">Small things found in the code.</p>
   <div class="plate">
     <canvas id="odd-dos" width="640" height="64"></canvas>
     <p class="cap" id="odd-dos-cap">The bytes at <code>$BCB8</code>-<code>$BCFF</code>, drawn with the game's own panel font (the Atari's space, <code>$00</code>, left blank): a piece of Atari DOS 2's menu, in 40-column lines with the Atari's two-column left margin. Nothing reads them.</p>
@@ -4220,7 +4220,7 @@ function engineStep(ex, m, old, tbl24) {
     const LO = 1000, HI = 1e6;
     const yOf = d => T + (Hh - T - B) * (1 - (Math.log10(Math.max(LO, Math.min(HI, d))) - 3) / 3);
     const CAPS = {
-      still: 'The Dart on the ground at 01-01, the attack starting 461,049 units away on X and Y, as the game ran it in the simulator. Each dot is an aim, 46 passes apart: 201,700, then 88,285, 38,584 and 16,893 units, 0.44 of the one before. The fifth leg ends inside 12,288 units on every axis, so the ship stays there and its missile leaves; 14 passes later it hits, 2,628 frames (52 seconds) after the attack began. The dips are the ship flying past you.',
+      still: 'The Dart on the ground at 01-01, the attack starting 461,049 units away on X and Y, as the game runs it. Each dot is an aim, 46 passes apart: 201,700, then 88,285, 38,584 and 16,893 units, 0.44 of the one before. The fifth leg ends inside 12,288 units on every axis, so the ship stays there and its missile leaves; 14 passes later it hits, 2,628 frames (52 seconds) after the attack began. The dips are the ship flying past you.',
       flying: 'The Dart cruising out of the city at about 4,465 units a pass. The aims settle, and from pass 599 on the ship holds 142,851 units behind on X, matching your speed, and never fires.',
     };
     function draw(key) {

@@ -74,7 +74,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <tr><td>18</td><td>17.3</td><td>12</td><td>27</td></tr>
 <tr><td>25</td><td>13.6</td><td>7</td><td>22</td></tr>
 </tbody></table>
-<p class="cap">The game's own <code>pick_question</code> (<code>$2C72</code>) run on the kit's 6502 over the listing, for block 1's Pop questions, 200 times from 200 seeds of the game's random generator, with the group sizes, masks and counters set as the block loader sets them (<code>$2AE8</code>-<code>$2B19</code>).</p></div>
+<p class="cap">The game's own <code>pick_question</code> (<code>$2C72</code>) run over the listing, for block 1's Pop questions, 200 times from 200 seeds of the game's random generator, with the group sizes, masks and counters set as the block loader sets them (<code>$2AE8</code>-<code>$2B19</code>).</p></div>
 <p><code>pick_question</code> draws a random question of the subject and, if its bit in <code>asked_questions</code> (<code>$1DC1</code>) is set, draws again. To stop it from looking for ever once every question is used, it counts down <code>subject_left</code> (<code>$0F09</code>), set to the subject's size when a block loads, and stops checking the bits when it reaches 0. But it counts every draw (<code>$2C96</code>), the rejected ones too, so the count reaches 0 after 43 draws, not after 43 different questions. From then on any question can come up, asked or not.</p>
 <p>The second row onwards comes from a second slip: nothing ever clears <code>asked_questions</code>. When the next block loads, the counters start again but the bits stay set, so the picker treats the new block's questions as asked wherever their numbers were asked in the last block, spends its draws rejecting them, and reaches 0 sooner.</p>
 </section>
@@ -102,7 +102,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <tr><td>4</td><td>Who were making “Mind Blowing Decisions” in '78?</td><td>Heatwave</td><td>1 question</td></tr>
 <tr><td>5</td><td>Who had a hit with “My Life” in '78?</td><td>Billy Joel</td><td>3 questions</td></tr>
 </tbody></table>
-<p class="cap">Built by the game's own <code data-part="title">build_question</code> (<code data-part="title">$3416</code>) and <code data-part="title">write_answer</code> (<code data-part="title">$3C3A</code>) on the kit's 6502, from each block as the game loads it. The header's last byte, <code>$B80A</code>, is 255 in all five blocks.</p></div>
+<p class="cap">Built by the game's own <code data-part="title">build_question</code> (<code data-part="title">$3416</code>) and <code data-part="title">write_answer</code> (<code data-part="title">$3C3A</code>), from each block as the game loads it. The header's last byte, <code>$B80A</code>, is 255 in all five blocks.</p></div>
 <p>The question picker adds a random number below a subject's size to the subject's first question (<code data-part="title">$2C88</code>), and Mystery, the last subject, runs from 213 up to, but not including, 255. The record is not wasted: its answer is borrowed as a wrong answer by other questions, so Neil Diamond turns up on the answer list without ever being the question. The question builder on the <a href="index.html#question">How it works</a> tab shows block 1's question 255 built.</p>
 </section>
 
@@ -119,7 +119,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="race" data-part="quiz"><p class="fig">08 · Quirk</p><h2 class="t">Starting a sound effect races the interrupt that plays it</h2>
-<p>The main program starts an effect with <code data-part="quiz">fx_start</code> (<code data-part="quiz">$4FCB</code>), which fills the voice tables at <code data-part="quiz">$50B5</code>-<code data-part="quiz">$50E1</code> and sets the filter. The raster interrupt plays the effect a frame at a time from the same tables, and <code data-part="quiz">fx_start</code> does not switch interrupts off while it writes them. When the interrupt falls in the middle, it plays the tables half written, and the SID's filter cutoff and volume registers (<code>$D416</code>, <code>$D418</code>) are left with other values than a whole start would leave. In one game on the kit's model of the C64 it happened 8 times in 132 starts. The <a href="play.html">Play</a> tab's port found it: its lockstep with the game's code allows this one difference and no other.</p>
+<p>The main program starts an effect with <code data-part="quiz">fx_start</code> (<code data-part="quiz">$4FCB</code>), which fills the voice tables at <code data-part="quiz">$50B5</code>-<code data-part="quiz">$50E1</code> and sets the filter. The raster interrupt plays the effect a frame at a time from the same tables, and <code data-part="quiz">fx_start</code> does not switch interrupts off while it writes them. When the interrupt falls in the middle, it plays the tables half written, and the SID's filter cutoff and volume registers (<code>$D416</code>, <code>$D418</code>) are left with other values than a whole start would leave. In one game it happened 8 times in 132 starts.</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>

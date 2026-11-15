@@ -183,3 +183,37 @@ text at `$46C1`-`$475B`. Each land's file has its own quotas at `$916F`
 and `$9185`, the stage card's name at `$913C`-`$913F`, the next land's
 "LOADING :" line at `$9151`, and Theo's speech at `$974C`, hyphenated
 into syllables.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The port was run beside the game's code in a 6502 simulator, with the keyboard answered from the keys held, over 400 runs of 600 frames: sequences typed with wrong keys, keys held for several frames and two keys at once.
+- In the emulator, the 25th key wrote the `RTS` and a stage whose clock ran out then left the lives at 03, where the same stage without the cheat lost one; the first 24 keys were set from the code there rather than typed.
+- Run beside the game's code in a 6502 simulator, from every pair of digits with the tens 0 to 10 and the units 0 to 9 and from the game-over value, both ports left the same digits as the game: 224 cases.
+- The protection screen, a screenshot from the emulator.
+- Run beside the game's code in a 6502 simulator on the play snapshot, the port left the same score and lives, and gave the same extra lives, in 27,648 cases: 432 scores (every digit at 0, 8 and 9, all nines, and 400 at random, weighted to 9) with each of the 16 awards and four multipliers.
+
+### index.html
+
+- One frame of Jellyland, recorded in VICE with every write to the video chip and the sprite pointers during the frame, drawn line by line with the state in force when the beam got there: at column 1, where it was recorded, 104,448 of 104,448 pixels match the emulator's own picture.
+- Each screen below is one frame recorded in the emulator: memory as the frame began and every write to the video chip during it, drawn again here.
+- Checked two ways: the port prints the six strings the recorded stage card and loading screen show into the same cells the game did (480 screen cells, all equal); and it agrees with `$B817` itself, run in a 6502 simulator, on every character from `$20` to `$5F` alone, every pair of them, and 2,000 random strings, 6,160 strings in all.
+- Run beside the game's code in a 6502 simulator, on the snapshot of the part that holds each tune and started the way the game starts it, the port made the same writes to the SID, in the same order, in every frame of all 24 tunes from the first frame to the driver's end command and past it: 8 057 196 frames.
+- The order of the columns, repeats included, is the order the game's own scroller produced them when it was run in a 6502 simulator from each land's starting point to the end of the map and back to its first column: the same in every column of all five lands.
+- Run beside the game's own code in a 6502 simulator for 6,000 frames, more than three whole cycles, the port kept the same counters and copied the same images on the same frames.
+- Checked against the intro itself, run whole in a 6502 simulator on the intro's snapshot with a model of the raster's timing: at 11,493 frames of the roll call (all but the 18 whose interrupt finds a page half set up) the screen, colour memory, character set, sprite registers and colours agree with the port.
+- Drawn, the Megasaurus page with its names in matches the emulator's screenshot intro-megasaurus-sad.png in all but 76 of 64,000 pixels, one raster line at the foot of the name's colour bars.
+- Four of the pages at full brightness match the emulator's screenshots (Steve Rowlands, Ollie Alderton, Tracy Matheussen, John Twiddy) in every one of their 64,000 pixels.
+- Checked against the intro run in the simulator, frame by frame: screen, colour memory, both sprite sets and the registers of each half agree in all 954 frames; the drawings at frames 216 and 640 match intro-mayhem-tv.png and intro-apex.png in every pixel.
+- One frame of Jellyland, recorded in the emulator with every write to the video chip, its bank and the sprite pointers, and memory as the frame began; drawn here by the site's renderer.
+- It matches the emulator's picture of the same frame in all 104,448 pixels.
+- One frame of the title, recorded and drawn as the play frame is: 11 of its 104,448 pixels differ from the emulator's picture, all on line 202.
+- The recording keeps memory as the frame began, and two of the card's handlers scroll characters on screen before the beam reaches them; drawn from that memory, 860 pixels differ from the emulator's picture.
+- It matches the emulator's picture in all 104,448 pixels.
+
+### levels.html
+
+- Checked against the game: that order is the one the engine's own scroller gives, run in a 6502 simulator from the land's start to both ends of the map, and the 40 × 24 window each land's play snapshot shows matches its screen and colour memory cell for cell.
