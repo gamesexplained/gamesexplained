@@ -21,7 +21,7 @@ The player directory at resident `$1C48` contains 84 indices pointing to 79 dist
 | Third | `$3C27` | 8 | `$C2CA` | 271 | `$BE8E` | `$BA4F` |
 | Fourth | `$3B2F` | 8 | `$C621` | 259 | `$C1E5` | `$BDA6` |
 
-Route tables select room numbers 0–7 in every load. Docking records 8 and 9 are extra stored backgrounds; the run makes no universal reachability claim about them. A background record has ten columns, each with five tile numbers and a reflection byte. Tile output covers forty by twenty character cells. The fourth load's character-bank exchange begins at `$0810`; the others begin at `$0800`.
+Route tables select room numbers 0–7 in every load. Docking records 8 and 9 are extra stored backgrounds that play cannot reach: see "Findings shown on Discoveries" below. A background record has ten columns, each with five tile numbers and a reflection byte. Tile output covers forty by twenty character cells. The fourth load's character-bank exchange begins at `$0810`; the others begin at `$0800`.
 
 The sprite directories use relative offsets. Their top bit selects pair-wise rather than bit-wise reflection when reflection is requested. A zero high byte selects a solid `$FF` image. Loads 1–2 use escape `$C8` and zero-run codes `$C9-$CF`; loads 3–4 use `$48` and `$49-$4F`. The directory flag does not by itself request reflection.
 
@@ -30,14 +30,31 @@ The sprite directories use relative offsets. Their top bit selects pair-wise rat
 The page functions are taken from the authored HTML by the tests beside it. Their reference memory comes from the committed listings, composed through the part hierarchy.
 
 - `test_graphics.js`: 2,176 bitmap/reflection cases, 662 component assemblies, 672 layered-player assemblies, and 4,542 actor-animation ticks and 208 impact-animation ticks match the original CPU routines.
-- `test_maps.js`: 1,700 tile calls and 34 character-bank selections match all stored backgrounds. The original animation scheduler selects the same streams for each room. Every tile exposed by the animation preview matches its original tile writer.
-- `test_energy.js`: 1,800 recharge cases cover every energy offered by the widget, both bodies, rooms 6/7, and first/fourth load rules. They match the original CPU instructions.
-- `test_sound.js`: all twelve music selections and eighteen effect definitions match each SID register write for 600 calls per selection, 18,000 calls. The function also runs in an isolated JavaScript context as required by the sound worklet. Definition 17 has no gated activity in that setup.
-- `test_frames.py`: the exact video excerpts embedded in the two pages reproduce all 104,448 pixels of each VICE image: the forced paused first-room presentation and the loading portrait. Both have zero differences.
+- `test_maps.js`: 1,700 tile calls and 34 character-bank selections match all stored backgrounds on Maps. The two unfinished docking rooms drawn on Discoveries are the same records as the Maps data's docking rooms 8 and 9.
+- `test_energy.js`: 1,800 recharge cases cover every energy offered by the Discoveries widget, both bodies, rooms 6/7, and first/fourth load rules. They match the original CPU instructions.
+- `test_sound.js`: the seven tunes on How it works (Complex 7's three and the loading module's 4, 2, 3 and 5; Discoveries repeats the last three) and the eighteen effect definitions match each SID register write, 15,000 frame calls in all. The function also runs in an isolated JavaScript context as required by the sound worklet. Definition 17 has no gated activity in that setup. The same test runs the game's own three Complex 7 tunes and the fourth load's two from their listings for 3,000 frames each: loading tunes 1, 6 and 7 write the same registers as Complex 7's 1, 2 and 3, and the fourth load's 1 and 2 are the same notes as Complex 7's 2 and 3.
+- `test_finds.js`: the source text at resident `$1200-$13DD` and the 22 rows of the Discoveries table against the routine bytes at `$158A`; the docking doorway list and the empty exit, interaction and object ranges of rooms 8 and 9; the YCY check bytes in all four loads; the message font (resident `$2000-$27FF`) and the twelve message lines on How it works.
+- `test_frames.py`: the video excerpts embedded in Graphics reproduce all 104,448 pixels of each VICE image: the forced paused first-room presentation and the loading portrait. Both have zero differences.
+
+## Findings shown on Discoveries
+
+These rest on the listings and are held by `test_finds.js`, `test_maps.js`, `test_sound.js` and `test_energy.js`. None was reached in a played game. The YCY patch and the last room's charge were also run as instructions in VICE by the first run ("Targeted native instruction checks" below); the quality pass of 15 November 2026 had no disk image and ran nothing live.
+
+- **Source text.** Resident `$1200-$13DD` holds 478 characters of assembler source as plain ASCII, lines ending CR LF. It begins at the start of a line and ends mid-word. Its 22 lines (label `MULTISETUP`, symbols `S.SWAPNOW`, `S.XPOS`, `CS.XPOS`, `BANKNUMBER=20`) assemble to the bytes of the sprite set-up routine at `$158A`, instruction for instruction. Nothing reads the text. CR LF line ends suggest it was typed on a PC-style editor; that is an inference.
+- **Docking rooms 8 and 9.** The doorway list at docking `$6547` has 22 entrances, all in rooms 0–7. The room number is otherwise written only at `$63ED` (room 0 at a new game) and `$A7DC` (from the doorway list). The exit boundaries at `$6DA9`, the attack-interaction boundaries (security systems) at `$6DB6` and the object boundaries (enemies) at `$6DD0` give rooms 8 and 9 empty ranges: each starts where the next room's does. Their layouts at `$3E17` and `$3E53` fill only the first three or four of ten columns.
+- **Unused tunes.** The loading module at `$EC4F` stores seven tunes. Tunes 1, 6 and 7 are the same notes as the game's title, in-play and area-complete tunes (see `test_sound.js`). Tunes 2, 3 and 5 have no copy in any of the four loads. The loading portrait requests tune 4 (orientation run, 14 November 2026). Whether any other code requests 2, 3 or 5 was searched in the four loads' listings only.
+- **Unused effects.** Every call of the effect routine at `$32DA` in the listings (one in resident, 29 or 30 in each load) follows an `LDA #` of the effect number. Together they ask for effects 0–2, 4, 6–11 and 13–16, so 3, 5, 12 and 17 are never asked for. Effect 17 makes no sound.
+- **YCY.** Each load's initials check (Complex 7 `$8325`) compares the three letters with `Y`, `C`, `Y` and, when they match, writes `$D0` over the `$F0` at the F3 callback's branch (Complex 7 `$98C1`). The test checks the bytes in all four loads. The patch is to memory, so it lasts until the next load replaces the code.
+- **Resting heal.** The status interrupt at Complex 7 `$6754` adds one to the resting body's energy every sixteen frames while it is below 33. The swap test at `$8C2A` needs the other body's energy above 32.
+- **Game over.** A game over restarts the current load with the score saved at `$08-$0A` on entry to the load (Complex 7 `$668B`, `$667B`).
+
+These are leads that are not on the pages:
+
+- Resident `$FE1C STA $D406,X` writes sustain/release to `$D407`/`$D408` for voices two and three, which are voice two's frequency registers. The wrong destination is established; how it sounds in play was not measured.
 
 ## Sound banks
 
-The loading player at `$EC4F-$FB8B` offers seven selections. Its loading portrait requests 4. Complex 7's `$EEAE-$FB9B` offers three: title 1, gameplay 2, and load transition 3. The fourth load's `$F16A-$FB92` offers two: title/gameplay 1 and completion 2. These are twelve stored selections, not a claim that all are distinct compositions. The page includes every selection.
+The loading player at `$EC4F-$FB8B` offers seven selections. Its loading portrait requests 4. Complex 7's `$EEAE-$FB9B` offers three: title 1, gameplay 2, and load transition 3. The fourth load's `$F16A-$FB92` offers two: title/gameplay 1 and completion 2. These are twelve stored selections and seven distinct tunes: `test_sound.js` shows the loading module's 1, 6 and 7 and the fourth load's 1 and 2 write the same registers as Complex 7's tunes. How it works plays Complex 7's three and the loading module's other four.
 
 The shared effect allocator at resident `$32DA` reads priorities at `$331A` and assigns the shared player at `$FC2F`. Eighteen sixteen-byte definitions occupy resident `$FEDA-$FFF9`. The page starts each through the allocator with sound mode `$80`, as the game's effects mode does.
 
@@ -56,7 +73,7 @@ The instruction/checkpoint records remain with the private working snapshots. Th
 
 ## Browser checks
 
-The session Playwright connector exercised 1188 stored graphics/map/animation choices and the page controls in Firefox 159.0. Each authored canvas drew visible content, with no page/console errors. The shared SID worklet checker rendered ten seconds from each button through OfflineAudioContext: all twelve music selections and effects 0–16 produced output; effect 17 remained silent as labelled.
+`ui-browser.js` drives the built pages in Chromium through `kit/scripts/play_browser.js`. It makes 927 choices across the four pages' controls, checks that every canvas draws something, and fails on any page error. On 14 November 2026 the first run also rendered ten seconds from every music and effect button through the shared SID worklet in Firefox 159.0: every tune and effects 0–16 produced output, and effect 17 stayed silent.
 
 ## The listing's error rate
 

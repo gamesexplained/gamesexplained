@@ -92,3 +92,11 @@ After the required native checks and frame captures, the run stopped its VICE pr
 The authored pages were committed as a draft, then rewritten in a separate copy pass. The final pass explains display registers, sprites, character pictures, sound voices, and stored room sets at their first use on each tab. The sentence changes were checked against the facts and retained the numerical evidence and source links. Copy remains agent-draft for human curation.
 
 The final controls table names Space for the inward turn. The manual’s unverified three-fire gesture stays in the explicit open feature row rather than appearing as a confirmed article control.
+
+## Quality pass, 15 November 2026
+
+A maintainer asked for a pass on the merged pages: cut the sections a reader finds dull, take the emulator and test talk out of the captions, add pictures and Discoveries, and use the site's bouncing-ball view for sound. The pass had the committed listings and reference pictures but no disk image, so everything new rests on the listings and the page tests; nothing was run in VICE.
+
+How it works lost the energy widget, the controls table, the world and cast lists and the screen section; the screen section moved to Graphics, the recharge widget to Discoveries. It gained the four loads with the messages the game types at the end of each, drawn in the game's own font from the listing, and the music and effects in the shared player with the ball view on. Tune copies that sound the same were dropped from the player after `test_sound.js` showed that they write the same registers frame for frame.
+
+The leads for Discoveries came from the earlier run's notes. The text at resident `$1200` was read as ASCII and found to be assembler source for the routine at `$158A`; `test_finds.js` holds the match. The two extra docking records were checked against the doorway list and the room writers and found unreachable. Every `$32DA` call was listed to find the effects nothing asks for, and the loading module's tunes were compared with the game's copies to find the three nothing plays. The sound-register store at `$FE1C` was taken off the pages, because its effect in play was never heard, and kept in `facts.md` as a lead.

@@ -17,4 +17,13 @@ for(const kind of ['music','effects'])for(let index=0;index<(kind==='music'?data
  for(let f=0;f<600;f++){writes.length=0;if(driver.playing())cpu.call(entry,{}, {maxSteps:200000});driver.play();assert.deepStrictEqual(Array.from(driver.writes),writes,kind+' '+index+' frame '+f);for(let v=0;v<3;v++)if((driver.sid[v*7+4]&1)&&(driver.sid[v*7]|driver.sid[v*7+1]))gates++;frames++;}
  assert.equal(!!gates,kind==='music'||index!==17,kind+' '+index+' gated activity');driver.stop();assert(!driver.playing());
 }
-console.log('12 music selections and 18 effects: '+frames+' frame calls, every SID write matched; effect17 silent');
+// The Discoveries player runs the same loading-disk routine.
+const unused=JSON.parse(g.read('discoveries.html').match(/id="hf-sound-data">([\s\S]*?)<\/script>/)[1]);
+assert.deepStrictEqual(unused.modules,data.modules.filter(m=>m.name==='loading'));assert.deepStrictEqual(unused.tunes.map(t=>t.number),[2,3,5]);
+assert.equal(g.block('discoveries.html','createHammerfistSound').text,block);
+// The copies the pages leave out sound the same: the loading disk's tunes 1, 6 and 7 and the
+// fourth load's two tunes write what the main routine's title, in-play and area-complete tunes write.
+{const L4=memory('load-4'),fourth={name:'fourth',blocks:[[0xf16a,Array.from(L4.slice(0xf16a,0xf16a+2601))]],entry:0xf16a,request:0xf16b,active:64407,notes:64403,instruments:64493,sequenceLow:64425,sequenceHigh:64428};
+ const mods=[...data.modules,fourth],run=(module,number)=>{const d=factory({modules:mods,tunes:[{module,number}]},C64Cpu),out=[];d.init(0);for(let f=0;f<3000&&d.playing();f++){d.play();out.push(Array.from(d.sid).join());}return out;};
+ for(const [m,n,mm,nn] of [['loading',1,'main',1],['loading',6,'main',2],['loading',7,'main',3],['fourth',1,'main',2],['fourth',2,'main',3]])assert.deepStrictEqual(run(m,n),run(mm,nn),m+' '+n+' copies '+mm+' '+nn);}
+console.log(data.tunes.length+' tunes and 18 effects: '+frames+' frame calls, every SID write matched; effect 17 silent');
