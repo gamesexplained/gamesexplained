@@ -100,3 +100,10 @@ facing rule is checked against `$8A91` on the kit's CPU in
 `test_widgets.js`, and `site-browser.js` was rewritten for the new widgets.
 The process paragraphs moved from the pages to facts.md.
 
+Later the same day Aaron pointed out that the four unused pictures at
+`$BC00` are an aeroplane, which Unseen64 reported in 2009. Comparing the
+four showed exact mirror pairs (`$F0`/`$F3`, `$F1`/`$F2`), so they are one
+plane facing four ways. Discoveries, Graphics and facts.md now say so and
+credit Unseen64. Neither Unseen64 nor the current Wikipedia article gives a
+reason for the plane.
+
