@@ -24,3 +24,12 @@ Built How it works, Discoveries, Maps and Graphics. The viewers run the original
 The final copy was written after the analysis, then read for plain language and evidence beside claims. The contributor's chosen Silver scope remained the completion target.
 
 The committed draft received its separate ELI15 pass: explained hexadecimal locations, object IDs, drawing attributes, sprites, the music interrupt and sound registers on the tabs where they first appear. Compared the changed sentences against the draft, retaining their addresses, counts and conditions. Removed duplicate draft CSS. Captured before/after page screenshots for the review.
+
+## 15 November 2026: page pass
+
+A quality pass on the merged pages, asked for by the site's maintainer after the Silver merged: cut the dull sections, take tool and test talk off the pages, add pictures and Discoveries, and give the sound players the bouncing ball. The listing and symbols were not changed.
+
+Checked the two leads in features.md live in VICE, on a program built from the committed listing because the disk image was not downloaded again. Australia turned out to be a real C64 difference (rooms upright, only Dizzy turned), with a detail no source mentioned: the half turn makes him face against his walk. The cage lead was confirmed both ways round, and reading the drop code found the whisky.
+
+How it works lost "A frame rebuilt from memory" and "A room number can mean carried" and gained a room builder that stamps a room picture by picture, a coin finder for all thirty coins, and music and sound players split in two with the bouncing ball (the ball had been turned off). The footstep button now plays a four-step walk instead of one click. Discoveries gained Australia, the cage, the whisky and a room browser that can be driven; the ESPILCE heading lost its "Secret:" label because Lemon64's cheat page could not be read to check whether the cheat was published. Maps gained a map of every room laid out by room number. Graphics kept its viewers and lost its addresses and process captions.
+

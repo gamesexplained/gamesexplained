@@ -22,6 +22,17 @@ The renderer $2B5B takes shape A, X at $033A in four-pixel units, Y at $033B in 
 
 The font was rendered and read. $26/$27 are quotation marks, $30-$39 digits, $3A space, $3B apostrophe, $3C comma, $3D hyphen, $3E full stop, $3F question mark, $40 exclamation mark and $41-$5A A-Z. Message bytes >=$64 position the cursor, bytes >=$C8 select colour, $FA draws a box, $5F waits for action and $FB-$FF terminate. Message pointer $3B extends into retained text rather than a normal empty-inventory message; its player-facing consequences remain open.
 
+## Australia, the cage, the whisky and the coins
+
+These were checked on 15 November 2026 in VICE 3.10 (x64sc), driven through vice-mcp, on a program built from the committed listing ($0B00-$FFFF loaded and started at $190E) rather than the disk image. The room browser placed Dizzy where each test needed him.
+
+- Australia. Rooms $16-$18 are below $19, so $2A7F copies the frame chosen at $1E43-$1E9C into $4A80 with its 63 bytes in reverse order and each byte's bits reversed (a half turn), and returns pointer $2A. $1AA5 swaps the horizontal control bits ($0C) when either is set. $1AB4-$1ACF ORs random bits into the controls when the ROM byte read by $3257 is at least $FA: bit 0 (up) and, from a value of one to four, left or right. No code turns a room over; the shape renderer $2B5B mirrors horizontally and shifts by a nibble, and has no vertical flip. Live in $18: holding left moved X from 27 to 35 with facing 1 (right) and pointer $2A; holding right moved X from 32 to 28. The screenshot reference/australia.png shows the upright church with Dizzy upside down. Frame $0A, a right-facing frame, comes out facing left, so he walks backwards.
+- The cage. $2084 acts only while lever $64's attribute differs from $87, sets it to $87, then moves objects $66, $67 and $65 down one pixel a step until $66 reaches Y $8B ($0A delay units a step, Daisy's attribute bit 7 toggled each step). Nothing else writes those Y values except the rescue at $2A44, which moves only Daisy ($67) to room $49. Live: with the cage up, Dizzy walked right along the table (Y 78), dropped at X 43-44 to the floor (Y 107), walked left to X 29 and the coin count went from 00 to 01 (coin $2F). With the cage lowered he stopped at X 44 on the cage floor, level with the table. From the left, the daggers ($68/$69) took a life; with the rug used ($0B at $FF, $6A/$6B in the room) he stood at Y 91 and stopped at X 18, short of the coin. There are exactly 30 coin objects ($1A-$37) and $2A68 ends the game only when the tens digit is three, so a lost coin makes the game unwinnable.
+- The whisky. Object $13 starts in room $35. $244C: dropping it shows message $28 ("YOU FIND THE WHISKY TOO TEMPTING TO DROP AND SO DRINK IT!") and removes it ($FF). $1A80: while $13 is $FF and animation counter bit 5 is clear (32 passes of every 64), the controls are XORed with $0C. Seen live: the message (reference/whisky.png), the swapped stick, and Dizzy walking left with the stick centred. In Australia the two XORs cancel. No other code reads object $13.
+- Coins. $1A-$2F start in rooms; $30-$36 start "not placed" ($65) at the positions of scenery $38-$3E, and $2161-$2174 places the coin when its scenery is picked up. $37 is placed in the dungeon ($24) at $1F2B, when Dizzy first passes X $34 in the deserted mines ($29), which also moves the troll ($42) there and shows message $1F.
+- Room numbers. $1DAA-$1DC5 add or subtract one at the side edges and $1DD8-$1DF9 add or subtract sixteen at the top and bottom; $2A08 sends room $07 to $37, so falling out of $17 lands in the bottomless well.
+- Sounds. Selector 3 is set on a coin ($39BC) and selector 4 on losing a life ($258A, $34F5) and at the rescue celebration ($3851). Key code $24 (M) at $1A45 toggles between the adventure tune and footsteps ($2B48). The footstep routine $2AB7 clicks only on odd animation counts, at frequency high byte 6 or 10 by bit 1 of the count.
+
 ## Hardware census and timing
 
 | Registers | Use | Code |
@@ -39,7 +50,7 @@ The census's addresses under I/O that the text reader names are RAM accesses whi
 
 ## Verification of the pages
 
-test_views.js runs 202 room views (objects on/off), checks 2783 record boundaries and executes 784 shape/mirror/shift cases. test_music.js compares every SID write for five selections over 5628 timer ticks; the driver factory is isolated as the audio worklet isolates it. Firefox 160.0 exercised all 101 room and 196 shape selections, sprite controls and animation. All five audio worklets produced nonzero output with envelopes and volume active. The blank $45 sprite is deliberate. The browser log had no errors.
+test_views.js runs 202 room views (objects on/off), checks 2783 record boundaries and executes 784 shape/mirror/shift cases. test_music.js compares every SID write for five selections, including the footstep player's eight main-loop passes (one every six timer ticks, an approximation of the first room's pace) and the sound player's offset into the selections; the driver factory is isolated as the audio worklet isolates it. The page widgets added on 15 November 2026 (room builder, coin finder, Australia walker, cage, room browser, map) run the same createView on edited copies of the initial object tables; the Australia walker moves Dizzy by the swapped controls once every 95 ms and does not run the game's collision code. Firefox 160.0 exercised all 101 room and 196 shape selections, sprite controls and animation. All five audio worklets produced nonzero output with envelopes and volume active. The blank $45 sprite is deliberate. The browser log had no errors.
 
 ## The listing's error rate
 
@@ -49,4 +60,4 @@ The findings were one rat lower-bound detail, eleven sprite descriptions omittin
 
 ## Open questions
 
-The post-cage coin's reachability, the secret browser beyond the directory and some retained sprite-piece roles remain open. These are not reported as absent or unreachable. A full playthrough, replay and optional audit were not undertaken.
+The secret browser beyond the directory and some retained sprite-piece roles remain open. These are not reported as absent or unreachable. A full playthrough, replay and optional audit were not undertaken.
