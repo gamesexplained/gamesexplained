@@ -2,7 +2,8 @@
 """sample.py draws the listing sample the same way for the same seed, keeps a stratum's
 comments apart, and counts the checker's verdicts only when each was given the text drawn and
 every finding has been settled (#657): on one run two drawn comments were corrected before the
-checker read them, and the rate came out lower than the listing's."""
+checker read them, and the rate came out lower than the listing's. It reports the sure minimum,
+the wrong found over the whole listing, apart from the rates, which are estimates (#868)."""
 import json
 import os
 import sys
@@ -65,6 +66,8 @@ class Sample(unittest.TestCase):
         lo, hi = r["interval"]
         self.assertTrue(lo < 6 / 80 < hi)
         self.assertAlmostEqual(r["weighted"], 150 / 450 * 6 / 60)
+        # an estimate either way; the wrong found over the whole listing is the one sure minimum (#868)
+        self.assertAlmostEqual(r["floor"], 6 / 450)
 
     def test_text_changed_before_the_check_is_refused(self):
         s = sample.draw(self.g, 7, 60, self.strata)
