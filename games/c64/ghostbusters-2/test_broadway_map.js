@@ -19,13 +19,16 @@ for (let a = 0x0900; a < 0x0a2a; a++) {
   assert(inherited.has[a], `missing inherited airshaft byte at $${a.toString(16)}`);
   ram[a] = inherited.ram[a];
 }
-assert.deepStrictEqual(data.codes, Array.from(ram.slice(0x0900, 0x1f80)));
+const censor = Array.from(ram.slice(0x0900, 0x1f80));
 assert.deepStrictEqual(data.charset, Array.from(listing.ram.slice(0x7000, 0x7800)));
+// The page draws the Jondi disk's street, which matches the original disk's byte for byte
+// (parts/broadway-jondi/facts.md); the Censor load starts 298 bytes late.
 const alternate = g.listing('parts/broadway-jondi/listing.json');
-assert.deepStrictEqual(data.jondiCodes, Array.from(alternate.ram.slice(0x0900, 0x1f80)));
-assert.notDeepStrictEqual(data.jondiCodes.slice(0, 298), data.codes.slice(0, 298));
+assert.deepStrictEqual(data.codes, Array.from(alternate.ram.slice(0x0900, 0x1f80)));
+assert.equal(data.jondiCodes, undefined);
+assert.notDeepStrictEqual(data.codes.slice(0, 298), censor.slice(0, 298));
 const vice = JSON.parse(fs.readFileSync(path.join(__dirname, 'broadway-map-vice.json'), 'utf8'));
-for (const fixture of vice) assert.deepStrictEqual(columnAt(data.codes, fixture.column), fixture.values,
+for (const fixture of vice) assert.deepStrictEqual(columnAt(censor, fixture.column), fixture.values,
   `VICE column ${fixture.column}`);
 const cpu = new CPU(ram, {port: 0x35});
 for (let column = 0; column < 480; column++) {
@@ -34,15 +37,16 @@ for (let column = 0; column < 480; column++) {
   cpu.pc = 0x87f4;
   cpu.run({until: 0x88c9, maxInstructions: 1000});
   assert.equal(cpu.pc, 0x88c9);
-  assert.deepStrictEqual(columnAt(data.codes, column), Array.from({length: 12}, (_, row) => ram[0x4517 + row * 40]),
+  assert.deepStrictEqual(columnAt(censor, column), Array.from({length: 12}, (_, row) => ram[0x4517 + row * 40]),
     `CPU column ${column}`);
 }
-ram.set(data.jondiCodes, 0x0900);
-for (const column of [0, 78, 479]) {
+ram.set(data.codes, 0x0900);
+for (let column = 0; column < 480; column++) {
   const pointer = 0x0900 + column;
   ram[0x87f7] = pointer & 255; ram[0x87fb] = pointer >> 8;
   cpu.pc = 0x87f4; cpu.run({until: 0x88c9, maxInstructions: 1000});
   assert.equal(cpu.pc, 0x88c9);
-  assert.deepStrictEqual(columnAt(data.jondiCodes, column), Array.from({length: 12}, (_, row) => ram[0x4517 + row * 40]));
+  assert.deepStrictEqual(columnAt(data.codes, column), Array.from({length: 12}, (_, row) => ram[0x4517 + row * 40]),
+    `CPU column ${column} of the page's street`);
 }
-console.log(`OK - both Broadway disks match the fetch routine; ${vice.length} Censor columns have VICE fixtures`);
+console.log(`OK - the page's street and the Censor load match the fetch routine; ${vice.length} Censor columns have VICE fixtures`);

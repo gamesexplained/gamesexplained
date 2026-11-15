@@ -66,3 +66,11 @@ for (let index = 0; index < route.reads.length; index++) {
 }
 assert.equal(route.milestones.at(-1).reads, route.reads.length);
 console.log(`OK - ${route.reads.length} recorded control reads reach the landing`);
+
+// The rope descent on How it works draws the museum floor from Graphics, with the rope's glyph.
+const page = g.read('index.html'), graphics = g.read('graphics.html');
+const embedded = (html, id) => JSON.parse(html.match(new RegExp(`<script id="${id}" type="application/json">([^<]+)</script>`))[1]);
+const rope = embedded(page, 'rope-frame-data');
+assert.deepStrictEqual(rope.frame, embedded(graphics, 'museum-frame-data'));
+assert.deepStrictEqual(rope.glyph, Array.from(g.listing('parts/museum/listing.json').ram.slice(0x77F8, 0x7800)));
+console.log('OK - the rope descent draws the museum floor and the rope glyph from the listing');
