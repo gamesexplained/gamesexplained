@@ -83,3 +83,26 @@ Run on the kit's 6502 over the listing's memory (no emulator):
   mean 106.9; `test_scream.js` holds the page's port to it.
 - The music: `test_music.js` holds the page's driver to the game's code for 3,000 frames of each
   tune; tunes 1 to 6 end after 1,117, 1,924, 1,120, 1,642, 1,270 and 1,290 frames.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, with friend 6 dead, Jason as friend 5, and friend 6 given the highest exposure, the next try revealed Jason and friend 6's state at `actor_state` went through the three steps below.
+- Friend 6's state at `actor_state`, read in the emulator at each step.
+
+### gameplay.html
+
+- Times assume the 4.48 frames between counts measured in the emulator during play, and no blows on friends.
+
+### levels.html
+
+- Room 39, beside the emulator's screenshot of the same room. Of the play area's 32,768 pixels, 292 differ, all of them in the two places where people stand: people are sprites, which `draw_room` does not draw.
+
+### music.html
+
+- `test_music.js` runs each tune for 3,000 frames and checks every write to the sound chip against the same code run directly.
+- The player calls a port of `play_scream` once for each bit, every 107 cycles, the average gap between the game's own volume writes when its loop is run on the kit's processor; the gaps run from 104 to 125 cycles.
+- `test_scream.js` checks every write against the game's routine.

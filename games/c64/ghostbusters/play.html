@@ -147,20 +147,9 @@ section table{margin:6px 0 18px}
 </section>
 <section id="port">
   <p class="fig">03 · The port</p>
-  <h2 class="t">Every routine of the game, checked against the original at every pass</h2>
+  <h2 class="t">Every routine of the game, written again in JavaScript</h2>
   <p class="lede">Nothing on this page emulates a 6502. The game's routines are written out in JavaScript, one function each, named by the listing's labels, and run on the game's own 64 KB of memory.</p>
   <p>The page loads that memory from the listing, the same bytes the Source code tab shows. From then on the port reads and writes the game's variables where the game keeps them, with the game's own decimal arithmetic, its self-modified operands and its bugs: the two bytes each drive leaves on the stack, and the empty branch at <code>$7200</code>.</p>
-  <h3>How it was checked</h3>
-  <p>The original code runs in a 6502 simulator beside the port, from the same saved moment and with the same keys and joystick. At the start of every pass all 64 KB are compared, with colour RAM. Only the stack page is left out.</p>
-    <table>
-    <tr><th>Routines</th><th>Tested alone</th><th>Lockstep sessions</th><th>Result</th></tr>
-    <tr><td>The frame, the input, the text engine, money, the interview and the car page</td><td>68 routines, 204,000 cases</td><td>17 sessions, about 21,000 passes: every interview answer, both F3 cases, every car, the map and the drive with their keys</td><td>identical at every pass but two, both the random-number race below</td></tr>
-    <tr><td>The shop and the city map</td><td>35 routines, 70,000 cases</td><td>23 sessions, 57,252 passes: every shop page, full cars, walks, bait, every refusal of fire, PK 5,000 and PK 9,500</td><td>identical at every pass but 17, all the race</td></tr>
-    <tr><td>The drive, the bust and GHQ</td><td>44 routines, 132,000 cases</td><td>18 sessions, 10,639 passes: steering, the vacuum, catches, misses, crossed streams, the laser system, bait, GHQ</td><td>identical at every pass but the race</td></tr>
-    <tr><td>The Marshmallow Man, Zuul and the endings</td><td>33 routines, 165,000 cases</td><td>10 sessions, about 13,700 passes: bait in time and too late, the win, GOOD TRY, a catch, foreclosure, the wait for F1</td><td>identical at every pass but one: on the pass after F1 restarts the game from the end pages, the sprites' X registers differ, because the check replays the interrupt that sets them after <code>init_game_vars</code> clears them, where the game ran it before</td></tr>
-    <tr><td>The interrupt, the music, the effects, the speech, the start-up and the title</td><td>20 routines, 3,000 cases each; 35 phrases</td><td>the cold start, the title with SPACE, F1 and F3, RUN/STOP + RESTORE, and all 57 sessions above again with this group in: 88,550 passes</td><td>identical at every pass but the two races below</td></tr>
-  </table>
-
   <h3>Where the original depends on its interrupts</h3>
   <p><b>The title's tune during speech.</b> While a phrase plays on the title, the game steps the tune, the lyrics and the ball from a loop that compares the raster line with the last one it read. It reads the line's two parts one after the other, and the speech interrupt can fall between them, so the game sometimes steps twice in a frame: 98 steps in 88.7 frames for one phrase. The port steps once a frame, so on this page the sing-along can end a fraction of a second later.</p>
   <p><b>The random number.</b> The raster interrupt steps the random number <code>$06</code> once a frame, at line 184. When a pass starts late, after a slow one, the main program reads <code>$06</code> after the interrupt has stepped it. The port runs the interrupt between passes, so its read gets the value before. Three places read it this way: the Roamer's spot on the road at the start of a drive (<code>$8113</code>), the Keymaster's and the Gatekeeper's turns (<code>$7DFF</code>) and the new haunting (<code>$740C</code>). On this page a Slimer or a Roamer can therefore turn up somewhere the original, at that moment, would not have put it. Either is a place the original can choose.</p>
@@ -170,7 +159,7 @@ section table{margin:6px 0 18px}
   <p class="fig">04 · Speed</p>
   <h2 class="t">It runs at the C64's speed, pass for pass</h2>
   <p class="lede">The game does one pass of its main loop a frame, and some passes take several: drawing the map, a building, Zuul's tower. A port that ran each pass in a frame would be too fast there.</p>
-  <p>So the page keeps a PAL machine's clock: 312 lines of 63 cycles, 50.12 frames a second, with the raster interrupts on their lines. The port does not execute instructions, so it cannot count their cycles. Each pass costs the median time the original's pass took in the same game state, measured on the simulator over 78,000 passes of the lockstep sessions, and the interrupts, the speech and the raster waits take their own time.</p>
+  <p>So the page keeps a PAL machine's clock: 312 lines of 63 cycles, 50.12 frames a second, with the raster interrupts on their lines. The port does not execute instructions, so it cannot count their cycles. Each pass costs the median time the original's pass takes in the same game state, and the interrupts, the speech and the raster waits take their own time.</p>
     <table>
     <tr><th>Session</th><th>Passes</th><th>Frames, original</th><th>Frames, this page</th></tr>
     <tr><td>Walking the map</td><td>4,035</td><td>4,035</td><td>4,035</td></tr>

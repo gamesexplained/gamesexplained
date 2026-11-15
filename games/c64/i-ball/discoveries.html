@@ -76,28 +76,28 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">01 · The timer</p>
   <h2 class="t">Bug: the more aliens on the screen, the slower the timer runs</h2>
   <p>The timer at the top of the screen starts each level at 50, and Iball loses a life when it reaches 0. But <code>timer_tick</code> takes a second off every 50 passes of the game's logic, and the logic does not run every frame. Its interrupt, <code>irq_logic</code>, skips a frame whenever the last pass has not finished, and a pass takes longer the more there is on the screen. So the busier the level, the slower the timer.</p>
-  <p>With only Iball on the screen the logic runs every frame and the timer keeps time. With seven aliens about, the emulator counted 695 passes in 1,350 frames, so the level's 50 seconds last about 97 real ones: a busy level gives the player nearly twice the time the timer shows. The How it works page has <a href="index.html#time">the interrupts and the measurement</a>.</p>
+  <p>With only Iball on the screen the logic runs every frame and the timer keeps time. With seven aliens about, the logic makes 695 passes in 1,350 frames, so the level's 50 seconds last about 97 real ones: a busy level gives the player nearly twice the time the timer shows. The How it works page has <a href="index.html#time">the interrupts and the measurement</a>.</p>
 </section>
 
 <section>
   <p class="fig">02 · The Smart Missile</p>
   <h2 class="t">Bug: the Smart Missile pays 10 points for every alien that is not there</h2>
   <p>Pressing SPACE with the Smart Missile fires it once: every alien explodes and scores 10 points. <code>smart_missile</code> goes through sprites 1 to 7 and sets each one exploding, skipping the discs and those already exploding. It never tests whether the sprite is in use, so an empty slot explodes too, out of sight, and scores the same 10 points.</p>
-  <p>Seen in the emulator: fired on a screen with no alien on it, the missile gave 70 points, and the disc countdown, which counts aliens killed, went from 20 to 13. Seven kills that never happened bring the next disc nearer too.</p>
+  <p>Fired on a screen with no alien on it, the missile gives 70 points, and the disc countdown, which counts aliens killed, goes from 20 to 13. Seven kills that never happened bring the next disc nearer too.</p>
 </section>
 
 <section>
   <p class="fig">03 · The title screen</p>
   <h2 class="t">Secret: the title's speech keys are X, Z and SPACE, not I, O and G</h2>
   <p>C64-Wiki says that on the title screen I, O and G say the three samples, "IBALL!", "OH NO!" and "GAME OVER!". In this image, I starts a game and O and G do nothing. <code>title_irq</code> tests the same key groups that steer and fire in play: the right keys (X and its group) say "IBALL!", the left keys (Z and its group) say "OH NO!", and the Smart Missile's keys (SPACE and its group) say "GAME OVER!". Pushing the joystick forward or back while on the title screen raises or lowers their pitch.</p>
-  <p>Seen in the emulator, each key pressed on the title screen in turn. The How it works page has <a href="index.html#controls">every key and what it does</a>, and the samples at any pitch.</p>
+  <p>The How it works page has <a href="index.html#controls">every key and what it does</a>, and the samples at any pitch.</p>
 </section>
 
 <section>
   <p class="fig">04 · The keyboard</p>
   <h2 class="t">Secret: five other keys pause the game as well as RUN/STOP</h2>
   <p>The game tests a key by driving several rows of the keyboard at once and reading one column, so every key in that column on those rows answers. The pause test drives every row but one and reads the column of RUN/STOP, so V, N, comma, / and left SHIFT pause the game too. The movement keys come in groups the same way: O is the up key, and so are E, T, U, @, the up-arrow and Q.</p>
-  <p>Seen in the emulator: RUN/STOP and V each paused the game and resumed it.</p>
+  <p>RUN/STOP and V each pause the game and resume it.</p>
 </section>
 
 <section>

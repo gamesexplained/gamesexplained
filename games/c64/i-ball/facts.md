@@ -359,3 +359,29 @@ the checker found outside the sample by running `ripple_fire` and
   BONUS BALL and a life; at 31, EXTRA SCORE and the sequence back to
   place 28.
 - Game over: lives 0 and the timer out: GAME OVER, then the title.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- With seven aliens about, the emulator counted 695 passes in 1,350 frames, so the level's 50 seconds last about 97 real ones: a busy level gives the player nearly twice the time the timer shows.
+- Seen in the emulator: fired on a screen with no alien on it, the missile gave 70 points, and the disc countdown, which counts aliens killed, went from 20 to 13.
+- Seen in the emulator, each key pressed on the title screen in turn.
+- Seen in the emulator: RUN/STOP and V each paused the game and resumed it.
+
+### graphics.html
+
+- It starts from a moment of play: the eight sprites as they were at a death in a run of the game on the kit's model of the C64.
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, at the tape's pace, with the border and the spoiled corner changing at the moments they did on the recorded load.
+
+### index.html
+
+- The game's music driver, `music_play` at `$E009`, run once a frame on the kit's 6502 over the listing's bytes, as the title screen's interrupt calls it, through a model of the SID.
+- The game's effects player, `effects_play` at `$ED56`, run once a frame on the kit's 6502 after the bytes each event writes into `effect_req` (`$ED50`-`$ED52`).
+- The game's own sample player, `say` (`$C1F3`) and `sample_nmi` (`$C199`), run on the kit's 6502 over the listing's bytes, one call of `sample_nmi` for each timer interrupt.
+- One whole frame of level 1, recorded in the emulator: the registers as the frame began, every write to the video chip during it, and the memory it read.
+- The page draws it with the site's C64 library; all 104,448 pixels match the emulator's own picture of the same frame.
+- The jobs come from the value each of the game's tests writes to `$DC00` and the column it reads in `$DC01`; the test beside this page runs each of the game's tests on the kit's 6502 for every key and checks that the same keys answer.
+- Counted in the emulator with checkpoints on `irq_logic`'s work and on `timer_tick`, only while Iball was alive and no sample played.

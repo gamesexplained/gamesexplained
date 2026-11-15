@@ -370,3 +370,24 @@ kit's tests.
   frame counter 0-255, eight times over, with random `$D41B` and `$D012`
   bytes and points to add, take off, both or neither: 2,048 calls, the
   three shapes `$3040`-`$30FF` the same after each.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- The face is drawn by a port of `animate_face` (`$6AAD`), run beside the game's own routine on the kit's 6502 simulator for 2,048 calls, every frame number eight times with random noise and points; the three shapes matched after every call.
+- In the emulator, on level 0, the antennae changed only on frame 2 of every 8 and the eyes only on frames 2, 8, 10 and 16 of every 128.
+
+### index.html
+
+- The port was run against the driver in a 6502 simulator on the game's bytes: 38,796 calls of the driver, tune and effects together, gave the same 300,119 register writes in the same order.
+- Drawn by the site's renderer from one frame of level 0 recorded in the emulator: memory as the frame began and every write to the video chip during it.
+- 104,442 of the 104,448 pixels match the emulator's own picture.
+- The port was run against `level_result` in a 6502 simulator on the game's bytes over every performance, saved count, level and 37 random values, on 45 sets of levels done: 674,325 cases, all the same.
+
+### levels.html
+
+- Each map below is the level as `level_start` (`$4573`) left it in memory at `$8000`-`$BFFF`, read from the emulator when the first frame of play began.
+- The screen before level 4 begins, from the emulator, with the name on its second line, and Mr Chad as the game stores him, enlarged: two characters of the panel font at `$2000`, `$7E` and `$7F`, with `$FE` and `$FF` below them, as for every double-height letter.

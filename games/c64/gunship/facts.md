@@ -274,3 +274,33 @@ from `parts/flight/work/play-flying-we.vsf` unless named.
 | `use_store` (`$5A25`) called five times with X = 0, in the simulator (`kit/cpu/cpu6502.js`) | the cannon's rounds at `$53D8` go from 60 to 55; with the wiki's `POKE 23082,189` they stay at 60 |
 | `G2`'s bytes (`$0801`-`$0E74`) put into a freshly reset C64 and `LIST`ed | nothing of line 0 is left on the screen and the listing stops at once with `?SYNTAX  ERROR`: the five DELs rub out "0 REM" and the shifted L stops it |
 | Fire pressed ten times with the CRT on the map, no target picked | no round is used: the cannon fires only with the CRT on the target view (`$3D60`) |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, from a snapshot in flight with the CRT on the map and no target picked, the fire button was pressed ten times.
+- Tested live in VICE on 31 October 2026, from the flight's snapshot in Western Europe.
+- Unlimited ammunition: in the kit's 6502, five shots leave 60 rounds at 60
+- The fuel POKEs tested live in VICE on 31 October 2026, from the flight's snapshot in Western Europe.
+- `G2`'s bytes put into a freshly reset C64 in VICE and listed, on 31 October 2026.
+
+### graphics.html
+
+- The page runs the flight's own interrupt, the sprite part of `irq_bottom` from `$92F9` to `$944D`, on the kit's 6502 simulator over the flight's listing (the `gs-sprites` block).
+- The cross and the helicopter are the big map's own interrupt (`irq_map`) and `heading_sprite` run on the kit's 6502 simulator, the page turning the heading.
+
+### index.html
+
+- The site's model of the video chip shows the bitmap the routine drew inside a frame of the cockpit recorded in the emulator, the program that plays the part of a C64.
+- One whole frame of the game in flight, recorded in the emulator, the program that plays the part of a C64 (every write to the video chip with the line it came on, and the memory the chip reads), and drawn here by the site's model of the video chip.
+- 104,447 of its 104,448 pixels match the emulator's own picture of the same frame.
+- One frame of the big map in Western Europe, recorded in the emulator and drawn by the site's model of the video chip.
+- 25 of its 104,448 pixels differ from the emulator's picture, all on the sprites, the small movable pictures the chip draws over the screen.
+
+### levels.html
+
+- The site's model of the video chip then draws the screen, with the chip's settings from a frame of the big map recorded in the emulator, the program that plays the part of a C64.
+- The theatre's bytes come from the game's own loads in the emulator, read when the cockpit first appeared on a mission there.
