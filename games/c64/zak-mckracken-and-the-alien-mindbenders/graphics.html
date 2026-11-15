@@ -34,7 +34,7 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 .cap b{color:var(--ink);font-weight:700}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .zk-cast{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 8px;background:#7b7b7b;border-radius:6px;padding:14px 10px}
-.zk-cast button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;font-family:var(--fm);font-size:11px;color:#fff;min-width:44px}
+.zk-cast[data-own-look] button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;font-family:var(--fm);font-size:11px;color:#fff;min-width:44px}
 .zk-cast canvas{display:block;image-rendering:pixelated;margin-bottom:4px}
 .zk-cast button.on span{background:var(--chip);border-radius:3px;padding:0 4px}
 .zk-cast button:focus-visible canvas{outline:2px solid #fff;outline-offset:2px}
@@ -43,11 +43,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .zk-stage canvas{display:block;image-rendering:pixelated}
 .zk-ctl{flex:1;min-width:250px}
 .zk-row{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
-.zk-btn{font-family:var(--fm);font-size:12.5px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-soft);border-radius:6px;padding:4px 10px;cursor:pointer}
-.zk-btn.on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
-.zk-btn:focus-visible,.zk-swatch:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.zk-swatch{width:20px;height:20px;border:1px solid var(--line);border-radius:4px;cursor:pointer;padding:0}
-.zk-swatch.on{outline:2px solid var(--ink);outline-offset:1px}
+.zk-btn{font-size:12.5px;padding:4px 10px}
+.zk-btn.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
+.zk-swatch[data-own-look]{width:20px;height:20px;border:1px solid var(--line);border-radius:4px;cursor:pointer;padding:0}
+.zk-swatch.on[data-own-look]{outline:2px solid var(--ink);outline-offset:1px}
 .zk-lab{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 6px}
 .zk-tab{border-collapse:collapse;width:100%;font-size:13.5px}
 .zk-tab th,.zk-tab td{border-bottom:1px solid var(--line-soft);padding:4px 6px;text-align:left;font-family:var(--fm);font-size:12.5px}
@@ -74,7 +73,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Every costume in the game, walking</h2>
   <p class="lede">The game has 37 costumes. Each one below walks to the right as it does in a room, at the game's own rate. Click one to look at it closely in the next section.</p>
   <div class="plate">
-    <div class="zk-cast" id="zk-cast"></div>
+    <div class="zk-cast" id="zk-cast" data-own-look></div>
     <p class="cap" id="zk-cast-cap">Each costume is drawn from its resource on the disk, by the page's port of the game's limb drawing (<code>$1DFE</code>), one frame each pass of the main loop: six frames of the screen at the speed the game plays at, about eight frames a second. A costume that has no walk stands still. Two pixel colours are the same for every actor (light red and black, from <code>$D025</code> and <code>$D026</code>), and the third is the actor's own.</p>
   </div>
 </section>
@@ -349,7 +348,7 @@ function zkDrawLimbs(D, st, foot, mirror) {
     b.onclick = () => { dir = d; restart(); }; $('zk-dir').appendChild(b);
   }
   PAL.forEach((p, k) => {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'zk-swatch'; b.dataset.c = k; b.style.background = p;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'zk-swatch'; b.setAttribute('data-own-look', ''); b.dataset.c = k; b.style.background = p;
     b.title = NAMES[k]; b.setAttribute('aria-label', NAMES[k]);
     b.onclick = () => { colour[cur] = k; restart(); }; $('zk-col').appendChild(b);
   });

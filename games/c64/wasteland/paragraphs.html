@@ -13,18 +13,18 @@
 <main class="wrap">
 <style>
 .wl-pg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:4px;margin:0 0 14px}
-.wl-pg-n{font:inherit;font-family:var(--fm);font-size:13px;padding:5px 0;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
-.wl-pg-n.wl-pg-twin{background:#f6d3cd;border-color:#e4a79e}
-.wl-pg-n.wl-pg-mars{background:#f6dcc2;border-color:#e2bb8f}
-.wl-pg-n.wl-pg-other{background:#efe3b0;border-color:#d9c777}
-.wl-pg-n.wl-pg-off{opacity:.25}
-.wl-pg-n[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px;font-weight:700}
+.wl-pg-n[data-own-look]{font:inherit;font-family:var(--fm);font-size:13px;padding:5px 0;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.wl-pg-n.wl-pg-twin[data-own-look]{background:#f6d3cd;border-color:#e4a79e}
+.wl-pg-n.wl-pg-mars[data-own-look]{background:#f6dcc2;border-color:#e2bb8f}
+.wl-pg-n.wl-pg-other[data-own-look]{background:#efe3b0;border-color:#d9c777}
+.wl-pg-n.wl-pg-off[data-own-look]{opacity:.25}
+.wl-pg-n[aria-pressed="true"][data-own-look]{outline:2px solid var(--accent);outline-offset:1px;font-weight:700}
 .wl-pg-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;margin:0 0 12px;padding:0;list-style:none}
 .wl-pg-key span{display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid var(--line);vertical-align:-2px;margin-right:5px}
 .wl-pg-words{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.wl-pg-w{font:inherit;font-family:var(--fm);font-size:12.5px;padding:3px 9px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
-.wl-pg-w.wl-pg-false{background:#f6d3cd;border-color:#e4a79e}
-.wl-pg-w.wl-pg-true{background:#d3e8da;border-color:#9fcbb0}
+.wl-pg-w[data-own-look]{font:inherit;font-family:var(--fm);font-size:12.5px;padding:3px 9px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.wl-pg-w.wl-pg-false[data-own-look]{background:#f6d3cd;border-color:#e4a79e}
+.wl-pg-w.wl-pg-true[data-own-look]{background:#d3e8da;border-color:#9fcbb0}
 .wl-pg-w small{font-family:var(--fb);color:var(--ink-soft)}
 .wl-pg-say{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 0}
 .wl-pg-reply td{background:#15161a;color:#d7d9de;font-family:var(--fm);font-size:12.5px;line-height:1.55}
@@ -277,7 +277,7 @@ const WLAsk = (function () {
     function draw(r) {
       const g = D.guards[+who.value];
       if (!r) {
-        words.innerHTML = g.words.map(w => '<button type="button" class="wl-pg-w ' + KIND[w[2]] + '" data-w="' + esc(w[0]) + '">' + esc(w[0]) + ' <small>paragraph ' + w[1] + '</small></button>').join('');
+        words.innerHTML = g.words.map(w => '<button type="button" class="wl-pg-w ' + KIND[w[2]] + '" data-w="' + esc(w[0]) + '" data-own-look>' + esc(w[0]) + ' <small>paragraph ' + w[1] + '</small></button>').join('');
         party.innerHTML = ''; log.innerHTML = '<p class="wl-fi-dim">Pick a word. The game’s text appears here.</p>'; tally.textContent = '';
         return;
       }
@@ -308,7 +308,7 @@ const WLAsk = (function () {
     const file = {}; D.files.forEach(f => { file[f.para] = f; });
     const kind = p => D.never[p] ? D.never[p].kind : 'cited';
     let h = '';
-    for (let p = 1; p <= 162; p++) h += '<button type="button" class="wl-pg-n' + (D.never[p] ? ' wl-pg-' + D.never[p].kind : '') + '" data-p="' + p + '" aria-pressed="false">' + p + '</button>';
+    for (let p = 1; p <= 162; p++) h += '<button type="button" class="wl-pg-n' + (D.never[p] ? ' wl-pg-' + D.never[p].kind : '') + '" data-p="' + p + '" aria-pressed="false" data-own-look>' + p + '</button>';
     grid.innerHTML = h;
     const count = k => { let n = 0; for (let p = 1; p <= 162; p++) if (kind(p) === k) n++; return n; };
     $('wl-pg-c0').textContent = count('cited'); $('wl-pg-c1').textContent = count('twin'); $('wl-pg-c2').textContent = count('mars'); $('wl-pg-c3').textContent = count('other');
@@ -346,7 +346,7 @@ const WLAsk = (function () {
     function draw() {
       const v = sel.value;
       rows.innerHTML = D.questions.map((q, i) => v && +v !== q.m ? '' : '<tr data-q="' + i + '"><td>' + mapLink(q.m) + '</td><td>' + esc(q.q) + '</td><td><div class="wl-pg-words">'
-        + q.a.map(a => '<button type="button" class="wl-pg-w' + (FALSE[q.m + ':' + a[0]] ? ' wl-pg-false' : '') + '" data-w="' + esc(a[0]) + '">' + esc(a[0]) + '</button>').join('') + '</div></td></tr>').join('');
+        + q.a.map(a => '<button type="button" class="wl-pg-w' + (FALSE[q.m + ':' + a[0]] ? ' wl-pg-false' : '') + '" data-w="' + esc(a[0]) + '" data-own-look>' + esc(a[0]) + '</button>').join('') + '</div></td></tr>').join('');
       tally.textContent = '';
     }
     const say = guard(el, tally, async (i, word) => {

@@ -17,6 +17,10 @@
   --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
   --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
 }
+/* buttons, menus, fields and sliders on game pages: the rules at the end of this file */
+:root{--btn-font:var(--fb);--btn-fw:400;--btn-fs:14px;--btn-pad:6px 12px;--btn-r:6px;
+  --btn-bg:var(--surface-2);--btn-ink:var(--ink);--btn-line:var(--line);--btn-line-hover:var(--ink-mute);
+  --btn-on-bg:var(--ink);--btn-on-ink:#fff;--btn-on-line:var(--ink);--btn-focus:var(--accent);--btn-accent:var(--ink);--field-bg:var(--surface)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}   /* a page's own display for a class must not show what the page hid */
 html{background:var(--bg);min-height:100%}
@@ -540,11 +544,11 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 .partpick a.on{color:var(--ink);border-color:var(--accent)}
 .partpick .none{border-style:dashed;color:var(--ink-mute)}
 .pick{display:flex;align-items:stretch;gap:6px;margin:0 0 12px;font-family:var(--fm);font-size:12.5px}
-.pick select{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:6px 8px;border-radius:6px;font:inherit}
-.pick .step{flex:none;display:flex;align-items:center;justify-content:center;width:30px;border:1px solid var(--line);border-radius:6px;color:var(--ink-soft);background:var(--surface);text-decoration:none;font-size:16px;line-height:1;cursor:pointer}
-.pick .step:hover{color:var(--ink);border-color:var(--ink-mute);text-decoration:none}
-.pick .step.off{opacity:.35;cursor:default}
-.pick select:focus-visible,.pick .step:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.pick select{flex:1;min-width:0}
+.pick .step{flex:none;display:flex;align-items:center;justify-content:center;width:30px;border:1px solid var(--btn-line);border-radius:var(--btn-r);color:var(--btn-ink);background:var(--btn-bg);text-decoration:none;font-size:16px;line-height:1;cursor:pointer}
+.pick .step:hover{color:var(--btn-ink);border-color:var(--btn-line-hover);text-decoration:none}
+.pick .step.off{opacity:.45;cursor:default}
+.pick .step:focus-visible{outline:2px solid var(--btn-focus);outline-offset:2px}
 /* a part laid over the listing beneath it: its own rows carry a bar, and its names an accent */
 .src .row.mine{box-shadow:inset 2px 0 0 var(--accent)}
 .src .idx a.mine .a{color:var(--accent)}
@@ -676,3 +680,22 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
   .checking .finds>span:nth-child(3),.checking .finds>span:nth-child(4){display:none}
 }
 @media (prefers-reduced-motion:no-preference){.checking .axis .range,.checking .axis .dot,.checking .finds .track i{transition:all .2s ease}}
+
+/* Buttons, switches, menus, fields and sliders on a game page: one look on every page, from the
+   --btn tokens above. A page's own rules size and place its controls (padding, width, gaps,
+   font-size) and leave the look to these, which have no specificity, so any page rule wins; a
+   state of the page's own draws with var(--btn-on-bg) and the rest. A widget whose buttons are the
+   picture (sprites, swatches, colour-coded cells) marks its container, or the button, data-own-look,
+   and its rules carry [data-own-look]: these leave it alone. check_docs.py holds pages to it. */
+:where(body:not(.site)) :where(button,select,textarea,input:is([type=text],[type=number],[type=search])):not(:where([data-own-look],[data-own-look] *,.gametabs *,.pagenav *,.gamebanner *,.paste *)){
+  font-family:var(--btn-font);font-weight:var(--btn-fw);font-size:var(--btn-fs);line-height:1.3;color:var(--btn-ink);
+  background-color:var(--btn-bg);border:1px solid var(--btn-line);border-radius:var(--btn-r);padding:var(--btn-pad);cursor:pointer}
+:where(body:not(.site)) :where(textarea,input:is([type=text],[type=number],[type=search])):not(:where([data-own-look],[data-own-look] *,.gametabs *,.pagenav *,.gamebanner *,.paste *)){background-color:var(--field-bg);cursor:text}
+:where(body:not(.site)) :where(select):not(:where([data-own-look],[data-own-look] *,.gametabs *,.pagenav *,.gamebanner *,.paste *)){appearance:none;-webkit-appearance:none;padding-right:30px;max-width:100%;background-repeat:no-repeat;background-position:right 10px center;background-size:11px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2380838a' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")}
+:where(body:not(.site)) :where(button,select):not(:where([data-own-look],[data-own-look] *,.gametabs *,.pagenav *,.gamebanner *,.paste *)):where(:hover:not(:disabled)){border-color:var(--btn-line-hover)}
+:where(body:not(.site)) :where(button):not(:where([data-own-look],[data-own-look] *,.gametabs *,.pagenav *,.gamebanner *,.paste *)):where([aria-pressed=true],[aria-selected=true],[aria-checked=true],[aria-current]:not([aria-current=false])){
+  background-color:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
+:where(body:not(.site)) :where(button,select,textarea,input):not(:where([data-own-look],[data-own-look] *,.gametabs *,.pagenav *,.gamebanner *,.paste *)):where(:focus-visible){outline:2px solid var(--btn-focus);outline-offset:2px}
+:where(body:not(.site)) :where(button,select,textarea,input):not(:where([data-own-look],[data-own-look] *,.gametabs *,.pagenav *,.gamebanner *,.paste *)):where(:disabled){opacity:.45;cursor:default}
+:where(body:not(.site)) :where(input:is([type=range],[type=checkbox],[type=radio])):not(:where([data-own-look],[data-own-look] *,.gametabs *,.pagenav *,.gamebanner *,.paste *)){accent-color:var(--btn-accent);cursor:pointer}
