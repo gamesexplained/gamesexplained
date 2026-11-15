@@ -16,10 +16,11 @@ typed as data has no cross-references and still reads as explained (#184).
 The record counts by the CPU's address, so on a C16, whose 16 KB of RAM is seen four times
 over the 64 KB, code run at $5234 is the byte at $1234: the dump folds $4000-$7FFF onto
 $0000-$3FFF, the address the listing holds it at. $8000-$FFFF is where the ROMs are paged in,
-and the record cannot tell a ROM's code from a game's run from the RAM beneath with the ROMs
-paged out, so the dump leaves those addresses out and says how many it left. On a C16 the RAM
-there is the same 16 KB again; a Plus/4 game that runs code under the ROMs needs its own reading
-of that (kit/skills/c16/tool-regen2000, "The RAM under the ROMs").
+and the KERNAL's interrupt entry runs there in every game, so the record names apart the
+instructions there whose opcode came from the RAM beneath the ROMs (`under_roms`): the dump keeps
+those, folded the same way on a C16, and leaves out the ROMs' own, saying how many of each. A
+server built before it could tell them apart gives no `under_roms`, and the dump then leaves out
+every address from $8000 up and says to rebuild it (`tools.py get-plus4emu`).
 
 Each instruction is sized by decoding the RAM as it is at the dump, so code the game rewrote
 after running it is sized from bytes that never ran; where two instructions then overlap
@@ -51,14 +52,16 @@ def runs(addrs):
     return out
 
 
-def fold(addrs, ram_size):
-    """(kept, left): the RAM addresses as the listing holds them, and how many lay at $8000 and above."""
+def fold(addrs, ram_size, under=None):
+    """(kept, left): the RAM addresses as the listing holds them, and how many at $8000 and above
+    were left out: those not in `under`, the addresses whose opcode came from the RAM beneath the
+    ROMs, or every one when `under` is None (a record that cannot tell)."""
     kept, left = set(), 0
     for a in addrs:
-        if a >= 0x8000:
+        if a >= 0x8000 and (under is None or a not in under):
             left += 1
         else:
-            kept.add(a % ram_size if ram_size < 0x8000 else a)
+            kept.add(a % ram_size if ram_size < 0x10000 else a)
     return kept, left
 
 
@@ -93,10 +96,19 @@ def dump(m, gdir, merge=False):
     if not record.get("instructions"):
         sys.exit("the code map is empty: zap, play, then dump")
     ram_size = 0x4000 if "16 KB" in m.status().get("model", "") else 0x10000
-    executed, left = fold([a for a, _, _ in record["instructions"]], ram_size)
-    if left:
-        print(f"note: left out {left} instructions at $8000-$FFFF, where the ROMs are paged in "
-              "(the KERNAL's interrupt entry runs there in every game)")
+    under = record.get("under_roms")
+    executed, left = fold([a for a, _, _ in record["instructions"]], ram_size,
+                          None if under is None else set(under))
+    if under is None:
+        print(f"note: left out {left} instructions at $8000-$FFFF, where the ROMs are paged in: this "
+              "build of the server cannot tell the RAM under the ROMs from the ROMs, so code a game ran "
+              "there is left out too; `tools.py get-plus4emu` rebuilds it")
+    else:
+        if under:
+            print(f"kept {len(under)} instructions at $8000-$FFFF that ran from the RAM under the ROMs")
+        if left:
+            print(f"note: left out {left} instructions at $8000-$FFFF that ran from the ROMs "
+                  "(the KERNAL's interrupt entry runs there in every game)")
     path = os.path.join(gdir, "codemap.json")
     if merge and os.path.isfile(path):
         executed |= set(json.load(open(path)).get("executed", []))
