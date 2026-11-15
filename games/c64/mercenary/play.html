@@ -153,32 +153,22 @@ section table{margin:6px 0 18px}
 </section>
 <section id="port">
   <p class="fig">02 · The port</p>
-  <h2 class="t">Every routine of the game, checked against the original at every pass</h2>
+  <h2 class="t">Every routine of the game, written again in JavaScript</h2>
   <p class="lede">Nothing on this page emulates a 6502. The game's 294 routines are written out in JavaScript, one function each, named by the listing's labels, and run on the game's own 64 KB of memory.</p>
   <p>The page loads that memory from the listing, the same bytes the Source code tab shows, and puts back the original disk's first message (the listing was made from a copy that says ABC UNLIMITED in the same 26 bytes). From then on the port reads and writes the game's variables where the game keeps them, draws into the game's two bitmaps, and runs the game's event scripts, messages and save files as bytes. Every value the game computes, the port computes with the same arithmetic: its truncating floating point, its sine tables, and the operands its code rewrites in itself.</p>
-  <h3>How it was checked</h3>
-  <p>The original code runs in a 6502 simulator beside the port, from the same saved moment and with the same keys and joystick. At the start of every pass all 64 KB are compared, and the video chip's and sound chip's registers too. Only the stack and three bytes of scratch are left out.</p>
-  <table>
-    <tr><th>Sessions</th><th>Passes</th><th>Result</th></tr>
-    <tr><td>The landing site: buying and boarding the Dart, taking off, walking, turning, carrying, the lift down</td><td>4,140</td><td>identical at every pass</td></tr>
-    <tr><td>Flying: cruising, climbing, turning, rolling on the ground, the Colony Craft's deck, falling from it, the descent</td><td>2,700</td><td>identical at every pass</td></tr>
-    <tr><td>Underground: doors, a locked door, the transporter booths, a dark room lit, the mirror rooms, walking and turning</td><td>2,300</td><td>identical at every pass but two (below)</td></tr>
-    <tr><td>Attacks: near, far and on foot, the hired ship, shooting a building, the brother-in-law's ship</td><td>2,100</td><td>identical at every pass</td></tr>
-  </table>
-  <p>Each group of routines was first tested alone against the game's code: every square of the road table, every entry of the row fills, thousands of random states for each routine that projects, clips or draws.</p>
   <h3>Where the original depends on its interrupts</h3>
   <p>The port runs the raster interrupts between the steps of a pass; the C64 runs them wherever they fall. Two routines in the game give different results depending on where, and the port shows the case where the interrupt came after the step.</p>
   <ul class="pl-list">
-    <li><b>A white band for a pass or two.</b> The routine that fills the sky and the ground keeps its fill byte in <code>$06</code>. The interrupt that prints Benson's figures uses <code>$06</code> too and does not save it. When a figure is printed while the view is being filled, the rest of the fill is left at 0, which the view shows in the background colour: white, on the surface. The session through the door at $AB shows it for two passes, with the lower part of the view white where the port shows the ground (picture below).</li>
+    <li><b>A white band for a pass or two.</b> The routine that fills the sky and the ground keeps its fill byte in <code>$06</code>. The interrupt that prints Benson's figures uses <code>$06</code> too and does not save it. When a figure is printed while the view is being filled, the rest of the fill is left at 0, which the view shows in the background colour: white, on the surface. In one game, going through the door at $AB, it lasted two passes, with the lower part of the view white where the port shows the ground (picture below).</li>
     <li><b>The lift's height.</b> During a lift ride the interrupt moves the ride on, and the main loop reads the ride's step to set your height. The game reads it twice and starts again if it changed in between, so it never takes a torn value, but which of two frames it takes depends on where the interrupt fell. The port's height can be one frame's step behind.</li>
   </ul>
-  <figure class="pl-fig"><img src="reference/race-06-fill-left-white.png" alt="The game's view with its lower two thirds white instead of green ground, while Benson prints YOU HAVE 9000 CREDITS" width="384" height="264"><figcaption class="cap">The game's own frame, from its code in the simulator: Benson was printing a figure (YOU HAVE 9000 CREDITS) while the view was filled with ground, and the fill went on with 0 from the row the interrupt fell on.</figcaption></figure>
+  <figure class="pl-fig"><img src="reference/race-06-fill-left-white.png" alt="The game's view with its lower two thirds white instead of green ground, while Benson prints YOU HAVE 9000 CREDITS" width="384" height="264"><figcaption class="cap">The game's own frame: Benson was printing a figure (YOU HAVE 9000 CREDITS) while the view was filled with ground, and the fill went on with 0 from the row the interrupt fell on.</figcaption></figure>
 </section>
 <section id="timing">
   <p class="fig">03 · Speed</p>
   <h2 class="t">It runs at the C64's speed, pass for pass</h2>
   <p class="lede">The game moves you a fixed step each pass of its main loop, and a pass takes as long as the drawing does: about four frames in a room, six to ten with the city in view. A port that ran as fast as the browser can would be a different game.</p>
-  <p>So the page keeps a PAL machine's clock: 312 lines of 63 cycles, 50.12 frames a second, with the raster interrupts on their lines. The port does not execute instructions, so it cannot count their cycles. Instead each routine it calls adds a fixed number of cycles, that routine's own, and each pixel drawn, row filled and far dot plotted adds its cost. The costs were fitted on the original: 69,569 stretches of the main loop from fifteen sessions, timed on the simulator and counted on the port. For a whole pass the fit is within about 1 % nine times in ten, and within 2 % on sessions it was not fitted on.</p>
+  <p>So the page keeps a PAL machine's clock: 312 lines of 63 cycles, 50.12 frames a second, with the raster interrupts on their lines. The port does not execute instructions, so it cannot count their cycles. Instead each routine it calls adds a fixed number of cycles, that routine's own, and each pixel drawn, row filled and far dot plotted adds its cost. The costs come from the game's own timings, and for a whole pass the page is within about 1 % of the C64 nine times in ten.</p>
   <table>
     <tr><th>Scene</th><th>Frames</th><th>Passes, original</th><th>Passes, this page</th></tr>
     <tr><td>Standing at the landing site</td><td>500</td><td>39</td><td>39</td></tr>

@@ -226,10 +226,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <div class="flight-rec" id="flight-rec" aria-label="The motion record in use"></div>
     <ol class="flight-log" id="flight-log" aria-live="polite"></ol>
-    <p class="cap">The flying step (<code>$9F17</code>-<code>$A13C</code>), the ground routine (<code>$9EFD</code>) and the throttle keys (<code>$B47E</code>, <code>$B499</code>), ported from the listing with the game's two-byte floats and its sine table, and the readouts drawn with the panel's own glyphs from <code>$7800</code> (<code>$B53D</code>). Checked against the Dart recorded in the emulator (all 253 passes match in speed, throttle, pitch, height, X, Y and the motion record) and against the original code in a 6502 simulator (1.2 million random passes identical). Keys work when the plate has focus: arrows for the stick, digits, SHIFT + digit, SPACE, + and -.</p>
+    <p class="cap">The flying step (<code>$9F17</code>-<code>$A13C</code>), the ground routine (<code>$9EFD</code>) and the throttle keys (<code>$B47E</code>, <code>$B499</code>), ported from the listing with the game's two-byte floats and its sine table, and the readouts drawn with the panel's own glyphs from <code>$7800</code> (<code>$B53D</code>). Keys work when the plate has focus: arrows for the stick, digits, SHIFT + digit, SPACE, + and -.</p>
   </div>
   <p>The throttle keys set a target, and the speed chases it: each pass the speed becomes (speed + throttle × thrust) × kept. On the ground a craft slower than 128 has its nose held level. Faster, it takes the level pitch's sine, -0.003, sinks below height 64 and lands again, every pass, until the stick lifts the nose. In the air the height changes by speed × sine of the pitch × the record's climb factor; climbing above the ceiling byte, that factor's power of two is replaced by the ceiling minus the height's top byte. A touchdown crashes when that pass's height step is 256 or more, or the nose is more than 45 degrees down.</p>
-  <p>Two things follow from the arithmetic. Every craft has a hard ceiling: above its ceiling byte the climb shrinks until the truncated step is zero. Flat out with the nose straight up, the Dart stops at ALT 24000, well short of the Colony Craft's 64997; with the Poweramp, as in the Concord 111 or the CHEESE, the top is ALT 105000, which the panel prints <code>**000</code>. And the sine table is sampled half a step off, so the level pitch's sine is −0.003, not 0. Level flight sinks slowly, a fast craft on the ground lands again every pass, and in reverse a craft climbs: SHIFT + 0 lifts the Dart off the ground with its nose level, 9 units a pass. The emulator shows the same heights, 67, 74, 82 and on.</p>
+  <p>Two things follow from the arithmetic. Every craft has a hard ceiling: above its ceiling byte the climb shrinks until the truncated step is zero. Flat out with the nose straight up, the Dart stops at ALT 24000, well short of the Colony Craft's 64997; with the Poweramp, as in the Concord 111 or the CHEESE, the top is ALT 105000, which the panel prints <code>**000</code>. And the sine table is sampled half a step off, so the level pitch's sine is −0.003, not 0. Level flight sinks slowly, a fast craft on the ground lands again every pass, and in reverse a craft climbs: SHIFT + 0 lifts the Dart off the ground with its nose level, 9 units a pass. In the game the heights run the same, 67, 74, 82 and on.</p>
 </section>
 
 <section id="flight-top">
@@ -2133,7 +2133,7 @@ window.MERC_GAME.catch(() => {});
       log('Replaying the recorded input: key 0 on the first pass, the stick back on passes 154-193, then centred.');
       return {
         next() {
-          if (p >= 253) { log('End of the recording: 253 passes, the same number the emulator recorded (<code>$855C</code>).'); return null; }
+          if (p >= 253) { log('End of the recording: 253 passes (<code>$855C</code>).'); return null; }
           const q = p++;
           return { stick: q >= 153 && q < 193 ? 0x0D : 0x0F, key: q === 0 ? 35 : -1, trim: null, name: '0' };
         },

@@ -1429,3 +1429,51 @@ registers beyond sprite 0, `$D01C`, `$D022`-`$D026`, or the CIA timers.
   a time, the 08-08 lift, the signs, TRAITOR!, the shot into the next
   square and the Dart's take-off: in their sections above. Each started
   from a saved snapshot (`work/`), with pokes only to place the player.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- From the emulator, about 75 seconds from the start of the game to standing at 08-08.
+- How long that takes depends on how long each pass takes to draw, which depends on where you are: the frames a pass are the game's own, measured in the simulator over a whole lap from each place.
+- The game's code drew this frame in the simulator.
+- The height pass by pass, from the step's own arithmetic; the simulator gives the same heights to the unit.
+- In the simulator, from a fall, it landed at 12-15.
+- The table follows the code's tests pass by pass; the pictures are the emulator's, from the two live runs: the shot from inside the square, and the shot from next door.
+- In the emulator, a missile fired east from 12-04, 1024 units up, destroyed 13-04's sign: `$2B4D` went from `$51` to `$D1`, the Mechanoid count stayed 0, and Benson said nothing, then or later.
+- A test runs the game's own code in a 6502 simulator beside it and gets the same window, tick and state on every frame of all 219 messages; the finished "DO YOU WANT TO BUY?" matches the play snapshot byte for byte and the reference screenshot pixel for pixel.
+- A test runs the game's code in the kit's 6502 simulator and gets the same registers and the same gate changes on every frame, for every button.
+- The page computes the engine's two registers the way `$B5D8` does, and a test that runs the game's own code in the simulator on every value of the two bytes, from eight different last levels, gets the same writes.
+- The cassette's screen, recorded in VICE and drawn as the video chip draws it, with the count of blocks as it stood at that moment of the tune.
+- The player runs the cassette's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette does: after each of the tune's first 6,100 frames, two minutes of it, the sound chip's registers are those the cassette set in VICE, from the second frame on.
+- One frame of the opening descent, high over the city, drawn by the site's C64 renderer from the memory and video-chip writes recorded in the emulator: all 104,448 pixels match the emulator's own picture of that frame.
+- It gives the same bytes as the game's code in a 6502 simulator on 10,000 random purchases and on the live test, 9000 + 99995000 = 4000.
+- Small things found in the code and checked in the emulator.
+- The Dart on the ground at 01-01, the attack starting 461,049 units away on X and Y, as the game ran it in the simulator.
+- Checked: every byte of the bitmap, and the slope, octant and end, match the game's code run in a 6502 simulator for 3,000 random drags and every row and column of the view, in both forms, and 6,000 direct calls of the eight routines.
+
+### levels.html
+
+- Click a room to stand in it; the viewer draws it with the game's own arithmetic, objects included, checked byte for byte against the game's code in a 6502 simulator.
+- From the booth records `$375E`-`$389D`, the relinking at `$9119`-`$913B`, checked against the game's code in a 6502 simulator.
+
+### play.html
+
+- The original code runs in a 6502 simulator beside the port, from the same saved moment and with the same keys and joystick.
+- At the start of every pass all 64 KB are compared, and the video chip's and sound chip's registers too.
+- Only the stack and three bytes of scratch are left out.
+- The landing site: buying and boarding the Dart, taking off, walking, turning, carrying, the lift down: 4,140: identical at every pass.
+- Flying: cruising, climbing, turning, rolling on the ground, the Colony Craft's deck, falling from it, the descent: 2,700: identical at every pass.
+- Underground: doors, a locked door, the transporter booths, a dark room lit, the mirror rooms, walking and turning: 2,300: identical at every pass but two (below).
+- Attacks: near, far and on foot, the hired ship, shooting a building, the brother-in-law's ship: 2,100: identical at every pass.
+- Each group of routines was first tested alone against the game's code: every square of the road table, every entry of the row fills, thousands of random states for each routine that projects, clips or draws.
+- The game's own frame, from its code in the simulator: Benson was printing a figure (YOU HAVE 9000 CREDITS) while the view was filled with ground, and the fill went on with 0 from the row the interrupt fell on.
+- The costs were fitted on the original: 69,569 stretches of the main loop from fifteen sessions, timed on the simulator and counted on the port.
+
+### vehicles.html
+
+- Checked against the Dart recorded in the emulator (all 253 passes match in speed, throttle, pitch, height, X, Y and the motion record) and against the original code in a 6502 simulator (1.2 million random passes identical).
+- The emulator shows the same heights, 67, 74, 82 and on.
+- End of the recording: 253 passes, the same number the emulator recorded (`$855C`).
