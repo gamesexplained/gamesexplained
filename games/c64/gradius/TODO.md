@@ -18,7 +18,21 @@ listing has not been audited (`kit/CHECKING.md`).
 
 - Play tab: not started.
 
+## Awaiting the steward's pass
+
+- How it works, section 02: the pictures above the power-up table, added
+  15 November 2026 at Aaron's request, with their captions. The table and
+  the text around it are unchanged.
+
 ## Ideas
+
+- Discoveries could take two finds from the power-up pictures: the shield's
+  pods vanish whenever the ship tilts, and with two Options the exhaust
+  flame never shows (`facts.md`, Graphics).
+- The listing's comments on `draw_options` ($6F7E) and `trail_x` ($53B7)
+  give the second Option as fourteen places back; it is drawn fifteen back
+  and fires from fourteen (`facts.md`, Graphics). Correct them at the next
+  pass over the listing, which needs the snapshot.
 
 - A section on how a frame is built (the four interrupt phases and the two
   NMI splits).
