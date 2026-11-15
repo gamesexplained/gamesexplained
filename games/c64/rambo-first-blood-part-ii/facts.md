@@ -191,3 +191,23 @@ recommended (TODO.md).
   autostart and plays (`orientation.md`).
 - *Live:* `$C006` is the first instruction run outside the loader's
   pages after the fast loader, with `$01` = `$37`.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- This was read in the code and reproduced on the driver in `test_music.js`; it has not been checked by ear in the emulator.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE once the picture was in, and drawn as the video chip draws them.
+
+### index.html
+
+- The first instructions page and the start of play, from the emulator.
+- The game's own driver (`$8100`-`$AFB3`, from the listing) runs on this page on the kit's 6502, once a frame, through a model of the SID with a 6581's filter.
+- `test_music.js` beside this page runs the same commands on the whole listing and checks every write to the chip, frame by frame.
+- The player runs the tune's own code and notes, as the cassette leaves them in memory, on the kit's 6502, once a frame as the cassette calls it.
+- It was checked against the cassette loading in VICE: the sound chip's registers after each of the first 9,000 calls, three minutes of music, are the player's.
