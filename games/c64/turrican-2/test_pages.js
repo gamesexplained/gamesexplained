@@ -28,6 +28,27 @@ for(let i=0;i<16;i++){const m=image('intro').slice();m[14]=i;const cpu=new C64Cp
 const walkCode=g.read('graphics.html').match(/function walkStep\(\)\{([\s\S]*?)\}function walkTick/)[1].replace('drawWalk();','return [walkDivider,walkIndex];');
 for(let divider=0;divider<256;divider++)for(let index=0;index<7;index++){const m=image('resident').slice();m[0x27]=divider;m[0x28]=index;m[0x2d]=0;const cpu=new C64Cpu.CPU(m);let done=false;try{cpu.call(0x12d5,{},{maxSteps:100,hooks:{0x12ef(){done=true;throw Error('DONE');}}});}catch(e){if(!done)throw e;}const actual=new Function('walkDivider','walkIndex',walkCode)(divider,index);assert.deepStrictEqual(actual,[m[0x27],m[0x28]]);}
 console.log('Graphics:',shapes,'sprite pieces,',A.groups.length,'groups, sixteen decoded story pictures and 1792 walking-divider cases matched');
+// The level 1-1 boss: fifteen shapes and colours per facing, three columns of five bands, from the pose tables.
+{const m=image('level-1-1'),B=A.boss;assert.deepStrictEqual(B.numbers,Array.from(m.slice(0x8634,0x8652)));assert.deepStrictEqual(B.colours,Array.from(m.slice(0x8616,0x8634)));
+ for(const n of B.numbers)if(n!==0xfe)assert.deepStrictEqual(Array.from(bytes(B.shapes[n])),Array.from(m.slice(0xc000+n*64,0xc000+n*64+63)),'boss shape '+n);
+ for(let i=0;i<4;i++)assert.equal((m[0x8742+i]-m[0x8741+i])&255,21,'boss bands 21 lines apart');
+ // The full-pose installer copies fifteen entries per facing into matrices indexed column*5+row.
+ assert.deepStrictEqual(Array.from(m.slice(0x8293,0x8295)),[0xa2,0x0e]);console.log('Boss:',Object.keys(B.shapes).length,'shapes and both facings matched');}
+// Discoveries: the level 1-2 bridge window and its six falling strips, and the farewell rows keyed by the ending's program.
+const X=readData('discoveries.html');
+{const m=image('level-1-2'),Q=X.bridge,map=bytes(Q.map),w=m[0x8fc0]+256*m[0x8fc1];assert.equal(map.length,Q.width*Q.height);
+ for(let r=0;r<Q.height;r++)for(let c=0;c<Q.width;c++)assert.equal(map[r*Q.width+c],m[0x9000+r*w+c],'bridge window '+r+','+c);
+ assert.deepStrictEqual(Q.strips.x,Array.from(m.slice(0xaf67,0xaf6d)));assert.deepStrictEqual(Q.strips.w,Array.from(m.slice(0xaf73,0xaf79)));
+ // The collapse clears rows four and five of the map: STA $9190,Y and STA $91F4,Y are 4*w and 5*w past $9000.
+ assert.equal(0x9190-0x9000,4*w);assert.equal(0x91f4-0x9000,5*w);
+ const L=readData('levels.html').maps.find(q=>q.name==='1-2');for(const k of ['tiles','font','colours','defs'])assert.deepStrictEqual(Q[k],L[k]);}
+{const m=image('ending'),F=X.farewell;assert.deepStrictEqual(Array.from(bytes(F.fonts[0])),Array.from(m.slice(0x906c,0x906c+880)));assert.deepStrictEqual(Array.from(bytes(F.fonts[1])),Array.from(m.slice(0x93dc,0x93dc+512)));
+ const rows=F.rows.map(r=>{const e=bytes(r.enc),k=bytes(r.key);assert.deepStrictEqual(Array.from(e),Array.from(m.slice(r.address,r.address+e.length)));
+  e.forEach((_,i)=>assert.equal(k[i],m[0x8206-(r.address+i-0xf600)],'key byte'));return Array.from(e,(v,i)=>(((v^0x86)+k[i]-0xd3)&255));});
+ const text=rows.map(b=>String.fromCharCode(...b.slice(3).filter(c=>c<0xfb)));assert.deepStrictEqual(text,['TURRICAN II','will be my','! LAST !','game on the Commodore 64']);
+ assert.equal(m[F.patch.address],0x85);assert.equal(F.patch.address,0x8206-(F.rows[F.patch.row].address+F.patch.index-0xf600));
+ const p=(((bytes(F.rows[F.patch.row].enc)[F.patch.index]^0x86)+F.patch.value-0xd3)&255),code=p<0x60?p&63:p-0x20;assert.equal(F.patch.glyphAddress,0x93dc+code*8);
+ assert.deepStrictEqual(Array.from(bytes(F.patch.glyph)),Array.from(m.slice(F.patch.glyphAddress,F.patch.glyphAddress+8)));console.log('Discoveries: bridge window, strip tables and four keyed farewell rows matched');}
 // Render every button through the exact AudioWorklet module, including its private CPU scope.
 require('../../../site/lib/sid.js');globalThis.C64Cpu=C64Cpu;
 const {CHECKER,verdict}=require('../../../kit/c64/sid_check.js');
@@ -38,4 +59,4 @@ for(const choices of [I.tunes,I.sfx])for(let tune=0;tune<choices.length;tune++){
  const result={name:choices[tune].name,error:null,heard:false,vol:false,env:false,moves:hi-lo};for(const m of posted){if(m.driverError)result.error=m.driverError;for(const k of ['heard','vol','env'])if(m[k])result[k]=true;}
  assert.equal(verdict(result,10),null,JSON.stringify(result));
 }
-console.log('Worklet audio: all sixty buttons rendered ten seconds each; all populated choices sounded; every silent selector is labelled');
+console.log('Worklet audio: all',I.tunes.length+I.sfx.length,'buttons rendered ten seconds each and every one sounded');

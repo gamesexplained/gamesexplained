@@ -115,13 +115,33 @@ The story intro is an independent image captured at its `$7B3D` entry, before th
 
 The media inventory answers all 27 items: 21 part attributions, two side markers, one saved score sector, and three retained files outside the load selections. The raw high-score sector is side one, track 18/sector 18, marked free in the allocation map. Its block matches the bytes loaded at `$67FF`. The fixed load calls and constructed auxiliary names are listed in `media.json`.
 
-The sound viewer offers all seventeen stored song choices, including eight silent selectors. Seven intro headers have empty orders. The world-3-3/world-5-2 selector one loops pattern zero with instrument zero: targeted original-instruction hooks at `$6E47/$6ED3` confirmed the zero instrument assignment. Nine choices therefore supply populated music. The effects viewer offers 35 resident selectors and eight ending selectors, including their silent zero entries.
+The story intro's player has eight song headers, of which seven have empty orders. The world-3-3/world-5-2 selector one loops pattern zero with instrument zero: targeted original-instruction hooks at `$6E47/$6ED3` confirmed the zero instrument assignment. That leaves nine populated tunes: the story, the title, the score entry (title song one), world 3-1 and its boss (song one, started by `three_part_flight_boss` at `$802E`), world 3-2 and its boss (song one, started at route index 29 by `$EA9A`), world 3-3, which level 5-2 plays again, and the ending. The levels on foot load no music player. The intro's loading display keeps the story tune going while the resident file loads, then fades it before the title file.
+
+The resident effects player takes its request at `$FFC0` as `$80` plus the number. The numbers the How it works tab names come from their request sites: 1 spread shot, 2 laser, 4 bouncing shot, 5 the held-fire beam (`process_held_fire`), 7 the palette flash, 8 world 4-1's lowering gates (`lower_gate_columns`), 9 power line, 16 explosion, 18 level 2-1 boss destroyed, 19 level 1-2 boss destroyed, 26 the world 4 bosses destroyed and 27 wheel bomb. Number 32 is world 4-1's scripted gate sequence, and level 2-2's departure picks one of 12 to 27 at random.
 
 ## Page verification
 
-`test_pages.js` compares 379530 ordered SID writes from 28140 original driver calls, covering every music/effect button. It constructs each driver from its function source alone, as the AudioWorklet does. A second pass renders ten seconds per button through the site's actual worklet module and SID model; every populated choice sounds, and silent choices are named. The test uses the committed listings, including each part's inherited bytes, rather than private snapshots.
+`test_pages.js` runs every music and effect button's original driver against the listing bytes and compares each SID write with the page's driver, then renders ten seconds of each through the site's AudioWorklet module; every button sounds. It checks all eleven map rectangles and terrain definitions, all 1902 stored sprite pieces, the 63 graphics groups, the sixteen intro decompressions, the generated scene-frame banks and 1792 walking-divider cases against the original controller prefix.
 
-The same test checks all eleven map rectangles and terrain definitions, all 1902 stored sprite pieces, 63 graphics groups, the sixteen intro decompressions, and the generated scene-frame banks. It compares 1792 walking-divider cases with the original controller prefix. The graphical preview explicitly schedules one controller call per PAL frame; this is the isolated animation rule, rather than a recorded gameplay route.
+It also holds the level 1-1 boss viewer to the pose tables at `$8616/$8634` and the shapes at `$C000` plus 64 times each number, the Discoveries bridge window to the level 1-2 map and its strip tables, and the four farewell rows to the ending's bytes and program-byte key.
+
+## Files the game never loads
+
+The disks carry three files outside every load path (`media.json`). All three are byte-identical on the original Rainbow Arts disks (TOSEC `turrican_ii_s1/s2[rainbow_arts_1991](!).g64`), so they shipped with the game rather than arriving with the crack.
+
+`23` (side one) is a memory save of level 1-2 in mid-game, `$6C00-$A89E`. Against the level's own load it differs in 34 bytes. Sixteen are map cells in rows four and five (columns 6-7, 9, 12, 13, 15 and 17-18), set to zero exactly as `update_collapsing_terrain_strips` (`$7CED`) clears them when each of the six bridge strips finishes falling; the strip tables are `$AF67` (X) and `$AF73` (width), both in units of four pixels. Eight are the actor records at `$8AA8-$8AC5`, the cells (1,0) and (2,0), with their type nibbles cleared as spawning does. Ten are map row 40, columns 86-95 (`$9FF6-$9FFF`), which hold the ASCII text `SMON $C000`: the start command of the SMON machine-code monitor.
+
+`61` (side two) is the same save, identical to `23` below `$A000`, but shorter (`$6C00-$A20C`). Its last 525 bytes are the C64 BASIC ROM, from the `CBMBASIC` signature through the start of the keyword table and error messages such as `TOO MANY FILES`, so it was saved with BASIC banked in.
+
+`ST` (side two) is packed. The game's own loader unpacks it to `$9FBB-$CFFF`. The output is engine code from another build: long runs of it equal resident code in `$1D96-$45xx` at constant displacements ($8225, $853C and $8528), more than 4,800 bytes in all. It is not a level, graphics or sound.
+
+The original side one starts with a 218-byte boot file `##` at `$0326`, which loads the loader file `HE`. Its last bytes are the text `ICH HASSE ALLE SCHLUEMPFE !!!`, which the game never displays. The Triangle copy has neither file; it starts from its own.
+
+The original disk's score sector (track 18, sector 18) holds the team as the default table: MANFRED TRENZ 100000 at 5-1, ANDREAS ESCHER 90000 at 4-2, MARKUS SIEBOLD 80000 at 4-1, STEFAN ALBES 70000 at 3-3, ALEXANDER ERNST 60000 at 3-2, JOERG PRENZING 50000 at 3-1, HOLGER SCHMIDT 40000 at 2-2, THOMAS ENGEL 30000 at 2-1, JULIAN E 20000 at 2-2 and MARC A. ULLRICH 10000 at 2-1. The Triangle copy's sector holds its crackers' scores instead.
+
+## The ending's key
+
+Each of the 2053 bytes of the ending's text stream (`$F600-$FE04`) is keyed by one program byte, `$8206` down to `$7A02`, so the byte at `$F600+n` uses `$8206-n`. The L of `! LAST !` at `$FB25` is keyed by `$7CE1`, the `STA $E0` opcode ($85) in `initialize_ending_counter_display` that sets the font copy's destination page. Changing it to `$EA` (NOP) decodes that letter as `$B1`, which the row decoder (`$875D`: below `$60` masked to six bits, otherwise less `$20`) turns into glyph `$91` of the second font, eight bytes at `$9864` outside it.
 
 ## The listing's error rate
 

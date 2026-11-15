@@ -152,3 +152,13 @@ Built the required pages and listing-based tests. Sound testing found the second
 ## Publication pass
 
 Committed the page draft before its separate rewrite and fifteen-year-old-reader pass. Explained sprites, character-sized tiles, music drivers, song selectors, and the comparison carry flag where they first appear. Corrected a boss evidence link to its actual entry at $7D45. The headless Firefox review exercised 63 graphics groups, 19 pictures, 195 ending text records, all eleven maps, and the instruction stepper on desktop and mobile widths. Node rendered ten seconds through the real AudioWorklet module for all sixty audio buttons. Required draft checks passed with 109 selected tests and eight unrelated missing-SkoolKit skips.
+
+## Quality pass, 15 November 2026
+
+A follow-up pass in a cloud session, after the maintainer asked for duller sections to be cut and for Discoveries and more pictures. VICE was the vice-mcp v4.0.0 Linux build under Xvfb, with its missing shared libraries unpacked into `tools/vice-libs` rather than installed. The maintainer agreed to downloading the original Rainbow Arts disks from archive.org and the C64Games release.
+
+Comparing the two retained files with the level 1-2 load showed what they are: a save of the level in mid-game, taken with SMON. The difference was 34 bytes, all of them accounted for by the bridge-collapse routine, actor spawning and the monitor's text. `61` is the same save with the BASIC ROM banked in at its end, which the earlier run had read as diagnostic text. Running the game's own loader on `ST` in VICE unpacked it to engine code of another build. The original disks also gave the boot file's Smurfs line and the team's default high-score table.
+
+The level screenshots came from snapshots taken at the start of each level, reached one after another by setting `$03E4` to four while the main thread waited at `$0A49`, which starts the transition to the next level. The bridge frames were taken from a snapshot at the start of level 1-2 while walking right.
+
+The pages lost the terrain-byte slider, the controls and weapons tables, the silent and unnamed sound selectors, the reference image and the playfield section, and their captions lost their account of how the run checked them. The two Discoveries bugs stay as leads in the level 5-1 and 5-2 facts: neither has a repro in normal play. The page test holds the new boss viewer, bridge window and farewell rows to the listings.
