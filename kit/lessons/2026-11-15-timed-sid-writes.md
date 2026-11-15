@@ -1,4 +1,4 @@
-## next · 2026-11-15 · Friday the 13th (C64) · air with Claude
+## 0.0.344 · 2026-11-15 · Friday the 13th (C64) · air with Claude
 
 - **Writes that match the game's in order can still drop notes: the
   chip needs their cycles too.** Friday the 13th's music page played
