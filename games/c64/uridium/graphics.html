@@ -88,7 +88,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="sprites">
   <p class="fig">01 · Everything that moves</p>
   <h2 class="t">Every sprite, moved by the game's own code</h2>
-  <p class="lede">Each picture here is placed, coloured and stepped by the game's own routines, run on the kit's 6502 over the listing's memory a frame at a time, a fiftieth of a second, in the colours of the Dreadnought chosen below.</p>
+  <p class="lede">Each picture here is placed, coloured and stepped by the game's own routines, run over the listing's memory a frame at a time, a fiftieth of a second, in the colours of the Dreadnought chosen below.</p>
   <div class="plate">
     <div class="gx-bar">
       <button type="button" id="gx-run">Pause</button>
@@ -138,7 +138,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <div class="ur-scroll"><canvas id="gx-chars" class="gx-cv" width="576" height="288"></canvas></div>
     <p class="gx-out" id="gx-cout">Point at a character to see its code.</p>
-    <p class="cap">The fixed half from <code>$7800</code>; the level's half copied to <code>$7C00</code> by <code>copy_tile_set</code> (<code>$1A54</code>) from <code>$D400</code>, <code>$D800</code> or <code>$DC00</code>, by the table at <code>$E040</code>; the colours from <code>level_colours</code> (<code>$2F33</code>), both run on the kit's 6502. Each cell is drawn in the level's map colour with its two shared colours, on the white background.</p>
+    <p class="cap">The fixed half from <code>$7800</code>; the level's half copied to <code>$7C00</code> by <code>copy_tile_set</code> (<code>$1A54</code>) from <code>$D400</code>, <code>$D800</code> or <code>$DC00</code>, by the table at <code>$E040</code>; the colours from <code>level_colours</code> (<code>$2F33</code>), both run in the page. Each cell is drawn in the level's map colour with its two shared colours, on the white background.</p>
   </div>
   <p>Walls are <code>$80</code>-<code>$8F</code> and targets <code>$90</code>-<code>$9F</code>, both in the level's own half, so each set gives its Dreadnoughts their own walls and targets. A target shot down becomes its wreck, the code <code>$20</code> lower, <code>$70</code>-<code>$7F</code> in the shared half. The runway's end is <code>$6F</code>, and the stars are <code>$42</code> and <code>$43</code>, rewritten every frame (<a href="how-it-works.html#stars">Stars</a>). The three sets are shared out over the fifteen Dreadnoughts: six use the set at <code>$DC00</code>, five the set at <code>$D400</code> and four the set at <code>$D800</code>.</p>
 </section>
@@ -161,7 +161,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">After a landing, the hull wipes away and the fuel rod chamber takes its place: a grey panel of paired slots joined by arrows, where fire at the right moment takes a bonus. It is drawn from a screen and a character set the rest of the game never uses, kept under the I/O chips at <code>$D200</code>.</p>
   <div class="plate">
     <div class="ur-scroll"><canvas id="gx-cham" class="gx-cv" width="640" height="336"></canvas></div>
-    <p class="cap">The chamber rebuilt from memory. <code>fuel_rod_chamber</code> (<code>$114E</code>) runs on the kit's 6502 after the wipe (<code>shift_rows_left</code>, <code>shift_rows_right</code>): it copies the screen from <code>$A600</code> and the characters from <code>$D200</code> to <code>$7C00</code>, then fades the three backgrounds in to white, light grey and dark grey (<code>chamber_fade</code>, <code>$38DE</code>). The wipe leaves every panel cell at colour <code>$F8</code>, so the fourth multicolour is black &mdash; the slots. The countdown digit and the flashing bonus are drawn only once play reaches the panel, so they are blank here.</p>
+    <p class="cap">The chamber rebuilt from memory. <code>fuel_rod_chamber</code> (<code>$114E</code>) runs after the wipe (<code>shift_rows_left</code>, <code>shift_rows_right</code>): it copies the screen from <code>$A600</code> and the characters from <code>$D200</code> to <code>$7C00</code>, then fades the three backgrounds in to white, light grey and dark grey (<code>chamber_fade</code>, <code>$38DE</code>). The wipe leaves every panel cell at colour <code>$F8</code>, so the fourth multicolour is black &mdash; the slots. The countdown digit and the flashing bonus are drawn only once play reaches the panel, so they are blank here.</p>
   </div>
   <div class="plate" style="margin-top:16px">
     <div class="ur-scroll"><canvas id="gx-chamset" class="gx-cv" width="864" height="54"></canvas></div>
@@ -177,7 +177,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <canvas class="ur-l-cv" id="ur-l-cv" width="384" height="272" role="img" aria-label="Uridium's loading screen: URIDIUM in black letters inside a frame of coloured stripes, BY ANDREW BRAYBROOK below it in striped letters, and a yellow bar near the foot of the screen that fills with arrows"></canvas>
     <div class="ur-l-bar"><button type="button" id="ur-l-again">Again</button><button type="button" id="ur-l-skip">Skip</button><span id="ur-l-stat" aria-live="off"></span></div>
-    <p class="cap">The cassette's screen at the tape's pace, from the moment it comes up. The loop the tape runs while it loads, written again in JavaScript, recolours a frame recorded in VICE and fills its bar, frame by frame, as it did on the recorded load. Skip goes to the end of the load.</p>
+    <p class="cap">The cassette's screen at the tape's pace, from the moment it comes up. The loop the tape runs while it loads, written again in JavaScript, recolours the screen and fills its bar, frame by frame, as it does on a real load. Skip goes to the end of the load.</p>
   </div>
   <p>Every other frame, the loop moves the three colours round one place: the background takes the first multicolour's, the first takes the second's, and the second takes the background's, so the stripes and the letters below them seem to flow. Every 256 frames, about five seconds, it starts again from one of eight sets of three in a table, greys, reds, blues and greens. It picks the set by the last three bits of the address the tape has reached, so the order depends on exactly how fast the tape runs.</p>
   <p>The bar stays yellow while everything above it changes colour. Its outline and arrows are drawn in the background colour, so in every frame the loop turns the background yellow when the beam reaches the empty line under ANDREW BRAYBROOK, and back again once the beam is past the foot of the screen.</p>
