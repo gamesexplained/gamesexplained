@@ -1,0 +1,70 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Count Duckula</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+</style>
+<style>.cd-img{image-rendering:pixelated;max-width:100%;height:auto}canvas{display:block;margin:12px 0;image-rendering:pixelated;max-width:100%;height:auto;background:#000}button,select,input{font:inherit}button{cursor:pointer}.cd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.cd-world{display:grid;grid-template-columns:repeat(13,1fr);gap:2px}.cd-world button{font-size:11px;padding:4px 0}.cd-world button[aria-pressed=true]{background:#185b91;color:white}.cd-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}table{border-collapse:collapse;width:100%}td,th{padding:8px;text-align:left;border-bottom:1px solid #ccc}@media(max-width:650px){.wrap,.hero{padding-left:20px;padding-right:20px}}</style><!-- tabs --><header class="hero"><p class="eyebrow">1989 · Alternative Software · Commodore 64</p><h1>Count Duckula</h1><p class="sub">Every stored sprite shape, plus the pictures and letters that build the screen.</p></header><main class="wrap"><section id="sprites"><p class="fig">01 · Count Duckula</p><h2 class="t">The shapes behind the actors</h2><div class="pick"><button class="step" id="cd-shape-prev">←</button><select id="cd-shape" aria-label="Sprite shape"></select><button class="step" id="cd-shape-next">→</button></div><label>Actor colour <select id="cd-colour" aria-label="Actor colour"></select></label><canvas id="cd-sprite" width="240" height="210" aria-label="Sprite bitmap"></canvas><p id="cd-shape-caption"></p><p>Each shape has 63 drawing bytes and one spare byte. A byte holds four pairs of bits, the binary digits zero and one. Each pair chooses transparency, one of two shared colours, or the actor’s own colour. The same stored shape can therefore appear in different colours.</p><figure><img class="cd-img" src="reference/wiki-door.gif" alt="Preserved Count Duckula gameplay showing a doorway"><figcaption class="cap">Independent gameplay reference preserved by <a href="https://www.c64-wiki.com/wiki/Count_Duckula_-_No_Sax_Please,_We%27re_Egyptian!">C64-Wiki</a>, retrieved 14 November 2026.</figcaption></figure><p>Duckula’s walking frames use three consecutive shapes. Mummies and crows use pairs. The viewer keeps each hardware shape separate so their component parts remain visible.</p><p class="cap">All 104 shapes from pointers <code>$10</code> through <code>$77</code> are drawn from <code>$C400</code> through <code>$DDFF</code>. The game’s shared multicolours are white and black; the menu changes the actor colour. Setup: <code>$2B85</code>. Walking shapes: <code>$3B56</code>.</p></section><section id="font"><p class="fig">02 · Count Duckula</p><h2 class="t">The title and its bitmap font</h2><img class="cd-img" src="reference/title.png" alt="The title logo and credit text"><canvas id="cd-font" style="width:640px" width="304" height="32" aria-label="Bitmap digits and letters"></canvas><p>The title logo is stored as a separate bitmap with two colour planes. Text uses eight-byte glyphs. The game writes those glyphs into the bitmap rather than asking the text display to draw a character.</p><p class="cap">Logo: <code>$1A80</code>, colours <code>$1800</code> and <code>$1940</code>. Font: <code>$BE50</code>, with colour tables <code>$BE00</code> and <code>$BE28</code>.</p></section></main><footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script><script>
+/* duckula-drawing */
+function roomData(m,id){
+ const bitmap=new Uint8Array(8192),screen=new Uint8Array(1024),colour=new Uint8Array(1024),collision=new Uint8Array(1024);
+ const page=m[0xff40+id]; if(page===255)throw Error('Outside the pyramid');
+ for(let row=0;row<10;row++)for(let col=0;col<20;col++){
+  const t=m[0x7000+page*256+row*20+col],lo=m[0x30a1+t%40];
+  const top=(m[0x30c9+t]<<8)|lo,bottom=(m[0x31b9+t]<<8)|((lo+64)&255),attr=(m[0x32a5+t]<<8)|m[0x33b5+t];
+  const dst=row*640+col*16,cell=row*80+col*2;
+  bitmap.set(m.slice(top,top+16),dst);bitmap.set(m.slice(bottom,bottom+16),dst+320);
+  for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++){
+   const src=attr+dy*40+dx,d=cell+dy*40+dx;
+   collision[d]=m[src];screen[d]=m[src+1024];colour[d]=m[src+2048]&15;
+  }
+ }
+ return {bitmap,screen,colour,collision};
+}
+function bitmapPixels(bitmap,screen,colour,background=0,height=160){
+ const out=new Uint8Array(320*height);
+ for(let y=0;y<height;y++)for(let x=0;x<320;x+=2){
+  const cell=(y>>3)*40+(x>>3),b=bitmap[cell*8+(y&7)],pair=(b>>(6-(x&6)))&3;
+  const c=[background,screen[cell]>>4,screen[cell]&15,colour[cell]&15][pair];out[y*320+x]=out[y*320+x+1]=c;
+ }
+ return out;
+}
+function paint(canvas,pixels,w,h,palette){
+ canvas.width=w;canvas.height=h;const c=canvas.getContext('2d'),im=c.createImageData(w,h);
+ for(let i=0;i<pixels.length;i++){const hex=palette[pixels[i]&15];im.data[i*4]=parseInt(hex.slice(1,3),16);im.data[i*4+1]=parseInt(hex.slice(3,5),16);im.data[i*4+2]=parseInt(hex.slice(5,7),16);im.data[i*4+3]=255;}c.putImageData(im,0,0);
+}
+// end of duckula-drawing
+
+C64.load('listing.json').then(L=>{const m=L.ram,s=document.getElementById('cd-shape'),col=document.getElementById('cd-colour'),cv=document.getElementById('cd-sprite');for(let p=16;p<120;p++){let o=document.createElement('option');o.value=p;o.textContent='Shape $'+p.toString(16).toUpperCase();s.append(o);}for(let p=0;p<16;p++){let o=document.createElement('option');o.value=p;o.textContent=p;col.append(o);}col.value=7;function draw(){let p=Number(s.value),out=new Uint8Array(24*21);for(let y=0;y<21;y++)for(let x=0;x<24;x+=2){const b=m[0xc000+p*64+y*3+(x>>3)],v=(b>>(6-(x&6)))&3;out[y*24+x]=out[y*24+x+1]=[11,1,Number(col.value),0][v];}paint(cv,out,24,21,C64.PAL);cv.style.width='240px';document.getElementById('cd-shape-caption').textContent='Pointer $'+p.toString(16).toUpperCase()+' · source $'+(0xc000+p*64).toString(16).toUpperCase()+' · transparent pixels shown grey';}s.onchange=draw;col.onchange=draw;document.getElementById('cd-shape-prev').onclick=()=>{s.value=Number(s.value)===16?119:Number(s.value)-1;draw();};document.getElementById('cd-shape-next').onclick=()=>{s.value=Number(s.value)===119?16:Number(s.value)+1;draw();};draw();let bm=new Uint8Array(38*8),sc=new Uint8Array(40),co=new Uint8Array(40);bm.set(m.slice(0xbe50,0xbf80));sc.set(m.slice(0xbe00,0xbe28));co.set(m.slice(0xbe28,0xbe50));paint(document.getElementById('cd-font'),bitmapPixels(bm,sc,co,0,8).slice(0,304*8),320,8,C64.PAL);});</script>

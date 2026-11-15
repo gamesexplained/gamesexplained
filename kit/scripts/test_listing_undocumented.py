@@ -78,6 +78,15 @@ class ListingAlignment(unittest.TestCase):
             run(KIT / 'scripts' / 'listing.py', p, '--relabel')
             self.assertEqual(rows(p), before)
 
+    def test_immediate_noop_keeps_music_request_operand(self):
+        # A music entry keeps its writable request in the two-byte NOOP's operand.
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d)
+            fixture(p, [0x80, 0x01, 0xAD, 0x01, 0x80, 0x60])
+            self.assertEqual([(r['a'], r['m'], r['b']) for r in rows(p, 0x8005)], [
+                (0x8000, 'noop', [0x80, 0x01]),
+                (0x8002, 'lda', [0xAD, 0x01, 0x80]), (0x8005, 'rts', [0x60])])
+
     def test_opcode_tool_reads_the_game(self):
         # kit/cpu/opcodes.py imports symbols_export only when it runs, so importing it proves nothing
         with tempfile.TemporaryDirectory() as d:

@@ -60,8 +60,14 @@ def project_blocks(blocks):
 def read_file(path):
     """(blocks, symbols, comments) from a .regen2000proj."""
     p = json.load(open(path))
-    blocks = [{"start": b["start"], "end": b["end"], "type": PROJECT_BLOCK_TYPES.get(b["type_"], b["type_"])}
-              for b in p["blocks"]]
+    blocks = []
+    splitters = sorted(set(p.get("splitters", [])))
+    for b in p["blocks"]:
+        cuts = ([b["start"]] + [a for a in splitters if b["start"] < a <= b["end"]]
+                + [b["end"] + 1])
+        blocks.extend({"start": start, "end": end - 1,
+                       "type": PROJECT_BLOCK_TYPES.get(b["type_"], b["type_"])}
+                      for start, end in zip(cuts, cuts[1:]))
     syms = [{"address": int(a), "name": l["name"], "type": l["label_type"], "kind": l.get("kind", "User").lower()}
             for a, ls in p["labels"].items() for l in ls]
     comments = ([{"address": int(a), "type": "line", "text": t} for a, t in p.get("user_line_comments", {}).items() if t.strip()]
@@ -108,6 +114,12 @@ def project(sym, ram, settings=None):
         "user_line_comments": {str(c["address"]): c["text"] for c in sym["comments"] if c["type"] == "line"},
         "user_side_comments": {str(c["address"]): c["text"] for c in sym["comments"] if c["type"] == "side"},
     }
+    # The disassembler coalesces adjacent blocks of the same type. For a
+    # split-address table that changes where its low half ends, and therefore
+    # every target; retain the logical boundaries exported by get_blocks.
+    declared = sorted(sym["blocks"], key=lambda b: b["start"])
+    body["splitters"] = [b["start"] for a, b in zip(declared, declared[1:])
+                         if a["end"] + 1 == b["start"] and a["type"] == b["type"]]
     if settings:
         body["settings"] = settings
     return body
