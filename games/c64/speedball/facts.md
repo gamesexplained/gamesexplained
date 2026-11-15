@@ -300,3 +300,20 @@ in `orientation.md`.
   describes.
 - Read from `work/files`, the disk's files `0` and `1`: the game state
   bytes listed under Build.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Run on the site's simulator with every value of the random byte, a slide into a side with skill 224 worked for 225 of the 256 (88 %), and into one with skill 48 for 49 (19 %), whatever the slider's own skill.
+
+### graphics.html
+
+- The players here are moved by the game's own animation code, run a pass at a time on the kit's 6502 in this page, and so is the team choice screen.
+
+### index.html
+
+- Drawn by the site's C64 library from one frame recorded in the emulator: the video chip's registers at the top of the frame, every change the game makes to them during it, at lines of the screen it chooses, and the memory the chip reads.
+- All 104,448 pixels match the emulator's own picture of the same frame, for both screens.

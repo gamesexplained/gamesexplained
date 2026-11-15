@@ -339,3 +339,32 @@ All from `work/play-level1.vsf` unless named, scripts in `work/`.
 | `$53` set, `$30` = 2, C= twice | EUROPE, EVEN LATER, then the ending and GAME OVER |
 | Fire and up, fire and down, up, against no input | a bullet taken and flying; a stick taken and its fuse burning; Y 139 to 128 (`live4.py`) |
 | SPACE held while the next room is built | the bottom rows differ from a build without it (`live2.py`) |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The name box runs a port of `$2103` and `$2146`, checked against the game's own routines on 3,000 names in the kit's 6502 simulator (`test_names.js`).
+- The bounce was read from the code and run in the simulator, not watched in play.
+
+### graphics.html
+
+- The twenty frames as `enemyFrames`, a port of `$16D3`, builds them; `test_mirror.js` holds it to the game's own routine for all four levels, every byte of every frame and its colour.
+
+### index.html
+
+- The picture below is drawn by this page from the memory of one frame of play, recorded in the emulator: the screen, the character set and the video chip's registers as they change during the frame.
+- Every one of its 104,448 pixels matches the emulator's own picture.
+- Drawn by the site's C64 renderer from the recorded frame, pixel for pixel the emulator's picture.
+- In the emulator, 141 steps took 284 frames.
+- `test_move.js` holds it to the game's own code run in the kit's simulator on the first room with its ceiling taken away: 400 runs of 80 steps of random stick, on both kinds of floor, the same position and speed at every step.
+- Drawn by `trapRun`, a port of `$1ACF`; `test_trap.js` holds it to the game's own code for all 47 trap types, every step's position and frame.
+- Drawn by `multiplex`, a port of `$3559`, `$36D9` and the handlers at `$3831` and `$387D`; `test_mux.js` holds it to the game's own code on 3,000 random rooms: the order, the sprites, the split lines and the ninth X bits.
+- The game's own music player, its code (`$5042`-`$5730`) and the tunes' data (`$5732`-`$5F8D`) as the listing holds them, run once a frame on the kit's 6502 simulator in this page, through the site's model of the SID.
+- `test_music.js` compares every SID write of every frame of all seven tunes with the same code called on the simulator directly: 117,097 writes.
+
+### levels.html
+
+- `test_maps.js` checks the decoding of every map row against the game's own `$2D59` in the kit's simulator.

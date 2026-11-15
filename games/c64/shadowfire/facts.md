@@ -388,3 +388,33 @@ advanced by whole frames, on 23 October 2026.
   showed SUCCEEDED and FAILED / ENIGMA FORCE DEFEATED.
 - The team screen's arrows, clicked with the joystick: the down arrow
   left `$1603` at 0; one press on the up arrow raised it to `$11`.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The emulator two seconds past zero: the clock reads 00:02, counting up, and the ticker has begun "AMBASSADOR KRYXIX HAS BEEN EXECUTED".
+- The monitor in a frame recorded in the emulator.
+- The emulator 256 seconds after the unit was armed, with the team still aboard the attack craft: Zoff V destroyed, 44 counted, and the mission incomplete with Kryxix not rescued.
+
+### graphics.html
+
+- The three things that move on their own, each played by the game's own routine on the kit's 6502 in this page.
+- The iris is `iris_open` (`$45E2`) and `iris_close` (`$4646`) over the four sprites' bytes at `$0900`-`$09FF`, a circle at a time, each shown after the cycles it takes on the kit's 6502; the game's interrupt and the video chip take some of the real machine's time, so the game's iris is a little slower.
+- Each picture is drawn by the game's `draw_picture` on the kit's 6502 from the listing's bytes, then shown from the bitmap, the screen colours and colour RAM it wrote, as the video chip shows a multicolour bitmap.
+
+### index.html
+
+- One frame of the status screen with Syylk chosen, recorded in the emulator and drawn here from the bitmap at `$2000`, the colours at `$0C00`, colour RAM and the sprites, by the site's renderer.
+- All 104,448 pixels of the drawing match the emulator's own picture of the frame.
+- The page runs the game's own music driver, its bytes `$1600`-`$1FC5` from the listing, on the kit's 6502, and plays what it writes through a model of the SID.
+- `test_music.js` checks every write of each button against the same driver run on the simulator, two rounds of the ring for the title music.
+- `test_music.js` checks these four as well.
+- `test_map.js` checks every cell of all 164 windows against the routine itself run on the simulator.
+- `test_pictures.js` checks it against the routine on every one of the 83 pictures these pages draw.
+
+### levels.html
+
+- The tile map at `$84CB` drawn whole with the tiles, colours and characters the view screen uses, by the port `test_map.js` checks against `draw_view_map` (`$6A50`) in all 164 windows.
