@@ -465,6 +465,13 @@ with the finding in the heading, so the section list tags it, and put the
 best first. Where a discovery rests on a mechanic the How it works page
 explains, link to that section rather than explaining it again.
 
+A `Bug:` is shown happening in a state normal play reaches: spend a few
+minutes reproducing it from the start of its level with input, as
+`60-verify` proves reachability. A bug only a forced setup has shown (a
+poked variable, a routine called directly) is a lead: it stays in
+`facts.md` with the setup that showed it and gets no section, so the
+page never hedges about whether ordinary play meets it.
+
 One kind deserves a special look: a state the code accepts but the
 programmer never meant anyone to reach (the open questions `50-coverage`
 notes and `60-verify`, "What a test lets through", settles). It is classic
