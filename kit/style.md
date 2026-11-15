@@ -6,10 +6,12 @@ not the deliverable. The tone is Hacker News, not Buzzfeed: quiet,
 precise, generous with the interesting detail, never breathless.
 
 Article copy is written as a separate, final pass, after the analysis is
-done. It is never produced by the same run that produced the facts. The
-final pass has three steps, described in `kit/skills/core/70-minisite`:
-the draft, a rewrite pass that applies the rules below mechanically,
-paragraph by paragraph, and a rewrite for a reader of fifteen.
+done. Give that pass the verified findings and working pages, and focus
+on what the reader will learn. It can be done by the same agent. The
+final pass has four steps, described in `kit/skills/core/70-minisite`:
+the draft, a pass that develops missing explanations, a rewrite that
+applies the rules below paragraph by paragraph, and a rewrite for a
+reader of fifteen. The reader review then checks the finished pages.
 
 ## What copy is for
 
@@ -20,7 +22,33 @@ paragraph by paragraph, and a rewrite for a reader of fifteen.
 - Secrets, quirks and bugs are the best part. Give them room. The
   unintended corner case, reachable by a player who knows the code, is
   the pick of them.
-- Interactivity beats description. If the reader can press it, let them.
+- Interactivity lets the reader try the rule and see its consequences.
+  Choose controls for the experiment they enable.
+
+## Depth and clarity
+
+Plain language can carry a detailed explanation. For an important
+mechanic, connect what the player notices to the rule that causes it,
+then work through a concrete situation. Explain a boundary or exception
+when it changes what the player can do. The reader should be able to
+predict another case after reading the section and using its widget.
+
+A counter value or a table entry is the beginning of an explanation.
+Work out what it means during play: how often an enemy moves, how long
+a resource lasts, which choice earns more, or why a familiar tactic
+fails. Check that consequence against the code or a live observation
+before publishing it. State uncertainty where the evidence ends.
+
+Give a discovery room in proportion to what it teaches. Add the context,
+causal steps, and examples a newcomer needs; remove repetition and
+irrelevant detail. There is no target word count or paragraph count.
+The short sentence rule controls sentence complexity, not the depth of
+the section. Simplifying a sentence must preserve its explanation.
+
+Use the game's own pictures, words, and sounds where they carry the
+point. A message beside the situation that triggers it and its sound
+can explain more than a description of the message interpreter. Keep
+source links beside the explanation so a reader can investigate further.
 
 ## Rules
 

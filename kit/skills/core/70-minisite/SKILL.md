@@ -8,7 +8,10 @@ description: Build the game's minisite. The "How it works" page (index.html) fro
 The minisite is the deliverable: a small site that explains the game, where
 the writing is the spine but anything that explains the game can live
 (widgets, level browsers, tune players, even a full JavaScript port of the
-game itself). If you can build it, build it.
+game itself). Build what helps the reader understand it. Silver delivers
+a site that stands on its own, with at most a few human edits needed.
+Read [reader-review.md](reader-review.md) before planning the pages and
+apply it to the finished site before calling this step done.
 
 Every game is a small site with the same tabs in the same order: **How it
 works** (`index.html`, authored), **Play** (`play.html`, authored, only
@@ -56,10 +59,60 @@ Audience: technical gamers who love game design and want to know how the
 game works, and who do not read assembly. Assembly is evidence, shown
 beside the claim; the explanation is in terms of what the player sees.
 
-**Interactivity is the point.** A page you can play with beats a page you
-read. Every section should have something to press: step a mechanic,
-scrub a tune, flip through the level data or the sprites, turn a 3D
-model, toggle an overlay on a reconstructed screen.
+**Interactivity should explain something.** Let the reader step a
+mechanic, compare outcomes, explore a map, or hear a sound in context.
+For each widget, name what the reader changes and what they will learn
+from the result. A picture, an animation, or prose can serve a section
+on its own; add a control when it gives the reader a useful experiment.
+
+## Plan the explanation
+
+Before implementing widgets, read `features.md`, `facts.md`, `cheats.md`,
+and the reference images together. Write a short outline in
+`work/minisite-plan.md`. For each proposed section, name the reader's
+question, the verified finding that answers it, its consequence during
+play, and the example or demonstration that will make it clear. Point
+to the supporting fact or routine. An implication not yet checked is
+a question to verify, not a finding to publish.
+
+Choose the strongest findings and place them as high as their needed
+context allows. Look especially for consequences still buried in the
+notes: an unusual counter, an exception to a shared rule, a combination
+of ordinary inputs, or something the game shows only at the end. Work
+out what each means to a player. Explain the ordinary behaviour well
+even when the game yields no secrets.
+
+The outline is a working aid, not a quota of sections or a new approval
+step. Select detail for what it teaches; group related material and
+leave research process in the notes. Inspect a relevant finished page
+for a useful explanation or interaction pattern, and record why that
+pattern fits. Borrow the pattern rather than another game's structure.
+Write the final prose after the demonstrations work, using this outline.
+
+## Design the demonstrations
+
+- **Use actions the reader understands.** Let them move a character,
+  place a target, throw an object, or step a decision when those actions
+  explain the rule. Sliders suit quantities such as time or score. A
+  movement example should show positions and movement, so the reader
+  does not have to imagine a scene from two distance values.
+- **Start with an informative case.** Show the relevant objects and an
+  outcome on arrival or after one obvious action. Make the controls and
+  the meaning of colours clear. Provide a contrasting case or boundary
+  that shows why the rule matters, without requiring a lucky combination
+  of settings. Keep mobile and keyboard use practical.
+- **Show cause and consequence together.** A pursuit demo can show the
+  step, whether it got closer, and the resulting turn. A formula can
+  show a worked result. A sound can sit beside the event or message it
+  accompanies. Label the inputs, result, and units in the reader's terms.
+- **Choose a useful view of a collection.** Show related moving figures
+  together when comparison is the point. Use a picker for a large set
+  that needs exploration. Explain what a pose, picture, or sound does
+  in the game, and make animation visible without a search for settings.
+- **Keep the demonstration faithful.** Verify its rules as described
+  under "Building it". Label simplifications that affect what a reader
+  would conclude, such as omitted obstacles or a changed time scale.
+  A mechanic demo can be small; it need not become a full Play port.
 
 ## Sections
 
@@ -68,10 +121,11 @@ rest, and they are in no order: each page chooses its own ("The order",
 below). The sound is the exception: a game with music gets its player,
 at every tier above Bronze.
 It is a starting set, not a form: the page is open to any structure that
-works for this game, any number of sections at any depth, and the human
-who takes it to Gold will cut what is dull, expand what is interesting and
-add what the agent did not think of. What stays fixed is the tab bar, the
-address links into the Source tab, and the house style in `kit/style.md`.
+works for this game, any number of sections at any depth. The agent
+develops what is interesting and cuts what does not serve the explanation
+before Silver. Human curation can refine it further. What stays fixed is
+the tab bar, the address links into the Source tab, and the house style
+in `kit/style.md`.
 
 - **The game.** What the game is, for a reader who has never played it:
    who you play, what you do and what ends a level, in two or three
@@ -79,7 +133,7 @@ address links into the Source tab, and the house style in `kit/style.md`.
    with a picture or two that introduce it: the title screen and the main
    character in play, from the emulator (the screenshots `20-features`
    saved in `reference/` usually serve). Keep it short, and keep the code
-   out of it. It is the one section with nothing to press.
+   out of it. Explain the stakes, including what happens after failure.
 - **One frame, rebuilt from memory.** Draw the play screen from memory
    with the page's own code, not a screenshot. It proves the data is
    understood and it is the base for overlays. A screen whose video
@@ -146,9 +200,10 @@ order is its own, chosen for this game: no two games have the same best
 thing, and no two pages need the same shape.
 
 The page opens with the game (above), so the reader knows what they are
-looking at before the first interrupt or table. Then, once the widgets
-work and before the copy, choose the one or two things a reader would
-most regret missing. They are usually things that move or make a sound:
+looking at before the first interrupt or table. In the outline, choose
+the one or two things a reader would most regret missing; once the
+widgets work, check that they deliver that promise. They are often
+things that move or make a sound:
 a tune player, a map to scrub through, a replay of the game playing.
 Sound effects are among them: their player goes straight after the
 music's, not at the foot of the page, where few readers reach it
@@ -366,9 +421,17 @@ its music or its maps can put that first instead.
 
 ## Copy
 
-Write the copy **last**, as a separate pass, under `kit/style.md`. Then do
-a **rewrite pass** as its own step, with the draft in front of you. An
-agent reads a rule list once and then reverts to its default voice; the
+Write the copy **last**, as a separate pass, under `kit/style.md`, using
+the outline and the working demonstrations. First do a **depth pass**:
+read each important section for the player experience, the cause, and
+the concrete example. Add missing connections, useful consequences,
+and exceptions. Compare the draft with the verified notes for strong
+findings that have been reduced to a number or an unexplained sentence.
+Check any new claim before keeping it. This pass develops the explanation;
+it does not pad every section to the same length.
+
+Then do a **rewrite pass** as its own step, with the draft in front of
+you. An agent reads a rule list once and then reverts to its default voice; the
 rewrite pass is where the house style actually lands. Work through this
 checklist mechanically, paragraph by paragraph:
 
@@ -434,8 +497,10 @@ Before/after, from real drafts:
 
 Last, do an **ELI15 pass** ("explain it like I'm fifteen"): rewrite every
 authored page so that a reader of fifteen who has never programmed can
-follow each sentence. The Source tab stays as it is, since its reader came
-for the code. Commit the pages first, so that `git diff` puts each changed
+follow each sentence and the explanation as a whole. Keep the examples,
+causes, and consequences developed in the depth pass. The Source tab
+stays as it is, since its reader came for the code. Commit the pages
+first, so that `git diff` puts each changed
 sentence beside the one it replaced. Then:
 
 1. Explain each term where it first appears on a page, in a few words,
@@ -680,11 +745,11 @@ at 60 frames a second: `fast-cpu.md` beside it says how.
 
 ## Check it in a browser
 
-The page is a visual, interactive artefact and none of the kit's checks
-render one. `check_docs.py` and `check_listing.py` read files; `build.py`
-assembles the site and checks its links without opening a page. A canvas that draws nothing, a
-widget that throws on load and a layout that collapses all pass every
-check there is.
+The page is a visual, interactive artefact. `check_docs.py` and
+`check_listing.py` read files; `build.py` assembles the site and checks
+its links without opening a page. These checks cannot catch a blank
+canvas, a widget that throws on load, or a collapsed layout. Browser
+tests catch only the outcomes they assert.
 
 So load it and look at it before calling this step done:
 
@@ -716,13 +781,28 @@ the console, exits 1 on an error, and with `?listing-reads` prints
 `ListingReads.report()`. It needs Playwright, which the kit does not
 install; `-h` says how it uses the browser above instead.
 
-Check, at least: every canvas has drawn something; the console has no
-errors, and for a withheld game none with `?listing-reads` after the
-address either; every control does
-something when clicked; and the rebuilt screen
-matches a reference screenshot from `reference/`. The reconstruction is
-the one section that is either right or obviously wrong the moment you
-see it, which makes it the best test that the data is understood.
+Check every canvas has drawn the intended scene, the console has no
+errors (including withheld listing reads), and the rebuilt screen
+matches a reference screenshot from `reference/`. Exercise every widget
+from its initial state, including on a narrow screen, and check the
+result its label and explanation promise.
+
+Keep those outcomes in the game's `site-browser.js`, using
+`kit/scripts/play_browser.js`. A click or a changed button label alone
+does not establish that a demonstration works. Assert the relevant
+visible result: a different rendered state, an object reaching the
+expected place, or the displayed calculation. For sound, check the page's
+actual selected input produces non-silent output as well as exercising
+playback in the browser. A flashing-screen control needs a screen with
+flashing cells. For a repeating animation, sample over enough time to
+observe distinct states; two samples can land on the same phase.
+Pair the visible check with the rule's expected result, since changing
+pixels alone does not show that it is right.
+
+Finally apply [reader-review.md](reader-review.md) to every authored tab.
+Fix the weaknesses it finds and record the concrete changes and remaining
+limits in `agent-history.md`. This is the same agent's separate editorial
+pass; it requires neither another agent nor a human approval step.
 
 ## Outputs
 
@@ -733,4 +813,5 @@ every level, map or room drawn, or the line in `agent-history.md` saying
 why the game has none; `graphics.html` with every shape the moving
 things are drawn with, or the line saying why it has none; `listing.json` built and passing
 `check_listing.py`; `game.json` with `copy` set; `build.py` producing the
-minisite without errors.
+minisite without errors; browser checks asserting the widgets' promised
+results; a completed reader review recorded in `agent-history.md`.

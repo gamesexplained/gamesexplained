@@ -24,6 +24,13 @@ ways it goes wrong:
 The game's own instruction text is itself a feature list. Find it early
 (the string sweep in `40-sweep` does this in seconds).
 
+Record the player's experience as well as the controls: the objective,
+what success and failure do, what carries into a retry, and how the game
+communicates changes through its panel, messages, pictures, and sounds.
+Keep questions those observations raise in `features.md` for the code
+to answer. They give `70-minisite` the reader's questions to explain;
+update them as the analysis resolves them.
+
 The web half of this rests on the contributor's answer at the start
 (`kit/START.md`). With a yes, the platform skill says where to look
 first; for the C64 that is the game's C64-Wiki page, read as a form. With

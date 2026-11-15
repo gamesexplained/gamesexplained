@@ -268,8 +268,11 @@ copy drifts."
   where the run that met it wrote it down: each game's `agent-history.md`
   and `kit-feedback.md`, and `kit/lessons/`. When something will not
   behave, search those for the symptom before spending an hour on it.
-- **Copy is not analysis.** Article text follows `kit/style.md`. Write it
-  as a separate, final pass, and declare who wrote it in `game.json`.
+- **Turn analysis into an explanation.** Plan what the reader should
+  learn before building the widgets (`kit/skills/core/70-minisite`).
+  Article text follows `kit/style.md` and is written as a separate,
+  final pass. Review the finished pages for depth and useful interaction,
+  and declare who wrote the copy in `game.json`.
 - **Record what you used.** `game.json` names the tools, the model and the
   kit version. It is honest and it makes the work reproducible. Some
   hosted sessions tell the agent to keep model identifiers out of
@@ -334,9 +337,9 @@ there.
 | Tier | Requires |
 |---|---|
 | Bronze | a partial run, off the starting line: boots; `orientation.md`; `features.md`; coverage below 100 %; `symbols.json` and `listing.json` committed for what there is |
-| Silver | 100 % coverage; `facts.md`; every item on the media answered in `media.json`, where the platform has a reader (`kit/skills/core/12-media`); a sample of the listing's comments checked, and every step behind the listing recorded in `accuracy`; the Source tab says what the sample found, and the run recommends an audit for later (`kit/skills/core/60-verify`); every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built, with a player for every tune when the game has music and a Graphics tab drawing every shape its moving things are drawn with (`kit/skills/core/70-minisite`); all of it agent-authored, copy `agent-draft`; coverage and verify done on proven models, or the listing sampled, and audited when the sample is over the mark, by a maintainer on a proven model, or audited and sampled again on proven models on a known contributor's run (`kit/CHECKING.md`) |
+| Silver | 100 % coverage; `facts.md`; every item on the media answered in `media.json`, where the platform has a reader (`kit/skills/core/12-media`); a sample of the listing's comments checked, and every step behind the listing recorded in `accuracy`; the Source tab says what the sample found, and the run recommends an audit for later (`kit/skills/core/60-verify`); every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built and its reader review completed (`kit/skills/core/70-minisite/reader-review.md`), with a player for every tune when the game has music and a Graphics tab drawing every shape its moving things are drawn with (`kit/skills/core/70-minisite`); all of it agent-authored, copy `agent-draft`; coverage and verify done on proven models, or the listing sampled, and audited when the sample is over the mark, by a maintainer on a proven model, or audited and sampled again on proven models on a known contributor's run (`kit/CHECKING.md`) |
 | Silver (claimed) | a Silver that a human has started to curate: `tier` is `silver-claimed` and `steward` names them (their GitHub login). Set it when the first edit pass begins, so the page says the work is under way and nobody starts it twice; it turns Gold when every section has had its pass. A Platinum game being curated keeps `platinum` and sets `steward` the same way, and its page reads platinum (claimed) |
-| Gold | a human has curated the Silver, section by section: rewriting the clichéd copy, cutting what is dull, expanding what is interesting and adding what the agent missed, often by prompting the agent for new pieces. A pass that finds nothing to change counts, and `copy` records which it was: `agent` when the human read it and left it, `human-edited` or `human` when they changed it |
+| Gold | a human has curated the Silver, section by section: reviewing its explanations and interactions, refining the emphasis, and making any changes or additions they judge useful, often with the agent. A pass that finds nothing to change counts, and `copy` records which it was: `agent` when the human read it and left it, `human-edited` or `human` when they changed it |
 | Platinum | a Silver whose Play tab is the whole game: every routine ported to JavaScript and run in lockstep with the game's own code (`kit/skills/core/70-minisite/play.md`), `test_play.js` beside the page holding the published page in CI, and no known bug in the port. It needs no human and says nothing about the copy, so it neither needs Gold nor follows it |
 | Diamond | Gold and Platinum both: `tier` is `diamond`. A Gold game moves to it when its Play tab is Platinum, and a Platinum game when its curation is done |
 
@@ -346,13 +349,20 @@ a part that has a folder and no analysis keeps the game at Bronze, with
 the page saying how many of its parts are done.
 
 Silver is the default goal and the normal path: the contributor pastes the
-one line, answers a few questions, walks away, and comes back to a Silver
-pull request. No human judgement goes into it, which is why it is not
-regarded as good or finished yet. Gold is where taste enters, and it is
-human work: the agent has no reliable sense of what is actually
-interesting. Platinum is the Play tab's tier, and like Silver an agent
-reaches it unattended, which is why it sits beside Gold rather than above
-it. Time required: a Silver run takes one to three hours.
+one line, answers a few questions, walks away, and comes back to a site
+that stands on its own. Aim for publication with at most a few human
+edits. The agent chooses the strongest findings, develops their
+explanations, and makes the widgets useful to a reader. Complete coverage
+and passing tests are necessary; the pages must also pass the reader
+review in `kit/skills/core/70-minisite/reader-review.md`. Fix a missing
+explanation or an ineffective widget before calling the work Silver.
+
+Gold records a human's curation of every section. That pass may refine
+the emphasis, add a perspective or discovery, or leave a strong page as
+it is. Silver already requires editorial care. `agent-draft` records
+that a human has not read the copy; it does not lower its quality target.
+Platinum is the Play tab's tier, reached unattended like Silver, and
+sits beside Gold rather than above it.
 
 Set `tier` in `game.json` to the highest tier every requirement of which
 is met, and list what is missing for the next one in `TODO.md`. Do not
