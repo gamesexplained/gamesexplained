@@ -1,0 +1,230 @@
+# Ghostbusters II — agent history
+
+## 12 November 2026
+
+The Jondi/Censor disk reached its intro but a subsequent boot fell into a BASIC ROM loop. A disk labelled SHAPE proved to be a standalone demo. The Censor Design disk reached the game and was used for the analysis; the other images stay in `work/`.
+
+The first captured play snapshot followed several autostarts without a power cycle. To avoid attributing leftovers to the airshaft, the game was booted again after a hard reset, and entry and play snapshots were taken. The earlier and clean play states differed in a few self-modifying operands. Rebuilding the disassembler on the clean snapshot lost four automatic labels, so they were retained explicitly before export; their meanings remain open.
+
+The emulator's first execution-map export stalled at its monitor socket. Restarting VICE and recording a shorter clean-boot interval succeeded. VICE runs on a virtual display with its `fs` sound output directed to `/dev/null`, which keeps the SID clocked without making sound.
+
+The first load trace stopped while the loading animation still ran. A second, with warp enabled, covered the transition through to the retry screen and recorded no call to `$FFD5`. A separate observation found the loading code calling the serial receive entry at `$EE13`.
+
+A breakpoint on the KERNAL internal OPEN entry `$F3D5`, with the filename read through `$B7/$BB–$BC`, found the numbered wildcard requests that the earlier LOAD-only watch could not see. The second-story route first returned to BASIC with the Jondi/Censor disk attached; retrying with the Censor disk reached the story wait and Broadway. That observation does not establish why the first attempt failed.
+
+While inspecting the copied story engine, the disassembler displayed a store to `$D000` at `$13EA` with the label of the hidden-RAM source at `$D000`. The code has `$01=$35` there, so that store reaches the VIC register, not the saved source byte. The stash listing describes the source as data; any future listing of the copied engine needs the I/O context marked explicitly.
+
+The copied loader was run offline with both zero-filled and one-filled memory. Its segment boundaries and output ranges agreed in both cases. The opening story, airshaft, Broadway and Jondi museum outputs matched their captured states throughout those ranges. The title and later story captures differed in some output bytes, which have not been attributed. The Censor museum stream ran out during the fourth segment; the Jondi museum stream completed and matched its captured state. The script and compact results are `analyse_unpack.js` and `unpack-map.json`. This method identifies stable output, not whether every output byte is used, nor the cause of the failed Censor transition.
+
+The title sound-driver ranges `$E256–$E439`, `$E43D–$E5C1` and `$E937–$EAEC` paired instruction for instruction with the airshaft listing. Their comments were carried to the title and the matching bytes typed as code. Export after typing removed automatically inferred spans, so it was forced after checking the change was caused by the new code boundaries.
+
+The title snapshot also matches the airshaft sound initialization instructions at `$E000–$E0C1` and the frequency and offset tables at `$E5C2–$E6AC`. The former was paired instruction by instruction; the latter was compared byte for byte before carrying its existing descriptions.
+
+The opening-story listing was cut to the ranges written by `2.FIRST STORY` and placed over the title. Its earlier listing also carried the title's sound driver and the copied resident engine; their ownership is now retained by those lower parts. The 602-byte comparison with the resident copy was retained as a hash of the previously captured story-state bytes, with its five observed differences recorded in `test_stash.js`. The opening-picture annotations now describe the loaded sources, not the runtime display copies.
+
+The airshaft part was scoped over the opening story to the decompressor's matched output ranges. Its low-memory transition annotations remain named outside those ranges pending evidence of their origin; generated symbols and listing were rebuilt on the captured play snapshot. This removes inherited or unowned bytes from its ledger rather than treating the snapshot as a whole new load.
+
+The first two-frame fire press from the second-story capture ended while screen setup was still running. Inspection showed the setup PC; twenty neutral frames reached serial loading. Bounded waits, with loader counters inspected when the first did not reach `$8009`, then reached the Jondi Broadway entry. Its decoded file matched all 56,695 stable output bytes. The Censor Broadway file leaves the first 298 bytes of the scroll region from the preceding airshaft; the alternate disk writes different bytes there. The Levels and How it works pages name the capture and this limitation.
+
+The airshaft success, retry, quit and failure messages at `$08EC–$0ACB` were typed as four 120-byte data blocks. The Censor Broadway part was scoped over the second story to its matched unpacker output; its map check now takes the inherited `$0900–$0A29` prefix from the airshaft listing. The alternate Broadway snapshot is kept in `work/` and the different data remain open in the media ledger.
+
+The third story, Jondi museum and ending were scoped to their decoded load ranges, over their preceding parts. The story snapshots restore the shared engine to low memory before the numbered load. Its names remain available through the parts chain, but the copied runtime image and transition ownership still need to be represented independently; these scopes do not settle that question.
+
+A separate `story-engine` part now lists the executing `$1000–$1BFF` copy from the handover. The title lies over it; later story parts include the restored range in their transition and exclude the repeated copy from coverage. The three later story snapshots differ from that copy at the same 88 runtime-state, operand and text-buffer positions, recorded in the engine facts. The engine listing still has untyped data and code to classify.
+
+Descriptions from the byte-identical stash source were placed on the executing engine addresses and the already traced code and data ranges were typed there. The engine listing uses explicit I/O contexts: for example the `$13EA` store names the VIC register, while the `$1356` load names the RAM beneath I/O. The unclassified gaps remain in the ledger.
+
+The alternate Broadway entry and play snapshots agree throughout `$0900–$1F7F` and `$2000–$2AFF`. A separate overlay now owns the alternate data, excluding output that matches the Censor handover. The Levels tab can switch between their backdrop captures.
+
+The alternate Broadway lookup views were described using the shared selector code and the alternate entry/play comparison. Eight eight-byte gaps between the views were given separate unannotated labels so coverage does not count them as explained by the adjacent views.
+
+The eight gaps between alternate Broadway lookup views were read directly: each contains its selector byte followed by `newline`. Their contents are now described, but their runtime purpose remains an open question.
+
+Forty-one airshaft sprite slots named by traced pointer tables were typed as bitmap data and added to a Graphics inspector. Their individual shapes were left without semantic comments, so the newly counted bytes remain unexplained until their roles are established. The bytes match in the entry and play snapshots.
+
+The five airshaft character poses were reconstructed from the six pointers in each `$919F` record and the raster handlers' captured two-column, three-row placement. Their 26 nonblank sprite pieces now have specific pose and position descriptions; slot `$0F` is cleared by the initialization routine.
+
+The resident-stash disassembler session exported its owned annotations but omitted 1,561 automatic symbols, four system labels and unrelated blocks outside that part's range. They were restored from the preceding export, the new `$D000–$DFFF` annotations were retained, and dependent listings were relabelled. The resident listing and affected checks then passed. This behavior needs investigation in the retrospective.
+
+Decoding the outcome streams exposed `$EF82=$91`, a stop command omitted from the earlier listing. The embedded sound data had inherited a zero at that position. It was corrected to match the captured bytes, and the existing sound check passed.
+
+Typing the effect records exposed 220 more zero-filled bytes in the embedded sound data. They were restored from the airshaft capture; the existing sound check then matched the rebuilt listing and its recorded VICE samples.
+
+The airshaft ledger now includes 24 previously uncounted stretches of stable unpacker output, 10,878 bytes in total. Their purposes remain open; this corrects the coverage denominator rather than treating their presence as understanding.
+
+The same audit added 19,852 Broadway bytes and 11,675 museum bytes to their ledgers, including play-time copies identified by the listing. They remain unexplained.
+
+Disassembling the Broadway path-handler entries followed a static edge into the backdrop at `$1000–$141B`. The export guard detected lost coverage. A temporary forced export exposed the changed types; the known backdrop range `$0A2A–$1F7F` was restored to byte data before the listing was rebuilt. The handler entry points are retained as code.
+
+Separating the two museum animation tables shortened an automatic symbol’s reach over 30 following bytes. The export guard detected the lost tracked range; `$A346–$A363` was added explicitly as stable loaded data with its use open before rebuilding the listing.
+
+Traced the Broadway sprite 5 position comparisons at `$9A4B` and `$9AEA`. A focused processor-model check confirms the latter match, its vertical threshold and its already-set flag guard; object identities remain open.
+
+Traced a further Broadway comparison between six active entries and the three figures, retaining unknown object identities. Two bytes between movement routines were recovered from the snapshot as `$60` after unconditional jumps; neither has an established alternate entry.
+
+Traced the Broadway active-entry comparison with the second position pair and the sprite 5 comparison with five scene entries, including their state transitions and the carry used in the sprite X calculation.
+
+Traced the airshaft sprite 5 and 7 boundary checks, retaining their actual sign-bit branches and the unresolved flag meanings.
+
+Traced the airshaft screen-pattern scan and recovered the three jump bytes at `$84AC–$84AE` from the snapshot; no alternate entry to those bytes has been established.
+
+Traced the museum coordinate comparison at `$8D0D`, including its state gates, bounds and conditional dispatch.
+
+Traced the museum’s eight-way motion dispatcher and restored the `$60` byte after the jump at `$C90F`; an alternate entry remains unestablished.
+
+Traced the second museum motion position’s grid lookup, including its 31-byte high-X adjustment and position-clearing conditions.
+
+Traced the museum’s paired position comparison and its dependency on the first match flag.
+
+Traced the first response reached when both museum position comparisons match, including the self-modifying byte-copy addresses.
+
+Traced the reverse museum byte-copy path and the gated joystick-fire input in the scene update loop.
+
+Traced the second museum fire path and the address and position adjustments made by the placement routines.
+
+Traced the museum status transition and scene reset, linking a status value to the previously decoded DEAD panel sprites.
+
+Connected the museum rope-state animation to its `$805E` status transition while leaving the cause unassigned.
+
+Traced the scene decisions after the museum column restoration and their status-panel updates.
+
+Traced the first museum scene-position reset and compared its initialized addresses with the second-position reset.
+
+Traced the museum placement overlap and active-position grid lookup, preserving the carry difference from the similar second-motion lookup.
+
+Traced the museum phase dispatcher and its counter-controlled active-position initialization.
+
+Traced the airshaft rope-table selector update and its sign-bit-based amount and direction adjustments.
+
+Traced the airshaft rope-selector input gates back to the cached CIA port A read.
+
+Decoded the two 41-byte airshaft character-position curves and traced their output to the raster sprite registers.
+
+Traced the airshaft rope-position Y adjustment, including its offset bounds and screen-row copies.
+
+Connected the rope Y adjustment enable to the airshaft scroll boundary and its offset direction to the joystick handlers.
+
+Traced the zero case of the airshaft screen-pattern drawing routine, including its paired character and colour writes.
+
+Connected the zero pattern restore to its matching save-and-draw path and noted that it does not save the original colours.
+
+Traced the airshaft pointer `$25` draw and restore pair and its boundary-limited diagonal.
+
+Traced two further airshaft drawing cases, including the shared column writer and restore routine.
+
+Traced the `$35` and `$3A` airshaft drawing and restore cases.
+
+Decoded the six airshaft pattern-character sequences and the counter that selects them.
+
+Connected the `$3F` and `$44` airshaft drawing cases to their matching restore paths.
+
+Traced the `$4A`, `$4F`, `$54` and `$59` airshaft draw-and-restore pairs.
+
+Finished tracing the airshaft drawing dispatch and its matching restore cases, retaining the open reachability and scene-effect questions.
+
+Traced the two airshaft sprite-relative screen scans, their five-step address table and their separate counters.
+
+Connected the two screen-scan result flags to sprite 6 and sprite 4 animation paths.
+
+Traced airshaft outcome-screen setup and established how the `$088C` sound interrupt entry is installed.
+
+Traced the character-relative screen address, scan-index routing and pointer-dependent marker checks.
+
+Traced four airshaft character-code counters and their three-byte copy response.
+
+Found six omitted sprite 4 bitmaps through its pointer sequences and added them to the Graphics inspector. Their bitmaps match both captured snapshots.
+
+Traced both sprite 4 setup paths and the counter that advances their animation sequences.
+
+Traced sprite 4 movement to the raster sprite 1 coordinates and its two alignment flags.
+
+Traced the character contact-point checks against sprites 6 and 7 and their state-dependent count responses.
+
+Traced both sprite 5 contact-check modes and their state-dependent animation flags.
+
+Found three omitted sprite 5 effect shapes in its patched pointer operands, added them to the Graphics inspector, and checked the setup path in the processor model.
+
+Added the sprite 6 alternate-state bitmap to the Graphics inspector after tracing its initializer.
+
+Included the title credits’ 95-byte zero tail and checked that every stable output byte of `1.THE INTRO` has a title listing record. Answered that packed disk item as the title part.
+
+Audited the story-load outputs against the part listings. The loads replace picture ranges whose untyped bytes were missing from coverage, so added those ranges as unexplained output in all four story ledgers. The coverage total fell accordingly. The shared font and sound ranges still need a byte-by-byte ownership audit.
+
+Decoded seven loaded story picture sources into bitmap, matrix and colour rows. Compared each captured second picture or ending picture to its display copy, and found that the opening story’s second picture matches the second story’s first. Added the six previously hidden sources to the Graphics viewer. The extra story-copy sources at `$9200–$A880` remain to be traced.
+
+Accounted for the four story text tails and verified each stable output byte against its own listing or the byte-identical title font and shared sound range. Answered the four packed story files in the media ledger; the documented sound-driver snapshot differences remain open.
+
+Audited the airshaft, Broadway and museum decompressor outputs against their listings, added all omitted loaded bytes to coverage as unexplained, and measured the load-time to listing-snapshot differences. The alternate Broadway shared ranges match the Censor load-time snapshot; its unique zero tail is now listed. Answered the four complete gameplay disk items, leaving the truncated museum copy open.
+
+Reran the shorter Censor museum file only until input exhaustion on both initial RAM fills. Its first two decoded segments match the complete museum entry, while the third has 3,158 differing stable bytes and the next header starts a segment that exhausts the file. The file remains open in the media ledger. Answered the Jondi bootstrap as a loader after reviewing the captured intro and prompts; its introductory sound remains open.
+
+Traced the forced airshaft success through the restored story-engine entry to `$10B7`. Its two later conditional picture copies read ranges that match the preceding clean airshaft snapshot; their actual display path remains unobserved.
+
+Described the byte distributions in the seven 127-byte tails following the story-picture colour bytes. The known picture-copy routines stop at the colour bytes; any other use of the tails remains open.
+
+Inspected the saved second-story CPU state in VICE with dummy sound: PC `$14D6`, stack pointer `$F9`, and return bytes `$A6 $19 $0A $11 $39 $10` place it in the final wait called from `$1108`. That supports the forced path having passed both conditional copies, but the intermediate displays remain unobserved.
+
+Described the remaining ranges of the title and story-band character sets as eight-byte patterns, retaining their display use as open. Checked the title picture’s 127-byte tail in the captured snapshot.
+
+Traced the museum raster interrupt scheduling and the selected sprite’s split handler, keeping the visual role open.
+
+Identified the three patched high bytes in the title sound-effect selectors as instruction operands, not separate routines.
+
+Recovered two sound helper entries that were typed as data, and traced the SID clear and four-byte shift-state operations.
+
+Described the title sound command dispatch table, including its zero entries and unchecked index.
+
+Traced the Broadway extra-animation delay, movement and pointer selection, and identified the patched store operand.
+
+Traced the second Broadway fire candidate through its screen and colour writes, including both patched colour-store operands.
+
+Traced the third through sixth Broadway fire candidates and checked their repeated cell-write instructions against the second candidate.
+
+Traced the Broadway fire routine’s row write and reset, including its self-modified screen address.
+
+Traced the Broadway three-operand animation cycle and the six-slot fire-position scan against five scene records.
+
+Resumed on the contributor-supplied model ID `gpt-sol-6.1`. Reopened pull request #889 as a draft. Traced all 36 bytes of each music voice's state and the 15-byte state for each timed effect, and carried their meanings into the scene copies after checking that the driver instructions differ only in mutable operands. The sound test still matches 500 updates for each published selection and the recorded VICE states.
+
+Removed automatic hidden-RAM labels created by accesses to I/O registers from the resident stash, preserving its 4,096-byte denominator. Split the previously undescribed lower tail into the 18-byte filename-record helpers and loader raster setup, keeping the intervening zero runs and unmatched prefix byte unexplained.
+
+Traced the museum's eight directional floor probes and their self-modified cell operands. Tested the first sprite pair in VICE and the processor model at the four boundary codes $00, $3F, $40 and $FF; all sixteen cases matched and every entry control fired once. Kept the low/high-byte conditions on room crossing explicit rather than replacing them with a wider numeric comparison.
+
+Traced the airshaft's second character set at $7800 through the $801C mode selector and raster $D018 write, including all six mutable pattern buffers. Completed the remaining unannotated airshaft subroutine entries and exhaustively checked the four short-pattern contact predicates across all 256 input bytes.
+
+Traced the remaining Broadway routine entries and the six fire-cell updaters. Compared the six instruction streams before templating their slot-specific comments, then checked 180 processor-model cases across all slots, both screen bands, five background codes and three step counts. The tests verify the restored character, fixed restoration colour, new fire code and colour, pointer advances and terminal count.
+
+Completed descriptions for every currently identified code range in the three gameplay parts. Removed unannotated automatic labels inside instruction operands, where they were incorrectly treated as independent routine boundaries, without changing the 257,478-byte denominator. Consolidated analogous interior labels in already-described screen rows and sprite records. Then excluded generated screen destinations, sprite-shift scratch buffers and explicitly cleared Broadway runtime arrays after tracing their initializers; their authored sources remain counted. All existing game tests passed with the corrected runtime exclusions.
+
+Accounted for the media inventory's six remaining entries: the damaged museum copy, decorative directory entries, the additional preview program and orphan allocated sectors. The short museum file shares a 10,668-byte prefix with the complete 28,376-byte file; its incomplete decode remains documented.
+
+Completed all 11 annotation ledgers, keeping retained byte fragments explicit and excluding only generated state traced from the entry paths. The full forced self-copy returned after visiting 26 destination pages; VICE confirmed the final source/destination operands and an entry count of one.
+
+A fresh checker on gpt-6-astra checked the seed-121126 sample (79 right, one wrong-detail) and separately reviewed the new state descriptions. Corrected the sampled sorted-array address and 26 additional field-role errors, including pointer/coordinate confusions and equipment exchange state. The original sample and verdicts remain private in work/reports. The review is partial, not a full listing audit.
+
+Applied 80-retro. The disassembler's automatic labels repeatedly returned after data-type changes; removed only verified operand/data-interior boundaries. No kit rule was changed because no second affected game was established. Completed the media dispositions, graphics additions, accuracy ledger, and follow-up checklist.
+
+
+The uncertainty pass resolved the nine open feature rows. Airshaft controls now have a complete 1,124-read route collecting all three scoop parts and winning; the route replayed in VICE. Controlled VICE tests covered bomb/shield activation, courage depletion, Broadway ground slime and resource costs, museum weapon energy, Oscar pickup, Janosz depletion and landing speed. The Censor intro’s real unpacker was caught writing RAM beneath I/O and produced a byte-identical 4,096-byte resident stash before the first engine entry.
+
+The independent mechanics checker found the strict simultaneous-beam claim wrong: disabling a museum beam leaves its hit flag set. A VICE replay through the real toggle reproduced continuing damage from the other beam. It also caught the second-player proton toggle reading the first player’s pickup-suppression byte, bomb movement being attributed to the activated-effect scroll correction, an ignored accumulator load before an X-argument sound wrapper, and a zero-command omission in the Broadway census. Corrections were made in the listing, facts and page; the regression test covers the two museum flag cases.
+
+
+The same corrections were propagated through the generated listing records: all 153 map rows and their six-byte tails, the Broadway script segments and wave records, carrying-sprite descriptions, and shared sound-effect records. A complete winning-route read trace had positive controls (9,502 read addresses, including 1,960 in the map range) and no reads of the six-byte tails. Complete music cycles selected pitch-sequence indices 0, 2, 3, 6 and 8. Effect records now name their literal-number call sites across the three episodes rather than leaving all 26 event mappings open.
+
+
+Following the contributor’s suggestion, sustained headless VICE runs used scoped load/store tracepoints with CPU-history context, rather than only routine fixtures. A drained persistent monitor connection avoided the old server’s broken-pipe trap. The museum trace and a focused selector stop identified the blank equipment sprite at `$0FC0`; a CPU data-read watch alone had missed the VIC’s use. An artificial Broadway run with resource bypass reached `$C9D5` and exposed the preliminary scroll reset. A normal numbered airshaft load produced eleven watched stores at `$088C–$0896`, including the match source `$0B14–$0B18`. All raw logs remain in `work/traces/`.
+
+A fresh headless named boot and drive-RAM inspection resolved the Jondi failure. Its loader searches for prefix `00`, absent from the disk. The first request returns an empty buffer; the following request fills 58,368 bytes with `$FF`, which the post-Space copy turns into `$BE`. The Jondi sound driver was independently stepped for 30 VICE calls and compared with a 6,434-byte extraction for 120,000 processor-model updates. The page now includes this separate intro tune.
+
+A search over ordinary Broadway controls found a winning route with the resource bypass left at zero. Its 5,721 joystick reads and 11,443 Space scans replayed to success in VICE with matching final supply and column state. Both replay harnesses restore their temporary control-read code and resident-stash data before any continuation. Raw frames, snapshots, and traces remain in `work/`; the public recording contains only input runs and milestones.
+
+Five scoped VICE wait-to-load traces and a 1,220-instruction direct-control-flow walk bounded the retained engine helpers and data. The only hits in the first broad skipped-check watch were its live continuation at `$11B7/$11BA`; the skipped body stayed unentered. A first diagnostic accidentally watched the tight tick-read loop and generated an oversized log; it was stopped and discarded, and the valid run instead traced the tick-wait entry.
+
+The font investigation corrected earlier labels that treated the `$2000` title-logo artwork as an alphabet. The consecutive logo screen codes and measured frame fetches account for its first 240 patterns. Running all 122 stored title/story/ending rows through `$1A12` assigned punctuation in the actual `$3000` alphabet. Three title-frame pixels differ at raster boundaries; the result stays explicitly inexact.
+
+## Silver review continuation
+
+Used gpt-6.1-sol for an independent 60-comment uniform sample and a separate 20-comment generated-template supplement. The checker found one misleading gate/control detail; instruction bytes at airshaft $E1D2–$E1E1 confirm that X holds the control byte while DEC changes the gate counter. Corrected all 21 matching comments across seven parts, using listing.py --recomment without changing machine bytes. Twenty targeted CPU tests and eleven matrix-copy cases passed. Eleven historical observations remain explicitly unverified in this review.
+
+VICE was started through tools.py using the installed headless build and its existing dummy sound configuration. The original work snapshots were absent. At the contributor's explicit request, downloaded the three image releases named by orientation.md from CSDb into gitignored work/. No optional playthrough or replay was performed.
