@@ -213,3 +213,11 @@ lower bound, and a full audit is recommended.
 - The ending's text and credits scrolled on screen after stage 8, with
   the music playing (*live*, `reference/` and the ending part's
   snapshot).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- The disk's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them.

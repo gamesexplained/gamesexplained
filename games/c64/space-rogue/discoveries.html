@@ -119,15 +119,14 @@ details summary{cursor:pointer;color:var(--link);font-size:14px;margin:12px 0 6p
     </div>
     <div class="sr-bar sr-gap"><button class="sr-btn" id="sr-ans-mark" aria-pressed="true">Outline what changed</button></div>
     <p class="sr-info" id="sr-ans-info"></p>
-    <p class="cap">Both pictures are unpacked here from <code data-part="title">SPACE</code> as the title holds it (<code data-part="title">$B700</code>), with <code>unpack_picture</code>'s rules (<code>$712D</code>); the text over them is left out. <code>test_discoveries.js</code> runs the game's own routine on the same bytes and gets the same picture and border.</p>
+    <p class="cap">Both pictures are unpacked here from <code data-part="title">SPACE</code> as the title holds it (<code data-part="title">$B700</code>), with <code>unpack_picture</code>'s rules (<code>$712D</code>); the text over them is left out.</p>
   </div>
   <p>The intro loads the packed star field, <code>SPACE</code>, to <code>$B700</code>, where its stream runs on to <code>$BF53</code>. The buffer for a typed line is at <code>$BF00</code> (<code>line_buffer</code>), inside that stream. The question is asked over the star field unpacked before anything is typed. A wrong answer sends the game to <code>access_denied</code> (<code>$7927</code>), which unpacks <code>SPACE</code> again, now with the answer and the zero that closes it written over the stream 84 bytes before its end.</p>
   <p>Those bytes unpack into the lower half of the screen matrix, which holds two of the four colours of each character cell. The unpacker reads the typed letters as counts and colours, so cells there change colour. When it reads the answer's closing zero as a control byte, the picture ends early and the rest of the screen keeps the question's colours. The byte after the end marker is the border colour, so a wrong answer can also turn the border blue or grey.</p>
   <div class="sr-shots">
-    <figure><img src="reference/denied-question.png" alt="A manual question in white over the star field, black border" width="384" height="272"><figcaption>The question, in VICE.</figcaption></figure>
+    <figure><img src="reference/denied-question.png" alt="A manual question in white over the star field, black border" width="384" height="272"><figcaption>The question.</figcaption></figure>
     <figure><img src="reference/denied-answer.png" alt="ACCESS DENIED over the star field, now with a grey border and a band of yellow and red stars" width="384" height="272"><figcaption>The same game after the answer "zz": the border is grey and a band of stars is yellow and red.</figcaption></figure>
   </div>
-  <p class="cap">Seen in VICE (PAL C64) on 15 October 2026. The buffer the screen showed matched the page's prediction for "zz" byte for byte, except under the two lines of text.</p>
 </section>
 
 <section data-part="intro" id="hang">
@@ -144,11 +143,11 @@ details summary{cursor:pointer;color:var(--link);font-size:14px;margin:12px 0 6p
       <p class="sr-info" id="sr-ras-info"></p>
       <table class="sr-code" id="sr-ras-code"></table>
     </div>
-    <p class="cap">The code is <code>bitmap_mode</code> in the intro (<code>$6FD7</code>); the title's (<code data-part="title">$2823</code>) and the ending's (<code data-part="ending">$6FE2</code>) are the same. <code>test_discoveries.js</code> runs it with the beam on every line of a PAL frame.</p>
+    <p class="cap">The code is <code>bitmap_mode</code> in the intro (<code>$6FD7</code>); the title's (<code data-part="title">$2823</code>) and the ending's (<code data-part="ending">$6FE2</code>) are the same.</p>
   </div>
   <p>The routine sets the bitmap bit with three instructions: read the control register <code data-part="">$D011</code>, set bit 5, write it back. Bit 7 of that register means two different things. Read, it is bit 8 of the line the beam is drawing. Written, it is bit 8 of the line the raster interrupt waits for, whose low byte stays at <code>$50</code>. When the routine runs while the beam is on line 256 or any later line, the interrupt moves from line 80 to line 336.</p>
   <p>A PAL frame has 312 lines and an NTSC frame 263, so line 336 never comes. The game reads the keyboard and counts frames in that interrupt, and it waits there for a key that can no longer arrive. Lines 256 to 311 are 56 of PAL's 312, so a call landing at a random moment hangs about one time in six on a PAL machine, and on NTSC (7 lines of 263) about one time in 38.</p>
-  <p class="cap">Seen in VICE (PAL C64): two clean boots out of two hung at "Old or New Game?", the interrupt stopped. Clearing bit 7 of <code data-part="">$D011</code> with the machine paused brought it back each time.</p>
+  <p class="cap">A clean boot on a PAL C64 can hang at "Old or New Game?", the interrupt stopped. Clearing bit 7 of <code data-part="">$D011</code> with the machine paused brings it back.</p>
 </section>
 
 <section data-part="hive" id="mounds">
@@ -161,7 +160,7 @@ details summary{cursor:pointer;color:var(--link);font-size:14px;margin:12px 0 6p
     <p class="sr-key"><span class="sr-sw" style="background:var(--accent)"></span>meant <span class="sr-sw" style="background:var(--coral)"></span>what the code does</p>
     <p class="sr-info" id="sr-mnd-info"></p>
     <table class="sr-code" id="sr-mnd-code"></table>
-    <p class="cap">Every wait the code can choose for each drop, one mark for each of random_upto's 91 results. "Meant" runs the same code with the branch the other way round. <code>test_discoveries.js</code> runs <code>hive_raise_mound</code> for every drop from 0 to 255 and every result.</p>
+    <p class="cap">Every wait the code can choose for each drop, one mark for each of random_upto's 91 results. "Meant" runs the same code with the branch the other way round.</p>
   </div>
   <p>When a mound rises (<code>hive_raise_mound</code>, <code>$59BA</code>), the timer for the next one is set from the drop number: 150 − 8 × drop, plus a random 0 to 90. The subtraction is done in one byte. The branch at <code>$59E4</code> keeps its result only when the subtraction borrows, that is when it goes below zero, and otherwise puts 1 in its place. Up to drop 18 the result is never below zero, so every drop gets the shortest wait the code allows: on drop 1 the mounds come about four times as often as the code was written to allow, and by drop 18 the two nearly agree.</p>
   <p>From drop 19 the subtraction does borrow, and the code keeps a number that has wrapped round to just under 256: the waits split between a very short one and one of over 150 passes. At drop 32, 8 × 32 is 256, which is 0 in one byte, and the pattern starts again. The timer counts passes of the drop's loop, twice as fast while there are no mounds standing.</p>
@@ -175,7 +174,7 @@ details summary{cursor:pointer;color:var(--link);font-size:14px;margin:12px 0 6p
     <div class="sr-bar"><button class="sr-btn" id="sr-mor-go" aria-pressed="false">Send it</button><span class="sr-lamp" id="sr-mor-lamp" aria-hidden="true"></span><span class="sr-mono" id="sr-mor-v"></span></div>
     <p class="sr-need" id="sr-mor-need" hidden></p>
     <canvas id="sr-mor-cv" class="sr-chart" width="680" height="228" aria-label="The beacon's tones and silences in frames, by letter"></canvas>
-    <p class="cap">Decoded from <code>morse_text</code> (<code>$7397</code>), each character drawn to scale in frames, a fiftieth of a second on a PAL machine; the lamp sends it at that speed. <code>test_discoveries.js</code> runs <code>distress_call</code> (<code>$7359</code>) and compares every tone and silence with this timeline.</p>
+    <p class="cap">Decoded from <code>morse_text</code> (<code>$7397</code>), each character drawn to scale in frames, a fiftieth of a second on a PAL machine; the lamp sends it at that speed.</p>
   </div>
   <p>The message is 86 bytes, one for each dot, dash and gap: a dot is a 2-frame tone, a dash a 6-frame tone, each followed by 2 frames of silence. Between letters the gap is 6 frames, but inside SOS it is only 4, so each SOS runs together as one signal, the way radio operators send it. Words are 18 frames apart. The story text calls the beacon a distress call and says nothing about what it spells. None of the sources read for this page mentions the message (the C64-Wiki's page and the QuestBusters review of November 1989).</p>
 </section>

@@ -111,3 +111,35 @@ After the audit a new sample, seed 51113, drew 60 of the 1,146 comments and gave
 - F5 returned the machine to the attract mode (`$9561`); the processor was then in `$0586`'s routine at `$0594`, which the attract loop calls.
 - The joystick in port 2 moved Johnny in both parts (the walk and the menu both answered it).
 - Each of part two's fourteen events, started on the kit's machine model by setting the scroll column to one of its columns, drew the shapes and colours the Graphics tab shows (13 November 2026).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Checked by running the game's own INPUT step (`$183D`) on the kit's 6502 from a snapshot of part one, with Johnny at each column and the DESK KEY chosen: at `$9A` the open flags went from `%00000000` to `%00011100`, at `$8F` to `%00000100`, and at `$9D` INPUT found no entry.
+
+### graphics.html
+
+- The bitmap appears at the tape's own pace, where it had got to every fifth of a second, measured in VICE.
+- One frame recorded in VICE with every write to the video chip, and drawn here by replaying them line by line; the drawing matched VICE's own picture in all 104,448 pixels.
+- The shapes and colours were taken from each event started on the kit's model of the machine, from a snapshot of part two with the scroll column set to a column of that event.
+
+### index.html
+
+- All 104,448 pixels match the emulator's picture of the same frame, for both parts (`test_frame.js` holds the drawing to the pictures in `reference/`).
+- The five tunes are played by a three-voice script interpreter, and the Music tab plays them by running that driver, taken from the listing, on a 6502 simulator.
+
+### levels.html
+
+- The 40 by 12 characters on screen at any moment are 10 tile columns; `test_levels.js` finds the first frame's screen inside this strip, character for character.
+- `test_levels.js` finds the recorded frame of part two in this strip, character for character and colour for colour.
+
+### music.html
+
+- Five tunes by Martin Galway, played by the game's own three-voice script driver, which this page runs on a 6502 simulator and sends through a model of the SID chip.
+- The driver at `$9EB1` to `$ACA0`, with its tune table at `$ACA0` and the voices' scripts to `$BFFE`, is embedded in this page as bytes from the listing and run on the site's 6502 simulator; every write it makes to the sound chip goes through the site's SID model, here with a 6581 filter.
+- `test_music.js` holds the page's driver to the game: the notes it plays in the first 300 frames of the attract tune match, voice by voice and note by note, a recording of the chip made in the emulator (frame offsets within one frame).
+- The player runs the tune's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette calls it.
+- It was checked against the cassette loading in VICE: the sound chip's registers after each of the first 3,000 calls, a minute of music, are the player's.
