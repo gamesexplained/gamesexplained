@@ -35,101 +35,131 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 </style>
-<style>.im-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.im-pics{display:grid;grid-template-columns:1fr 1fr;gap:18px}.im-pics img{width:100%;image-rendering:pixelated}canvas{image-rendering:pixelated;max-width:100%;height:auto}button,select,input{font:inherit}button,select{padding:8px 12px;margin:4px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#222}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #1f5fa8}input[type=range]{width:min(100%,500px)}.im-note{font-size:14px;color:#555}.im-scroll{overflow:auto;background:#111}.im-scroll canvas{max-width:none}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}output{display:block;margin:10px 0}.im-sprite{background:#292929;padding:16px}.im-error{color:#9e2419}@media(max-width:650px){.wrap{padding:0 20px}.hero{padding:30px 20px}.im-pics{grid-template-columns:1fr}.plate{padding:16px}h1{font-size:36px!important}}</style>
+<style>.im-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.im-pics{display:grid;grid-template-columns:1fr 1fr;gap:18px}.im-pics img,.im-gallery img{width:100%;image-rendering:pixelated;display:block}figure{margin:0}canvas{image-rendering:pixelated;max-width:100%;height:auto}button,select,input{font:inherit}button,select{padding:8px 12px;margin:4px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#222}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #1f5fa8}input[type=range]{width:min(100%,500px)}.im-note{font-size:14px;color:#555}.im-scroll{overflow:auto;background:#111;border-radius:6px}.im-scroll canvas{max-width:none;display:block}#im-world{height:384px;width:auto;cursor:pointer}@media(max-width:650px){#im-world{height:288px}}table{border-collapse:collapse;width:100%;margin:18px 0}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd;vertical-align:top}output{display:block;margin:10px 0}.im-error{color:#9e2419}.im-wide{display:block;width:100%;margin-top:12px;border-radius:4px}.im-thumb{width:48px;min-width:48px;height:42px;background:#111;border-radius:4px;display:block}
+.im-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.im-gallery figcaption{font-size:14px;color:var(--ink-mute);margin-top:6px}
+.im-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;margin-bottom:16px}.im-item{display:flex;flex-direction:column;align-items:center;gap:4px;margin:0;padding:10px 6px;line-height:1.25}.im-item canvas{background:#111;border-radius:4px;width:72px;height:63px}.im-item small{color:var(--ink-mute);font-family:var(--fm);font-size:12px}.im-item[aria-pressed=true]{outline:3px solid var(--accent);outline-offset:1px}
+.im-bar{height:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;overflow:hidden;margin:6px 0 12px}.im-bar i{display:block;height:100%;width:0;background:var(--amber)}
+.im-pad button{min-width:110px;touch-action:none;user-select:none;-webkit-user-select:none}.im-pad button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.im-stats{display:flex;gap:28px;flex-wrap:wrap;font-family:var(--fm);font-size:14px;color:var(--ink-soft);margin-top:8px}.im-stats b{display:block;font-size:26px;color:var(--ink)}
+.im-screen{background:#000;color:#fff;font-family:var(--fm);font-size:15px;line-height:1.7;padding:18px 20px;border-radius:6px;white-space:pre-wrap;margin:0 0 18px}
+.im-name{font-family:var(--fm);font-size:20px;letter-spacing:.12em;text-transform:uppercase;width:12ch;padding:6px 10px;border:1px solid #aaa;border-radius:5px}
+.im-key[hidden]{display:none}.im-key{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:14px;color:var(--ink-soft);margin:10px 0 0}.im-key label{display:flex;align-items:center;gap:6px}.im-key i{display:inline-block;width:14px;height:14px;border-radius:3px}
+.im-cast{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}.im-cast figure{background:#1e3238;border-radius:6px;padding:6px 4px;text-align:center}.im-cast canvas{width:100%;max-width:144px;height:auto}.im-cast figcaption{color:#ccc;font-size:12px;line-height:1.3;min-height:2.6em}
+@media(max-width:650px){.wrap{padding:0 20px}.hero{padding:30px 20px}.im-pics{grid-template-columns:1fr}.im-gallery{grid-template-columns:1fr 1fr}.plate{padding:16px}h1{font-size:36px!important}}</style>
 <!-- tabs -->
 <header class="hero">
 <p class="eyebrow">1990 · Gremlin Graphics · C64</p>
 <h1>Impossamole</h1>
-<p class="sub">Six names hidden in the high-score checker alter Monty’s resources and rules.</p>
+<p class="sub">A shopkeeper who loses count when you wiggle, and a high-score table that reaches into the music.</p>
 </header>
 <main class="wrap">
-<section id="names">
-<h2 class="t">Secret: high-score names change the next game</h2>
-<p>The name checker accepts six exact eight-character strings. Each name selects a modifier, a number that remembers which rule to change later. The dots and spaces are part of the names.</p>
+<section id="haggle">
+<h2 class="t">Secret: waggle the joystick and the shopkeeper takes less</h2>
+<p>Every level has a shop. Monty walks up to an item, its price appears, and fire buys it if he has that much money. The item is his at once. The money leaves afterwards, one coin a frame, fifty times a second, so a 125-coin shatterbomb takes two and a half seconds to pay for.</p>
+<p>On each of those frames the game reads the joystick. If it is pushed left or right, and not the same way as the last push, that frame's coin stays in Monty's pocket. Waggle the stick and some of the price is never taken. Change direction on every frame and the item is free. The payment always lasts as many frames as the price, so a fast hand saves money, not time. The instructions don’t mention it.</p>
 <div class="plate">
-<label>Name <select id="im-secret">
-</select>
-</label>
-<output id="im-secret-result">
-</output>
+<div class="im-items" id="im-items" role="group" aria-label="Items for sale"></div>
+<div class="im-bar" aria-hidden="true"><i id="im-pay-bar"></i></div>
+<div class="im-row im-pad">
+<button type="button" id="im-left">◀ Left</button>
+<button type="button" id="im-right">Right ▶</button>
+<label><input type="checkbox" id="im-auto"> Waggle on every frame for me</label>
+</div>
+<div class="im-stats"><span>Purse<b id="im-purse">250</b></span><span>Paid<b id="im-paid">0</b></span><span>Kept<b id="im-kept">0</b></span></div>
+<output id="im-pay-msg">Pick an item to buy it.</output>
+</div>
+<p class="cap">Pick an item, then press Left and Right in turn, or the arrow keys. The purse starts full each time: 250 coins is the most Monty can carry.</p>
+</section>
+<section id="tune">
+<h2 class="t">Bug: a cheat name knocks the tune out of key</h2>
+<p>When a new name goes into the high-score table, the game checks it against six cheat names (below). The check counts matching letters, and it keeps that count in a byte that belongs to the music: the first step of one of the tune’s instruments, the number of semitones that step adds to each note. The byte is 0 when the game loads, and the check leaves its count behind.</p>
+<p>A cheat name matches all eight letters and leaves 8. From then on that instrument plays every note eight semitones high, while the other two voices stay in key. It is a part on the third voice that first comes in 53 seconds into the tune, which plays on the title screen and, with music chosen, during play. It stays wrong until the next high-score name is checked, or the machine is switched off.</p>
+<div id="im-tune" class="plate"></div>
+<p class="cap">Both players start 50 seconds into the tune. Mute voices 1 and 2 to hear the third on its own.</p>
+<p>Ordinary names can do it too. The last cheat name checked is JUGGLERS, and when nothing matches, the count left behind is how many letters the new name shares with JUGGLERS from the start. JIM leaves 1, JUDY 2, JUGGLER 7. Any name that begins with J pushes that part up.</p>
+<div class="im-pics">
+<figure><img src="reference/highscores-cheat.png" alt="The high-score table with OOCHOUCH in eighth place at 1,649 points"><figcaption class="cap">A game of Klondike ended at 1,649 points, and OOCHOUCH typed in with the joystick. The table’s own names are ROB, BOB, TEL, ANDY, GREG, AND THE, OTHER, LADZ.</figcaption></figure>
+</div>
+</section>
+<section id="names">
+<h2 class="t">Six cheat names hide in the high-score table</h2>
+<p>Typed into the high-score table, six names change the next game. Each must fill all eight places, so the spaces around HEINZ. count. The name entry starts as eight full stops, which a short name keeps.</p>
+<div class="plate">
+<label>High-score name <input id="im-name" class="im-name" maxlength="8" value="OOCHOUCH" autocomplete="off" spellcheck="false" aria-describedby="im-name-out"></label>
+<output id="im-name-out"></output>
+<p class="im-note">The joystick can pick a full stop, A to Z, a space and a question mark.</p>
 </div>
 <table>
-<tr>
-<th>Name</th>
-<th>Effect</th>
-</tr>
-<tr>
-<td>
-<code>LUMBAJAK</code>
-</td>
-<td>Raises the starting capacity default from 9 to 17.</td>
-</tr>
-<tr>
-<td>
-<code> HEINZ. </code>
-</td>
-<td>Starts strength at 3. Include one space at each end.</td>
-</tr>
-<tr>
-<td>
-<code>COMMANDO</code>
-</td>
-<td>Preserves the weapon lifetime.</td>
-</tr>
-<tr>
-<td>
-<code>ANNFRANK</code>
-</td>
-<td>Adds one starting reserve.</td>
-</tr>
-<tr>
-<td>
-<code>OOCHOUCH</code>
-</td>
-<td>Skips damage from terrain class 9.</td>
-</tr>
-<tr>
-<td>
-<code>JUGGLERS</code>
-</td>
-<td>Doubles food restoration.</td>
-</tr>
+<tr><th>Name</th><th>The next game</th></tr>
+<tr><td><code>LUMBAJAK</code></td><td>A longer energy bar: its size is 17 instead of 9.</td></tr>
+<tr><td><code>&nbsp;HEINZ.&nbsp;</code></td><td>Monty starts at full strength, 3 instead of 1.</td></tr>
+<tr><td><code>COMMANDO</code></td><td>A weapon from a shop or the floor never wears off.</td></tr>
+<tr><td><code>ANNFRANK</code></td><td>One spare energy bar, used when the first runs out.</td></tr>
+<tr><td><code>OOCHOUCH</code></td><td>Ground that hurts, such as the sea, still bounces Monty up, but no longer harms him.</td></tr>
+<tr><td><code>JUGGLERS</code></td><td>Food restores twice as much energy.</td></tr>
 </table>
-<p>The routine that compares names at <code>$5001</code> checks all eight characters against the encoded table at <code>$5076</code>. Adding <code>$45</code> to each stored byte restores its letter for the comparison. A match stores the modifier at <code>$08BE</code> and resets the capacity, strength, and reserve defaults before applying the selected change. The final accepted name therefore selects one modifier. Live instruction traces through the comparison confirm all six accepted names and their initial values.</p>
-<p>The routines that apply the other modifiers are <code>$3473</code> for the weapon lifetime, <code>$3053</code> for terrain damage, and <code>$3690</code> for food. These modify those particular rules. The names are entered through the game’s high-score-name interface; this inspection verified the comparisons directly rather than playing a qualifying score.</p>
+<p>Only the newest cheat counts. Each one first puts the energy bar, strength and spare back to normal, then makes its own change, so two cheats never add up. An ordinary name leaves the last cheat in force. In memory the names are kept with every letter moved 69 places along, and moved back one at a time as they are compared.</p>
+<p>Cheat lists for the PC version give some of these names, and they work the same way here.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a">
 <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a>
 <br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a>
 </footer>
-<script src="../../lib/c64.js"></script><script>
-
+<script src="../../lib/c64.js"></script><script src="../../lib/sid.js"></script><script src="../../lib/cpu6502.js"></script><script>
 const IM_IDS=['klondike','orient','amazon','iceland','bermuda'];
 const IM_NAMES=['Klondike','Orient','Amazonian Forest','Iceland','Bermuda Triangle'];
 const $=id=>document.getElementById(id);
-function imHex(a){return '$'+a.toString(16).toUpperCase().padStart(4,'0');}
 async function imMemory(i){const [r,l]=await Promise.all([C64.load('parts/resident/listing.json'),C64.load('parts/'+IM_IDS[i]+'/listing.json')]);const m=r.ram.slice();for(let a=0;a<65536;a++)if(l.has[a])m[a]=l.ram[a];return m;}
-function imOptions(el){IM_NAMES.forEach((s,i)=>el.add(new Option(s,i)));}
 function imFail(e){console.error(e);const x=document.createElement('p');x.className='im-error';x.textContent='Viewer stopped: '+e.message;document.querySelector('main').append(x);}
-// im-map-port
-function imBlock(m,id){return Array.from(m.slice(0xb000+16*id,0xb010+16*id));}
-function imDrawMap(canvas,m,start=0,columns=40,overlay=false){canvas.width=columns*8;canvas.height=192;const c=canvas.getContext('2d'),cs=m.subarray(0xf000,0xf800),level=m[0x83e6],pal=C64.PAL;
-for(let x=0;x<columns;x++)for(let y=0;y<24;y++){const col=start+x,block=m[0xa410+Math.floor(col/4)*6+Math.floor(y/4)],ch=imBlock(m,block)[(y%4)*4+col%4],co=m[0xae00+ch];
- if(co&8)C64.drawGlyphMC(c,cs,ch,x*8,y*8,1,[pal[0],pal[m[0x7ec1+level]&15],pal[m[0x7ec6+level]&15],pal[co&7]]);else C64.drawGlyph(c,cs,ch,x*8,y*8,1,pal[co&15],pal[0]);
- if(overlay){const t=m[0xaf00+ch];c.fillStyle=['#ffffff00','#4af8','#4f48','#ff48','#f448'][Math.min(t,4)];c.fillRect(x*8,y*8,8,8);}}
+// im-haggle-port
+// The shop's payment, once a frame: joy is the joystick port, where bit 2 low is left and bit 3 low is right
+function imPayStart(price,latch){return {state:price+2,money:250,latch};}
+function imPaying(s){return s.state>=3;}
+function imPayFrame(s,joy){const v=joy&0x0c;if(v!==0x0c&&v!==s.latch)s.latch=v;else s.money=(s.money-1)&255;s.state=(s.state-1)&255;}
+// end im-haggle-port
+// im-name-port
+function imCheckName(m,name){let count=0;for(let n=0;n<6;n++){count=0;for(let i=0;i<8;i++){if(((m[0x5076+8*n+i]+0x45)&255)!==name.charCodeAt(i))break;count++;}if(count===8)return{id:n,count};}return{id:-1,count};}
+// end im-name-port
+// im-shift-driver
+function createShiftDriver(D,C64Cpu){
+ const base=new Uint8Array(65536);for(const [a,b] of D.mem)base.set(b,a);
+ const sid=new Uint8Array(25);let m,cpu,writes=[];
+ const io={read(a){throw Error('Audio read '+a.toString(16));},write(a,v){if(a>=0xd400&&a<=0xd418){sid[a-0xd400]=v;writes.push(a-0xd400,v);}else throw Error('Audio write '+a.toString(16));}};
+ return {sid,get writes(){return writes;},
+  init(t){m=base.slice();m[0x7126]=t?8:0;cpu=new C64Cpu.CPU(m,{port:0x35,io});sid.fill(0);m[0x66ff]=0;cpu.call(0x6cc5,{a:0});for(let f=0;f<2506;f++)cpu.call(0x6701,{},{maxSteps:100000});writes=[];},
+  play(){writes=[];cpu.call(0x6701,{},{maxSteps:100000});},stop(){writes=[];},playing(){return true;}};
 }
-// end im-map-port
-// im-animation-port
-function imActor(m,p){return {shape:m[p],colour:m[p+1],expandX:0,expandY:m[p+7],multi:m[p+8],index:m[p+11],delay:m[p+12],reload:m[p+12],active:1};}
-function imTick(m,a){if(!a.active||a.delay===255)return;if(a.delay){a.delay--;return;}if(!a.index)return;a.delay=a.reload;
-for(let guard=0;guard<256;guard++){const v=m[0x8ec0+a.index];if(v!==255){a.shape=v;a.index=(a.index+1)&255;return;}const n=m[0x8ec0+((a.index+1)&255)];if(n===255){a.active=0;a.index=0;a.shape=0;return;}a.index=n;if(!n)return;}throw Error('Animation loop without a shape');}
-function imSprite(canvas,m,a){canvas.width=144;canvas.height=126;const c=canvas.getContext('2d');c.fillStyle='#292929';c.fillRect(0,0,144,126);if(!a.active)return;const b=m.slice(0xc000+64*a.shape,0xc03f+64*a.shape),pal=C64.PAL,ex=a.expandX?2:1,ey=a.expandY?2:1;
-if(a.multi)C64.drawSpriteMC(c,b,0,0,3,pal[a.colour&15],pal[11],pal[15],ex,ey);else C64.drawSprite(c,b,0,0,3,pal[a.colour&15],ex,ey);}
-function imTemplates(m){const out=[];for(let i=0;i<256;i++){const p=m[0x817c+2*i]|m[0x817d+2*i]<<8;if(p>=0x9142&&p+25<=0x9aff)out.push({id:i,p});}return out;}
-// end im-animation-port
-
-
-const imSecrets=[['LUMBAJAK','Modifier 0 · capacity 17 · strength 1 · reserves 0'],[' HEINZ. ','Modifier 1 · capacity 9 · strength 3 · reserves 0'],['COMMANDO','Modifier 2 · capacity 9 · strength 1 · reserves 0 · weapon lifetime preserved'],['ANNFRANK','Modifier 3 · capacity 9 · strength 1 · reserves 1'],['OOCHOUCH','Modifier 4 · capacity 9 · strength 1 · reserves 0 · terrain class 9 immunity'],['JUGGLERS','Modifier 5 · capacity 9 · strength 1 · reserves 0 · doubled food']];imSecrets.forEach((x,i)=>$('im-secret').add(new Option(JSON.stringify(x[0]),i)));function secret(){$('im-secret-result').textContent=imSecrets[+$('im-secret').value][1];}$('im-secret').onchange=secret;secret();
-
+// end im-shift-driver
+const IM_ITEMS=[[1,'Shatterbomb'],[2,'Power gun'],[3,'Lazer gun'],[4,'Soup can'],[5,'Slimy worms'],[7,'Pinta a day']];
+const IM_ALPHABET='.ABCDEFGHIJKLMNOPQRSTUVWXYZ ?';
+const IM_CHEATS=['a longer energy bar','Monty starts at full strength','weapons never wear off','one spare energy bar','harmful ground no longer hurts','food restores twice as much energy'];
+function imItemSprite(canvas,m,type){const p=m[0x817c+2*type]|m[0x817d+2*type]<<8,c=canvas.getContext('2d'),pal=C64.PAL,b=m.slice(0xc000+64*m[p],0xc03f+64*m[p]);canvas.width=72;canvas.height=63;c.clearRect(0,0,72,63);
+ if(m[p+8])C64.drawSpriteMC(c,b,0,0,3,pal[m[p+1]&15],pal[11],pal[15]);else C64.drawSprite(c,b,0,0,3,pal[m[p+1]&15]);}
+(async()=>{
+if(typeof C64==='undefined')throw Error('Build the site to load the shared drawing library.');
+const m=await imMemory(0);
+// The shop
+let pay=null,item=null,latch=m[0x809c],acc=0,last=0,flip=0;const held={l:false,r:false};
+const buttons=IM_ITEMS.map(([type,name])=>{const b=document.createElement('button');b.type='button';b.className='im-item';b.setAttribute('aria-pressed','false');const cv=document.createElement('canvas');imItemSprite(cv,m,type);
+ b.append(cv,name);const s=document.createElement('small');s.textContent=m[0x8091+type]+' coins';b.append(s);b.onclick=()=>buy(type,name,b);$('im-items').append(b);return b;});
+function joy(){if($('im-auto').checked){flip^=1;return flip?0x08:0x04;}return 0x0c&~(held.l?4:0)&~(held.r?8:0);}
+function show(){const price=m[0x8091+item.type],paid=250-pay.money,done=price-(pay.state-2);$('im-purse').textContent=pay.money;$('im-paid').textContent=paid;$('im-kept').textContent=done-paid;$('im-pay-bar').style.width=(100*done/price)+'%';}
+function buy(type,name,b){buttons.forEach(x=>x.setAttribute('aria-pressed',String(x===b)));item={type,name};pay=imPayStart(m[0x8091+type],latch);acc=0;last=performance.now();$('im-pay-msg').textContent='Paying for the '+name.toLowerCase()+'…';show();requestAnimationFrame(tick);}
+function tick(t){if(!pay||!imPaying(pay))return;acc+=Math.min(0.25,(t-last)/1000)*50.125;last=t;while(acc>=1&&imPaying(pay)){imPayFrame(pay,joy());acc--;}show();
+ if(imPaying(pay))requestAnimationFrame(tick);else{latch=pay.latch;const price=m[0x8091+item.type],paid=250-pay.money;$('im-pay-msg').textContent=paid===price?'Paid the full '+price+' coins for the '+item.name.toLowerCase()+'.':'Paid '+paid+' of '+price+' coins for the '+item.name.toLowerCase()+'. '+(price-paid)+' stayed in the purse.';}}
+function hold(id,key){const b=$(id),on=v=>{held[key]=v;b.classList.toggle('on',v);};b.addEventListener('pointerdown',e=>{e.preventDefault();on(true);});for(const ev of ['pointerup','pointerleave','pointercancel'])b.addEventListener(ev,()=>on(false));b.addEventListener('contextmenu',e=>e.preventDefault());return on;}
+const setL=hold('im-left','l'),setR=hold('im-right','r');
+const keyOf=e=>e.key==='ArrowLeft'?setL:e.key==='ArrowRight'?setR:null;
+addEventListener('keydown',e=>{const f=keyOf(e);if(f&&pay&&imPaying(pay)){e.preventDefault();f(true);}});addEventListener('keyup',e=>{const f=keyOf(e);if(f)f(false);});
+// The names
+function check(){const raw=$('im-name').value.toUpperCase(),bad=[...raw].some(c=>!IM_ALPHABET.includes(c)),name=raw.padEnd(8,'.');const r=imCheckName(m,name),out=$('im-name-out');
+ if(bad){out.textContent='The name entry has no such letter.';return;}
+ out.textContent=(r.id>=0?'A cheat: '+IM_CHEATS[r.id]+'.':'No cheat.')+' '+(r.count?'The tune’s third-voice part goes up '+r.count+' semitone'+(r.count>1?'s':'')+'.':'The tune stays in key.');}
+$('im-name').oninput=check;check();
+// The tune
+if(typeof C64Sid==='undefined'||typeof C64Cpu==='undefined')throw Error('Build the site to load the shared sound and CPU libraries.');
+const r=await C64.load('parts/resident/listing.json'),mem=[[0x60da,Array.from(r.ram.slice(0x60da,0x7ec0))]];
+C64Sid.mount($('im-tune'),{driver:createShiftDriver,data:{mem},tunes:['Before a cheat name','After a cheat name'],filter:'6581'});
+})().catch(imFail);
 </script>
