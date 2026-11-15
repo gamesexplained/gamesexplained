@@ -76,7 +76,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">Each bar is the bonus for reaching 4.00 miles with that much time left, worked out the way the ride works it out (<code>ride1_step</code>, <code>$2345</code>). A test beside this page runs the game's own code for every reading of the clock at all three levels and compares.</p>
   </div>
   <p>The clock counts down from 2.00, minutes and seconds, each kept as a BCD byte, a byte whose two halves are two decimal digits (<code>clock_mins</code> <code>$48</code>, <code>clock_secs</code> <code>$47</code>). At the finish a loop adds 15, 20 or 25 points by level, as many times as the byte <code>zpa_10</code> says. With a minute or more left the game puts the seconds there plus <code>$50</code>, added as a plain binary sum although the seconds are BCD. So 1.30 gives <code>$30</code> + <code>$50</code> = <code>$80</code>, 128 counts, and 1.00 gives only 80. With under a minute left nothing is put there. The byte still holds the 0 left by the routine that unpacked the ride's sprites, and a loop that counts down from 0 runs 256 times.</p>
-  <p>In the emulator on level 1, reaching Kane at 1.00 gave 1,200 points and reaching it a second later, at 0.59, gave 3,840. Each also got a few more from the next bug.</p>
+  <p>On level 1, reaching Kane at 1.00 gives 1,200 points and reaching it a second later, at 0.59, gives 3,840. Each also gets a few more from the next bug.</p>
 </section>
 
 <section>
@@ -94,7 +94,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">The score is drawn in the game's own font, a frame at a time at the game's pace, by the page's version of <code>count_score</code> (<code>$3B9A</code>). The chart shows the points the score gains beyond those it was given, for every amount from 1 to 2,000 waiting on a score of 0: press it to count any of them. A test beside this page checks the counting against the game's own routine frame by frame, for 2,900 amounts.</p>
   </div>
   <p>The score and the points still to come (<code>pending</code>, <code>$8FA4</code>) are four BCD bytes each. Every frame <code>count_score</code> takes a step off the one and adds it to the other, with the processor's decimal mode on. The step is 1 while fewer than 100 are waiting, <code>$99</code> while 1,000 or more are, and <code>$0B</code> in between. <code>$0B</code> is not a BCD number: it is eleven written in binary. The 6502's decimal mode only works on digits 0 to 9. Given <code>$0B</code>, it leaves digits of 10 to 15 in the score, which the game prints as the characters after 9 in its font: <code>:</code> <code>;</code> <code>&lt;</code> <code>=</code> <code>&gt;</code> <code>?</code>. The next adds carry those digits on as extra points.</p>
-  <p>The points waiting go wrong too: taking eleven from 550 leaves <code data-part="">$054F</code>, which the next step reads as 544. A gunman on level 3 is worth 594 points and puts 706 on a score whose last digit is 0 to 4, as the emulator showed, or 690 on one whose last digit is 5 to 9. Under 100 the count is right, and so it is for the 149 points of a duck on level 2. Most larger amounts the game pays gain a little.</p>
+  <p>The points waiting go wrong too: taking eleven from 550 leaves <code data-part="">$054F</code>, which the next step reads as 544. A gunman on level 3 is worth 594 points and puts 706 on a score whose last digit is 0 to 4, or 690 on one whose last digit is 5 to 9. Under 100 the count is right, and so it is for the 149 points of a duck on level 2. Most larger amounts the game pays gain a little.</p>
 </section>
 
 <section>
@@ -102,7 +102,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Secret: keep walking and the gunmen's shots cannot hit the Marshall</h2>
   <p class="lede">A gunman's shot only counts while the Marshall stands still. Walking left and right between shots, he cannot be hit. The inlay says only that standing still makes the gunmen's shots more accurate, and their aim does close in on a Marshall who stands (<code>gunmen_aim</code>, <code>$8A61</code>).</p>
   <table class="kn-tbl">
-    <thead><tr><th>In the emulator, one minute of the shoot-out</th><th>Gunmen's shots</th><th>Shots that hit</th></tr></thead>
+    <thead><tr><th>One minute of the shoot-out</th><th>Gunmen's shots</th><th>Shots that hit</th></tr></thead>
     <tbody>
       <tr><td>Walking left and right without stopping</td><td class="kn-n">16</td><td class="kn-n">0</td></tr>
       <tr><td>Standing still</td><td class="kn-n">8</td><td class="kn-n">6</td></tr>
@@ -115,7 +115,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">04 · F1</p>
   <h2 class="t">Secret: F1 restarts a ride with the clock full and nothing lost</h2>
   <p class="lede">After a fall the game tells you that F1 will restart the level. F1 works at any moment of a ride, fall or no fall, costs no token, and puts two minutes back on the clock.</p>
-  <p>The ride's loop checks the F1 key on every pass and jumps back to <code>start_ride</code> (<code>$1F3B</code>), which sets the clock to 2.00 and the distance to 0.00. A ride whose clock is running out can be started again as often as you like, so the clock never has to reach 0.00. In the emulator, with four seconds left on ride 1 and 2.50 miles covered, F1 gave a new ride with the clock full, the distance back at 0.00 and the same number of tokens. Each restart also adds 2 points to the score, the 2 the game has in hand from setting the minutes.</p>
+  <p>The ride's loop checks the F1 key on every pass and jumps back to <code>start_ride</code> (<code>$1F3B</code>), which sets the clock to 2.00 and the distance to 0.00. A ride whose clock is running out can be started again as often as you like, so the clock never has to reach 0.00. With four seconds left on ride 1 and 2.50 miles covered, F1 gives a new ride with the clock full, the distance back at 0.00 and the same number of tokens. Each restart also adds 2 points to the score, the 2 the game has in hand from setting the minutes.</p>
 </section>
 
 <section>
@@ -123,10 +123,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Bug: two gunmen can hide in the same place</h2>
   <p class="lede">The game means each of the sixteen hiding places to hold one gunman at a time. A slip in the check lets a second gunman into a place that is taken, where he stands in the first one's spot.</p>
   <div class="kn-two">
-    <figure><img src="reference/live-shared-place.png" alt="A close view of the town: one gunman inside a red box in the street, where two gunman sprites stand on one another"><figcaption>Seen in the emulator: gunmen 0 and 1 both in place 9, their two sprites one on top of the other.</figcaption></figure>
+    <figure><img src="reference/live-shared-place.png" alt="A close view of the town: one gunman inside a red box in the street, where two gunman sprites stand on one another"><figcaption>Gunmen 0 and 1 both in place 9, their two sprites one on top of the other.</figcaption></figure>
     <div>
       <p>When a gunman's sprite is free, <code>gunmen_appear</code> (<code>$3E77</code>) picks a place at random and should turn it away if <code>place_used</code> (<code>$914D</code>) marks it taken. The test reads the wrong entry (<code>$3ED4</code>): <code>place_used</code> at the gunman's own number, 0 to 3, instead of the place's. So a gunman can take a place another is in, and is sent away from any place while the place with his own number is taken.</p>
-      <p>Watched in the emulator for two and a half minutes, four times a second, two gunmen shared a place in 29 of the 552 looks. The pair look like a single gunman.</p>
+      <p>Over two and a half minutes of play, looked at four times a second, two gunmen share a place in 29 of the 552 looks. The pair look like a single gunman.</p>
     </div>
   </div>
 </section>
@@ -146,7 +146,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">07 · The first shot</p>
   <h2 class="t">Bug: the Marshall's first shot after the game loads makes no sound</h2>
   <p class="lede">Each of the Marshall's shots is a burst of noise. The first one after the tape has loaded is silent, and so is every shot in the next three and a half seconds.</p>
-  <p>The shot's sound (<code>shot_sound</code>, <code>$920E</code>) counts frames in <code>shot_time</code> (<code>$25</code>). At 0 it starts the noise and sets the count to 20, and at 10 it stops the noise and ends the effect, leaving 9. Nothing sets the count before the first shot, and once the game has loaded that byte holds 189. So the first shot counts down from 189 to 10, 179 frames, without passing 0, and never starts the noise. Seen in the emulator: <code>shot_time</code> went from 189 to 9 in three and a half seconds of the first shot, and the code that starts the noise never ran.</p>
+  <p>The shot's sound (<code>shot_sound</code>, <code>$920E</code>) counts frames in <code>shot_time</code> (<code>$25</code>). At 0 it starts the noise and sets the count to 20, and at 10 it stops the noise and ends the effect, leaving 9. Nothing sets the count before the first shot, and once the game has loaded that byte holds 189. So the first shot counts down from 189 to 10, 179 frames, without passing 0, and never starts the noise. <code>shot_time</code> goes from 189 to 9 in three and a half seconds of the first shot, and the code that starts the noise never runs.</p>
   <p>Every later shot starts from the 9 the last one left, so its noise comes nine frames, about a fifth of a second, after the trigger. The gunmen's shots (<code>$9247</code>) count the same way from a count that starts at 0, so only their first shot comes at once.</p>
 </section>
 
@@ -155,7 +155,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Bug: the coach count stops at 19 when the train gets away</h2>
   <p class="lede">Fall twenty coaches behind and the train has got away. The count under the picture stops at 19 while the game's own count goes on.</p>
   <div class="kn-two">
-    <figure><img src="reference/live-train-away.png" alt="The train ride with the train gone from the top of the screen and the status line reading Distance To Go 19 Coaches"><figcaption>Seen in the emulator: the count at 21 coaches, the screen showing 19.</figcaption></figure>
+    <figure><img src="reference/live-train-away.png" alt="The train ride with the train gone from the top of the screen and the status line reading Distance To Go 19 Coaches"><figcaption>The count at 21 coaches, the screen showing 19.</figcaption></figure>
     <div>
       <p>The train's ride (<code>train_step</code>, <code>$228B</code>) prints the coach count on every pass while it is under 20. From 20 it takes another path, which clears the obstacles, slows the horse until it stands and then costs a token, and never reaches the line that prints the count. So the last number shown is 19, whatever the count is.</p>
     </div>

@@ -91,3 +91,29 @@ The same scene6 door also closes7→1, then refuses a repeated CLOSE. Ordinary u
 Continuing up through the scene6 arch at column30 requests refresh0/entry26 and reaches X1696/depth6, with a ladder visible to the left. The first door’s cell remains7 through this in-room refresh. A no-input control stays at the arch. The shared nonnegative placement prefix matches the corridor image and computes64*entry+32. A return to the first door and persistence across actual disk loads remain open. See parts/scene-06/facts.md and test_stone_arch.js.
 
 The scene6 column25 ladder accepts the checked centred approach at X1633, then completes its climb without held movement input. Its actual exit requests scene5/entry1 and returns to the Wall of Hands at X84/depth6; the hands’ opening question appears again. Off-centre X1641/1637 approaches stopped at depth24 in the checked trials. See parts/scene-06/facts.md, parts/scene-05/facts.md and test_stone_ladder.js.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The three outcomes are ports of `$9485`, `$9023` and `$906E`; `test_nickel.js` runs the game's own code at `$9023` and `$906E` for every value of `$0575` and every debt from 0 to 3, and `test_workflow.js` runs `$9485`.
+- The pick-up and the hand-back were played in the emulator; the theater offer and the Wise Man were checked in the code only.
+- Both orders, collecting the change first or complaining first, were played in the emulator and end with three quarters.
+- Both doorways were walked through in the emulator with the bit at 1.
+
+### how-it-works.html
+
+- The lookup is a port of the engine's loop at `$5F63`, and `test_dispatch.js` checks it against that loop running on the kit's 6502 for every scene, every verb and every object the scene names, plus objects it does not.
+- The block lookup is a port of `$4C01`, and `test_room.js` checks it against the routine itself on the kit's 6502: 574,720 screen cells across every scene, all equal.
+- The step is state × 37 + 17, kept to 16 bits; `test_dispatch.js` checks the port against `$4210` for all 65,536 states.
+- The first line starts from `$435B`, the state recorded at the moment an ordinary walk through the corridor's opening at column 8 reached the exit; its next number, `$BC38`, gave bank 1 and entry 35 of the Brick Hallway in the emulator.
+
+### levels.html
+
+- In an emulator test with the goblin forced into reach, “avocado” gave “Save it for when you REALLY need it.”, while “owl”, “jaggies”, and “plastics” gave only “Nothing happens.” Why those three differ is not known.
+
+### music.html
+
+- Stream 0 is a filter stream, but request 0 files it in voice slot 0, which expects a voice stream, and the simulator ends up running code at `$0000`.

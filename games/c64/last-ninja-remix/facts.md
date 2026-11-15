@@ -348,3 +348,35 @@ too.
 - The tick and the clock: in 500 frames of Central Park, the CIA interrupt
   came 505 times and the raster interrupt 500 times; the clock moved ten
   seconds and the tune was played on every frame.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The page's recogniser is a port of the check at `$95AB`-`$95D5`; `test_discoveries.js` runs it and the game's code on the kit's 6502 side by side on 20,000 joystick readings, random and with the sequence among them, and they agree on every one.
+- `test_discoveries.js` runs the port and the intro's routines side by side through the whole text, and the strip agrees in every frame.
+- The leftover routine at `$6000`, run in the page on the kit's 6502 over the engine and the title load, up to its wait for the fire button at `$606B`, and drawn by the site's renderer.
+- `test_discoveries.js` runs it the same way and checks that it reaches the wait with the text drawn, its interrupt vector set to `$60A0`, and an `RTI` at `$4002`.
+
+### index.html
+
+- Each button runs the tune's own player on the kit's 6502 in the page and plays what it writes to the sound chip through a model of the SID.
+- `test_music.js` checks every write of 6,000 frames of each tune against the same player run on the kit's simulator over the listing.
+- The picture beside them is the panel's USING box, drawn by the level's own `DrawUiImageRecord` (`$B411`) on the kit's 6502 into the frame of section 04.
+- `test_index.js` holds each port against the game's routine in all seven levels: every stick direction and heading with every weapon, each of the player's 36 animations record by record, every frame they show with each weapon, and 41,520 placings of the two fighters in each level.
+- Each area is drawn by the level's own renderer on the kit's 6502, with the objects not yet taken (`DrawInactiveObject`), as in section 05.
+- One frame of Central Park, recorded in the emulator and drawn here by the site's renderer from the bitmap at $2000, the screen colours at $0400, colour RAM and the sprites.
+- All 104,448 pixels of the drawing match the emulator's own picture of the frame; the game changes none of the video chip's registers while the frame is drawn.
+- The level's own renderer runs on the kit's 6502 in the page and stops at each call of `RenderUiSceneRecord` (`$8B49` in Central Park), which draws one picture.
+- Each card is drawn in the page by the level's own DrawTitleCard ($4E00 in every first load) on the kit's 6502, over the engine's memory.
+- In all seven levels every pixel of the play window matches the emulator's picture with the card on show, and for Central Park, the card a new game opens with, so does every pixel of the screen; `test_index.js` keeps a fingerprint of each.
+- The unpacker on this page is ported from `DecodeSpriteMaskRle63` (`$BF3F`); `test_index.js` unpacks all 242 with the port and with the game's routine on the kit's 6502, and they agree in every byte.
+- `test_index.js` runs the port and the game's routine on the kit's 6502 over 4,378 pairs of times, every boundary and wrap of the counter among them, and the spiral port against the engine's code for every energy, counting up and counting down; they agree on every one.
+- The code comes from the engine's clock by a port of CopyClockToCode ($B9B2 in The Basement); `test_index.js` runs the port and the game's routine on the kit's 6502 for all 3,600 minutes and seconds, and they give the same code for every one.
+
+### levels.html
+
+- Each picture is the game's own code run on the kit's 6502 in the page: the engine's routine at $140E clears the play window, then the level's `RenderSceneForRoomInA` draws the area's scene from the level's scene file.
+- The area each level's snapshot was taken in matches the emulator's picture of it, all 34,560 pixels of the play window, in all seven levels.

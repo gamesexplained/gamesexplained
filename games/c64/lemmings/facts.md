@@ -204,3 +204,28 @@ made.
 | The 320 code sheet numbers (`test_code_sheet.js`) | all match the menu's own code; five checked against the manual's page 18 |
 | The end tune with its NMI, rendered through `site/lib/sid.js` (`work/endlevel.js`) | rms 0.062 with the 6581's DC level, 0.048 without, no clipping |
 | The frame step for the 21 actions and the intro's 148 images (`test_graphics.js`) | the page's ports match the game's code |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- `test_graphics.js` runs the game's own step for every action and compares.
+- `test_graphics.js` unpacks all 148 with the game's own code on the kit's 6502 and compares them byte for byte.
+- Drawn by this page from the game's memory 30 seconds into level 1 (`reference/lem-gfx.js`, made by `work/mkgfx.py` from a snapshot of play), in multicolour with the play screen's colours.
+
+### index.html
+
+- Drawn by this page from one recorded frame of level 1 (`kit/c64/frame.py`): the video chip's registers as the frame began, all 166 writes to them and to the sprite pointers in the frame, each at its raster line, and the memory the chip read.
+- Redrawn with the site's model of the video chip, all 104,448 pixels match the emulator's picture of the same frame.
+- The game's own players, run on the kit's 6502 through the site's model of the SID with the 6581's filter.
+- The test beside this page (`test_music.js`) runs every tune on the simulator as the game calls it and compares every SID write of every frame with the page's.
+- The play engine's driver, run on the kit's 6502, starting each effect as `play_sound` (`$29F8`) does, with the tune file of level 1 loaded; every tune file carries the same six.
+- `test_music.js` compares every SID write of each with the game's code.
+- The ending's own player, run on the kit's 6502, with CIA 2's timer counted down in the page and the game's interrupt handler run at each tick: 132,287 writes to the volume register in the 52 seconds.
+- `test_music.js` runs the same code on the simulator with a timer of its own and compares every SID write.
+
+### levels.html
+
+- Each file was unpacked by the game's own code on the kit's 6502: the loader's unpacker (`$CDFB`), then the routine every level file carries, which unpacks the terrain and lays it out as sprite shapes at `$8000` (`unpack_terrain`, `$E094`).

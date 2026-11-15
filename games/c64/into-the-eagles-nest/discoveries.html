@@ -72,7 +72,7 @@ table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-t
     <tr><td>A door key is always in hand</td><td><code>$5BD1</code> writes 1 into the key count every frame</td></tr>
     <tr><td>The ammunition is back to 99 on two frames in three</td><td><code>$5BB4</code></td></tr>
   </table>
-  <p class="cap">All ten characters are on the name-entry screen's own alphabet strip, so this is a cheat meant to be typed, not poked. Tested in the emulator: with the word in place a mission starts with <code>$603F</code> = 1 and a key in hand, and without it there is no key.</p>
+  <p class="cap">All ten characters are on the name-entry screen's own alphabet strip, so this is a cheat meant to be typed, not poked. With the word in place a mission starts with <code>$603F</code> = 1 and a key in hand, and without it there is no key.</p>
   <p>The check runs every time a floor is built, so the cheat lasts as long as the name does, and a new name on a later high score turns it off.</p>
 </section>
 
@@ -124,7 +124,7 @@ table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-t
       <figure><img src="reference/select-mission.png" alt="A black screen reading SELECT MISSION with the number 1 below it."><figcaption>The mission select, stepped down to 1.</figcaption></figure>
       <figure><img src="reference/briefing-mission-1.png" alt="A black screen reading MISSION 1 and, below it, BLOW UP THE CASTLE."><figcaption>The briefing that follows it.</figcaption></figure>
     </div>
-    <p class="cap">Taken in the emulator, one after the other: three pushes down and fire.</p>
+    <p class="cap">One after the other: three pushes down and fire.</p>
   </div>
   <p>The game keeps the mission number in <code>$0836</code>, and the briefing at <code>$1E3F</code> reads it: 4 orders the castle blown up and anything else orders a prisoner rescued. The digit on the screen is not that number. <code>$1DBE</code> draws five minus it, so the mission the game calls 4 is the one the screen calls 1.</p>
   <p>The manual was written for the American disk release, where the missions are numbered the way it describes. On this tape the screen counts the other way, and a player following the manual starts with the demolition.</p>
@@ -154,7 +154,7 @@ table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-t
   <p class="lede">The game rolls its dice once, at start-up, out of the SID's noise.</p>
   <div class="plate">
     <canvas id="en-dice" class="en-cv" width="512" height="128"></canvas>
-    <p class="cap">256 bytes built by the game's own loop at <code>$67CA</code>, run in the emulator with the sound chip running, one column a byte. The table does not exist until the game runs, so it is not in the listing, and every game builds a different one.</p>
+    <p class="cap">256 bytes built by the game's own loop at <code>$67CA</code>, run with the sound chip running, one column a byte. The table does not exist until the game runs, so it is not in the listing, and every game builds a different one.</p>
   </div>
   <p><code>$67CA</code> sets voice three to noise at the highest frequency it can hold, reads the voice's own oscillator output at <code>$D41B</code> 256 times, writes what it reads into <code>$8700</code>, and silences the voice again. From then on <code>$67F3</code> steps an index, <code>$02E1</code>, through those 256 bytes, and the chests are the only thing that ever asks it for a number: it is called from <code>$5598</code> and nowhere else. Everything else in the game, the guards included, goes the same way every time.</p>
   <p>The noise is not quite random from one byte to the next. The loop reads it every 14 cycles, and at the highest frequency the noise generator steps about once every 16, so most bytes are their neighbour shifted by one bit and a few are equal to it. That is why the chests open on jewels more often than on explosives. An emulator with its sound turned off gives something else again: there <code>$D41B</code> reads a cycle counter, the table is a smooth ramp, and a chest never opens on explosives at all.</p>
@@ -184,7 +184,7 @@ table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-t
     <p class="cap" id="en-shot-cap"></p>
   </div>
   <p>Firing points sprite 4 at the flash's shape for the direction and puts it beside the barrel. The interrupt counts it down: orange for three frames, yellow for one, and then it is moved to the corner of the screen, where nothing shows. The shot carries on regardless. Its place is kept in <code>$02DB</code> and <code>$02DC</code>, and every frame <code>$5212</code> looks up the map tile there to see whether it has hit something, but nothing writes the shot to the screen or to a sprite.</p>
-  <p>The frames above are the game's own, recorded in the emulator with the player firing to the right across open floor: the flash for four frames, and the shot moving 8 pixels on two frames of every three until it meets the wall eighty pixels on. A screenshot taken in the eighth frame differs from one taken before the shot only in the ammunition count and the player's pose. A hit is the first thing on the screen to show where a bullet went.</p>
+  <p>The frames above are the game's own, with the player firing to the right across open floor: the flash for four frames, and the shot moving 8 pixels on two frames of every three until it meets the wall eighty pixels on. A screenshot taken in the eighth frame differs from one taken before the shot only in the ammunition count and the player's pose. A hit is the first thing on the screen to show where a bullet went.</p>
 </section>
 
 </main>
