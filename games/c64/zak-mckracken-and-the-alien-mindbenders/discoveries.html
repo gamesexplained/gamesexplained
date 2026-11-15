@@ -42,9 +42,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .zk-tab tr.bad td{background:#fde7e3}
 .zk-wide{overflow-x:auto}
 .zk-row{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;align-items:center}
-.zk-btn{font-family:var(--fm);font-size:12.5px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-soft);border-radius:6px;padding:5px 11px;cursor:pointer}
-.zk-btn.on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
-.zk-btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.zk-btn{font-size:12.5px;padding:5px 11px}
+.zk-btn.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .zk-meter{height:16px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
 .zk-meter i{display:block;height:100%;background:var(--accent);width:100%}
 .zk-say{font-family:var(--fm);font-size:13.5px;color:var(--ink);margin:10px 0 0;min-height:1.5em}
@@ -54,16 +53,15 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .zk-bars .b.off{background:var(--coral)}
 .zk-tunes{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:center;font-size:14px}
 .zk-notes{display:flex;gap:6px;flex-wrap:wrap}
-.zk-note{width:44px;height:30px;border-radius:5px;border:1px solid rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:11px;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.5)}
+.zk-note[data-own-look]{width:44px;height:30px;border-radius:5px;border:1px solid rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:11px;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.5)}
 .zk-bars .track{display:flex;background:var(--surface-2);border-radius:3px;overflow:hidden}
 .zk-shots{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 18px}
 .zk-shots figure{margin:0}
 .zk-shots img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px;background:#000}
 .zk-shots figcaption{font-size:13.5px;color:var(--ink-soft);margin-top:6px;line-height:1.45}
 .zk-plate-gap{margin-top:18px}
-button.zk-note{cursor:pointer;padding:0}
-button.zk-note:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.zk-note.on{box-shadow:0 0 0 3px var(--ink);transform:translateY(-1px)}
+button.zk-note{padding:0}
+.zk-note.on[data-own-look]{box-shadow:0 0 0 3px var(--ink);transform:translateY(-1px)}
 .zk-tunes .zk-btn{white-space:nowrap}
 @media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}.zk-bars{grid-template-columns:1fr}.zk-shots{grid-template-columns:1fr}}
 </style>
@@ -496,7 +494,7 @@ function createDriver(D, C64Cpu) {
     timers.push(setTimeout(() => light(null), notes.length * STEP));
   }
   const row = (label, notes, k) => `<button type="button" class="zk-btn" data-tune="${k}" aria-label="Play ${label}">▶ ${label}</button><div class="zk-notes">` +
-    notes.map((n, i) => `<button type="button" class="zk-note" data-n="${n}" style="background:${COLOURS[n]}" title="${NAMES[n]}" aria-label="Note ${i + 1}: ${NAMES[n]}">${i + 1}</button>`).join('') + '</div>';
+    notes.map((n, i) => `<button type="button" class="zk-note" data-n="${n}" style="background:${COLOURS[n]}" title="${NAMES[n]}" aria-label="Note ${i + 1}: ${NAMES[n]}" data-own-look>${i + 1}</button>`).join('') + '</div>';
   let tunes = [];
   const show = (pilot) => {
     tunes = [pilot, pilot.map((n, i) => (n + i + 1) % 6)];

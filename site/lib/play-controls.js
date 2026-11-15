@@ -134,9 +134,9 @@
 .pc-fire.on{transform:translateY(3px);box-shadow:0 1px 0 #8e2f26;filter:brightness(1.15)}
 .pc-mid{display:flex;flex-direction:column;align-items:center;gap:8px}
 .pc-above{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-end;gap:8px;margin-bottom:10px}
-:where(.pc-above) button{font-family:var(--fb,Lato,system-ui,sans-serif);font-size:14px;font-weight:700;background:var(--surface-2,#f1efe9);color:var(--ink,#2f3136);border:1px solid var(--line,#d6d3cb);border-radius:8px;padding:7px 12px;cursor:pointer}
-:where(.pc-above) button[aria-pressed="true"]{background:var(--ink,#2f3136);color:#fff;border-color:var(--ink,#2f3136)}
-:where(.pc-above) button:hover{border-color:var(--ink-mute,#8b8d93)}
+:where(.pc-above) button{font-family:var(--btn-font,Lato,system-ui,sans-serif);font-size:var(--btn-fs,14px);font-weight:var(--btn-fw,400);background:var(--btn-bg,#f1efea);color:var(--btn-ink,#2f3136);border:1px solid var(--btn-line,#d5d3cc);border-radius:var(--btn-r,6px);padding:7px 12px;cursor:pointer}
+:where(.pc-above) button[aria-pressed="true"]{background:var(--btn-on-bg,#2f3136);color:var(--btn-on-ink,#fff);border-color:var(--btn-on-line,#2f3136)}
+:where(.pc-above) button:hover{border-color:var(--btn-line-hover,#80838a)}
 @media (max-width:520px){.pc-above{gap:6px}.pc-above button{font-size:12px;padding:6px 7px}}
 .pc-glyph{display:inline-block;width:1.2em;text-align:center}
 .pc-icon{font:700 14px/1 Lato,system-ui,sans-serif;min-width:40px;height:40px;padding:0 12px;border-radius:20px;border:1px solid rgba(127,127,127,.45);background:rgba(127,127,127,.12);color:inherit;cursor:pointer;touch-action:manipulation}
@@ -197,8 +197,8 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
 .pc-wide .pc-kslot li+li{margin-top:6px}
 .pc-wide .pc-kslot .pc-key{min-width:34px;padding:6px 7px;margin:2px 0;font-size:14px;line-height:18px}
 .pc-key{display:inline-block;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
-@media (hover:hover){.pc-key:hover{border-color:var(--ink-mute,#8b8d93)}}
-.pc-key.on,.pc-key[aria-pressed="true"]{background:var(--ink,#2f3136);color:#fff;border-color:var(--ink,#2f3136)}
+@media (hover:hover){.pc-key:hover{border-color:var(--btn-line-hover,#80838a)}}
+.pc-key.on,.pc-key[aria-pressed="true"]{background:var(--btn-on-bg,#2f3136);color:var(--btn-on-ink,#fff);border-color:var(--btn-on-line,#2f3136)}
 .pc-keys-touch .pc-key{min-width:42px;padding:9px 10px;margin:3px 0;font-size:16px;line-height:20px;text-align:center}`;
 
   const ARROWS = '<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">' +

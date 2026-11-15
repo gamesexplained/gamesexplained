@@ -375,8 +375,10 @@ registerProcessor('ted-sound', TEDSoundProcessor);`;
       const st = document.createElement('style');
       st.className = 'tedsnd-style';
       st.textContent = `.tedsnd-bar{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:.4rem 0}
-.tedsnd-bar button{font:inherit;padding:.25rem .7rem;border:1px solid #555;background:#1c1c1c;color:#eee;border-radius:3px;cursor:pointer}
-.tedsnd-bar button.on{background:#2e7d32;border-color:#4caf50}
+.tedsnd-bar button{font-family:var(--btn-font,inherit);font-size:var(--btn-fs,inherit);font-weight:var(--btn-fw,400);line-height:1.3;padding:6px 12px;border:1px solid var(--btn-line,#555);background:var(--btn-bg,#1c1c1c);color:var(--btn-ink,#eee);border-radius:var(--btn-r,3px);cursor:pointer}
+.tedsnd-bar button:hover{border-color:var(--btn-line-hover,#888)}
+.tedsnd-bar button.on{background:var(--btn-on-bg,#2e7d32);border-color:var(--btn-on-line,#4caf50);color:var(--btn-on-ink,#eee)}
+.tedsnd-bar button:focus-visible{outline:2px solid var(--btn-focus,#4caf50);outline-offset:2px}
 .tedsnd-view{display:inline-flex;align-items:center;gap:.4rem;margin-left:.4rem;color:#aaa}
 .tedsnd-view[hidden]{display:none}
 .tedsnd-clock{margin-left:auto;font-variant-numeric:tabular-nums;opacity:.8}

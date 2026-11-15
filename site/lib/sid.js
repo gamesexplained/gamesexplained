@@ -805,10 +805,11 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   // ------------------------------------------------------------------ the player
   const CSS = `
 .sid-player{font-family:var(--fb,'Lato',system-ui,sans-serif);color:var(--ink,#2f3136);font-size:14px;line-height:1.5}
-.sid-player button{font-family:var(--fm,'IBM Plex Mono',ui-monospace,Menlo,monospace);font-size:12.5px;line-height:1.3;
-  background:var(--surface-2,#f1efea);color:var(--ink,#2f3136);border:1px solid var(--line,#d5d3cc);border-radius:7px;padding:6px 12px;cursor:pointer}
-.sid-player button:hover{border-color:var(--accent,#1f5fa8)}
-.sid-player button[aria-pressed="true"]{background:var(--accent,#1f5fa8);border-color:var(--accent,#1f5fa8);color:#fff}
+.sid-player button{font-family:var(--btn-font,var(--fb,'Lato',system-ui,sans-serif));font-size:var(--btn-fs,14px);font-weight:var(--btn-fw,400);line-height:1.3;
+  background:var(--btn-bg,#f1efea);color:var(--btn-ink,#2f3136);border:1px solid var(--btn-line,#d5d3cc);border-radius:var(--btn-r,6px);padding:6px 12px;cursor:pointer}
+.sid-player button:hover{border-color:var(--btn-line-hover,#80838a)}
+.sid-player button[aria-pressed="true"]{background:var(--btn-on-bg,#2f3136);border-color:var(--btn-on-line,#2f3136);color:var(--btn-on-ink,#fff)}
+.sid-player button:focus-visible{outline:2px solid var(--btn-focus,#1f5fa8);outline-offset:2px}
 .sid-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}
 .sid-filt{display:inline-flex;align-items:center;gap:4px;margin-left:8px}
 .sid-fsw{display:inline-flex;align-items:center;gap:4px}
@@ -821,7 +822,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 .sid-vol i{display:block;width:4px;height:12px;border-radius:1px;background:var(--line,#d5d3cc)}
 .sid-vol i.sid-lit{background:var(--accent,#1f5fa8)}
 .sid-seek{display:flex;align-items:center;gap:12px;margin:0 0 10px;font-family:var(--fm,'IBM Plex Mono',ui-monospace,monospace);font-size:12.5px}
-.sid-seek input{flex:1;min-width:0;margin:0;accent-color:var(--accent,#1f5fa8)}
+.sid-seek input{flex:1;min-width:0;margin:0;accent-color:var(--btn-accent,#2f3136)}
 .sid-seek input:disabled{opacity:.45}
 .sid-seek span{white-space:nowrap;font-variant-numeric:tabular-nums}
 .sid-roll{display:block;width:100%;height:190px;border:1px solid var(--line,#d5d3cc);border-radius:8px;background:#fff}
