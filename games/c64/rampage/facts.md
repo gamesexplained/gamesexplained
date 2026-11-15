@@ -456,6 +456,16 @@ burst that dies by its own envelope. *Live:* no run of it in 6,000
 frames of play, in which `start_sound` ran 66 times. Effects 3 and 4 are
 never started.
 
+Effect 3 would be silent, and would silence the other voices with it.
+Its filter byte is `$00`: `start_sound` ORs in `$0F` and writes `$0F` to
+`$D418` (`$8268`), which selects none of the low-, band- and high-pass
+outputs, then writes `$FF` to `$D417` (`$826D`), which sends all three
+voices into the filter. Nothing comes out until the next `start_sound`
+writes `$D418` again. *Live:* both of the page's buttons for it, with
+and without `update_sound`, render a flat output for 10 s through the
+site's 6581 model (`kit/c64/sid_check.js` from pull request #913, 15
+November 2026), while their envelopes rise.
+
 Run from the frame after an effect starts, `update_sound` would end the
 five effects after 1, 4, 2, 3 and 3 calls of itself (`sfx_time`), and 50
 frames later the voice is silent. How often the game meant to call it is
