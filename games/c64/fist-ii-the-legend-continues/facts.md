@@ -38,3 +38,30 @@ a stretch one copy leaves out.
 The data differs. Training has 256 packed body images to the
 Adventure's 229, 60 poses to 73, four sampled sounds of its own, and its
 own tunes, played by the same driver.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### gameplay.html
+
+- Captured in an emulator on 2 October 2026, with the hero's energy held up while playing.
+
+### graphics.html
+
+- A reconstruction, not a screenshot: one frame recorded in the emulator, with 70 writes to the video chip and the line each happened on, drawn line by line.
+- It matches the emulator's own picture in all 104,448 pixels.
+
+### levels.html
+
+- The outdoor rooms were checked against screenshots taken in the emulator (rooms 94 and 100); the cave rooms of scenery set 0 were not.
+
+### music.html
+
+- The port was checked against the driver itself, run in a 6502 simulator on the game's bytes: all 25 sound registers after each of 30,000 frames, ten minutes of each tune, match.
+- The sample player (`$3D8B`, `$3DB8`, `$3E1A`) is ported to JavaScript, and the port was checked against the game’s own routines run in a 6502 simulator on the game’s bytes: every write to the volume register, and the frame and cycle it falls on, match for all ten.
+
+### solution.html
+
+- Jump across and continue right." This crossing has not been driven in the emulator.
+- This was observed in the emulator.

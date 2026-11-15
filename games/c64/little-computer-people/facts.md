@@ -570,3 +570,22 @@ game.
 - **Why the crack has no guestbook, no disk data and a fixed name** is not
   known. The name "Billy Bob Binkle" and "Zeke" (the random number
   generator's starting state) are in the image, and nothing reads the name.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator three nonsense sentences after "hello" left three more greetings waiting.
+
+### index.html
+
+- The three moods, captured in the emulator with the mood byte `$035F` set to 0, 1 and 2.
+- In the emulator, with his mood set to sad, "light a fire" scored 4 and was still waiting 25 seconds later, and "please light a fire" scored 8 and started at once.
+- Nine minutes left alone, from the snapshot, with the activity number sampled four times a second in the emulator.
+- Timed in the emulator, one tick is 45,287,427 cycles, exactly 2,304 PAL frames or 45.97 seconds, which makes his day 3 hours 41 minutes long.
+- With the cupboard and the tank empty, in the emulator the illness rose one level each house hour, and at level 3 he went to bed.
+- The port was checked against the game's own code running in a 6502 simulator on the game's memory: every sound-chip write, in order, of every frame of the four pieces to their ends and of 12,000 talking calls, is the same.
+- These are recordings: the SID's registers read in the emulator, one frame at a time for 20 seconds, with each tune forced where the game picks it at random (`$AB14`).
+- During one phone call in the emulator that happened 24 times.

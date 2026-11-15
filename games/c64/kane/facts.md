@@ -242,3 +242,33 @@ All in VICE 3.13.2 (x64sc, PAL) on 25 October 2026, from the snapshots in
 - A reset in the canyon (the game restarts) and after the train got away
   (BASIC).
 - The coach count at 21 with 19 on the screen.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator on level 1, reaching Kane at 1.00 gave 1,200 points and reaching it a second later, at 0.59, gave 3,840.
+- A gunman on level 3 is worth 594 points and puts 706 on a score whose last digit is 0 to 4, as the emulator showed, or 690 on one whose last digit is 5 to 9.
+- In the emulator, one minute of the shoot-out: Gunmen's shots: Shots that hit.
+- In the emulator, with four seconds left on ride 1 and 2.50 miles covered, F1 gave a new ride with the clock full, the distance back at 0.00 and the same number of tokens.
+- Seen in the emulator: gunmen 0 and 1 both in place 9, their two sprites one on top of the other.
+- Watched in the emulator for two and a half minutes, four times a second, two gunmen shared a place in 29 of the 552 looks.
+- Seen in the emulator: `shot_time` went from 189 to 9 in three and a half seconds of the first shot, and the code that starts the noise never ran.
+- Seen in the emulator: the count at 21 coaches, the screen showing 19.
+
+### graphics.html
+
+- The canyon and the shoot-out are the game's own loops, and the gunmen beside them the game's own `gunman_step` (`$8810`), run on the kit's 6502 in this page; the sight's flicker and the collision register, which the game's interrupt keeps, are kept by the page.
+- The stages' loops are timed by delay loops rather than by the screen, so their rates are the averages measured in the emulator; a ride's four frames are counted by its raster interrupt.
+- Two frames of the cassette, recorded in VICE and drawn as the video chip draws them: the stripes, then the picture, after the 1.9 seconds they lasted on the recorded load.
+
+### index.html
+
+- The page runs the game's own music player, `music_step` at `$9492`, on the kit's 6502 with its code and tables from the listing, once a frame, as the game's raster interrupt calls it.
+- The page runs each effect's own routine from the listing on the kit's 6502 once a frame, as `play_effects` (`$91E7`) and `play_music` (`$9475`) call them, after setting the bytes the game sets when the effect starts.
+- The page runs the game's own sample player on the kit's 6502, with a model of the timer it waits on, and turns each bit into a level: voice 1 held high, or low, scaled by the volume.
+- Drawn by the site's C64 library from one whole frame recorded in the emulator: the memory as the frame began and every write to the video chip, with the line and cycle it happened on.
+- Every one of its 104,448 pixels matches the emulator's own picture of the same frame.
+- Drawn with the page's port of the game's three unpacking routines, from the packed bytes in the listing, at the pace the game's own routine runs on the kit's 6502.

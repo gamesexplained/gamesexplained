@@ -102,3 +102,11 @@ stays at Bronze.
   matches `$7E40`-`$CC3F` of the play snapshot byte for byte.
 - The page's music player writes the same SID registers as the driver
   run on the title's listing, for 3000 frames of each tune (`test_music.js`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- On this disk the machine crashes there, with the program counter stuck at `$C011`, every time a game runs out of lives in the emulator.

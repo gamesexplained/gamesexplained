@@ -335,3 +335,49 @@ which every collision probe of the player reaches. It was corrected.
 - The in-game tune's first voice, recorded with and without $D415-$D417
   cleared.
 - RESTORE during play: the game went on, unaffected.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The jump over the wall is left out, and the fall starts where it started in VICE, in column 3 at height `$48`.
+- In VICE the same jump took all nine lives, one landing after another, and the game went back to the title.
+- In VICE that took the nine lives in ten entries into the room.
+- From VICE, on the seventh of the nine falls into the Entrance to Hades: Willy, top left, just above the guardians, with two spare lives left on the status line.
+- In VICE, with the byte restored, ↑ FACES 5 7 took Willy to The Beach, 4 9 to the Watch Tower and 0 5 to The Security Guard.
+- In VICE, over 600 frames in each room, sprite 6 showed an arrow in no frame in The Beach, in 83 in Cuckoo's Nest and in 51 in I'm Sure I've Seen This Before.
+- In VICE, with the processor sent to `$3A02` in the middle of a game, the card asked for A14, cell 252.
+- That header points RESTORE back at the title, but a reset jams the processor at `$A005`, because it leaves BASIC's ROM switched in where the title should be (seen in VICE).
+- From VICE, with `$0400` set: Willy on the bed and Maria gone.
+- In VICE + took it from 12 to 15, and − from 15 to 10.
+- In VICE a watch on `$60` through a stretch of random play saw no store at all.
+- In VICE the glyph at `$7928` changed within 60 frames in The Bathroom and stayed the same in the Master Bedroom.
+
+### graphics.html
+
+- The swing is a port of `$16A2`, held against the game's code by `test_rooms.js`.
+
+### index.html
+
+- `test_music.js` holds the port against the game's own code on the kit's 6502 simulator: 11,652 frames of both tunes, every write to the chip the same.
+- The filter is on, with one 8580's cutoff, because the in-game tune's first voice depends on it: the model lets nothing of that voice through, where VICE's 8580 let it through about 19 dB down.
+- Drawn by the site's renderer from one frame recorded in the emulator, its registers, screen, colour memory and the bytes the drawing reads: all 104,448 pixels match the emulator's picture of the same frame.
+- The picture is drawn by a port of the game's room builder (`$2E55` to `$30E1`) from these bytes, in `reference/jsw-rooms.js`; `test_rooms.js` holds it against the game's own code for all sixty rooms.
+
+### levels.html
+
+- Its room builder, guardians, arrows, rope swing and conveyors are each checked against the game's own code for every room, by `test_rooms.js` on the kit's 6502 simulator.
+
+### play.html
+
+- `test_play.js` runs the port beside the game's own code on the kit's model of the C64, with the same keys, through 400,000 passes of the main loop at `$30FF`.
+- Its player walks, jumps, pauses, turns the tune off and on, and gives up now and then, and in one room in two every exit is sent to a room picked at random, a room with a rope one time in two.
+- A second run, of 300,000 passes, has a player who only wanders and so stays longer in each room.
+- At the start of every pass the two memories are compared, and so are colour RAM and every register written to the video chip and the SID.
+- The site's model of them, `collide.js`, works them out as the beam draws the sprites and the graphics, and `test_play.js` gives the game's own code on the kit's machine the same model.
+- On 17 October 2026 it was held against VICE in 144 scenes, each register read to the cycle, and gave what VICE gave in every one.
+- Each routine the port calls moves the clock on by the cycles the game's own routine took on the kit's machine, its average over 120,000 passes, and for a few by what they are given: the items in the room, the guardians that move, the spare lives.
+- In `test_pace.js`, over 60,000 frames with both sides given the same input, a pass of play took the page 0.13 % less time than the game.
+- `test_screen.js` draws the title sixty times a second and holds the ticker to a move of 0 or 1 pixel left from one drawing to the next.

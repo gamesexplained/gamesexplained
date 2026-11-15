@@ -130,3 +130,15 @@ The native disk room-one buffer independently matches raw offsets 1–224; runne
 - Complete loader/protection reconstruction and byte-identical reassembly; these are future scope, not claims of this Silver engine listing.
 - Complete editor write/read buffer alignment: original pack/write and reader loops are traced, but drive-buffer protocol and a full round trip remain integration checks.
 - Ordinary consumption of retained demo-input tail bytes; forced zero-duration tests establish 256 control polls without proving that the demo reaches those records.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- Rebuilt from the recorded PAL frame. All 104,448 pixels match the VICE picture; zero differ.
+
+### levels.html
+
+- Rebuilt from the recorded PAL frame. All 104,448 pixels match the VICE picture; zero differ.
