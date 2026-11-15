@@ -12,13 +12,29 @@ $FF40 holds six rows of thirteen world positions. Values 0-47 select 48 room pag
 
 $362A reads port-2 joystick bits. Left/right move the three player components, fire plus a direction selects a long jump, and terrain tests gate a vertical jump. $388D applies the signed 35-entry long-jump table; $39C7 accelerates falls to four pixels per update. Room exits change the world position by one horizontally and thirteen vertically. $F0 bypasses the normal left/right closed-door tests.
 
+The listing lacks the byte at $35C4, which the up-exit code reads as Duckula's Y on arrival. On the kit's machine model (kit/c64/machine.js), run from the listing, it reads zero, and leaving a room by the top carried Duckula up through three rooms at once. Side exits and drops are unaffected. The byte needs the game image to fill.
+
 ## Inventory, clock and hazards
 
 $3FAB compares position against item actors 2-8. Keys have their own counter and nine initial records. Other objects enter slots $41D4-$41D6; overflow drops the oldest at Duckula and gives 150 updates of pickup immunity. The use handler $42D2 reads keys 1-3. Two puzzle actions are spatially restricted to rooms $06 and $22; combining item 7 with carried item 6 produces item 8, which activates the completion condition in room $06 at low-X $9C-$B0, high-X zero and Y below $50. The walkthrough and C64-Wiki identify the special items as a death mask (actor 4), sandbag (5), canopic jar (6), hammer (7), and large key (8); the two room tests and combination path distinguish their roles. The saxophone is the destination object (9).
 
-The displayed clock begins at 9:59. Its divider resets to seventy in $5801. The ankh's pickup path $41DA adds two to the hours digit once, or caps to 9:59 when the sum reaches ten. This differs from the manual's three-hour use description. Igor's contact bonus $BD43 adds three to the tens digit, carrying into the hours at six. Ordinary actor contacts call $5801 directly through $BD63, independently of the normal divider. The colour flash counter does not prevent that clock call.
+The displayed clock begins at 9:59: hours at $587F, tens at $5881, units at $5882. Its divider resets to seventy in $5801, so a minute lasts seventy frames and the night about fourteen minutes. The ankh's pickup path $41DA adds two to the hours digit once, or caps to 9:59 when the sum reaches ten, and recolours the ankh brown (9). This differs from the manual's three-hour use description; the item's use key does nothing with it.
+
+Igor's contact bonus $BD43 adds three to the tens digit; at six or more it subtracts six and increments the hours only when they are below nine. From 9:30 to 9:59 the clock therefore goes back thirty minutes. Reproduced in normal play on the kit's machine model: typing BURN THE WITCH for the room-71 door, walking the bottom floor and entering room 72 ($48) for the fourth time, the clock read 9:36 at contact and 9:06 after. The visit counter $4F00 counts entries to rooms $2F, $39, $3B and $48 and spawns Igor when its low two bits are zero; new-game setup $2B69 does not reset it, so it carries into the next game. The cooldown $4EFE is fifteen room entries. Igor is six sprites, actors 15 to 20, shapes $62-$66 and legs $67-$6A.
+
+Ordinary actor contacts call $5801 directly through $BD63, independently of the normal divider; the colour flash counter does not prevent that clock call. $BCC0 returns after the first contact, so one frame costs at most one minute. Duckula turns red (yellow EOR 5, read back from $D027) for fourteen frames. In normal play on the kit's machine model, the first mummy of room 66 ($42) cost nine minutes walking through a standing Duckula and five when he walked into it; test_clock.js holds the page's model to $57F7 and $BCC0 frame by frame.
 
 Mummies walk on floor value three and reverse at edges ($489F). The second mummy's shape computation at $4A2B reads the first mummy's frame phase $4A38. Crows have four persistent routes crossing room rows by thirteen ($4A61). Two rocks in rooms $4D,$37,$2A follow phase counters modulo one hundred ($4BDD). Bats use bounded oscillation and one-pixel pursuit ($4CBC). Nanny can replace door artwork in four named rooms ($5019). Igor's moving group is started in four rooms ($4ED2).
+
+## Sprite shapes
+
+Duckula's walk uses $10-$27 (left $1C-$27, right $10-$1B, each pose three sprites: top, legs at Y+21, and a green layer over the top), standing $28-$2A, falling $2B-$2D and the winning screen $2E-$30 ($5903). Doors use $31-$3A, mummies $44-$4F (facing bases $4A left, $44 right), the bat $50-$57, crows $58-$61 (second sprite ten lines below the first), Igor $62-$6A, objects $6B-$70 and $72, rocks $71 and the broken jar $73.
+
+Shapes $3B-$43 are three more three-sprite poses of Duckula: facing the player wrapped in his cape ($3B), three-quarters ($3E) and side on facing right ($41). Shapes $74-$77 are stripes like the doors. No code selects any of them: the program has 31 stores to the actor shapes at $298E-$29A5 and 23 to the sprite pointers at $C3F8-$C3FF, each with a constant, a table or a computed value outside these ranges; it has no indirect stores; and none of its self-modified stores, nor the block copies at $2C43, $2E53 and $592C, reach either area.
+
+## The winning screen
+
+$26CD draws the five lines of $2880. The second loop ($2749) draws 34 letters with the bitmap offset X*8 held in one byte, so letters 33 and 34 (the N and D of AND) land on letters 1 and 2 and the line reads NDOR IS DELIGHTED BECAUSE EVIL A. The screen colours use X directly and are right. Shown on the kit's machine model by setting $2DF7 to 1 in play, the flag the large key sets at the keyhole; the drawing does not depend on how the flag was set.
 
 ## Music and hardware census
 
@@ -40,4 +56,6 @@ The independent sample (seed 20261114) drew 80 of 626 comments: 60 from 363 writ
 
 ## Page checks
 
-The opening-screen reconstruction matches 104,448 of 104,448 emulator pixels. The static display capture has no raster-write history because this opening state reproduces without one. The room decoder matches the native $2E53 routine byte for byte for all 48 maps, including bitmap and all three attribute planes. All 104 sprite allocations are present in the listing. The isolated music wrapper matches 9,000 native driver ticks, every SID write in order, with nonzero volume during gated notes. The full-frame recorder crash is a tool limitation, not an unexplained display mismatch.
+test_viewers.js: the room decoder matches the native $2E53 routine byte for byte for all 48 maps, including bitmap and all three attribute planes; all 104 sprite shapes are in the listing; the Graphics tab's poses, dividers and shapes are the game's bytes. test_sound.js: the isolated music wrapper matches 9,000 native driver ticks, every SID write in order, with nonzero volume during gated notes. test_clock.js: Igor's and the ankh's additions for all 600 clock times, the contact widget frame by frame, and the panel digits against $5841.
+
+The pictures of room 66 before and after BURN THE WITCH and of the winning screen are frames recorded on the kit's machine model, from the listing, with C64.renderFrame.
