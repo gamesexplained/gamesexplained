@@ -452,3 +452,54 @@ All in VICE MCP release v3.13.2, PAL, from the snapshots in
 - `kit/c64/frame.py capture` and `compare` on the first frame of play:
   `work/frame-trim.json`, drawn by `site/lib/c64.js`, matches the
   emulator's picture in all 104,448 pixels (Graphics).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- `test_meter.js` runs the game's own `MUL_S8_S8_TO_S16` (`$2643`) and `DIV_S24_BY_S16` (`$259F`) for every clock value and every count of spirits, 5,632 cases, and finds the port the same in all of them.
+- Live (`work/scripts/meter.py`): with 11 and with 12 destroyed the game ended as the clock went from 127 to 128; with 13 and with 20 it did not.
+- Drinks0 Score17,500Strength16Variable 250 Live (`work/scripts/stores.py`): from a new game, a script jump to the Stores (17,500 for the first visit), then the action on the potion 70 times, 150 frames apart, reading the score (`$2442`), strength (`$2455`) and variable 25 (`$2451`) after each.
+- `test_music.js` holds the second against the same calls on the kit's 6502 simulator, frame by frame.
+- Live (`work/scripts/alarm.py`): in the Magister, with its one sensor, each frame the start wrote `$00`, `$FF` and `$FE` to the three voices' control registers, and the tick then wrote the tune's first frame, frequency `$45A0` on voices 1 and 3 and `$8B40` on voice 2.
+- Live (`work/scripts/ending.py`, `tour.py`): from a new game, a script jump to the Magister, then the move event on object 5.
+- Live (`work/scripts/drain.py`): in the Magister strength fell from 16 to 13 in 1,500 frames, 30 seconds.
+
+### graphics.html
+
+- The disk's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them.
+
+### index.html
+
+- The driver's code and its state, `$C800-$CFFF`, and its tables, `$065A-$1046`, run on the kit's 6502 simulator inside the page, called as the game calls them: `SID_PLAYER_INITIALIZE` (`$CF1B`) with the tune in A, then `SID_PLAYER_TICK` (`$C885`) once a frame.
+- `test_music.js` makes the same calls on the simulator directly and finds every SID write the same, in the same order, for all 17 tunes: 16,457 frames.
+- The first view of play, drawn by this page from the bytes of the video chip, the bitmap, and the colour memory as the frame began. mark the 3D view Drawn with the site's renderer from a whole frame recorded in the emulator (`kit/c64/frame.py`); 0 of 104,448 pixels differ from the emulator's own picture of the same frame.
+- `test_world.js` checks that reading against the game's own `SELECT_AREA` (`$76D0`) for all 34 areas and its `FIND_OBJECT_BY_ID` (`$621C`) for every object.
+
+### levels.html
+
+- Pyramids are built as `QUEUE_PYRAMID_OBJECT` (`$2F21`) builds them, and `test_world.js` checks the page's corners against the game's code for all 62 of them.
+
+### play.html
+
+- Each routine alone: Fifteen test files call each routine of the port and the game's own routine on the kit's 6502 simulator from the same state, made from saved moments of play with registers, variables and keys changed at random, and compare every byte each one leaves..
+- The main loop in lockstep: The port's main loop runs beside the game's, pass by pass, from 199 moments: a walk in the Wilderness and every area and entrance the game's scripts lead to, each 150 passes with keys pressed at random.
+- Every byte of memory, colour RAM, the video chip and the sound chip was the same at the start of every pass..
+- The title and its menus: From the loader's jump, through the title, the language and the character to the first view, beside the game in each of the six choices, with every byte the same at each stop..
+- Saving and loading: The information screen's save, to tape and to disk, writes the same file as the game's, and a load puts back the same bytes; a file that is not a saved game prints INVALID FILE, as the game's does..
+- The page's memory: The page carries the game's memory as the loader leaves it, with every instruction set to zero but 192 bytes of instructions the game rewrites and reads as variables, and the music driver, which the port runs on the site's 6502, the kit's simulator.
+- The page's machine on that memory and on the whole memory runs the same, frame for frame, from the loader's jump in each language and from every one of the 199 moments..
+- The pace: The port executes no instructions, so the page charges each routine, and each row, byte and edge step it draws, the cycles they cost the game, fitted on some 9,700 passes timed on the simulator: play from the moments, the title's menus in each of the six choices, and the information screen opened again and again with keys shown, saves and loads.
+- The viewport's opening steps and the keyboard's scan, which run only while the game waits for the clock, were timed alone, 2,000 calls each.
+- From 25 moments, with the same turns, walks and looks on both, the page takes within 5 % of the game's time for the same passes, and on average 0.3 % more.
+- From the loader's jump each of the title's keys is taken within 2 % of the game's time, each of the information screen's within 1 %, and a letter held for ten frames types twice on both, as it does on the C64..
+- At each picture the game drew, the page's scene against the game's own drawing: The same.
+- The painter's order, sorted from the game's bounds: 1,633 of 1,633 sorts.
+- Objects: which, and in what order: 8,796 of 8,796, in the game's order in all 1,633 pictures.
+- Faces: which, in which colour, with how many corners: 11,526 of 11,587.
+- Faces with every corner within 2 pixels of the game's: 11,461 of 11,521.
+- The view's pixels, the page's scene painted in the C64's pixels: 99.16 %.
+- The pictures are the 1,633 the game drew in 82,600 frames of play, from the loader's jump and from 199 moments in every area, walking, turning and looking up and down.
+- The 60 faces that are further out are all cut by an edge of the view, where the game's cut and the page's put a corner up to 35 pixels apart; why is not known.
