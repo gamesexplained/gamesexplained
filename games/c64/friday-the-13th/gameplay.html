@@ -71,9 +71,17 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ft-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:14px 0 0}
 .ft-inline{display:inline-flex;align-items:center;gap:6px;margin:0}
 .ft-warn{font-size:13px;color:var(--ink-mute)}
-.ft-camp{margin:14px 0 0}
+.ft-camp{margin:14px 0 0;grid-template-columns:minmax(0,3fr) minmax(0,2fr)}
 .ft-roster td,.ft-roster th{padding:3px 6px;font-size:13px;white-space:nowrap}
-.ft-roster tr.ft-victim td{background:var(--hl)}
+.ft-roster .ft-meter{width:64px}
+.ft-roster tr.ft-victim td{background:#f6d5cf}
+.ft-roster tr.ft-victim td:first-child{box-shadow:inset 4px 0 0 var(--coral)}
+.ft-roster tr.ft-jason td{background:#000;color:#fff;font-weight:700}
+.ft-roster tr.ft-jason .ft-meter{border-color:#000}
+.ft-roster tr.ft-jason .ft-meter b{color:var(--ink);font-weight:500}
+@media (max-width:1000px){.ft-camp{grid-template-columns:1fr}}
+@media (max-width:520px){.ft-roster td,.ft-roster th{padding:3px 4px;white-space:normal}.ft-roster .ft-meter{width:44px}}
+@media (max-width:360px){.ft-roster td,.ft-roster th{padding:2px 3px;font-size:12px}.ft-roster .ft-meter{width:34px}}
 .ft-log{list-style:none;margin:0;padding:8px 10px;font-size:13px;line-height:1.45;max-height:360px;overflow-y:auto;background:var(--surface-2);border-radius:6px}
 .ft-log li{margin:0 0 6px}
 .ft-log b{font-family:var(--fm);font-weight:500;margin-right:8px}
@@ -112,11 +120,11 @@ sup.fn + sup.fn::before{content:","}
   <p class="lede">You stand still in the church, where every round starts, and the game plays the round around you. Ten others wander the 44 rooms, Jason among them in disguise, until the danger clock lets him throw it off. Then he picks the most exposed, walks to them room by room, and they fall one by one.</p>
   <div class="plate">
     <canvas id="gvMap" class="ft-map" width="1080" height="448" aria-label="All 44 rooms, with everyone in the camp"></canvas>
-    <div class="ft-bar"><button type="button" id="gvGo" aria-pressed="false">Play</button><label class="ft-lab ft-inline">Speed <select id="gvSpeed"><option value="1">real time</option><option value="10">10 times</option><option value="30" selected>30 times</option><option value="100">100 times</option></select></label><button type="button" id="gvNew">New round</button><button type="button" id="gvShow" aria-pressed="false">Show who Jason is</button><button type="button" id="gvSound" aria-pressed="false">Scream at each death</button></div>
+    <div class="ft-bar"><button type="button" id="gvGo" aria-pressed="false">Play</button><label class="ft-lab ft-inline">Speed <select id="gvSpeed"><option value="1">real time</option><option value="2">2 times</option><option value="5">5 times</option><option value="10">10 times</option><option value="30" selected>30 times</option><option value="100">100 times</option></select></label><button type="button" id="gvNew">New round</button><button type="button" id="gvShow" aria-pressed="false">Show who Jason is</button><button type="button" id="gvSound" aria-pressed="false">Scream at each death</button></div>
     <div class="ft-bar-out"><div id="gvClockBar"></div></div>
     <p class="ft-read" id="gvClock"></p>
     <div class="ft-two ft-camp"><div class="ft-scroll"><table class="ft-table ft-roster" id="gvRoster"><thead><tr><th></th><th>Room</th><th>Doing</th><th>Exposure</th><th>Strength</th></tr></thead><tbody></tbody></table></div><ol class="ft-log" id="gvLog" aria-live="polite"></ol></div>
-    <p class="cap">Each round is the game's own code on a copy of the C64's processor, set up as for Gerry; New round starts another, with other random numbers. A dot is a friend, numbered 0 to 9 in their own colour, and a cross is a body. Jason turns black when he reveals himself, his victim has a red ring, and the red line is his path. Times run at the game's rate, with two seconds for each scream, when the whole game stops. Doors join room 17 to the lodge, room 11 to the church, and room 9 to the barn.</p></div>
+    <p class="cap">Each round is the game's own code on a copy of the C64's processor, set up as for Gerry; New round starts another, with other random numbers. A dot is a friend, numbered 0 to 9 in their own colour, and a cross is a body. Jason turns black when he reveals himself, his victim has a red ring, and the red line is his path; in the table, his row is black and his victim's is red. Times run at the game's rate, with two seconds for each scream, when the whole game stops. Doors join room 17 to the lodge, room 11 to the church, and room 9 to the barn.</p></div>
   <p>Jason chooses his victim the moment he reveals himself, by <a href="#jason">exposure</a>: whoever has the most, you included when your fear is higher than everyone's. He walks there as the others walk, a step every other pass, room to room and through the doors, and none of it depends on where you are. A friend he reaches gets one roll: he gives up unless a number below 60 falls under their exposure. Otherwise he swings until they fall, and the scream plays wherever they are.</p>
   <p>Out of your sight, nothing decides whether a blow lands. In your room each blow is a sprite, and it hits whoever it touches. Anywhere else, once he is within 13 pixels across and 4 down, every swing takes 8 strength off the victim, more for each round you have won.</p>
   <p>Watch a round where the most exposed friend is in the church with you. Jason heads for the church door in room 11, catches on the end of the fence at its gap, and stays there for the rest of the round. <a href="discoveries.html#stuck">Discoveries</a> tells why.</p>
@@ -742,8 +750,9 @@ const SCREAM_PERIOD = 107;
       const tb = $('gvRoster').tBodies[0]; tb.textContent = '';
       for (let i = 0; i <= 10; i++) {
         const s = m[0x090E + i], tr = tb.insertRow();
-        tr.className = hunting && i === m[0x0993] ? 'ft-victim' : '';
-        tr.insertCell().textContent = i === 10 ? 'You, Gerry' : 'Friend ' + i + (i === J && (hunting || show) ? ', Jason' : '');
+        const known = i === J && (hunting || show);
+        tr.className = known ? 'ft-jason' : hunting && i === m[0x0993] ? 'ft-victim' : '';
+        tr.insertCell().textContent = i === 10 ? 'You, Gerry' : known ? 'Jason, friend ' + i : 'Friend ' + i;
         tr.insertCell().textContent = String(roomOf(m[0x08E2 + i]));
         tr.insertCell().textContent = s === 0 ? 'dead' : (s & 0x80 ? 'struck, ' : '') + (i === 10 && (s & 0x3F) === 4 ? 'standing still' : DOING[s & 0x3F] || 'state ' + (s & 0x3F));
         const ex = i === 10 ? m[0x0938] : m[0x092E + i], sg = i === 10 ? m[0x0943] : m[0x0939 + i];
