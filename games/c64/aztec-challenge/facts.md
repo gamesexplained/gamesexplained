@@ -240,3 +240,54 @@ All on VICE (vice-mcp v3.13.2), from the snapshots in `orientation.md`,
   the floor it hopped round past the screen's edge as X passed 511.
   Twenty trap lists, each started half a second apart, are windows of
   one sequence.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Live in VICE on 8 November 2026: 60 seconds of the Vermin, the sprites on screen sampled 281 times; sprites 0-5 and 7 all came on, sprite 6 never, and bit 4 of `$2A` was never set.
+- VICE, 8 November 2026, from one snapshot of the Piranha a few seconds in, counting the calls of the eaten routine (`$1F9D`) and of the life-lost routine (`$1BD2`).
+- Seconds held right At the rate measured in VICE (72 passes in 10 seconds, 7.2 a second, on 8 November 2026), with the byte wrapping as `INC $68` does.
+- Swimming up in VICE: stage 0, then 1 at the second passage; a bite; stage 0 again.
+- Live in VICE on 9 November 2026: the first room's spears, the stick held left so the runner stands still, each spear moved straight above the runner as it appeared, and the collision bits read at every pass of the check (`$79F3`) until the runner was caught (`$7A08`).
+- Twenty lists drawn in VICE on 9 November 2026, phase 1, each started a little over half a second later than the one before.
+- The four exits are on the Levels tab's map of the floor, worked out from the tables and held against the game's own hop checks, from every tile in every direction (`test_hop.js`).
+- Live in VICE, with the traps switched off, the hopper hopped forward from tiles 60, 66 and 72 off the floor, came back from the first two, and, once off the floor, hopped right past the edge of the screen and came round again from the left as its X passed 511.
+
+### graphics.html
+
+- The game has no tables of animation: each sequence is a few instructions in the level's code that add 2 to the pointer and wrap it round, so the pictures below play the sequences those instructions make, at the speed they ran in the emulator.
+- Speeds are what the game ran at in VICE on 8 November 2026, counted in video frames: a runner's pose lasts about 5 frames, the climber's 8, the swimmer's stroke 15.
+- The throwers' frames and the temple drawn from the listing's bytes by a port of `$62E0`, which `test_temple.js` holds against the game's own routine run on the kit's 6502, stage by stage, screen and colour byte for byte.
+- From each level's set-up code and the registers read back in VICE in play.
+
+### index.html
+
+- The title, and the first level, the Gauntlet, in VICE.
+- Each button runs the game's own code on the kit's 6502: the start-up's sound set-up (`$1000`), the menu's (`$1121`), a level's start (`$1CA0`) and the stage routine once for each stage, then the interrupt at `$1C00` 60 times a second, as the computer's own timer calls it.
+- `test_music.js` holds every button against the same code run along the game's own path.
+- Each button runs the stretch of the game's code that makes the effect on the kit's 6502, a video frame's worth of cycles at a time, so the effect keeps the pace its delay loops give it in the game.
+- `test_sounds.js` holds each button against the same code run along the game's path.
+- EverythingCharacters only One frame recorded with `kit/c64/frame.py` in VICE on 8 November 2026 and drawn by the site's `C64.drawFrame`: all 104,448 pixels match the emulator's picture of the same frame.
+- Checked in VICE: the Gauntlet won with no life lost and no achievements added 1,010; five lives lost with none added 10.
+
+### levels.html
+
+- The pictures are one frame of each, recorded in play in the emulator and drawn here from the memory and registers that frame read. ◀▶ Each frame recorded with `kit/c64/frame.py` on 8 November 2026 and drawn by the site's `C64.drawFrame`.
+- The pictures are one frame of each in play, drawn here from the memory and registers that frame read. ◀▶ Each frame recorded with `kit/c64/frame.py` on 8 November 2026 and drawn by the site's `C64.drawFrame`.
+- Compared with the emulator's own picture of the same frame, every pixel matches on six levels; on the Stairs 9 of 104,448 differ, where the game redraws the steps while the beam is drawing them.
+- The map is worked out from the tables, and `test_hop.js` holds it against the game's own four hop checks run on the kit's 6502 from every tile in every direction: 260 hops, refused or landed exactly as the map says.
+
+### play.html
+
+- `test_play.js` runs the port beside the game's own code on the kit's model of the C64, from `$1000`, with the same input to both.
+- The port has no stand-ins: a call to any routine of the game's that it had not written would throw.
+- At every turn of the scorecard, and at one checkpoint in four besides, the two memories are compared, and so are colour RAM and every register written to the video chip and the SID.
+- The test runs three sessions.
+- In the first, the menu is left alone and shows each level played by the game itself.
+- In the second, one player goes through all seven levels with a stick moved at random.
+- In the third, two players win level after level: the test sets what counts each level's progress to one step short of the end, in both at once, and the first player's win on the Bridge in phase 4 ends the game, which starts again from Cosmi's logo.
+- In the test, the port takes each such value from the game at the instruction after its read; the kit's model of the C64 does not run the SID's voices, so there the noise is a fixed sequence of numbers instead.
+- The rest of the game's work was fitted to the cycles its own code took on the kit's machine: a cost for each stretch between two checkpoints, and a cost for each call of one of the port's routines, so that a stretch which holds more of the Gauntlet's 44 steps costs more.
