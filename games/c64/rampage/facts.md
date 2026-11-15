@@ -509,3 +509,21 @@ or `work/play-day1.vsf`; the scripts are `work/scripts/t*.py`.
 | Energy 1 and a hit for the first player (`t12.py`) | state 9 for 210 frames, 10 for 400, then 15; second word all red |
 | Helicopter A put on path 8 (`t19.py`) | the shape sequence above |
 | `building_strength` 0 for building 0, George on the street (`t18.py`) | 9 hits with `climb_building` 0, 1 with 5; `$D016` `$DF` after |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, a monster chewed for 70 frames, a frame being a fiftieth of a second.
+- They punch at random: in a long unattended run in the emulator they brought down one of the first level's three buildings.
+- In the emulator, a bullet inside the third monster's box set the second monster's flag while the second monster stood nine columns away.
+- In the emulator, George stood in the street while the first building fell.
+- In the emulator the register held `$D8` before any building fell, and `$DB` and `$DF` after two different falls.
+- In the emulator the shapes went `C1 C2 C2 C3 C3 C2 C2 C1 C1 C0`, then `C0 C2 C2 C3 C3 C4 C4 C3 C3 C2 C2`, then `C2 C2 C3 C3 C4 C4 C5 C5 C4 C4 C3 C3`.
+
+### index.html
+
+- One frame of play, recorded in the emulator and drawn again by this page.
+- Every one of its 104,448 pixels matches the emulator's own picture of the frame.

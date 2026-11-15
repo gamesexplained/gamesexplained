@@ -308,3 +308,15 @@ start the disassembler on that project.
 
 Coverage: `python3 kit/scripts/coverage.py games/c64/radar-rat-race [--top N] [--code | --data]`.
 Reference screenshots: `reference/`.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Every one came out of the code; the ones marked as confirmed were then tested in an emulator.
+- The "where to look" lines of three secrets said how each was confirmed:
+  `player_collision_check at $F344 · confirmed by putting the rat on a cat`;
+  `prng_next at $EE2E is called from placement and the title loop only · round 1 confirmed across two loads`;
+  `red_rat_move_countdown = $FF · timeout_handler at $EAC0 · confirmed in the emulator`.

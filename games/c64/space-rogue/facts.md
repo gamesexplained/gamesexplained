@@ -232,3 +232,52 @@ Tests for a later run, each from a snapshot named in `orientation.md`:
 - F1 in flight pauses until a key; F7 switches between CF and NF.
 - In HIVE!, being caught on drop 5 pays 8 credits; on drop 4, nothing.
 - A base's cargo check finds contraband about one visit in two.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- `test_discoveries.js` runs the game's own routine on the same bytes and gets the same picture and border.
+- Seen in VICE (PAL C64) on 15 October 2026.
+- `test_discoveries.js` runs it with the beam on every line of a PAL frame.
+- Seen in VICE (PAL C64): two clean boots out of two hung at "Old or New Game?", the interrupt stopped.
+- `test_discoveries.js` runs `hive_raise_mound` for every drop from 0 to 255 and every result.
+- `test_discoveries.js` runs `distress_call` (`$7359`) and compares every tone and silence with this timeline.
+
+### index.html
+
+- The title, from a clean boot in VICE.
+- Each picture is a frame recorded in VICE, the memory and the video chip's registers at the start of a frame and every write to them during it, drawn by the site's renderer.
+- A test, `test_sound.js`, runs every button on the engine's own code and compares every SID write of every frame.
+- A test, `test_unpack.js`, runs both routines on every picture and on made-up streams and compares the 10 KB they write.
+- A test, `test_odds.js`, feeds each code to the engine's routine and checks the character it gives.
+
+### levels.html
+
+- A test, `test_chart.js`, runs the same routines from the listing on the kit's 6502 simulator and compares: every map for every day the orbits can tell apart, windows centred on every sector and beyond, the tile pixels `draw_chart` puts in the bitmap, and maps with every entry made random.
+
+### play.html
+
+- Each routine alone: Fifteen test files call each routine of the port and the game's own routine on the kit's 6502 simulator from the same state, made from 107 saved moments of play with registers, variables and keys changed at random, and compare every byte each one leaves..
+- The main loop in lockstep: The port's main loop runs beside the game's, pass by pass, from the moments of flight, of fights and of docking, with keys and the stick pressed at random: every byte of memory, the video chip and the sound chip the same at the start of each pass..
+- The title, the story and the ending: Each runs beside the game from its first instruction to the jump to the next program, with every byte the same at each stop: 54 passes of the title, the story for a new game and for an old one, and the ending to the title again..
+- The page's disk: The page carries the game's data files whole and its code files with every instruction set to zero, apart from 3,157 bytes of instructions the game rewrites and reads as variables.
+- The page's machine on that disk and on the whole disk runs the same, frame for frame, from power-on through the story and flight, and from 23 moments of flight, fights and docking..
+- The pace: The port executes no instructions, so the page charges each stretch of the main loop the cycles it cost the game, fitted on 26,600 passes timed on the simulator.
+- From each of 17 moments of flight and of fights, the page runs within 2 % of the game's passes in 20 seconds.
+- At each pass the game drew, the page's view against the game's own drawing: The same.
+- Polygons: which, in what order, in which colour: 12,126 of 12,168.
+- Dots, rings and bursts: where, how big, in which colour, to within a pixel: 15,588 of 15,620.
+- The corners of models: where, to within 2.5 pixels: 36,315 of 36,315.
+- The passes are the 2,686 the game drew in 23,100 frames of play, from power-on and from 23 moments of flight, fights and docking, with the stick, the view and the target changed as the game ran.
+- The page moves the line back into the frame, as the simulator the port was checked on does.
+
+### ships.html
+
+- A test, `test_ships.js`, runs the engine's own `draw_model` on all 20 models from about 6,000 eyes and gets the same faces in the same order with the same colours, and runs `set_colour` on every colour code.
+- A test, `test_combat.js`, holds the page's 6502 to the kit's simulator opcode by opcode, then runs the fight this section opens with and four others in both, the page's on only the bytes this page carries, and gets the same positions, headings, hit points, tactics and targets every 8 passes, the same launches, hits, rams and kills, and the same memory at the end.
+- Ships on the same side ram each other too, since `check_collisions` (`$6AB3`) tests every pair and never their factions: in one of the fights `test_combat.js` runs, a Titan and four fighters, the Titan and the Hunter, both Imperial, collide four times.
+- A test, `test_odds.js`, runs the engine's own routine on every roll for every system and rank and counts the same.
+- `test_combat.js` runs `turn_objects` (`$7634`) on the engine with a rate of 1 and measures the turn: a 1024th of a turn for the Sunracer, and each type's step for the computer ships.
