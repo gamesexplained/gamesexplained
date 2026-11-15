@@ -429,3 +429,55 @@ All in VICE x64sc (vice-mcp v3.13.2) from `work/play-1p.vsf`.
 - RESTORE (VICE's RESTORE key): one `nmi` entry, 38 passes in the
   next 100 frames. Soft reset: `restart` and `title` once each, the
   title on screen.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Checked against the kit's 6502 simulator: every byte of memory matches after each step up to the second scroll, which neither runs to its end.
+- The last picture is the emulator's.
+- In the emulator no monster appeared in 1,500 frames with the generator standing.
+- In the emulator it wrote over the panel and the play area, and the game froze: the main loop never ran again, and the raster interrupt fired about a hundred times a frame.
+- In the emulator: slot 0 shot, then a scroll.
+- In the emulator, with four brooches: the door refuses, and Agravain stays where he is.
+- In the emulator, with `brooches` set to 4 in room 3, walking into the door brought the message and stopped the player; set to 3, the door opened and he walked through.
+- Each cost computed by the game's `touch_damage` (`$62A4`) on the kit's 6502 simulator in the page, for every value `mon_kind` takes, and checked against the same code called on the simulator directly.
+- The same costs came out of the emulator.
+- Both rooms drawn by the game's own routines on the kit's 6502 simulator in the page, and checked against the same code called on the simulator directly.
+- In the emulator, the first game after loading held 3 keys and 2 scrolls, and counters set to 7 keys, 2 brooches, and 5 scrolls before a game over were the same in the next game.
+- In the emulator, Agravain with armour 4 still had 1968 energy after 500 frames, and with armour 2 the armour was gone within them.
+- The message line in room 69, in the emulator.
+
+### graphics.html
+
+- Each tile is a machine of its own: the game's routines on the kit's 6502 in the page, over the listing's bytes, with the play area cleared.
+- A pass here takes 2.6 frames, the rate counted in the emulator with six monsters out.
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+
+### index.html
+
+- The title tune played by the game's own music driver: its bytes, `$9000`-`$99C1`, run once a frame on the kit's 6502 simulator in the page, heard through the site's model of the SID.
+- Checked against the same bytes called on the simulator directly: every register write of 7,000 frames matches.
+- Each effect played by the game's own code, `sfx_start` and then `sfx_update` once a frame (`$5632`-`$5937`), on the kit's 6502 simulator in the page.
+- Checked against the same code called on the simulator directly: every register write of all 15 effects, 805 frames, matches.
+- Drawn by the game's own routines, run on the kit's 6502 simulator in the page over the listing's bytes, after `reset_walls` and `reset_objects` have put every room back as a new game finds it.
+- Checked against the same code called on the simulator directly: in all 100 rooms, drawn whole and with each list left out, every byte of memory matches.
+- Run plays 19 passes a second, the rate counted in the emulator with six monsters out.
+- Checked against the kit's 6502 simulator over 2,000 passes in each of the 47 rooms offered here: every byte of memory matches after every pass.
+- Checked against the kit's 6502 simulator over 21,060 cases (every armour from 0 to 12, 18 drains, 15 energies, and the three warning states, for both players): every byte of memory matches.
+- In the emulator, Agravain with armour 4 ended 500 frames with the energy he started with.
+- A frame of play recorded in the emulator (every write to the video chip, with the line and cycle it came on, and memory as the frame began) and drawn by the site's model of the chip.
+- All 104,448 pixels match the emulator's picture.
+
+### levels.html
+
+- Every room drawn by the game's routines (`draw_floor`, `draw_walls`, `draw_border`, `draw_generators`, `draw_objects`) on the kit's 6502 simulator in the page, over the listing's bytes, after `reset_walls` and `reset_objects`, and placed by `room_map`.
+- The same code is checked against the kit's 6502 simulator in all 100 rooms on How it works.
+
+### play.html
+
+- `test_play.js` runs the port beside the game's own code on the kit's model of the C64, with the same joysticks, through 40,000 passes of the main loop at `$78D7`: whole games of one player and of two, and the title screens between them.
+- Each routine the port calls moves the clock on by the cycles the game's own routine took on the kit's machine, on average over the same 40,000 passes; for the routines that draw a block, by the block's width and height.
+- In `test_pace.js`, over 24,000 frames with both driven by the same autopilot, a pass of play took the page 0.45 % longer than the game with one player and 0.41 % with two.

@@ -304,3 +304,16 @@ until an audit reads the whole listing.
   the port's WHEELS_TURN); `test_index.js` (the view's frames, and the
   odds of every pair of drivers against the port's RACE_RESULT);
   `test_discoveries.js` (every byte the page shows against the listing).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+
+### index.html
+
+- Little Ramp from above, in VICE, before a practice race.
+- `test_sound.js` holds every frame of the race to the Play tab's, register by register.

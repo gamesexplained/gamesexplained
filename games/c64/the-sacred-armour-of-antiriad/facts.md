@@ -569,3 +569,35 @@ given the stick the kit's machine read there.
   had come 615 frames after the read, with the score at 1,080 and the
   game not over.
 
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- `test_rooms.js` checks the screen and colour RAM against the routine run on the simulator.
+- Outside the two sprites, the drawing matches every pixel of the emulator's screenshot on the How it works page.
+- In the emulator the cell appeared about 100 frames after the room was built, and with the striped creature killed first the cell and the three creatures listed after it never appeared.
+- In the emulator a stone on the bomb started its dissolve on the first frame they touched.
+- In the emulator the bomb, worth 20, scored 40 to a stone and 20 to a shot.
+- In the emulator rooms `$03`, `$07` and `$3B` each put the bomb on sprite 5, and room `$1E` never did.
+- In the emulator its bottom row was solid in colour RAM across all 40 columns.
+- In the emulator the first game after switching on began in `$38`.
+- In the emulator, from this build's start with no stone thrown, Tal walked out of room `$3E` at the right and was in `$40` seven frames later.
+
+### index.html
+
+- The page runs the game's own sound driver, its code and tables from the listing (`$AFC5`-`$C1A9`, the instruments at `$F7C9`-`$FBAA`), on the kit's 6502, called from the two timers as the game sets them, and plays what it writes through a model of the SID.
+- `test_music.js` checks every write of 60 seconds of each button against the same driver run on the simulator over the game's whole memory.
+- The tempo matches the emulator, where the first part took 826 steps in 19.66 million cycles; the effects timer runs about half a per cent fast here, most likely because on the machine the raster interrupt can run inside the music routine and hold it back, which the player leaves out.
+- `test_music.js` checks these as well.
+- One frame in room `$2B` with the suit worn, recorded in the emulator and drawn here from the screen at `$4000`, the two character sets, colour RAM, the sprites and every register the game wrote during the frame, by the site's renderer.
+- All 104,448 pixels of the drawing match the emulator's own picture of the frame.
+- `test_rooms.js` checks the screen, colour RAM, every character's shape and the multicolours of all 69 rooms against the routine itself run on the simulator, and the sprites against `place_room_sprites`.
+- Set off, the panel's strip scrolls message `$93` as section 08 does, and then the playfield dissolves as `victory_sequence` (`$8AD9`) dissolves it, which `test_ending.js` holds to the routine step by step.
+
+### levels.html
+
+- `test_route.js` plays the recording through the game's own code, from the listing, and fails if any stage or place differs from the ones drawn here.
+- Drawn from the listing by the same port of `build_room` (`$852C`), `place_room_sprites`, `hold_back_group` and `place_bomber` as the How it works page, which `test_rooms.js` checks against the game's routines for all 69 rooms.
+- The animated tiles move as `animate_tiles` (`$8C30`) steps them, a frame at a time, which `test_rooms.js` holds to the routine for 1,500 frames of every room that has them.

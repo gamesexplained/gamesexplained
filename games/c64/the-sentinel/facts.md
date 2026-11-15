@@ -685,3 +685,26 @@ printable range.
 | F1 in play | back to the bitmap display (`$9AF6` = 0) and the title |
 | U, with a stopping checkpoint on `$888F` | stopped with A = `$28` (music offset 40); the player's yaw `$09FE` went from 40 to 168 |
 | `frame.py capture` of the first view | 0 of 104,448 pixels differ from the emulator's picture |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Each of these is in memory at the address given; the ones marked live were also seen in the emulator.
+
+### graphics.html
+
+- Drawn by the game's routines on the kit's 6502 in the page, over the listing's bytes.
+- The scanner is sprites 1 to 3 in white, black and green, drawn by `draw_scanner` (`$163F`) on the kit's 6502, 50 times a second as the raster interrupt calls it while an enemy is draining the player.
+- The bottom right-hand corner of the title's bitmap, 100 × 156 pixels, as `draw_title_pair` (`$887E`) draws them on the kit's 6502: the object on top in configuration 1, then the tower in configuration 2 (`$8819`).
+
+### index.html
+
+- The port matches the tiles, objects and variables of eight landscapes recorded in the emulator byte for byte, and all 10,000 codes of Simon Owen's published list.
+- The port was held to the game's own code, run in a 6502 simulator on the analysed image: 20 runs, 4,718 frames, every SID register after every frame and every write in order, with no difference.
+- One frame of the first view of landscape 0000, drawn by the site's renderer from what the emulator recorded: the video registers, the five `$D018` writes and the memory the picture is made of.
+- 0 of its 104,448 pixels differ from the emulator's own picture.
+- In the emulator, 1,000 frames gave 801 calls, and the Sentinel's heading went 112, 92, 72, 52 in steps of about 752 frames, 15.0 seconds.
+- In the emulator, 10 units showed three robots and a tree, 9 three robots, 8 two robots and a boulder, 5 a robot and a boulder.
