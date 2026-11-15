@@ -185,3 +185,20 @@ ball's shapes). The listing has not had a full audit.
   the NMI writes at lines 82/242, then 1/161/272, then 80/191/226.
 - Screenshots of all eight stages taken on VICE switched to an NTSC C64,
   where the splits land in place (`reference/`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- Each group is drawn from the listing's bytes in the colour, mode and size the game gives it, recorded from the sprite table while every stage was played through in VICE.6 All of them are multicolour, with the two shared colours grey (`$D025` = 12) and white (`$D026` = 1).
+
+### index.html
+
+- The loading screen, the title and stage 1, in VICE.
+- The Big Core at the end of stage 6, in VICE.
+
+### levels.html
+
+- Pictures taken in VICE on an NTSC C64.

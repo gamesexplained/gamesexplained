@@ -87,7 +87,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">02 · Music</p>
   <h2 class="t">Music: Rob Hubbard's tune, played by the game's own driver</h2>
   <p class="lede">The title plays the music, and so does play if the player presses 1 on the title screen. Press 2 instead and the game plays its sound effects.</p>
-  <div class="plate"><div id="ib-sid"></div><p class="cap">The game's music driver, <code>music_play</code> at <code>$E009</code>, run once a frame on the kit's 6502 over the listing's bytes, as the title screen's interrupt calls it, through a model of the SID. The test beside this page holds every register write of 3,000 frames to the same calls made on the game's code. The tune never ends: each voice's track goes back to its start.</p></div>
+  <div class="plate"><div id="ib-sid"></div><p class="cap">The game's music driver, <code>music_play</code> at <code>$E009</code>, run once a frame over the listing's bytes, as the title screen's interrupt calls it, through a model of the SID. The tune never ends: each voice's track goes back to its start.</p></div>
   <p>The driver plays three voices, each from a <b>track</b>: a list of pattern numbers, with a transpose before some of them. A <b>pattern</b> is a run of notes with their lengths and instrument changes. There are 35 patterns (<code>pattern_ptrs</code>, <code>$E849</code>) and 18 <b>instruments</b> of 16 bytes (<code>instruments</code>, <code>$E70B</code>), whose flags switch on vibrato, a pulse-width sweep, an arpeggio, a filter sweep, or a drum table that changes the waveform and pitch each frame. C64-Wiki says the tune is a remix of Cabaret Voltaire's songs; Wikipedia names "Whip Blow" and "I Want You".</p>
 </section>
 
@@ -95,7 +95,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">03 · Sound</p>
   <h2 class="t">Sound: 22 effects, and the events that ask for them</h2>
   <p class="lede">With effects chosen, a second player runs in place of the music. The game asks it for an effect by writing $40 plus the effect's number into one byte per voice.</p>
-  <div class="plate"><div id="ib-sfx"></div><p class="cap">The game's effects player, <code>effects_play</code> at <code>$ED56</code>, run once a frame on the kit's 6502 after the bytes each event writes into <code>effect_req</code> (<code>$ED50</code>-<code>$ED52</code>). Eight of the 22 effects are not asked for anywhere in the game; their buttons play them on voice 1.</p></div>
+  <div class="plate"><div id="ib-sfx"></div><p class="cap">The game's effects player, <code>effects_play</code> at <code>$ED56</code>, run once a frame after the bytes each event writes into <code>effect_req</code> (<code>$ED50</code>-<code>$ED52</code>). Eight of the 22 effects are not asked for anywhere in the game; their buttons play them on voice 1.</p></div>
   <p>An effect is a frequency that slides by a step, and the step itself changes each tick. One of eight scripts says when to slide up, when to slide down and when to go back to the start (<code>effect_script_data</code>, <code>$F050</code>). Each effect's 16 bytes (<code>effect_defs_a</code> and <code>effect_defs_b</code>) give its starting note, waveforms, length and script.</p>
 </section>
 
@@ -107,7 +107,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <canvas id="ib-wave" class="ib-cv" width="900" height="120"></canvas>
     <div class="ib-range"><span>pitch</span><input id="ib-pitch" type="range" min="90" max="250" value="140"><span id="ib-pitch-out">$8C</span></div>
     <p class="ib-out" id="ib-samp-out">Press a word.</p>
-    <p class="cap">The game's own sample player, <code>say</code> (<code>$C1F3</code>) and <code>sample_nmi</code> (<code>$C199</code>), run on the kit's 6502 over the listing's bytes, one call of <code>sample_nmi</code> for each timer interrupt. The picture is the volume of every interrupt. The game uses the pitch <code>$8C</code>; the title screen's stick moves it between <code>$5A</code> and <code>$FA</code>, as this slider does.</p>
+    <p class="cap">The game's own sample player, <code>say</code> (<code>$C1F3</code>) and <code>sample_nmi</code> (<code>$C199</code>), run over the listing's bytes, one call of <code>sample_nmi</code> for each timer interrupt. The picture is the volume of every interrupt. The game uses the pitch <code>$8C</code>; the title screen's stick moves it between <code>$5A</code> and <code>$FA</code>, as this slider does.</p>
   </div>
   <p>The SID has no way to play recorded sound, but changing its master volume makes a click, and changing it thousands of times a second makes a waveform. Each byte of a sample holds two four-bit volumes. CIA 2's timer interrupts the processor every <code>sample_pitch</code> + 1 cycles, and each interrupt writes the next volume into <code>$D418</code>. The three samples fill <code>$A000</code>-<code>$BFFF</code>. The game plays the first on the title screen, the second when Iball dies, and the third at the end of a game.</p>
   <p>While a sample plays, the game stands still. <code>irq_panel_end</code> (<code>$4506</code>) checks <code>sample_busy</code> and, if it is set, does not hand on to the next interrupt of the frame, so none of the game's logic runs until the word has been said.</p>
@@ -120,7 +120,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="ib-bar" id="ib-bands"></div>
     <div class="ib-stack"><canvas id="ib-frame" class="ib-cv" width="384" height="272"></canvas><canvas id="ib-frame-over" class="ib-cv" width="384" height="272"></canvas></div>
     <p class="ib-out" id="ib-band-out">Press a band to see which interrupt sets it up.</p>
-    <p class="cap">One whole frame of level 1, recorded in the emulator: the registers as the frame began, every write to the video chip during it, and the memory it read. The page draws it with the site's C64 library; all 104,448 pixels match the emulator's own picture of the same frame.</p>
+    <p class="cap">One whole frame of level 1: the registers as the frame began, every write to the video chip during it, and the memory it read. The page draws it with the site's C64 library.</p>
   </div>
   <p>Four raster interrupts cut the frame in bands, each setting the line of the next. The top and bottom panels use extended colour mode and the text character set, each with its own eight sprites: the extras' icons, the timer's two digits, the score and the lives. The play area between them uses multicolour characters from the playfield's set at <code>$3000</code> and eight sprites of its own. The panels' sprites are the same eight sprites as the play area's, moved and repainted three times a frame.</p>
 </section>
@@ -158,7 +158,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="ib-bar" id="ib-kb-mode"></div>
     <div class="ib-kb" id="ib-kb"></div>
     <p class="ib-out" id="ib-kb-out">Press a key.</p>
-    <p class="cap">The keyboard as the C64 wires it: eight rows and eight columns. Each key is shaded when it has a job. The jobs come from the value each of the game's tests writes to <code>$DC00</code> and the column it reads in <code>$DC01</code>; the test beside this page runs each of the game's tests on the kit's 6502 for every key and checks that the same keys answer.</p>
+    <p class="cap">The keyboard as the C64 wires it: eight rows and eight columns. Each key is shaded when it has a job. The jobs come from the value each of the game's tests writes to <code>$DC00</code> and the column it reads in <code>$DC01</code>.</p>
   </div>
   <p>The manual gives Z, X, O and K for left, right, up and down, P for fire, SPACE for the Smart Missile and M for the Molecule Bomb. The game reads a key by driving rows of the keyboard low and reading one column. Most of its tests drive seven rows at once, so every key in that column on those rows does the job. O is the up key, and so are E, T, U, @, the up-arrow and Q.</p>
   <p>The same groups answer on the title screen, where the jobs change. I, the key C64-Wiki gives for the "IBALL!" sample, is in the fire column, so it starts a game. X and the other right keys say "IBALL!", Z "OH NO!", and SPACE "GAME OVER!".</p>
@@ -216,7 +216,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>Iball alone</td><td class="ib-n">1,500</td><td class="ib-n">1,500</td><td class="ib-n">50 s</td></tr>
     <tr><td>Seven aliens about</td><td class="ib-n">1,350</td><td class="ib-n">695</td><td class="ib-n">about 97 s</td></tr>
   </table>
-  <p class="cap">Counted in the emulator with checkpoints on <code>irq_logic</code>'s work and on <code>timer_tick</code>, only while Iball was alive and no sample played. The timer also stands still while Iball materialises or dies, in hyperspace, and while a word is said.</p>
+  <p class="cap">Counted only while Iball is alive and no sample plays. The timer also stands still while Iball materialises or dies, in hyperspace, and while a word is said.</p>
 </section>
 
 </main>

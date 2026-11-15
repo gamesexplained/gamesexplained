@@ -72,10 +72,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="gx-ctl"><label>Health before the poison <input type="number" id="gx-hp" min="0" max="9999" value="50"></label>
       <button type="button" data-hp="2000">2000</button><button type="button" data-hp="1250">1250</button><button type="button" data-hp="50">50</button></div>
     <div id="gx-pois" class="gx-out"></div>
-    <p class="cap"><b>The game's arithmetic, ported.</b> The panel digits are drawn with the game's own panel font (<code>$6000</code>), glyph <code>$10</code> plus each digit. <code>test_poison.js</code> holds the port against the game's code in the kit's 6502 simulator: poison_health (<code>$9F62</code>) for all 256 values of the hundreds byte, and one tick of health_tick (<code>$B933</code>) from all 65,536 health values, every result and every death the same.</p>
+    <p class="cap"><b>The game's arithmetic, ported.</b> The panel digits are drawn with the game's own panel font (<code>$6000</code>), glyph <code>$10</code> plus each digit.</p>
   </div>
   <p>Health is kept as four decimal digits in two bytes (<code>$B931</code> and <code>$B92F</code> for player one): 2000 is <code>$20</code> <code>$00</code>. The clock takes one off with the processor in decimal mode (health_tick, <code>$B944</code>). Poison, when the hero has no power to lose, takes a potion if it carries one, then one off the high byte with decimal mode off (poison_health, <code>$9F62</code>). From 2000 the high byte becomes <code>$1F</code>, which is not a decimal number: the panel shows a glyph from the word SCORE in the hundreds place, and the decimal countdown treats F as fifteen hundreds, so the hero has 600 more health than it should.</p>
-  <p>Below 100 there is nothing to borrow from. <code>$00</code> less one is <code>$FF</code>, the routine never tests for it, and the clock counts down from $FF50 in decimal: 16,550 ticks, nearly six hours of play. In the emulator, a Warrior poisoned with 50 health had <code>$FF</code> <code>$47</code> after the message, two stray glyphs on the panel, and <code>$FF</code> <code>$07</code> forty ticks later, still in the game. Poison jugs appear on their own from level 8.</p>
+  <p>Below 100 there is nothing to borrow from. <code>$00</code> less one is <code>$FF</code>, the routine never tests for it, and the clock counts down from $FF50 in decimal: 16,550 ticks, nearly six hours of play. In play, a Warrior poisoned with 50 health had <code>$FF</code> <code>$47</code> after the message, two stray glyphs on the panel, and <code>$FF</code> <code>$07</code> forty ticks later, still in the game. Poison jugs appear on their own from level 8.</p>
 </section>
 
 <section>
@@ -91,7 +91,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <tr><td>Lobber's rock</td><td>3</td><td>shot_hits_player</td></tr>
       <tr><td>Death's touch</td><td>4, fifty times</td><td>death_drain <code>$BC9B</code></td></tr>
     </table>
-    <p class="cap"><b>The same for every hero.</b> In the emulator a level-three grunt was put beside a standing player: in 187 attacks the game read monster_damage 93 times, on alternate attacks, and the six armour values not once. Health fell by 961: 93 blows of 10 and 31 ticks of the clock.</p>
+    <p class="cap"><b>The same for every hero.</b> A level-three grunt put beside a standing player: in 187 attacks the game read monster_damage 93 times, on alternate attacks, and the six armour values not once. Health fell by 961: 93 blows of 10 and 31 ticks of the clock.</p>
   </div>
   <p>At the start of a game each player gets six damage values from its hero's table, and the armour potion replaces them with lower ones (power_apply, <code>$9D10</code>; damage_taken <code>$9E49</code>). No instruction in the program reads them. A Warrior with 20 % armour and a Wizard with none lose health at exactly the same rate.</p>
   <p>Hand-to-hand is the same story. A blow takes <code>$40</code> off a monster for any hero (fight_damage, <code>$ACCA</code>); the fight-power potion writes a stronger value one place along, at <code>$ACCC</code>, which nothing reads. The potion's other half, more power against generators (fight_power, <code>$ACC8</code>), does work.</p>
@@ -101,7 +101,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">03 · Idle timer</p>
   <h2 class="t">Bug: when player two fights hand to hand, the doors stay shut five times as long</h2>
   <p class="lede">Stop shooting and the game helps you out: after 30 seconds the doors open, and 150 seconds later every wall becomes an exit. A hand-to-hand blow puts the timer back too, but how far back depends on who struck it, not on how far the timer had got.</p>
-  <p>After a shot, shot_fire looks up the count to put back by the stage the timer has reached: 30 before the doors open, 150 after, and 255 once the walls are exits, when nothing counts any more (<code>$A75E</code>). After a blow that does not kill, fight_back loads the stage the same way and then looks the count up by the player's number instead (<code>$C54E</code>). Player one's blows always put back 30, and player two's always 150. A second player who fights rather than shoots keeps the doors shut five times as long, and once the doors are open, player one's blows bring the exits sooner than a shot would. In the emulator, the two routines left exactly those counts for each player at each stage.</p>
+  <p>After a shot, shot_fire looks up the count to put back by the stage the timer has reached: 30 before the doors open, 150 after, and 255 once the walls are exits, when nothing counts any more (<code>$A75E</code>). After a blow that does not kill, fight_back loads the stage the same way and then looks the count up by the player's number instead (<code>$C54E</code>). Player one's blows always put back 30, and player two's always 150. A second player who fights rather than shoots keeps the doors shut five times as long, and once the doors are open, player one's blows bring the exits sooner than a shot would.</p>
 </section>
 
 <section>

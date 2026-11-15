@@ -88,3 +88,16 @@ Sample of seed 2613, drawn as the maintainer's check at the contributor's reques
 - RESTORE in play, 13 November 2026: reached `$2F30`.
 - Main loop rate, 13 November 2026: `$1E` advanced 70, 67, 79, 79, 73 and 88 in six runs of 50 frames.
 - Hit ground objects, 13 November 2026: with byte 15 bit 6 set on records at picture `$60`, the pointers shown were `$C6-$D1`, alternating in pairs; `$D2` never appeared in 1,500 frames.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### controls.html
+
+- Tested in the emulator on 13 November 2026: holding up for under a second sent the plane down the screen, and it kept going with the stick released.
+
+### graphics.html
+
+- The moving ones play at the game's own speed, measured in the emulator.
+- A multicolour bitmap, drawn from its 10,000 bytes (the bitmap at `$E000`, the screen at `$DC00` and the colour memory), read from the emulator's memory on 13 November 2026 while the picture was up.
