@@ -66,7 +66,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="cd-bar"><label>The helicopter's world X <input type="range" id="tk-x" min="720" max="4095" value="1794"></label></div>
     <canvas id="tk-cv" class="cd-strip" width="900" height="120"></canvas>
     <p class="cd-out" id="tk-out"></p>
-    <p class="cap">The right-hand branch of <code>spawn_tank</code> (<code>$6434</code>) adds $01B0 to the helicopter's X, and then the LDA #$00 at <code>$6440</code> replaces the high byte it has just worked out; the 0 is stored as the gun's aim and as the high byte, so the tank's X is the low byte alone, $0000-$00FF. The tank's routine drops any tank whose distance from the helicopter has a high byte from 3 to $FC (<code>$666A</code>-<code>$667A</code>). The slider runs over every X at which a tank can come, up to two blocks of 256 dots short of the fence. <b>For every one of those 3,376 positions, the arithmetic here gives the same X and the same verdict as the game's own code run on the listing's bytes</b> (<code>test_tank.js</code>). In Apple2TS, with the helicopter held at $0702 for 3,000 frames, one tank came, on the left, and two meant for the right never entered the tank list.</p>
+    <p class="cap">The right-hand branch of <code>spawn_tank</code> (<code>$6434</code>) adds $01B0 to the helicopter's X, and then the LDA #$00 at <code>$6440</code> replaces the high byte it has just worked out; the 0 is stored as the gun's aim and as the high byte, so the tank's X is the low byte alone, $0000-$00FF. The tank's routine drops any tank whose distance from the helicopter has a high byte from 3 to $FC (<code>$666A</code>-<code>$667A</code>). The slider runs over every X at which a tank can come, up to two blocks of 256 dots short of the fence. With the helicopter held at $0702 for 3,000 frames, one tank comes, on the left, and the two meant for the right never enter the tank list.</p>
   </div>
   <p>There is one place where a right-hand tank survives: with the helicopter in the first 128 dots of the world it can reach, $02D0-$034F, the slipped tank lands less than three blocks away and drives in from the left like any other.</p>
   <p>The <a href="../../c64/choplifter/index.html">Commodore 64 version</a> has the same slip in its own code ($9F54 there): it adds $B0 to the low byte, stores 0 as the high byte, and deletes the tank on its first update.</p>
@@ -79,14 +79,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="cd-sound" id="nz"><span class="cd-err" id="nz-msg">Loading the listing…</span></div>
     <div class="cd-bytes" id="nz-bytes"></div>
-    <p class="cap">The bytes at <code>$8101</code>-<code>$8120</code>, from the listing, each the delay before one pair of clicks; a tank's shot plays the first 10, a jet's missiles all 32, from the last back to the first. The two effects run the game's code for them on the kit's 6502, as on the How it works page, and the clicks match the game's in Apple2TS click for click (<code>test_sound.js</code>).</p>
+    <p class="cap">The bytes at <code>$8101</code>-<code>$8120</code>, from the listing, each the delay before one pair of clicks; a tank's shot plays the first 10, a jet's missiles all 32, from the last back to the first. The two effects run the game's own code for them, as on the How it works page.</p>
   </div>
 </section>
 
 <section id="level">
   <p class="fig">03 · The level</p>
   <h2 class="t">Secret: CTRL-L, then a number, picks the level</h2>
-  <p>The level, 0 to 3, sets how many tanks, jets and drones may be in play, how many jets are bold, and whether drones drop shells (<a href="index.html">How it works</a>). It normally goes up by one for each trip that brings hostages home. CTRL-L, then any key, sets it to the key's low two bits (<code>read_keys</code>, <code>$0DED</code>), so CTRL-L then 3 starts the hardest level at once. In Apple2TS, CTRL-L then 3 set the level byte (<code>$731D</code>) to 3. A new game puts it back to 0 (<code>refill</code>, <code>$9A47</code>), so the keys have to be pressed during play.</p>
+  <p>The level, 0 to 3, sets how many tanks, jets and drones may be in play, how many jets are bold, and whether drones drop shells (<a href="index.html">How it works</a>). It normally goes up by one for each trip that brings hostages home. CTRL-L, then any key, sets it to the key's low two bits (<code>read_keys</code>, <code>$0DED</code>), so CTRL-L then 3 starts the hardest level at once. A new game puts it back to 0 (<code>refill</code>, <code>$9A47</code>), so the keys have to be pressed during play.</p>
 </section>
 
 <section id="loading">
@@ -97,7 +97,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <img src="reference/title.png" alt="The title screen, over the loading picture's bar and ground">
       <img src="reference/first-sortie.png" alt="The first sortie's message over the same bar and ground">
     </div>
-    <p class="cap">The title and the first sortie, Apple2TS. The bar at the top and the violet ground band are the same bytes throughout: the disk loads them into both screen pages as part of the title picture.</p>
+    <p class="cap">The title and the first sortie. The bar at the top and the violet ground band are the same bytes throughout: the disk loads them into both screen pages as part of the title picture.</p>
   </div>
   <p>The game never draws its ground band. The loader puts the title picture into both hi-res pages, ground and all, and erasing keeps the ground intact by filling every box below the ground line with the ground's pattern, $55 $2A. A routine that would build the whole screen from nothing, clearing both pages, drawing the bar and filling the ground, is in memory at <code>$9ADD</code> and is never called. That is why the demonstration on the How it works page has to start from the loading screen.</p>
 </section>
@@ -105,13 +105,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="same">
   <p class="fig">05 · The demonstration</p>
   <h2 class="t">The demonstration flight is the same every time the disk boots</h2>
-  <p>The random number generator's one byte (<code>$76</code>) is seeded at start-up with whatever the A register holds (<code>start</code>, <code>$0800</code>). The loader jumps to the game straight after checking the sum of everything it loaded, and that sum must be $31, so A is always $31. The demonstration reads no clock, and while no key is pressed it unfolds the same way on every boot: the How it works page runs it from the listing and its frames match Apple2TS's byte for byte. A game becomes different only through the moment a key starts it.</p>
+  <p>The random number generator's one byte (<code>$76</code>) is seeded at start-up with whatever the A register holds (<code>start</code>, <code>$0800</code>). The loader jumps to the game straight after checking the sum of everything it loaded, and that sum must be $31, so A is always $31. The demonstration reads no clock, and while no key is pressed it unfolds the same way on every boot, which is why the How it works page can run it from the listing. A game becomes different only through the moment a key starts it.</p>
 </section>
 
 <section id="iie">
   <p class="fig">06 · The machine</p>
   <h2 class="t">The disk stops with an M on an enhanced Apple IIe</h2>
-  <p>While it loads, the loader compares stretches of the Monitor ROM with copies it carries, one set for the original Apple II and one for the Autostart ROM of the II Plus, and stops with a lone <code>M</code> on any difference. The enhanced IIe's Monitor differs at $FB51, where it makes room for 80 columns, so this original disk runs on the Apple II and the II Plus only. In Apple2TS as an enhanced IIe the disk stopped there; as a II Plus it played.</p>
+  <p>While it loads, the loader compares stretches of the Monitor ROM with copies it carries, one set for the original Apple II and one for the Autostart ROM of the II Plus, and stops with a lone <code>M</code> on any difference. The enhanced IIe's Monitor differs at $FB51, where it makes room for 80 columns, so this original disk runs on the Apple II and the II Plus only. On an enhanced IIe the disk stops there; on a II Plus it plays.</p>
 </section>
 
 <section id="leftovers">

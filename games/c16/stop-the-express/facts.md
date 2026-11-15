@@ -252,3 +252,17 @@ kit's mark. A zero observed rate does not prove every comment is right.
   confirmed both initializer overruns and the last modified record byte.
 - The caution-sign pose is held to the original warning caller at $4709,
   including its $80 character-code offset.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- A live emulator check reproduced the overwritten entry and confirmed that `$24FE`/`$24FF` stay untouched.
+- The emulator reproduced the same overwritten entry bytes.
+
+### index.html
+
+- The sequence of writes to the sound controls matches a complete emulator recording, with its starting point shifted around the loop.
+- 0 of 64,000 display pixels differ from the emulator picture of this frozen frame.

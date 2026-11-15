@@ -378,3 +378,33 @@ All on jsbeeb 2.4.0 in the kit's server, 24 October 2026.
   &80, and the six together: the whole Crystal Flower.
 - **Delays.** `PRINT` at BASIC's prompt of t×1000 less its rounding for
   every delay the programs use: 0 each time.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The variables at each step, read from the computer's memory in jsbeeb.
+- In jsbeeb, at the Centre's `Where do you wish to go next?`, `Map` was typed again and again.
+- In jsbeeb the lie detector said NO to the three lies among the five and YES to the two truths, and Stay was right for the first.
+- In jsbeeb the Fright Freak, met with a raincoat, a metal detector and a fright stick, left all eleven bytes of `e%` at 0.
+- Part 1 loaded with `LOAD"AD1"` and listed, in jsbeeb.
+- In jsbeeb, with each danger made to vanish, each said The ... disappears. and then You are safe.
+- Menu choice 1, in jsbeeb.
+- In jsbeeb it is &01, which BASIC takes for the start of one more line, and the program stops with `Bad program`.
+- In jsbeeb F printed `END` and waited at line 19037 again, and S started a fresh game.
+
+### index.html
+
+- The emulator's picture of the end of the game, with all six parts found.
+- In the jsbeeb emulator, each piece run alone, and all six run together, left exactly the same 1,000 characters on the screen as the page does.
+- The emulator's picture of the map as it opens, with the game's instructions under it.
+- The page's window matched jsbeeb's after every key press, all 680 characters of it, on 32 screens: the map opened, scrolled south with 28 presses of the up arrow (the last two at the end of the map), and scrolled north with 3 presses of the down arrow.
+- Every one of the 56 journeys was made in jsbeeb, and each went the way the table says.
+- The game's own PROChaz, run in jsbeeb 2,000 times on a path and 2,000 times without one for each of the three kinds of weather, chose only the hazards the page chooses, never the same one twice on a journey, and each about as often as the others.
+- In jsbeeb the detector answered NO to the cave, the steps and the mist, and YES to the fence and the hill, and answering by it beat Fibber.
+
+### levels.html
+
+- The pictures are from play in the jsbeeb emulator.

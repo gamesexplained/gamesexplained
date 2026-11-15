@@ -286,3 +286,20 @@ a full audit.
 - The page's machine on the published memory, with the code blanked,
   against the same machine on the whole memory (`port/test/t-page.js`).
 - The page as published (`test_play.js`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- The port is held to the game's own code byte for byte in the lockstep test, and its drawing of the view at a moment saved from the emulator matches the game's screen in every pixel.
+
+### play.html
+
+- Each routine alone: Eight test files take each routine at the moments the game itself calls it, in 208 moments of play saved from the emulator; others run on inputs made at random: the arithmetic on random operands, keys and the joystick held at random, and scripts of random instructions. The port's routine and the game's own, on the kit's Z80, run from the same machine, and every byte of memory, the border and the beeper's writes must come out the same.
+- The whole program in lockstep: The port's program runs beside the game's, pass by pass: from the loader's hand-over through the security question and the control options into play, and from each moment of play for 150 passes, with the keys played at random. Five more runs force the ways out of play the sessions seldom reach: the clock running out, the energy, the shield, the information screen, and abandoning the game from it, each through the game over and back to the menu. Every byte of memory and the border were the same at every stop, but for the stack.
+- The ROM: Collecting a rig in Amethyst before any rig of the game has been put down reads the gas from a table whose pointer is still 0: the ROM's first byte, `$F3`. The page carries that one byte of the 48K ROM and nothing else of it.
+- The page's memory: The page carries the game's memory as the loader leaves it, with 20,091 bytes of instructions set to zero; it keeps 288 bytes of code that the game also keeps state in, operands it rewrites and the two bytes the security question mends. The page's machine on that memory and on the whole memory ran the same, frame for frame, from the hand-over and from the moments of play with random keys.
+- The pace: The port executes no instructions, so the page charges each stretch of the main loop, each routine, and each row, byte and character it fills or prints the T-states they cost the game. The heaviest routines are priced from their own T-states, measured on the game: the span filler by the rows, bits and bytes it fills, a polygon's edges by their rows and steps, the vertex rotation by its multiplications, the painter's sort by its comparisons and swaps, and nine routines whose cost a call holds within 10 % at that cost. The rest is fitted around them on 16,389 passes timed on the kit's model of the 48K; the interrupt is fitted the same way, with each sensor it checks and each beam it draws. On 2,399 passes it was not fitted on, the median pass is 0.1 % short of the game's time, and seven in eight are within 5 %. Over 60 passes from each of 153 moments of play, once with random keys and once with a fixed round of walks, turns, looks up and down and moves of the crosshair, 296 of the 306 runs take within 5 % of the game's time; the slowest, in Mitral, takes 9 % longer. From moments of play, with that round of commands on both for 30 seconds, the page takes within 5 % of the game's time for the same passes.
+- The listing: The port was written before the listing's comments on the code, and they were written from it, so porting found none of them wrong.

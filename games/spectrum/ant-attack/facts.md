@@ -188,3 +188,18 @@ Weighting by stratum population gives 6.6%. These are measurements of
 the comments before those corrections, not a measured rate for the
 remaining listing. The sample is a lower bound on mistakes a checker
 can find; a full independent audit is recommended and has not been done.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The same 36-pass inputs reproduced every recorded position, fuse, ammunition, and explosion value on ZEsarUX and the independent Spectrum machine.
+
+### index.html
+
+- Title and timeout: ROM BEEP port writes captured in ZEsarUX.
+- The final rising notes exceed the emulator WAV’s useful bandwidth, so the port-write timing is the reference.
+- All 49,152 active pixels match the emulator by colour number.
+- The shared renderer uses a brighter normal palette: intensity 215 instead of ZEsarUX’s 192.

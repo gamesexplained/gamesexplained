@@ -246,3 +246,19 @@ further corrections. The observed plain and weighted error rates are 0%;
 the plain 95% Wilson interval is 0-4.6%. All 25 independent original-code
 test groups passed. The sample is within the kit's mark. Zero observed
 errors does not establish that every remaining detail is right.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Four consecutive emulator measurements each counted exactly 51 calls to the IRQ handler, the code run by a display interrupt, between time subtractions.
+
+### index.html
+
+- Room 1 in plus4emu.
+- All 1,304 game-tune register writes and 759 title-tune writes match independent plus4emu captures in value and order.
+- Show emulator reference
+- alt="The emulator frame used for the pixel comparison" hidden>This 320 × 200 picture matches all 64,000 pixels of the emulator's display window.
+- The control code at `$6D42` was checked with both keyboard and joystick inputs in plus4emu.
