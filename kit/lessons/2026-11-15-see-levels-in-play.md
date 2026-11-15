@@ -1,4 +1,4 @@
-## next · 2026-11-15 · Super Wonder Boy in Monster Land (C64) · 64kramsystem with Codex, reviewed by air with Claude
+## 0.0.342 · 2026-11-15 · Super Wonder Boy in Monster Land (C64) · 64kramsystem with Codex, reviewed by air with Claude
 
 - **Watch each level run before writing about it.** This run captured the
   first round in play and reached loads 2 to 31 by calling the game's own
