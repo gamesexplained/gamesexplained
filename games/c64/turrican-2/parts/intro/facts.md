@@ -8,9 +8,13 @@ Sixteen compressed pictures occupy `$0810-$7B3C`. Split low/high directories at 
 
 The drawing loop at `$7E2D` copies each picture into rows 320 bytes apart, using width, height, position and colour directories at `$90EC-$919B`. Pictures seven and eight omit the border. The other pictures use eight frame glyphs at `$9484-$94C3`. Attribute staging occupies `$BB00-$BEFF`; the fade routine at `$8DE7` traverses the 1024 screen bytes at `$DC00` with an odd step selected from a CIA timer. Nonzero A selects fade-out; zero selects the staged attributes.
 
-The story source `$94C4-$A243` uses rolling keys. Reader `$7FD0` computes `((source XOR $0277) - $0801) XOR $1B`, with byte wrapping and an explicit SEC. It then XORs the third key into `$1B`, adds the new `$1B` into `$0801`, and XORs that sum into `$0277`. Initial keys are `$79/$13/$D3`. A read watchpoint on `$94C4` and instruction stepping through the reader confirmed the first decoded character is space `$20`.
+The story source `$94C4-$A243` uses rolling keys. Reader `$7FD0` computes `((source XOR $0277) - $0801) XOR $1B`, with byte wrapping and an explicit SEC. It then XORs `$0277` into `$1B`, adds the new `$1B` into `$0801`, and XORs that sum into `$0277`. The initial keys are `$D3` at `$0277`, `$13` at `$0801` and `$79` at `$1B`. A read watchpoint on `$94C4` and instruction stepping through the reader confirmed the first decoded character is space `$20`.
 
 The stream contains sixteen `$FF` picture markers and the narrative of the Avalon 1, Bren McGuire and the Machine. A final byte decodes as `$01` after the last picture marker; it is outside the completed story display. The source pointer would stay fixed on a decoded zero, but this stream contains no such hold read. Ninety-one eight-byte font glyphs begin at `$91AC`. The IRQ folds lowercase letters to uppercase and shifts generated text through eight sprites at `$0400-$05FF`, inserting a character every eight scroll calls. Joystick-left invokes the scroll routine a second time. Fire on either joystick port leaves the story.
+
+## The story as it plays
+
+A capture of the story from its entry at `$7B3D`, with a screenshot every 75 frames, ran 368 screenshots (about 550 seconds of PAL time) before the loading display took over. Picture one is on the screen from the start, and each `$FF` marker in the stream brings in the next picture, so each picture stays up while the paragraph before its own marker scrolls past. Pictures 3, 4 and 5 are drawn over picture 2, 11 and 12 over 10, and 14 over 13, without fading the larger picture out; they are the six twelve-row pictures. The text line is eight sprites in the lower border: the nested raster IRQ at `$7CA9` waits for line `$F9` and writes `$73` to `$D011` (24 rows) before restoring `$3B`. The pictures occupy `$0810-$7B3C`, 29485 bytes.
 
 ## Loading display
 

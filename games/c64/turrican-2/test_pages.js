@@ -27,6 +27,16 @@ for(let i=0;i<16;i++){const m=image('intro').slice();m[14]=i;const cpu=new C64Cp
 // Hold the walking preview's divider and shape rule to the original controller prefix.
 const walkCode=g.read('graphics.html').match(/function walkStep\(\)\{([\s\S]*?)\}function walkTick/)[1].replace('drawWalk();','return [walkDivider,walkIndex];');
 for(let divider=0;divider<256;divider++)for(let index=0;index<7;index++){const m=image('resident').slice();m[0x27]=divider;m[0x28]=index;m[0x2d]=0;const cpu=new C64Cpu.CPU(m);let done=false;try{cpu.call(0x12d5,{},{maxSteps:100,hooks:{0x12ef(){done=true;throw Error('DONE');}}});}catch(e){if(!done)throw e;}const actual=new Function('walkDivider','walkIndex',walkCode)(divider,index);assert.deepStrictEqual(actual,[m[0x27],m[0x28]]);}
+// Hold the wheel preview to the controller's shape step at $10E4-$10F6 and the composer's wheel colours.
+{const res=image('resident'),l11=image('level-1-1'),walkData=bytes(A.walk.sprites);
+ assert.deepStrictEqual(Array.from(walkData),Array.from(l11.slice(0xd000,0xd000+walkData.length)),'player sprite shapes');
+ assert.deepStrictEqual(A.wheel,{shape:res[0x10f5],colours:[res[0x08e8],res[0x0ffb]]},'wheel shape and colours');
+ assert.equal(res[0x0fe5],0xfe,'third sprite pointed at shape $FE in wheel form');
+ const multicolour=[res[0x52c1],res[0x52c6]];assert.deepStrictEqual(A.walk.multicolour,multicolour,'player multicolours');
+ for(const q of A.groups)if(q.shared&&q.part.startsWith('level-'))assert.deepStrictEqual(q.shared,multicolour,q.name+' multicolours');
+ const wheelNext=new Function('return '+g.read('graphics.html').match(/function wheelNext\(i,left\)\{[\s\S]*?\}/)[0])();
+ for(let i=0;i<4;i++)for(const left of [false,true]){const m=res.slice();m[0x2e]=i;m[0x25]=left?0:1;m[0x2d]=1;const cpu=new C64Cpu.CPU(m);let done=false;try{cpu.call(0x10e4,{},{maxSteps:50,hooks:{0x10f8(){done=true;throw Error('DONE');}}});}catch(e){if(!done)throw e;}assert(done);const next=wheelNext(i,left);assert.equal(next,m[0x2e]);assert.equal(A.wheel.shape+2*next,m[0x2c]);}}
+console.log('Wheel: shape step, colours and third-sprite shape matched to the player code');
 console.log('Graphics:',shapes,'sprite pieces,',A.groups.length,'groups, sixteen decoded story pictures and 1792 walking-divider cases matched');
 // The level 1-1 boss: fifteen shapes and colours per facing, three columns of five bands, from the pose tables.
 {const m=image('level-1-1'),B=A.boss;assert.deepStrictEqual(B.numbers,Array.from(m.slice(0x8634,0x8652)));assert.deepStrictEqual(B.colours,Array.from(m.slice(0x8616,0x8634)));
@@ -34,6 +44,11 @@ console.log('Graphics:',shapes,'sprite pieces,',A.groups.length,'groups, sixteen
  for(let i=0;i<4;i++)assert.equal((m[0x8742+i]-m[0x8741+i])&255,21,'boss bands 21 lines apart');
  // The full-pose installer copies fifteen entries per facing into matrices indexed column*5+row.
  assert.deepStrictEqual(Array.from(m.slice(0x8293,0x8295)),[0xa2,0x0e]);console.log('Boss:',Object.keys(B.shapes).length,'shapes and both facings matched');}
+// The story text shown with each picture: the intro's rolling-key stream split at its sixteen picture markers.
+{const m=image('intro'),out=[];let k277=0xd3,k801=0x13,k1b=0x79;for(let a=0x94c4;a<0xa244;a++){out.push((((m[a]^k277)-k801)&255)^k1b);k1b^=k277;k801=(k801+k1b)&255;k277^=k801;}
+ assert.equal(out[0],0x20);const paras=[[]];for(const v of out){if(v===0xff)paras.push([]);else paras[paras.length-1].push(v);}assert.equal(paras.length,17);
+ let base=null;A.story.forEach((s,i)=>{assert.equal(s.text,String.fromCharCode(...paras[i]).split(/\s+/).filter(Boolean).join(' '),'story '+(i+1));const inset=A.pictures[i].rows<=12;if(!inset)base=i+1;assert.equal(s.over,inset?base:null);});
+ assert.equal(A.story.length,16);console.log('Story: sixteen paragraphs decoded from the intro and matched');}
 // Discoveries: the level 1-2 bridge window and its six falling strips, and the farewell rows keyed by the ending's program.
 const X=readData('discoveries.html');
 {const m=image('level-1-2'),Q=X.bridge,map=bytes(Q.map),w=m[0x8fc0]+256*m[0x8fc1];assert.equal(map.length,Q.width*Q.height);

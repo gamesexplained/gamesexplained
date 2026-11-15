@@ -23,7 +23,7 @@ Sources:
 | Hidden bonus blocks and rooms | open | Shared bonus-block replacement/reward code is traced at `$3827`, and all eleven maps are decoded. Which map regions players call hidden rooms remains unclassified; no extra playthrough was used to assign those names. |
 | Hold fire for surround flash; collect range upgrades | traced | `$3931` charges to `$13`; `$3A37` updates twenty records; range reward `$5A79`. |
 | Space activates limited power lines | confirmed | Seventy-one-instruction live trace at `$2F95`: ammunition three to two, active flag `$D3`. |
-| Down and Space activate wheel form | traced | Player controller `$1063`, including transformation at `$119D`. |
+| Down and Space activate wheel form | confirmed | Player controller `$1063`, including transformation at `$119D`. Live in VICE on 15 November 2026: down with Space set `$2D` to 1, the wheel's shape stepped once a frame, and up ended it. |
 | Fire drops bombs in wheel form | traced | `$2DBE` selects `$2E05`; bomb character `$DD` has damage 100, verified at the live damage-table read. |
 | Surround flash and Space activate special weapon | traced | `$42B1` consumes availability `$0739`; player reset `$5206` restores it. |
 | Control pauses | traced | Resident $0BAC reads keyboard-input bit two, sets $0265, advances effects while paused, and clears the flag on joystick fire. Direct matrix-input exercise of Control remains open. |
