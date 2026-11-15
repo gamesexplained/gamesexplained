@@ -164,16 +164,17 @@ def home_candidates():
     return [os.path.join(h, d) for d in (".config", ".local", ".cache")] + [h]
 
 
-def footprint_signatures(words):
+def footprint_signatures(words, extra=()):
     """Every file outside this repository, under the usual home folders and up to four levels down,
-    whose path names one of `words` (lower case), with its size and change times.
+    whose path names one of `words` (lower case), with its size and change times. `extra` adds
+    folders to walk, such as the system's temporary folder for a tool that writes there.
 
     Take one before the tool starts and compare with written_outside() after it stops: a file is
     blamed on the run only when its signature changed, so a file with an old or a future
     timestamp that the run never touched is not (the method #125 brought to the C64's check)."""
     inside = os.path.normcase(os.path.realpath(ROOT))
     found = {}
-    for base in home_candidates():
+    for base in home_candidates() + [e for e in extra if os.path.isdir(e)]:
         depth0 = base.rstrip(os.sep).count(os.sep)
         for d, dirs, files in os.walk(base):
             resolved = os.path.normcase(os.path.realpath(d))
@@ -192,9 +193,9 @@ def footprint_signatures(words):
     return found
 
 
-def written_outside(before, words):
-    """The files whose signature changed, or that appeared, since footprint_signatures(words) gave `before`."""
-    return sorted(path for path, sig in footprint_signatures(words).items() if before.get(path) != sig)
+def written_outside(before, words, extra=()):
+    """The files whose signature changed, or that appeared, since footprint_signatures(words, extra) gave `before`."""
+    return sorted(path for path, sig in footprint_signatures(words, extra).items() if before.get(path) != sig)
 
 
 def judge_footprint(hits, known_residue, snapshot, covered=""):

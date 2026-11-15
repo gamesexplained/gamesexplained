@@ -284,8 +284,10 @@ class Rpc:
         ZEsarUX picks the file type from the extension: a `.tzx`/`.tap` plays the
         tape, a `.sna`/`.z80` loads a snapshot. It enters cpu-step for the load and
         leaves it again when the machine was running, so the loader starts by
-        itself. A tape plays at real speed — the machine keeps running while this
-        returns — so watch the screen (or poll the PC) until the game is up."""
+        itself. Blocks at the ROM's speed go into memory at once through ZEsarUX's
+        tape traps; the machine keeps running while this returns, so watch the screen
+        (or poll the PC) until the game is up. A tape heard at a Spectrum's pace needs
+        `realtape-open` or `--realtape` (kit/skills/spectrum/tool-zesarux, "Tapes")."""
         if not os.path.isfile(path):
             raise ZesaruxError(f"smartload {path}: no such file")
         return self.entering("smartload", os.path.abspath(path))

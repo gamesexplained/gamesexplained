@@ -275,6 +275,51 @@ def test_spectrum_statistics_stay_off():
           r.returncode == 0 and "ok" in r.stdout, r.stdout + r.stderr)
 
 
+TEMPDIR = r"""
+import importlib.util, os, sys, tempfile
+kit_spectrum = sys.argv[1]
+sys.path.insert(0, os.path.join(os.path.dirname(kit_spectrum), "scripts"))
+spec = importlib.util.spec_from_file_location("spectrum_tools", os.path.join(kit_spectrum, "tools.py"))
+t = importlib.util.module_from_spec(spec); spec.loader.exec_module(t)
+with tempfile.TemporaryDirectory() as d:
+    t.ZESARUX_HOME, t.SNAPSHOTS, t.PORT = os.path.join(d, "home"), os.path.join(d, "home", "snapshots"), 10005
+    started = []
+    t.app_path = lambda: "/x/zesarux"
+    t.missing_libraries = t.foreign_detail = lambda *a: None
+    t.close_opening_menu = lambda: None
+    t.start = lambda cmd, *a, **k: started.append(cmd)
+    stale = os.path.join(t.tempdir(), "tmp_old.tap.rwa")
+    os.makedirs(t.tempdir()); open(stale, "w").close()
+    t.zesarux()
+    cmd = started[0]
+    where = cmd[cmd.index("--tempdir") + 1]
+    assert where == os.path.join(d, "home", "tmp", "10005"), where
+    assert os.path.isdir(where) and not os.listdir(where), "the folder must exist, and start empty"
+    for port in ("10005", "10006", "notaport"):
+        os.makedirs(os.path.join(d, "home", "tmp", port), exist_ok=True)
+    t.up = lambda port: port == 10006
+    t.clear_tempdirs()
+    assert sorted(os.listdir(os.path.join(d, "home", "tmp"))) == ["10006"], os.listdir(os.path.join(d, "home", "tmp"))
+    t.up = lambda port: False
+    t.clear_tempdirs(10006)
+    assert not os.listdir(os.path.join(d, "home", "tmp"))
+    tape = os.path.join(d, "f.tap"); t.footprint_tape(tape)
+    data = open(tape, "rb").read()
+    assert len(data) == 2 + 19 + 2 + 258 and data[:3] == bytes([19, 0, 0]) and data[21:24] == bytes([2, 1, 0xFF]), data[:24]
+print("ok")
+"""
+
+
+def test_spectrum_tempdir():
+    """ZEsarUX keeps its temporary files, a tape's sound file among them, in tools/ (#883)."""
+    if "spectrum" not in tools.platforms():
+        return
+    r = subprocess.run([sys.executable, "-c", TEMPDIR, os.path.join(KIT, "spectrum")], capture_output=True, text=True)
+    check("spectrum: the emulator's temporary folder is one to a port under tools/zesarux-home, emptied at "
+          "each start and removed once no emulator answers on its port",
+          r.returncode == 0 and "ok" in r.stdout, r.stdout + r.stderr)
+
+
 if __name__ == "__main__":
     test_c64_status_selection()
     test_declarations()
@@ -284,5 +329,6 @@ if __name__ == "__main__":
     test_end_to_end()
     test_spectrum_bundle_layout()
     test_spectrum_statistics_stay_off()
+    test_spectrum_tempdir()
     print(f"\n{'all passed' if not failures else str(len(failures)) + ' failed'}")
     sys.exit(1 if failures else 0)

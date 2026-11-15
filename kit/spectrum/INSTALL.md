@@ -355,13 +355,21 @@ Tell the contributor this before installing anything:
 |---|---|---|
 | Emulator, unpacked from the release | `tools/zesarux/` | about 100 MB (the macOS bundle; the Linux build is about 43 MB compressed) |
 | Everything the emulator would put in a home directory: `.zesaruxrc`, any XDG folder it uses, and the kit's snapshots | `tools/zesarux-home/` | small; a 48K snapshot is 49 KB |
+| The emulator's temporary files, one folder to each port: the sound file of a tape played at real speed, which ZEsarUX would otherwise leave in `/tmp` | `tools/zesarux-home/tmp/<port>/` | 2.5 to 8 MB a tape; emptied at each start, removed by `stop` |
 | Disassembler, a Python virtual environment with SkoolKit 10.1 | `tools/skoolkit/` | about 15 MB |
 | Downloads on the way in | `tools/downloads/` | the release file, until it is unpacked and deleted |
 | Logs | `tools/logs/` | small |
 
 The launcher points `HOME` (and the XDG variables) at
 `tools/zesarux-home/` before starting the emulator, because ZEsarUX reads
-and writes `.zesaruxrc` in the home directory on every run.
+and writes `.zesaruxrc` in the home directory on every run. It passes
+`--tempdir tools/zesarux-home/tmp/<port>` too: ZEsarUX's own temporary
+folder is `/tmp/zesarux-<user id>` (a folder under `TMP` on Windows), which
+`TMPDIR` does not move, and it left there every tape it played at real
+speed, named after the tape's file alone, so two emulators given tapes of
+the same name shared one (#883). A clone whose launcher did not pass it may
+have left that folder; it holds only those sound files, and deleting it is
+safe.
 
 One thing can be installed outside the repository, on Linux only: the
 `ubuntu24` build is dynamically linked against SDL 1.2, which Ubuntu 24.04
@@ -376,8 +384,10 @@ Verified with `tools.py --platform spectrum verify-footprint` on macOS
 arm64, 29 September 2026: it started the emulator, had it write a
 snapshot, read memory through ZRCP and stopped it, and found nothing
 written outside the repository — no `.zesaruxrc` and nothing in the real
-home directory. No run is recorded on Linux or Windows; the launcher keeps
-the emulator's home inside `tools/zesarux-home/` on every system, and
+home directory. That check played no tape and did not look in the
+system's temporary folders, which it does since #883; the Linux run under
+"Linux" did both. No run is recorded on Windows; the launcher keeps the
+emulator's home inside `tools/zesarux-home/` on every system, and
 `verify-footprint` is how that is checked on the next one.
 
 ## Get the emulator
@@ -466,6 +476,10 @@ carries no path on this computer.
 24.04, no display) on 17 October 2026, on the 13.0 release's `ubuntu24`
 build: 47 of 50 in each of three runs, 19 to 20 s a run. `verify-footprint` was
 clean: `.zesaruxrc` lands in `tools/zesarux-home/` and nothing in `$HOME`.
+On 15 November 2026 it was clean again with the check that plays a tape
+and walks `/tmp` as well: the tape's sound file landed in
+`tools/zesarux-home/tmp/10000/`. With the launcher's `--tempdir` taken
+out, the same check failed on `/tmp/zesarux-0/`, as it should.
 With the launcher's flags the emulator opened no network connection
 (measured 3 October 2026). The `ubuntu24` build needs SDL
 1.2, which Ubuntu does not install by default; see "What goes where".
