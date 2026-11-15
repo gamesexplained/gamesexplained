@@ -296,3 +296,28 @@ generated ones by template. The listing has had no full audit; one is recommende
 - The cave (`work/cave.py`): with `$9687` = 2 and `$8032` = `$14`, the
   cave came up (city type 9) and the computer's ogre beat the lizard,
   which nobody steered, five hits to none (`reference/cave-fight.png`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The volcano, the fourth city of a round, reached in the emulator by ending three cities without taking an egg.
+- Fire on port 1 during a game of the lizard's, in the emulator: the ogre walks in from the right.
+- Measured in the emulator: the characters' bytes took the table at `$B4BF` + 1, + 25 and + 49 in phases 1 to 3, and in phase 0 the wrapped bytes, exactly.
+
+### graphics.html
+
+- Thirteen of them are redrawn on every pass by the game's own `animate_chars` (`$B463`), run here on the kit's 6502.
+
+### index.html
+
+- `test_music.js` runs the game's own code beside it and compares every write to the sound chip, frame by frame.
+- Everything No sprites The frame was recorded in the emulator (every write to the video chip, with its line and cycle) and is drawn here with the site's model of the chip.
+- The drawing matches the emulator's own picture of the same frame in all 104,448 pixels.
+- The roll here uses the same table, read from the listing; `test_rounds.js` checks it against the game's own picker for every count and number.
+
+### levels.html
+
+- Checked in the emulator: ending city after city, the fourth was the volcano each time, and the count went back to 1 after it.

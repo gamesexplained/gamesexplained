@@ -89,3 +89,24 @@ Sixteen sessions in `port/test/lockstep.js`, each keys given at frames to the ga
 | old-age | Old Age chosen at the start and played by 520 keys at random to the life's end, at 65; the stage's menu; a new life in Infancy played to the age of 1 | 115,881 |
 
 The disks the game and the port leave are compared file by file at the end of each. `test_play.js` holds the published Play page to the game on three of the sessions, `test_levels.js` the Stages tab's maps to the game's own drawing, and `test_graphics.js` the Graphics tab's arrow and curtain to the game's code. The Play page's Fast switch runs at once each frame in which the game makes no call of GETIN; `test_play.js` plays new-random, infancy and save a key at a time, each key given once the game has looked for one for 25 frames, and the game's memory at every key is the same with Fast on and off. Over infancy's 62 keys the game is busy for 3,976 frames, and the longest stretch with no call of GETIN is 271 frames.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The original program on the kit's C64, Old Age chosen at the start and then played with keys pressed at random.
+- The original program on the kit's C64: Infancy played from a new game until a scene moved the fraction to `$4703`, three months, then saved in the first place and quit.
+
+### play.html
+
+- The game in lockstep: Sixteen sessions give keys at set frames to the game's own code on the kit's C64 and to the port side by side, from the title to a new life after Old Age: a life begun with the questionnaire left to chance, answered by hand and gone over, saving, resuming and quitting, every stage chosen at the start, and runs of random keys, the longest 330,973 frames, an hour and fifty minutes of play.
+- Every byte of memory and of the chips is the same at every call of GETIN, the routine that looks for a key, and the disks the two leave are the same file by file..
+- The page's disk: The page carries the game's files with the start's and the life object's program left out, and its memory without the resident program.
+- Through 40 pages of Infancy, the page on that and on the whole program is the same at every frame in every byte outside the program..
+- The pace: The port executes no instructions, so the page moves its clock on by the cycles each routine costs the game, measured routine by routine on the kit's C64.
+- Beside the C64 on three sessions, every screen that settles on the C64 settles on the page in the same order, each within 60 frames, and the page looks for a key as often as the C64, to within 5 %..
+- Fast: Played a key at a time, each pressed once the game looks for one, the game's memory with Fast on is the same at every key, byte for byte, as with it off, through the start, 40 pages of Infancy, and saving, loading and quitting.
+- Over Infancy's 62 keys the player waits 3,976 frames, 79 seconds, without Fast and 58 frames with it.
+- The longest stretch Fast runs at once is 271 frames, and every one ends with the game looking for a key again..

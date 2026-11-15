@@ -86,7 +86,7 @@ a{color:var(--link)}
   </div>
   <p>The message, in plain ASCII (the usual codes for letters) at <code>$51B4</code>-<code>$53D3</code>, is never printed. It ends: "IF YOU ENTER THE NAME OF MY HAMSTER ON THE HIGH SCORE TABLE, PLAYER ONE WILL BE IMMORTAL. A REAL HACKER WILL FIND HER NAME FROM THE CODE". The hamster is DUSTY BUG.</p>
   <p>After every game, <code>$5634</code> compares the first eight letters of the name buffer (<code>$6933</code>) with the hamster's name, so DUSTY BU is enough. It makes the comparison whether or not anyone qualified for the table, and whichever pilot typed the name, so a name entered by pilot two makes plane one immortal. A match sets the flag at <code>$0975</code>, and nothing in the game ever clears it. The flag is the last byte of the high-score table, so it is written to the disk with the scores (<code>$1F30</code>) and read back the next time the game loads (<code>$09E5</code>).</p>
-  <p>With the flag set, plane one burns no fuel (<code>$43FC</code>) and the side panel shows IMMORTAL where it counted the planes left (<code>$1C44</code>). In the kit's machine, from a recorded flight, plane one's fuel stayed at 247 for 300 frames with the flag set and fell to 245 without it. A crash or a kill still marks the plane as lost, but the check that would take it away passes over plane one while the flag is set (<code>$0D93</code>). The other pilot still scores 200 points for each kill (<code>$282F</code>), so an immortal plane one can be shot down again and again for points.</p>
+  <p>With the flag set, plane one burns no fuel (<code>$43FC</code>) and the side panel shows IMMORTAL where it counted the planes left (<code>$1C44</code>). Over 300 frames of a flight, plane one's fuel stays at 247 with the flag set and falls to 245 without it. A crash or a kill still marks the plane as lost, but the check that would take it away passes over plane one while the flag is set (<code>$0D93</code>). The other pilot still scores 200 points for each kill (<code>$282F</code>), so an immortal plane one can be shot down again and again for points.</p>
 </section>
 
 <section id="traitor">
@@ -112,7 +112,7 @@ a{color:var(--link)}
       <tr><td><code>$0288</code></td><td>pilot one's chaff left</td><td class="a2-n">0</td><td class="a2-n">0</td></tr>
       <tr><td><code>$028C</code></td><td>pilot one's chaff timer</td><td class="a2-n">0</td><td class="a2-n">0</td></tr>
     </table>
-    <p class="cap">The decoy routine <code>$2531</code> run in the kit's simulator from a recorded flight, for pilot one with no chaff and a radar missile in flight: it reached <code>$25EF</code> with X = 11, the message number of NO CHAFF.</p>
+    <p class="cap">The decoy routine <code>$2531</code> in flight, for pilot one with no chaff and a radar missile in flight: it reached <code>$25EF</code> with X = 11, the message number of NO CHAFF.</p>
   </div>
   <p>The decoy routine shows NO CHAFF through the message routine with X = 11, the message's number. There is no jump past the next lines, which take a chaff from this pilot's count and start its timer, both indexed by X. With 11 in X they hit the object table instead: one is taken from <code>$0293</code>, and 8 is written into <code>$0297</code>, the middle byte of plane two's position across. Plane two moves by less than an eighth of a square of the map, whichever pilot pressed the key, every pass the key is held.</p>
 </section>
@@ -144,7 +144,7 @@ a{color:var(--link)}
       <tr><td><code>$43FC</code></td><td class="a2-n">$85 (STA)</td><td class="a2-n">$86 (STX)</td><td>the first instruction of the play interrupt</td></tr>
       <tr><td><code>$16E9</code></td><td class="a2-n">$EA (NOP)</td><td class="a2-n">$60 (RTS)</td><td>inside the routine that draws objects into the view</td></tr>
     </table>
-    <p class="cap">In the kit's machine, from a recorded flight: 600 NMIs in 300 frames, two a frame, with both bytes correct afterwards. With the NMI vector pointed at an RTI instead, both bytes stayed broken.</p>
+    <p class="cap">In flight: 600 NMIs in 300 frames, two a frame, with both bytes correct afterwards. With the NMI vector pointed at an RTI instead, both bytes stayed broken.</p>
   </div>
   <p><code>$6066</code> starts timer A of the second CIA chip with a count of 5 and its interrupt on, reaching the chip's registers through an index (<code>$DCF0</code> + X) so that the CIA 2 addresses never appear in the code. The NMI handler, <code>$2AA6</code>, acknowledges the chip and writes the two correct bytes back. The game sets the NMI vector itself, and the reset vector too, through a pointer built at run time (<code>$0A07</code>). Anything that points the NMI vector elsewhere leaves the play interrupt starting with the wrong instruction and the object drawer returning early.</p>
 </section>
@@ -172,7 +172,7 @@ a{color:var(--link)}
       <tr><td><code>$51B4</code>-<code>$53D3</code></td><td>the programmer's message, in plain ASCII</td><td>nothing</td></tr>
       <tr><td><code>$7556</code></td><td>"S0:QZ", a disk drive's command to delete a file called QZ, then "QZ"</td><td>nothing</td></tr>
     </table>
-    <p class="cap">Each found with the references search over the whole game and the access records of runs in the kit's machine: no instruction names these bytes, by address, by pointer or through an index.</p>
+    <p class="cap">No instruction in the game names these bytes, by address, by pointer or through an index.</p>
   </div>
   <p>The game goes to the trouble of scrambling every word it prints, then loads a plain copy of most of them into memory, where any memory dump shows them. The programmer's message, with its dedication "TO THE VERY WONDERFUL TERESA" and its hint about the hamster, is plain ASCII too, among the code.</p>
 </section>

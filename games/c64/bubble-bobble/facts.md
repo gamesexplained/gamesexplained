@@ -428,3 +428,30 @@ recipe in `orientation.md`, stepped by frames.
 
 Not tested live: the giant foods, a second player, and the boss fight
 played through (its beaten state was forced).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### controls.html
+
+- The C64-Wiki says Space switches between one and two players; nothing in the code reads the Space key, and the jump height and the bubble's flight above were measured in the emulator from the round-start snapshot.
+
+### discoveries.html
+
+- It works on every 6510 made, and on the emulator.
+
+### graphics.html
+
+- Compared with the emulator's own picture of the same frame, all 104,448 pixels match.
+- AgainSkip The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, at the tape's pace, with the border taking each new colour at the moment it did on the recorded load.
+
+### play.html
+
+- How it was checked Each routine was first checked alone against the game's code, run in a 6502 simulator: 258 checks over the 271 routines, from about 61,000 random starting states made out of 22 saved moments of play, each state bent towards the branches of the routine under test (every bubble kind, every actor state, every item, every round's layout).
+- The thirteen scenes that wait on the frame counter (the flood, the bonus rooms, the secret room, the umbrellas, the door to round 70, EXTEND) and all twelve tunes were stepped frame by frame beside the game's code with every byte compared after each frame.
+- Then the whole port ran beside the original in lockstep, from the saved moments with the same random joystick: at the start of every pass of the main loop all 64 KB are compared, and so are colour RAM and the registers the game writes to the video and sound chips.
+- Only the stack is left out.
+- 47 sessions: 22 saved moments of play (rounds 1 to 3 and round 100) run for up to 1500 passes with 2 random joysticks each (19 of them to the game over and the score table), two from the cold start (the title page with its tune, fire, the score table, 1, the story, and round 1), and one of the score table's key loop: 52,309: 51,430 identical (98.32 %); 879 differed at the actor interrupt's race (below).
+- A pass of the main loop is three frames long, timed by the frame counter the interrupt keeps, so the page runs the game at the C64's pace by keeping a PAL machine's clock, 312 lines of 63 cycles, and moving it on by the measured cost of each stretch of the main loop (the cycles from each call to the next, taken on the kit's machine while the lockstep ran) and of each interrupt.
+- From four saved moments, 600 frames of the same held joystick gave the same number of passes, the same player position and the same score on the kit's machine and on this page.

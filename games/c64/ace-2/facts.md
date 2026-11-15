@@ -245,3 +245,29 @@ from the snapshots in `work/`, scripts in `work/verify/`.
 - The security check: square DD 5 accepted orange (8), the colour in
   `$FA00`'s entry for it.
 - Passes: 156 in 500 frames of play.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the kit's machine, from a recorded flight, plane one's fuel stayed at 247 for 300 frames with the flag set and fell to 245 without it.
+- The decoy routine `$2531` run in the kit's simulator from a recorded flight, for pilot one with no chaff and a radar missile in flight: it reached `$25EF` with X = 11, the message number of NO CHAFF.
+- In the kit's machine, from a recorded flight: 600 NMIs in 300 frames, two a frame, with both bytes correct afterwards.
+- Each found with the references search over the whole game and the access records of runs in the kit's machine: no instruction names these bytes, by address, by pointer or through an index.
+
+### graphics.html
+
+- The enemy's pictures are chosen by the game's own code from `enemy_in_view` (`$2C86`), for its heading against ours turning a full circle, with both planes' roll and our pitch level, then built by `shape_build` (`$1581`) and `shape_shift` (`$15DB`), all run on the kit's 6502 over the listing.
+- `shape_shift` (`$15DB`) run on the kit's 6502 over the picture `shape_build` made, with the fine position in the top bits of `$05` (down) and `$06` (across), as `project_to_view` (`$3948`) leaves them.
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+
+### index.html
+
+- The page runs the game's own music driver on the kit's model of the C64's processor, the 6502.
+- Every register write in 16,000 frames matches the driver run in the kit's simulator on the game's memory.
+- Drawn by the page from one frame of play recorded in VICE (plane one over the sea, plane two over land, one player against the computer): every write to the video chip with the raster line and cycle it landed on, and the memory the drawing reads, drawn with the site's renderer.
+- 0 of the 104,448 pixels differ from VICE's own picture of the same frame.
+- The map picture, 30 by 12 characters at `$9800` in the character set at `$B000`, drawn by the page from the listing in the colours the video chip is given in plane one's map view in the kit's machine: black, light blue (`$D022`), white (`$D023`) and yellow (colour RAM `$0F`).
+- In VICE the game asked for square DD 5 and took orange, the colour this table gives it.

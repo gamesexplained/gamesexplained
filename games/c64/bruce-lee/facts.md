@@ -224,3 +224,25 @@ audit is recommended.
 - Extra fall: `add_score` (`$312C`) run in the kit's simulator from
   `play-room1.vsf` with the threshold set to 40,000, seven score and point
   pairs, falls before and after compared.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### controls.html
+
+- Tested in the emulator: with joystick 1 set left-handed, the stick pushed left read `$0E`, up, in the game’s copy of the stick (`$98`); set right-handed, it read `$0B`, left.
+
+### discoveries.html
+
+- Run with the game’s own routine on the kit’s 6502 simulator, 39,900 + 100 = 40,000 and 40,150 + 125 = 40,275 earned the fall, while 40,100 + 100 = 40,200 and 65,400 + 200 = 65,600 did not.
+
+### levels.html
+
+- The pictures were taken in the emulator with Bruce placed in each room.
+
+### music.html
+
+- How this player was checkedThe same calls were made in the kit’s model of the whole C64, with a raster interrupt calling the player once a frame as the game does, and every write to the sound chip compared, in order: 3,000 frames of the tune and 300 of each effect, all the same (`test_music.js`).
+- The player runs the cassette's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette does.
+- It was checked against the cassette loading in VICE: after each of the tune's first 6,200 frames, two minutes of it, the sound chip's registers are the player's.

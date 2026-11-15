@@ -97,7 +97,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Music: Wally Beben's tunes, played by the game's own driver</h2>
   <p class="lede">The title tune and the cave's tune, played by the game's own music driver.</p>
   <div class="plate"><div id="ag-sid"></div>
-  <p class="cap">The game's own driver runs on the site's model of the 6502, from the listing's bytes: a button writes the tune's number to <code>$68F7</code>, as the title does, and then calls <code>$68F8</code> once a frame, as the title's interrupt does. <code>test_music.js</code> runs the game's own code beside it and compares every write to the sound chip, frame by frame.</p></div>
+  <p class="cap">The game's own driver plays these: a button writes the tune's number to <code>$68F7</code>, as the title does, and then calls <code>$68F8</code> once a frame, as the title's interrupt does.</p></div>
   <p>The driver plays three voices, each reading an order list of patterns. A pattern byte below <code>$60</code> is a note; others set the note's length, its instrument (32 of them, eight bytes each at <code>$7021</code>), the speed, a slide or an arpeggio. A few instruments are drums, which step through a short table of waveforms and pitches. In play the same interrupt runs the sound effects instead of the music, so a city is silent but for its effects.</p>
   <h3>Sound: the effects</h3>
   <div class="plate"><div id="ag-sfx"></div>
@@ -114,7 +114,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button class="ag-btn" type="button" data-v="none" aria-pressed="false">No sprites</button>
     </div>
     <canvas id="ag-frame" class="ag-cv" width="768" height="544" aria-label="A frame of play, drawn from memory"></canvas>
-    <p class="cap">The frame was recorded in the emulator (every write to the video chip, with its line and cycle) and is drawn here with the site's model of the chip. The drawing matches the emulator's own picture of the same frame in all 104,448 pixels.</p>
+    <p class="cap">One frame of the game, drawn here from every write it made to the video chip, at the line and cycle it made it.</p>
   </div>
   <p>A sprite is a small picture the video chip draws over the screen, and the chip shows eight at a time. The game shows sixteen by moving them half-way down the frame. An interrupt is a routine the processor runs when the video chip signals that its beam has reached a chosen line of the picture. The interrupt on line 0 (<code>$8810</code>) places the first band: the two hornets and the white flyer. A second interrupt (<code>$88A2</code>) comes just above the monsters and places the second band: each monster as three sprites (its legs, its body and a burst beside a punch) and the cannon as two side by side. Its line moves with the monsters: each pass <code>$9B4F</code> writes it into <code>$889E</code>, 26 lines above the higher monster's legs, which is just above its body.</p>
   <p>When the ogre stands lower on the screen than the lizard, nearer the player, <code>$9AF8</code> swaps the two monsters' sprites. The nearer one then has the lower sprite numbers, and the video chip draws those in front.</p>
@@ -135,7 +135,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="ag-bar"><button class="ag-btn" type="button" id="ag-roll">Roll a round</button></div>
     <div class="ag-round" id="ag-round"></div>
-    <p class="cap">The picker at <code>$8444</code> reads the table at <code>$842F</code> at four times the city count plus a random number from 1 to 4. The roll here uses the same table, read from the listing; <code>test_rounds.js</code> checks it against the game's own picker for every count and number. Every place is drawn on the <a href="levels.html">Maps</a> tab.</p>
+    <p class="cap">The picker at <code>$8444</code> reads the table at <code>$842F</code> at four times the city count plus a random number from 1 to 4. The roll here uses the same table. Every place is drawn on the <a href="levels.html">Maps</a> tab.</p>
   </div>
   <p>The city count at <code>$803E</code> goes 1, 2, 3, 4, and back to 1. The first city is the jungle village or the temple in the mountains, the second the castle or the wild west town, the third the town by the water, the city in the cave or the pyramids, and the fourth always the volcano. That makes seven cities, not twelve. Nothing counts the eggs, so the volcano comes every fourth city, whether or not a monster has taken one. Its golden egg is drawn on the screen from the start (<code>$87A1</code>). Taking it leads to the cave, as any egg does, and the next city starts a new round. The game has no ending: it goes on until both monsters are dead.</p>
 </section>

@@ -88,7 +88,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">02 · Boss fights</p>
   <h2 class="t">Secret: the enemies a boss lets loose cannot be shot</h2>
   <p class="lede">Most bosses release enemies during the fight. The players' fire passes straight through them, so they have to be dodged.</p>
-  <p>In a boss fight the hit test (<code>enemies_hit_by_fire</code>, <code>$A54C</code>) looks only at the core and its guards, objects <code>$86</code> down to 0. The enemies a boss releases are objects 12 to 15, beyond the test's reach. In the emulator, a shot character written onto a released enemy during level 1's mid-level fight stayed on the screen and the enemy flew on untouched, while the same character on the core took a hit off it. Flying into a released enemy still costs a life, as flying into any enemy does. The <a href="bosses.html#fights">Bosses</a> tab says which bosses release them.</p>
+  <p>In a boss fight the hit test (<code>enemies_hit_by_fire</code>, <code>$A54C</code>) looks only at the core and its guards, objects <code>$86</code> down to 0. The enemies a boss releases are objects 12 to 15, beyond the test's reach. A shot character on a released enemy during level 1's mid-level fight stays on the screen and the enemy flies on untouched, while the same character on the core takes a hit off it. Flying into a released enemy still costs a life, as flying into any enemy does. The <a href="bosses.html#fights">Bosses</a> tab says which bosses release them.</p>
 </section>
 
 <section id="shield" data-part="engine">
@@ -101,14 +101,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap" id="ar-bugcap"></p>
   </div>
   <p>At a level's start <code>level_setup_vars</code> clears the zero page and then decrements the two invulnerability timers, <code>$56</code> and <code>$57</code>, at <code>$A260</code>, turning their 0 into 255. In between it sets up the demo tune, and <code>music_init</code> reads the tune's tracks through the same two bytes (<code>music_track_next</code>, <code>$C43C</code>), leaving <code>$CD67</code> there. The decrement turns <code>$67</code> into 102 for ship 1 and <code>$CD</code> into 204 for ship 2.</p>
-  <p>In the emulator the shields lasted 103 and 205 frames counted from the main loop's first pass, the extra frame being the one before the countdown's first step. Player 2, or the drone, is covered twice as long as player 1 at the start of every level.</p>
+  <p>The shields last 103 and 205 frames counted from the main loop's first pass, the extra frame being the one before the countdown's first step. Player 2, or the drone, is covered twice as long as player 1 at the start of every level.</p>
 </section>
 
 <section id="super-weapon" data-part="engine">
   <p class="fig">04 · Super weapons</p>
   <h2 class="t">Secret: a super weapon's shot counts once on a boss</h2>
   <p class="lede">A super weapon's shots go on through ordinary enemies, hitting each one they cross. On a boss part each shot is spent on its first hit, like a normal shot.</p>
-  <p>The hit test wipes the shot character it finds on an enemy, unless the character is a super weapon's, <code>$FB</code> and up (<code>$A5AF</code>). In a boss fight the hit goes another way (<code>$A5DE</code>), which wipes the character whatever it is before counting the hit. In the emulator a <code>$FB</code> character written onto level 1's mid-level core took one hit off its 90 and was gone the next frame. A boss part takes one hit a frame at most in any case.</p>
+  <p>The hit test wipes the shot character it finds on an enemy, unless the character is a super weapon's, <code>$FB</code> and up (<code>$A5AF</code>). In a boss fight the hit goes another way (<code>$A5DE</code>), which wipes the character whatever it is before counting the hit. A <code>$FB</code> character on level 1's mid-level core takes one hit off its 90 and is gone the next frame. A boss part takes one hit a frame at most in any case.</p>
 </section>
 
 <section id="poke" data-part="engine">
@@ -122,7 +122,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p>A life is lost by a <code>DEC $B005</code> at <code>$E9F3</code> for player 1, and another at <code>$EA57</code> for player 2. The poke changes the first into a load, which takes nothing away. Every second frame <code>anti_cheat_check</code> (<code>$F77D</code>) compares both instructions and the branches after them with what they should be. When they differ the check switches the KERNAL ROM in over the game's own code, so its own next instruction is fetched from the ROM, and the machine runs on into a loop with interrupts off.</p>
   <p>Two more checks guard the game. At each level's start the stack page is filled with <code>$FF</code>, and if any of <code>$0138-$013F</code> holds anything else, as after a freezer cartridge has used the stack, the game wipes <code>$B000-$FFFF</code> and resets (<code>$AFAE</code>). On the title, CIA 1's timer B must show that one PAL frame has passed since the last check, give or take about 60 cycles (<code>$BDC8</code>), so a machine that has been stopped, or an NTSC machine, clears the engine's code from <code>$E000</code> up and halts (<code>$B845</code>).</p>
-  <p>The wiki's other poke, <code>POKE 53792,96</code> for unlimited energy, writes to <code>$D220</code>. With the I/O chips in that address is a copy of the border colour register, and 96 sets the border to black, which it already is; in the emulator a 5 written there turned the border green. The pokes that do work are in the Source tab's cheats.</p>
+  <p>The wiki's other poke, <code>POKE 53792,96</code> for unlimited energy, writes to <code>$D220</code>. With the I/O chips in that address is a copy of the border colour register, and 96 sets the border to black, which it already is; a 5 written there turns the border green. The pokes that do work are in the Source tab's cheats.</p>
 </section>
 
 <section id="producers" data-part="engine">
@@ -135,7 +135,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <img id="ar-timg" alt="" style="width:384px;max-width:100%;image-rendering:pixelated;border-radius:4px">
       <ol id="ar-tlines" start="0" style="font-family:var(--fm);font-size:13px;margin:0;padding-left:2.2em;flex:1;min-width:260px"></ol>
     </div>
-    <p class="cap" id="ar-tcap">Each page's ten lines, read from <code>$B953</code> and decoded from the strings at <code>$9000</code>, beside a screenshot of that page from the emulator. A line of icons shows as ▪.</p>
+    <p class="cap" id="ar-tcap">Each page's ten lines, read from <code>$B953</code> and decoded from the strings at <code>$9000</code>, beside a screenshot of that page. A line of icons shows as ▪.</p>
   </div>
   <p>The title's texts are 41 strings (<code>$9000</code>), and each of the seven title pages lists the strings for its ten lines (<code>$B953</code>). The credit pages show strings 9 to 16: Dan Phillips, programming and game design; John Kemp, system programming and game design; Robin Levy, graphics, level and game design; Martin Walker, music and sound effects. Strings 17 and 18, the producers, appear in no page's list.</p>
 </section>

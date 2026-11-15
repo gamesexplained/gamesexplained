@@ -329,3 +329,39 @@ hand-over image. Indexed accesses with a base outside a chip
 | `POKE 39801,189` (`$9B79` `STA` → `LDA`) | three lost balls: lives 3 → 0 without it, 3 → 3 with it; the lost-life path ran 3 times in each |
 | Score set to 199,900 against the 20,000 threshold | ten extra lives, threshold 220,000 |
 | Protection serial check | `$BA65` = `$09` after it |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The chooser on this page is a port of `$B204`-`$B21B`, checked against the game's own code run in a 6502 simulator on 40,000 random cases, with no difference.
+
+### graphics.html
+
+- The bitmap appears at the tape's own pace, where it had got to every half second, measured in VICE.
+
+### index.html
+
+- Round 1 in an emulator: a row of silver bricks above six rows of coloured ones, the Vaus at the bottom, and the two players' panels on the right.
+
+### levels.html
+
+- Screenshot from the emulator.
+
+### mechanics.html
+
+- One frame of round 1, rebuilt from memory One frame of play recorded in the emulator: the video chip's registers, every change made to them during the frame, and the memory they read, drawn line by line.
+- It matches the emulator's own picture of the same frame with 0 pixels different.
+- Doh takes 23 hits Round 33 in the emulator, reached by setting the round number and the bricks-left count so that the next brick broken in round 1 ended the round.
+- In the emulator a score set to 199,900 paid out ten lives in a row, taking the lives from 3 to 13 and the threshold to 220,000.
+- The published cheat `POKE 39801,189` turns the store at `$9B79` that takes a life away into a load, so a lost ball costs nothing: in the emulator three lost balls left the lives at 3.
+
+### music.html
+
+- The player below runs the game's own sound driver, `$2615`-`$3429`, on the kit's 6502 simulator, frame by frame, and plays what it writes to the SID.
+- Every tune was checked against the same code run in the kit's 6502 simulator: every write to the sound chip, in order, on every frame, with no difference.
+- The title and ending tunes advance once a frame and the others twice, as measured in the emulator (the game calls the driver from its NMI once on the title and twice in play).
+- The player runs the tune's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette calls it.
+- It was checked against the cassette loading in VICE: the sound chip's registers after each of the first 9,000 calls, three minutes of music, are the player's.

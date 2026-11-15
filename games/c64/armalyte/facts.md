@@ -320,3 +320,29 @@ Run in VICE 3.13.2 (x64sc, PAL), from the snapshots in `orientation.md`:
   `$D022`/`$D023` pixels.
 - The ending's first four pictures appeared in turn in the frame, each
   with its message typed beneath.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, a shot character written onto a released enemy during level 1's mid-level fight stayed on the screen and the enemy flew on untouched, while the same character on the core took a hit off it.
+- In the emulator the shields lasted 103 and 205 frames counted from the main loop's first pass, the extra frame being the one before the countdown's first step.
+- In the emulator a `$FB` character written onto level 1's mid-level core took one hit off its 90 and was gone the next frame.
+- With the I/O chips in that address is a copy of the border colour register, and 96 sets the border to black, which it already is; in the emulator a 5 written there turned the border green.
+- Each page's ten lines, read from `$B953` and decoded from the strings at `$9000`, beside a screenshot of that page from the emulator.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE with the picture up, 150 seconds into the tape, and drawn as the video chip draws them.
+
+### index.html
+
+- One frame of level 1 at tile column 36, recorded in VICE with every write to the video chip during the frame, and drawn here line by line with the state in force when the beam got there: 104,448 of 104,448 pixels match the emulator's own picture.
+- Run beside the game's code in a 6502 simulator, the port made the same writes to the SID, in the same order, in every frame of each tune (ten minutes of the two that repeat) and of 200 random tunes, which with the four run every instruction of the routine.
+- Measured in the emulator from an empty generator: the rebuild count stepped every 61 frames with no generator and every 19 with four, and the charge was full after 488 and 152 frames.
+- Checked against the routine itself on a 6502 simulator from level 1's memory: 1,810 starting states, every counter value from 0 to 255 among them, and 291,200 calls with no difference; with no batteries it charges the generator in 488 frames with no generators and 152 with four, as measured in the emulator.
+- The main loop never fell behind: run through all of level 1 in the emulator it made 25,299 passes in 25,298.5 frames, one a frame.
+- Pictures 0 to 3 were seen this way in the emulator.
+- Run beside the demo's code in a 6502 simulator, the port made the same writes to the SID, in the same order, in every frame of all sixteen headers for twenty thousand frames each, and of 200 random tunes with random instruments, which together run every instruction of the routine.
