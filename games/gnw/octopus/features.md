@@ -25,6 +25,25 @@ Sources, read on 12 November 2026:
   the buttons and their pins, the "Invincibility" test pad on R2 and
   the R3 row marked "alarm test?".
 
+Sources read on 15 November 2026, for the page's history and photographs:
+
+- Nintendo's "Iwata Asks: Game & Watch", parts 2 and 4
+  (<https://www.nintendo.com/en-gb/Iwata-Asks/Iwata-Asks-Game-Watch/Iwata-Asks-Game-Watch/4-Absorbed-in-Development/4-Absorbed-in-Development-223140.html>):
+  Takehiro Izushi wrote Octopus's software and Masao Yamamoto
+  Parachute's, at almost the same time; Makoto Kano drew it, and drew
+  the alarm's octopus after Tako no Hatchan; about two months to the
+  ROM; 5,800 yen; the clock shows AM or PM to save segments.
+- The Super Mario Wiki (above): German Schnapp den Schatz, Italian La
+  Piovra; Game & Watch Gallery and Gallery 4. The Home Computer Museum,
+  <https://www.homecomputermuseum.nl/en/collectie/nintendo/nintendo-game-watch-octopus/>:
+  Mysteries of the Sea or of the Deep in Britain. The gameandwatch.ch
+  forum: some backs printed "Nintend".
+- reference/photo-octopus-unit.jpg: Christoph Bauer, 2008, CC BY-SA 2.0,
+  <https://commons.wikimedia.org/wiki/File:Octopus_-_Game%26Watch_-_Nintendo.jpg>.
+  reference/photo-fire-wide-screen.jpg: Peer Schmidt, CC BY-SA 4.0,
+  <https://commons.wikimedia.org/wiki/File:Nintendo-game-and-watch-wide-screen.jpg>.
+  Both re-encoded at 1012 pixels wide.
+
 ## Features
 
 | Feature | Status | Where |
@@ -45,6 +64,7 @@ Sources, read on 12 November 2026:
 | Misses removed at 200 and 500 points | live | add_point $0085, bonus_step $06DC: only when a diver has been lost; the spares blink for about 5 seconds |
 | The tentacles speed up as you progress | live | set_wait $00C0: by the score's hundreds plus tens, so the game slows again at each hundred |
 | Game B faster than Game A | differs | set_wait $00C0, the tentacles $0100: faster only at 0-19 and 100-109 points; otherwise the same speed, but its tentacles may come back from the base |
+| A 24-hour clock (the 1982 review) | differs | add_hour $0240, hours_ampm: 12 hours, AM or PM, the tens of hours one segment that shows a 1 |
 | Pressing both buttons makes the diver dance (the 1982 review) | differs | read_pad $0380: both at once count as neither, and the diver stays |
 | A ticking sound, and a buzz when a diver is caught | live | click $02A7 each step, caught_sound $02F4, caught_step $00E9 |
 | The high score is remembered | live | add_point $0085 ($00A1): one for each game, shown while its key is held (game_screen $062E) |

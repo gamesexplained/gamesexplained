@@ -34,3 +34,9 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   step, so every move into the boat looked fatal. It now counts a step
   that does not come as safe. A frame test hooked after the drawing also
   fired when nothing was drawn; it hooks the drawing's last instruction.
+- 15 November 2026, at Zihe's request, history and photographs. Nintendo's
+  "Iwata Asks" interview names Octopus's programmer and artist and
+  explains the 12-hour clock; the listing agrees (add_hour, hours_ampm).
+  The 1982 review's "24-hour clock" is wrong. Two photographs came from
+  Wikimedia Commons under CC BY-SA; a patent drawing found there shows
+  the two-screen case and was left out.
