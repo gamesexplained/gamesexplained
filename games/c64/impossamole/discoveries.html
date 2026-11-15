@@ -35,8 +35,74 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 </style>
-<style>.im-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.im-pics{display:grid;grid-template-columns:1fr 1fr;gap:18px}.im-pics img{width:100%;image-rendering:pixelated}canvas{image-rendering:pixelated;max-width:100%;height:auto}button,select,input{font:inherit}button,select{padding:8px 12px;margin:4px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#222}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #1f5fa8}input[type=range]{width:min(100%,500px)}.im-note{font-size:14px;color:#555}.im-scroll{overflow:auto;background:#111}.im-scroll canvas{max-width:none}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}output{display:block;margin:10px 0}.im-sprite{background:#292929;padding:16px}.im-error{color:#9e2419}@media(max-width:650px){.wrap{padding:0 20px}.hero{padding:30px 20px}.im-pics{grid-template-columns:1fr}.plate{padding:16px}h1{font-size:36px!important}}</style><!-- tabs -->
-<header class="hero"><p class="eyebrow">1990 · Gremlin Graphics · C64</p><h1>Impossamole</h1><p class="sub">Six names hidden in the high-score checker alter Monty’s resources and rules.</p></header><main class="wrap"><section id="names"><h2 class="t">Secret: high-score names change the next game</h2><p>The name checker accepts six exact eight-character strings. Each one selects a modifier that the game reads later. The dots and spaces are part of the names.</p><div class="plate"><label>Name <select id="im-secret"></select></label><output id="im-secret-result"></output></div><table><tr><th>Name</th><th>Effect</th></tr><tr><td><code>LUMBAJAK</code></td><td>Raises the starting capacity default from 9 to 17.</td></tr><tr><td><code> HEINZ. </code></td><td>Starts strength at 3. Include one space at each end.</td></tr><tr><td><code>COMMANDO</code></td><td>Preserves the weapon lifetime.</td></tr><tr><td><code>ANNFRANK</code></td><td>Adds one starting reserve.</td></tr><tr><td><code>OOCHOUCH</code></td><td>Skips damage from terrain class 9.</td></tr><tr><td><code>JUGGLERS</code></td><td>Doubles food restoration.</td></tr></table><p>The comparison routine at <code>$5001</code> checks all eight characters against the encoded table at <code>$5076</code>. A match writes the modifier at <code>$08BE</code> and resets the capacity, strength, and reserve defaults before applying the selected change. The final accepted name therefore selects one modifier. Live instruction traces through the comparison confirm all six accepted names and their initial values.</p><p>The later readers are <code>$3473</code> for the weapon lifetime, <code>$3053</code> for terrain damage, and <code>$3690</code> for food. These modify those particular rules. The names are entered through the game’s high-score-name interface; this inspection verified the comparisons directly rather than playing a qualifying score.</p></section></main><footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<style>.im-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.im-pics{display:grid;grid-template-columns:1fr 1fr;gap:18px}.im-pics img{width:100%;image-rendering:pixelated}canvas{image-rendering:pixelated;max-width:100%;height:auto}button,select,input{font:inherit}button,select{padding:8px 12px;margin:4px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#222}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #1f5fa8}input[type=range]{width:min(100%,500px)}.im-note{font-size:14px;color:#555}.im-scroll{overflow:auto;background:#111}.im-scroll canvas{max-width:none}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}output{display:block;margin:10px 0}.im-sprite{background:#292929;padding:16px}.im-error{color:#9e2419}@media(max-width:650px){.wrap{padding:0 20px}.hero{padding:30px 20px}.im-pics{grid-template-columns:1fr}.plate{padding:16px}h1{font-size:36px!important}}</style>
+<!-- tabs -->
+<header class="hero">
+<p class="eyebrow">1990 · Gremlin Graphics · C64</p>
+<h1>Impossamole</h1>
+<p class="sub">Six names hidden in the high-score checker alter Monty’s resources and rules.</p>
+</header>
+<main class="wrap">
+<section id="names">
+<h2 class="t">Secret: high-score names change the next game</h2>
+<p>The name checker accepts six exact eight-character strings. Each name selects a modifier, a number that remembers which rule to change later. The dots and spaces are part of the names.</p>
+<div class="plate">
+<label>Name <select id="im-secret">
+</select>
+</label>
+<output id="im-secret-result">
+</output>
+</div>
+<table>
+<tr>
+<th>Name</th>
+<th>Effect</th>
+</tr>
+<tr>
+<td>
+<code>LUMBAJAK</code>
+</td>
+<td>Raises the starting capacity default from 9 to 17.</td>
+</tr>
+<tr>
+<td>
+<code> HEINZ. </code>
+</td>
+<td>Starts strength at 3. Include one space at each end.</td>
+</tr>
+<tr>
+<td>
+<code>COMMANDO</code>
+</td>
+<td>Preserves the weapon lifetime.</td>
+</tr>
+<tr>
+<td>
+<code>ANNFRANK</code>
+</td>
+<td>Adds one starting reserve.</td>
+</tr>
+<tr>
+<td>
+<code>OOCHOUCH</code>
+</td>
+<td>Skips damage from terrain class 9.</td>
+</tr>
+<tr>
+<td>
+<code>JUGGLERS</code>
+</td>
+<td>Doubles food restoration.</td>
+</tr>
+</table>
+<p>The routine that compares names at <code>$5001</code> checks all eight characters against the encoded table at <code>$5076</code>. Adding <code>$45</code> to each stored byte restores its letter for the comparison. A match stores the modifier at <code>$08BE</code> and resets the capacity, strength, and reserve defaults before applying the selected change. The final accepted name therefore selects one modifier. Live instruction traces through the comparison confirm all six accepted names and their initial values.</p>
+<p>The routines that apply the other modifiers are <code>$3473</code> for the weapon lifetime, <code>$3053</code> for terrain damage, and <code>$3690</code> for food. These modify those particular rules. The names are entered through the game’s high-score-name interface; this inspection verified the comparisons directly rather than playing a qualifying score.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a">
+<a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a>
+<br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a>
+</footer>
 <script src="../../lib/c64.js"></script><script>
 
 const IM_IDS=['klondike','orient','amazon','iceland','bermuda'];

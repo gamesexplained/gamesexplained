@@ -35,8 +35,121 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 </style>
-<style>.im-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.im-pics{display:grid;grid-template-columns:1fr 1fr;gap:18px}.im-pics img{width:100%;image-rendering:pixelated}canvas{image-rendering:pixelated;max-width:100%;height:auto}button,select,input{font:inherit}button,select{padding:8px 12px;margin:4px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#222}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #1f5fa8}input[type=range]{width:min(100%,500px)}.im-note{font-size:14px;color:#555}.im-scroll{overflow:auto;background:#111}.im-scroll canvas{max-width:none}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}output{display:block;margin:10px 0}.im-sprite{background:#292929;padding:16px}.im-error{color:#9e2419}@media(max-width:650px){.wrap{padding:0 20px}.hero{padding:30px 20px}.im-pics{grid-template-columns:1fr}.plate{padding:16px}h1{font-size:36px!important}}</style><!-- tabs -->
-<header class="hero"><p class="eyebrow">1990 · Gremlin Graphics · C64</p><h1>Impossamole</h1><p class="sub">Monty’s landscapes share one engine. Blocks build the worlds; small actor records choose how their inhabitants move.</p></header><main class="wrap"><section id="game"><h2 class="t">A mole on five missions</h2><p>Monty explores mines, forests, and icy passages to recover stolen scrolls. He jumps between platforms, fights creatures, and collects food and weapons. Shops let him spend the money he finds.</p><p>The first four levels can be chosen in any order. Completing them opens Bermuda Triangle. Each level has its own guardian.</p><div class="im-pics"><figure><img src="reference/title.png" alt="Impossamole title screen"><figcaption class="cap">The title screen.</figcaption></figure><figure><img src="reference/play-klondike.png" alt="Monty in the Klondike mine"><figcaption class="cap">Monty in Klondike, the mine level.</figcaption></figure></div></section><section id="sound"><h2 class="t">One tune and sixteen effects</h2><p>Barry Leitch’s music has three voices. Each voice follows a list of musical patterns. The sound effects use separate records that control pitch, waveform, and volume over time.</p><div id="im-music" class="plate"></div><div id="im-effects" class="plate"></div><p class="cap">These players run the game’s own audio routines on the shared 6502 processor model and send their writes to the SID sound-chip model. The tune starts at <code>$6CC5</code> and advances at <code>$6701</code>. Effects start through <code>$6117</code> and advance at <code>$6281</code>. A test compares every register write for the tune and all 16 effects. The 6581 filter model represents one chip’s cutoff curve; physical chips vary.</p></section><section id="frame"><h2 class="t">The screen changes during each frame</h2><div class="plate"><canvas id="im-frame"></canvas><div><button id="im-sprites">Hide sprites</button><button id="im-split">Freeze video registers</button></div><p class="cap">A frame drawn from the recorded video writes and the memory they read. All 104,448 pixels match the emulator image; zero differ. Freeze the registers to see why one snapshot of them is insufficient.</p></div><p>The video chip draws the playfield with the level’s character set. A later interrupt, a scheduled call during drawing, selects the character set for the status display. The handlers at <code>$0973</code>, <code>$0A5C</code>, and <code>$0ACA</code> schedule the next calls at lines 176, 255, and 57. The screen also uses hardware sprites for Monty and the other moving objects.</p></section><section id="map"><h2 class="t">Small blocks build the landscape</h2><div class="plate"><canvas id="im-map" width="320" height="192"></canvas><label>Map column <input id="im-pan" type="range" min="0" max="1656" value="0"></label><label><input type="checkbox" id="im-terrain"> Show terrain classes</label><output id="im-map-info"></output></div><p>Each map byte chooses a block of sixteen characters. Six blocks make one vertical strip. The same character can therefore appear in many places while keeping its colour and collision rule. The block definitions begin at <code data-part="klondike">$B000</code>; colours and terrain rules begin at <code data-part="klondike">$AE00</code> and <code data-part="klondike">$AF00</code>.</p><p>The overlay highlights the collision classes: blue for class 1, green for class 2, yellow for class 3, and red for class 4 and above. Individual movement tests use different thresholds. The <a href="levels.html">Maps tab</a> draws the full stored stream for every level and lists its exit destinations.</p></section><section id="resources"><h2 class="t">Strength stops at three</h2><div class="plate"><label>Strength <select id="im-strength"><option>0</option><option>1</option><option>2</option><option>3</option></select></label><button id="im-upgrade">Take a strength pickup</button><output id="im-resource"></output></div><p>Strength is a weapon index with four values, from 0 to 3. A pickup increments that value. If the result equals 4, the game replaces it with 3. The instruction trace through <code>$1B11</code> confirms that another pickup at maximum strength leaves the value at 3.</p><p>Temporary weapons have a separate lifetime. The divider at <code>$7F7B</code> counts 50 calls to <code>$4FE4</code> before reducing the lifetime at <code>$7F7A</code>. The game’s high-score names can change these defaults and rules. They are listed on <a href="discoveries.html">Discoveries</a>.</p></section><section id="controls"><h2 class="t">The keyboard supplements joystick 2</h2><details><summary>Show controls and code evidence</summary><table><tr><th>Control</th><th>Action</th></tr><tr><td>Joystick port 2</td><td>Move, jump, climb, and attack.</td></tr><tr><td>SPACE</td><td>Use an available super weapon outside the shop.</td></tr><tr><td>P</td><td>Toggle pause when the death state permits.</td></tr><tr><td>RUN/STOP while paused</td><td>Quit to the title.</td></tr><tr><td>Title-screen joystick</td><td>Select music or sound effects.</td></tr></table><p>The keyboard scanner is <code>$0E9A</code>. The command handler at <code>$0FA4</code> applies the pause, super-weapon, and quit conditions. The joystick’s fire button starts the normal attack; strength and weapon type choose its template.</p></details></section></main><footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<style>.im-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.im-pics{display:grid;grid-template-columns:1fr 1fr;gap:18px}.im-pics img{width:100%;image-rendering:pixelated}canvas{image-rendering:pixelated;max-width:100%;height:auto}button,select,input{font:inherit}button,select{padding:8px 12px;margin:4px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#222}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #1f5fa8}input[type=range]{width:min(100%,500px)}.im-note{font-size:14px;color:#555}.im-scroll{overflow:auto;background:#111}.im-scroll canvas{max-width:none}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}output{display:block;margin:10px 0}.im-sprite{background:#292929;padding:16px}.im-error{color:#9e2419}@media(max-width:650px){.wrap{padding:0 20px}.hero{padding:30px 20px}.im-pics{grid-template-columns:1fr}.plate{padding:16px}h1{font-size:36px!important}}</style>
+<!-- tabs -->
+<header class="hero">
+<p class="eyebrow">1990 · Gremlin Graphics · C64</p>
+<h1>Impossamole</h1>
+<p class="sub">Monty’s landscapes share one engine. Blocks build the worlds; small actor records choose how their inhabitants move.</p>
+</header>
+<main class="wrap">
+<section id="game">
+<h2 class="t">A mole on five missions</h2>
+<p>Monty explores mines, forests, and icy passages to recover stolen scrolls. He jumps between platforms, fights creatures, and collects food and weapons. Shops let him spend the money he finds.</p>
+<p>The first four levels can be chosen in any order. Completing them opens Bermuda Triangle. Each level has its own guardian.</p>
+<div class="im-pics">
+<figure>
+<img src="reference/title.png" alt="Impossamole title screen">
+<figcaption class="cap">The title screen.</figcaption>
+</figure>
+<figure>
+<img src="reference/play-klondike.png" alt="Monty in the Klondike mine">
+<figcaption class="cap">Monty in Klondike, the mine level.</figcaption>
+</figure>
+</div>
+</section>
+<section id="sound">
+<h2 class="t">One tune and sixteen effects</h2>
+<p>Barry Leitch’s music has three voices. Each voice follows a list of musical patterns. The sound effects use separate records that control pitch, waveform, and volume over time.</p>
+<div id="im-music" class="plate">
+</div>
+<div id="im-effects" class="plate">
+</div>
+<p class="cap">These players run the game’s own audio instructions on a model of its 6502 processor. They send the resulting sound settings to a model of the SID, the C64’s sound chip. The tune starts at <code>$6CC5</code> and advances at <code>$6701</code>. Effects start through <code>$6117</code> and advance at <code>$6281</code>. A test compares every register write for the tune and all 16 effects. The 6581 filter model represents one chip’s cutoff curve; physical chips vary.</p>
+</section>
+<section id="frame">
+<h2 class="t">The screen changes during each frame</h2>
+<div class="plate">
+<canvas id="im-frame">
+</canvas>
+<div>
+<button id="im-sprites">Hide sprites</button>
+<button id="im-split">Freeze video registers</button>
+</div>
+<p class="cap">A frame drawn from the recorded video writes and the memory they read. All 104,448 pixels match the emulator image; zero differ. Freeze the registers to see why one snapshot of them is insufficient.</p>
+</div>
+<p>The video chip draws the playfield with the level’s character set. A later interrupt, a scheduled call during drawing, selects the character set for the status display. The interrupt routines at <code>$0973</code>, <code>$0A5C</code>, and <code>$0ACA</code> schedule the next calls at lines 176, 255, and 57. The screen also uses sprites, separate movable pictures drawn by the video chip, for Monty and the other moving objects.</p>
+</section>
+<section id="map">
+<h2 class="t">Small blocks build the landscape</h2>
+<div class="plate">
+<canvas id="im-map" width="320" height="192">
+</canvas>
+<label>Map column <input id="im-pan" type="range" min="0" max="1656" value="0">
+</label>
+<label>
+<input type="checkbox" id="im-terrain"> Show terrain classes</label>
+<output id="im-map-info">
+</output>
+</div>
+<p>Each map byte, one stored number, chooses a block of sixteen characters. Six blocks make one vertical strip. The same character can therefore appear in many places while keeping its colour and collision rule. A character is an eight-by-eight-pixel shape. The block definitions begin at <code data-part="klondike">$B000</code>; colours and terrain rules begin at <code data-part="klondike">$AE00</code> and <code data-part="klondike">$AF00</code>.</p>
+<p>The overlay highlights the collision classes: blue for class 1, green for class 2, yellow for class 3, and red for class 4 and above. Individual movement tests use different thresholds. The <a href="levels.html">Maps tab</a> draws the full stored stream for every level and lists its exit destinations.</p>
+</section>
+<section id="resources">
+<h2 class="t">Strength stops at three</h2>
+<div class="plate">
+<label>Strength <select id="im-strength">
+<option>0</option>
+<option>1</option>
+<option>2</option>
+<option>3</option>
+</select>
+</label>
+<button id="im-upgrade">Take a strength pickup</button>
+<output id="im-resource">
+</output>
+</div>
+<p>Strength is a number that selects a weapon setting. It has four values, from 0 to 3. A pickup increments that value. If the result equals 4, the game replaces it with 3. Following the processor’s instructions through <code>$1B11</code> confirms that another pickup at maximum strength leaves the value at 3.</p>
+<p>Temporary weapons have a separate lifetime. A counter at <code>$7F7B</code> divides the lifetime updates: every 50 calls to the routine at <code>$4FE4</code>, the game reduces the lifetime at <code>$7F7A</code>. The game’s high-score names can change these defaults and rules. They are listed on <a href="discoveries.html">Discoveries</a>.</p>
+</section>
+<section id="controls">
+<h2 class="t">The keyboard supplements joystick 2</h2>
+<details>
+<summary>Show controls and code evidence</summary>
+<table>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+<tr>
+<td>Joystick port 2</td>
+<td>Move, jump, climb, and attack.</td>
+</tr>
+<tr>
+<td>SPACE</td>
+<td>Use an available super weapon outside the shop.</td>
+</tr>
+<tr>
+<td>P</td>
+<td>Toggle pause when the death state permits.</td>
+</tr>
+<tr>
+<td>RUN/STOP while paused</td>
+<td>Quit to the title.</td>
+</tr>
+<tr>
+<td>Title-screen joystick</td>
+<td>Select music or sound effects.</td>
+</tr>
+</table>
+<p>The keyboard scanner is <code>$0E9A</code>. The command handler at <code>$0FA4</code> applies the pause, super-weapon, and quit conditions. The joystick’s fire button starts the normal attack; strength and weapon type choose its template.</p>
+</details>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a">
+<a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a>
+<br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a>
+</footer>
 <script src="../../lib/c64.js"></script><script src="../../lib/sid.js"></script><script src="../../lib/cpu6502.js"></script><script>
 
 const IM_IDS=['klondike','orient','amazon','iceland','bermuda'];

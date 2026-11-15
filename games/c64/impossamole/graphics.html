@@ -35,8 +35,82 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 </style>
-<style>.im-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.im-pics{display:grid;grid-template-columns:1fr 1fr;gap:18px}.im-pics img{width:100%;image-rendering:pixelated}canvas{image-rendering:pixelated;max-width:100%;height:auto}button,select,input{font:inherit}button,select{padding:8px 12px;margin:4px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#222}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #1f5fa8}input[type=range]{width:min(100%,500px)}.im-note{font-size:14px;color:#555}.im-scroll{overflow:auto;background:#111}.im-scroll canvas{max-width:none}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}output{display:block;margin:10px 0}.im-sprite{background:#292929;padding:16px}.im-error{color:#9e2419}@media(max-width:650px){.wrap{padding:0 20px}.hero{padding:30px 20px}.im-pics{grid-template-columns:1fr}.plate{padding:16px}h1{font-size:36px!important}}</style><!-- tabs -->
-<header class="hero"><p class="eyebrow">1990 · Gremlin Graphics · C64</p><h1>Impossamole</h1><p class="sub">Actor templates select colours and timing. Shape streams make them move.</p></header><main class="wrap"><section id="actors"><h2 class="t">Actors follow their own animation records</h2><div class="plate"><div><label>Level <select id="im-level"></select></label><label>Actor template <select id="im-template"></select></label></div><canvas id="im-actor" class="im-sprite"></canvas><div><button id="im-motion">Pause animation</button><button id="im-step">Step one call</button><button id="im-rewind">Return to first shape</button></div><output id="im-actor-info"></output></div><p>Templates are the game’s numbered recipes for actors. Each one gives a starting shape, colour, collision size, and animation timing. The viewer uses the 26-byte records addressed by <code>$817C</code>. It follows the spawned-actor constructor at <code>$3C32</code>, which clears horizontal expansion. The direct constructor at <code>$4F04</code> instead takes horizontal expansion from record byte 6.</p><p>The animation routine <code>$382B</code> counts the delay down to zero. It then reads another shape number from <code>$8EC0</code>. A marker can return to an earlier point or remove the actor. A delay of n leaves n+1 calls between shape changes. The viewer advances at the PAL frame rate and is tested against the CPU routine.</p></section><section id="monty"><h2 class="t">Monty has a separate shape stream</h2><div class="plate"><label>Sequence <select id="im-monty-seq"></select></label><label><input id="im-alt" type="checkbox"> Gun shapes</label><canvas id="im-monty" class="im-sprite"></canvas></div><p>Monty’s movement state and facing choose a starting index in <code>$7EF9</code>. The normal animation counter reloads to five. The marker <code>$80</code> supplies the next index. Gun weapons select alternate shapes by adding <code>$16</code> to a shape below <code>$17</code>, as <code>$13A7</code> does. Turning and standing on a ladder add conditions to normal play; this viewer keeps each selected sequence running.</p></section><section id="remaining"><h2 class="t">Shapes outside those animation streams</h2><div class="plate"><label>Shape <select id="im-shape"></select></label><label>Colour <input id="im-colour" type="number" min="0" max="15" value="1"></label><label><input id="im-multi" type="checkbox" checked> Multicolour</label><canvas id="im-still" class="im-sprite"></canvas><output id="im-shape-info"></output></div><p>The selector contains the shapes that the viewers above do not animate for this level. It includes fixed objects and spare slots. Their role is left unnamed when a shape number alone cannot establish it. The colour and multicolour controls are inspection settings; an actor’s own flags choose them in play. Every one of the 160 sprite slots is represented by an animation or this selector.</p></section><section id="characters"><h2 class="t">Characters supply the scenery</h2><div class="plate"><canvas id="im-chars"></canvas></div><p>The level character set contains 256 eight-byte shapes at <code data-part="klondike">$F000</code>. A character’s colour chooses between a one-bit pattern and double-width multicolour pixels. The sheet uses the level’s colour table. The map combines these shapes into four-by-four-character blocks.</p><p>The <a href="index.html#frame">rebuilt frame</a> shows how interrupts switch character sets during drawing. The title image is shown on <a href="index.html#game">How it works</a>. The selected disk begins with a crack intro rather than a separate original loading picture.</p></section></main><footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<style>.im-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.im-pics{display:grid;grid-template-columns:1fr 1fr;gap:18px}.im-pics img{width:100%;image-rendering:pixelated}canvas{image-rendering:pixelated;max-width:100%;height:auto}button,select,input{font:inherit}button,select{padding:8px 12px;margin:4px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#222}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #1f5fa8}input[type=range]{width:min(100%,500px)}.im-note{font-size:14px;color:#555}.im-scroll{overflow:auto;background:#111}.im-scroll canvas{max-width:none}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}output{display:block;margin:10px 0}.im-sprite{background:#292929;padding:16px}.im-error{color:#9e2419}@media(max-width:650px){.wrap{padding:0 20px}.hero{padding:30px 20px}.im-pics{grid-template-columns:1fr}.plate{padding:16px}h1{font-size:36px!important}}</style>
+<!-- tabs -->
+<header class="hero">
+<p class="eyebrow">1990 · Gremlin Graphics · C64</p>
+<h1>Impossamole</h1>
+<p class="sub">Numbered actor recipes select colours and timing. Lists of shape numbers make the pictures move.</p>
+</header>
+<main class="wrap">
+<section id="actors">
+<h2 class="t">Actors follow their own animation records</h2>
+<div class="plate">
+<div>
+<label>Level <select id="im-level">
+</select>
+</label>
+<label>Actor template <select id="im-template">
+</select>
+</label>
+</div>
+<canvas id="im-actor" class="im-sprite">
+</canvas>
+<div>
+<button id="im-motion">Pause animation</button>
+<button id="im-step">Step one call</button>
+<button id="im-rewind">Return to first shape</button>
+</div>
+<output id="im-actor-info">
+</output>
+</div>
+<p>Actors are Monty, creatures, attacks, and collectable objects. Templates are the game’s numbered recipes for creating them. Each one gives a starting shape, colour, collision size, and animation timing. The viewer uses the 26-byte records addressed by <code>$817C</code>. The viewer follows <code>$3C32</code>, the routine that creates an actor from a level spawn record. That routine leaves its picture at normal width. A second creation routine, <code>$4F04</code>, instead takes horizontal expansion from record byte 6. Expansion makes the picture twice as wide.</p>
+<p>The animation routine <code>$382B</code> counts the delay down to zero. It then reads another shape number from <code>$8EC0</code>. A marker can return to an earlier point or remove the actor. A delay of n leaves n+1 calls between shape changes. The viewer advances about 50.125 times per second, the PAL C64’s frame rate. Its results match the original routine run on a model of the processor.</p>
+</section>
+<section id="monty">
+<h2 class="t">Monty has a separate shape stream</h2>
+<div class="plate">
+<label>Sequence <select id="im-monty-seq">
+</select>
+</label>
+<label>
+<input id="im-alt" type="checkbox"> Gun shapes</label>
+<canvas id="im-monty" class="im-sprite">
+</canvas>
+</div>
+<p>Monty’s movement state and facing choose a starting position in the list at <code>$7EF9</code>. The normal animation counter reloads to five. The marker <code>$80</code> says that the following number is another position in the list. Gun weapons select alternate shapes by adding <code>$16</code> to a shape below <code>$17</code>, as <code>$13A7</code> does. Turning and standing on a ladder add conditions to normal play; this viewer keeps each selected sequence running.</p>
+</section>
+<section id="remaining">
+<h2 class="t">Shapes outside those animation streams</h2>
+<div class="plate">
+<label>Shape <select id="im-shape">
+</select>
+</label>
+<label>Colour <input id="im-colour" type="number" min="0" max="15" value="1">
+</label>
+<label>
+<input id="im-multi" type="checkbox" checked> Multicolour</label>
+<canvas id="im-still" class="im-sprite">
+</canvas>
+<output id="im-shape-info">
+</output>
+</div>
+<p>The selector contains the shapes that the viewers above do not animate for this level. It includes fixed objects and spare slots. Their role is left unnamed when a shape number alone cannot establish it. The colour and multicolour controls are inspection settings. Multicolour mode groups each pair of bits into one double-width pixel. Each actor’s stored settings choose the mode in play. Every one of the 160 sprite slots is represented by an animation or this selector.</p>
+</section>
+<section id="characters">
+<h2 class="t">Characters supply the scenery</h2>
+<div class="plate">
+<canvas id="im-chars">
+</canvas>
+</div>
+<p>The level character set contains 256 eight-byte shapes at <code data-part="klondike">$F000</code>. A character’s colour chooses between a one-bit pattern and double-width multicolour pixels. The sheet uses the level’s colour table. The map combines these shapes into four-by-four-character blocks.</p>
+<p>The <a href="index.html#frame">rebuilt frame</a> shows how interrupts, scheduled processor calls, switch character sets during drawing. The title image is shown on <a href="index.html#game">How it works</a>. The selected disk begins with a crack intro rather than a separate original loading picture.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a">
+<a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a>
+<br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a>
+</footer>
 <script src="../../lib/c64.js"></script><script>
 
 const IM_IDS=['klondike','orient','amazon','iceland','bermuda'];
@@ -70,6 +144,7 @@ function actor(){const p=+$('im-template').value;a=imActor(m,p);draw();}function
 function still(){const n=+$('im-shape').value;imSprite($('im-still'),m,{shape:n,colour:+$('im-colour').value,multi:$('im-multi').checked,active:1});$('im-shape-info').textContent='Shape '+n+' · '+imHex(0xc000+64*n)+' · 21 rows × 3 bytes';}
 async function change(){const id=+$('im-level').value;m=await imMemory(id);m[0x83e6]=id;used.clear();$('im-template').replaceChildren();for(const t of imTemplates(m)){const x=imActor(m,t.p);$('im-template').add(new Option(t.id+' at '+imHex(t.p),t.p));for(let f=0;f<1500&&x.active;f++){used.add(x.shape);imTick(m,x);}}
 for(const [start]of seqs){let k=start;for(let f=0;f<120;f++){const sh=m[0x7ef9+k];if(sh===128){k=m[0x7efa+k];continue;}used.add(sh);if(sh<23)used.add(sh+22);k++;}}
+const first=imTemplates(m).find(t=>m[t.p+11]&&m[t.p+12]!==255&&m[t.p+1]);if(first)$('im-template').value=first.p;
 $('im-shape').replaceChildren();for(let n=0;n<160;n++)if(!used.has(n))$('im-shape').add(new Option('Shape '+n,n));actor();still();mi=+$('im-monty-seq').value;
 const c=$('im-chars');c.width=256;c.height=64;const cx=c.getContext('2d'),cs=m.slice(0xf000,0xf800),pal=C64.PAL;for(let n=0;n<256;n++){const co=m[0xae00+n];if(co&8)C64.drawGlyphMC(cx,cs,n,n%32*8,Math.floor(n/32)*8,1,[pal[0],pal[m[0x7ec1+id]&15],pal[m[0x7ec6+id]&15],pal[co&7]]);else C64.drawGlyph(cx,cs,n,n%32*8,Math.floor(n/32)*8,1,pal[co&15],pal[0]);}}
 $('im-level').onchange=change;$('im-template').onchange=actor;$('im-shape').onchange=still;$('im-colour').oninput=still;$('im-multi').onchange=still;$('im-monty-seq').onchange=()=>{mi=+$('im-monty-seq').value;mtick=0;};$('im-alt').onchange=()=>{mtick=0;};

@@ -35,8 +35,82 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 </style>
-<style>.im-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.im-pics{display:grid;grid-template-columns:1fr 1fr;gap:18px}.im-pics img{width:100%;image-rendering:pixelated}canvas{image-rendering:pixelated;max-width:100%;height:auto}button,select,input{font:inherit}button,select{padding:8px 12px;margin:4px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#222}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #1f5fa8}input[type=range]{width:min(100%,500px)}.im-note{font-size:14px;color:#555}.im-scroll{overflow:auto;background:#111}.im-scroll canvas{max-width:none}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}output{display:block;margin:10px 0}.im-sprite{background:#292929;padding:16px}.im-error{color:#9e2419}@media(max-width:650px){.wrap{padding:0 20px}.hero{padding:30px 20px}.im-pics{grid-template-columns:1fr}.plate{padding:16px}h1{font-size:36px!important}}</style><!-- tabs -->
-<header class="hero"><p class="eyebrow">1990 · Gremlin Graphics · C64</p><h1>Impossamole</h1><p class="sub">Five level payloads replace the landscapes, creatures, and character graphics while keeping the same engine.</p></header><main class="wrap"><section id="maps"><h2 class="t">Every stored landscape</h2><p>Each level stores 424 columns of blocks, with six blocks in each column. The picture below draws that whole allocation. Exits can redirect the view into another part of the stream. A position in this picture does not by itself establish that Monty can reach it.</p><div class="plate"><label>Level <select id="im-level"></select></label><label><input id="im-classes" type="checkbox"> Show terrain classes</label><div class="im-scroll"><canvas id="im-world"></canvas></div><p class="cap">Scroll sideways through all 1,696 character columns. The same block renderer is tested against <code>$5192</code> for all 256 block IDs in all five payloads. Colours come from <code data-part="klondike">$AE00</code> and the level’s shared colour tables.</p></div></section><section id="exits"><h2 class="t">Exits choose another view</h2><p>The exit handler at <code>$3096</code> matches an edge and a source position. Each record supplies a destination scroll value, right scroll limit, and Monty’s destination X. The game computes the map pointer from that scroll value at <code>$50E3</code>.</p><div class="plate"><label>Exit <select id="im-exit"></select></label><output id="im-exit-info"></output><canvas id="im-destination"></canvas></div><p class="cap">The destination preview uses the stored scroll value rounded down to a four-character block boundary. It shows map data, without actors or the transition animation.</p><table><tr><th>Level</th><th>Exit records</th><th>First-area right limit</th></tr><tr><td>Klondike</td><td>23</td><td>180</td></tr><tr><td>Orient</td><td>31</td><td>388</td></tr><tr><td>Amazonian Forest</td><td>21</td><td>508</td></tr><tr><td>Iceland</td><td>22</td><td>468</td></tr><tr><td>Bermuda Triangle</td><td>30</td><td>120</td></tr></table><p class="cap">Right limits are in character columns. The counts come from <code>$806C</code>, and the first-area limits from <code>$0912</code>.</p></section></main><footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<style>.im-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.im-pics{display:grid;grid-template-columns:1fr 1fr;gap:18px}.im-pics img{width:100%;image-rendering:pixelated}canvas{image-rendering:pixelated;max-width:100%;height:auto}button,select,input{font:inherit}button,select{padding:8px 12px;margin:4px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#222}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #1f5fa8}input[type=range]{width:min(100%,500px)}.im-note{font-size:14px;color:#555}.im-scroll{overflow:auto;background:#111}.im-scroll canvas{max-width:none}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}output{display:block;margin:10px 0}.im-sprite{background:#292929;padding:16px}.im-error{color:#9e2419}@media(max-width:650px){.wrap{padding:0 20px}.hero{padding:30px 20px}.im-pics{grid-template-columns:1fr}.plate{padding:16px}h1{font-size:36px!important}}</style>
+<!-- tabs -->
+<header class="hero">
+<p class="eyebrow">1990 · Gremlin Graphics · C64</p>
+<h1>Impossamole</h1>
+<p class="sub">Five level payloads replace the landscapes, creatures, and character graphics while keeping the same engine.</p>
+</header>
+<main class="wrap">
+<section id="maps">
+<h2 class="t">Every stored landscape</h2>
+<p>Each level stores 424 columns of blocks, with six blocks in each column. A block is a four-by-four grid of characters, the eight-by-eight-pixel shapes used for scenery. The picture below draws that whole allocation. Exits can redirect the view into another part of the stream. A position in this picture does not by itself establish that Monty can reach it.</p>
+<div class="plate">
+<label>Level <select id="im-level">
+</select>
+</label>
+<label>
+<input id="im-classes" type="checkbox"> Show terrain classes</label>
+<div class="im-scroll">
+<canvas id="im-world">
+</canvas>
+</div>
+<p class="cap">Scroll sideways through all 1,696 character columns. The same block renderer is tested against <code>$5192</code> for all 256 block IDs in all five payloads. Colours come from <code data-part="klondike">$AE00</code> and the level’s shared colour tables.</p>
+</div>
+</section>
+<section id="exits">
+<h2 class="t">Exits choose another view</h2>
+<p>The routine that handles exits at <code>$3096</code> matches an edge and a source position. Each record gives the destination’s scroll position and right scroll limit. It also gives Monty’s destination X, his horizontal position. The game computes the map pointer, the address where it will read the scenery, from that scroll value at <code>$50E3</code>.</p>
+<div class="plate">
+<label>Exit <select id="im-exit">
+</select>
+</label>
+<output id="im-exit-info">
+</output>
+<canvas id="im-destination">
+</canvas>
+</div>
+<p class="cap">The destination preview uses the stored scroll value rounded down to a four-character block boundary. It shows map data, without actors or the transition animation.</p>
+<table>
+<tr>
+<th>Level</th>
+<th>Exit records</th>
+<th>First-area right limit</th>
+</tr>
+<tr>
+<td>Klondike</td>
+<td>23</td>
+<td>180</td>
+</tr>
+<tr>
+<td>Orient</td>
+<td>31</td>
+<td>388</td>
+</tr>
+<tr>
+<td>Amazonian Forest</td>
+<td>21</td>
+<td>508</td>
+</tr>
+<tr>
+<td>Iceland</td>
+<td>22</td>
+<td>468</td>
+</tr>
+<tr>
+<td>Bermuda Triangle</td>
+<td>30</td>
+<td>120</td>
+</tr>
+</table>
+<p class="cap">Right limits are in character columns, each eight pixels wide. The counts come from <code>$806C</code>, and the first-area limits from <code>$0912</code>.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a">
+<a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a>
+<br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a>
+</footer>
 <script src="../../lib/c64.js"></script><script>
 
 const IM_IDS=['klondike','orient','amazon','iceland','bermuda'];
