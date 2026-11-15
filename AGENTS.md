@@ -173,7 +173,15 @@ see the work. Write for someone clever who knows nothing about it.
 - When a pull request changes a page in a way a reader can see, put
   screenshots of it before and after the change in the description, so
   a reviewer can see the difference and approve it without opening a
-  preview of the site and finding the page.
+  preview of the site and finding the page. The screenshots belong to
+  the pull request, not to the site, so they never reach `main`. How to
+  host them changes as GitHub's tools do. On 15 November 2026 two ways
+  worked: drag each image into the description in GitHub's editor, or,
+  where the session cannot upload (a cloud session cannot), commit the
+  images on the branch, link each at that commit's 12-character short
+  SHA on `raw.githubusercontent.com` (some tools break links that carry
+  the full 40), and remove them in the next commit, so the squash merge
+  leaves them out of `main`.
 - Before posting, or handing a draft to the contributor, read it again
   against this list.
 
