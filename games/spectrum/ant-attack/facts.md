@@ -118,7 +118,8 @@ at `$4421`. Screen RAM is output, not a shape source.
 Each masked shape contains sixteen rows, with two `(mask, bitmap)` byte
 pairs per row. `$80A0` draws `(old AND mask) OR bitmap`. There are sixty
 records in the two source ranges. Groups: grenade `$68–$6B`, girl
-`$6C–$7F`, boy `$DC–$EF`, unused `$F0–$F3`, puff `$F4–$F7`, ants `$F8–$FF`.
+`$6C–$7F`, boy `$DC–$EF`, unused aeroplane `$F0–$F3`, puff `$F4–$F7`, ants
+`$F8–$FF`.
 A picture ID is the actor's +8 when it is `$80` or more, otherwise
 `base + frame*4 + ((camera + facing) AND 3)`.
 
@@ -135,7 +136,13 @@ The only writes to an actor's +8 are `$82E9` and `$898A` (death),
 `$89F8` (respawn), `$8A37` and `$8A4B` (ants), `$8D22` (throw) and `$8D32`
 (the grenade's `$F4`). `$80A0` has one caller, the compositor at `$8532`.
 Computed IDs stop at `$EF` for people and start at `$F8` for ants, so no
-code selects `$F0–$F3`. A draw log of a throw that blew the player up
+code selects `$F0–$F3`.
+They draw one aeroplane facing four ways: `$F0` and `$F3`, and `$F1` and
+`$F2`, are exact left-right mirrors (0 of 256 pixels differ). The boy's and
+girl's views pair the same way to within 1–3 pixels, the ants' to within 15.
+Unseen64 reported the plane on 2 March 2009 (post by monokoma, tip from
+Robert Seddon), quoting a Wikipedia trivia line that the article no longer
+had on 15 November 2026. Neither gives a reason for the plane. A draw log of a throw that blew the player up
 recorded player `$DE $E2 $E6 $F4–$F7`, grenade `$68 $6A $F4–$F7`, ants
 `$F8–$FF` and `$F5`, and partner `$78`. The grenade's explosion drew
 `$F4, $F7, $F6, $F5` on countdowns 4 to 1.
@@ -313,7 +320,7 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 
 - The same 36-pass inputs reproduced every recorded position, fuse, ammunition, and explosion value on ZEsarUX and the independent Spectrum machine.
 - The ant race uses the reloads and starting counts from BASIC lines 140–190 and the skip rule at `$8A5D`; the 349-of-367 count above is the live check.
-- The four unused pictures are drawn from the listing's bytes at `$BC00`.
+- The aeroplane is drawn from the listing's bytes at `$BC00`.
 
 ### graphics.html
 
