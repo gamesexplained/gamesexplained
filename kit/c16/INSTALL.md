@@ -87,8 +87,7 @@ change the rows here together.
 
 | Build | Machine | Measured | Checks passed |
 |---|---|---|---|
-| plus4emu 1.2.11 (git 939e652), from source, with `kit/c16/codemap.patch` counting apart the code run from the RAM under the ROMs (#874), in the kit's server, g++ 13.3.0, Python 3.13.18; built without libsndfile | Linux x86_64 (Ubuntu 24.04, no display, 4 cores) | 15 November 2026 | 47 of 47 as a C16 (45 s) and as a Plus/4 (42 s); 47 of 47 as a Plus/4 on a library built without the patch, where the server's callback makes the code map (51 s) |
-| plus4emu 1.2.11 (git 939e652), from source, with `kit/c16/codemap.patch`, in the kit's server, g++ 13.3.0, Python 3.13.16 | Linux x86_64 (Ubuntu 24.04, no display, 4 cores) | 19 October 2026 | 46 of 46 as a C16 in each of two runs (53 and 57 s), and as a Plus/4 (67 s); built without libsndfile, 46 of 46 as a C16 (56 s); `verify-footprint` clean |
+| plus4emu 1.2.11 (git 939e652), from source, with `kit/c16/codemap.patch` counting apart the code run from the RAM under the ROMs (#874), in the kit's server, g++ 13.3.0, Python 3.13.18; built without libsndfile | Linux x86_64 (Ubuntu 24.04, no display, 4 cores) | 15 November 2026 | 47 of 47 as a C16 (45 s) and as a Plus/4 (42 s); 47 of 47 as a Plus/4 on a library built without the patch, where the server's callback makes the code map (51 s); `verify-footprint` clean |
 
 | Phase | Passes | Fails | Workaround |
 |---|---|---|---|
