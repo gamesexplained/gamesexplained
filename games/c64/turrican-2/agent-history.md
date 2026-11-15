@@ -166,3 +166,7 @@ The pages lost the terrain-byte slider, the controls and weapons tables, the sil
 ## The story pictures, 15 November 2026
 
 The maintainer asked what the Graphics tab's story pictures are and when they appear. A capture of the story in VICE from its entry, one screenshot every 75 frames, showed the order of the pictures, the six close-ups drawn over larger pictures, and the line of text in the lower border; it ran about 550 seconds. The capture also corrected the order of the reader's initial keys in the intro facts, which the decoded paragraphs depend on. The Graphics tab now steps through the sixteen pictures as the screen shows them, each with its own paragraph of the story, and keeps the stored pictures one button away.
+
+## The wheel, 15 November 2026
+
+The maintainer noticed that the Graphics tab never showed the wheel the suit rolls into. Reading `$0F33` showed that the wheel is drawn differently from the suit: two hi-res sprites at the same place and an empty third. VICE confirmed the rest in level 1-1: down with Space turned the suit into the wheel, its shape changed on every frame, and up ended it. While checking the wheel's colours against the screen, the standing suit's light grey showed that the walk preview and the level sprite pieces had been drawn with white as their first multicolour; every level takes light grey and dark grey from `$52C0`, and the pages now use them.

@@ -27,6 +27,16 @@ for(let i=0;i<16;i++){const m=image('intro').slice();m[14]=i;const cpu=new C64Cp
 // Hold the walking preview's divider and shape rule to the original controller prefix.
 const walkCode=g.read('graphics.html').match(/function walkStep\(\)\{([\s\S]*?)\}function walkTick/)[1].replace('drawWalk();','return [walkDivider,walkIndex];');
 for(let divider=0;divider<256;divider++)for(let index=0;index<7;index++){const m=image('resident').slice();m[0x27]=divider;m[0x28]=index;m[0x2d]=0;const cpu=new C64Cpu.CPU(m);let done=false;try{cpu.call(0x12d5,{},{maxSteps:100,hooks:{0x12ef(){done=true;throw Error('DONE');}}});}catch(e){if(!done)throw e;}const actual=new Function('walkDivider','walkIndex',walkCode)(divider,index);assert.deepStrictEqual(actual,[m[0x27],m[0x28]]);}
+// Hold the wheel preview to the controller's shape step at $10E4-$10F6 and the composer's wheel colours.
+{const res=image('resident'),l11=image('level-1-1'),walkData=bytes(A.walk.sprites);
+ assert.deepStrictEqual(Array.from(walkData),Array.from(l11.slice(0xd000,0xd000+walkData.length)),'player sprite shapes');
+ assert.deepStrictEqual(A.wheel,{shape:res[0x10f5],colours:[res[0x08e8],res[0x0ffb]]},'wheel shape and colours');
+ assert.equal(res[0x0fe5],0xfe,'third sprite pointed at shape $FE in wheel form');
+ const multicolour=[res[0x52c1],res[0x52c6]];assert.deepStrictEqual(A.walk.multicolour,multicolour,'player multicolours');
+ for(const q of A.groups)if(q.shared&&q.part.startsWith('level-'))assert.deepStrictEqual(q.shared,multicolour,q.name+' multicolours');
+ const wheelNext=new Function('return '+g.read('graphics.html').match(/function wheelNext\(i,left\)\{[\s\S]*?\}/)[0])();
+ for(let i=0;i<4;i++)for(const left of [false,true]){const m=res.slice();m[0x2e]=i;m[0x25]=left?0:1;m[0x2d]=1;const cpu=new C64Cpu.CPU(m);let done=false;try{cpu.call(0x10e4,{},{maxSteps:50,hooks:{0x10f8(){done=true;throw Error('DONE');}}});}catch(e){if(!done)throw e;}assert(done);const next=wheelNext(i,left);assert.equal(next,m[0x2e]);assert.equal(A.wheel.shape+2*next,m[0x2c]);}}
+console.log('Wheel: shape step, colours and third-sprite shape matched to the player code');
 console.log('Graphics:',shapes,'sprite pieces,',A.groups.length,'groups, sixteen decoded story pictures and 1792 walking-divider cases matched');
 // The level 1-1 boss: fifteen shapes and colours per facing, three columns of five bands, from the pose tables.
 {const m=image('level-1-1'),B=A.boss;assert.deepStrictEqual(B.numbers,Array.from(m.slice(0x8634,0x8652)));assert.deepStrictEqual(B.colours,Array.from(m.slice(0x8616,0x8634)));

@@ -27,6 +27,19 @@ joystick, terrain properties and movement state. Down with Space selects
 wheel mode; `$0F33` composes the player from hardware sprites. The active
 weapon handler is the mutable JMP at `$0702`.
 
+In wheel mode (`$2D` non-zero) `$0F33` draws sprites 0 and 1 as hi-res
+sprites at the same place, 16 lines below `$1F`: sprite 0 takes shape `$2C`
+in the colour at `$08E8` (white), sprite 1 takes `$2C`+1 in light blue
+(`$0E`, the immediate at `$0FFB`), and sprite 2 points at shape `$FE`, which
+was all zero when read live in VICE. Sprite 1 is a solid disc and sprite 0 the
+spokes. On every call `$10E4-$10F6` steps the wheel index `$2E` by one,
+down when `$25` says the player faces right and up when it faces left, and
+sets `$2C` to `$7C` plus twice the index, so the shapes are `$7C`-`$83`. On
+15 November 2026, live in VICE in level 1-1, down with Space set `$2D` to 1,
+`$2E` changed once a frame while standing still and while rolling, and
+pushing up cleared `$2D` and started a jump. The sprite multicolours for
+every level are `$0F` and `$0B`, set at `$52C0-$52C9`.
+
 Scatter allocation/update is `$3182/$3281`, laser `$35CD/$3623`, bounce
 `$4471/$44A2`. Their upgrade counters are `$07EE/$07EF/$07F0`. Wheel fire
 selects the four-slot bomb allocator at `$2E05`; its placement uses six
