@@ -30,12 +30,17 @@ function run(driver, frames = 100) {
   vm.runInNewContext(C64Sid.worklet(driver) + CHECKER, scope);
   const p = new Proc({ processorOptions: { data: {}, opts: {}, frames: false, tune: 0 } });
   const out = [new Float32Array(128)];
-  for (let k = 0; k < frames * 960 / 128; k++) p.process([], [out]);
+  let lo = Infinity, hi = -Infinity;
+  for (let k = 0; k < frames * 960 / 128; k++) {
+    p.process([], [out]);
+    for (const x of out[0]) { lo = Math.min(lo, x); hi = Math.max(hi, x); }
+  }
   const r = { name: 'Tune 0', error: null, heard: false, vol: false, env: false, moves: 0 };
   for (const m of posted) {
     if (m.driverError) r.error = r.error || m.driverError;
     for (const k of ['heard', 'vol', 'env']) if (m[k]) r[k] = true;
   }
+  r.moves = hi - lo;
   return r;
 }
 
@@ -63,6 +68,15 @@ function gated(vol) {
 {
   const r = run(gated(15));
   check(!r.error && r.heard && r.vol && r.env && verdict(r, 10) === null, 'a driver that sets the volume and gates a voice is heard');
+}
+{
+  const r = run(function createDriver() {
+    const sid = new Uint8Array(25);
+    return { sid, writes: [], init() { sid[24] = 15; sid[1] = 0x1C; sid[5] = 0x09; sid[6] = 0xF0; sid[4] = 1; },
+      stop() {}, play() {}, playing: () => true };
+  });
+  check(r.heard && r.env && r.vol && r.moves === 0 && /output stays flat/.test(verdict(r, 10) || ''),
+        'a gated voice without a waveform fails despite its active envelope');
 }
 {
   const r = run(function createDriver() {
