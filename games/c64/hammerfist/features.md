@@ -40,10 +40,22 @@ Sources:
 
 ## Beyond the documentation
 
-YCY initials patch the F3 callback into a route shortcut (native instruction checked). Fourth-load room 7 caps recharge overflow without the ordinary explosion (native instruction checked). A sound retrigger stores sustain/release through the wrong SID register index (native instruction checked). The docking payload retains two extra background records. See Discoveries for evidence and the limits of these tests.
+| Finding | Status | Where |
+|---|---|---|
+| A page of the programmer's assembler source, matching the sprite set-up routine line for line | confirmed | Resident `$1200-$13DD` against `$158A`; `test_finds.js`. On Discoveries. |
+| Docking rooms 8 and 9 are stored but unreachable and unfinished | traced | Docking doorway list `$6547`, room writers `$63ED`/`$A7DC`, empty ranges at `$6DA9`/`$6DB6`/`$6DD0`, layouts `$3E17`/`$3E53`. On Discoveries. |
+| Three tunes on the loading disk that nothing plays | traced | Loading module `$EC4F` tunes 2, 3 and 5; no copy in the four loads. On Discoveries. |
+| Four effects that nothing asks for | traced | Every `$32DA` call follows `LDA #`; 3, 5, 12 and 17 never appear. On How it works and Discoveries. |
+| YCY initials turn F3 into a room skip until the next load | confirmed | Complex 7 `$8325` patches `$98C1`; the same check in all four loads (`test_finds.js`). Native instruction check by the first run. On Discoveries. |
+| Overcharging in the last room is safe | confirmed | Fourth load `$913C`/`$9162`; native instruction check by the first run; `test_energy.js`. On Discoveries. |
+| A resting body heals itself only to 33, the swap threshold | traced | Complex 7 `$6754` and `$8C2A`. On How it works. |
+| A game over restarts the current load with the score it started with | traced | Complex 7 `$668B`, `$667B`. On How it works. |
+| A sound retrigger writes sustain/release to the wrong SID register | confirmed | Resident `$FE1C` (native instruction check). Not on the pages: how it sounds in play was not measured. |
+
+See `facts.md`, "Findings shown on Discoveries", for the evidence and its limits.
 
 ## Open questions
 
-The two documented multi-fire gestures and the visual mapping of manual opponent names remain open as described above. No absence or universal reachability claim is made.
+The two documented multi-fire gestures and the visual mapping of manual opponent names remain open as described above. The claims that docking rooms 8 and 9, loading tunes 2, 3 and 5, and effects 3, 5, 12 and 17 are never used rest on the doorway list and on every call in the four loads' listings; no playthrough checked them.
 
 A follow-up web search for the two multi-fire gestures and named opponents found the manual transcription and contemporary review, but did not settle this C64 binary’s gesture timing or identify every decoded actor. The [manual transcription](https://www.lemonamiga.com/doc/hammerfist/767) repeats the gestures; the [1990 review](https://www.amigareviews.leveluphost.com/hammerfi.htm) describes opponents without a record-to-shape key. These remain the bounded open questions above.
