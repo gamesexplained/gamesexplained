@@ -208,9 +208,11 @@ inside its batch and apply the rest.
   code; `--refs <address>` lists every instruction that can touch an
   address, documented or not: by name, as a pointer, or through an index,
   including one that wraps past `$FFFF`.
-- **Code that indexes into I/O mints symbols in the RAM beneath.**
-  `STA $D800,X`, `LDA $DDDD,X` (a placeholder operand) and the like leave
-  automatic symbols at `$D000`-`$DFFF`. If that RAM holds the game's own
-  data (`coverage.include`), type it, clear those symbols (an empty name)
-  and label the data, or the listing names sprite rows after the chips'
-  registers.
+- **Code that touches I/O mints symbols in the RAM beneath.**
+  `STA $D803`, `STA $D800,X`, `LDA $DDDD,X` (a placeholder operand) and
+  the like leave automatic symbols at `$D000`-`$DFFF`. If that RAM holds
+  the game's own data (`coverage.include`), type it and label the data.
+  The ledger and the listing pass over the automatic symbols there that
+  lie outside code and carry no comment, so leave them uncommented: a
+  comment makes one a boundary again, and the listing then prints a
+  colour RAM note among sprite pixels.
