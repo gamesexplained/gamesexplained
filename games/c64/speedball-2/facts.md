@@ -202,3 +202,23 @@ All in VICE 3.14.0 through `kit/c64/vice.py`, from the parts' snapshots
 - *The star* (intro, with the letters shown): sprite 7 was on, at X 400
   and Y 60, showing frame $67, the star; the seven letters were at X 80
   to 248.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Typing the code three times in VICE set the flag to 1, 0 and 1.
+- All but the match's + were tested in VICE; that one is read from the code.
+- Typing MARTIN in VICE showed it, and fire went back to the title.
+- In VICE, with the letters shown, sprite 7 was switched on at X 400 and Y 60, showing frame `$67`, the star.
+
+### graphics.html
+
+- Every frame here is made from the listing's bytes by the game's own code, run on the kit's 6502 in this page: `match_setup` (`$2657`) from its first unpack to its last mirror image, and the second unpack after the run-out (`$29B6`-`$29DE`).
+
+### index.html
+
+- `test_music.js` runs the same player over the intro's whole listing, as the intro calls it, and checks that every frame's writes are the same, for 6,000 frames of each button.
+- One frame of a match, drawn by the site's model of the video chip from the game's memory as the frame began and every register write made during it, recorded in VICE.
