@@ -94,7 +94,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="pick"><a class="step" id="gx-prev" aria-label="previous scenario">‹</a><select id="gx-scen" aria-label="scenario"><option value="1">Scenario 1, The Many Coloured Land</option><option value="2">Scenario 2, Slayer's Dungeon</option><option value="3">Scenario 3, Ragaril's Domain</option></select><a class="step" id="gx-next" aria-label="next scenario">›</a></div>
     <div id="gx-sheet"><p class="cap">Loading the scenario…</p></div>
     <div class="gx-detail" id="gx-detail"></div>
-    <p class="cap">Drawn from the listings the way draw_block (<code>$A7B6</code>) draws a square, and animated the way the interrupt animates them (<code>$A891</code>, next_frame <code>$A936</code>), one working frame every second frame of the 48K's picture. <b>test_graphics.js</b> holds both to the game's own code in all three scenarios: every frame of every thing, the sparkle's too, drawn by the game's draw_thing_at (<code>$A843</code>), the four cursors drawn by its draw_map (<code>$A94C</code>), and 300 working frames of its interrupt.</p>
+    <p class="cap">Drawn from the listings the way draw_block (<code>$A7B6</code>) draws a square, and animated the way the interrupt animates them (<code>$A891</code>, next_frame <code>$A936</code>), one working frame every second frame of the 48K's picture.</p>
   </div>
   <p>Each thing has five bytes in the scenario's table (<code>$D032</code>): the character set its characters come from, the graphic (nine character numbers, three rows of three), the colour set (nine attributes, one for each character), and two bytes of animation, a count and the number of the next frame. On every second frame the interrupt counts each thing's count down, and when it reaches 0 the thing takes the next frame's four bytes from the frame table (<code>$D034</code>): a new graphic, a new colour set, how long to show them and which frame comes after. A count of 255 is never counted, so a thing with 255 stands still.</p>
   <p>The animation belongs to the number, not to the creature. Every goblin on the map is the same map byte, <code>$95</code>, so all the goblins step in time together. The four wizards are one figure of four frames in four sets of colours. A few entries draw graphic 0 of set 0 in colour set 0, the look of nothing in particular: a thing that scenario never puts on its map.</p>
@@ -109,7 +109,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="loc-bar"><label>Wizard <select id="dx-who"></select></label><button id="dx-play">Play</button><button id="dx-slow" aria-pressed="false">Four times slower</button></div>
     <div class="loc-row"><div><canvas id="dx-cv" class="gx-cv" width="168" height="168" style="width:336px" aria-label="The map window during a wizard's death animation"></canvas></div>
       <div class="loc-info" id="dx-info"></div></div>
-    <p class="cap">A port of the game's routine (<code>$8C0C</code>, death_animation_frame <code>$8C6A</code>), held to the game's code by <b>test_graphics.js</b>, which compares the screen after every step. The pause after each step is the time the game's sound takes, counted in T-states on the kit's Z80 running the game's code, without the slowing a 48K's screen memory adds.</p>
+    <p class="cap">A port of the game's routine (<code>$8C0C</code>, death_animation_frame <code>$8C6A</code>). The pause after each step is the time the game's sound takes, without the slowing a 48K's screen memory adds.</p>
   </div>
   <p>The figure is the wizard's graphic as it stood when the wizard died, since the interrupts are off from then on. death_animation_frame draws it at eight places round the middle of the window, one character further out each time, ten times, with a sound after each step, and draws over what it drew before, so the figures leave trails. Frame number <i>n</i> of the seven uses colour set <i>n</i> of the scenario, the first seven colour sets in the table, whatever the wizard's own colours are. Then the map is drawn again and the trails are gone.</p>
 </section>
@@ -122,7 +122,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="loc-bar"><button id="hx-play">Hit</button><button id="hx-slow" aria-pressed="true">Eight times slower</button></div>
     <div class="loc-row"><div><canvas id="hx-cv" class="gx-cv" width="168" height="168" style="width:336px" aria-label="The map window with the hit's burst on the middle square"></canvas></div>
       <div class="gx-strip" id="hx-strip"></div></div>
-    <p class="cap">A port of draw_hit (<code>$AEC2</code>), held to the game's code by <b>test_graphics.js</b>. Each graphic stays for the time the game's sound after it takes, counted on the kit's Z80.</p>
+    <p class="cap">A port of draw_hit (<code>$AEC2</code>). Each graphic stays for the time the game's sound after it takes.</p>
   </div>
   <p>draw_hit does not go through the table of things. It points the drawing at character set 1 (<code>$BE3C</code>), which is in the program rather than the scenario, and draws graphics <code>$53</code> to <code>$55</code> straight from the scenario's graphics table in colour set 0, playing a little of sound 8 after each. When a creature strikes another, the map is drawn again straight after, and the wounded square shows <code>$4E</code>, then the sparkle if the creature died. Scenario 3 gives the same three graphics, in other colours, to one of its own squares: map byte 8, which has no name and lies on four squares of its map.</p>
 </section>
@@ -134,7 +134,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="gx-shape" id="mx-shapes"></div>
     <div class="loc-scroll"><table class="loc-tab" id="mx-tab"></table></div>
-    <p class="cap">The two shapes as shapes (<code>$AD4E</code>) lists them, line and column offsets from the missile's place, and the seven styles in missile_styles (<code>$B60E</code>), eight bytes each. <b>test_graphics.js</b> plots each shape with the game's draw_shape (<code>$AD1D</code>) and compares the pixels.</p>
+    <p class="cap">The two shapes as shapes (<code>$AD4E</code>) lists them, line and column offsets from the missile's place, and the seven styles in missile_styles (<code>$B60E</code>), eight bytes each.</p>
   </div>
   <p>set_missile copies a style's eight bytes into place before the flight: the shape, how many pixels it moves a frame, how long its tail is, how far it reaches, its colour, its combat strength, whether it is magic, and its sound. draw_missile then steps along the line from the middle of the window and plots the shape at each place, keeping the last places in its tail and wiping the oldest. A missile that leaves the window moves the view seven squares that way and carries on.</p>
 </section>

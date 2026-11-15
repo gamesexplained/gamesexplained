@@ -330,3 +330,37 @@ snapshots, with the keyboard chosen by writing 1 to $C4.
 - *The portcullis*, *the doorways*, *the stages in order* and *the text
   alphabet*: `orientation.md`, "From power-on to play", and "The text
   alphabet" above.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Apple2TS, from the palace's snapshot (reference/).
+- Apple2TS, from the last stage's snapshot (reference/).
+- In Apple2TS, from the stage's start with room 5 opened, a hero who ran into room 6 died of the first kick, and one who came in the stance was knocked back into room 5, after which Akuma fought by the brain.
+- Apple2TS, from the cliff's snapshot (reference/).
+- Apple2TS (reference/).
+
+### graphics.html
+
+- On this page they move by the game's own routines, from the listings, on the kit's 6502.
+- The stage's three calls for one fighter (`$6780` or `$678C`, `$6786` or `$6789`, then `$6783`) run on the kit's 6502 for the pose shown, stopped at each call to the stage's shape routines ($1903, $1906, $1909 and $190C), with the bytes each step changed in yellow.
+
+### index.html
+
+- Apple2TS 3.7.0 as an enhanced Apple IIe, from Brøderbund's original disk (`reference/`).
+- The title stage's code runs from its entry, $BFFA, on the kit's 6502 over the engine's listing with the title's laid over it, and stops each time the game flips the page shown; the page then shown is drawn by the site's Apple II library (`reference/demo.js`).
+- At 18 flips from the credits to the demonstration fight and the prologue again, both hi-res pages hold the same 16,384 bytes as in Apple2TS, and the round's 16,141 clicks come at the same spacings between its flips, run from the stage's entry (`test_demo.js`).
+- On the cliff, in Apple2TS
+- The port gives the same move, height, stick and next random number as the game's own routine run on the kit's 6502 in 673,440 cases: every random number at every distance from 0 to 13 in every stage, and 100,000 random states of every cell of zero page the routine reads (`test_brain.js`).
+- Each button runs the stage's own entry for that tune from the listing (a JMP among those at $1000) through the player on the kit's 6502, and plays its clicks through the site's model of the speaker (`site/lib/apple2-speaker.js`).
+- Run from each stage's snapshot in Apple2TS, all sixteen tunes click at the same cycles, click for click (`test_tunes.js`).
+- Each button runs the engine's own code for the sound from the listing on the kit's 6502 and plays its clicks through the site's model of the speaker.
+- In Apple2TS the same calls click at the same cycles, click for click, for all ten (`test_sound.js`).
+
+### levels.html
+
+- Each place runs the stage's code from its entry ($BFFA) on the kit's 6502, over the engine's listing with this stage's laid over it and the engine's memory as the stage before left it, to the flip named, and draws the page then shown (`reference/stages.js`).
+- Every place shows the same picture, byte for byte, as Apple2TS run from the stage's snapshot to the same flip after the same changes (`test_stages.js`).

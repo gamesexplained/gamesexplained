@@ -66,7 +66,7 @@ section table{margin:6px 0 18px}
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Play the whole game in your browser, start on any of its sixteen levels, and see how this port was checked against the Commodore 16 original.</p>
+  <p class="sub">Play the whole game in your browser, and start on any of its sixteen levels.</p>
 </header>
 <main class="wrap">
 <section class="pl-first" id="game">
@@ -96,16 +96,8 @@ section table{margin:6px 0 18px}
 </section>
 <section id="port">
   <p class="fig">01 · The port</p>
-  <h2 class="t">Every routine of the game, checked against the original</h2>
-  <p class="lede">The game is a 6502 program of 7,067 bytes of code. The port is the same program written again in JavaScript, one function for each routine the game calls and for the two places where one routine jumps into another's end, 79 in all, reading and writing the game's variables at the game's own addresses. The page runs only the port: the game's code is in the tests, as the original the port is held to.</p>
-<table>
-  <tr><th>Check</th><th>What it showed</th></tr>
-  <tr><td>Each routine alone</td><td>Seven test files call 67 of the port's functions and the game's own routines on the kit's 6502 simulator from the same state, 131,250 cases in all, and compare every byte of memory each one leaves, its writes to TED in order, and the registers it hands back. The states are 432 moments of play saved on every one of the sixteen levels, with the registers, variables, and controls changed at random. The other 12 functions, five small look-ups among them, run inside the routines that call them and in the lockstep.</td></tr>
-  <tr><td>The whole game in lockstep</td><td>The port runs beside the game's own code on the kit's Commodore 16, from the game's first instruction, and the two memories are compared at the start of every pass of the main loop. Four sessions of 12,000 frames each, about four minutes of play apiece, made 26,409 passes with every byte the same at each one. A scripted player drives both: on the title it changes the level, switches the controls, and types a name for the high scores; in play it moves the stick, or the keys, at random and lays dynamite now and then. One game is left with ESC, in another a level is finished, and in a third the score is high enough for a name in the table.</td></tr>
-  <tr><td>The interrupt's bytes</td><td>The game's main program reads eight bytes that the interrupts write, among them the frame counter and the controls. Where the C16 could take the interrupt between two of those reads, the lockstep gave the port the values the game read, so the check holds the port's logic and not the moment an interrupt happened to come.</td></tr>
-  <tr><td>The pace</td><td>The port executes no instructions, so the page charges each stretch of the main program and of the interrupt, and each call it makes, the cycles they cost the game, fitted on the kit's C16's timings of three of the sessions, some 500,000 stretches. Six routines the fit could not price, most of them run while the mine is built with the screen off, were timed alone, 2,000 calls each. On the fourth session, which the fit never saw, the page's cycles for its stretches are 1.0 % from the game's. The page's own test plays it beside the C16 from the same first instruction: level 1's first pass comes 146 frames after fire, the C16's 145, and in play both run 200 passes in 200 frames.</td></tr>
-  <tr><td>The listing</td><td>Porting a routine means reading every instruction of it. One comment was wrong, the one on what the start-up's write to <code>$FF13</code> does to the clock and the ROMs, and it has been corrected in the Source code tab.</td></tr>
-</table>
+  <h2 class="t">Every routine of the game, written again in JavaScript</h2>
+  <p class="lede">The game is a 6502 program of 7,067 bytes of code. The port is the same program written again in JavaScript, one function for each routine the game calls and for the two places where one routine jumps into another's end, 79 in all, reading and writing the game's variables at the game's own addresses. The page runs only the port.</p>
 </section>
 <section id="differences">
   <p class="fig">02 · Differences</p>
@@ -116,7 +108,7 @@ section table{margin:6px 0 18px}
     <li><b>The screen.</b> TED reads the screen as its beam meets it. The page keeps the memory as each row of characters began and TED's registers line by line, a write taking effect on the line after the one it was made on, and draws the frame from those. The game changes its colours and its fine scroll on three lines of each frame, and the page shows each change on its line.</li>
     <li><b>The interrupt.</b> On the C16 the raster interrupt can come between any two instructions. On the page it comes between the port's steps: at each call <code>main_loop</code> makes, at each call inside the play interrupt, and at each turn of a loop that waits. The game reads eight bytes that the interrupt writes, among them the frame counter and the controls, and where the two could read different values the check gave the port what the game read (section 01).</li>
     <li><b>Random numbers.</b> The game makes its random numbers from TED's timers and the beam's place, read as the code reaches them. The page reads them on its own clock, so the goodies, the creatures, and the face fall where a C16 would put them on some other run, never where one particular run did.</li>
-    <li><b>The sound.</b> The game's writes to TED's sound registers go to the site's model of TED's two voices, made from the plus4emu emulator's, each write at the place in the frame where the page's clock made it.</li>
+    <li><b>The sound.</b> The game's writes to TED's sound registers go to the site's model of TED's two voices, each write at the place in the frame where the page's clock made it.</li>
     <li><b>Three bytes.</b> The table that gives the earth character beside each one, at <code>$2970</code> to <code>$2972</code>, is missing from the listing the page reads the game from. The page adds the three bytes (2, 1, and 4), as the listing's comment gives them.</li>
     <li><b>Start on.</b> The level buttons are the page's own, but they do what a player does: on the title they tap right until the level shows, then press fire. The high-score table lasts until the page is reloaded, which starts the game from its first instruction.</li>
     <li><b>The keys.</b> The arrows and Space are the joystick in port 2, or, with the keyboard chosen on the title, the game's own keys: A, S, P, and L, and SPACE. Enter is RETURN and Esc is ESC.</li>

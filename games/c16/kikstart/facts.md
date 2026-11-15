@@ -258,3 +258,15 @@ After the audit, seed 2026111102 drew a fresh 116 of 294 comments: 60 of 138 wri
 - The page test covers all speed bytes, all terrain bytes, shape variants, bonus tables, and every music write value.
 
 Browser checks exercised all four authored pages at desktop and 390-pixel mobile widths, including all course choices, shape types, animation, speed/bonus controls, and music/effect buttons. There were no JavaScript errors or horizontal page overflow.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- The reconstructed frame shows the band boundaries and its pixel comparison with the emulator.
+
+### index.html
+
+- 0 of 64,000 display pixels differ from the matching emulator image.

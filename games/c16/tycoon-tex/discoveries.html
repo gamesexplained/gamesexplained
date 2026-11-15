@@ -109,7 +109,7 @@ input[type=range].tt-range{width:100%;max-width:640px;display:block;margin:10px 
     <div class="tt-legend"><span><i style="background:#2a8a4a"></i>lands past the break</span><span><i style="background:#b8473b"></i>falls in</span><span>The number: columns from Tex's left column to the first column that kills</span></div>
     <p class="tt-state" id="tt-jstate"></p>
     <div class="tt-scroll"><table class="tt-table" id="tt-jtable"></table></div>
-    <p class="cap">Each try is the game's five raster interrupts on the kit's 6502, as on the How it works page. Tex walks right until <code>set_speed</code> gives the speed chosen, then a break of the size chosen comes next in the pipe's feed, built by the game's <code>build_break</code>. A jump is tried on every frame from when the break's first deadly column is 24 columns ahead until Tex falls in standing; click a square to watch that one. The table counts the frames that work. In plus4emu the same search at speeds 1, 2 and 3, over four breaks at each, gave the same answer: none at speed 1, breaks of one middle at speed 2, of one or two middles at speed 3 (<code>test_tex.js</code> holds this page to it).</p>
+    <p class="cap">Each try is the game's own five raster interrupts, as on the How it works page. Tex walks right until <code>set_speed</code> gives the speed chosen, then a break of the size chosen comes next in the pipe's feed, built by the game's <code>build_break</code>. A jump is tried on every frame from when the break's first deadly column is 24 columns ahead until Tex falls in standing; click a square to watch that one. The table counts the frames that work.</p>
   </div>
   <p><code>move_tex</code> reads left and right only while Tex is on the ground, so a jump goes straight up and down: ten steps, one every second frame, five rows up and five down (<code>start_jump</code>, <code>step_jump</code>). <code>check_hole</code> tests the pipe cell under his left column on every frame he stands. From the frame after up is pressed it is testing a row of the field instead, and 18 frames later he is back on the pipe.</p>
   <p>To get over a break the pipe has to carry the cell under him from the column before the break's deadly columns to the one after them. The narrowest break kills on 5 columns, so that is 6 columns, or 48 pixels. The widest kills on 9, so 80 pixels. In 18 frames the pipe moves 36 pixels at speed 1, 54 at speed 2, 72 at speed 3 and 90 at speed 4 (<code>pipe_speeds</code>). At speed 1 nothing can be cleared. At speed 2 only a break of one middle can, from a window of five frames, a tenth of a second. Speed 3 clears one or two middles, and from speed 4 every break clears.</p>
@@ -128,7 +128,7 @@ input[type=range].tt-range{width:100%;max-width:640px;display:block;margin:10px 
     </div>
     <div class="tt-hs"><div><h3>THE TYCOONS! before</h3><pre id="tt-hbefore"></pre></div><div><h3>after</h3><pre id="tt-hafter"></pre></div></div>
     <p class="tt-state" id="tt-hstate"></p>
-    <p class="cap">The game's <code>check_hiscore</code> (<code>$2625</code>) and <code>enter_hiscore</code> on the kit's 6502, over the table as loaded with the top entry's score changed, stopped where name entry begins (<code>$269C</code>); the digit that changed is marked. In plus4emu, with GREMLIN's score poked to 150,000 and a game ended at 200,000, GREMLIN came back at 50,000.</p>
+    <p class="cap">The game's <code>check_hiscore</code> (<code>$2625</code>) and <code>enter_hiscore</code>, over the table as loaded with the top entry's score changed, stopped where name entry begins (<code>$269C</code>); the digit that changed is marked. In the game, with GREMLIN's score set to 150,000 and a game ended at 200,000, GREMLIN comes back at 50,000.</p>
   </div>
   <p>Each entry of <code>hiscore_table</code> is 14 bytes: six digits, seven letters and a 0. <code>enter_hiscore</code> makes room by copying every byte below the new entry 14 bytes further down, from the bottom up, with X counting down from <code>$62</code>. The loop stops as soon as X reaches the new entry's own offset, before it copies the byte there. That byte is the first digit of the entry being pushed down, so the place it moves to keeps the first digit it held before: the old first digit of the next entry down.</p>
   <p>As the game loads, every score in the table is below 100,000 and every first digit is 0, so the bug changes nothing. Only a score of six figures beaten by another shows it.</p>
@@ -140,7 +140,7 @@ input[type=range].tt-range{width:100%;max-width:640px;display:block;margin:10px 
   <p class="lede">A bomb or a crash explosive that lands on the pipe takes four eighths of a cell off the oil pressure. With fewer than four in the part cell, it takes those and one more.</p>
   <div class="plate">
     <div class="tt-scroll"><table class="tt-table" id="tt-bomb"></table></div>
-    <p class="cap">The game's <code>lose_pressure</code> (<code>$21B1</code>) on the kit's 6502, from 10 whole cells and each part cell from 0 to 7, with the 4 eighths <code>break_pipe</code> takes and the 2 it takes where the pipe is broken already. Run the same way in plus4emu, from <code>$21B1</code> with A set, it took the same.</p>
+    <p class="cap">The game's <code>lose_pressure</code> (<code>$21B1</code>), from 10 whole cells and each part cell from 0 to 7, with the 4 eighths <code>break_pipe</code> takes and the 2 it takes where the pipe is broken already.</p>
   </div>
   <p>The pressure is whole cells in <code>pressure_cells</code> and eighths of the part cell in <code>pressure_fine</code> (<a href="index.html#pressure">How it works</a>). <code>lose_pressure</code> takes the loss off the eighths. When they go below zero it takes a cell and sets the eighths to 7, whatever was left, where adding 8 would have kept the rest of the loss. So a bomb that lands with 1 eighth in the part cell leaves the cell below at 7: 2 eighths lost instead of 4. The main loop's drain takes 1 at a time and comes out right.</p>
 </section>
@@ -154,7 +154,7 @@ input[type=range].tt-range{width:100%;max-width:640px;display:block;margin:10px 
     <div class="tt-bits" id="tt-bbits"></div>
     <p class="tt-state" id="tt-bstate"></p>
     <div class="tt-scroll"><table class="tt-table" id="tt-btable"></table></div>
-    <p class="cap">The game's <code>next_level</code> (<code>$3A31</code>) on the kit's 6502, called on the level before, as the game calls it at the end of a level. In plus4emu, levels 20, 40, 60, 80 and 99, entered by poking the level and then <code>$9D</code>, had delays of 100, 58, 1, 128 and 128.</p>
+    <p class="cap">The game's <code>next_level</code> (<code>$3A31</code>), called on the level before, as the game calls it at the end of a level.</p>
   </div>
   <p>The level is kept in one byte as two decimal digits, binary-coded decimal: level 37 is <code>$37</code>, <code>0011 0111</code>. <code>next_level</code> takes the enemies' delay from bits 5 and 6 of that byte. For the tens digits 0 to 7 those two bits split the levels into four groups of twenty: neither bit for 1 to 19, bit 5 for 20 to 39, bit 6 for 40 to 59, both for 60 to 79. A tens digit of 8 or 9 sets bit 7 and leaves 5 and 6 clear, so levels 80 to 99 get the delay of levels 1 to 19, 128, straight after the 1 of levels 60 to 79.</p>
   <p>The delay is the least time an enemy stays away after it has gone (<a href="index.html#levels">How it works</a>). At 1 every enemy comes back as soon as the threshold lets its count run; at 128 the arrow and the jet wait at least 128 frames, two and a half seconds.</p>
@@ -166,7 +166,7 @@ input[type=range].tt-range{width:100%;max-width:640px;display:block;margin:10px 
   <p class="lede">The inlay promises 99 levels. Complete the 99th and the game goes on at level 00, then 01, for as long as the pressure lasts.</p>
   <div class="plate">
     <div class="tt-scroll"><table class="tt-table tt-left" id="tt-ztable"></table></div>
-    <p class="cap">The game's <code>next_level</code> on the kit's 6502 for each level, through every entry of <code>enemy_pairs</code> for 00. In plus4emu, level 99 completed by poking <code>$9D</code> gave level 00 with the arrow and the crash explosive (mask <code>$09</code>) and threshold <code>$80</code>.</p>
+    <p class="cap">The game's <code>next_level</code> for each level, through every entry of <code>enemy_pairs</code> for 00. In the game, completing level 99 gives level 00 with the arrow and the crash explosive (mask <code>$09</code>) and threshold <code>$80</code>.</p>
   </div>
   <p><code>next_level</code> adds 1 to the level in decimal mode, so 99 and 1 make 00, with a carry nothing reads. Nothing in the game tests for a last level. Level 00 is below 4, so its breaks have at most two middles, as on levels 1 to 3. It is not 1, 2 or 3 and it is below 7, so it gets two kinds of enemy at random, as on levels 4 to 6. Then 01 is level 1 again, the jet alone.</p>
 </section>
@@ -178,7 +178,7 @@ input[type=range].tt-range{width:100%;max-width:640px;display:block;margin:10px 
   <div class="plate">
     <div id="tt-shot"></div>
     <div class="tt-scroll"><table class="tt-table" id="tt-stable"></table></div>
-    <p class="cap">Both from the game's <code>shot_sound</code> and <code>tick_shot_sound</code> on the kit's 6502, as on the <a href="index.html#sound">How it works</a> page. The first wrote what the game wrote in plus4emu, frame by frame. The second has the high bits moved to voice 1's register, <code>$FF12</code>: a guess at what was meant, not the game.</p>
+    <p class="cap">Both from the game's <code>shot_sound</code> and <code>tick_shot_sound</code>, as on the <a href="index.html#sound">How it works</a> page. The first is the game's own sound. The second has the high bits moved to voice 1's register, <code>$FF12</code>: a guess at what was meant, not the game.</p>
   </div>
   <p>A voice's pitch is a 10-bit value: voice 1's is <code>$FF0E</code> and bits 0 and 1 of <code>$FF12</code>, voice 2's is <code>$FF0F</code> and bits 0 and 1 of <code>$FF10</code>. <code>shot_sound</code> starts voice 1 at <code>$301</code>. Each frame <code>tick_shot_sound</code> takes 8 off the low byte, and when that runs below zero it takes 1 off the high bits it keeps in <code>$DC</code>, 3 then 2. It ORs <code>$DC</code> into <code>$FF10</code>. Voice 1 keeps the 3 it was given, so after the first frame its value is <code>$3F9</code>, 18,473 Hz, and it falls 8 a frame to <code>$369</code>, 739 Hz.</p>
   <p>Voice 2 is switched off while the shot plays, so nothing else is heard. A hit sets voice 2's register whole before it plays (<code>hit_sound</code>).</p>
@@ -192,7 +192,7 @@ input[type=range].tt-range{width:100%;max-width:640px;display:block;margin:10px 
     <canvas id="tt-jet" class="tt-screen" width="640" height="400" aria-label="Level 1: the jet crossing the sky while Tex jumps and fires below it."></canvas>
     <input type="range" class="tt-range" id="tt-jetframe" min="0" max="0" value="0" aria-label="Frame">
     <p class="tt-state" id="tt-jetstate"></p>
-    <p class="cap">Level 1 on the kit's 6502, where the jet is the only enemy: Tex jumps as it comes over and fires at the top of the jump. The bands mark rows 8 and 9, where <code>move_arrow_and_jet</code> flies the jet, and rows 14 to 19, the rows <code>fire_bullet</code> can start a bullet on. Drag to step through the frames.</p>
+    <p class="cap">Level 1, where the jet is the only enemy: Tex jumps as it comes over and fires at the top of the jump. The bands mark rows 8 and 9, where <code>move_arrow_and_jet</code> flies the jet, and rows 14 to 19, the rows <code>fire_bullet</code> can start a bullet on. Drag to step through the frames.</p>
   </div>
   <p><code>fire_bullet</code> puts the bullet two rows below Tex's top-left cell, the row of his gun: row 19 when he stands, row 14 at the top of a jump, five rows higher. <code>move_bullet</code> moves it straight right, one column a frame, and <code>bullet_stop</code> marks the right edge of rows 14 to 20 only. The jet's bomb falls from below the jet to the pipe, across the gun's rows, and is worth the most points in the game.</p>
 </section>
