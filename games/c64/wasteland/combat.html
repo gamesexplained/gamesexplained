@@ -41,7 +41,7 @@
 
   <p>When a monster's shot is on target, the game picks one of the party at random to take it, and a Ranger who is down can be picked (<code>$9DEC</code>). The routine that hands out the damage then looks at the victim. If the victim is already down and the attacker's weapon is a gun, the routine prints the Ranger's name and <q>but misses.</q>, and leaves the CON alone (<code>$A889-$A8AD</code>).</p>
 
-  <p>The same routine has a rule for a claw or a club landing on a Ranger who is down: two dice, thrown again on a double, have to come in under the monster's number of damage dice (<code>$A899</code>). That rule never runs. A monster in melee picks its victim from the Rangers still on their feet, and makes no attack when there are none (<code>$81B7</code>). In the emulator, two Mutants on the world map fought twelve rounds against a party with one Ranger unconscious, and all 25 of their blows went to Rangers on their feet.</p>
+  <p>The same routine has a rule for a claw or a club landing on a Ranger who is down: two dice, thrown again on a double, have to come in under the monster's number of damage dice (<code>$A899</code>). That rule never runs. A monster in melee picks its victim from the Rangers still on their feet, and makes no attack when there are none (<code>$81B7</code>). Two Mutants on the world map, fighting twelve rounds against a party with one Ranger unconscious, send all 25 of their blows to Rangers on their feet.</p>
 
   <p>So an unconscious Ranger is the safest member of the party. From −1 to −10 CON a Ranger gets a point back after every round, and wakes with half the CON they had before the blow (<code>$B7BA-$B7DB</code>). From −11 down the Ranger loses a point after every round and dies below −50 (<code>$B842</code>). That count is the only danger in a fight, and a monster can do nothing to hurry it.</p>
 </section>
@@ -167,7 +167,7 @@
 
   <p>The clock that counts is a byte that goes up with every step, by an amount the map sets: 16 on the world map, 2 in a town such as Quartz, and 1 inside most buildings (<code>$AF32</code>). Each time the byte comes to a multiple of 16 the game looks at every Ranger in every party (<code>$B795</code>). A Ranger who is hurt and on their feet gets a point when the lowest six bits of the byte are all 0, which is every 64 ticks. For a Ranger in the party being led the test takes seven bits, which is every 128 (<code>$B7FD-$B810</code>).</p>
 
-  <p>On the world map that is a point every four steps for a party left behind and a point every eight for the party that walks. In the emulator, 64 steps on the world map took a party left behind from 6 CON to 22 and the walkers from 5 to 13.</p>
+  <p>On the world map that is a point every four steps for a party left behind and a point every eight for the party that walks. 64 steps on the world map take a party left behind from 6 CON to 22 and the walkers from 5 to 13.</p>
 
   <p>A Ranger who is down does not wait for those ticks. An unconscious Ranger, from −1 to −10, gets a point every time the game looks, in whichever party, and a Ranger who is worse off loses one. The game looks at every step on the world map, so a Ranger at −25 is dead 26 steps later. Inside the Citadel it looks every 16 steps, and the same Ranger lasts 416. It also looks after every round of a fight.</p>
 
@@ -300,7 +300,7 @@
     <div class="wl-dice-rollout"><div id="wl-dice-c-out" aria-live="polite"></div><p class="wl-dice-tally" id="wl-dice-c-tally"></p></div>
   </div>
   <p class="wl-dice-note"></p>
-  <p class="cap">The chance is exact for fair dice: every way the throw can reach each total is counted, doubles and all. The chart is the throw alone; red totals fail at once. Roll runs the game's own check, ported from the engine (<code>$0C29</code>, <code>$0D0A</code>) and tested against the original code on a 6502 simulator: 27,324 skill checks over every skill, levels 0 to 10 and difficulties 0 to 31, and 3,072 attribute checks, with the same random bytes, gave the same results and used the same bytes.</p>
+  <p class="cap">The chance is exact for fair dice: every way the throw can reach each total is counted, doubles and all. The chart is the throw alone; red totals fail at once. Roll runs the game's own check, ported from the engine (<code>$0C29</code>, <code>$0D0A</code>).</p>
 </div>
 
 <p data-part="game">A shot uses the same throw (<code>$A584</code>). To it are added DEX, 4 for each level of the weapon's skill, and the fire mode: 4 for a burst, the rounds left in the gun for automatic fire, and 10 for an explosive (<code>$A5D6</code>). A full Uzi on automatic adds 40. The total must reach a target that grows with the distance, rounded up to 5 feet, at one of three rates (<code>$A793</code>, <code>$BD48</code>). Pistols, thrown weapons, and explosives start at 0 and add 5 for every 5 feet. SMGs, carbines, the Flamethrower, the Ion beamer, the Mangler, and the Sabot rocket start at 10 and add 2. Every other gun, from the rifles to the Meson cannon, the LAW, and the RPG-7, starts at 20 and adds 1, so beyond 25 feet a rifle is an easier shot than a pistol, and beyond 50 feet than an SMG.</p>
@@ -361,10 +361,10 @@
     <div class="wl-dice-rollout" id="wl-dice-a-out" aria-live="polite"></div>
   </div>
   <p class="wl-dice-note"></p>
-  <p class="cap">A party member's shot at a monster group, with the guns, rockets and explosives of the item table (<code>$3108</code>). The chart is the damage of one hit after armour; 0 is in red. Fists and hand weapons fight in melee, which works differently and is not shown. Fire runs the game's routines, ported and tested on the simulator against the original code with the same random bytes: the hit roll with every item in the table (15,360 cases), the damage with every item against armour 0 to 15 and beyond (10,368), the hits of bursts and automatic fire (5,436), and the range targets for every distance (606). Which monster each hit lands on is drawn at random too; that draw is left out.</p>
+  <p class="cap">A party member's shot at a monster group, with the guns, rockets and explosives of the item table (<code>$3108</code>). The chart is the damage of one hit after armour; 0 is in red. Fists and hand weapons fight in melee, which works differently and is not shown. Fire runs the game's routines, ported: the hit roll, the damage after armour, the hits of bursts and automatic fire, and the range targets. Which monster each hit lands on is drawn at random too; that draw is left out.</p>
 </div>
 
-<p data-part="engine">The chances above are given twice. The first is exact for fair dice. The second comes from the pairs the engine's own code threw on the simulator (<code>$24E3</code>), taking each repeat to fall the way a first pair does. They differ because the game's dice are not fair, as the next section shows.</p>
+<p data-part="engine">The chances above are given twice. The first is exact for fair dice. The second comes from pairs thrown by the engine's own code (<code>$24E3</code>), taking each repeat to fall the way a first pair does. They differ because the game's dice are not fair, as the next section shows.</p>
 </section>
 
 <section id="wl-melee" data-part="game">
@@ -382,7 +382,7 @@
       <button type="button" class="wl-xp-btn wl-xp-ghost" id="wl-xp-reset">Start again</button>
       <p class="wl-xp-say" id="wl-xp-say" role="status"></p>
     </div>
-    <p class="cap">The two places the game pays for a kill, from the Source tab: the end of a melee attack and the end of a shot. Step runs one line of each. The kill is worth 40 here, as each Shambler Ghoul was in the emulator. There, three kills in melee each took their killer's experience from 0 to 80, 40 at each of the two calls.</p>
+    <p class="cap">The two places the game pays for a kill, from the Source tab: the end of a melee attack and the end of a shot. Step runs one line of each. The kill is worth 40 here, as each Shambler Ghoul is. Three kills in melee each take their killer's experience from 0 to 80, 40 at each of the two calls.</p>
   </div>
   <p>The kill's worth comes from <code>$A9E8</code>: the base value in the monster's record, added once for each of its armour dice and once more. <span data-part="engine"><code>$03DD</code></span> adds that number to the experience of the character whose turn it is, and leaves the number in place. The melee code calls it at <code>$8163</code> and again at <code>$8166</code>, with nothing between that could change the number or the character. A shot calls it once (<code>$A719</code>), and so does an explosion for each monster it kills (<code>$A08A</code>).</p>
   <div class="wl-xp-fig">

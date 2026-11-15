@@ -433,3 +433,36 @@ KERNAL is out and the game owns the vectors: NMI `$2FF2`, RESET `$1990`
 | `$DD0E` trap | `$DD0E` = 1, then a scoring blow | crash to `$0201` |
 | Backdrops | Python re-implementation of both unpackers | byte-identical to the snapshot |
 | Players byte | `$AE` read in a two-player game | 1 |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- According to secondary sources (see the Overview), some early C64 versions lacked the bull; this one has it, and it was played through in the emulator.
+- Below: the emulator, after felling the bull at a distance of 26.
+- In the emulator, holding down and adding forward when the bull was 28 units away felled it at 26.
+- In the emulator, with the timer started by hand before a blow, the screen filled with garbage and the processor ended up executing the speech table at `$0201`.
+- A pass usually takes one frame, but measured in the emulator a unit took 50 to 66 frames, so a bout lasts 30 to 40 real seconds.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+
+### index.html
+
+- The start of a one-player bout at Novice, captured in an emulator.
+
+### levels.html
+
+- The end of a two-player game, captured in the emulator.
+
+### mechanics.html
+
+- One frame of a two-player bout, drawn from memory and the recorded writes to the video chip with the site's renderer: all 104,448 pixels match the emulator's own picture of the same frame.
+
+### music.html
+
+- The game's own driver (`$09A5`) running on the kit's 6502 simulator in this page, over the music bytes as the game loads them.
+- Each sample byte is one half of a wave: the volume stays where it is for 9 cycles per unit of the table entry the byte picks, plus about 108 for the interrupt itself (measured in the emulator), then flips.

@@ -935,3 +935,70 @@ and no wandering monsters.
   (engine `$C993`). All three were rewritten, and so were five
   neighbouring comments of the death screen that left out the game's
   instructions in the same way.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### combat.html
+
+- In the emulator, two Mutants on the world map fought twelve rounds against a party with one Ranger unconscious, and all 25 of their blows went to Rangers on their feet.
+- In the emulator, 64 steps on the world map took a party left behind from 6 CON to 22 and the walkers from 5 to 13.
+- Roll runs the game's own check, ported from the engine (`$0C29`, `$0D0A`) and tested against the original code on a 6502 simulator: 27,324 skill checks over every skill, levels 0 to 10 and difficulties 0 to 31, and 3,072 attribute checks, with the same random bytes, gave the same results and used the same bytes.
+- Fire runs the game's routines, ported and tested on the simulator against the original code with the same random bytes: the hit roll with every item in the table (15,360 cases), the damage with every item against armour 0 to 15 and beyond (10,368), the hits of bursts and automatic fire (5,436), and the range targets for every distance (606).
+- The second comes from the pairs the engine's own code threw on the simulator (`$24E3`), taking each repeat to fall the way a first pair does.
+- The kill is worth 40 here, as each Shambler Ghoul was in the emulator.
+
+### discoveries.html
+
+- Screens from the emulator, in order.
+- Both screens are from the emulator.
+- In the emulator, Hell Razor with an LK of 3 and a Throwing knife, against the Shambler Ghouls in map 1's graveyard.
+- The dice widget's two measured sets were labelled "In the emulator" and "On the simulator", and its text called them "in the emulator, 4,096 throws" and "on the simulator, 2,000,000 throws".
+- In the emulator, a stub in play threw 4,096 pairs with the game's own routines and the same instructions between the two dice as the throw itself (`$084A-$0850`), each pair after the seed had been stirred 1 to 256 times, as waiting for a key stirs it.
+- On the simulator, the engine's code threw 2,000,000 pairs on the kit's 6502 simulator from random moments: a random raster line, cycle, timer value, and seed for each.
+- The game's dice do it 13.1% of the time on the simulator and 12.9% in the emulator.
+- In 5,000 dice from the Ranger Center's attribute rolls, watched in the emulator, ones came up 1,043 times, fours 727, and sixes 826, where fair dice give 833 of each.
+- In the emulator, booted from the original side 1, the engine's own check ran 256 times with a byte of 10 and a CHR of 20: the target it computed was 15 on every call, where 15 + 5 × 10 is 65.
+- On the kit's 6502 simulator the port and the original code were given the same random bytes for 38,528 checks, trades, and hires, and gave the same answers, left the same bytes in the record, and used the same random bytes.
+- The port was run against the original code on a 6502 simulator for every one of the 7,776 ways five dice can fall, comparison by comparison, and again for 3,000 throws with the game's own dice routine; every slot and every sum matched.
+- Watched in the emulator, 32 rolls at the Ranger Center ended slot for slot as the loop predicts, and 21 of them came out below the best three of their dice.
+- In the emulator, the party stepped onto the world map's 5d6 square with every member's armour class set to 30.
+- Every step onto the square was run in the 6502 simulator with the game's own code (`$AD5B`): each is refused, and message 53 is shown.
+- The game does the same in the emulator.
+- The pictures are from the game in the emulator, and How it works animates them.
+- The ending was run in the emulator three ways, from a saved game with the countdown set to its last step.
+- The page runs the routine on the kit's 6502 for the four Rangers the game starts with, and shows the text it builds, stopped where the routine would send it to the printer.
+
+### disks.html
+
+- The order is the engine’s own arithmetic (`$FFAC`, `$FD0B`), ported and run against the original on a 6502 simulator for every pair of track and sector bytes, 131,072 cases, and for every file through the game’s own read and write calls, with no difference.
+- The port matched a save the game made in the emulator, byte for byte (cash 12,345, sum $6B).
+- The sum, the scramble, the save and the start-up’s check were each run against the game’s own code on a 6502 simulator, 1,549 cases, with no difference.
+- The game’s check ran on a 6502 simulator over 6,912 combinations of the three bytes, `$ED` and the side asked for, then from the start-up’s Utils and in play on all four sides of the masters and the copies.
+
+### index.html
+
+- Two frames of play, recorded in the emulator a moment apart, and drawn here by the site's model of the video chip from the 9,001 bytes it reads: the colours at `$5C00`, the bitmap at `$6000`, and one byte at `$7FFF`, with the colour memory.
+- Drawn the same way, every one of the 104,448 pixels of each frame, border included, matches the emulator's own picture.
+
+### levels.html
+
+- The port was checked against the game's own code, run in a 6502 simulator on each map as the game loaded it: every square of all 42 maps, and a ring of squares off each map, at seven hours of the day.
+- That is 455,952 squares, with no difference.
+- The tile drawing was checked against every tile of the nine sets, and the view against a frame recorded in play, pixel for pixel.
+
+### party.html
+
+- On map 1's cactus every member is tested, and on the kit's 6502 simulator the game's check code (`$8E14`) ran it 1,000 times for a party of a Ranger and Dan.
+
+### pictures.html
+
+- The port was run beside the engine's own code on the kit's 6502 simulator, the bitmap compared after every tick or every step: 1,088 cases and 5,649,956 ticks on the title and portraits 0, 1, 3, 6 and 8, and 400 steps of every one of the 75 portraits and of the ending's three pictures, with no difference.
+- The emulator's screenshots of the title and the Ranger Center show the same pictures.
+- The decoder and the printer are ports of the engine's own routines, checked against the game's code on a 6502 simulator for all 4,920 messages in the 52 blocks: 0 differences.
+
+### sound.html
+
+- Each port keeps the routine's timing to the cycle: a test ran the game's own code on the kit's 6502 simulator beside the port, 1,789 runs and 172,557 SID writes, and every write came in the same frame, at the same cycle, with the same value.
+- The loop goes round about a thousand times a second, 20 times a frame by a count in the emulator, so the clicks come at random, faster as the radiation gets nearer.

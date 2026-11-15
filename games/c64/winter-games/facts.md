@@ -221,3 +221,32 @@ its `work/` folder, with input on joystick 2; the scripts stay in `work/`.
   column 71's fourth cell, so it is on screen in far pieces 21 to 25.
   `draw_far` is called when the stretch's far piece differs from the one
   drawn (`$42B9`), and at the start.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The program in the emulator, played with the joystick alone: stick down with fire 22 times, and nothing else.
+- `test_marks.js` checks it against the routine, and against the two programs played in the emulator: 22 falls scored 6.0 and 40 scored 0.0.
+- In the emulator a skater fell about every 1.7 seconds, so the minute holds 19 with time to spare.
+- In the emulator a crash at stretch 168 slid over the line, and one at 164 came to a halt before it and scored 99.99.
+- Tested in the emulator in Hot Dog.
+- A 22.10 bobsled run takes 26.5 seconds, and Figure Skating's minute lasted about 72 seconds in the emulator.
+- The colours are the ones every cell of the far view has in the frame recorded in the emulator: light blue sky and white, with black where a dot's two bits are clear.
+- In the emulator `$878A` took values from 1 to 8 during a run, and each of them turns two or three of the four dots black: a dash in the sky that stays until the view turns again.
+- The bit stays set until every sound is stopped at the end of the run, and in the emulator the engine's copy of `$D418` held `$8F` from the crash on.
+
+### graphics.html
+
+- Every frame is made from the listing's bytes by the event's own code, run on the kit's 6502 in this page.
+
+### index.html
+
+- Each event at its start, from the emulator.
+- `test_marks.js` checks the page against the routine.
+- `test_music.js` runs every button against the game's code and checks every write to the sound chip, frame by frame.
+- `test_music.js` checks every write against the game's code.
+- Drawn by the site's model of the video chip from the frame's memory and the 30 writes the game made to the chip during it, recorded in the emulator in the left-hand bend from stretch 21, the sled high on the right wall.
+- The drawing matches the emulator's picture of the same frame pixel for pixel, but for the player's name on the bottom row: the video chip draws that row's letters from the character ROM, where the C64 keeps its own letters, and the page does not carry it.
