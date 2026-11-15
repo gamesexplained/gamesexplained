@@ -2,7 +2,7 @@
 
 ## Room browser
 
-Enter **ESPILCE** during play, changing keys in sequence. The input path was checked through the matrix and instruction checkpoints at $3B0A/$3B11. Reaching $3B1D restores the spare-life byte $03B9 to two. Browser navigation remains unverified.
+Enter **ESPILCE** during play, changing keys in sequence. The input path was checked through the matrix and instruction checkpoints at $3B0A/$3B11. Reaching $3B1D restores the spare-life byte $03B9 to two. In the browser ($3B23) the joystick steps the room number by the table at $3AF0: left -1, right +1, up +16, down -16, kept within $15-$A7; fire returns to play in the room shown. Navigation and fire were used live on 15 November 2026 to reach Daisy's prison and Australia.
 
 ## Candidate addresses
 
