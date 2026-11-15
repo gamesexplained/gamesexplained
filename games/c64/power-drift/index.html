@@ -239,7 +239,7 @@ function createDriver(D, C64Cpu) {
   const base = new Uint8Array(0x10000);
   for (const [ad, bytes] of D.mem) base.set(bytes, ad);
   const sid = new Uint8Array(25);
-  let m, cpu, c, writes = [], over = false;
+  let m, cpu, c, writes = [], times = [], t0 = 0, over = false;
   const io = {
     read(ad) {
       if (ad === 0xD012) return 0;
@@ -247,7 +247,7 @@ function createDriver(D, C64Cpu) {
       throw new Error('read $' + ad.toString(16));
     },
     write(ad, val) {
-      if (ad >= 0xD400 && ad < 0xD419) { sid[ad - 0xD400] = val; writes.push(ad - 0xD400, val); return; }
+      if (ad >= 0xD400 && ad < 0xD419) { sid[ad - 0xD400] = val; writes.push(ad - 0xD400, val); times.push(cpu.cycles - t0); return; }
       if (ad >= 0xD419 && ad < 0xD41C) return;
       throw new Error('write $' + ad.toString(16));
     },
@@ -255,18 +255,18 @@ function createDriver(D, C64Cpu) {
   const run = (ad) => cpu.call(ad, {}, { maxSteps: 100000 });
   return {
     sid,
-    get writes() { return writes; },
+    get writes() { return writes; }, get times() { return times; },
     get mem() { return m; },
     init(t) {
       c = D.list[t];
       m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x35, io });
-      sid.fill(0); over = false; writes = [];
+      sid.fill(0); over = false; writes = []; times = []; t0 = cpu ? cpu.cycles : 0;
       if (c.tune) { m[0xB806] = 0; m[0xB804] = c.tune; run(0xB80A); }
       else { run(0xB80A); m[0xB806] = 1; m[0xB805] = c.sfx; }
     },
-    stop() { over = true; writes = []; },
+    stop() { over = true; writes = []; times = []; t0 = cpu ? cpu.cycles : 0; },
     play() {
-      writes = [];
+      writes = []; times = []; t0 = cpu ? cpu.cycles : 0;
       if (over) return;
       run(0xB800);
       if (c.sfx && !m[0xC0BB] && !m[0xB805]) over = true;
@@ -716,18 +716,18 @@ function raceFrame(m, colour) {
 function createLoaderTune(D, C64Cpu) {
   const mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
   const image = D.blocks.map(([a, s]) => [a, Uint8Array.from(atob(s), (c) => c.charCodeAt(0))]);
-  let writes = [], on = false;
+  let writes = [], times = [], t0 = 0, on = false;
   const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: {
     read: (a) => (a >= 0xD400 && a <= 0xD41F ? 0 : mem[a]),
-    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); } else mem[a] = v; },
+    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); times.push(cpu.cycles - t0); } else mem[a] = v; },
   } });
-  const set = (list) => { for (const [r, v] of list || []) { sid[r] = v; writes.push(r, v); } };
+  const set = (list) => { for (const [r, v] of list || []) { sid[r] = v; writes.push(r, v); times.push(cpu.cycles - t0); } };
   return {
-    init() { mem.fill(0); for (const [a, b] of image) mem.set(b, a); sid.fill(0); writes = [];
+    init() { mem.fill(0); for (const [a, b] of image) mem.set(b, a); sid.fill(0); writes = []; times = []; t0 = cpu.cycles;
       set(D.before); cpu.call(D.init, {}, { maxSteps: 200000 }); set(D.after); on = true; },
     stop() { on = false; },
-    play() { writes = []; if (on) cpu.call(D.play, {}, { maxSteps: 200000 }); },
-    sid, get writes() { return writes; }, playing: () => on, mem,
+    play() { writes = []; times = []; t0 = cpu.cycles; if (on) cpu.call(D.play, {}, { maxSteps: 200000 }); },
+    sid, get writes() { return writes; }, get times() { return times; }, playing: () => on, mem,
   };
 }
 // end of pd-loader-tune
