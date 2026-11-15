@@ -162,3 +162,7 @@ Comparing the two retained files with the level 1-2 load showed what they are: a
 The level screenshots came from snapshots taken at the start of each level, reached one after another by setting `$03E4` to four while the main thread waited at `$0A49`, which starts the transition to the next level. The bridge frames were taken from a snapshot at the start of level 1-2 while walking right.
 
 The pages lost the terrain-byte slider, the controls and weapons tables, the silent and unnamed sound selectors, the reference image and the playfield section, and their captions lost their account of how the run checked them. The two Discoveries bugs stay as leads in the level 5-1 and 5-2 facts: neither has a repro in normal play. The page test holds the new boss viewer, bridge window and farewell rows to the listings.
+
+## The story pictures, 15 November 2026
+
+The maintainer asked what the Graphics tab's story pictures are and when they appear. A capture of the story in VICE from its entry, one screenshot every 75 frames, showed the order of the pictures, the six close-ups drawn over larger pictures, and the line of text in the lower border; it ran about 550 seconds. The capture also corrected the order of the reader's initial keys in the intro facts, which the decoded paragraphs depend on. The Graphics tab now steps through the sixteen pictures as the screen shows them, each with its own paragraph of the story, and keeps the stored pictures one button away.

@@ -34,6 +34,11 @@ console.log('Graphics:',shapes,'sprite pieces,',A.groups.length,'groups, sixteen
  for(let i=0;i<4;i++)assert.equal((m[0x8742+i]-m[0x8741+i])&255,21,'boss bands 21 lines apart');
  // The full-pose installer copies fifteen entries per facing into matrices indexed column*5+row.
  assert.deepStrictEqual(Array.from(m.slice(0x8293,0x8295)),[0xa2,0x0e]);console.log('Boss:',Object.keys(B.shapes).length,'shapes and both facings matched');}
+// The story text shown with each picture: the intro's rolling-key stream split at its sixteen picture markers.
+{const m=image('intro'),out=[];let k277=0xd3,k801=0x13,k1b=0x79;for(let a=0x94c4;a<0xa244;a++){out.push((((m[a]^k277)-k801)&255)^k1b);k1b^=k277;k801=(k801+k1b)&255;k277^=k801;}
+ assert.equal(out[0],0x20);const paras=[[]];for(const v of out){if(v===0xff)paras.push([]);else paras[paras.length-1].push(v);}assert.equal(paras.length,17);
+ let base=null;A.story.forEach((s,i)=>{assert.equal(s.text,String.fromCharCode(...paras[i]).split(/\s+/).filter(Boolean).join(' '),'story '+(i+1));const inset=A.pictures[i].rows<=12;if(!inset)base=i+1;assert.equal(s.over,inset?base:null);});
+ assert.equal(A.story.length,16);console.log('Story: sixteen paragraphs decoded from the intro and matched');}
 // Discoveries: the level 1-2 bridge window and its six falling strips, and the farewell rows keyed by the ending's program.
 const X=readData('discoveries.html');
 {const m=image('level-1-2'),Q=X.bridge,map=bytes(Q.map),w=m[0x8fc0]+256*m[0x8fc1];assert.equal(map.length,Q.width*Q.height);
