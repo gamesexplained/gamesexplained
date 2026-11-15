@@ -314,3 +314,22 @@ All on VICE (`orientation.md`), from `play-level1.vsf` unless said.
   game. What it did not reach is read from the code: worms A and B and
   the later level stages, maze 3, two of the treasure's three values and
   eating worms in the bonus run. None of the dead code listed above ran.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the VICE emulator, with the level number set to 19 by hand, the next level showed 10.
+- In VICE, stopping the machine after each one showed the same values, on an 8580 and, from a fresh start, on a 6581.
+- In VICE, holding 2, 1, CTRL, and ← for a quarter of a second each moved the player right, up, left, and down, and SPACE started a game.
+- Both from the VICE emulator, after a game ended with its score set to 300 by hand and the name DCC entered.
+
+### graphics.html
+
+- The shapes are the character set at `$2800`, from the listing's bytes, and they change because the page runs the game's own interrupt, `irq_handler` (`$3CB3`), on the kit's 6502 once a jiffy, the tick of the C64's clock, 60 times a second.
+
+### index.html
+
+- The bonus run in the VICE emulator: the blocks are character `$00`, a wall.

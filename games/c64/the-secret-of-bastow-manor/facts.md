@@ -341,3 +341,34 @@ Every check was made by an agent on claude-opus-5-5 that wrote none of the comme
 | maintainer's sample of 60 (`air`) | 5150 | 1 wrong (1.7 %, 95 % interval 0.3 % to 8.9 %), within the mark | 1, and 1 more that said the same thing |
 
 The errors were in details, never in what a comment is about: which places are dark, what a flag means, sprite and voice numbers, colours, line numbers off by one, "every" claims that fail for one case, and calling the chest's combination the safe's. The comments are on groups of lines, not on each line. The annotation itself was written on claude-sonnet-5-5, which is not a proven model, so the last three rows are a maintainer's check (`kit/CHECKING.md`), made by `air` with fresh checkers on claude-opus-5-5. Its first sample found what a verb answers when the noun is right but the object is not in the pack (`i can't do that...yet`, line 1630) left out of three "anything else" claims, a condition the trapdoor needs on both its lines, and a misquoted prompt. Its audit corrected, among the comments, where the cursor sits after line 1900, what the ladder's flag `DG` means, the line that leaves `E` for `which one`, and quoted game text; and in this file the layout table's addresses and line ranges, the list of special exits, the meanings of `BM`, `BN`, `LL`, `DM`, `MJ` and `X`, the dogs' hiding places and the place of the `BM-2` save. Its second sample found that a refused `get ladder` or `drop ladder` in place 4 still changes `DG`.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### controls.html
+
+- That consequence was read from the code and not tried in the emulator.
+- Eighteen of them were used in the emulator by replaying a published walkthrough. Six were not: `eat`, `help`, `inventory` (the one-letter `i` was used instead), `quit`, `ring` and `save`, which are read from the code only.
+- The save and restore routines match each other and those two files, but no game was saved to a tape in the emulator.
+
+### discoveries.html
+
+- What the program does that its screens never say, found by reading its BASIC lines and trying each one in the emulator.
+- In the emulator, `LIST 5` printed `5` and nothing else, and with the byte put back by hand line 5 listed whole.
+- Typing `IBDF` at the lock opened the chest in the emulator.
+- In the emulator the winning screen came up with the gold left in the chest.
+
+### gameplay.html
+
+- The howling and barking were seen in the emulator.
+- The death itself was read from the code, since the route never lets the counter run out.
+
+### levels.html
+
+- The pictures below are the game’s own screens from the emulator.
+- The pictures are screenshots of the game running in the VICE emulator.
+
+### music.html
+
+- One pass of the empty loop took 1.24 ms in the emulator: 124 clock ticks at 50 a second for 2,000 passes, timed at the READY prompt with `TI`, so the 14 sounded notes last about 6.5 seconds.

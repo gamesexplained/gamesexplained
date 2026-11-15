@@ -299,3 +299,32 @@ All from `work/play-start.vsf` in vice-mcp v3.14.0, 31 October 2026.
   inventory pieces, each the same bytes as the file read off the disk by
   `kit/c64/disk.py`. Not asked for: `R01000`, `R01081`, `R01083`-`R01086`,
   `R01088`, `R01099`, `B01001I` and `B01250R`.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, after SCORE in the fuzzy area with the gems put there.
+- Drawn by the page from each saved game's room and item places, with the same room drawing as the Rooms tab, which `test_pictures.js` holds to the game's own.
+- Read from the 1984 disk's directory and block map with `kit/c64/disk.py`. Tested in the emulator on fresh copies of the disk: a game saved to area B, and another to area C, each went into track 32 sectors 4, 14 and 6, and afterwards areas A and D both restored it.
+- In the emulator, after the dome was drawn, the screen bytes read `$26`, the sign's red and blue, and after the cavern `$86`, the cage's; the pictures alone give `$86` and `$8E`.
+- In the emulator, D started the game again from the colour test and typed these lines into the parser a character at a time.
+- In the emulator, `$FF` put straight into the keyboard queue at the prompt gave a cleared screen and READY.
+- In the emulator, with counting checkpoints, one V ran the action table (`$5B06`) twice.
+- In the emulator, E XYZZY in the dome went into the tunnel.
+
+### index.html
+
+- `test_pictures.js` runs the game's own decoder on all 70 picture files on the disk and on 45 rooms drawn whole, and the page's matches it in every byte of the bitmap, the screen's colours, colour RAM and the background.
+- Drawn by the page from one frame of the first room, recorded in the emulator with `kit/c64/frame.py`: the video chip's registers as the frame begins and the eight writes the interrupt makes on the way down, run through the site's model of the chip.
+- All 104,448 pixels match the emulator's picture of the same frame.
+- `test_parser.js` runs the game's own code on 20,202 lines, every verb with every noun, every letter alone and 3,000 random lines among them, and the page gives the same verb, noun and reply for each.
+- The disk's files were read with `kit/c64/disk.py` from Commodore's 1984 disk. In the emulator, 60 of the 70 picture files were caught as the game's loader brought them in, and each was the same, byte for byte, as the file on the disk.
+
+### play.html
+
+- A load takes as long as it takes on a C64 with a 1541, measured in the emulator, and a name with no file gets the same answer as from the drive.
+- A poll of the keyboard, a column of a picture, a fill, a copy and a delay each cost what the game's code costs, and the clock gives the game as many cycles a second as the emulator does: 111 polls of the keyboard a frame, as measured there.
+- The site's model of the video chip draws each frame from the port's memory, with the interrupt's eight writes at the lines and cycles the emulator recorded.
