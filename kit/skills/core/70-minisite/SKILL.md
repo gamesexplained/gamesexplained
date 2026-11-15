@@ -216,6 +216,16 @@ its music or its maps can put that first instead.
   `<style>` or its own stylesheet) share with `site.css`, unless the rule
   is the site's copied word for word or one of the template's. Prefix the
   page's own classes and it never comes up.
+- Buttons, menus, fields and sliders take their look from `site.css`, so
+  a reader meets the same controls on every game. A page's rules for them
+  give size and place only (padding, widths, gaps, font size); a state of
+  the page's own, a key held or a tune playing, is drawn with
+  `var(--btn-on-bg)`, `var(--btn-on-ink)` and `var(--btn-on-line)`. Where
+  the buttons are the picture (a keyboard, a joystick, swatches, a map
+  grid), mark the widget's container `data-own-look` and put
+  `[data-own-look]` in its rules' selectors. `check_docs.py` fails any
+  other rule that colours, borders, rounds or sets the typeface of a
+  control.
 - Start from `kit/template/index.html` for the design tokens and layout.
   Keep its `<!-- tabs -->` marker; the build puts the tab bar there.
   A finished example to borrow patterns from is any Gold game in `games/`:

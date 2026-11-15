@@ -40,9 +40,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .sb-shots img{width:100%;height:auto;image-rendering:pixelated;border-radius:4px;display:block}
 .sb-cv{max-width:100%;height:auto;image-rendering:pixelated;display:block;border-radius:4px}
 .sb-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
-.sb-bar button,.sb-key{font-family:var(--fm);font-size:12.5px;line-height:1.3;padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);cursor:pointer}
-.sb-bar button:hover,.sb-key:hover{border-color:var(--accent)}
-.sb-bar button[aria-pressed="true"],.sb-key[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.sb-bar button,.sb-key{font-size:12.5px;line-height:1.3;padding:5px 10px}
+.sb-key[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
 .sb-out{font-size:15px;color:var(--ink-soft);margin:12px 0 0;min-height:3em}
 .sb-out b{color:var(--ink)}
 .sb-tbl{border-collapse:collapse;font-size:14.5px;width:100%;margin:6px 0 0}
@@ -58,18 +57,18 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .sb-arena canvas{flex:0 0 auto}
 .sb-arena .sb-side{flex:1 1 260px;min-width:0}
 .sb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
-.sb-grid button{padding:4px 0 2px;border:1px solid var(--line);border-radius:6px;background:#3a3a3a;cursor:pointer;display:flex;flex-direction:column;align-items:center}
-.sb-grid button[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:-1px}
+.sb-grid[data-own-look] button{padding:4px 0 2px;border:1px solid var(--line);border-radius:6px;background:#3a3a3a;cursor:pointer;display:flex;flex-direction:column;align-items:center}
+.sb-grid[data-own-look] button[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:-1px}
 .sb-grid span{font-family:var(--fm);font-size:11px;color:#ddd}
 .sb-grp{font-size:12.5px;color:var(--ink-mute);margin:12px 0 6px;font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em}
 .sb-teams td .sb-sbar{display:inline-block;height:10px;background:var(--accent);border-radius:2px;vertical-align:middle}
 .sb-sw{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.2);vertical-align:-2px}
 .sb-kb{display:flex;flex-direction:column;gap:5px;overflow-x:auto;padding-bottom:4px}
 .sb-kb div{display:flex;gap:5px}
-.sb-kb .sb-key{min-width:34px;padding:6px 4px;text-align:center;flex:0 0 auto}
-.sb-kb .sb-key.p2{background:#e6eefb;border-color:#9db6e0}
-.sb-kb .sb-key.p1{background:#fbe9e6;border-color:#e0a69d}
-.sb-kb .sb-key.both{background:#ececec;border-color:#a8a8a8}
+.sb-kb[data-own-look] .sb-key{min-width:34px;padding:6px 4px;text-align:center;flex:0 0 auto}
+.sb-kb[data-own-look] .sb-key.p2{background:#e6eefb;border-color:#9db6e0}
+.sb-kb[data-own-look] .sb-key.p1{background:#fbe9e6;border-color:#e0a69d}
+.sb-kb[data-own-look] .sb-key.both{background:#ececec;border-color:#a8a8a8}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -188,7 +187,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Ten keys stand in for the two joysticks</h2>
   <p class="lede">Both loads read the keyboard as a second pair of joysticks, five keys for each.</p>
   <div class="plate">
-    <div class="sb-kb" id="sb-kb"></div>
+    <div class="sb-kb" id="sb-kb" data-own-look></div>
     <p class="sb-out" id="sb-kb-out" aria-live="polite">Press a key on the drawing to see what the game reads from it.</p>
     <p class="cap">The keys come from the game's tables at <code>$1C4D</code> and <code>$1C53</code>, stored as key numbers. The C64 wires its keys in a grid of eight rows and eight columns, the keyboard matrix, and a key's number is eight times its row plus its column.</p>
   </div>
@@ -447,7 +446,7 @@ function pickups(G, F) {
   el.innerHTML = '';
   for (const [title, a, b] of [['Armour, types 0-7', 0, 8], ['Tokens, types 8-19', 8, 20], ['Coins, types 20-31', 20, 32]]) {
     const g = document.createElement('p'); g.className = 'sb-grp'; g.textContent = title; el.appendChild(g);
-    const grid = document.createElement('div'); grid.className = 'sb-grid'; el.appendChild(grid);
+    const grid = document.createElement('div'); grid.className = 'sb-grid'; grid.setAttribute('data-own-look', ''); el.appendChild(grid);
     for (let t = a; t < b; t++) {
       const btn = document.createElement('button');
       btn.type = 'button'; btn.setAttribute('aria-pressed', 'false');
