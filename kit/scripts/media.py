@@ -36,6 +36,10 @@ media.json, in the game's folder (one for the whole game, whatever its parts):
               "bytes": 9088, "sha256": "...", "also": ["side3"], "answer": "part",
               "part": "combat", "at": "$0800", "matched": 9080}, ...]}
 
+An item with "traced": true is one no reader lists, added by `trace` from what the game was seen
+to read or write (#902). A scan keeps it while its bytes on the image are the same, and opens it
+again, saying so, when they are not.
+
 "bytes" counts what reaches memory (a PRG without its address); "sha256" is of the item as it
 lies on the medium. An item whose bytes another holds exactly is listed once, and "also" names
 the others ("side3", or "side3: OTHER NAME"). An open item the scan matched in part carries
@@ -48,6 +52,13 @@ Usage:
                     media.json; a part's listing that holds 90 % of an open file's or bank's bytes
                     answers it; answers already given are kept for every item whose bytes have not
                     changed
+  media.py trace <game dir> [<name>=]<image> <track> <sector>[-<last>] <answer> --why TEXT
+                  [--label TEXT] [--part ID] [--at $ADDR] [--packed] [--page PAGE]
+                    add sectors the game was traced reading or writing with the drive's block
+                    commands that no item holds, because the disk's map marks them free (a high
+                    score table): the image is one the ledger lists, why says what the trace showed
+                    (the routine and the address the bytes go to), and the item is marked
+                    "traced", so a later scan keeps it, while its bytes stay the same
   media.py answer <game dir> <pattern> <answer> [--part ID] [--at $ADDR] [--packed]
                   [--page PAGE] [--why TEXT] [--open-only]
                     answer every item whose label (or "image: label") matches the pattern
@@ -111,8 +122,8 @@ def load(gdir):
 
 
 IMAGE_KEYS = ("name", "file", "what", "sha256", "unread", "missing")
-ITEM_KEYS = ("image", "label", "place", "load", "bytes", "sha256", "problem", "also", "answer", "part", "at",
-             "matched", "packed", "page", "why", "near")
+ITEM_KEYS = ("image", "label", "place", "load", "bytes", "sha256", "traced", "problem", "also", "answer", "part",
+             "at", "matched", "packed", "page", "why", "near")
 
 
 def save(gdir, led):
@@ -228,7 +239,7 @@ def scan(gdir, images):
     kept = {(i["image"], i["label"], i["sha256"]): i for i in old["items"]}
     by_bytes = {i["sha256"]: i for i in old["items"] if i.get("bytes")}   # an image renamed or reordered
     names, led = Counter(), {"images": [], "items": []}
-    by_hash = {}
+    by_hash, paths = {}, {}
     for arg in images:
         stem, eq, path = arg.partition("=")
         if not eq or not stem or os.path.exists(arg):
@@ -246,6 +257,7 @@ def scan(gdir, images):
         if got.get("missing"):
             img["missing"] = got["missing"]
         led["images"].append(img)
+        paths[name] = path
         labels = Counter()
         for it in got["items"] or []:
             labels[it["label"]] += 1
@@ -275,6 +287,7 @@ def scan(gdir, images):
             led["items"].append(item)
             if it["raw"]:
                 by_hash[h] = item
+    retraced = keep_traced(rd, old, led, paths)
     find = Finder(gdir)
     for item in led["items"]:
         data, pieces = item.pop("_data"), item.pop("_pieces")
@@ -296,10 +309,115 @@ def scan(gdir, images):
     gone = [k for k, i in kept.items() if k[2] not in now and i["answer"] != "open"]
     save(gdir, led)
     report(gdir)
+    for line in retraced:
+        print(line)
     if gone:
         print(f"\n{len(gone)} answered item(s) of the old media.json are on none of these images, and were dropped:")
         for im, lab, _ in gone[:20]:
             print(f"  {im}: {lab}")
+
+
+# --- traced sectors --------------------------------------------------------------------------
+
+def sector_span(place):
+    """(track, first, last) of an item's place on a disk, or None: a run lists "sectors": [a, b],
+    and a row written by hand may give "sector": s."""
+    if not isinstance(place, dict) or "track" not in place or "file" in place:
+        return None
+    if isinstance(place.get("sectors"), list) and len(place["sectors"]) == 2:
+        return place["track"], place["sectors"][0], place["sectors"][1]
+    if isinstance(place.get("sector"), int):
+        return place["track"], place["sector"], place["sector"]
+    return None
+
+
+def traced_item(rd, image, path, track, first, last):
+    """A new traced item's place, size and hash, from the reader's sectors()."""
+    raw = rd.sectors(path, track, first, last)
+    return {"image": image, "label": f"track {track}, sector {first}" if first == last
+            else f"track {track}, sectors {first}-{last}",
+            "place": {"track": track, "sectors": [first, last]}, "bytes": len(raw),
+            "sha256": hashlib.sha256(raw).hexdigest(), "traced": True}
+
+
+def keep_traced(rd, old, led, paths):
+    """Put the old ledger's traced items back into a new scan's, each read again from its image:
+    kept as it was while its bytes are the same, opened again when they are not, and handed to
+    an item of the scan's own that now lists the same sectors (the map marks them used).
+    Returns what to say about the ones that changed."""
+    said = []
+    for t in [i for i in old["items"] if i.get("traced")]:
+        span, path = sector_span(t["place"]), paths.get(t["image"])
+        if span is None or path is None or not hasattr(rd, "sectors"):
+            continue                                 # the image was not scanned: dropped with the rest
+        same = next((i for i in led["items"] if i["image"] == t["image"] and sector_span(i["place"]) == span), None)
+        if same is not None:
+            if same["answer"] == "open":
+                same.update({k: v for k, v in t.items() if k in ("answer", "part", "at", "packed", "page", "why")})
+            said.append(f"{t['image']}: {t['label']} is listed by the scan now, as {same['label']}: its answer moved there")
+            continue
+        raw = rd.sectors(path, *span)
+        item = dict(t, bytes=len(raw), _data=raw, _pieces=[])
+        if hashlib.sha256(raw).hexdigest() != t["sha256"]:
+            for k in ("part", "at", "matched", "packed", "page", "near"):
+                item.pop(k, None)
+            item.update(sha256=hashlib.sha256(raw).hexdigest(), answer="open",
+                        why=f"traced; its bytes changed since the answer ({t['answer']}: {t.get('why', '')})")
+            said.append(f"{t['image']}: {t['label']}, a traced item, holds other bytes now: it is open again")
+        led["items"].append(item)
+    return said
+
+
+def trace(gdir, image, span, ans, why, label=None, part=None, at=None, packed=False, page=None):
+    led = load(gdir)
+    if led is None:
+        sys.exit(f"{gdir}: no {FILE}; run media.py scan first")
+    rd = reader(game_of(gdir)["platform"])
+    if rd is None or not hasattr(rd, "sectors"):
+        sys.exit("this machine's media reader cannot read sectors yet, so nothing can be traced here")
+    if not str(why or "").strip():
+        sys.exit("--why says what the trace showed: the routine that reads or writes the sectors, and where "
+                 "their bytes go")
+    stem, eq, path = image.partition("=")
+    if not eq or os.path.exists(image):
+        stem, path = None, image
+    if not os.path.isfile(path):
+        sys.exit(f"{path}: no such file")
+    h = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    img = next((i for i in led["images"] if (stem is None or i["name"] == stem) and i.get("sha256") == h), None)
+    if img is None:
+        sys.exit(f"{path} is " + (f"not the image {stem}" if stem else "none of the images") + f" {FILE} lists: "
+                 "scan it first, or give the ledger's name for it, <name>=<image>")
+    track, first, last = span
+    if last < first:
+        sys.exit("the sectors run backwards")
+    for i in led["items"]:
+        got = sector_span(i["place"]) if i["image"] == img["name"] else None
+        if got and got[0] == track and not (got[2] < first or got[1] > last) and not i.get("traced"):
+            sys.exit(f"{img['name']}: {i['label']} lists those sectors already: answer it with media.py answer")
+    item = traced_item(rd, img["name"], path, track, first, last)
+    if label:
+        item["label"] = label
+    item.update(answer=ans, why=why)
+    if ans == "part":
+        P = part_dirs(gdir)
+        if "" not in P and part not in P:
+            sys.exit(f"--part names one of the game's parts: {', '.join(sorted(P))}")
+        if part:
+            item["part"] = part
+        if at:
+            item["at"] = hexa(unhex(at))
+        if packed:
+            item["packed"] = True
+    if page:
+        if not os.path.isfile(os.path.join(gdir, page)):
+            sys.exit(f"--page {page}: no such page in the game's folder")
+        item["page"] = page
+    led["items"] = [i for i in led["items"]
+                    if not (i.get("traced") and i["image"] == img["name"] and sector_span(i["place"]) == (track, first, last))]
+    led["items"].append(item)
+    save(gdir, led)
+    print(f"{img['name']}: {item['label']}, {item['bytes']} bytes, traced and answered {ans}")
 
 
 # --- answering -------------------------------------------------------------------------------
@@ -475,6 +593,19 @@ def main():
         if len(sys.argv) < 4:
             sys.exit("media.py scan <game dir> [<name>=]<image> [...]")
         scan(sys.argv[2], sys.argv[3:])
+        return 0
+    if sys.argv[1] == "trace":
+        ap = argparse.ArgumentParser(prog="media.py trace")
+        ap.add_argument("gdir"); ap.add_argument("image"); ap.add_argument("track", type=int)
+        ap.add_argument("sectors"); ap.add_argument("answer", choices=ANSWERS)
+        ap.add_argument("--why"); ap.add_argument("--label"); ap.add_argument("--part"); ap.add_argument("--at")
+        ap.add_argument("--packed", action="store_true"); ap.add_argument("--page")
+        a = ap.parse_args(sys.argv[2:])
+        m = re.fullmatch(r"(\d+)(?:-(\d+))?", a.sectors)
+        if not m:
+            sys.exit("sectors: a number, or a first and last, 3-7")
+        span = (a.track, int(m.group(1)), int(m.group(2) or m.group(1)))
+        trace(a.gdir, a.image, span, a.answer, a.why, a.label, a.part, a.at, a.packed, a.page)
         return 0
     if sys.argv[1] == "answer":
         ap = argparse.ArgumentParser(prog="media.py answer")

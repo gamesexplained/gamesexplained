@@ -25,6 +25,8 @@ format of the game's own). Each item is a dict:
   problem  why it cannot be read whole (a decoy's chain that leaves the disk), or absent
   blank    True for a bank of one value throughout
 
+  sectors(path, track, first, last) -> the bytes of a run of sectors, for a traced item
+
 A .d64 or .g64 (kit/c64/disk.py): every directory entry whose chain starts on the disk,
 scratched ones too, then each run of consecutive sectors on a track that the disk's
 allocation map marks as used and that no file holds (what a game reads with the drive's block
@@ -137,6 +139,22 @@ def program_items(path):
         sys.exit(f"{path}: too short to hold a load address")
     return {"what": "program file", "items": [{"label": name, "place": {"file": name, "type": "PRG"},
                                                "load": blob[0] | blob[1] << 8, "data": blob[2:], "raw": blob}]}
+
+
+def sectors(path, track, first, last):
+    """The bytes of sectors first..last of a track on a .d64 or .g64, as the drive's block
+    commands read them: what kit/scripts/media.py's `trace` lists when the game reads or writes
+    sectors that no file holds and the disk's map marks free. Exits on an image that is not a
+    disk, and on a sector the image lacks or cannot read."""
+    if not path.lower().endswith((".d64", ".g64")):
+        sys.exit(f"{path}: only a disk (.d64 or .g64) has sectors to trace")
+    d = disk_mod.Disk(path)
+    out = bytearray()
+    for s in range(first, last + 1):
+        if (track, s) not in d.sectors or (track, s) in d.bad:
+            sys.exit(f"{path}: track {track}, sector {s} is not on the image, or cannot be read")
+        out += d.sectors[(track, s)]
+    return bytes(out)
 
 
 def items(path):
