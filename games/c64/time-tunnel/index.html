@@ -260,30 +260,30 @@ function createDriver(D, C64Cpu) {
   for (const [ad, bytes] of D.mem) base.set(bytes, ad);
   base[0xAF] = 0xFF;
   const sid = new Uint8Array(25);
-  let m, cpu, c, writes = [], over = false;
+  let m, cpu, c, writes = [], times = [], t0 = 0, over = false;
   const io = {
     read(ad) { throw new Error('read $' + ad.toString(16)); },
     write(ad, val) {
-      if (ad >= 0xD400 && ad < 0xD419) { sid[ad - 0xD400] = val; writes.push(ad - 0xD400, val); return; }
+      if (ad >= 0xD400 && ad < 0xD419) { sid[ad - 0xD400] = val; writes.push(ad - 0xD400, val); times.push(cpu.cycles - t0); return; }
       throw new Error('write $' + ad.toString(16));
     },
   };
   const run = (ad, regs) => cpu.call(ad, regs || {}, { maxSteps: 100000 });
   return {
     sid,
-    get writes() { return writes; },
+    get writes() { return writes; }, get times() { return times; },
     get mem() { return m; },
     init(t) {
       c = D.list[t];
       m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x35, io });
-      sid.fill(0); over = false; writes = [];
+      sid.fill(0); over = false; writes = []; times = []; t0 = cpu ? cpu.cycles : 0;
       cpu.pc = 0x0EA4; cpu.run({ until: 0x0EA9, maxSteps: 10 });
       if (c.sfx === undefined) { run(0xBCAA, { x: c.tune * 4 }); m[0xA0] = c.mask; }
       else run(0xBB32, { x: c.sfx });
     },
-    stop() { over = true; writes = []; },
+    stop() { over = true; writes = []; times = []; t0 = cpu ? cpu.cycles : 0; },
     play() {
-      writes = [];
+      writes = []; times = []; t0 = cpu ? cpu.cycles : 0;
       if (over) return;
       if (c.sfx === undefined) run(0xBCEE);
       else { run(0xBB51); if (!m[0x7A]) over = true; }

@@ -206,10 +206,10 @@ function createDriver(D, C64Cpu) {
   'use strict';
   const m = new Uint8Array(0x10000);
   const sid = new Uint8Array(25);
-  let writes = [], bus = 0, env3 = 0, osc3 = 0, tune = -1;
+  let writes = [], times = [], t0 = 0, bus = 0, env3 = 0, osc3 = 0, tune = -1;
   const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {             // the chips at $D000-$DFFF
     read(ad) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; } return m[ad]; },
-    write(ad, val) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; } m[ad] = val; },
+    write(ad, val) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); times.push(cpu.cycles - t0); } bus = val; return; } m[ad] = val; },
   } });
   // A call starts with A, X and Y as regs gives them (0 otherwise) and decimal mode off. At the
   // sound effects' start (P.start) it notes the sound each voice is given: Y, for the voice in X.
@@ -217,7 +217,7 @@ function createDriver(D, C64Cpu) {
     const hooks = P.start === undefined ? null : { [P.start]: (c) => { started[c.x & 3] = c.y; } };
     cpu.call(entry, { a: regs.a || 0, x: regs.x || 0, y: regs.y || 0, d: 0 }, { hooks, maxSteps: 200000 });
   }
-  let P = null, T = null, pending = [], started = [], frame = 0;
+  let P = null, T = null, pending = [], pendingTimes = [], started = [], frame = 0;
   const busy = () => !Array.isArray(P.on) ? !!m[P.on]
     : !(T.sfx.end && frame >= T.sfx.end) && P.on.concat(T.sfx.on || []).some((ad) => m[ad]);
   const start = (pokes, calls) => {
@@ -226,7 +226,7 @@ function createDriver(D, C64Cpu) {
   };
   return {
     sid,
-    get writes() { return writes; },
+    get writes() { return writes; }, get times() { return times; },
     readback(e3, o3, b) { env3 = e3; osc3 = o3; bus = b; },
     init(t) {
       T = D.tunes[t];
@@ -234,14 +234,15 @@ function createDriver(D, C64Cpu) {
       m.fill(0);
       for (const name of T.blocks) for (const [base, hex] of D.blocks[name]) for (let i = 0; i < hex.length / 2; i++) m[base + i] = parseInt(hex.substr(2 * i, 2), 16);
       if (T.hooks) T.hooks.forEach((h, i) => { m[P.hooks[i]] = h; });
-      writes = [];
+      writes = []; times = []; t0 = cpu.cycles;
       if (T.sfx) start(T.sfx.pokes, T.sfx.calls);
       else call(P.play, { y: T.at & 255, x: T.at >> 8 });
-      pending = writes; writes = [];
+      pending = writes; pendingTimes = times; writes = []; times = [];
     },
-    stop() { writes = []; pending = []; if (P && !T.sfx) m[P.on] = 0; tune = -1; },
+    stop() { writes = []; times = []; pending = []; pendingTimes = []; if (P && !T.sfx) m[P.on] = 0; tune = -1; },
     play() {
-      writes = pending; pending = [];
+      writes = pending; pending = []; times = pendingTimes; pendingTimes = [];
+      t0 = cpu.cycles - (times.length ? times[times.length - 1] : 0);   // this frame's writes after init's
       if (tune < 0 || !busy()) return;
       if (T.sfx) for (const [f, pokes, calls] of T.sfx.later || []) if (f === frame) start(pokes, calls);
       for (const e of [].concat(T.sfx && T.sfx.frame || P.frame)) call(e, {});

@@ -413,25 +413,25 @@ function createDriver(D, C64Cpu) {
   const base = new Uint8Array(0x10000);
   for (const [ad, bytes] of D.mem) base.set(bytes, ad);
   const sid = new Uint8Array(25);
-  let m, cpu, tune, writes = [], bus = 0, env3 = 0, osc3 = 0;
+  let m, cpu, tune, writes = [], times = [], t0 = 0, bus = 0, env3 = 0, osc3 = 0;
   const io = {                                                  // the chips at $D000-$DFFF
     read(ad) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; } return m[ad]; },
-    write(ad, val) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; } m[ad] = val; },
+    write(ad, val) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); times.push(cpu.cycles - t0); } bus = val; return; } m[ad] = val; },
   };
   const call = () => cpu.call(0x0500, { a: 0, x: 0, y: 0, n: 0, v: 0, d: 0, z: 0, c: 0 }, { maxSteps: 200000 });
   return {
     sid,
-    get writes() { return writes; },
+    get writes() { return writes; }, get times() { return times; },
     readback(e3, o3, b) { env3 = e3; osc3 = o3; bus = b; },
     init(t) {
       tune = D.tunes[t];
       m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x35, io });
-      sid.fill(0); writes = []; bus = 0;
+      sid.fill(0); writes = []; times = []; t0 = cpu ? cpu.cycles : 0; bus = 0;
       m[0x47] = 5;
       if (tune.title) { m[0x90] = 0; call(); m[0x90] = 0x11; call(); } else { m[0x90] = 0x12; call(); m[0x91] = tune.effect; }
     },
-    stop() { writes = []; m[0x90] = 0; },
-    play() { writes = []; call(); },
+    stop() { writes = []; times = []; t0 = cpu ? cpu.cycles : 0; m[0x90] = 0; },
+    play() { writes = []; times = []; t0 = cpu ? cpu.cycles : 0; call(); },
     playing() { return m[0x90] !== 0 && (tune.title || (m[0x9D] | m[0x9E] | m[0x91] | m[0x92]) !== 0); },
     voice(x) { return x === 0 ? { effect: m[0x9D] } : x === 1 ? { effect: m[0x9E] } : { effect: 0 }; },
   };

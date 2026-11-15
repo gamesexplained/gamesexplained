@@ -126,14 +126,14 @@ function createDriver(D, C64Cpu) {
   'use strict';
   const m = new Uint8Array(0x10000);
   const sid = new Uint8Array(25);
-  let writes = [], bus = 0, env3 = 0, osc3 = 0, tune = -1;
+  let writes = [], times = [], t0 = 0, bus = 0, env3 = 0, osc3 = 0, tune = -1;
   const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {             // the chips at $D000-$DFFF
     read(ad) {
       if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; }
       return m[ad];
     },
     write(ad, val) {
-      if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; }
+      if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); times.push(cpu.cycles - t0); } bus = val; return; }
       m[ad] = val;
     },
   } });
@@ -146,16 +146,16 @@ function createDriver(D, C64Cpu) {
   const FLAG = [0xE69E, 0xE69E, 0xA03C];
   return {
     sid,
-    get writes() { return writes; },
+    get writes() { return writes; }, get times() { return times; },
     readback(e3, o3, b) { env3 = e3; osc3 = o3; bus = b; },
     init(t) {
-      fresh(); writes = []; tune = t;
+      fresh(); writes = []; times = []; t0 = cpu.cycles; tune = t;
       if (t < 2) { call(0xE003, { a: 0x00, x: t === 0 ? 0x10 : 0xEA }); m[0xE69E] = 1; }
       else { call(0xA039, { a: 0x00, x: 0xE8 }); m[0xA03C] = 1; }
     },
-    stop() { writes = []; if (tune >= 0) m[FLAG[tune]] = 0; tune = -1; },
+    stop() { writes = []; times = []; t0 = cpu.cycles; if (tune >= 0) m[FLAG[tune]] = 0; tune = -1; },
     play() {
-      writes = [];
+      writes = []; times = []; t0 = cpu.cycles;
       if (tune < 0 || !m[FLAG[tune]]) return;
       call(tune < 2 ? 0xE000 : 0xA036, {});
     },
@@ -181,14 +181,14 @@ function createSfxDriver(D, C64Cpu) {
   'use strict';
   const m = new Uint8Array(0x10000);
   const sid = new Uint8Array(25);
-  let writes = [], bus = 0, env3 = 0, osc3 = 0, on = false;
+  let writes = [], times = [], t0 = 0, bus = 0, env3 = 0, osc3 = 0, on = false;
   const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {             // the chips at $D000-$DFFF
     read(ad) {
       if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; }
       return m[ad];
     },
     write(ad, val) {
-      if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; }
+      if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); times.push(cpu.cycles - t0); } bus = val; return; }
       m[ad] = val;
     },
   } });
@@ -201,11 +201,11 @@ function createSfxDriver(D, C64Cpu) {
   const busy = () => m[0xCCC9] !== 0xFF || m[0xCCCA] !== 0xFF || m[0xCCCB] !== 0xFF;
   return {
     sid,
-    get writes() { return writes; },
+    get writes() { return writes; }, get times() { return times; },
     readback(e3, o3, b) { env3 = e3; osc3 = o3; bus = b; },
-    init(t) { fresh(); writes = []; call(0xCD77, {}); call(0xCDDB, { a: t }); on = busy(); },
-    stop() { writes = []; call(0xCD77, {}); on = false; },
-    play() { writes = []; if (!on) return; call(0xCCD3, {}); on = busy(); },
+    init(t) { fresh(); writes = []; times = []; t0 = cpu.cycles; call(0xCD77, {}); call(0xCDDB, { a: t }); on = busy(); },
+    stop() { writes = []; times = []; t0 = cpu.cycles; call(0xCD77, {}); on = false; },
+    play() { writes = []; times = []; t0 = cpu.cycles; if (!on) return; call(0xCCD3, {}); on = busy(); },
     playing() { return on; },
     voice(i) { return m[0xCCC9 + i] === 0xFF ? {} : { fx: m[0xCCCC + i], step: m[0xCCC9 + i] }; },
   };

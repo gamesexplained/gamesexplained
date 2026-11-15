@@ -113,6 +113,13 @@ source text alone, `vm.runInNewContext('(' + createDriver + ')', {})`, as
 the worklet makes it: one taken from the page's scope passes a driver
 that uses the page's other names, and on the page that driver is silent.
 Say in the caption that the page runs the game's own player.
+Give the player each write's cycle as well, in `times` (the driver's
+contract at the top of `site/lib/sid.js`): `cpu.cycles` at the write less
+its count when the call began. Without it a frame's writes land at one
+instant, and a driver that restarts a note by turning the gate off and,
+some hundred cycles later, on again loses the note, because an envelope
+at full level released and attacked at one instant wraps to 0, on the
+chip as in the model (`kit/lessons/2026-11-15-timed-sid-writes.md`).
 
 Writes that match the game's frame by frame can still be silent: the chip
 plays nothing while the low four bits of `$D418` are 0, and many games
