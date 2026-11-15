@@ -1,0 +1,155 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impossamole</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+</style>
+<style>.im-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.im-pics{display:grid;grid-template-columns:1fr 1fr;gap:18px}.im-pics img{width:100%;image-rendering:pixelated}canvas{image-rendering:pixelated;max-width:100%;height:auto}button,select,input{font:inherit}button,select{padding:8px 12px;margin:4px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#222}button{cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #1f5fa8}input[type=range]{width:min(100%,500px)}.im-note{font-size:14px;color:#555}.im-scroll{overflow:auto;background:#111}.im-scroll canvas{max-width:none}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}output{display:block;margin:10px 0}.im-sprite{background:#292929;padding:16px}.im-error{color:#9e2419}@media(max-width:650px){.wrap{padding:0 20px}.hero{padding:30px 20px}.im-pics{grid-template-columns:1fr}.plate{padding:16px}h1{font-size:36px!important}}</style>
+<!-- tabs -->
+<header class="hero">
+<p class="eyebrow">1990 · Gremlin Graphics · C64</p>
+<h1>Impossamole</h1>
+<p class="sub">Numbered actor recipes select colours and timing. Lists of shape numbers make the pictures move.</p>
+</header>
+<main class="wrap">
+<section id="actors">
+<h2 class="t">Actors follow their own animation records</h2>
+<div class="plate">
+<div>
+<label>Level <select id="im-level">
+</select>
+</label>
+<label>Actor template <select id="im-template">
+</select>
+</label>
+</div>
+<canvas id="im-actor" class="im-sprite">
+</canvas>
+<div>
+<button id="im-motion">Pause animation</button>
+<button id="im-step">Step one call</button>
+<button id="im-rewind">Return to first shape</button>
+</div>
+<output id="im-actor-info">
+</output>
+</div>
+<p>Actors are Monty, creatures, attacks, and collectable objects. Templates are the game’s numbered recipes for creating them. Each one gives a starting shape, colour, collision size, and animation timing. The viewer uses the 26-byte records addressed by <code>$817C</code>. The viewer follows <code>$3C32</code>, the routine that creates an actor from a level spawn record. That routine leaves its picture at normal width. A second creation routine, <code>$4F04</code>, instead takes horizontal expansion from record byte 6. Expansion makes the picture twice as wide.</p>
+<p>The animation routine <code>$382B</code> counts the delay down to zero. It then reads another shape number from <code>$8EC0</code>. A marker can return to an earlier point or remove the actor. A delay of n leaves n+1 calls between shape changes. The viewer advances about 50.125 times per second, the PAL C64’s frame rate. Its results match the original routine run on a model of the processor.</p>
+</section>
+<section id="monty">
+<h2 class="t">Monty has a separate shape stream</h2>
+<div class="plate">
+<label>Sequence <select id="im-monty-seq">
+</select>
+</label>
+<label>
+<input id="im-alt" type="checkbox"> Gun shapes</label>
+<canvas id="im-monty" class="im-sprite">
+</canvas>
+</div>
+<p>Monty’s movement state and facing choose a starting position in the list at <code>$7EF9</code>. The normal animation counter reloads to five. The marker <code>$80</code> says that the following number is another position in the list. Gun weapons select alternate shapes by adding <code>$16</code> to a shape below <code>$17</code>, as <code>$13A7</code> does. Turning and standing on a ladder add conditions to normal play; this viewer keeps each selected sequence running.</p>
+</section>
+<section id="remaining">
+<h2 class="t">Shapes outside those animation streams</h2>
+<div class="plate">
+<label>Shape <select id="im-shape">
+</select>
+</label>
+<label>Colour <input id="im-colour" type="number" min="0" max="15" value="1">
+</label>
+<label>
+<input id="im-multi" type="checkbox" checked> Multicolour</label>
+<canvas id="im-still" class="im-sprite">
+</canvas>
+<output id="im-shape-info">
+</output>
+</div>
+<p>The selector contains the shapes that the viewers above do not animate for this level. It includes fixed objects and spare slots. Their role is left unnamed when a shape number alone cannot establish it. The colour and multicolour controls are inspection settings. Multicolour mode groups each pair of bits into one double-width pixel. Each actor’s stored settings choose the mode in play. Every one of the 160 sprite slots is represented by an animation or this selector.</p>
+</section>
+<section id="characters">
+<h2 class="t">Characters supply the scenery</h2>
+<div class="plate">
+<canvas id="im-chars">
+</canvas>
+</div>
+<p>The level character set contains 256 eight-byte shapes at <code data-part="klondike">$F000</code>. A character’s colour chooses between a one-bit pattern and double-width multicolour pixels. The sheet uses the level’s colour table. The map combines these shapes into four-by-four-character blocks.</p>
+<p>The <a href="index.html#frame">rebuilt frame</a> shows how interrupts, scheduled processor calls, switch character sets during drawing. The title image is shown on <a href="index.html#game">How it works</a>. The selected disk begins with a crack intro rather than a separate original loading picture.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a">
+<a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a>
+<br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a>
+</footer>
+<script src="../../lib/c64.js"></script><script>
+
+const IM_IDS=['klondike','orient','amazon','iceland','bermuda'];
+const IM_NAMES=['Klondike','Orient','Amazonian Forest','Iceland','Bermuda Triangle'];
+const $=id=>document.getElementById(id);
+function imHex(a){return '$'+a.toString(16).toUpperCase().padStart(4,'0');}
+async function imMemory(i){const [r,l]=await Promise.all([C64.load('parts/resident/listing.json'),C64.load('parts/'+IM_IDS[i]+'/listing.json')]);const m=r.ram.slice();for(let a=0;a<65536;a++)if(l.has[a])m[a]=l.ram[a];return m;}
+function imOptions(el){IM_NAMES.forEach((s,i)=>el.add(new Option(s,i)));}
+function imFail(e){console.error(e);const x=document.createElement('p');x.className='im-error';x.textContent='Viewer stopped: '+e.message;document.querySelector('main').append(x);}
+// im-map-port
+function imBlock(m,id){return Array.from(m.slice(0xb000+16*id,0xb010+16*id));}
+function imDrawMap(canvas,m,start=0,columns=40,overlay=false){canvas.width=columns*8;canvas.height=192;const c=canvas.getContext('2d'),cs=m.subarray(0xf000,0xf800),level=m[0x83e6],pal=C64.PAL;
+for(let x=0;x<columns;x++)for(let y=0;y<24;y++){const col=start+x,block=m[0xa410+Math.floor(col/4)*6+Math.floor(y/4)],ch=imBlock(m,block)[(y%4)*4+col%4],co=m[0xae00+ch];
+ if(co&8)C64.drawGlyphMC(c,cs,ch,x*8,y*8,1,[pal[0],pal[m[0x7ec1+level]&15],pal[m[0x7ec6+level]&15],pal[co&7]]);else C64.drawGlyph(c,cs,ch,x*8,y*8,1,pal[co&15],pal[0]);
+ if(overlay){const t=m[0xaf00+ch];c.fillStyle=['#ffffff00','#4af8','#4f48','#ff48','#f448'][Math.min(t,4)];c.fillRect(x*8,y*8,8,8);}}
+}
+// end im-map-port
+// im-animation-port
+function imActor(m,p){return {shape:m[p],colour:m[p+1],expandX:0,expandY:m[p+7],multi:m[p+8],index:m[p+11],delay:m[p+12],reload:m[p+12],active:1};}
+function imTick(m,a){if(!a.active||a.delay===255)return;if(a.delay){a.delay--;return;}if(!a.index)return;a.delay=a.reload;
+for(let guard=0;guard<256;guard++){const v=m[0x8ec0+a.index];if(v!==255){a.shape=v;a.index=(a.index+1)&255;return;}const n=m[0x8ec0+((a.index+1)&255)];if(n===255){a.active=0;a.index=0;a.shape=0;return;}a.index=n;if(!n)return;}throw Error('Animation loop without a shape');}
+function imSprite(canvas,m,a){canvas.width=144;canvas.height=126;const c=canvas.getContext('2d');c.fillStyle='#292929';c.fillRect(0,0,144,126);if(!a.active)return;const b=m.slice(0xc000+64*a.shape,0xc03f+64*a.shape),pal=C64.PAL,ex=a.expandX?2:1,ey=a.expandY?2:1;
+if(a.multi)C64.drawSpriteMC(c,b,0,0,3,pal[a.colour&15],pal[11],pal[15],ex,ey);else C64.drawSprite(c,b,0,0,3,pal[a.colour&15],ex,ey);}
+function imTemplates(m){const out=[];for(let i=0;i<256;i++){const p=m[0x817c+2*i]|m[0x817d+2*i]<<8;if(p>=0x9142&&p+25<=0x9aff)out.push({id:i,p});}return out;}
+// end im-animation-port
+
+
+(async()=>{imOptions($('im-level'));let m,a,paused=false,last=0,mtick=0,mi=0;const used=new Set();
+const seqs=[[0,'Stand right'],[3,'Stand left'],[6,'Walk right'],[14,'Walk left'],[22,'Climb'],[28,'Fall right'],[31,'Fall left'],[34,'Jump right A'],[37,'Jump left A'],[40,'Jump right B'],[43,'Jump left B'],[46,'Hazard walk right'],[50,'Hazard walk left'],[54,'Hazard stand right'],[57,'Hazard stand left']];for(const [v,n]of seqs)$('im-monty-seq').add(new Option(n,v));
+function actor(){const p=+$('im-template').value;a=imActor(m,p);draw();}function draw(){imSprite($('im-actor'),m,a);$('im-actor-info').textContent='Template '+$('im-template').selectedOptions[0].text+' · shape '+a.shape+' · index '+a.index+' · delay '+a.delay+' · '+(a.active?'active':'removed');}
+function still(){const n=+$('im-shape').value;imSprite($('im-still'),m,{shape:n,colour:+$('im-colour').value,multi:$('im-multi').checked,active:1});$('im-shape-info').textContent='Shape '+n+' · '+imHex(0xc000+64*n)+' · 21 rows × 3 bytes';}
+async function change(){const id=+$('im-level').value;m=await imMemory(id);m[0x83e6]=id;used.clear();$('im-template').replaceChildren();for(const t of imTemplates(m)){const x=imActor(m,t.p);$('im-template').add(new Option(t.id+' at '+imHex(t.p),t.p));for(let f=0;f<1500&&x.active;f++){used.add(x.shape);imTick(m,x);}}
+for(const [start]of seqs){let k=start;for(let f=0;f<120;f++){const sh=m[0x7ef9+k];if(sh===128){k=m[0x7efa+k];continue;}used.add(sh);if(sh<23)used.add(sh+22);k++;}}
+const first=imTemplates(m).find(t=>m[t.p+11]&&m[t.p+12]!==255&&m[t.p+1]);if(first)$('im-template').value=first.p;
+$('im-shape').replaceChildren();for(let n=0;n<160;n++)if(!used.has(n))$('im-shape').add(new Option('Shape '+n,n));actor();still();mi=+$('im-monty-seq').value;
+const c=$('im-chars');c.width=256;c.height=64;const cx=c.getContext('2d'),cs=m.slice(0xf000,0xf800),pal=C64.PAL;for(let n=0;n<256;n++){const co=m[0xae00+n];if(co&8)C64.drawGlyphMC(cx,cs,n,n%32*8,Math.floor(n/32)*8,1,[pal[0],pal[m[0x7ec1+id]&15],pal[m[0x7ec6+id]&15],pal[co&7]]);else C64.drawGlyph(cx,cs,n,n%32*8,Math.floor(n/32)*8,1,pal[co&15],pal[0]);}}
+$('im-level').onchange=change;$('im-template').onchange=actor;$('im-shape').onchange=still;$('im-colour').oninput=still;$('im-multi').onchange=still;$('im-monty-seq').onchange=()=>{mi=+$('im-monty-seq').value;mtick=0;};$('im-alt').onchange=()=>{mtick=0;};
+$('im-motion').onclick=()=>{paused=!paused;$('im-motion').textContent=paused?'Run animation':'Pause animation';};$('im-step').onclick=()=>{imTick(m,a);draw();};$('im-rewind').onclick=actor;
+await change();function animate(t){if(t-last>=1000/50.125){last=t;if(!paused){imTick(m,a);draw();}if(mtick--<=0){mtick=4;if(m[0x7ef9+mi]===128)mi=m[0x7efa+mi];let sh=m[0x7ef9+mi++];if($('im-alt').checked&&sh<23)sh+=22;imSprite($('im-monty'),m,{shape:sh,colour:2,multi:1,active:1});}}requestAnimationFrame(animate);}requestAnimationFrame(animate);
+})().catch(imFail);
+
+</script>

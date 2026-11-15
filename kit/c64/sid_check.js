@@ -69,10 +69,11 @@ function pagesWithSid(site) {
 // What one button's run found, as a line: null when it sounded or its label says it is silent
 function verdict(r, seconds) {
   if (r.error) return 'the driver stopped in the AudioWorklet: ' + r.error;
-  if (r.heard || r.moves >= MOVES) return null;
+  if ((r.heard && r.moves > 0) || r.moves >= MOVES) return null;
   if (/\bsilen(t|ce)\b/i.test(r.name)) return null;
   if (r.env && !r.vol) return `silent: its voices play, but the chip's volume ($D418) stays at 0 for ${seconds} s`;
   if (!r.env) return `silent: no voice's envelope rises in ${seconds} s`;
+  if (r.heard && r.moves === 0) return `silent: active envelopes, but the rendered output stays flat for ${seconds} s`;
   return `silent for ${seconds} s`;
 }
 

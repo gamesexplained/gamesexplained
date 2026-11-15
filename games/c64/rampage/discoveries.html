@@ -128,7 +128,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p>Each effect is described by a record of eight numbers (<code>$82EC</code>). The game uses five of them when it starts the effect. The other three, a length and two slides, are read only by a second routine, which was meant to run again and again while the effect sounds. That routine is complete and nothing calls it, so every effect is one burst of noise that fades by itself, and a long one is cut off by the next. With the routine running, each effect is a short, sharp sound of a few frames.</p>
   <p>The game has a routine that the machine runs once a frame, whatever else is going on, called an interrupt. That routine has a gap of twenty empty bytes in it (<code>$7953</code>). A call to the missing routine would fit there. What the gap once held is not known.</p>
-  <p>Two of the five effects are never started. One of them is the only effect that is a tone, not noise.</p>
+  <p>Two of the five effects are never started. One of them is the only effect that is a tone, not noise. The other would have silenced the whole chip. Its record switches off all three of the filter's outputs (<code>$D418</code>), and the game sends every voice through the filter (<code>$D417</code>), so its own noise and any effect still sounding would go quiet until the next effect set the filter again.</p>
 </section>
 
 <section id="fall">
@@ -314,7 +314,7 @@ const RP_EFFECTS = [
   { name: 'A punch breaks a wall (0)', sfx: 0, voice: 0 },
   { name: 'A helicopter fires; a building falls (1)', sfx: 1, voice: 2 },
   { name: 'A bullet hits a monster; a building falls (2)', sfx: 2, voice: 1 },
-  { name: 'Effect 3, never started', sfx: 3, voice: 0 },
+  { name: 'Effect 3, never started (silent)', sfx: 3, voice: 0 },
   { name: 'Effect 4, never started', sfx: 4, voice: 0 },
 ];
 const RP_EFFECTS_SWEPT = RP_EFFECTS.map((e) => ({ name: e.name, sfx: e.sfx, voice: e.voice, sweep: true }));
