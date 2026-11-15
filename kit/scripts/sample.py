@@ -21,6 +21,9 @@ better than it was. Every entry marked wrong, wrong-detail or doubtful is read a
 the run, which adds "held": true where the finding holds and false where it does not; count asks
 for each one missing. It then prints the plain rate, its 95 % interval (Wilson), each stratum's
 count, the rate weighted by the strata's sizes, and the sample's row for game.json's accuracy.
+The rates are estimates: chance can put a sample's above the listing's or below it, and a checker
+misses some. The one sure minimum is the wrong comments found over every comment in the listing,
+which it prints last.
 In a game of several parts, an entry names its part as the draw does ("folder").
 """
 import hashlib, json, os, random, re, sys
@@ -126,7 +129,7 @@ def count(sample, verdicts):
         if mine:
             weighted += s["population"] / sample["population"] * k / len(mine)
     return [], {"size": size, "wrong": wrong, "interval": wilson(wrong, size), "strata": rows,
-                "weighted": weighted, "wrong_at": [key(c) for c in sample["comments"] if c["wrong"]]}
+                "weighted": weighted, "floor": wrong / sample["population"], "wrong_at": [key(c) for c in sample["comments"] if c["wrong"]]}
 
 
 def pct(x):
@@ -171,6 +174,8 @@ def main(argv):
         if len(r["strata"]) > 1:
             print("by stratum: " + "; ".join(f"{n} {k} of {m} drawn from {p}" for n, k, m, p in r["strata"])
                   + f"; weighted by the strata's sizes {pct(r['weighted'])}")
+        print(f"these are estimates, and the checker may have missed some; at least {r['wrong']} of the listing's "
+              f"{sample['population']} comments are wrong ({pct(r['floor'])})")
         if r["wrong_at"]:
             print("wrong: " + " ".join((f"{f} " if f != "." else "") + f"${a:04X}" for f, a in r["wrong_at"]))
         print("accuracy row, with fixed and models to fill in: "
