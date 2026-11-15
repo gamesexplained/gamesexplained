@@ -121,7 +121,10 @@ inside its batch and apply the rest.
   as `lo_hi_address` reads the first half as low bytes and the second half as
   high bytes, invents addresses that are not there, and mints auto symbols
   all over the image. The tell is symbols appearing in regions the game never
-  touches.
+  touches. `r2000.py --apply` warns, naming the range, when a range it types
+  `lo_hi_address` reads as side-by-side pointers that all land on labels,
+  blocks or the loaded file and the split reading does not; retype it
+  `address` and the strays go.
 - **A custom alphabet has no data type.** `petscii` and `screencode` are the
   only text types; a game whose character set is in its own order has to be
   typed `byte` with the decoded text in the comment.
