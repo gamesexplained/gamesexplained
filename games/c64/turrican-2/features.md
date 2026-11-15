@@ -29,7 +29,7 @@ Sources:
 | Control pauses | traced | Resident $0BAC reads keyboard-input bit two, sets $0265, advances effects while paused, and clears the flag on joystick fire. Direct matrix-input exercise of Control remains open. |
 | Energy, lives, time and score | traced | Panel routines `$4AF9-$4C45`; time digits `$080F-$0811` and reload-fifty prescaler. |
 | High scores saved on disk | confirmed | Title $900C/$9013 writes one raw block at track 18/sector 18 from $67FF; intro source $90A2/$90A9 reads it. Disk bytes match the loaded ten-record table. |
-| Title, intro, ending and music | confirmed | Independent intro, title and ending listings; sixteen story pictures; seventeen music selectors (nine populated, eight silent), with all music/effect players checked against original calls and rendered through the SID model. |
+| Title, intro, ending and music | confirmed | Independent intro, title and ending listings; sixteen story pictures; seventeen music selectors, of which nine are populated and named on How it works, with every music and effect button checked against original calls and rendered through the SID model. |
 
 ## Beyond the documentation
 
@@ -39,10 +39,18 @@ Sources:
   Its thirteen-row projectile scan damages selected rows on one side.
 - The actor directory's two seventeen-entry tables overlap in one byte;
   live instruction tracing confirmed its final projectile handler.
+- Files `23` and `61`, which nothing loads, are a developer's memory
+  save of level 1-2 in mid-game: the bridge has fallen, the first
+  actors have spawned and map row 40 holds the text `SMON $C000`. Both
+  are on the original Rainbow Arts disks (Discoveries, `facts.md`).
+- The ending's text is keyed with the ending's own program bytes, so
+  changing one instruction garbles a letter of the farewell.
+- The original disk's boot file ends with `ICH HASSE ALLE SCHLUEMPFE !!!`,
+  and its score sector holds the team as the default high scores.
 
 Here, traced rows identify source paths. Their remaining live checks
 are assessed in the verification step; they do not imply a playthrough.
 
 ## Open questions
 
-The external world-one reference image is saved as `reference/wiki-world1.gif` from C64-Wiki and shown beside the decoded maps. The title, intro, and ending alphabets were rendered and their encoded readers traced. Creature names that cannot be settled from the code are kept as actor types and sprite pieces rather than guessed.
+The external world-one reference image is saved as `reference/wiki-world1.gif` from C64-Wiki; the Levels tab shows the game's own screens in play (`reference/play/`) instead. The title, intro, and ending alphabets were rendered and their encoded readers traced. Creature names that cannot be settled from the code are kept as actor types and sprite pieces rather than guessed.
