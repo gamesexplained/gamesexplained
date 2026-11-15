@@ -388,3 +388,17 @@ PLP restores.
 - Survey complete with TO MAP 1 and JEWELS 220 poked, and the time
   poked to 1: the screens in `work/shots/live-survey.png` and
   `live-timeout-*.png` (`live4.py`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- Each tile is a machine of its own: the game's routines on the kit's 6502 in the page, over the listing's bytes, with nothing in front to hide what they draw.
+- Room (53, 61), built by the game's routines on the kit's 6502 as the Map tab builds it, with Gerald moved to and fro along a line one cell from its front edge.
+- The cassette's own screen, recorded in VICE and drawn as the video chip draws it.
+
+### index.html
+
+- `test_sound.js` holds the first frames of each against the game's own instructions.
