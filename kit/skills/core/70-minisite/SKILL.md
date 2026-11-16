@@ -438,55 +438,78 @@ its music or its maps can put that first instead.
 
 ## Copy
 
-Write the copy **last**, as a separate pass, under `kit/style.md`, using
-the outline and the working demonstrations. First do a **depth pass**:
-hold each important section against "Depth and clarity" in
-`kit/style.md`, and make sure each lead the plan gave a section reads as
-a finding with its consequence, not a number or a passing sentence.
-Check any new claim before keeping it.
+Write the copy **last**, under `kit/style.md`, from the outline and the
+working demonstrations. It takes three steps: a draft, the lint, and one
+edit. An agent reads a rule list once and drifts back to its own voice
+while it drafts, so the lint and the edit are where the house style
+lands.
 
-Then do a **rewrite pass** as its own step, with the draft in front of
-you. An agent reads a rule list once and then reverts to its default voice; the
-rewrite pass is where the house style actually lands. Work through this
-checklist mechanically, paragraph by paragraph:
+**Draft** each page for its reader from the start. Each section answers
+the question the outline gave it with the finding, its consequence
+during play and the example, so the depth is written in rather than
+added later (`kit/style.md`, "Depth and clarity"). Write to the sentence
+rules (`kit/style.md`, "Sentences"). Check any claim the outline did not
+have before keeping it. Then commit the pages, so that `git diff` puts
+each sentence the edit changes beside the one it replaced.
 
-1. Search the draft for em-dashes. Every one that joins two clauses becomes
-   two sentences, a colon, or parentheses. Parenthetical asides may stay if
-   they are rare.
-2. Delete any sentence that only announces the next sentence ("Here is the
-   odd part", "And here's the kicker"). The next sentence does the work.
-3. Cut imperatives addressed to the reader ("Listen to the last note",
-   "Notice how") unless the thing is interactive, in which case point at
-   the control ("Press a direction").
-4. Headings name the thing, never a tautology ("Every character is a
-   character") and never a claim the section still has to prove. Prefer the
-   thing over the claim about the thing. Read each heading for a list: two
-   or more things joined by commas or "and", with no verb saying what they
-   do, is an inventory of the section ("Five digits, one key and one
-   column: how the bomb is defused"). Rewrite it as the one finding, or as
-   the plain name of the subject. Then read each heading alone, as the
-   section list shows it, and wherever it needs the section to make sense
-   ("Secret: the dungeon's hawk can be killed, the palace's only driven
-   off"), put back the words it squeezed out: who acts, on what, with a
-   plain verb (`kit/style.md`, "Section headings").
-5. Collapse triplets written for rhythm into a plain list or two sentences.
-   Three genuine items are fine; three arranged for a drumbeat are not.
-6. State it positively. A one-beat correction is fine when the reader would
-   genuinely expect the wrong thing ("A reconstruction, not a screenshot"),
-   but never "it's not X, it's Y" as the sentence's whole move. Search
-   for "no " as well: where "no X" is the one acting ("no gate leads to
-   it"), rewrite the sentence so a real thing acts, or say "there is no
-   X" (`kit/style.md`, the section on "no X" as the subject).
-7. Give every paragraph its purpose, in a line written to yourself
+**Lint** the pages:
+
+```
+python3 kit/scripts/copy_lint.py games/<platform>/<slug>
+```
+
+It prints each sentence that breaks a rule a pattern can catch: a dash
+joining two clauses, a sentence that announces the next one, an
+instruction to the reader, "it's not X, it's Y", "no X" as the subject,
+a hype word, and a sentence of more than 25 words. Fix each line it
+prints, or keep it for a reason you can state, such as a long sentence
+that is a list a table would not improve. It skips the game's own words
+in a `<blockquote>` or `<q>`, in quotation marks or in capitals; mark any
+other quotation with `data-copy-lint="off"`. It cannot see the strings a
+widget writes from script, so the edit reads those. Run it again after
+the edit.
+
+**Edit** each authored page once, paragraph by paragraph, for what a
+pattern cannot catch. The Source tab stays as it is, since its reader
+came for the code.
+
+1. Give every paragraph its purpose, in a line written to yourself
    (`kit/style.md`, "Paragraphs"). First check that purpose against the
-   page's subtitle and the section's heading, and move the paragraph to the
-   tab or section it serves if it serves another. Then read each sentence
-   against it. Move or
-   cut any sentence that serves another point, however interesting; split
-   a paragraph whose purpose needs an "and"; put the point first or last;
-   reorder sentences until each opens with something the last one gave the
-   reader; and replace any "it" that could mean more than one thing. Do
-   this before the other steps polish sentences that are about to move.
+   page's subtitle and the section's heading, and move the paragraph to
+   the tab or section it serves if it serves another. Then read each
+   sentence against it. Move or cut any sentence that serves another
+   point, however interesting; split a paragraph whose purpose needs an
+   "and"; put the point first or last; reorder sentences until each
+   opens with something the last one gave the reader; and replace any
+   "it" that could mean more than one thing. Do this first, before
+   polishing sentences that are about to move.
+2. Read each heading for a list: two or more things joined by commas or
+   "and", with no verb saying what they do, is an inventory of the
+   section ("Five digits, one key and one column: how the bomb is
+   defused"). Rewrite it as the one finding, or as the plain name of
+   the subject, never a tautology ("Every character is a character").
+   Then read each heading alone, as the section list shows it, and
+   wherever it needs the section to make sense ("Secret: the dungeon's
+   hawk can be killed, the palace's only driven off"), put back the
+   words it squeezed out: who acts, on what, with a plain verb
+   (`kit/style.md`, "Section headings").
+3. Collapse triplets written for rhythm into a plain list or two
+   sentences. Three genuine items are fine; three arranged for a
+   drumbeat are not.
+4. Read for the sentence rules a pattern cannot check (`kit/style.md`,
+   "Sentences"): a term used before the page explains it, since a reader
+   can open any tab first; two names for one thing; a passive that hides
+   who acts; a stack of nouns; jargon where a plain word would do
+   ("starts" for "initialises"). Keep the code, the addresses and the
+   numbers, which are the evidence.
+5. Read the standfirst, the captions, the table cells and the text the
+   widgets write. They are copy too, and follow `kit/style.md` like the
+   rest.
+6. Check the diff sentence by sentence against the draft. Every fact the
+   draft gave (a number, a name, an address, a condition, a cause) is
+   still on the page, and every explanation added is true. Put back what
+   was lost, and check what was added against `facts.md` and the
+   platform reference.
 
 Before/after, from real drafts:
 
@@ -509,31 +532,6 @@ Before/after, from real drafts:
   next: what was stolen, why the villain needs the place, what the hero is
   sent to do. The second is who else is there, ending on that enemy and
   why it looks the way it does.
-
-Last, do an **ELI15 pass** ("explain it like I'm fifteen"): rewrite every
-authored page so that a reader of fifteen who has never programmed can
-follow each sentence and the explanation as a whole. Keep the examples,
-causes, and consequences developed in the depth pass. The Source tab
-stays as it is, since its reader came for the code. Commit the pages
-first, so that `git diff` puts each changed
-sentence beside the one it replaced. Then:
-
-1. Explain each term where it first appears on a page, in a few words,
-   since a reader can open any tab first: a keyword of the game's
-   language, a chip or its register, a hexadecimal address, a kind of
-   variable. Keep the code, the addresses and the numbers, which are the
-   evidence.
-2. Split every sentence that holds more than one idea, and put plain words
-   in place of shorthand ("turns down" for "declines").
-3. Check the diff sentence by sentence against the original. Every fact
-   the original gave (a number, a name, an address, a condition, a cause)
-   is still on the page, and every explanation added is true. Put back
-   what was lost, and check what was added against `facts.md` and the
-   platform reference.
-
-The standfirst, the headings, the captions, the table cells and the text
-the widgets write are copy too, and the rewrite follows `kit/style.md`
-like the draft.
 
 Set `copy` in `game.json` honestly: `agent-draft` when the agent wrote it
 and no human has read it yet, `agent` once a human has read it and left it

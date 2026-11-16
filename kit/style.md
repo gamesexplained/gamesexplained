@@ -1,18 +1,19 @@
 # House style for minisite copy
 
-The audience is technical gamers who love game design and want to know how
-a game works, and who are not assembly programmers. Assembly is evidence,
-not the deliverable. The tone is Hacker News, not Buzzfeed: quiet,
-precise, generous with the interesting detail, never breathless.
+The audience is adults: technical gamers who love game design and want
+to know how a game works, and who are not assembly programmers. Picture
+a clever reader of 45 who knows games well and has never read this
+game's code, and never talk down to them. Assembly is evidence, not the
+deliverable. The tone is Hacker News, not Buzzfeed: quiet, precise,
+generous with the interesting detail, never breathless.
 
 Article copy is written as a separate, final pass, after the analysis is
 done. Give that pass the verified findings and working pages, and focus
 on what the reader will learn. It can be done by the same agent. The
-final pass has four steps, described in `kit/skills/core/70-minisite`:
-the draft, a pass that develops missing explanations, a rewrite that
-applies the rules below paragraph by paragraph, and a rewrite for a
-reader of fifteen. The reader review (`kit/skills/core/75-review`)
-then checks the finished pages.
+final pass has three steps, described in `kit/skills/core/70-minisite`:
+a draft written to these rules, `kit/scripts/copy_lint.py` for the rules
+a pattern can catch, and one edit for the rest. The reader review
+(`kit/skills/core/75-review`) then checks the finished pages.
 
 ## What copy is for
 
@@ -44,25 +45,65 @@ before publishing it. What the evidence does not settle stays in
 Give a discovery room in proportion to what it teaches. Add the context,
 causal steps, and examples a newcomer needs; remove repetition and
 irrelevant detail. There is no target word count or paragraph count.
-The short sentence rule controls sentence complexity, not the depth of
-the section. Simplifying a sentence must preserve its explanation.
+The sentence rules below control how each sentence is built, not the
+depth of the section. Splitting a sentence must keep its explanation.
 
 Use the game's own pictures, words, and sounds where they carry the
 point. A message beside the situation that triggers it and its sound
 can explain more than a description of the message interpreter. Keep
 source links beside the explanation so a reader can investigate further.
 
+## Sentences
+
+These rules come from Simplified Technical English (ASD-STE100), the
+standard that aircraft maintenance manuals are written in so that a
+reader gets one meaning on the first reading. The kit takes its rules
+for sentences and leaves out its fixed dictionary, because a page about
+a game needs the game's own words.
+
+- One idea to a sentence. A cause and its consequence can share a
+  sentence; two findings cannot.
+- At most 25 words in a sentence that explains, and fewer is usually
+  better. A longer sentence is two ideas, or a list that wants to be a
+  list or a table.
+- Say who or what acts: "the game clears the flag", not "the flag is
+  cleared". A passive is fine when the actor does not matter.
+- One name for one thing. Once a page calls something "the energy bar",
+  it stays the energy bar, not "the fuel gauge" or "the meter": a reader
+  takes a new word for a new thing. Use the game's own name where it has
+  one.
+- Explain a term where it first appears on each page, in a few words,
+  since a reader can open any tab first: a keyword of the game's
+  language, a chip or its register, a hexadecimal address, a kind of
+  variable. Keep the code, the addresses and the numbers, which are the
+  evidence.
+- Keep the small words: the articles, "that", "which", the verb. A
+  sentence with them squeezed out reads like a telegram, and the reader
+  has to rebuild it, as with a telegram heading ("Section headings",
+  below).
+- No more than three nouns in a row. "The enemy spawn timer reset value"
+  becomes "the value the spawn timer starts from".
+- The plainest exact verb, in a simple tense: "starts" for
+  "initialises", "the game reads the stick" for "the game will be
+  reading the stick". The present tense for what the code does, the past for
+  what happened to the game.
+
 ## Rules
 
-- Plain sentences. One idea each. Say the thing.
+- Say the thing.
 - Numbers go in tables, not prose, unless the number is the point.
 - No hype adjectives: elegant, clever, fascinating, remarkable, brilliant,
   masterful, beautiful, ingenious. If it is clever, the explanation will
   show it.
 - No stage directions to the reader: "let's dive in", "here's the thing",
-  "buckle up", "spoiler alert", "in other words", "put simply".
+  "buckle up", "spoiler alert", "in other words", "put simply". Do not
+  tell the reader to notice, listen to or imagine something; say what is
+  there ("The last note is held twice as long as the rest"). An
+  instruction is fine when it names a control ("Press a direction").
 - No rhetorical question followed by its answer.
-- No "it's not X, it's Y", "not just X but Y", "more than just".
+- No "it's not X, it's Y", "not just X but Y", "more than just". A
+  one-beat correction is fine when the reader would genuinely expect
+  the wrong thing ("A reconstruction, not a screenshot").
 - The page title is the game's name, never a claim ("The X Is A Y").
   The standfirst, the subtitle under the title, carries the hook: the
   most interesting thing inside the game, in a sentence or two. The agent
@@ -72,7 +113,8 @@ source links beside the explanation so a reader can investigate further.
   ("The landing test" over "The gauge lies").
 - No tidy triplets for rhythm. Two things or four things are fine when
   there are two or four things.
-- No em-dashes as the default joint between clauses. Write two sentences.
+- No em-dashes as the default joint between clauses. Write two sentences,
+  or use a colon or parentheses.
 - Use the Oxford comma: a list of three or more items takes a comma before
   the final "and" or "or" ("the Doctor, a robot cat, and a mine"). The
   comma removes the doubt over whether the last two items are a pair.
