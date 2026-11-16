@@ -10,10 +10,12 @@ fixes each line it prints or keeps it for a reason it can say. The rules are in 
   contrast       "it's not X, it's Y", "not just", "more than just", "not only ... but"
   no-subject     "no X" as the one acting ("no gate leads to it", "no player is told")
   hype           a hype word (elegant, clever, fascinating, remarkable, brilliant, ...)
-  long           a sentence of more than 25 words
+  negation       two negations in one sentence ("which cannot be searched, is opened without being seen")
 
-Headings get every check but the length: whether a heading is an inventory or a telegram
-(kit/style.md, "Section headings") needs a reader, and the edit pass reads each one.
+A heading is checked whole. Whether a heading is an inventory or a telegram (kit/style.md,
+"Section headings"), and whether a sentence is compressed (kit/style.md, "Sentences"), needs a
+reader, and the edit pass reads for both. Length is not checked: on the pages it was tried on, a
+long sentence was as often clear as not, and the hard ones were as often short.
 
 It reads the text a reader sees in the page's HTML: not scripts, styles or code blocks, not the
 game's own words (<blockquote>, <q>, any element marked data-copy-lint="off", text in quotation
@@ -29,8 +31,6 @@ import html.parser
 import re
 import sys
 from pathlib import Path
-
-MAX_WORDS = 25
 
 SKIP = {"script", "style", "pre", "svg", "math", "blockquote", "q", "template", "noscript", "head", "title"}
 INLINE_CODE = {"code", "kbd", "samp", "var"}
@@ -69,8 +69,9 @@ RULES = [
     ("hype", re.compile(r"\b(?:" + "|".join(HYPE) + r")\b", re.I)),
 ]
 
+NEGATION = re.compile(r"\b(?:not|no|never|none|nothing|nobody|nowhere|neither|without|cannot)\b|n['’]t\b", re.I)
+
 ABBREV = re.compile(r"\b(?:e\.g|i\.e|etc|vs|cf|Mr|Mrs|Ms|Dr|St|No|approx|fig|vol|ed)\.$", re.I)
-WORD = re.compile(r"[A-Za-z0-9$%][\w$%'’.-]*")
 
 
 class Text(html.parser.HTMLParser):
@@ -139,7 +140,7 @@ class Text(html.parser.HTMLParser):
 def sentences(text):
     """Split a block into sentences, keeping abbreviations and addresses whole."""
     out, cur = [], ""
-    for piece in re.split(r"(?<=[.!?])\s+(?=[\"“‘(A-Z0-9$])", text):
+    for piece in re.split(r"(?<=[.!?])\s+(?=[\"“‘(\[A-Z0-9$])", text):
         cur = f"{cur} {piece}".strip() if cur else piece
         if ABBREV.search(cur):
             continue
@@ -173,15 +174,13 @@ def own_words(s):
     return own
 
 
-def check_sentence(s, heading):
+def check_sentence(s):
     if game_words(s) or re.search(r"\w\s[?!]$", s.rstrip()):
         return []
     own = own_words(s)
     found = [name for name, rx in RULES if rx.search(own)]
-    if not heading:
-        n = len(WORD.findall(s))
-        if n > MAX_WORDS:
-            found.append(f"long ({n} words)")
+    if len(NEGATION.findall(own)) >= 2:
+        found.append("negation")
     return found
 
 
@@ -194,7 +193,7 @@ def lint_text(page_html):
     out = []
     for line, text, heading in p.blocks:
         for s in ([text] if heading else sentences(text)):
-            for rule in check_sentence(s, heading):
+            for rule in check_sentence(s):
                 out.append((line, rule, s))
     return out
 

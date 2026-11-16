@@ -461,10 +461,10 @@ python3 kit/scripts/copy_lint.py games/<platform>/<slug>
 It prints each sentence that breaks a rule a pattern can catch: a dash
 joining two clauses, a sentence that announces the next one, an
 instruction to the reader, "it's not X, it's Y", "no X" as the subject,
-a hype word, and a sentence of more than 25 words. Fix each line it
-prints, or keep it for a reason you can state, such as a long sentence
-that is a list a table would not improve. It skips the game's own words
-in a `<blockquote>` or `<q>`, in quotation marks or in capitals; mark any
+a hype word, and two negations in one sentence. Fix each line it prints,
+or keep it for a reason you can state, such as a finding about two
+things the game never does. It skips the game's own words in a
+`<blockquote>` or `<q>`, in quotation marks or in capitals; mark any
 other quotation with `data-copy-lint="off"`. It cannot see the strings a
 widget writes from script, so the edit reads those. Run it again after
 the edit.
@@ -496,12 +496,15 @@ came for the code.
 3. Collapse triplets written for rhythm into a plain list or two
    sentences. Three genuine items are fine; three arranged for a
    drumbeat are not.
-4. Read for the sentence rules a pattern cannot check (`kit/style.md`,
-   "Sentences"): a term used before the page explains it, since a reader
-   can open any tab first; two names for one thing; a passive that hides
-   who acts; a stack of nouns; jargon where a plain word would do
-   ("starts" for "initialises"). Keep the code, the addresses and the
-   numbers, which are the evidence.
+4. Read each sentence for compression, which a pattern cannot catch
+   (`kit/style.md`, "Sentences"): a phrase made up for the page; a
+   thing given a person's verb; a noun used as a verb; a subject held
+   apart from its verb; a "that" left out; a term used before the page
+   explains it, since a reader can open any tab first; two names for one
+   thing; a passive that hides who acts; a stack of nouns. Length is not
+   the test: rewrite the sentence a reader would have to read twice,
+   long or short. Keep the code, the addresses and the numbers, which
+   are the evidence.
 5. Read the standfirst, the captions, the table cells and the text the
    widgets write. They are copy too, and follow `kit/style.md` like the
    rest.

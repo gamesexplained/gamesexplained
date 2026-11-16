@@ -2,8 +2,8 @@
 """copy_lint.py finds the sentences on a game's pages that break a house-style rule a pattern can
 catch, in the text a reader sees: each rule fires on its own example and stays quiet on the
 nearest fair sentence; the game's own words, quotations, code and scripts are left alone; a
-heading is checked for everything but its length; and the script exits 0 on findings unless it
-is run with --strict."""
+heading is checked whole; length is not a rule; and the script exits 0 on findings unless it is
+run with --strict."""
 from pathlib import Path
 import io
 import sys
@@ -67,13 +67,21 @@ class Rules(unittest.TestCase):
         self.fires("hype", "The renderer is elegant.")
         self.quiet("The renderer draws each row once.")
 
-    def test_long(self):
-        self.fires("long", " ".join(["word"] * 26) + ".")
-        self.quiet(" ".join(["word"] * 25) + ".")
+    def test_negation(self):
+        self.fires("negation", "The drawer, which cannot be searched, is opened without ever being seen.")
+        self.fires("negation", "Nothing sets the state, so the frames are never drawn.")
+        self.fires("negation", "The game doesn't check it and never will.")
+        self.quiet("The game never sets that state.")
+        self.quiet("Every script that is neither running nor locked is thrown out.")
+
+    def test_length_is_not_a_rule(self):
+        self.quiet(" ".join(["word"] * 60) + ".")
 
     def test_sentences_are_split(self):
         found = rules("<p>The gauge is clever. It reads high. Here's the odd part.</p>")
         self.assertEqual(found, ["hype", "announcer"])
+        self.assertEqual(copy_lint.sentences("The bar fills. [code] counts down."),
+                         ["The bar fills.", "[code] counts down."])
 
     def test_abbreviations_do_not_split(self):
         self.assertEqual(copy_lint.sentences("Each bonus, e.g. the shield, lasts. The end."),
@@ -99,10 +107,9 @@ class Skipped(unittest.TestCase):
         _, _, s = copy_lint.lint_text("<p>Set <code>$D020 - 1</code> — then wait.</p>")[0]
         self.assertEqual(s, "Set [code] — then wait.")
 
-    def test_headings_skip_only_the_length(self):
-        long = " ".join(["word"] * 30)
-        self.assertEqual(rules(f"<h2>{long}</h2>"), [])
-        self.assertEqual(rules("<h2>Secret: the gauge lies — by one pixel</h2>"), ["dash"])
+    def test_headings_are_checked_whole(self):
+        self.assertEqual(rules("<h2>Secret: the gauge lies. By one pixel — up</h2>"), ["dash"])
+        self.assertEqual(rules("<h2>Secret: no gate leads to the tenth system</h2>"), ["no-subject"])
 
     def test_layouts_are_not_pages(self):
         with tempfile.TemporaryDirectory() as tmp:

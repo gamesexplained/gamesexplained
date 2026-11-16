@@ -46,7 +46,7 @@ Give a discovery room in proportion to what it teaches. Add the context,
 causal steps, and examples a newcomer needs; remove repetition and
 irrelevant detail. There is no target word count or paragraph count.
 The sentence rules below control how each sentence is built, not the
-depth of the section. Splitting a sentence must keep its explanation.
+depth of the section. Rewriting a sentence must keep its explanation.
 
 Use the game's own pictures, words, and sounds where they carry the
 point. A message beside the situation that triggers it and its sound
@@ -55,19 +55,51 @@ source links beside the explanation so a reader can investigate further.
 
 ## Sentences
 
-These rules come from Simplified Technical English (ASD-STE100), the
-standard that aircraft maintenance manuals are written in so that a
-reader gets one meaning on the first reading. The kit takes its rules
-for sentences and leaves out its fixed dictionary, because a page about
-a game needs the game's own words.
+These rules take the sentence rules of Simplified Technical English
+(ASD-STE100), the standard that aircraft maintenance manuals are written
+in so that a reader gets one meaning on the first reading, and leave out
+its fixed dictionary, because a page about a game needs the game's own
+words. The rest come from a study of why AI-written text is hard to read
+(Clark, Martin and Mahowald, "Why is AI-generated language so hard to
+understand?", arXiv 2610.29162). Its finding matches what the pages
+show: the fault in an agent's sentence is rarely its length. It is
+compression, more meaning packed into fewer words than a reader can
+take in at reading speed. A long sentence that reads at once is fine; a
+short one that has to be unpacked is not. Each rule below undoes one
+kind of compression.
 
 - One idea to a sentence. A cause and its consequence can share a
   sentence; two findings cannot.
-- At most 25 words in a sentence that explains, and fewer is usually
-  better. A longer sentence is two ideas, or a list that wants to be a
-  list or a table.
 - Say who or what acts: "the game clears the flag", not "the flag is
   cleared". A passive is fine when the actor does not matter.
+- Give a thing a thing's verb. A routine reads, sets, checks and skips;
+  it does not "swallow" an error or "cheer" a side. Write "the check
+  ignores the error".
+- Use a noun as a noun. "Footnote it" and "the routine tables the
+  scores" make the reader turn a noun into an action; write "add a
+  footnote" and "puts the scores in a table".
+- Use words in pairings the reader has met before. A phrase made up for
+  the page ("a slip in the frame counter", "once a pass", "ten pictures
+  apart") stops the reader to decode it. Say the literal thing ("a bug
+  in the frame counter", "once each time round the main loop"), or
+  explain the term once and keep it.
+- One negation to a sentence, and what happens before what does not.
+  Two negations make the reader work out what is true ("the animation
+  is a monster state that nothing ever sets, so those two frames are
+  never seen"). Say it once: "the code holds two frames for a monster
+  state that the game never sets".
+- Keep the subject next to its verb. "The routine that the game calls
+  every frame while the player is in the air sets the flag" holds the
+  reader through a clause before the verb arrives; "every frame while
+  the player is in the air, the game calls a routine that sets the
+  flag" does not.
+- Keep the small words: the articles, "that", "which", the verb. A
+  sentence with them squeezed out reads like a telegram, and the reader
+  has to rebuild it, as with a telegram heading ("Section headings",
+  below). Keep "that" before a clause with a subject of its own: "the
+  picture that its neighbour had", not "the picture its neighbour had".
+- No more than three nouns in a row. "The enemy spawn timer reset value"
+  becomes "the value that the spawn timer starts from".
 - One name for one thing. Once a page calls something "the energy bar",
   it stays the energy bar, not "the fuel gauge" or "the meter": a reader
   takes a new word for a new thing. Use the game's own name where it has
@@ -77,12 +109,6 @@ a game needs the game's own words.
   language, a chip or its register, a hexadecimal address, a kind of
   variable. Keep the code, the addresses and the numbers, which are the
   evidence.
-- Keep the small words: the articles, "that", "which", the verb. A
-  sentence with them squeezed out reads like a telegram, and the reader
-  has to rebuild it, as with a telegram heading ("Section headings",
-  below).
-- No more than three nouns in a row. "The enemy spawn timer reset value"
-  becomes "the value the spawn timer starts from".
 - The plainest exact verb, in a simple tense: "starts" for
   "initialises", "the game reads the stick" for "the game will be
   reading the stick". The present tense for what the code does, the past for
