@@ -703,7 +703,9 @@ is already installed, the shared launcher offers `python3 kit/scripts/tools.py
 browser`. It starts an isolated headless profile under `tools/firefox/`,
 with the WebDriver BiDi endpoint at `ws://127.0.0.1:9222/session`.
 Use a BiDi client to navigate, exercise controls and capture screenshots,
-and record its name/version and Firefox package origin.
+and record its name/version and Firefox package origin. With the kit's
+Chromium in `tools/` (below) it starts that instead, with the DevTools
+protocol at `http://127.0.0.1:9222`, which `shoot.js --cdp` drives.
 `tools.py stop browser` stops only this clone's test browser. It downloads
 nothing and does not use the contributor's personal browser session. See
 `kit/INSTALL.md`, "Browser checks", for the tested host and containment.
@@ -713,8 +715,10 @@ button and steps every select, then saves one picture of each section,
 scrolled into view first: a full-page screenshot is blank below the first
 screen, because the page skips drawing a section off the screen. It prints
 the console, exits 1 on an error, and with `?listing-reads` prints
-`ListingReads.report()`. It needs Playwright, which the kit does not
-install; `-h` says how it uses the browser above instead.
+`ListingReads.report()`. It needs Playwright and a Chromium:
+`tools.py get-node` installs the client, and `tools.py get-chromium`,
+with the contributor's yes, a headless Chromium in `tools/`
+(`kit/INSTALL.md`, "Browser checks").
 
 Check, at least: every canvas has drawn something; the console has no
 errors, and for a withheld game none with `?listing-reads` after the

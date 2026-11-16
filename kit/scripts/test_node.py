@@ -20,6 +20,7 @@ import sys
 import tarfile
 import tempfile
 import unittest
+from unittest.mock import patch
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -167,6 +168,84 @@ class GetNode(unittest.TestCase):
         self.assertIn("tools.py get-node", node.build_line(self.tools))
         with self.assertRaises(SystemExit):
             node.run(["node", "--version"], tools=self.tools)
+
+
+# A made-up Node whose only trick is Playwright's `install`: it lays out a headless Chromium under
+# PLAYWRIGHT_BROWSERS_PATH as Playwright's installer does, and says where it was told to put things.
+FAKE_NODE = """#!/bin/sh
+store=$PLAYWRIGHT_BROWSERS_PATH
+dir=$store/chromium_headless_shell-1255/chrome-headless-shell-linux64
+mkdir -p "$dir"
+printf '#!/bin/sh\\necho Google Chrome for Testing 159.0.8154.6\\n' > "$dir/chrome-headless-shell"
+chmod +x "$dir/chrome-headless-shell"
+[ -n "$BROKEN" ] && printf '#!/bin/sh\\nexit 127\\n' > "$dir/chrome-headless-shell"
+touch "$store/chromium_headless_shell-1255/INSTALLATION_COMPLETE"
+printf '%s\\n%s\\n%s\\n%s\\n' "$*" "$HOME" "$XDG_CACHE_HOME" "${PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD:-unset}" > "$store/node-saw"
+"""
+
+
+class GetChromium(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.tools = os.path.join(self.tmp.name, "clone", "tools")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def install_node(self):
+        bin_ = os.path.join(self.tools, "node", "bin")
+        os.makedirs(bin_)
+        with open(os.path.join(bin_, "node"), "w") as f:
+            f.write(FAKE_NODE)
+        os.chmod(os.path.join(bin_, "node"), 0o755)
+        pw = os.path.join(self.tools, "npm", "node_modules", "playwright-core")
+        os.makedirs(pw)
+        with open(os.path.join(pw, "package.json"), "w") as f:
+            f.write('{"version": "1.65.1"}')
+        open(os.path.join(pw, "cli.js"), "w").close()
+
+    def get(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            node.get_chromium(self.tools)
+        return out.getvalue()
+
+    def test_it_needs_get_node_first(self):
+        with self.assertRaises(SystemExit) as e:
+            node.get_chromium(self.tools)
+        self.assertIn("get-node", str(e.exception))
+        self.assertFalse(os.path.exists(self.tools), "something was made")
+
+    def test_playwrights_installer_puts_it_in_tools(self):
+        self.install_node()
+        said = self.get()
+        store = os.path.join(self.tools, "playwright")
+        shell = os.path.join(store, "chromium_headless_shell-1255", "chrome-headless-shell-linux64", "chrome-headless-shell")
+        self.assertEqual(node.chromium(self.tools), shell)
+        self.assertIn("Google Chrome for Testing 159.0.8154.6", said)
+        with open(os.path.join(store, "node-saw")) as f:
+            argv, home, cache, skip = f.read().split("\n")[:4]
+        self.assertTrue(argv.endswith("cli.js install --no-progress chromium-headless-shell"), argv)
+        self.assertEqual(home, os.path.join(self.tools, "npm", "home"), "the installer ran with the contributor's home")
+        self.assertTrue(cache.startswith(self.tools), cache)
+        self.assertEqual(skip, "unset", "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD would have stopped the download")
+        self.assertEqual(sorted(os.listdir(self.tmp.name)), ["clone"])
+        self.assertEqual(node.chromium_line(self.tools), "Chrome Headless Shell, Playwright's chromium_headless_shell-1255")
+
+    def test_one_that_does_not_start_is_reported(self):
+        self.install_node()
+        with patch.dict(os.environ, {"BROKEN": "1"}), self.assertRaises(SystemExit) as e, \
+                contextlib.redirect_stdout(io.StringIO()):
+            node.get_chromium(self.tools)
+        self.assertIn("does not start", str(e.exception))
+        self.assertIn("install-deps", str(e.exception))
+
+    def test_an_unfinished_install_is_passed_over(self):
+        d = os.path.join(self.tools, "playwright", "chromium_headless_shell-1300", "chrome-headless-shell-linux64")
+        os.makedirs(d)
+        open(os.path.join(d, "chrome-headless-shell"), "w").close()
+        self.assertIsNone(node.chromium(self.tools))
+        self.assertIsNone(node.chromium_line(self.tools))
 
 
 if __name__ == "__main__":
