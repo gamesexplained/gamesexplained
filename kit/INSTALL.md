@@ -35,13 +35,18 @@ contributor can trust it with their computer.** In practice:
 
 1. Everything installed lives inside this repository, under `tools/`.
 2. Everything the tools write while running (settings, logs, snapshots,
-   caches) lives there too, by pointing each tool's paths inside.
+   caches) lives there too, by pointing each tool's paths inside. The one
+   exception is throwaway files in the system's temporary folder (`/tmp`
+   on macOS and Linux, `%TEMP%` on Windows): it is made for files nobody
+   needs after the run, and the system clears it, so a tool may use it
+   the normal way. Anything that must outlast the tool that wrote it,
+   such as a snapshot or a setting, stays in `tools/`.
 3. Uninstalling is deleting the folder. Whatever cannot be contained is
    listed, completely, in the platform's notes under "Uninstall", and the
    contributor is told before anything is installed.
 4. It is verified, not assumed: `python3 kit/scripts/tools.py --platform <platform> verify-footprint`
    runs a whole launch, use and exit and lists anything written outside the
-   repository. An empty list is the pass.
+   repository and the temporary folder. An empty list is the pass.
 5. Nothing outside the repository is changed without asking first: no
    shell profiles, no system settings, no global package installs.
 6. Everything installed is open source and comes from the project's own

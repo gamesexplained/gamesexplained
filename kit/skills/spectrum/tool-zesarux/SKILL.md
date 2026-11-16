@@ -340,9 +340,10 @@ T-states. A fast loader's short pulses then come out a few per cent fast
 or slow, up to 5 per cent on the five tapes of #883: take how long
 something takes to load from the TZX file's own timings, and the
 emulator only for the order things appear in. The sound file goes in the
-launcher's temporary folder, `tools/zesarux-home/tmp/<port>/`, which each
-start empties and `stop` removes; ZEsarUX's own default is in `/tmp`,
-outside the repository, where it was left behind.
+launcher's temporary folder for that port, `tools/zesarux-home/tmp/<port>/`,
+which each start empties and `stop` removes. ZEsarUX on its own keeps one
+folder for every emulator and names the file after the tape alone, so two
+emulators given tapes of the same name would play the same one.
 
 ## Snapshots
 

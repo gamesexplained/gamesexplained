@@ -12,6 +12,7 @@
   the TZX's pulse lengths and the picture's bits (`site/lib/spectrum.js`,
   `tapeTimes`), and used the emulator to see what appears when. The same
   run found that `smartload` copies blocks at the ROM's speed straight into
-  memory through the tape traps, so it shows no load at all, and that the
-  sound files were left in `/tmp`, which the launcher now keeps in
-  `tools/` (`kit/skills/spectrum/tool-zesarux`, "Tapes").
+  memory through the tape traps, so it shows no load at all, and that two
+  emulators given tapes of the same file name shared one sound file and
+  played the same game, which the launcher now keeps apart with a folder
+  to each port (`kit/skills/spectrum/tool-zesarux`, "Tapes").

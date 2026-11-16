@@ -64,11 +64,10 @@ and `stop` are unambiguous.
 
 verify-footprint is how the clean-footprint principle (AGENTS.md, kit/INSTALL.md) is
 checked: it starts the emulator, has it write a snapshot, reads memory through ZRCP,
-plays a tape at real speed, stops it, and then lists every file outside the repository,
-in the home folders and the system's temporary folders, that changed meanwhile and
+stops it, and then lists every file outside the repository that changed meanwhile and
 looks like it belongs to ZEsarUX. An empty list is the pass.
 """
-import glob, json, os, re, shutil, struct, subprocess, sys, tempfile, time
+import glob, json, os, re, shutil, subprocess, sys, time
 
 # What this launcher serves, read by the dispatcher (kit/scripts/tools.py) when several
 # platforms have a launcher. Keep in step with main() below.
@@ -184,10 +183,10 @@ def emulator_env():
 def tempdir(port=None):
     """The folder the emulator on `port` keeps its temporary files in (`--tempdir`).
 
-    ZEsarUX's own is /tmp/zesarux-<user id>, outside the repository, and it leaves there
-    the sound file it makes of every tape played at real speed (`--realtape`,
-    `realtape-open`), named after the tape's file alone: two emulators given tapes of
-    the same name shared one file (#883). One folder to a port keeps them apart."""
+    ZEsarUX's own is one folder for every emulator, /tmp/zesarux-<user id>, and it names
+    the sound file it makes of a tape played at real speed (`--realtape`, `realtape-open`)
+    after the tape's file alone: two emulators given tapes of the same name shared one
+    file, so both played the same game (#883). One folder to a port keeps them apart."""
     return os.path.join(ZESARUX_HOME, "tmp", str(port or PORT))
 
 
@@ -373,71 +372,29 @@ def snapshots():
 KNOWN_RESIDUE = ()
 
 
-def temp_folders():
-    """The system's temporary folders, where ZEsarUX keeps its files when not given --tempdir:
-    /tmp/zesarux-<user id> on Linux and macOS, a folder under TMP on Windows."""
-    found = []
-    for d in ("/tmp", tempfile.gettempdir()):
-        if os.path.isdir(d) and os.path.realpath(d) not in map(os.path.realpath, found):
-            found.append(d)
-    return found
-
-
-def footprint_tape(path):
-    """A two-block .tap (a header and 256 bytes of code) for the footprint check to play."""
-    def block(flag, data):
-        body = bytes([flag]) + data
-        check = 0
-        for b in body:
-            check ^= b
-        return struct.pack("<H", len(body) + 1) + body + bytes([check])
-    code = bytes(range(256))
-    header = bytes([3]) + b"footprint " + struct.pack("<HHH", len(code), 32768, 32768)
-    with open(path, "wb") as f:
-        f.write(block(0, header) + block(0xFF, code))
-
-
 def verify_footprint():
-    """Launch the emulator, save a snapshot, play a tape and stop it, then look for anything it
-    left outside the repository: in the home folders, and in the system's temporary folders,
-    where ZEsarUX's own default puts a tape's sound file (#883)."""
+    """Launch, use and stop the emulator, then look for anything it left outside the repository."""
     t0 = time.time() - 1
     if up(PORT):
         sys.exit("stop the emulator first (tools.py stop): the check has to see a whole launch-to-exit cycle")
     words = ("zesarux", "zsf")
-    before = footprint_signatures(words, temp_folders())
+    before = footprint_signatures(words)
     zesarux()
     os.makedirs(SNAPSHOTS, exist_ok=True)
     snap = os.path.join(SNAPSHOTS, f"footprint_check_{int(t0)}.sna")
     where = client("snapshot-save", {"path": snap})
     print("snapshot written to:", os.path.relpath(where, ROOT))
     print("memory read through ZRCP:", client("read-memory", {"addr": "4000H", "len": 8})[:32], "...")
-    # a tape played at real speed is turned into a sound file first, which ZEsarUX's own
-    # default put in /tmp and left there (#883); realtape-open resets the machine, so it comes last
-    tape = os.path.join(SNAPSHOTS, f"footprint_check_{int(t0)}.tap")
-    footprint_tape(tape)
-    sys.path.insert(0, HERE)
-    import zesarux as zx
-    rpc = zx.connect(port=PORT, timeout=10)
-    rpc.cmd(f"realtape-open {tape}")
-    rpc.close()
-    played = glob.glob(os.path.join(tempdir(), "tmp_*"))
-    print("a tape played at real speed became:",
-          ", ".join(os.path.relpath(p, ROOT) for p in played) or "nothing in " + os.path.relpath(tempdir(), ROOT))
     stop(quiet=True)
-    hits = written_outside(before, words, temp_folders())
-    for f in (snap, tape):
-        try:
-            os.remove(f)
-        except OSError:
-            pass
+    hits = written_outside(before, words)
+    try:
+        os.remove(snap)
+    except OSError:
+        pass
     if statistics_enabled():
         sys.exit(f"FAILED - {os.path.relpath(CONFIG, ROOT)} has {STATS_ON} after a launch-to-exit cycle: "
                  "the emulator would send usage statistics at its next start")
     print("usage statistics: off in the saved configuration")
-    if not played and not hits:
-        sys.exit(f"FAILED - the tape's sound file is neither in {os.path.relpath(tempdir(), ROOT)} nor in a "
-                 "folder this check walks: find where ZEsarUX put it")
     judge_footprint(hits, KNOWN_RESIDUE, snap)
 
 

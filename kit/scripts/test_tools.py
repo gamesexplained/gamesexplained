@@ -303,15 +303,12 @@ with tempfile.TemporaryDirectory() as d:
     t.up = lambda port: False
     t.clear_tempdirs(10006)
     assert not os.listdir(os.path.join(d, "home", "tmp"))
-    tape = os.path.join(d, "f.tap"); t.footprint_tape(tape)
-    data = open(tape, "rb").read()
-    assert len(data) == 2 + 19 + 2 + 258 and data[:3] == bytes([19, 0, 0]) and data[21:24] == bytes([2, 1, 0xFF]), data[:24]
 print("ok")
 """
 
 
 def test_spectrum_tempdir():
-    """ZEsarUX keeps its temporary files, a tape's sound file among them, in tools/ (#883)."""
+    """Each ZEsarUX keeps its temporary files, a tape's sound file among them, in a folder of its own (#883)."""
     if "spectrum" not in tools.platforms():
         return
     r = subprocess.run([sys.executable, "-c", TEMPDIR, os.path.join(KIT, "spectrum")], capture_output=True, text=True)
