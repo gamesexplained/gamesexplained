@@ -22,17 +22,17 @@
 <section id="driver">
   <p class="fig">The tune</p>
   <h2 class="t">A music player with its maker’s name inside</h2>
-  <p class="lede">The tune is played by a separate music player at <code>$E000</code>, whose text reads “MICROPEARL MUSIC PLAYER COPYRIGHT 1983 JOHN A. FITZPATRICK” (<code>$E315</code>). Nothing on screen shows it.</p>
+  <p class="lede">The tune is played by a separate music player at <code>$E000</code>, whose text reads “MICROPEARL MUSIC PLAYER COPYRIGHT 1983 JOHN A. FITZPATRICK” (<code>$E315</code>). The game never shows it on screen.</p>
   <p>The title screen’s raster interrupt calls the player once a frame (<code>irq_menu_bottom</code>, <code>$152C</code>, calling <code>$E006</code>). It reads three streams of notes and commands, one for each voice of the SID (<code>$E8D0</code>, <code>$E97D</code>, <code>$EA31</code>): a byte with bit 7 clear is a note, and the commands that follow set the next notes’ length, the waveform, the envelope, an instrument, the pulse width, the filter, or the tempo (<code>voice_next_note</code>, <code>$E578</code>).</p>
   <p>Before it starts the tune, the title screen writes a song list of song 0 followed by <code>$FF</code>, which sends the player back to the start of the list (<code>$06CC</code>-<code>$06DA</code>). The tune therefore repeats for as long as the title screen is up, every 1,154 frames, about 23 seconds. In play the game has no music, only effects.</p>
-  <p>The player’s song table has room for a second song, but song 1’s three voice addresses point into the sound-effect code at <code>$EB00</code> and beyond (<code>song_table</code>, <code>$E8C0</code>). Nothing ever asks for it.</p>
+  <p>The player’s song table has room for a second song, but song 1’s three voice addresses point into the sound-effect code at <code>$EB00</code> and beyond (<code>song_table</code>, <code>$E8C0</code>). The game never asks for it.</p>
 </section>
 
 <section id="effects">
   <p class="fig">The effects</p>
   <h2 class="t">Three players, one per voice</h2>
   <p class="lede">The effects have a player of their own, copied three times, once for each voice of the SID (<code>$EB03</code>, <code>$EF73</code>, <code>$F073</code>), and all three run once a frame (<code>frame_work</code>, <code>$15A8</code>). An effect is a script of steps, each a command byte followed by a duration, a note, an envelope, a pulse width, or a waveform as the command needs (<code>sfx_scripts</code>, <code>$EBE5</code>).</p>
-  <p><code>play_sound</code> (<code>$2509</code>) puts a new effect in the first free voice. When all three are busy it takes the voice playing the effect of lowest priority, as long as the new one’s priority is at least as high (<code>$2572</code>). There are fifteen scripts; nothing asks for effects 3 and 8.</p>
+  <p><code>play_sound</code> (<code>$2509</code>) puts a new effect in the first free voice. When all three are busy it takes the voice playing the effect of lowest priority, as long as the new one’s priority is at least as high (<code>$2572</code>). There are fifteen scripts, and the game never asks for effects 3 and 8.</p>
   <div class="tw"><table class="t">
     <tr><th class="n">Effect</th><th>When</th><th class="n">Priority</th><th>Asked for by</th></tr>
     <tr><td class="n">0</td><td>a jump</td><td class="n">11</td><td><code>jump_sound</code>, <code>$1FC4</code></td></tr>

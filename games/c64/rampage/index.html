@@ -70,7 +70,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <figure><img src="reference/newspaper-ready.png" alt="The newspaper screen: a strip each for George, Lizzie and Ralph, each reading READY FOR ACTION" width="384" height="272"><figcaption>The newspaper screen before each level. A fire button joins the game.</figcaption></figure>
     <figure><img src="reference/play-three-monsters.png" alt="The three monsters among the buildings of the first level" width="384" height="272"><figcaption>The first level, with all three monsters on screen.</figcaption></figure>
   </div></div>
-  <p>Three people have been turned into monsters: George the gorilla, Lizzie the lizard, and Ralph the wolf. Up to three players take one each, two with joysticks and one on the keyboard, and the computer plays any monster nobody joined as. All three are always on the screen.</p>
+  <p>Three people have been turned into monsters: George the gorilla, Lizzie the lizard, and Ralph the wolf. Up to three players take one each, two with joysticks and one on the keyboard, and the computer plays every monster that is left without a player. All three are always on the screen.</p>
   <p>A level is one screen of buildings. A monster walks along the street, climbs a building's side, and punches the wall while it hangs there. Every punch that breaks something scores 100 points and weakens the building, and a building that has taken enough punches crumbles to the ground. When every building is down, the next level begins.</p>
   <p>The army fights back. Soldiers lean out of the holes the monsters make and shoot, a helicopter fires as it dives, and a fall costs energy at every step. Each monster's energy is shown by the word <code>DAMAGE</code> under its score, which turns red a letter at a time. A monster with no energy left shrinks back into a human and walks off the screen.</p>
 </section>
@@ -92,7 +92,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate"><div id="rp-sfx"></div>
   <p class="cap">Each button calls the game's own <code>$822F</code> with the effect and the voice the game uses for it, on the site's 6502, and plays what it writes. The game writes to the chip once for each effect and never again, so the sound fades at the rate its envelope sets. The punch takes many seconds to fade, and in the game the next effect on the same voice cuts it off; a button here stops after three seconds. The same test as the music's compares every write with the game's code.</p></div>
   <p>An effect is eight bytes in a table at <code>$82EC</code>: a pitch, a length, a waveform (noise or a tone), a filter setting, an envelope (how fast the sound rises and how fast it dies away), and a figure to slide the pitch by. Four of the five are noise and the last is a plain tone. Effect 3 makes no sound at all: it switches off all three of the filter's outputs, and the game sends every voice through the filter. Starting an effect writes the pitch, the waveform and the envelope to one voice of the chip and switches the filter on.</p>
-  <p>The length and the slide are never used. The routine that would count an effect down, slide its pitch and stop it exists at <code>$82AC</code>, and nothing calls it. <a href="discoveries.html#sfx">Discoveries</a> plays the effects with that routine running.</p>
+  <p>The length and the slide are never used. The routine that would count an effect down, slide its pitch and stop it exists at <code>$82AC</code>, but the game never calls it. <a href="discoveries.html#sfx">Discoveries</a> plays the effects with that routine running.</p>
 </section>
 
 <section id="frame">
@@ -178,7 +178,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p>The manual promises energy bars. The game colours a word instead: the energy divided by 8, plus one, is the number of letters shown in white from the left, and the rest are red. With six letters in <code>DAMAGE</code>, the word stays white down to 40 and then loses a letter for every 8 units.</p>
   <p>Damage arrives as flags. A flag is a byte that is either 0 or 1. A bullet, each step of a fall, each step of being knocked back by another monster, and standing in a hole in the road all set a monster's "hit" flag to 1. Once a pass the game looks at the flag, and every second time it finds the flag set it takes one unit of energy. Several hits in the same pass count as one.</p>
-  <p>Nothing gives energy back. Sliding George to 0 with Lizzie above 0 shows one of the game's slips, which is in <a href="discoveries.html#red">Discoveries</a> with the others about energy.</p>
+  <p>The game never gives energy back. Sliding George to 0 with Lizzie above 0 shows one of the game's slips, which is in <a href="discoveries.html#red">Discoveries</a> with the others about energy.</p>
 </section>
 
 <section id="helicopters">
@@ -207,7 +207,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="computer">
   <p class="fig">11 · The computer's monsters</p>
-  <h2 class="t">A monster nobody plays presses buttons at random</h2>
+  <h2 class="t">A monster without a player presses buttons at random</h2>
   <p class="lede">The computer steers its monsters by pressing the same five controls a player has.</p>
   <div class="plate">
     <div class="rp-bar"><button type="button" id="rp-ai-go">Let the game's routine decide 1,000 times</button></div>

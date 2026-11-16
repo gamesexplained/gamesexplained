@@ -71,9 +71,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">Two of the game's text screens, drawn by the game's own code, which the page runs on a copy of the C64's processor, the 6502. Left: the screen that ends a game. Right: the list shown before the first level, in three groups: things worth points in the arcade game, food, and things that hurt.</p>
   </div>
   <p>In the arcade game, food gives a monster energy back, and the manual of this version says the same: "edibles" increase your energy and electrical appliances give "nasty surprises". One of the newspaper's headlines is a hint about it: <code>WANT TO EAT. WELL PUNCH SLOWER</code>.</p>
-  <p>The code has one routine for eating (<code>$8BFF</code>; a number after a $ is an address in the game's memory, written in hexadecimal, and links to that place on the Source code tab). The routine plays 21 steps of a chewing animation and goes back to what the monster was doing. The routine never looks at which of the twelve things was grabbed, so a turkey, a toaster, and a bottle of poison are the same. Nothing in the program adds to a monster's energy (<code>$9B81</code>), and the only routine that adds to a score is the one for a punch on a building.</p>
+  <p>The code has one routine for eating (<code>$8BFF</code>; a number after a $ is an address in the game's memory, written in hexadecimal, and links to that place on the Source code tab). The routine plays 21 steps of a chewing animation and goes back to what the monster was doing. The routine never looks at which of the twelve things was grabbed, so a turkey, a toaster, and a bottle of poison are the same. The program never adds to a monster's energy (<code>$9B81</code>), and the only routine that adds to a score is the one for a punch on a building.</p>
   <p>A monster that chews for 70 frames, a frame being a fiftieth of a second, has energy 40 before and 40 after, and its score does not change.</p>
-  <p>Energy therefore only ever goes down. A monster starts with 56 units and loses one for every second hit that counts, so each monster is out of the game after 112 counted hits, whatever it eats. A routine that adds 500 points sits in the code beside the one that adds 100 (<code>$98E2</code>), and nothing calls it.</p>
+  <p>Energy therefore only ever goes down. A monster starts with 56 units and loses one for every second hit that counts, so each monster is out of the game after 112 counted hits, whatever it eats. A routine that adds 500 points sits in the code beside the one that adds 100 (<code>$98E2</code>), but the game never calls it.</p>
 </section>
 
 <section id="names">
@@ -116,7 +116,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="sfx">
   <p class="fig">05 · Unfinished sound</p>
   <h2 class="t">Bug: the sound effects never get to finish</h2>
-  <p class="lede">Each effect was written to slide in pitch and stop after a set time. The routine that does both is in the game, and nothing calls it.</p>
+  <p class="lede">Each effect was written to slide in pitch and stop after a set time. The game has a routine that does both, but never calls it.</p>
   <div class="plate">
     <div class="rp-row">
       <div style="flex:1 1 320px"><p class="rp-out" style="margin:0 0 8px">As the game plays them</p><div id="rp-d-sfx-a"></div></div>
@@ -124,7 +124,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <p class="cap">Both players run the game's own code on the site's 6502. The left one starts an effect and does nothing more, as the game does. The right one also runs the unused routine (<code>$82AC</code>), which slides the pitch and the filter and switches the voice off when the effect's time is up. The page runs it once a frame, from the frame after an effect starts. How often the game was meant to run it is not known.</p>
   </div>
-  <p>Each effect is described by a record of eight numbers (<code>$82EC</code>). The game uses five of them when it starts the effect. The other three, a length and two slides, are read only by a second routine, which was meant to run again and again while the effect sounds. That routine is complete and nothing calls it, so every effect is one burst of noise that fades by itself, and a long one is cut off by the next. With the routine running, each effect is a short, sharp sound of a few frames.</p>
+  <p>Each effect is described by a record of eight numbers (<code>$82EC</code>). The game uses five of them when it starts the effect. The other three, a length and two slides, are read only by a second routine, which was meant to run again and again while the effect sounds. That routine is complete, but the game never calls it, so every effect is one burst of noise that fades by itself, and a long one is cut off by the next. With the routine running, each effect is a short, sharp sound of a few frames.</p>
   <p>The game has a routine that the machine runs once a frame, whatever else is going on, called an interrupt. That routine has a gap of twenty empty bytes in it (<code>$7953</code>). A call to the missing routine would fit there. What the gap once held is not known.</p>
   <p>Two of the five effects are never started. One of them is the only effect that is a tone, not noise. The other would have silenced the whole chip. Its record switches off all three of the filter's outputs (<code>$D418</code>), and the game sends every voice through the filter (<code>$D417</code>), so its own noise and any effect still sounding would go quiet until the next effect set the filter again.</p>
 </section>
@@ -179,7 +179,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="rp-out" id="rp-d-shake-out"></p>
     <p class="cap">The first level, with the game's own code for a falling building run on the site's 6502 at the game's speed. The black strip that opens at the left edge is the shift.</p>
   </div>
-  <p>The video chip can slide the whole picture to the right by 0 to 7 pixels. The program asks for this by writing a number to one of the chip's registers, <code>$D016</code>. On each pass that a building has no strength left, the game puts a different number there (<code>$B2DF</code>), and the city jumps about. Nothing puts the 0 back when the building has gone, so the picture, the status lines included, stays up to 7 pixels to the right until the next level sets the screen up again.</p>
+  <p>The video chip can slide the whole picture to the right by 0 to 7 pixels. The program asks for this by writing a number to one of the chip's registers, <code>$D016</code>. On each pass that a building has no strength left, the game puts a different number there (<code>$B2DF</code>), and the city jumps about. The game never puts the 0 back when the building has gone, so the picture, the status lines included, stays up to 7 pixels to the right until the next level sets the screen up again.</p>
   <p>The register holds <code>$D8</code> before any building falls, and <code>$DB</code> and <code>$DF</code> after two different falls. The last digit is the slide: 0, then 3 and 7 pixels.</p>
 </section>
 
@@ -205,7 +205,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The inlay describes 50 cities of three days each. The program has twenty levels and then starts again.</p>
   <p>Each level is two short lists, of building shapes and of columns. There are twenty pairs of lists in use, and when the twentieth level is cleared the level number goes back to 0 (<code>$926F</code>). There are no city names and there is no count of days. The <a href="levels.html">Levels</a> tab draws all twenty.</p>
   <p>The level tables have two more entries after the twentieth, each a single building. The level number can never reach them.</p>
-  <p>The scoring is smaller than the manual's too. A punch that changes a block of a building scores 100 points, and nothing else scores: not a building falling, a helicopter, a vehicle, or a soldier. The last two digits of a score never change.</p>
+  <p>The scoring is smaller than the manual's too. A punch that changes a block of a building scores 100 points, and it is the only thing that scores: a building falling, a helicopter, a vehicle and a soldier are all worth nothing. The last two digits of a score never change.</p>
 </section>
 
 <section id="headline">
@@ -239,15 +239,15 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="unused">
   <p class="fig">14 · Never used</p>
-  <h2 class="t">Leftover: a high-score table, a pause, and words nothing prints</h2>
-  <p class="lede">Parts of a slightly bigger game are still in the code, with nothing that leads to them.</p>
+  <h2 class="t">Leftover: a high-score table, a pause, and words the game never prints</h2>
+  <p class="lede">Parts of a slightly bigger game are still in the code, where the game never reaches them.</p>
   <table class="rp-tab">
     <tr><th>What</th><th>Where</th><th>What it would do</th></tr>
     <tr><td>A high-score routine and the words <code>HIGH SCORE</code> and <code>GAME SCORE</code></td><td><code>$A9B0</code>, <code>$A9F8</code>, <code>$B197</code></td><td>Keep the best score and print it. The game shows only the three scores of the game just played.</td></tr>
-    <tr><td>A pause</td><td><code>$8FEC</code></td><td>Wait in a loop while a flag is set. Nothing sets the flag. The keyboard routine reads the Q key and the Commodore key on every pass and does nothing with either.</td></tr>
-    <tr><td><code>MISS YOU</code> and <code>CUDDLE WHUMP FLUMP DUNKS</code></td><td><code>$AEE7</code></td><td>Unknown. The words sit among the headlines and nothing prints them.</td></tr>
+    <tr><td>A pause</td><td><code>$8FEC</code></td><td>Wait in a loop while a flag is set. The game never sets the flag. The keyboard routine reads the Q key and the Commodore key on every pass and does nothing with either.</td></tr>
+    <tr><td><code>MISS YOU</code> and <code>CUDDLE WHUMP FLUMP DUNKS</code></td><td><code>$AEE7</code></td><td>Unknown. The words sit among the headlines, and the game never prints them.</td></tr>
     <tr><td><code>THEN PRESS FIRE</code>, and <code>ONE</code>, <code>TWO</code>, <code>THREE</code></td><td><code>$AF32</code>, <code>$AF5D</code></td><td>Unknown. The words read like a screen for choosing how many play; in the game, players join from the newspaper screen.</td></tr>
-    <tr><td>A second eating animation</td><td><code>$8BF5</code></td><td>Monster state 13. Nothing puts a monster in it.</td></tr>
+    <tr><td>A second eating animation</td><td><code>$8BF5</code></td><td>Monster state 13. The game never puts a monster in it.</td></tr>
     <tr><td>A test of what is beside a climbing monster</td><td><code>$87DA</code></td><td>A list of wall characters that a jump placed in front of the list skips, so a climb is never refused for what is next to the monster.</td></tr>
     <tr><td>A routine that prints a number in hexadecimal, with six test bytes</td><td><code>$A7F1</code></td><td>A programmer's tool for looking at memory on the screen.</td></tr>
     <tr><td>A routine that flashes the border</td><td><code>$84D1</code></td><td>Runs when a monster's state number is out of range: an alarm for the programmer.</td></tr>
@@ -269,7 +269,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p><b>Holes.</b> A new hole in a wall joins up with a hole above it, never with one below. The code for the hole below is there, and the address it would use is only half set up.</p>
   <p><b>Reaching for food.</b> A monster's grab was meant to test a square of four characters for something to eat. An instruction is missing, and the test covers three characters in a row.</p>
   <p><b>One row of colours.</b> The game draws on two screens by turns. For one of the two, the copy of the colours for row 21 reads the other screen's characters, so that row's colours can be a pass out of date.</p>
-  <p><b>Lit windows.</b> The routine that lights and darkens windows takes eight buildings in turn, and a level has room for six. On the two extra turns the routine looks at memory that belongs to the monsters' pictures. No byte there has the value of a window, so nothing is changed.</p>
+  <p><b>Lit windows.</b> The routine that lights and darkens windows takes eight buildings in turn, and a level has room for six. On the two extra turns the routine looks at memory that belongs to the monsters' pictures. There is no byte there with the value of a window, so the routine changes nothing.</p>
 </section>
 
 </main>

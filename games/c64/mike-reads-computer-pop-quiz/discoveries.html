@@ -62,7 +62,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1988 · Elite Systems</p>
   <h1>Mike Read's Computer Pop Quiz</h1>
-  <p class="sub">A round of the television show that was written and never reached, credits nobody sees, a question in every block that is never asked, and a question picker that repeats itself sooner than it means to.</p>
+  <p class="sub">A round of the television show that was written and never reached, credits that never appear on screen, a question in every block that is never asked, and a question picker that repeats itself sooner than it means to.</p>
 </header>
 <main class="wrap" data-part="title">
 
@@ -76,7 +76,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </tbody></table>
 <p class="cap">The game's own <code>pick_question</code> (<code>$2C72</code>) run over the listing, for block 1's Pop questions, 200 times from 200 seeds of the game's random generator, with the group sizes, masks and counters set as the block loader sets them (<code>$2AE8</code>-<code>$2B19</code>).</p></div>
 <p><code>pick_question</code> draws a random question of the subject and, if its bit in <code>asked_questions</code> (<code>$1DC1</code>) is set, draws again. To stop it from looking for ever once every question is used, it counts down <code>subject_left</code> (<code>$0F09</code>), set to the subject's size when a block loads, and stops checking the bits when it reaches 0. But it counts every draw (<code>$2C96</code>), the rejected ones too, so the count reaches 0 after 43 draws, not after 43 different questions. From then on any question can come up, asked or not.</p>
-<p>The second row onwards comes from a second slip: nothing ever clears <code>asked_questions</code>. When the next block loads, the counters start again but the bits stay set, so the picker treats the new block's questions as asked wherever their numbers were asked in the last block, spends its draws rejecting them, and reaches 0 sooner.</p>
+<p>The second row onwards comes from a second slip: the game never clears <code>asked_questions</code>. When the next block loads, the counters start again but the bits stay set, so the picker treats the new block's questions as asked wherever their numbers were asked in the last block, spends its draws rejecting them, and reaches 0 sooner.</p>
 </section>
 
 <section id="next"><p class="fig">02 · Secret</p><h2 class="t">Secret: a "What happened next" round is in the code, and the show never runs it</h2>
@@ -94,7 +94,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="q255" data-part="quiz"><p class="fig">04 · Secret</p><h2 class="t">Secret: the last question of every block is never asked</h2>
-<p class="lede">Each block holds 256 question records, numbered 0 to 255. The header that divides them into subjects ends the last subject at 255, so question 255 belongs to none and is never asked.</p>
+<p class="lede">Each block holds 256 question records, numbered 0 to 255. The header that divides them into subjects ends the last subject at 255, so question 255 falls outside every subject and is never asked.</p>
 <div class="plate"><table class="pq-tbl"><thead><tr><th>Block</th><th>Question 255</th><th>Answer</th><th>Used as a wrong answer by</th></tr></thead><tbody>
 <tr><td>1</td><td>Who liked a “Beautiful Noise”?</td><td>Neil Diamond</td><td>3 questions</td></tr>
 <tr><td>2</td><td>“The Laughing Gnome” was a hit for whom?</td><td>David Bowie</td><td>4 questions</td></tr>
@@ -111,7 +111,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="leftovers" data-part="quiz"><p class="fig">06 · Quirk</p><h2 class="t">Each question block carries a copy of the game's own pictures, which it never reads</h2>
-<p>A block's three question files are cut from one stretch of memory, <code>$B800</code> to <code>$FEFF</code>, and the parts the questions do not fill were saved as they were. In block 1 the stretches <code>$DF09</code>-<code>$F1FF</code> and <code>$FB4F</code>-<code>$FEFF</code> are not read, and much of them is the game's own graphics, byte for byte, 26,624 bytes (<code>$6800</code>) above where the game keeps them: <code>$E800</code>-<code>$F13F</code> is the game's <code data-part="title">$8000</code>-<code data-part="title">$893F</code> (the Jukebox ball, the subject icons, the numbers and the first pictures), and <code>$FC00</code>-<code>$FDFF</code> its <code data-part="title">$9400</code>-<code data-part="title">$95FF</code> (clock tiles, the star frames and the start of the bubble font). So the questions were saved from a machine that held the game's graphics there. Nothing reads these bytes.</p>
+<p>A block's three question files are cut from one stretch of memory, <code>$B800</code> to <code>$FEFF</code>, and the parts the questions do not fill were saved as they were. In block 1 the stretches <code>$DF09</code>-<code>$F1FF</code> and <code>$FB4F</code>-<code>$FEFF</code> are not read, and much of them is the game's own graphics, byte for byte, 26,624 bytes (<code>$6800</code>) above where the game keeps them: <code>$E800</code>-<code>$F13F</code> is the game's <code data-part="title">$8000</code>-<code data-part="title">$893F</code> (the Jukebox ball, the subject icons, the numbers and the first pictures), and <code>$FC00</code>-<code>$FDFF</code> its <code data-part="title">$9400</code>-<code data-part="title">$95FF</code> (clock tiles, the star frames and the start of the bubble font). So the questions were saved from a machine that held the game's graphics there. The game never reads these bytes.</p>
 </section>
 
 <section id="slash"><p class="fig">07 · Quirk</p><h2 class="t">The bubble's font has no "/", and points into the other font instead</h2>
