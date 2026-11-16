@@ -10,7 +10,7 @@ was tried), **confirmed** (in the code, consistent with the emulator),
 Sources:
 
 - C64-Wiki, "Licence to Kill", https://www.c64-wiki.com/wiki/Licence_to_Kill, read 16 November 2026 (credits, the six levels and their controls, a cracked version's cheats, the Zzap!64 score).
-- Zzap!64 issue 53, September 1989, review of Licence To Kill (C64 and Amiga), read as the scan's OCR text at https://archive.org/details/zzapp_64_issue_053_600dpi on 16 November 2026: the six sections, prices, the C64 ratings (Presentation 84 %, Graphics 81 %, Sound 65 %, Hookability 80 %, Lastability 80 %, Overall 80 %) and "no multiload".
+- Zzap!64 issue 53, September 1989, review of Licence To Kill (C64 and Amiga), read as the scan's OCR text at https://archive.org/details/zzapp_64_issue_053_600dpi on 16 November 2026: the six sections, prices (C64 £9.99 cassette, £14.99 disk), the C64 ratings (Presentation 84 %, Graphics 81 %, Sound 65 %, Hookability 80 %, Lastability 80 %, Overall 80 %), "no multiload", and a reviewer's surprise at "how Quixel has managed to cram so much into a one-load 64 version".
 - MI6-HQ, "Licence To Kill" game page, https://varnish.mi6-hq.com/sections/games/ltk, read through a research summary on 16 November 2026 (credits, release 20 April 1989).
 - Wikipedia, "007: Licence to Kill", https://en.wikipedia.org/wiki/007:_Licence_to_Kill, read through a research summary on 16 November 2026.
 - The game's own screens: the title credits list "COMMODORE CHRIS WEST., ATARI PAUL MARGRAVE., AMIGA BOZZ BOSWELL., IBM MARCUS GOODEY., GRAPHICS TONY WEST., SOUND DAVID WHITTAKER., MANAGEMENT JOHN KAVANAGH." and "COPYRIGHT 1989 DOMARK."
@@ -36,7 +36,7 @@ review, and each is to be checked against the code.
 | Two energy bars in the panel, red through yellow to green | live | |
 | High-score table "ALL TIME TOP SECRET AGENTS", seven entries 007 to 001 with three-letter names, entered after a good score ("GREAT SCORE. INPUT YOUR NAME.") | live (table) / traced (entry) | `name_entry` (`$91B1`); table at `$F401`, names `$F42B`; the table is not saved to disk (C64-Wiki) |
 | Title: tagline "His bad side is a dangerous place to be.", logo, credits, a white dot (the gun-barrel dot of the films' openings, without the barrel) | live | |
-| Music by David Whittaker: an intro tune; sound effects in play, no in-game music (Zzap!64) | differs | five tunes at `$CADB`: the title's, one that starts with the water-ski, the game over, the opening of levels 1, 4 and 5, and one nothing plays; 24 effects at `$C6C2` (`facts.md`, Sound) |
+| Music by David Whittaker: an intro tune and sound effects (Zzap!64's C64 ratings: "Nice intro tune and good spot effects"; the "no in-game music" line is in its Amiga box) | traced | five tunes at `$CADB`: the title's, one that starts with the water-ski, the game over, the opening of levels 1, 4 and 5, and one nothing plays; 24 effects at `$C6C2` (`facts.md`, Sound) |
 | Joystick in port 1 | live | fire on port 2 does not start the game; RUN/STOP pauses and Q quits from the pause (live, `pause_keys` `$8F15`) |
 
 ## Beyond the documentation

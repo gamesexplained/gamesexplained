@@ -88,10 +88,17 @@ The five level numbers hold the six sections of the reviews: level 4
 - No register for sprite-to-background collisions is read ($D01F does
   not appear in the census). Crashes into scenery are found from the
   characters under the player: each level has a table of character
-  heights, one nibble a character (`height_table_ptr` `$C7`), and a
-  height of 2 or more under the player loses a life
-  (`player_hits_scenery`, `$32CB`). Shots read the same table
-  (`move_shots`, `$1D52`).
+  heights, one nibble a character (`height_table_ptr` `$C7`). On level 1
+  (`player_hits_scenery`, `$32CB`, called only from `level_main_loop`) a
+  character whose height times 4 reaches the throttle `$0392` sets the
+  damage count to `$FF` and loses a life: the throttle is the
+  helicopter's height as well as its speed. On the simulator, from
+  `play-l1.vsf`, with the helicopter put at 530 positions over the screen,
+  throttle 1 crashed at 100 of them, 8 at 55, 16 at 5, and 24 or more at
+  none. Level 2 uses the same routine from `$32D1` to stop Bond walking
+  into walls. Shots read the same table (`move_shots`, `$1D52`). On level 5
+  Bond's tanker loses energy when the road under it is not clear
+  (`road_under_sprite`, from `drive_tanker` `$FAA7`).
 - Sprite-to-sprite collisions are read from `$D01E` on level 2 (`$3925`) and level 4 (`$8088`, `$8166`) only; the other levels compare positions.
 - The playfield scrolls down a pixel at a time with the fine scroll; at
   each whole character, the copy is split over four frames
@@ -110,10 +117,14 @@ The five level numbers hold the six sections of the reviews: level 4
   negative (`$14FB`, `$3997`, `$F6A9`, and the loops of levels 3 and 4),
   so the panel's 03 means four attempts: play goes on at 00. A life is
   lost when the damage count `$039E` goes negative (`player_anim` `$20E6`
-  on level 1, the loops of the other levels). Every level's start and
-  restart sets the count to 47 (`start_timer`, called from `$27B5`,
-  `$290F`, `$2A80`, `$87F4`, `$8F83`); the 6 that `player_anim` stores
-  after a loss is overwritten by the restart.
+  on level 1, the loops of the other levels). Every level's start sets
+  the count to 47 (`start_timer`), and levels 1 and 3 then set it to 6
+  (`$2871`, `$28D8`, `$2AEA`). An enemy shot takes 1 on level 1 and 8
+  on the other levels that call `enemy_shots_hit_player` (`$2CE8`), so a
+  life lasts seven shots on level 1 and six on level 2. On level 4 a
+  diver's touch takes 1 (`diving_collisions`); on level 5 the tanker has
+  its own energy, `$F6BC`, and the Stinger takes 3 of it. The energy bar draws the count
+  times 8, up to 47 (`draw_energy_bar`, `$304F`).
 - Enemy shots cost 1 point of damage on level 1 and 8 elsewhere
   (`enemy_shots_hit_player`, `$2CE8`). The code at `$2D37` that would take
   a life for a level 1 hit is jumped over and never runs.
@@ -206,6 +217,7 @@ full audit; one, then a second sample, is recommended.
 ## Live tests
 
 - Sample seed 2616: see the listing's error rate, above.
+- Crash heights: the simulator test above, `player_hits_scenery` run from `play-l1.vsf`.
 - Countdown rate: 200 frames from `play-l1.vsf` took it from 1920 to
   1820, with `count_down_timer` and `irq_play` each hit 200 times.
 - Pause: RUN/STOP set `$03A5`; the countdown stood still for 100 frames.
