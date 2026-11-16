@@ -1,4 +1,4 @@
-## next · 2026-11-16 · Ant Attack (Spectrum) and Fantasy World Dizzy (C64) · air and 64kramsystem with Codex, reviewed by air with Claude
+## 0.0.350 · 2026-11-16 · Ant Attack (Spectrum) and Fantasy World Dizzy (C64) · air and 64kramsystem with Codex, reviewed by air with Claude
 
 - **A run's best findings can sit in its notes and never reach a page.**
   The Ant Attack run (gpt-6.1-sol, 6 November 2026) wrote in `facts.md`
