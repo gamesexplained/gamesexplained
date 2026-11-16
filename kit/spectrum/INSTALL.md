@@ -355,13 +355,20 @@ Tell the contributor this before installing anything:
 |---|---|---|
 | Emulator, unpacked from the release | `tools/zesarux/` | about 100 MB (the macOS bundle; the Linux build is about 43 MB compressed) |
 | Everything the emulator would put in a home directory: `.zesaruxrc`, any XDG folder it uses, and the kit's snapshots | `tools/zesarux-home/` | small; a 48K snapshot is 49 KB |
+| The emulator's temporary files, one folder to each port: the sound file of a tape played at real speed | `tools/zesarux-home/tmp/<port>/` | 2.5 to 8 MB a tape; emptied at each start, removed by `stop` |
 | Disassembler, a Python virtual environment with SkoolKit 10.1 | `tools/skoolkit/` | about 15 MB |
 | Downloads on the way in | `tools/downloads/` | the release file, until it is unpacked and deleted |
 | Logs | `tools/logs/` | small |
 
 The launcher points `HOME` (and the XDG variables) at
 `tools/zesarux-home/` before starting the emulator, because ZEsarUX reads
-and writes `.zesaruxrc` in the home directory on every run.
+and writes `.zesaruxrc` in the home directory on every run. It passes
+`--tempdir tools/zesarux-home/tmp/<port>` too: ZEsarUX's own temporary
+folder is one for every emulator, `/tmp/zesarux-<user id>` (a folder under
+`TMP` on Windows), which `TMPDIR` does not move, and it names the sound file
+of a tape played at real speed after the tape's file alone, so two
+emulators given tapes of the same name shared one and played the same game
+(#883).
 
 One thing can be installed outside the repository, on Linux only: the
 `ubuntu24` build is dynamically linked against SDL 1.2, which Ubuntu 24.04

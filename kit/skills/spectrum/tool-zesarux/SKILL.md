@@ -82,7 +82,7 @@ lists all 129.
 | Input, read back | `get-ui-io-ports` | same 18 hex characters |
 | Keys | `send-keys-event <key> <1\|0>` | pumped by the running machine only; see below |
 | Snapshots | `snapshot-save <file>`, `snapshot-load <file>` | a `.sna` for a 48K machine is 49179 bytes |
-| Load a game | `smartload <file>` | from the extension: `.tzx`/`.tap` plays the tape, `.sna`/`.z80` loads a snapshot; the loader then runs by itself. A tape plays at real speed, so wait for the game (poll the PC or save the screen) |
+| Load a game | `smartload <file>` | from the extension: `.tzx`/`.tap` inserts the tape and types the load, `.sna`/`.z80` loads a snapshot; the loader then runs by itself. Blocks at the ROM's speed go into memory at once, through the emulator's tape traps; to play a tape at a Spectrum's pace, see "Tapes". Wait for the game either way (poll the PC or save the screen) |
 | Screen | `save-screen <file>` | `.scr` is 6912 bytes, `.bmp` and `.pbm` too |
 | Expressions | `evaluate <expr>` | `PEEK`, `IN`, registers, `TSTATESP`, arithmetic and comparisons |
 | Machine | `get-current-machine` | `ZX Spectrum 48k`, or `ZX Spectrum+ 128k` |
@@ -320,6 +320,30 @@ Verify input the way `check-emulator` does, in the game's own terms: read
 the port with `evaluate IN(...)` to see it before any instruction runs, and
 read a variable the game writes to see the game itself react
 (`input-lands`, `input-seen`, `input-released`, `input-joystick`).
+
+## Tapes
+
+`smartload` is the quick way into a game. Blocks at the ROM's speed skip
+the sound altogether: the emulator's tape traps copy them into memory as
+soon as the ROM asks, so a 3,000-byte BASIC program was in memory three
+seconds after `smartload` (15 November 2026), where the tape itself runs
+about twenty. A loading picture filling in line by line, a loader's
+border stripes or a tune played while loading need the tape played as
+sound: start the emulator with `--realtape <file>` (the launcher passes
+it on), or open the tape with `realtape-open <file>` over ZRCP.
+`realtape-open` resets the machine, so open the tape before loading a
+snapshot.
+
+To play it, ZEsarUX first turns the tape into a sound file at 15,600
+samples a second, so each pulse is rounded to a whole sample, about 224
+T-states. A fast loader's short pulses then come out a few per cent fast
+or slow, up to 5 per cent on the five tapes of #883: take how long
+something takes to load from the TZX file's own timings, and the
+emulator only for the order things appear in. The sound file goes in the
+launcher's temporary folder for that port, `tools/zesarux-home/tmp/<port>/`,
+which each start empties and `stop` removes. ZEsarUX on its own keeps one
+folder for every emulator and names the file after the tape alone, so two
+emulators given tapes of the same name would play the same one.
 
 ## Snapshots
 

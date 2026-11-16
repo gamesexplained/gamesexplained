@@ -283,8 +283,10 @@ copy drifts."
   repository with their computer. Everything the kit installs goes under
   the gitignored `tools/` folder, tools are started only through
   `kit/scripts/tools.py` so that their settings, logs and saved state stay
-  there too, and uninstalling is deleting the folder. Before installing
-  anything, tell the contributor what will be installed, where, how big,
+  there too, and uninstalling is deleting the folder. Throwaway files in
+  the system's temporary folder (`/tmp`), which the system clears by
+  itself, are the one exception. Before installing anything, tell the
+  contributor what will be installed, where, how big,
   and the complete list of anything that can end up outside the folder.
   Say where it comes from, too: the project by name, that it is open
   source and under which licence, and that the download is the project's
