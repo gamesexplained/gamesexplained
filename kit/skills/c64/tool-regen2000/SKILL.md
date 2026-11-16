@@ -121,7 +121,10 @@ inside its batch and apply the rest.
   as `lo_hi_address` reads the first half as low bytes and the second half as
   high bytes, invents addresses that are not there, and mints auto symbols
   all over the image. The tell is symbols appearing in regions the game never
-  touches.
+  touches. `r2000.py --apply` warns, naming the range, when a range it types
+  `lo_hi_address` reads as side-by-side pointers that all land on labels,
+  blocks or the loaded file and the split reading does not; retype it
+  `address` and the strays go.
 - **A custom alphabet has no data type.** `petscii` and `screencode` are the
   only text types; a game whose character set is in its own order has to be
   typed `byte` with the decoded text in the comment.
@@ -208,9 +211,11 @@ inside its batch and apply the rest.
   code; `--refs <address>` lists every instruction that can touch an
   address, documented or not: by name, as a pointer, or through an index,
   including one that wraps past `$FFFF`.
-- **Code that indexes into I/O mints symbols in the RAM beneath.**
-  `STA $D800,X`, `LDA $DDDD,X` (a placeholder operand) and the like leave
-  automatic symbols at `$D000`-`$DFFF`. If that RAM holds the game's own
-  data (`coverage.include`), type it, clear those symbols (an empty name)
-  and label the data, or the listing names sprite rows after the chips'
-  registers.
+- **Code that touches I/O mints symbols in the RAM beneath.**
+  `STA $D803`, `STA $D800,X`, `LDA $DDDD,X` (a placeholder operand) and
+  the like leave automatic symbols at `$D000`-`$DFFF`. If that RAM holds
+  the game's own data (`coverage.include`), type it and label the data.
+  The ledger and the listing pass over the automatic symbols there that
+  lie outside code and carry no comment, so leave them uncommented: a
+  comment makes one a boundary again, and the listing then prints a
+  colour RAM note among sprite pixels.

@@ -21,7 +21,7 @@ starts.
 - Record a keyboard-only rescue route and replay it read-by-read on both machines.
 - Extend the map viewer with a route and an overlay showing the five ants' runtime occupancy bits.
 - Test the complete ten-rescue score progression and ending from legal play.
-- The four pictures at `$BC00–$BCFF` (`$F0–$F3`): no code selects them (facts.md, Rendering). Look for what they were meant to show, in other releases or in interviews.
+- The aeroplane at `$BC00–$BCFF` (`$F0–$F3`): no code selects it (facts.md, Rendering). Look for why a plane, in Sandy White's own pages, interviews or other releases.
 - Check whether the waiting partner always lies down (frame 3) before being found, in later rescues and as the boy; then say so on Graphics.
 - See what happens in play when ant 1 respawns at `(186,168)`, a column with a ground block (facts.md, Actors and controls).
 - Port the game's own follow and ant code (`$8AB6`, `$8A00`) in lockstep for the How it works widgets, so they run the code rather than its rule.
