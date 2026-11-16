@@ -37,7 +37,10 @@ For each section, answer from the page itself:
 | What can I try, and what does the result mean? | Understandable controls, an informative starting state, and visible feedback tied to the rule. A section that teaches its point with a picture or prose needs no controls. |
 | Does the page state what happens? | The finding told as fact. What was not settled, and how anything was tested, stays in `facts.md`. |
 
-Answer with a sentence or example from the page, not a score.
+Answer with a sentence or example from the page, not a score. Quote
+each sentence you had to read twice to follow, and say what stopped
+you: a phrase you had to decode, a term not yet explained, "no X" or
+"nothing" where a thing should be, or a subject far from its verb.
 
 ## Compare the notes with the pages
 
