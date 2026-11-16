@@ -8,8 +8,9 @@ fixes each line it prints or keeps it for a reason it can say. The rules are in 
   announcer      a sentence that announces the next one ("Here's the odd part", "It turns out")
   imperative     an instruction to the reader that is not a control ("Notice", "Listen to", "Imagine")
   contrast       "it's not X, it's Y", "not just", "more than just", "not only ... but"
-  no-x           "no X" or "nothing" standing in for a thing: as the one acting ("no gate leads to
-                 it", "nothing reads it"), behind "by" ("an exit found by no player") or "belongs to"
+  no-x           "no X", "nothing" or "nobody" standing in for a thing: as the one acting ("no gate
+                 leads to it", "nothing in the game calls it", "tunes nobody hears"), behind "by"
+                 ("an exit found by no player"), or after "belongs to"
   hype           a hype word (elegant, clever, fascinating, remarkable, brilliant, ...)
 
 A heading is checked whole. Whether a heading is an inventory or a telegram (kit/style.md,
@@ -43,12 +44,20 @@ VOID = {"br", "hr", "img", "input", "meta", "link", "source", "wbr", "area", "ba
 HYPE = ("elegant", "elegantly", "clever", "cleverly", "fascinating", "remarkable", "remarkably", "brilliant",
         "brilliantly", "masterful", "masterfully", "beautiful", "beautifully", "ingenious", "ingeniously")
 
-# Verbs that make "no X" or "nothing" the one acting; the first line reads naturally after "nothing"
-# ("nothing happens") and is checked only after "no X".
-ACTS = (r"gets?|changes?|appears?|happens?|stops?|moves?|"
-        r"leads?|reach(?:es)?|reads?|tells?|uses?|plays?|knows?|sees?|draws?|calls?|selects?|points?|sets?|starts?"
-        r"|writes?|clears?|loads?|checks?|kills?|names?|mentions?|refers?|finds?|asks?|jumps?|shows?")
-ACTS_ON = ACTS.split("|", 6)[6]
+# "No X" standing in for a thing. ACTS are verbs that make the "no X" before them the one acting;
+# after "nothing" or "nobody" any verb in -s or -ed counts, except the ones in STATES, which read
+# naturally there ("nothing happens", "nothing else matters").
+ACTS = (r"leads|reach(?:es|ed)|reads|tells|uses|plays|knows|sees|draws|calls|selects|points|sets|starts|writes"
+        r"|clear(?:s|ed)|loads|checks|kills|names|mentions|refers|finds|asks|jumps|shows|prints|puts|adds|gives"
+        r"|comes|scales|mirrors|chooses|says|joined|heard?s?|wrote|noticed")
+STATES = (r"is|was|has|does|happens|happened|changes|changed|goes|matters|mattered|remains|remained|seems|seemed"
+          r"|looks|works|worked|stays|stayed|means|fits|survives|else|less|needs|needed|exists|existed")
+NOTHING = r"(?:nothing|nobody|no\s+one)"
+WORD_ = r"(?!(?:it|its|what|which|who|he|she|they|we|you|that|this)\b)[\w'’-]+"
+PLACE = r"(?:\s+(?:in|on|of|at|from|inside|outside)\s+(?:the\s+|its\s+|this\s+|that\s+)?" + WORD_ + r"(?:\s+" + WORD_ + r")?)?"
+NO_X = (r"no\s+(?!longer\b|more\b|matter\b|doubt\b|way\b|less\b)[a-z][\w-]*"
+        r"(?:\s+(?!(?:to|in|on|at|for|of|from|with|by|during|after|before|and|or)\b)[a-z][\w-]*)?"
+        r"(?:\s+(?:of|in|on)\s+(?:the\s+)?[a-z][\w'’-]*)?")
 
 RULES = [
     ("dash", re.compile(r"—|[A-Za-z]\s+[–-]\s+[A-Za-z]")),
@@ -68,10 +77,18 @@ RULES = [
         r"|(?<!has )(?<!have )(?<!had )\bnot\s+just\b|\bmore\s+than\s+just\b|\bnot\s+(?:only|merely)\b[^.]{1,80}\bbut\b",
         re.I)),
     ("no-x", re.compile(
+        # "no X" as the subject, after the start of a clause: "no gate leads to it", "no player is told"
         r"(?:^|[.;:,]\s+|\b(?:and|but|so|because|since|when|where|that|which)\s+)(?<!there is )(?<!there are )"
-        r"(?<!there was )(?<!there were )(?:no\s+(?!longer\b|more\b|matter\b|doubt\b|way\b)[a-z][\w-]*(?:\s+(?!(?:to|in|on|at|for|of|from|with|by|during|after|before)\b)[a-z][\w-]*)?\s+"
-        r"(?:is|are|was|were|can|could|will|would|does|did|has|have|ever|" + ACTS + r")"
-        r"|(?:nothing|nobody|no\s+one)\s+(?:ever\s+|else\s+)?(?:" + ACTS_ON + r"))\b"
+        r"(?<!there was )(?<!there were )" + NO_X + r"\s+(?:ever\s+)?(?:is|are|was|were|can|could|will|would|does|did"
+        r"|has|have)\b"
+        # "no X" before a verb of action anywhere, a "that" left out included: "rooms no doorway reaches"
+        r"|(?<!there is )(?<!there are )\b" + NO_X + r"\s+(?:ever\s+)?(?:" + ACTS + r")\b"
+        # "nothing" or "nobody" acting: "nothing reads it", "tunes nobody hears", "nothing in the game calls it"
+        r"|(?<!there is )(?<!there was )(?<!with )(?<!has )(?<!have )(?<!had )\b" + NOTHING + r"(?:\s+else)?" + PLACE + r"\s+(?:ever\s+)?"
+        r"(?:(?!(?:" + STATES + r")\b)(?:[a-z]+s|[a-z]+ed(?=\s+[\w\[]))|wrote|saw|heard|knew|found|gave|took|told|sent|ran|chose|drew"
+        r"|(?:is|are|was|were)\s+(?:ever\s+)?[a-z]+ed"
+        r"|(?<=nobody )(?:can|could|will|would)\s+[a-z]+|(?<=no one )(?:can|could|will|would)\s+[a-z]+)\b"
+        # behind "by", or as what a thing belongs to: "found by no player", "belongs to no room"
         r"|\bby\s+(?:no\s+(?!means\b|chance\b|accident\b)[a-z][\w-]*|nothing|nobody|no\s+one|none)\b"
         r"|\bbelong(?:s|ed|ing)?\s+to\s+(?:no\s+[a-z][\w-]*|nothing|nobody|no\s+one|none)\b",
         re.I)),
