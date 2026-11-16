@@ -86,7 +86,7 @@ sup.fn + sup.fn::before{content:","}
   <p class="fig">01 · The levels</p>
   <h2 class="t">Six scenes, five levels</h2>
   <p class="lede">The reviews counted six sections, and the game counts five levels. The dive and the water-ski are one level in the code, number 3, and harpooning the seaplane switches from one to the other.</p>
-  <table class="ft-table">
+  <div class="ft-scroll"><table class="ft-table">
     <thead><tr><th>Level</th><th>Scene</th><th>Won by</th><th>Countdown</th></tr></thead>
     <tbody>
       <tr><td>1 (number 0)</td><td>The helicopter chases Sanchez's jeep over a town (<a href="source.html#27A6"><code>level1_start</code></a>)</td><td>Reaching the end of the map and landing: the scroll stops, and the helicopter must come down inside the landing area (<a href="source.html#133D"><code>move_player</code></a>)</td><td>2,000: 80 seconds</td></tr>
@@ -96,31 +96,38 @@ sup.fn + sup.fn::before{content:","}
       <tr><td>The water-ski behind the seaplane</td><td>Reaching the top of the screen (<a href="source.html#80F9"><code>diving_loop</code></a>)</td></tr>
       <tr><td>5 (number 4)</td><td>The plane over the tanker convoy, then Bond on a tanker (<a href="source.html#8F5F"><code>level5_start</code></a>)</td><td>Jumping onto a tanker and running the convoy off the road to the last stretch</td><td>5,000: 200 seconds</td></tr>
     </tbody>
-  </table>
+  </table></div>
+  <div class="ft-two">
+    <figure class="overview-shot" style="margin:0"><img src="reference/level2-gunfight.png" width="384" height="272" alt="Level 2: Bond on foot in a sandy boatyard beside a shed, with ammunition and magazines shown in the panel"><figcaption>Level 2, the boatyard. The panel shows the bullets left and the spare magazines.</figcaption></figure>
+    <figure class="overview-shot" style="margin:0"><img src="reference/level3-plane.png" width="384" height="272" alt="Level 3: Bond hanging below the helicopter over a blue sea beside a long pier"><figcaption>Level 3: Bond on the rope over the sea.</figcaption></figure>
+    <figure class="overview-shot" style="margin:0"><img src="reference/level4-diving.png" width="384" height="272" alt="Level 4: the diver in light blue water near a boat"><figcaption>Level 4: the dive, with a boat at the surface.</figcaption></figure>
+    <figure class="overview-shot" style="margin:0"><img src="reference/title-scores.png" width="384" height="272" alt="The high-score table, ALL TIME TOP SECRET AGENTS, seven names from 007 down to 001"><figcaption>The high-score table between games.</figcaption></figure>
+  </div>
+  <p>Within the scenes there is more to do than the table shows. On level 1 Sanchez's jeep can be shot: it takes 12 hits, each worth 100 points, and stopping it is worth 2,000 more (<a href="source.html#2DF3"><code>shots_hit_jeep</code></a>); the lower bar in the panel shows the hits it has left (<a href="source.html#3002"><code>draw_hits_bar</code></a>). On level 2 an ammunition crate makes the gun fire by itself for 66 shots, and each magazine picked up adds one, up to three (<a href="source.html#8746"><code>touch_enemies</code></a>). On level 3 the rope grows while the plane is on the screen and shrinks while it is not (<a href="source.html#3D33"><code>rope_length_step</code></a>), and it swings with the helicopter's speed. When the truck chase ends, the game prints "CONGRATULATIONS ON DEFEATING SANCHEZ AND SMASHING HIS EVIL DRUG EMPIRE" (<a href="source.html#FEE4"><code>level5_end</code></a>), waits for fire, and starts again from level 1.</p>
   <p>Each level has a 25-byte record in the table at <a href="source.html#9A63"><code>level_records</code></a>, which <a href="source.html#0C47"><code>start_level</code></a> reads: where its map ends, its colour scheme and playfield colour, how fast its fuel runs down, its list of enemy launches, its tiles, and its table of character heights. Most of the values are written straight into the code as it runs, so the same routines serve every level. After level 5 the level number goes back to 0 (<a href="source.html#157A"><code>level_complete</code></a>).</p>
 </section>
 
 <section id="energy">
   <p class="fig">02 · Energy, lives and the clock</p>
-  <h2 class="t">Seven shots, four lives</h2>
+  <h2 class="t">Six or seven shots, four lives</h2>
   <p class="lede">A shot or a crash takes energy, and Bond loses a life when the energy is gone. The level then starts again from its beginning.</p>
-  <p>The energy is a count at <a href="source.html#039E"><code>$039E</code></a>. Every level starts it at 47 (<a href="source.html#8F01"><code>start_timer</code></a>), and levels 1 and 3 then set it to 6. An enemy shot takes 1 on level 1 and 8 on level 2 (<a href="source.html#2CE8"><code>enemy_shots_hit_player</code></a>), so either way Bond survives six shots and the seventh costs a life. On level 4 each touch of a diver takes 1; on level 5 the tanker has an energy count of its own, and a Stinger missile takes 3 of it (<a href="source.html#FF79"><code>move_stinger</code></a>). A crash into the scenery sets the count below zero at once.</p>
+  <p>The energy is a count at <a href="source.html#039E"><code>$039E</code></a>. Every level starts it at 47 (<a href="source.html#8F01"><code>start_timer</code></a>), and levels 1 and 3 then set it to 6. An enemy shot takes 1 on level 1 and 8 on level 2 (<a href="source.html#2CE8"><code>enemy_shots_hit_player</code></a>), so the seventh shot costs a life on level 1 and the sixth on level 2. Touching an enemy on level 2 costs a life at once (<a href="source.html#8746"><code>touch_enemies</code></a>). On level 4 each touch of a diver takes 1, and a boat that hits Bond at the surface empties the energy (<a href="source.html#89BC"><code>diving_collisions</code></a>). On level 5 the tanker has an energy count of its own: it drains while the tanker is off the road (<a href="source.html#FAA7"><code>drive_tanker</code></a>), and a Stinger missile takes 3 of it (<a href="source.html#FF79"><code>move_stinger</code></a>). A crash into the scenery sets the count below zero at once.</p>
   <p>The lives start at 3 (<a href="source.html#19F6"><code>$19F6</code></a>), and the panel shows 03. Each loss takes one away, but the game ends only when the count goes below zero, so Bond plays on at 00 and has <a href="discoveries.html#lives">four attempts</a>.</p>
-  <p>The countdown in the panel loses one every other frame, 25 a second (<a href="source.html#8EC8"><code>count_down_timer</code></a>), and stops at 0000; running out of time is not a loss. Whatever is left when a level ends is added to the score as a bonus. Measured in the emulator, 200 frames of play took the clock from 1920 to 1820.<sup class="fn"><a href="about.html#src-live">4</a></sup></p>
+  <p>The countdown in the panel loses one every other frame, 25 a second (<a href="source.html#8EC8"><code>count_down_timer</code></a>), and stops at 0000; running out of time is not a loss. Whatever is left when a level ends is added to the score as a bonus.<sup class="fn"><a href="about.html#src-live">4</a></sup></p>
 </section>
 
 <section id="crash">
   <p class="fig">03 · Crashes</p>
-  <h2 class="t">Fly higher to clear the buildings</h2>
+  <h2 class="t">Fly higher to clear the buildings, but not all of them</h2>
   <p class="lede">On level 1 the stick's up and down set the helicopter's throttle, from 1 to 47. The throttle picks how fast the scenery scrolls, and it is also how high the helicopter flies: the game crashes it into anything taller than that.</p>
   <div class="plate">
     <label class="ft-lab" for="ltkThr">Throttle: <b id="ltkThrV">8</b></label>
     <input type="range" id="ltkThr" class="ft-range" min="1" max="47" value="8">
     <canvas id="ltkCrash" class="ft-px" style="max-width:512px;margin:12px auto 0"></canvas>
     <p class="ft-read" id="ltkCrashR"></p>
-    <p class="cap">The opening picture of level 1, drawn from its map, tiles and character set. Every character the helicopter would crash into at this throttle is hatched in white and outlined in black. The test is the game's own: a character crashes the helicopter when its height times 4 is at least the throttle (<a href="source.html#32CB"><code>player_hits_scenery</code></a>).</p>
+    <p class="cap">The opening picture of level 1, drawn from its map, tiles, and character set. Every character the helicopter would crash into at this throttle is hatched in white and outlined in black. The test is the game's own: a character crashes the helicopter when its height times 4 is at least the throttle (<a href="source.html#32CB"><code>player_hits_scenery</code></a>).</p>
   </div>
-  <p>The C64 can report when a sprite touches the background, but the game never reads that register. Instead each level has a table of heights, one for every character, four bits each (<a href="source.html#9C24"><code>heights_a</code></a> for levels 1 and 4, <a href="source.html#9C8C"><code>heights_b</code></a> for the others). Each frame on level 1, <a href="source.html#32CB"><code>player_hits_scenery</code></a> copies the throttle into the compare instruction at <a href="source.html#333F"><code>$333F</code></a>, works out which screen characters lie under the helicopter, and looks up the heights of up to seven of them, chosen by where the helicopter sits within a character from the lists at <a href="source.html#93A5"><code>scenery_offsets</code></a>. One that is high enough sets the energy below zero. Run on the game's own code over a moment of play, with the helicopter placed at 530 points over the screen, throttle 1 crashed at 100 of them, throttle 8 at 55, throttle 16 at 5, and throttle 24 or more at none.<sup class="fn"><a href="about.html#src-live">4</a></sup></p>
+  <p>The C64 can report when a sprite touches the background, but the game never reads that register. Instead each level has a table of heights, one for every character, four bits each (<a href="source.html#9C24"><code>heights_a</code></a> for levels 1 and 4, <a href="source.html#9C8C"><code>heights_b</code></a> for the others). Each frame on level 1, <a href="source.html#32CB"><code>player_hits_scenery</code></a> copies the throttle into the compare instruction at <a href="source.html#333F"><code>$333F</code></a>, works out which screen characters lie under the helicopter, and looks up the heights of up to seven of them, chosen by where the helicopter sits within a character from the lists at <a href="source.html#93A5"><code>scenery_offsets</code></a>. One that is high enough sets the energy below zero.<sup class="fn"><a href="about.html#src-live">4</a></sup> Heights run from 0 to 12 on level 1, and the throttle stops at 47, so a character of height 12, which needs 48, can never be flown over: at full throttle those are the only ones left hatched in the widget.</p>
   <p>The same heights decide where shots stop: a character taller than a shot ends it (<a href="source.html#1D52"><code>move_shots</code></a>). On level 2 the routine is entered further in, at <a href="source.html#32D1"><code>$32D1</code></a>, and a high character puts Bond back where he stood, which is how the boatyard's walls stop him. The <a href="levels.html">Maps</a> tab can show every character's height.</p>
 </section>
 
@@ -128,7 +135,7 @@ sup.fn + sup.fn::before{content:","}
   <p class="fig">04 · The scroll</p>
   <h2 class="t">Two screens and a four-part copy</h2>
   <p>The scenery moves down the screen a pixel or more each frame, by the C64's fine-scroll register (<a href="source.html#1702"><code>scroll_step</code></a>). Each time it has moved a whole character, every row must be copied one row down, which is too much work for one frame. The game keeps two screens, at <code>$4000</code> and <code>$4400</code>, shows one while it copies into the other in four parts of six rows (<a href="source.html#07FF"><code>scroll_copy_rows_a</code></a> to <a href="source.html#0877"><code>_d</code></a>), draws the new top row from the map, and then flips the display to it (<a href="source.html#1785"><code>set_scroll_regs</code></a>).</p>
-  <p>Enemies arrive from a list for each level, three bytes an entry: a scroll position, a column, and a kind of enemy (<a href="source.html#2547"><code>launch_from_map</code></a>). When the scroll reaches the position, a group of up to six sprites appears. Each of the 45 kinds names its shape, colour, hit points, hit box and where its shots start from, in the tables from <a href="source.html#94F3"><code>type_state</code></a>.</p>
+  <p>Enemies arrive from a list for each level, three bytes an entry: a scroll position, a column, and a kind of enemy (<a href="source.html#2547"><code>launch_from_map</code></a>). When the scroll reaches the position, a group of up to six sprites appears. Each of the 45 kinds names its shape, colour, hit points, hit box, and where its shots start from, in the tables from <a href="source.html#94F3"><code>type_state</code></a>.</p>
 </section>
 
 </main>
@@ -159,7 +166,7 @@ sup.fn + sup.fn::before{content:","}
         if (h * 4 >= thr) { n++; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.beginPath();
           for (let k = -8; k < 8; k += 4) { ctx.moveTo(px + k * s, py + 8 * s); ctx.lineTo(px + (k + 8) * s, py); } ctx.stroke(); ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.strokeRect(px + .5, py + .5, 8 * s - 1, 8 * s - 1); }
       } });
-      $('ltkCrashR').textContent = `Throttle ${thr}: ${n} of the ${all} characters are tall enough to crash into` + (n ? '' : ': the helicopter clears everything here') + '.';
+      $('ltkCrashR').textContent = `Throttle ${thr}: ${n} of the ${all} characters are tall enough to crash into` + '.';
     }
     $('ltkThr').oninput = draw; draw();
   });

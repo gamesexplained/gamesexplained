@@ -95,7 +95,8 @@ The five level numbers hold the six sections of the reviews: level 4
   helicopter's height as well as its speed. On the simulator, from
   `play-l1.vsf`, with the helicopter put at 530 positions over the screen,
   throttle 1 crashed at 100 of them, 8 at 55, 16 at 5, and 24 or more at
-  none. Level 2 uses the same routine from `$32D1` to stop Bond walking
+  none in that frame. Level 1's heights run up to 12, which times 4 is
+  48, beyond the throttle's 47, so two characters can never be cleared. Level 2 uses the same routine from `$32D1` to stop Bond walking
   into walls. Shots read the same table (`move_shots`, `$1D52`). On level 5
   Bond's tanker loses energy when the road under it is not clear
   (`road_under_sprite`, from `drive_tanker` `$FAA7`).

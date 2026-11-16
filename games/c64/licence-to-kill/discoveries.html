@@ -89,25 +89,37 @@ sup.fn + sup.fn::before{content:","}
   <p>A new game sets the lives to 3 (<a href="source.html#19F6"><code>$19F6</code></a>). Each loss takes one away, and every routine that does so then tests whether the count has gone below zero, not whether it has reached zero: <a href="source.html#14FB"><code>$14FB</code></a> on level 1, <a href="source.html#3997"><code>$3997</code></a> on level 2, <a href="source.html#F6A9"><code>$F6A9</code></a> on level 5, and the loops of levels 3 and 4 the same way. In the emulator, a game with one life left and its energy emptied restarted the level with LIVES 00 in the panel; with none left, the next loss went to the end of the game.<sup class="fn"><a href="about.html#src-live">4</a></sup> The panel draws a negative count as 0 (<a href="source.html#105D"><code>draw_score</code></a>), but the game never shows one.</p>
 </section>
 
+<section id="too-tall">
+  <p class="fig">02 · A limit</p>
+  <h2 class="t">Too tall to fly over</h2>
+  <p>On level 1 the helicopter crashes into any character whose height, times 4, reaches its throttle (<a href="gameplay.html#crash">crashes</a>). The throttle stops at 47, and two characters in level 1's table of heights have height 12, which needs 48 (<a href="source.html#9C24"><code>heights_a</code></a>). However high Bond flies, those two always crash him, so the only way past them is round.</p>
+</section>
+
+<section id="same-dice">
+  <p class="fig">03 · Determinism</p>
+  <h2 class="t">The same dice after every lost life</h2>
+  <p>The game's random numbers come from a 32-bit shift register (<a href="source.html#33F9"><code>random</code></a>). When a level starts again after a lost life, <a href="source.html#8AB7"><code>restart_level</code></a> puts the same four bytes back into it every time, <code>$DC275C0D</code>, so the random choices that follow, such as which enemy fires and where level 4's bags float, start from the same point on every attempt.</p>
+</section>
+
 <section id="bond-will-return">
-  <p class="fig">02 · Cut content</p>
+  <p class="fig">04 · Cut content</p>
   <h2 class="t">"BOND WILL RETURN."</h2>
   <p class="lede">The game carries a screen for the reset button: black, with "BOND WILL RETURN." in light grey at the top. In this copy one wrong byte means it never appears.</p>
-  <p>A C64 that is reset looks at <code>$8004</code> for the five bytes <code>C3 C2 CD 38 30</code>, "CBM80", which mark a cartridge, and if it finds them it jumps to the address at <code>$8002</code> instead of starting BASIC. The game puts such a header at <a href="source.html#8000"><code>reset_header</code></a>, pointing at its own handler, <a href="source.html#8009"><code>reset_bond_will_return</code></a>, which sets the screen up again and prints <a href="source.html#803E"><code>str_bond_will_return</code></a>, then waits for ever. In this disk's copy the first byte of the signature is <code>$C0</code>, so the reset never finds it. The other build, on the second disk, has <code>$C3</code> there, and should show the message.</p>
+  <p>A C64 that is reset looks at <code>$8004</code> for the five bytes <code>C3 C2 CD 38 30</code>, "CBM80", which mark a cartridge, and if it finds them it jumps to the address at <code>$8002</code> instead of starting BASIC. The game puts such a header at <a href="source.html#8000"><code>reset_header</code></a>, pointing at its own handler, <a href="source.html#8009"><code>reset_bond_will_return</code></a>, which sets the screen up again and prints <a href="source.html#803E"><code>str_bond_will_return</code></a>, then waits for ever. In this disk's copy the first byte of the signature is <code>$C0</code>, so the reset never finds it. The other build of the game, on a second disk (see <a href="about.html#copy">the copy studied</a>), has <code>$C3</code> there, and should show the message.</p>
   <p>The handler has a slip of its own: it loads <code>$FF</code> into X to reset the stack, then uses <code>TSX</code>, which copies the stack pointer into X, where <code>TXS</code>, which copies X into the stack pointer, was meant. The stack is left as it was, which does no harm to a routine that never returns.</p>
 </section>
 
 <section id="tune-4">
-  <p class="fig">03 · Unheard music</p>
+  <p class="fig">05 · Unheard music</p>
   <h2 class="t">A fifth tune</h2>
   <p>The tune table at <a href="source.html#CADB"><code>tunes</code></a> has five entries, and the game starts tunes from seven places, each with tune 0, 1, 2 or 3. Tune 4 has its own tempo and three tracks of its own, and plays and repeats when started, but nothing starts it. You can hear it on the <a href="music.html">Music</a> tab. Ten of the 24 sound effects are not played by any call in the game either: numbers 5, 9, 11, 12, 13, 16, 19, 20, 21, and 22.</p>
 </section>
 
 <section id="unused">
-  <p class="fig">04 · Leftovers</p>
+  <p class="fig">06 · Leftovers</p>
   <h2 class="t">Code that nothing calls</h2>
   <p class="lede">A dozen routines sit in the program with no call, jump, or vector that reaches them. Most do a job that other code does in the finished game, which suggests they were replaced.</p>
-  <table class="ft-table">
+  <div class="ft-scroll"><table class="ft-table">
     <thead><tr><th>Routine</th><th>What it would do</th></tr></thead>
     <tbody>
       <tr><td><a href="source.html#0B00"><code>unused_fill_screens</code></a></td><td>Fill both play screens with one value, the job <a href="source.html#0DDF"><code>clear_screens</code></a> does</td></tr>
@@ -121,20 +133,21 @@ sup.fn + sup.fn::before{content:","}
       <tr><td><a href="source.html#82A8"><code>unused_pick_sound</code></a></td><td>Play the last of a list of requested sounds; the list at <a href="source.html#92A0"><code>sound_requests</code></a> is empty</td></tr>
       <tr><td><a href="source.html#8D4F"><code>unused_aim_tail</code></a></td><td>An alternative ending for the enemies' aiming routine</td></tr>
       <tr><td><a href="source.html#C8E5"><code>unused_buzz_pitch</code></a>, <a href="source.html#C920"><code>unused_buzz_off</code></a></td><td>Set the pitch of the sound driver's buzz on voice 2, and stop it: the buzz plays at the pitch it was loaded with</td></tr>
+      <tr><td><a href="source.html#8131"><code>$8131</code></a></td><td>An older rule for level 4's energy, which stopped the scroll when it reached exactly 0; the jump at <code>$812E</code> passes over it</td></tr>
       <tr><td><a href="source.html#39F7"><code>unused_clear_bit7</code></a></td><td>Clear a flag in an enemy slot</td></tr>
     </tbody>
-  </table>
+  </table></div>
   <p>One routine that does run has a branch that never does. <a href="source.html#181F"><code>draw_explosions</code></a> tests a flag at <a href="source.html#0393"><code>$0393</code></a> and draws the helicopter instead of the small explosions when it is clear; the game sets the flag to 1 and never clears it.</p>
 </section>
 
 <section id="maps">
-  <p class="fig">05 · Unused map data</p>
+  <p class="fig">07 · Unused map data</p>
   <h2 class="t">Rows nobody flies over</h2>
   <p>Level 2's map stores six rows after its opening picture that are never read (<a href="source.html#B705"><code>map_l2</code></a>), and level 5's two more (<a href="source.html#BF8F"><code>$BF8F</code></a>). Level 3 looks up its map sections in a table of seven addresses (<a href="source.html#B83D"><code>l3_section_addr</code></a>): six of them name the same rows, and the seventh, <code>$B885</code>, is one no section number reaches. Level 5's character set reaches into the start of the level's tiles, so its upper characters are tile numbers that the copy brings along and the screen never shows (<a href="source.html#E800"><code>charset_l5</code></a>).</p>
 </section>
 
 <section id="quixel">
-  <p class="fig">06 · Credits</p>
+  <p class="fig">08 · Credits</p>
   <h2 class="t">"BY QUIXEL"</h2>
   <p>Among the title's strings, beside "COPYRIGHT 1989 DOMARK", is the line "BY QUIXEL", the name of the team that made the C64 version. The credits that follow name the programmers of every version: Chris West, Paul Margrave, Bozz Boswell, and Marcus Goodey.</p>
 </section>

@@ -78,7 +78,7 @@ sup.fn + sup.fn::before{content:","}
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1989 · Domark</p>
   <h1>Licence To Kill: maps</h1>
-  <p class="sub">The scenery of all five levels, drawn from the game's own map rows, tiles and character sets.</p>
+  <p class="sub">The scenery of all five levels, drawn from the game's own map rows, tiles, and character sets.</p>
 </header>
 <main class="wrap">
 
@@ -97,7 +97,7 @@ sup.fn + sup.fn::before{content:","}
   <p>A map is a list of rows, four bytes to a row and one byte to a tile. A tile is 8 characters wide and 4 high, so a row of four tiles fills the 32-character playfield. The game reads the map backwards, from its last row towards an <code>$FF</code> row at its start (<a href="source.html#0951"><code>draw_new_map_row</code></a>), drawing one character row of the tiles at the top of the screen each time the scenery has moved down by 8 pixels (<a href="source.html#0A79"><code>copy_tile_row</code></a>). The last seven rows of each map do a second job: before the level begins, <a href="source.html#0B5D"><code>draw_picture_tiles</code></a> draws them whole as the opening picture.</p>
   <p>Colour comes from two places. Each tile number has an attribute byte. When a row's first tile names a different colour scheme in its attribute's low four bits, the two colours every character shares change from that row on (<a href="source.html#0A1E"><code>map_row_tiles</code></a>); the change is a raster split that moves down the screen with the scenery (<a href="source.html#10F5"><code>move_colour_splits</code></a>). When an attribute's top bit is set, its top four bits are a colour for that tile's column of the screen, painted into colour memory a row at a time as the tile moves down (<a href="source.html#2455"><code>row_colour_patches</code></a>). The drawing here applies both from the row they start at.</p>
   <h3 style="margin:28px 0 8px">How each map runs out</h3>
-  <table class="ft-table">
+  <div class="ft-scroll"><table class="ft-table">
     <thead><tr><th>Level</th><th>Map</th><th>When the <code>$FF</code> row comes</th></tr></thead>
     <tbody>
       <tr><td>1, the helicopter chase</td><td><a href="source.html#B1D4"><code>map_l1</code></a>, 92 rows</td><td>The scroll stops, and Bond has to put the helicopter down (<a href="source.html#0AB9"><code>stop_scrolling</code></a>).</td></tr>
@@ -106,7 +106,7 @@ sup.fn + sup.fn::before{content:","}
       <tr><td>4, diving and water-ski</td><td><a href="source.html#BB2F"><code>map_l4</code></a></td><td>The sea repeats from <code>$BB47</code> for as long as the level lasts (<a href="source.html#091B"><code>map_restart_level4</code></a>).</td></tr>
       <tr><td>5, the truck chase</td><td><a href="source.html#BEDB"><code>map_l5</code></a> and <a href="source.html#BE4B"><code>roads_l5</code></a></td><td>The opening road is followed by one of two stretches, picked at random each time, and a last stretch when the chase ends (<a href="source.html#09E9"><code>map_next_section_l5</code></a>).</td></tr>
     </tbody>
-  </table>
+  </table></div>
 </section>
 
 </main>
@@ -182,8 +182,8 @@ function ltkColours(ram, lv, rows) {
               else C64.drawGlyph(ctx, cs, code, px, py, s, P[c], P[0]);
               if ($('ltkHeights').checked) {
                 const h = (ram[hts + (code >> 1)] >> (code & 1 ? 0 : 4)) & 15;
-                if (h > 0) { ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(px + 2, py + 2, 8 * s - 4, 8 * s - 4);
-                  ctx.fillStyle = '#000'; ctx.font = '700 11px "IBM Plex Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText(h.toString(16).toUpperCase(), px + 4 * s, py + 6 * s); ctx.textAlign = 'left'; }
+                if (h > 0) { ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fillRect(px + 4 * s - 8, py + 4 * s - 7, 16, 12);
+                  ctx.fillStyle = '#000'; ctx.font = '700 11px "IBM Plex Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText(String(h), px + 4 * s, py + 4 * s + 4); ctx.textAlign = 'left'; }
               }
             }
           }
@@ -191,7 +191,7 @@ function ltkColours(ram, lv, rows) {
         if (st.label) { ctx.fillStyle = 'rgba(0,0,0,.7)'; ctx.fillRect(0, y0, 256 * s, 18); ctx.fillStyle = '#fff'; ctx.font = '500 12px "IBM Plex Mono", monospace'; ctx.fillText(st.label, 6, y0 + 13); }
         y0 += st.rows.length * 32 * s + GAP * s;
       }
-      $('ltkMapCap').innerHTML = CAPS[lv] + ' Drawn from the level record at <a href="source.html#' + rec.toString(16).toUpperCase() + '"><code>$' + rec.toString(16).toUpperCase() + '</code></a>: tiles from <code>$' + tiles.toString(16).toUpperCase() + '</code>, heights from <code>$' + hts.toString(16).toUpperCase() + '</code>. A colour split here changes at the row where the scheme changes; in the game only two can be on the screen at once.';
+      $('ltkMapCap').innerHTML = CAPS[lv] + ' Drawn from the level record at <a href="source.html#' + rec.toString(16).toUpperCase() + '"><code>$' + rec.toString(16).toUpperCase() + '</code></a>: tiles from <code>$' + tiles.toString(16).toUpperCase() + '</code>, heights from <code>$' + hts.toString(16).toUpperCase() + '</code>; on level 1 a character crashes the helicopter when its height times 4 reaches the throttle (<a href="gameplay.html#crash">crashes</a>). A colour split here changes at the row where the scheme changes; in the game only two can be on the screen at once.';
       const box = $('ltkMapBox'); box.scrollTop = box.scrollHeight;
     }
     draw();

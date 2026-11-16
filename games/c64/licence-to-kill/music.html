@@ -88,9 +88,9 @@ sup.fn + sup.fn::before{content:","}
   <p class="lede">The game stores five tunes. One plays over the title, one opens three of the levels, one starts when Bond takes to the water-skis, and one plays when the game ends. The fifth is in the table with the others, and nothing in the game ever starts it.</p>
   <div class="plate"><div id="sidRoot"></div>
     <p class="cap">The player runs the game's own music code on a copy of the C64's processor in the page, over the game's bytes from the Source tab: <a href="source.html#C000"><code>play_tune</code></a> to start a tune, then <a href="source.html#C127"><code>sound_frame</code></a> once a frame, as the game's interrupt calls it. The volume is set to 15 first, as the game does before every tune.</p></div>
-  <table class="ft-table" id="ltkTunes"><thead><tr><th>Tune</th><th>Where it plays</th><th>Started from</th><th>Length</th></tr></thead><tbody></tbody></table>
+  <div class="ft-scroll"><table class="ft-table" id="ltkTunes"><thead><tr><th>Tune</th><th>Where it plays</th><th>Started from</th><th>Length</th></tr></thead><tbody></tbody></table></div>
   <p>The tunes are kept as a table at <a href="source.html#CADB"><code>tunes</code></a>, seven bytes each: a tempo, then where each of the three voices' tracks begins. A track is a list of patterns, and a pattern is a run of notes and commands, a byte each. A byte from <code>$81</code> upwards is a command, looked up in the table at <a href="source.html#C214"><code>pattern_commands</code></a>: vibrato, a slide, drums, a change of waveform, a sweep of the pulse width, a rest, a transposition, or a jump to another place in the track. Each frame the tempo is added to a counter, and the voices move on to their next step each time the counter overflows, so a tempo of <code>$37</code> steps a little more than once in five frames.</p>
-  <p>Only two of the tunes play during a level. Tune 3 plays while levels 1, 4 and 5 open, and it lasts 3.4 seconds, so it has ended by the time the scenery starts to move. Tune 1 is the exception: <a href="source.html#8E27"><code>harpoon_seaplane</code></a> starts it when the diver's harpoon catches the seaplane's pontoon, and it plays on through the water-ski chase that follows. <i>Zzap!64</i>'s ratings for the C64 game called it a "nice intro tune and good spot effects".<sup class="fn"><a href="about.html#src-zzap">1</a></sup></p>
+  <p>Only two of the tunes play during a level. Tune 3 plays while levels 1, 4, and 5 open, and it lasts 3.4 seconds, so it has ended by the time the scenery starts to move. Tune 1 is the exception: <a href="source.html#8E27"><code>harpoon_seaplane</code></a> starts it when the diver's harpoon catches the seaplane's pontoon, and it plays on through the water-ski chase that follows. <i>Zzap!64</i>'s ratings for the C64 game called it a "nice intro tune and good spot effects".<sup class="fn"><a href="about.html#src-zzap">1</a></sup></p>
 </section>
 
 <section id="effects">
@@ -99,8 +99,8 @@ sup.fn + sup.fn::before{content:","}
   <p class="lede">A sound effect takes voices 1 and 3 away from the music while it plays, and gives them back when it ends. Voice 2 carries the engine noise of the helicopter, the plane and the truck.</p>
   <div class="plate"><div id="fxRoot"></div>
     <p class="cap">Each button runs the game's own <a href="source.html#C5F6"><code>start_effect</code></a> with the effect's number, then <a href="source.html#C127"><code>sound_frame</code></a> once a frame until <a href="source.html#C930"><code>effect_done</code></a> hands the voices back.</p></div>
-  <p>An effect is 20 bytes in the table at <a href="source.html#C6C2"><code>effects</code></a>: how long it lasts, how often its two notes start again, a frequency, envelope, waveform and pulse width for each of the two voices, how far each frequency sweeps up or down every frame, how many times it repeats, and a flag that adds a random amount to voice 1's pitch at each repeat. Every sound in the game goes through one routine, <a href="source.html#2DE9"><code>$2DE9</code></a>, which the game calls from 21 places, each naming its effect as a number.</p>
-  <table class="ft-table" id="ltkFx"><thead><tr><th>Effect</th><th>When the game plays it</th></tr></thead><tbody></tbody></table>
+  <p>An effect is 20 bytes in the table at <a href="source.html#C6C2"><code>effects</code></a>: how long it lasts, how often its two notes start again, a frequency, envelope, waveform, and pulse width for each of the two voices, how far each frequency sweeps up or down every frame, how many times it repeats, and a flag that adds a random amount to voice 1's pitch at each repeat. Every sound in the game goes through one routine, <a href="source.html#2DE9"><code>$2DE9</code></a>, which the game calls from 21 places, each naming its effect as a number.</p>
+  <div class="ft-scroll"><table class="ft-table" id="ltkFx"><thead><tr><th>Effect</th><th>When the game plays it</th></tr></thead><tbody></tbody></table></div>
 </section>
 
 </main>
@@ -144,7 +144,7 @@ const LTK_FX = [
   [4, 'the Stinger missile is fired on level 5 (stinger_fires)', 'FE4B'], [5, null], [6, 'an enemy shot hits the helicopter on level 1, and Bond\u2019s tanker hits a road object on level 5', '2D3C'],
   [7, 'level 2\u2019s fire button, in gunfight_controls', '3534'], [8, 'level 2\u2019s fire button, in gunfight_controls, and a shot hitting an enemy (shots_hit_enemies)', '352E'], [9, null],
   [10, 'an enemy is destroyed on level 4 (enemy_destroyed)', '8940'], [11, null], [12, null], [13, null], [14, 'a harpoon is thrown on level 4 (throw_harpoon)', '8CAA'],
-  [15, 'the plane changes down a gear after the jump on level 5 (change_gear)', 'F8BC'], [16, null], [17, 'a road object runs out of hits on level 5 (trucks_collide)', '3F08'],
+  [15, 'the tanker changes down a gear on level 5, after the jump (change_gear)', 'F8BC'], [16, null], [17, 'a road object runs out of hits on level 5 (trucks_collide)', '3F08'],
   [18, 'each step of the helicopter\u2019s explosion (player_anim), and in trucks_collide on level 5', '20DF'], [19, null], [20, null], [21, null], [22, null],
   [23, 'Bond catches the plane\u2019s tail on level 3 (catch_plane)', '3E9F'],
 ];
@@ -160,7 +160,7 @@ const LTK_FX = [
     const ram = L.ram;
     C64Sid.mount($('sidRoot'), { driver: createDriver, data: { ram }, tunes: LTK_TUNES, rows: [{ k: 'Gate', f: v => v.gate }] });
     const WHERE = ['over the title pages, until fire is pressed', 'from the moment the harpoon catches the seaplane, through the water-ski chase',
-      'when the game is over, and at the end of level 5', 'while levels 1, 4 and 5 open', 'nowhere: no call starts it'];
+      'when the game is over, and at the end of level 5', 'while levels 1, 4, and 5 open', 'nowhere: no call starts it'];
     const FROM = [['19AF', 'title_screen'], ['8E4D', 'harpoon_seaplane'], ['31C8', 'game_over'], ['28A5', 'level 1'], null];
     const tb = $('ltkTunes').tBodies[0];
     for (let n = 0; n < 5; n++) {
@@ -171,7 +171,8 @@ const LTK_FX = [
       else c.textContent = '—';
       tr.insertCell().textContent = LTK_LEN[n];
     }
-    const fxNames = LTK_FX.map(([n, w]) => 'Effect ' + n + (w ? '' : ' (no call plays it)'));
+    const SHORT = {0: 'a shot', 1: 'a hit', 2: 'shot ends', 3: 'a strike', 4: 'Stinger launch', 6: 'Bond hit', 7: 'gun (level 2)', 8: 'gun (level 2)', 10: 'enemy destroyed', 14: 'harpoon', 15: 'gear change', 17: 'out of hits', 18: 'explosion', 23: 'plane caught'};
+    const fxNames = LTK_FX.map(([n, w]) => 'Effect ' + n + ': ' + (w ? SHORT[n] : 'never played'));
     C64Sid.mount($('fxRoot'), { driver: createDriver, data: { ram, fx: true }, tunes: fxNames, rows: [{ k: 'Gate', f: v => v.gate }] });
     const fb = $('ltkFx').tBodies[0];
     for (const [n, w, at] of LTK_FX) {

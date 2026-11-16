@@ -33,7 +33,7 @@ review, and each is to be checked against the code.
 | Lives: three at the start, shown in the panel | differs | `$108E` starts at 3 (`$19F6`) but the game ends only when it goes below 0, so play goes on at 00: four attempts (live, `facts.md`). Five routines take a life (`$20FC`, `$3994`, `$3B5E`, `$8123`, `$F6A6`); a sixth, `$2D37`, is jumped over |
 | A countdown timer in the panel (1946, 4854, ... at the start of the levels) | live | `count_down_timer` (`$8EC8`): one unit every other frame, 25 a second (live); starts at 2,000, 5,000, 2,000, 3,000 and 5,000 (`start_timer`); what is left is a bonus |
 | Score, six digits | live | |
-| Two energy bars in the panel, red through yellow to green | live | |
+| Two energy bars in the panel, red through yellow to green | differs | on level 1 the upper bar is Bond's energy (`draw_energy_bar`, `$304F`) and the lower the jeep's hits left (`draw_hits_bar`, `$3002`) |
 | High-score table "ALL TIME TOP SECRET AGENTS", seven entries 007 to 001 with three-letter names, entered after a good score ("GREAT SCORE. INPUT YOUR NAME.") | live (table) / traced (entry) | `name_entry` (`$91B1`); table at `$F401`, names `$F42B`; the table is not saved to disk (C64-Wiki) |
 | Title: tagline "His bad side is a dangerous place to be.", logo, credits, a white dot (the gun-barrel dot of the films' openings, without the barrel) | live | |
 | Music by David Whittaker: an intro tune and sound effects (Zzap!64's C64 ratings: "Nice intro tune and good spot effects"; the "no in-game music" line is in its Amiga box) | traced | five tunes at `$CADB`: the title's, one that starts with the water-ski, the game over, the opening of levels 1, 4 and 5, and one nothing plays; 24 effects at `$C6C2` (`facts.md`, Sound) |

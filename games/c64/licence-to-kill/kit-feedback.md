@@ -7,35 +7,24 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `50-coverage`: "So is a value read off the snapshot": searching for writes to the crash test's compare operand showed it holds the throttle, not the constant 2 the snapshot showed, and that the throttle is the helicopter's height.
+- `70-minisite`: "Start with the leads": the leads list put the unused tune, the reset screen and the dead code on the Discoveries tab.
+- `60-verify`: "When the code and a measurement disagree": the energy rule written from `start_timer` alone (47 on every level) failed against the play snapshot's value of 3, and the writes at `$2871` and `$2AEA` that set 6 on levels 1 and 3 were found.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/c64/snapshot.py`: finds the RAM in a snapshot from the start of its C64MEM module, so snapshots written by VICE 4.0, whose memory module sits at another offset than earlier releases', read correctly; the fixed offset 209 read the wrong bytes.
+- `kit/c64/check_emulator.py`: its `snapshot-ram-offset` check and `saved_word` read the RAM where `snapshot.py` finds it, so the check passes on VICE 4.0 for the right reason.
+- `kit/lessons/2026-11-16-licence-to-kill.md`: two lessons, on parallel tables copied in a loop and on a threshold kept in a patched operand.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+- **Parallel type tables labelled one field out.** The annotation named eight of the enemy type tables at `$94F3`-`$9769` by their order in memory against the order of the slot tables, and every label was a field away from the slot table the spawn loop copies it into. Nothing failed; the 60-comment sample found two of them, and reading the copy loop (`LDA type,Y / STA slot,X`) fixed all eight. The rule would say: label a table that a loop copies into another by the destination it is copied to, read from the loop, never by its place in a run of tables.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+- **Have listing.py name the routines it reports as keeping auto names, or drop the note for operand symbols.** The note "462 routine(s) in the Source tab's index keep the disassembler's own name (a_0998, a_09EA, a_0A17, ...)" counts the `a_` symbols the disassembler makes for self-modified operands, which are not routines and already carry comments; on this game every one named is an operand. It cost a check of a dozen of them to be sure nothing was missed. Suggest leaving out symbols whose address is the operand byte of an instruction (kit/scripts/listing.py, the index note).
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+A note in `kit/skills/c64/tool-vice-mcp` that VICE 4.0 moved the snapshot's memory module, and that `snapshot.py` must find it by its module name, would have saved the time spent finding why the first snapshots read the wrong bytes.
