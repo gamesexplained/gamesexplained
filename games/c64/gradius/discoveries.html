@@ -61,7 +61,7 @@ sup.fn a{text-decoration:none}
 <header class="hero">
   <p class="eyebrow">1987 · Konami</p>
   <h1>Gradius</h1>
-  <p class="sub">What the code holds that the game never shows: a cheat one byte from working, a music player nobody calls, a pause key that was cut, and the test loops and file names the developer left behind.</p>
+  <p class="sub">What the code holds that the game never shows: a cheat one byte from working, a music player that is never called, a pause key that was cut, and the test loops and file names the developer left behind.</p>
 </header>
 <main class="wrap">
 
@@ -74,7 +74,7 @@ sup.fn a{text-decoration:none}
   <div class="plate">
     <table class="gr-tbl"><thead><tr><th>Evidence</th><th>What was seen</th></tr></thead><tbody>
       <tr><td>Tried in VICE</td><td>With $A9 written at <code>$18D0</code>, four players chosen and left SHIFT held on the title, a "C" appeared, and in play the ship flew through enemies without losing a life.</td></tr>
-      <tr><td>As shipped</td><td>The RTS at <code>$18D0</code> returns before the key is read, and nothing else jumps into <code>cheat_key</code>.</td></tr>
+      <tr><td>As shipped</td><td>The RTS at <code>$18D0</code> returns before the key is read, and there is no other jump into <code>cheat_key</code>.</td></tr>
     </tbody></table>
   </div>
 </section>
@@ -90,7 +90,7 @@ sup.fn a{text-decoration:none}
   <div class="plate">
     <table class="gr-tbl"><thead><tr><th>Evidence</th><th>What was seen</th></tr></thead><tbody>
       <tr><td>Tried in VICE</td><td>With <code>$4C</code> (JMP) written at <code>$6AA6</code> in a saved moment of play, pressing M set <code>music_on</code> to 1, and the sound effects went quiet.</td></tr>
-      <tr><td>Still missing</td><td>No instruction anywhere in memory calls <code>music_tick</code> (<code>$6AA9</code>), so even with the patch no note of either tune plays.</td></tr>
+      <tr><td>Still missing</td><td>There is no instruction anywhere in memory that calls <code>music_tick</code> (<code>$6AA9</code>), so even with the patch neither tune plays a note.</td></tr>
       <tr><td>On this site</td><td>The player on <a href="index.html#music">How it works</a> runs the game's own <code>tune_tick</code>, so both tunes, and the sharp second voice, can be heard there.</td></tr>
     </tbody></table>
   </div>
@@ -118,13 +118,13 @@ sup.fn a{text-decoration:none}
 <section id="pause">
   <p class="fig">06 · Leftover</p>
   <h2 class="t">Leftover: a pause on P that was cut</h2>
-  <p>At <code>$6B29</code>, next to the routine for Q, sits a pause. It switches the interrupt and the screen off, silences the sound chip, waits for P to be let go, pressed and let go again, and turns everything back on. Nothing calls it, and it could not run as it stands: its calls to a delay routine land in the middle of an instruction at <code>$6B81</code>. The game shipped with no pause.</p>
+  <p>At <code>$6B29</code>, next to the routine for Q, sits a pause. It switches the interrupt and the screen off, silences the sound chip, waits for P to be let go, pressed and let go again, and turns everything back on. The game never calls it, and it could not run as it stands: its calls to a delay routine land in the middle of an instruction at <code>$6B81</code>. The game shipped with no pause.</p>
 </section>
 
 <section id="tests">
   <p class="fig">07 · Leftover</p>
   <h2 class="t">Leftover: test loops for single enemies</h2>
-  <p>Five loops in the game run one part of it on its own, frame after frame, and nothing calls any of them. They look like the developer's test benches, each built to watch one enemy or one piece of the game without playing up to it.</p>
+  <p>Five loops in the game run one part of it on its own, frame after frame, and the game never calls any of them. They look like the developer's test benches, each built to watch one enemy or one piece of the game without playing up to it.</p>
   <div class="plate">
     <table class="gr-tbl"><thead><tr><th>Where</th><th>What it runs</th></tr></thead><tbody>
       <tr><td><code>$0C98</code></td><td><a href="levels.html#stage-4">Stage 4's volcano</a>: waits for raster line 255, then runs the eruption and its rocks and draws the sprites.</td></tr>

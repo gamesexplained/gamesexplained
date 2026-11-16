@@ -85,12 +85,12 @@ sup.fn + sup.fn::before{content:","}
 <section id="music">
   <p class="fig">01 · Music</p>
   <h2 class="t">Music: the theme and six tunes</h2>
-  <p class="lede">The theme plays throughout and starts again whenever nothing else plays. Five rooms have a tune of their own, and a sixth tune plays only when Jason throws off his disguise. Three are tunes everyone knows: the theme is Teddy Bears’ Picnic, the song that warns of a big surprise in the woods; the church’s organ plays the opening of Bach’s Toccata and Fugue in D minor; and the barn plays Old MacDonald Had a Farm.</p>
+  <p class="lede">The theme plays throughout and starts again whenever there is nothing else playing. Five rooms have a tune of their own, and a sixth tune plays only when Jason throws off his disguise. Three are tunes everyone knows: the theme is Teddy Bears’ Picnic, the song that warns of a big surprise in the woods; the church’s organ plays the opening of Bach’s Toccata and Fugue in D minor; and the barn plays Old MacDonald Had a Farm.</p>
   <div class="plate"><div id="sidRoot"></div>
     <p class="cap">The player runs the game's own music code, <a href="source-game.html#C4D8"><code>play_tune</code></a> and once a frame <a href="source-game.html#C604"><code>irq_music</code></a>, on a copy of the C64's processor in the page, over the game's bytes from the Source tab.</p></div>
   <p>The seven tunes lie under the KERNAL ROM, from <code>$E000</code> to <code>$EF02</code>. To read them, <a href="source-game.html#C81B"><code>music_swap</code></a> banks the ROM out for each step and back in after it. Each voice is a list of note and length pairs, with four commands: repeat, waveform, attack and decay, and sustain and release. A tune's speed is a number of frames between steps at <a href="source-game.html#C8DB"><code>tune_tempo</code></a>, and only the theme repeats.</p>
   <table class="ft-table" id="ftTunes"><thead><tr><th>Tune</th><th>Where it plays</th><th>Frames per step</th><th>Length</th></tr></thead><tbody></tbody></table>
-  <p>A room's tune comes from <a href="source-game.html#CA51"><code>place_tune</code></a>, which looks the room up in six places at <a href="source-game.html#CA6B"><code>tune_places</code></a>. It starts one only when the last tune started was the theme, so a room's tune never cuts into another room's, or into Jason's. The fourth place is $FF, which no room has, so tune 4 is heard only when Jason reveals himself (<a href="source-game.html#A24C"><code>jason_reveal</code></a>).</p>
+  <p>A room's tune comes from <a href="source-game.html#CA51"><code>place_tune</code></a>, which looks the room up in six places at <a href="source-game.html#CA6B"><code>tune_places</code></a>. It starts one only when the last tune started was the theme, so a room's tune never cuts into another room's, or into Jason's. The fourth place is $FF, which does not match any room, so tune 4 is heard only when Jason reveals himself (<a href="source-game.html#A24C"><code>jason_reveal</code></a>).</p>
 </section>
 
 <section id="scream">
@@ -184,7 +184,7 @@ const SCREAM_PERIOD = 107;
     // Music
     C64Sid.mount($('sidRoot'), { driver: createDriver, data: { ram }, tunes: FRIDAY_TUNES, rows: [{ k: 'Gate', f: v => v.gate }] });
     const LEN = [null, 1116, 1923, 1119, 1641, 1269, 1289];
-    const WHERE = ['throughout play, and again whenever nothing else plays', 'room 37, in the church', 'room 38, the church, where each round starts',
+    const WHERE = ['throughout play, and again whenever there is nothing else playing', 'room 37, in the church', 'room 38, the church, where each round starts',
       'room 2, outdoors', 'only when Jason reveals himself', 'room 40, just inside the barn', 'room 14, outdoors'];
     const tb = $('ftTunes').tBodies[0];
     for (let n = 0; n < 7; n++) {
