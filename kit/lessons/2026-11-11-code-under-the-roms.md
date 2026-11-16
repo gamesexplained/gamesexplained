@@ -1,4 +1,4 @@
-## next · 2026-11-11 · Stop the Express (Plus/4) · jankfoundry
+## 0.0.348 · 2026-11-11 · Stop the Express (Plus/4) · jankfoundry
 
 - **An address does not say which memory an instruction came from, so a
   code map on a machine that pages ROM over RAM records the source at the
