@@ -17,6 +17,8 @@ Usage:
   tools.py stop browser                            stop only this clone's browser
   tools.py get-node [--version vX.Y.Z]             download Node (the newest LTS release) and playwright-core into tools/,
                                                    for a machine with no Node
+  tools.py get-chromium                            download the headless Chromium that playwright-core is made for into
+                                                   tools/, for the scripted page checks (after get-node; ask first)
   tools.py node run <command> [args]               run a command with that Node first on its PATH (node.py -h for the rest);
                                                    a platform's launcher is given it without being asked
   tools.py get-bocfel                              download and build Bocfel, with the kit's trace
@@ -54,6 +56,7 @@ ROOT = os.path.dirname(KIT)
 SELF_DIR = os.path.basename(os.path.dirname(os.path.abspath(__file__)))   # "scripts" is not a platform
 EVERY_PLATFORM = ("status", "stop")    # safe to run on every platform's tools at once
 SHARED = ("get-node", "node",          # Node and the Playwright client, which every platform's page tests share
+          "get-chromium",              # and the Chromium they launch
           "get-bocfel", "bocfel",      # the Z-machine's, which every platform's Infocom games share
           "get-scummvm", "scummvm")    # SCUMM's, which every platform's Lucasfilm games share
 
@@ -162,6 +165,8 @@ def main():
         browser.stop(); return
     if a and a[0] == "get-node":
         sys.exit(node.main(["get"] + a[1:]))
+    if a == ["get-chromium"]:
+        sys.exit(node.main(a))
     if a and a[0] == "node":
         sys.exit(node.main(a[1:]))
     if a == ["get-bocfel"]:
@@ -187,6 +192,8 @@ def main():
         browser.status()
         if os.path.isdir(os.path.join(ROOT, "tools", "node")):
             print(f"node          {node.build_line()}")
+        if node.chromium_line():
+            print(f"chromium      {node.chromium_line()}")
         if os.path.isdir(os.path.join(ROOT, "tools", "zmachine")):
             print(f"bocfel        {bocfel().build_line()}")
         if os.path.isdir(os.path.join(ROOT, "tools", "scumm")):

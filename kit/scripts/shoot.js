@@ -19,14 +19,15 @@
 //   printed last, after the clicks, since a byte only a click reads is read only then.
 // - --width 390 takes the narrow-screen layout.
 //
-// It needs Playwright (the playwright or playwright-core package), which the kit does not install:
-// the hosted containers have it, with its Chromium. Without --cdp it starts that Chromium, with
-// its profile and temporary files under tools/shoot/. --cdp <url> drives a Chromium already
-// running with a debugging port instead, such as the one KIT_BROWSER_CHROMIUM=<executable>
-// python3 kit/scripts/tools.py browser starts at http://127.0.0.1:9222 (kit/INSTALL.md, "Browser
-// checks"). Nothing is downloaded. Playwright does not drive the kit's Firefox.
+// It needs Playwright's client and a Chromium, found as kit/scripts/chromium.js says: the hosted
+// containers have both, and `tools.py get-node` and `tools.py get-chromium` put them in tools/.
+// Without --cdp it starts the kit's Chromium, else Playwright's own, with its profile and
+// temporary files under tools/shoot/. --cdp <url> drives a Chromium already running with a
+// debugging port instead, such as the one python3 kit/scripts/tools.py browser starts at
+// http://127.0.0.1:9222 (kit/INSTALL.md, "Browser checks"). Playwright does not drive Firefox.
 const fs = require('fs');
 const path = require('path');
+const { playwright, launchOptions, NO_CLIENT, NO_BROWSER } = require('./chromium.js');
 
 const ROOT = path.resolve(__dirname, '../..');
 const STATE = path.join(ROOT, 'tools/shoot');
@@ -144,13 +145,6 @@ async function shoot(page, o, say = console.log) {
   return { files, errors };
 }
 
-function playwright() {
-  for (const name of ['playwright', 'playwright-core']) {
-    try { return require(name); } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e; }
-  }
-  return null;
-}
-
 // The launched browser's profile, temporary files and XDG state stay under tools/shoot/
 function contain() {
   const env = { ...process.env };
@@ -173,14 +167,14 @@ async function main(argv) {
   }
   const pw = playwright();
   if (!pw) {
-    console.error('Playwright is not installed here, and the kit does not install it. Use the session\'s own browser tool, or ask the contributor (kit/INSTALL.md, "Browser checks").');
+    console.error(NO_CLIENT);
     return 2;
   }
   let browser;
   try {
-    browser = o.cdp ? await pw.chromium.connectOverCDP(o.cdp) : await pw.chromium.launch({ env: contain() });
+    browser = o.cdp ? await pw.chromium.connectOverCDP(o.cdp) : await pw.chromium.launch(launchOptions(null, { env: contain() }));
   } catch (e) {
-    console.error(`no browser: ${String(e.message).split('\n')[0]}\nNothing is downloaded. Start one with KIT_BROWSER_CHROMIUM=<executable> python3 kit/scripts/tools.py browser and pass --cdp http://127.0.0.1:9222`);
+    console.error(`no browser: ${String(e.message).split('\n')[0]}\n${NO_BROWSER}`);
     return 2;
   }
   try {

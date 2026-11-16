@@ -15,9 +15,14 @@ Everything goes under tools/ (gitignored):
   tools/npm/            playwright-core (Microsoft, Apache-2.0), from the npm registry, in
                         node_modules/; npm's cache and logs in cache/; the home directory npm
                         runs with in home/, so that it reads and writes no ~/.npmrc and no ~/.npm
+  tools/playwright/     only after `get-chromium`: the headless Chromium this playwright-core is
+                        made for (Google's Chrome for Testing chrome-headless-shell, built from
+                        Chromium), fetched by Playwright's own installer, with the FFmpeg build
+                        it installs beside it
 
-No browser is downloaded: playwright-core is the client alone. kit/INSTALL.md, "Browser
-checks", says how the kit uses a browser the machine has.
+get-node downloads no browser: playwright-core is the client alone. get-chromium is asked for
+separately, with the contributor's yes, and the kit's scripted page checks then launch that
+Chromium (kit/scripts/chromium.js). kit/INSTALL.md, "Browser checks".
 
 The download is checked against the SHA-256 in the release's own SHASUMS256.txt, fetched
 from the same site. That catches a broken or cut-off download; it is not a check of who
@@ -25,14 +30,15 @@ published the release.
 
 Usage:
   node.py get [--version vX.Y.Z]   download, check and unpack Node; install playwright-core
-  node.py status                   which Node and playwright-core are there
+  node.py get-chromium             install the headless Chromium playwright-core is made for
+  node.py status                   which Node, playwright-core and Chromium are there
   node.py run <command> [args]     run a command with them first on its PATH and NODE_PATH, so
                                    that it and whatever it starts find them:
                                      node.py run node kit/scripts/shoot.js ...
                                      node.py run python3 kit/scripts/test_kit.py
   node.py env                      the two variables, as lines a shell can eval
 """
-import hashlib, json, os, platform, shutil, subprocess, sys, tarfile
+import glob, hashlib, json, os, platform, shutil, subprocess, sys, tarfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -206,6 +212,51 @@ def playwright(tools=TOOLS):
         return None
 
 
+def chromium(tools=TOOLS):
+    """The newest complete headless Chromium in tools/playwright/, as kit/scripts/chromium.js finds
+    it, or None."""
+    found = []
+    for d in glob.glob(os.path.join(tools, "playwright", "chromium_headless_shell-*")):
+        rev = d.rsplit("-", 1)[1]
+        if not rev.isdigit() or not os.path.isfile(os.path.join(d, "INSTALLATION_COMPLETE")):
+            continue
+        for name in ("chrome-headless-shell", "headless_shell"):   # Chrome for Testing's name, and older builds'
+            found += [(int(rev), exe) for exe in glob.glob(os.path.join(d, "*", name)) if os.path.isfile(exe)]
+    return max(found)[1] if found else None
+
+
+def get_chromium(tools=TOOLS):
+    """Install the headless Chromium the playwright-core in tools/ is made for, in tools/playwright/,
+    through Playwright's own installer, then check that it starts."""
+    exe = os.path.join(tools, "node", "bin", "node")
+    cli = os.path.join(tools, "npm", "node_modules", "playwright-core", "cli.js")
+    if not (os.path.isfile(exe) and os.path.isfile(cli)):
+        sys.exit("get-chromium installs through the Node and playwright-core in tools/: run tools.py get-node first")
+    env = _npm_environment(tools)
+    env.pop("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", None)
+    env["PLAYWRIGHT_BROWSERS_PATH"] = os.path.join(tools, "playwright")
+    print(f"installing the headless Chromium that playwright-core {playwright(tools)} is made for into tools/playwright/,\n"
+          "through Playwright's own installer (Google's Chrome for Testing chrome-headless-shell, from Playwright's site)")
+    r = subprocess.run([exe, cli, "install", "--no-progress", "chromium-headless-shell"], env=env)
+    if r.returncode:
+        sys.exit(f"Playwright's installer failed (exit {r.returncode})")
+    shell = chromium(tools)
+    runs, why = _version_of(shell, env) if shell else (None, "nothing was installed")
+    if not runs:
+        sys.exit(f"the Chromium in tools/playwright/ does not start ({why}). On Linux it needs the system libraries "
+                 "Playwright's `install-deps` lists, which need root: ask the contributor before installing them")
+    print(f"{runs}: {os.path.relpath(shell, os.path.dirname(tools))}\n"
+          "the SID check, shoot.js and the games' browser checks now launch it when given no other")
+
+
+def chromium_line(tools=TOOLS):
+    """Which headless Chromium is in tools/playwright/, by its folder, or None."""
+    shell = chromium(tools)
+    if not shell:
+        return None
+    return f"Chrome Headless Shell, Playwright's {os.path.basename(os.path.dirname(os.path.dirname(shell)))}"
+
+
 def build_line(tools=TOOLS):
     """Which Node and playwright-core are in tools/, as a line that can go into game.json."""
     try:
@@ -235,7 +286,12 @@ def run(argv, tools=TOOLS):
 
 def main(a):
     if a == ["status"]:
-        print(build_line()); return 0
+        print(build_line())
+        if chromium_line():
+            print(chromium_line())
+        return 0
+    if a == ["get-chromium"]:
+        get_chromium(); return 0
     if a == ["env"]:
         print(env_lines()); return 0
     if len(a) > 1 and a[0] == "run":

@@ -130,7 +130,10 @@ fails a frame that gates a voice on at volume 0. Then
 `node kit/c64/sid_check.js _site [<page> ...]` plays every button of the
 built pages through the player's own worklet and fails one that stays
 silent or whose driver stops there. A button the game leaves silent says
-so in its label, "(silent)". CI runs it over the whole site.
+so in its label, "(silent)". CI runs it over the whole site. It needs
+Playwright and a Chromium, which `tools.py get-node` and `tools.py
+get-chromium` put in `tools/` (`kit/INSTALL.md`, "Browser checks"), so a
+machine with only Firefox runs it too.
 
 The filter is off unless the page passes `filter: '6581'` (or `'8580'`)
 to `mount`, which also shows a switch to compare it with no filter; pass
