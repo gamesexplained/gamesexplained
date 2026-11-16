@@ -177,3 +177,11 @@ lower bound: a checker misses some.
   (screenshots on 10 November 2026).
 - The equipment check: a wrong piece printed IMPROPER IDENTIFICATION and
   the same piece was asked again.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### music.html
+
+- The game's own music player (`music_tick`, `$249E`) and frame effects (`effects_tick`, `$27FB`) running on the kit's 6502 simulator over the bytes on the Source tab, heard through the site's model of the SID with a 6581's filter.

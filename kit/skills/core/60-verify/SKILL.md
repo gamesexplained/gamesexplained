@@ -157,10 +157,14 @@ That is the one wait in the run, and the contributor chose it by naming
 the model. Settle its verdicts against the code as for any checker.
 With no model named, use the strongest model the session has.
 
-The rate is what the checker found, and a checker misses some: in one
-run, a full audit that re-read the first sample's 60 comments found six
-more wrong among the 53 the checker had passed. Report it as a lower
-bound on the true rate.
+A sample's rate is an estimate of the listing's, not a bound on it.
+Chance alone can draw more wrong comments than the listing's share, or
+fewer, which is what the interval measures; and a checker misses some,
+which pulls the estimate down. Report the rate as an estimate, with its
+interval and, when the sample has strata, the weighted rate, and say
+that the checker may have missed errors. The only sure minimum is the
+wrong comments found over every comment in the listing, which
+`sample.py count` prints too (`kit/lessons/2026-11-11-sample-rate-estimate.md`).
 
 A wrong comment is usually one belief written down more than once: one
 run's "runs every frame" was in 16 comments, and another's wrong unit

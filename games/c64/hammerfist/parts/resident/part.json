@@ -1,0 +1,93 @@
+{
+  "title": "Shared routines and first-load initialization",
+  "order": 1,
+  "video": {
+    "screen": "",
+    "charset": ""
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0000",
+        "$03FF",
+        "Runtime CPU port, zero-page variables, stack and actor work pages; the payload starts at $0400 and startup clears the work pages."
+      ],
+      [
+        "$04C8",
+        "$07FF",
+        "Generated playfield screen and sprite pointers; $17FB clears $04C8-$07E7."
+      ],
+      [
+        "$296E",
+        "$31FF",
+        "Space after the startup routine, the release loader at $2A00-$2C69, and the runtime sprite cache. The numbered payload does not load $2A00-$31FF."
+      ],
+      [
+        "$FFFA",
+        "$FFFF",
+        "Hardware vectors installed by startup rather than authored payload bytes."
+      ],
+      [
+        "$332C",
+        "$339D",
+        "Runtime saved portrait glyph/colour buffers and adjacent scratch bytes populated by startup at $28FF-$2911."
+      ],
+      [
+        "$FB9C",
+        "$FC2B",
+        "Music driver runtime voice state and generated arpeggio buffers; initialized by tune setup and updated by the player."
+      ],
+      [
+        "$FE86",
+        "$FEB8",
+        "Sound-effect per-voice runtime arrays initialized from effect definitions."
+      ],
+      [
+        "$FEBC",
+        "$FED9",
+        "Sound-effect runtime repeat, modulation and active-state arrays."
+      ]
+    ],
+    "extra": [
+      [
+        "$0400",
+        "$04C7",
+        "Authored 200-cell status screen retained by the playfield clear."
+      ],
+      [
+        "$1000",
+        "$11FF",
+        "Two 256-byte sprite reflection lookup tables read by $BF94."
+      ],
+      [
+        "$199C",
+        "$1C47",
+        "Shape descriptors addressed by the directory at $1C48."
+      ],
+      [
+        "$1C48",
+        "$1CEF",
+        "Eighty-four little-endian shape descriptor pointers."
+      ],
+      [
+        "$2000",
+        "$27FF",
+        "Authored character data loaded with the first part; distinguish it from the runtime sprite cache beginning at $2800."
+      ],
+      [
+        "$1200",
+        "$13DD",
+        "Retained assembler-source text in the first payload, later overwritten by runtime persistent state, scheduler and actor arrays. Preserve its authored entry-image meaning."
+      ]
+    ],
+    "include": [
+      [
+        "$04C8",
+        "$058F",
+        "Two hundred authored status colour bytes at loader hand-over, copied to $D800 by startup before this area becomes generated playfield screen. The listing uses the entry image to preserve this first meaning."
+      ]
+    ]
+  },
+  "io": [],
+  "regions": []
+}

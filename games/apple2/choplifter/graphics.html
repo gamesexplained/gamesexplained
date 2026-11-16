@@ -37,8 +37,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ch-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
 .ch-pair img,.ch-screen{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
 .ch-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
-.ch-bar button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}
-.ch-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ch-bar button{font-size:13px;padding:5px 11px}
+.ch-bar button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .ch-bar label{font-size:13px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
 .ch-bar input[type=range]{width:200px}
 .ch-stat{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
@@ -50,8 +50,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ch-scroll{overflow-x:auto}
 .ch-note{font-size:14px;color:var(--ink-soft)}
 .ch-tilts{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin:10px 0 0}
-.ch-tilts button{padding:0 0 3px;border:2px solid transparent;background:#000;border-radius:5px;cursor:pointer;overflow:hidden}
-.ch-tilts button.on{border-color:var(--amber)}
+.ch-tilts[data-own-look] button{padding:0 0 3px;border:2px solid transparent;background:#000;border-radius:5px;cursor:pointer;overflow:hidden}
+.ch-tilts[data-own-look] button.on{border-color:var(--amber)}
 .ch-tilts canvas{width:100%;display:block;image-rendering:pixelated}
 .ch-tilts span{display:block;font-family:var(--fm);font-size:11px;color:#ccc;text-align:center}
 .ch-sound{background:#111;border-radius:6px;padding:8px 10px;color:#ddd}
@@ -65,8 +65,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gx-group{margin:0 0 18px}
 .gx-group h3{font-size:14px;font-weight:700;color:var(--ink-soft);margin:0 0 8px}
 .gx-tiles{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
-.gx-tiles button{background:#000;border:2px solid transparent;border-radius:4px;padding:4px 4px 2px;cursor:pointer;max-width:100%}
-.gx-tiles button.on{border-color:var(--amber)}
+.gx-tiles[data-own-look] button{background:#000;border:2px solid transparent;border-radius:4px;padding:4px 4px 2px;cursor:pointer;max-width:100%}
+.gx-tiles[data-own-look] button.on{border-color:var(--amber)}
 .gx-tiles canvas{display:block;image-rendering:pixelated;max-width:100%}
 .gx-tiles span{display:block;font-family:var(--fm);font-size:10px;color:#aaa;text-align:center}
 .gx-info{font-size:14px;color:var(--ink);min-height:3em;margin:12px 0 0}
@@ -77,7 +77,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1982 · Broderbund Software · Apple II</p>
   <h1>Choplifter</h1>
-  <p class="sub">The Apple II has no sprites. The helicopter, the hostages, the tanks and the jets are pictures from one table of 128 shapes, drawn dot by dot onto the hi-res screen by a graphics library of the game's own at <code>$1000</code>. Every picture on this page is drawn by that library, from the listing, on the kit's 6502.</p>
+  <p class="sub">The Apple II has no sprites. The helicopter, the hostages, the tanks and the jets are pictures from one table of 128 shapes, drawn dot by dot onto the hi-res screen by a graphics library of the game's own at <code>$1000</code>. Every picture on this page is drawn by that library, from the listing.</p>
 </header>
 <main class="wrap">
 
@@ -127,7 +127,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <canvas id="fr-cv" class="gx-frame" width="560" height="384" aria-label="The hidden hi-res page as one frame is drawn"></canvas>
     <p class="gx-info" id="fr-stat"></p>
-    <p class="cap">The demonstration flight is the game's own code run from <code>start</code> on the kit's 6502 (<code>reference/demo.js</code>), to its 268th frame. That frame is then run again stopped at each call to the library's drawing routines, at <code>erase_old</code> (<code>$9B4C</code>), <code>twinkle_stars</code> (<code>$96AE</code>) and <code>draw_planet</code> (<code>$9411</code>), and at <code>gfx_show_page</code>, which ends it. Each step shows the page after it, with the bytes it changed in yellow.</p>
+    <p class="cap">The demonstration flight is the game's own code run from <code>start</code>, to its 268th frame. That frame is then run again stopped at each call to the library's drawing routines, at <code>erase_old</code> (<code>$9B4C</code>), <code>twinkle_stars</code> (<code>$96AE</code>) and <code>draw_planet</code> (<code>$9411</code>), and at <code>gfx_show_page</code>, which ends it. Each step shows the page after it, with the bytes it changed in yellow.</p>
   </div>
   <p>There are two hi-res pages, and the game draws on the one that is not being shown, then shows it and starts on the other (<code>gfx_flip_page</code>). The library EORs <code>$60</code> into the high byte of every line address on page 2, which turns <code>$20</code>-<code>$3F</code> into <code>$40</code>-<code>$5F</code>, so every drawing routine serves both pages.</p>
   <p>Nothing is cleared. Every shape drawn records a box in its page's erase list: a kind, its X and its row (<code>add_erase</code>, <code>$7BF8</code>). At the start of the next frame on that page, two frames later, <code>erase_old</code> fills each of those boxes, black above the ground line and the ground's pattern below it, so only what moved is touched. The ground band itself is never drawn: it is in the picture the disk loads onto both pages, and the erase boxes refill it with the same pattern, <code>$55 $2A</code>.</p>
@@ -361,7 +361,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   const tiles = $('gx-table');
   for (const [title, a, b] of GROUPS) {
     const g = document.createElement('div'); g.className = 'gx-group';
-    g.innerHTML = '<h3>' + title + '</h3><div class="gx-tiles"></div>';
+    g.innerHTML = '<h3>' + title + '</h3><div class="gx-tiles" data-own-look></div>';
     const row = g.lastChild;
     for (let i = a; i <= b; i++) {
       if (MOVING.has(i)) continue;

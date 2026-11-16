@@ -80,6 +80,12 @@ plays the tune with the game's other music.
   commands, a protection's track, or leftovers of writing the disk.
   Answer them `unused` only once the game is shown to ask for every
   file by name.
+- Sectors the game was traced reading or writing that the disk's map
+  marks free, such as a high-score table, are in no item, since a scan
+  lists only what the map marks used. Add them with `media.py trace`,
+  its why naming the routine and where the bytes go: a row written by
+  hand is lost at the next scan, and a traced one is kept while its
+  bytes are the same.
 
 A game at Silver or above needs a `media.json` with nothing open
 (`check_docs.py`). A game made before the ledger keeps its tier, and its

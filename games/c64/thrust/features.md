@@ -31,7 +31,7 @@ Sources:
 
 | Feature | Status | Where |
 |---|---|---|
-| Title picture: the ship towing the pod past a planet, signed "Bob" | live | the loading picture, with "TCI" added by the crack (`reference/title-loading-picture.png`; the original is `reference/c64wiki-title.gif`); shown by the first depacker, before the game runs |
+| Title picture: the ship towing the pod past a planet, signed "Bob" | live | the loading picture, with "TCI" added by the crack (`reference/title-loading-picture.png`; the original is `reference/c64wiki-title.gif`, and graphics.html draws it from Firebird's 1986 cassette, the same picture as Firebird's disk); shown by the first depacker, before the game runs |
 | Attract mode: a demo pilot flies level 1 and tows the pod | live | `title` (`$AF93`), `demo_controls` (`$B4C9`): only after a game has ended; at boot this copy starts a game at once (`crack_start`, `$AF82`), *live* from `entry.vsf`. `reference/attract-towing-pod.png`, `reference/attract-level1.png` |
 | Space starts a game from attract mode | live | lives read 3, then 2 once the ship appears |
 | The ship materialises out of a yellow cross | live | `reference/ship-materialising.png` |
@@ -87,7 +87,8 @@ Found in the code, not in the manual.
 - The C64 manual (REG-Vault's scan) was not read: the controls above
   come from C64-Wiki, the game's own response and the key tests in the
   code.
-- This image is TCI's crack. Whether TCI changed anything besides the
-  title picture, the packing, the high score names, the start straight
-  into a game (`crack_start`) and the music is not known without
-  Firebird's release to compare.
+- This image is TCI's crack. Firebird's 1986 cassette shows that the
+  release plays music from a player at `$2000` (reached by `JMP $2000`
+  at `$3000`) and starts in its attract mode, and that its loading
+  picture has neither TCI nor the boxed signature (TODO.md). Whether
+  TCI changed anything else is not known.

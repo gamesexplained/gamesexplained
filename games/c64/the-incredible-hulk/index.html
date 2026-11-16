@@ -54,8 +54,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .hk-fig img{width:100%;height:auto;image-rendering:pixelated;border-radius:4px;display:block}
 .hk-fig figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
 .hk-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 12px}
-.hk-bar button{font:inherit;font-size:13.5px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;padding:5px 10px;cursor:pointer}
-.hk-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.hk-bar button{font-size:13.5px;padding:5px 10px}
+.hk-bar button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .hk-bar input[type=range]{flex:1;min-width:140px}
 .hk-num{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);min-width:9em}
 .hk-head{font-size:14px;margin-top:12px;display:flex;flex-direction:column;gap:4px}
@@ -70,7 +70,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .hk-acts{margin:6px 0 0;padding-left:22px}
 .hk-acts li{margin:4px 0}
 .hk-prompt{font-family:var(--fm);font-size:14px;color:var(--ink)}
-#hk-cmd{font-family:var(--fm);font-size:15px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;width:13em;text-transform:uppercase}
+#hk-cmd{font-size:15px;padding:6px 8px;width:13em}
 .hk-stack{position:relative;max-width:768px}
 .hk-stack .hk-cv{max-width:768px}
 .hk-ov{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
@@ -104,7 +104,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <canvas id="hk-dec" class="hk-cv" width="640" height="320" aria-label="The picture being decoded"></canvas>
     <div class="hk-bar"><button type="button" id="hk-play">Draw</button><input type="range" id="hk-scrub" min="0" max="1" value="1" aria-label="Pairs drawn"><span class="hk-num" id="hk-count"></span></div>
     <div id="hk-head" class="hk-head"></div>
-    <p class="cap">Drawn by the page from the disk's file with a copy of the game's decoder, <code>decode_picture</code> at <code>$7A9A</code>. <code>test_pictures.js</code> runs the game's own decoder on all 70 picture files on the disk and on 45 rooms drawn whole, and the page's matches it in every byte of the bitmap, the screen's colours, colour RAM and the background.</p>
+    <p class="cap">Drawn by the page from the disk's file with a copy of the game's decoder, <code>decode_picture</code> at <code>$7A9A</code>.</p>
   </div>
   <p>The C64 shows the picture in its multicolour bitmap mode, where every dot on the screen comes from a bit in memory rather than from a letter. A pixel is two dots wide, so there are 160 across, and each pixel's two bits pick one of four colours. The pattern of bits is at <code>$2000</code>, an address in the C64's memory written in hexadecimal, as the <code>$</code> shows. It takes eight bytes for each 8 by 8 square of the screen. Three of the colours come from the screen memory at <code>$0400</code> and from colour RAM, which hold a setting for each square, and the fourth is the background. The game gives all of the screen's 800 squares the same three colours, so a picture has four colours in all.</p>
   <p>The header gives the picture's first column, its first row, its last column and its bottom row, then four colour bytes. Each colour byte holds a hue in its top four bits and a brightness in its bottom four, the way the Atari 400 and 800 store colours. The routine at <code>$7B71</code> turns it into one of the C64's sixteen colours. Brightness 0 is black. A brightness of 9 or more takes the hue's colour from a bright table at <code>$7B92</code>, and anything else takes it from a dark one at <code>$7BA2</code>.</p>
@@ -131,7 +131,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="hk-bar" id="hk-frame-bar"></div>
     <div class="hk-stack"><canvas id="hk-frame" class="hk-cv" width="768" height="544" aria-label="One frame of the first room"></canvas><canvas id="hk-frame-ov" class="hk-ov" width="768" height="544" aria-hidden="true"></canvas></div>
-    <p class="cap" id="hk-frame-cap">Drawn by the page from one frame of the first room, recorded in the emulator with <code>kit/c64/frame.py</code>: the video chip's registers as the frame begins and the eight writes the interrupt makes on the way down, run through the site's model of the chip. All 104,448 pixels match the emulator's picture of the same frame. The letters come from the C64's character ROM (901225-01), and the page carries only the 38 it shows.</p>
+    <p class="cap" id="hk-frame-cap">Drawn by the page from one frame of the first room: the video chip's registers as the frame begins and the eight writes the interrupt makes on the way down, run through the site's model of the chip. The letters come from the C64's character ROM (901225-01), and the page carries only the 38 it shows.</p>
   </div>
   <p>The game asks the video chip for an interrupt at two raster lines, the lines the chip draws one after another down the screen. An interrupt makes the processor drop what it is doing and run a routine, the handler, at that moment. The handler at <code>$6AB6</code> takes the first interrupt at line 192, waits for line 201, and counts down a short delay. On line 210, just before the twenty-first row of characters, it switches to text. It sets the chip's registers, the addresses where the chip takes its settings: <code>$D011</code> to <code>$1B</code> for text, <code>$D018</code> to <code>$17</code> for the lower-case letters in the C64's character ROM, and a white border and background. The second interrupt, at line 247, waits for line 255 and puts the bitmap back on line 265, in the bottom border, with the picture's own background colour. Both halves use the same screen memory at <code>$0400</code>: its first twenty rows hold the picture's colours and its last five the text.</p>
   <p>When the text fills its five lines, the KERNAL, the C64's built-in operating system, scrolls the screen up a row, and the row that moves into the picture's area would carry text into the picture. So before each new line the game paints row 20 in the picture's colours (<code>$54C9</code>). With the picture on, the sixth line since the last command stops the text with a beep until a key is pressed.</p>
@@ -144,7 +144,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="hk-bar"><span class="hk-prompt">What shall I do?</span><input id="hk-cmd" maxlength="14" value="BITE TONGUE" autocomplete="off" spellcheck="false" aria-label="A command"></div>
     <div id="hk-parse" class="hk-out"></div>
-    <p class="cap">The page's parser is a copy of the game's command line after it has read the line (<code>$6CF8</code>-<code>$6E05</code>), with its word lookup, <code>find_word</code> at <code>$6975</code>. <code>test_parser.js</code> runs the game's own code on 20,202 lines, every verb with every noun, every letter alone and 3,000 random lines among them, and the page gives the same verb, noun and reply for each.</p>
+    <p class="cap">The page's parser is a copy of the game's command line after it has read the line (<code>$6CF8</code>-<code>$6E05</code>), with its word lookup, <code>find_word</code> at <code>$6975</code>.</p>
   </div>
   <p>The vocabulary is two lists of 129 entries, verbs at <code>$8307</code> and nouns at <code>$8082</code>, five bytes each: a mark and four letters. The game compares only the first four letters of a typed word, so GET ROPE and GET ROPEWALKER are the same command. An entry marked <code>*</code> is another spelling of the nearest entry above it without the mark. <code>find_word</code> steps back to that entry and writes its four letters over the typed word, so a message that repeats the noun prints the main word. The lists hold 42 verbs and 81 nouns, with 133 other spellings.</p>
   <p>A word of one letter is a command of its own. N, S, E, W, U and D move; L and I stand for LOOK and INVENTORY; Z turns the pictures off and on; V lets a turn pass; and X, P and T switch a tester, left in from the programmer's work, which prints the number of each action the game tries. A one-letter move ignores whatever follows it, so <b>N FOOBAR</b> walks north. RETURN alone matches entry 116, one of two empty entries in the verb list. There is no action for it, so the game answers "I don't understand you".</p>
@@ -169,7 +169,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The pictures are 70 files, 90 kilobytes in all, too many to keep in the C64's memory with the program, so the game fetches each when it is needed.</p>
   <div class="plate">
     <table class="hk-tab" id="hk-files"></table>
-    <p class="cap">The disk's files, read with <code>kit/c64/disk.py</code> from Commodore's 1984 disk. In the emulator, 60 of the 70 picture files were caught as the game's loader brought them in, and each was the same, byte for byte, as the file on the disk.</p>
+    <p class="cap">The disk's files, from Commodore's 1984 disk.</p>
   </div>
   <p>The 1541 disk drive has a processor and memory of its own. At the start the program sends 26 bytes of code into the drive's memory and runs them there (<code>$7904</code>). They read two sectors that belong to no file, track 35 sectors 0 and 1, into the drive's buffers and start them: a fast loader that waits for a file name from the C64. To load a picture, <code>load_picture</code> at <code>$7777</code> builds a name of seven characters. A room's is <code>R??</code>, three digits and <code>*</code>; an item's piece is <code>B??</code>, three digits and <code>I</code> or <code>R</code>. The name goes a bit at a time over the serial cable. The question marks match the <code>01</code> in every name on the disk. The drive answers with a status, then the file in blocks of a count and that many bytes, which land at <code>$07FE</code>.</p>
   <p>The program itself belongs to no file either. A small loader reads 45 sectors from track 16 on into <code>$5400</code>-<code>$7FFE</code>, and unscrambles each byte with an exclusive-or against <code>$55</code>, which flips the same four of its eight bits. The last room picture loaded is kept at <code>$4000</code> (<code>$7984</code>), so when a close-up, a scene or the inventory has covered the room, its picture comes back from memory and not from the disk.</p>

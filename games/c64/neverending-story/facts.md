@@ -305,3 +305,37 @@ way.
   room $0A's shows picture 6 only while Artax is with Atreyu, flag 0), the
   picture in use ($2942) was 0, the open book, the same as `OBJ_ROOM_TABLE` gives them; in
   room $04 it was 18 and in room $06 5, as the table gives.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- QUIT and Y in Part 2's first room, recorded in the emulator.
+- After the ending, recorded in the emulator: LOAD came back with carry set and A = 4, file not found, for "PART 4", and `$2F00` still held Part 3.
+- MUSIC, NOM and TEST in the first room, recorded in the emulator.
+- SAVE and LOAD in the first room, recorded in the emulator.
+- The loading picture, recorded in the emulator before the game starts.
+- The parser on the How it works page, a port of `PARSE_INPUT` (`$122F`), `RESOLVE_VERB_NOUN` and `DISPATCH_COMMAND`, held to the game's code by `test_parser.js`.
+- Icon 27 and picture 49 over the backdrop, drawn from the game's bytes by the page's port of `BLIT_ROOM_GRAPHIC` (`$05BF`), which `test_pictures.js` holds to the game's routine.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+
+### index.html
+
+- The driver's code (`$9680-$9FEE`), its data (`$F000-$F768`) and its zero page run on the kit's 6502 simulator inside the page, called as the opening calls them: `MUSIC_STOP` and `MUSIC_INIT` once, then `MUSIC_PLAY` once a frame.
+- `test_music.js` makes the same calls on the simulator directly and finds every SID write the same, in the same order.
+- Drawn by the page from one frame of Part 2's first room, recorded in the emulator after LOOK: memory as the frame began and the eight writes during it that change the picture, to `$D011`, `$D016`, `$D018` and `$D021`, with the line and cycle of each.
+- Drawn by the site's renderer, all 104,448 pixels are the same as the emulator's picture of that frame.
+- The page's test is a port of `COND_RANDOM` (`$1222`); `test_chance.js` runs the game's routine for every number and every one of the 312 lines, 79,872 cases, and finds the same answer in each.
+- The port of `BLIT_ROOM_GRAPHIC` on How it works is held to the game's routine by `test_pictures.js` on all 57 records, byte for byte.
+- Printed by a port of the game's printer (`PRINT_ROOM_TEXT`, `PRINT_EVENT_TEXT` or `PRINT_SENTENCE`), which `test_text.js` holds to the game's routines on every room, event and sentence of the three parts, screen and colour byte for byte.
+- Read by a port of `PARSE_INPUT`, `RESOLVE_VERB_NOUN` and `DISPATCH_COMMAND`, which `test_parser.js` holds to the game's routines on every word of the vocabulary and thousands of lines made from them.
+
+### levels.html
+
+- The picture and the description are drawn by the How it works page's ports of the game's blitter and printer, which `test_pictures.js` and `test_text.js` hold to the game's routines.
+- The exits are read as `ACTION_MOVE_DIRECTION` (`$0E3F`) reads them, which `test_rooms.js` checks for every room and direction, and the scripts as `RUN_SCRIPT` (`$1605`) reads them, checked by `test_scripts.js`.

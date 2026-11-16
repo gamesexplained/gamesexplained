@@ -101,3 +101,21 @@ from reading the code in the snapshot named in `orientation.md`
 - Joystick and keyboard control: see Controls above (10 November 2026).
 - Timer: 999 became 995, 992, 988 and 984 at 50-frame steps; lives were 4 and the score digits showed 50 (`$54`-`$59` = 00 00 00 00 05 00) at the play snapshot.
 - Trainer: both options on replace `$1CEF` and `$2CE8`; both off leave the original bytes (hand-over snapshots compared).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### controls.html
+
+- Each of these was held in an emulator running a stage, and each produced the movement or the spray in the table.
+
+### discoveries.html
+
+- In the emulator, 999 became 984 in 200 frames, which is that rate.
+- Each key was held in the emulator and moved the firefighter the same way as the stick.
+- Run in the simulator on a snapshot of stage 1, a shot far from a bird cleared it and raised the score from 50 to 80, and a shot on the bird left it flying.
+
+### music.html
+
+- The page runs the game's own sound driver, the bytes at `$8000`-`$8DFF`, on the kit's 6502 simulator, and plays what it writes through a model of the SID chip with the filter modelled as one 6581's.

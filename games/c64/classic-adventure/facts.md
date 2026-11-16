@@ -390,3 +390,25 @@ other templates (the texts, the vocabulary, the exits, the rule heads and
 the conditions) were tested against the code that reads each: the first
 match in `lookup_word`, noun `$FF` as any noun in `command_rules`, and
 condition lists of two bytes each throughout.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The same moment in VICE, 8 October 2026: after the 10,000th command, LOOK and SCORE print only blank lines.
+
+### index.html
+
+- The port was run beside the game's own code in a 6502 simulator for 504 sessions and 137,126 typed lines, and printed the same text and left the same variables after every line.
+
+### play.html
+
+- SCORE with exactly fifteen objects there shows 150 and sets the flag that closes the cave."},{"cmds":["XYZY","PIT","DOWN"],"note":"The next arrival in the hall of mists closes the cave and moves the player to the north-east end of the repository."}]},{"title":"The six commands that should win","intro":"","groups":[{"cmds":["SW","GET ROD","NE","DROP ROD","SW","BLAST"],"note":"The rules’ own way to win, and why it fails, are in How it works: DROP ROD keeps the rod in hand, and the blast at the south-west end kills the player instead."}]}] Every command here was played by the port and by the game's own code in `test_play.js`, with the same output from both, and the test fails if any command on the route tests a chance condition.
+- How it was checked The port ran beside the game's own code, run in the kit's 6502 simulator with the KERNAL's screen and keyboard routines answered by the test, on the same typed lines.
+- After every line, the text sent to the screen, the objects, and the variables from `$0BBB` to `$0F97` were compared.
+- Sessions: Typed lines: Result.
+- A walk through the first half of the cave with SAVE and RESTORE; quitting, and answering “Another game”; the 10,000th command; a score past 200; the walkthrough above, to the blast at the end; and 500 sessions of 150 to 400 random lines built from the game's own words and exits, with the jiffy clock aimed at the chance thresholds the rules test: 137,621 in 505 sessions: identical after every line.
+- The game ran 1,426 of its 1,440 instructions.
+- The rest are carries into a high byte that no value reaches, the end of an action list, which no list reaches because each one ends by leaving the rule, the one handler no rule uses, and the jump to the reset, where the test stops.

@@ -18,14 +18,27 @@ expanding and rewriting (`AGENTS.md`, "Definition of done"); `copy` in
 
 ## Questions only a person can settle
 
-- Did Firebird's release play Rob Hubbard's music in the game, through
-  the `JSR $3000` and `music_hook` (`$A951`) calls this copy answers
-  with an RTS? A copy of the original release, or a different crack,
-  would show it.
-- Does the original release start at a title screen, where this copy
-  starts a game at once (`crack_start`, `$AF82`)?
 - The C64 manual on REG-Vault is a scanned PDF this run could not read;
   it may describe controls or scoring this write-up does not.
+
+## Settled by Firebird's cassette
+
+Firebird's 1986 cassette (the Ultimate Tape Archive's `Thrust.tap`,
+loaded in VICE on 12 November 2026) answers two questions this crack
+left open:
+
+- The release plays music. Once loaded, it writes the sound chip every
+  frame from a player at `$2000`, which `$3000` reaches with
+  `JMP $2000`; this copy answers the same call with an RTS. 113 of the
+  224 16-byte pieces of HVSC's `Thrust.sid` (Rob Hubbard, 1986
+  Firebird) are in the tape's memory, from `$1F8E` on, where the rip
+  loads them at `$0800`.
+- The release starts in its attract mode, the demo pilot and the TOP
+  EIGHT THRUSTERS table with PRESS SPACE BAR TO START, where this copy
+  starts a game at once (`crack_start`, `$AF82`).
+
+The loading picture itself is on Graphics, from the tape. A player for
+the title tune would need the tape's player and its data in a page.
 
 ## Ideas for the pages
 

@@ -38,8 +38,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gs-ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 14px;font-size:15px}
 .gs-ctl label{display:flex;gap:6px;align-items:center}
 .gs-ctl input[type=range]{width:180px}
-.gs-btn{font:inherit;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
-.gs-btn[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gs-btn{font-size:14px;padding:5px 12px}
 .gs-out{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 14px;margin-top:12px;line-height:1.5}
 .gx-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 16px}
 .gx-group{margin:0 0 26px}
@@ -51,9 +50,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gx-tile canvas{display:block;image-rendering:pixelated;border-radius:4px;max-width:100%;height:auto}
 .gx-tile figcaption{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-top:5px}
 .gs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;margin:0 0 16px}
-.gs-cell{border:1px solid var(--line-soft);border-radius:8px;background:var(--surface);padding:6px 4px 4px;font:inherit;font-size:12px;line-height:1.25;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
-.gs-cell:hover{border-color:var(--ink-mute)}
-.gs-cell.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.gs-cell{padding:6px 4px 4px;font-size:12px;line-height:1.25;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
 .gs-cell canvas{width:100%;height:auto;display:block;background:var(--surface-2);border-radius:4px}
 @media (max-width:700px){:root{--gx:16px;--h1:34px}}
 </style>
@@ -72,7 +69,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="gx-bar"><button type="button" class="gs-btn" id="gx-run">Pause</button><button type="button" class="gs-btn" id="gx-step">One frame</button></div>
     <div id="gx-window"></div>
-    <p class="cap">The page runs <b>the flight's own interrupt</b>, the sprite part of <a href="source-flight.html#9206"><code>irq_bottom</code></a> from <code>$92F9</code> to <code>$944D</code>, on the kit's 6502 simulator over the flight's listing (the <code>gs-sprites</code> block). It gives each sprite its frame, and the launches and the enemy's flashes their places and colours; the page sets what the flight's main loop would: the gun fired and a hit, a launch, missiles in their slots, an explosion's start, the enemy firing. The window's sprites are multicoloured but for the sight, with the two shared colours the interrupt sets.</p>
+    <p class="cap">The page runs <b>the flight's own interrupt</b>, the sprite part of <a href="source-flight.html#9206"><code>irq_bottom</code></a> from <code>$92F9</code> to <code>$944D</code>, over the flight's listing (the <code>gs-sprites</code> block). It gives each sprite its frame, and the launches and the enemy's flashes their places and colours; the page sets what the flight's main loop would: the gun fired and a hit, a launch, missiles in their slots, an explosion's start, the enemy firing. The window's sprites are multicoloured but for the sight, with the two shared colours the interrupt sets.</p>
   </div>
   <p>The interrupt runs once a frame at line <code>$FB</code>, below the window, and the window's sprite registers are its own instructions: the main loop writes each sprite's place, colour and frame into a table at <code>$8154</code>, and <a href="source-flight.html#9AEA"><code>sprites_copy</code></a> writes them into the interrupt's LDA instructions, which store them into the video chip. So the main loop can take as long as its 3D picture needs, and the sprites still move every frame.</p>
 </section>
@@ -83,7 +80,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">A second interrupt, at line <code>$9A</code> where the window ends, gives the panel its own eight sprites: the pitch ladder, the slip and waypoint marks, the four needles and the helicopter's mark on the CRT. On the big map the cross and the helicopter are sprites again.</p>
   <div class="plate">
     <div id="gx-map"></div>
-    <p class="cap">The cross and the helicopter are the big map's own interrupt (<a href="source-flight.html#97D8"><code>irq_map</code></a>) and <a href="source-flight.html#9873"><code>heading_sprite</code></a> run on the kit's 6502 simulator, the page turning the heading. The stills are the shapes as the listing holds them, in the colours the panel gives them.</p>
+    <p class="cap">The cross and the helicopter are the big map's own interrupt (<a href="source-flight.html#97D8"><code>irq_map</code></a>) and <a href="source-flight.html#9873"><code>heading_sprite</code></a>, run by the page as it turns the heading. The stills are the shapes as the listing holds them, in the colours the panel gives them.</p>
   </div>
 </section>
 

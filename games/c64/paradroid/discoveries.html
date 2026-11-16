@@ -83,7 +83,7 @@ a{color:var(--link)}
       <figure><img src="reference/burnout-static.png" alt="Game over: the deck window filled with black and white static"><figcaption>The moment the 001's limit reaches 0: "Game over" and static.</figcaption></figure>
       <figure><img src="reference/burnout-lowest.png" alt="Lowest Score of the Day, with a droid picture and a prompt for initials"><figcaption>Then the day's lowest score, for a game that ended on 0.</figcaption></figure>
     </div>
-    <p class="cap">The slider counts passes at 16.5 a second. Tested in VICE: the 001 left alone lost two points of its limit in 800 frames, and with the limit set to 1 the next fall emptied its energy and the game ended, as above.</p>
+    <p class="cap">The slider counts passes at 16.5 a second. Left alone, the 001 loses two points of its limit in 800 frames, and with the limit at 1 the next fall empties its energy and the game ends, as above.</p>
   </div>
   <p>The burn-out rule lives in <code>alert</code> (<code>$3E32</code>) and has no exception for the 001. Every 16 passes it tests the pass count against the host's mask from <code>burn_masks</code> (<code>$6DDE</code>); class 0's mask is <code>$7F</code>, so the 001 loses a point of its limit every 128 passes, half as fast as a 123. The 001 starts each ship with a limit of 64, so after 64 × 128 passes, a little over eight minutes of play, its energy is 0 and <code>out_of_energy</code> (<code>$144D</code>) ends the game. A host other than the 001 that burns out only drops the player back to the 001 (<a href="index.html#energy">How it works</a>).</p>
 </section>
@@ -94,7 +94,7 @@ a{color:var(--link)}
   <p class="lede">Between the game's text routines sits a small editor that shows an address and its byte on the status bar and changes either from the keyboard. Nothing in the game calls it, but it still works.</p>
   <div class="plate">
     <img class="pd-cv" src="reference/abmon.png" alt="Two status bars: ( abmon : 0010 - 00 ) and, after a key press, ( abmon : 010 - 4C ) with one digit blinked out" style="width:100%;max-width:672px">
-    <p class="cap">The editor running in VICE after one instruction of the game was changed so that the main loop calls it: the status bar as the editor starts, at address <code>$0010</code>, and after a press of J, with the chosen digit blinking and the byte at the new address, <code>$4C</code>.</p>
+    <p class="cap">The editor running after one instruction of the game is changed so that the main loop calls it: the status bar as the editor starts, at address <code>$0010</code>, and after a press of J, with the chosen digit blinking and the byte at the new address, <code>$4C</code>.</p>
   </div>
   <p>The editor is <code>abmon</code> (<code>$0D63</code>-<code>$0F0A</code>), named by its own status line, "( abmon : 0000 - 00 )" (<code>str_abmon</code>, <code>$0D2D</code>). Each call reads one key: A and D switch it on and off, comma and full stop move along the six digits, and J and M add to or take away from the digit chosen, so the address steps by 1, 16, 256 or 4,096 and the byte by 1 or 16. Every change is written straight back to memory. No instruction in the program jumps to it or names any address inside it, yet <code>init_vars</code> (<code>$0900</code>) still sets up its variables at every cold start.</p>
   <p>To try it, change the main loop's call of <code>score_tick</code> at <code>$13E3</code> into a call of the editor, the bytes <code>$63</code> <code>$0D</code> at <code>$13E4</code>, from a cartridge or an emulator's monitor. The score then stops counting up on screen, since the editor has taken the place of the routine that does it.</p>
@@ -111,7 +111,7 @@ a{color:var(--link)}
       <tr><td>As the game runs</td><td class="pd-n">121 → 121</td><td class="pd-n">0</td></tr>
       <tr><td>With sprites 1-6 all marked in use (<code>$0206</code>-<code>$020B</code>)</td><td class="pd-n">121 → 119</td><td class="pd-n">0</td></tr>
     </table>
-    <p class="cap">Tested in VICE from a snapshot of the first deck: two robots walked into the window while no sprite was free, and both were taken off the ship with no points paid.</p>
+    <p class="cap">On the first deck, two robots walk into the window while no sprite is free, and both are taken off the ship with no points paid.</p>
   </div>
   <p>In <code>droid_step</code> (<code>$18CA</code>), a robot entering the window asks <code>find_sprite</code> for one of sprites 1 to 6. When none is free, the code sets its energy to 0 and calls <code>unpopulate</code>, which clears its place in the ship's population table, so the robot does not come back on a later visit to the deck. The count of robots in the ship falls with it, and a ship can be cleared with fewer robots destroyed than it held. A crowded screen, with shots and explosions on most of the sprites, is when it happens.</p>
 </section>
@@ -127,7 +127,7 @@ a{color:var(--link)}
       <tr><td>The target's place in the population table</td><td class="pd-n">a 516</td><td class="pd-n">empty</td></tr>
       <tr><td>Robots on the ship</td><td class="pd-n">121</td><td class="pd-n">120</td></tr>
     </table>
-    <p class="cap">Tested in VICE: a transfer started against a robot on the first deck with the stick left alone, so the robot's side won.</p>
+    <p class="cap">A transfer against a robot on the first deck with the stick left alone: the robot's side wins.</p>
   </div>
   <p><code>transfer_result</code> (<code>$21CF</code>) settles who won, and then <code>transfer_done</code> (<code>$2260</code>) runs for every result: it sets the target's energy to 0, frees its sprite and clears its place in the ship (<code>unpopulate</code>). A player who loses keeps the 001 and loses the host's ram points, but the robot is gone, unscored. A lost transfer is therefore a way to clear a big robot from a deck for the price of a host, though from the bare 001 a loss ends the game.</p>
 </section>
@@ -138,7 +138,7 @@ a{color:var(--link)}
   <p class="lede">The robot enquiry prints a height for every type. Each one is "1." followed by two digits from the droid's record, so the command cyborg and the little disposal robot are never more than 99 cm apart.</p>
   <div class="plate">
     <div class="pd-scroll"><table class="pd-tbl" id="pd-heights"></table></div>
-    <p class="cap">Byte 8 of each record (<code>$EB08</code> + 64 × type), and the height <code>field_value</code> (<code>$2F57</code>) prints from it through the word at <code>$6C15</code>, "1." and the two digits, then " m". The 001's page in VICE reads "Height: 1.00 m".</p>
+    <p class="cap">Byte 8 of each record (<code>$EB08</code> + 64 × type), and the height <code>field_value</code> (<code>$2F57</code>) prints from it through the word at <code>$6C15</code>, "1." and the two digits, then " m". The 001's page reads "Height: 1.00 m".</p>
   </div>
   <p>The byte is binary-coded decimal, two digits in one byte, and the code prints its two halves as they are. So the 001 and the 821, whose bytes are <code>$00</code>, stand exactly a metre tall, and the 614, the 711 and the 751, at <code>$93</code>, are the tallest at 1.93 m. Weight has three digits of its own, from 23 kg for the 302 to 227 kg for the 751.</p>
 </section>
@@ -150,7 +150,7 @@ a{color:var(--link)}
   <div class="plate">
     <div class="pd-bar"><label class="pd-mono" for="pd-fill">Energy to refill</label><input type="range" id="pd-fill" min="1" max="64" value="32"><span class="pd-mono" id="pd-fill-out"></span></div>
     <img class="pd-cv" src="reference/energiser.png" alt="The player on an energiser, score 936" style="width:100%;max-width:384px">
-    <p class="cap">Tested in VICE: on deck 7's energiser for 200 frames with the energy set to 16, the host gained 17 points of energy and the score fell by 85.</p>
+    <p class="cap">On deck 7's energiser for 200 frames with the energy at 16, the host gains 17 points of energy and the score falls by 85.</p>
   </div>
   <p>Standing on an energiser cell, <code>floor_cell</code> (<code>$2E7B</code>) adds a point of energy every fourth pass, up to the host's limit, and calls <code>score_down</code> with 5 each time. The points come off the score a point at a time, the way an award goes on (<code>score_tick</code>, <code>$0A7D</code>). The debt meets the score at 0 and stops there: the tick that would take the score below 0 sets it to 0 and drops whatever is still owed, so for a player with no points to lose, an energiser costs nothing.</p>
 </section>
@@ -161,7 +161,7 @@ a{color:var(--link)}
   <p class="lede">The title pages show the top and the lowest score of the day. Before anyone plays, they are 6809, held by AEB, and 6502, held by TSO.</p>
   <div class="plate">
     <img class="pd-cv" src="reference/lowest-score.png" alt="Game over with 50 points: Lowest Score of the Day, and a prompt for initials" style="width:100%;max-width:384px">
-    <p class="cap">A game that ended on 50 points, under 6502, in VICE: the lowest score of the day, and a prompt for initials.</p>
+    <p class="cap">A game that ended on 50 points, under 6502: the lowest score of the day, and a prompt for initials.</p>
   </div>
   <p>The two scores are eight BCD digits each, <code>top_score</code> at <code>$E70C</code> and <code>worst_score</code> at <code>$E710</code>, and <code>score_check</code> (<code>$E4E5</code>) compares every finished game with both. A score above the top or below the worst takes its place and asks for initials. The two starting numbers are also the part numbers of two 8-bit processors, the Motorola 6809 and the MOS 6502. AEB is most likely Andrew Braybrook himself. In Uridium, his next game, the best score starts at 12000 held by AEB, and the title message spells it out: "Uridium by Andrew Braybrook. High - 12000 AEB" (<a href="../uridium/source.html#349F"><code>$349F</code></a> there). <a href="../gribblys-day-out/index.html">Gribbly's Day Out</a>, the game before, starts its best score at 6809 too (<a href="../gribblys-day-out/source.html#0226"><code>$0226</code></a> there). Who TSO is, the game does not say.</p>
 </section>

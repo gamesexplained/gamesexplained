@@ -187,3 +187,11 @@ palette and difficulty tables.
 A fresh GPT-6 Astra checker found zero errors in 60 of the 206 comments
 after the audit. The draw used seed 2026111202. The observed rate was
 0.0%, with a 95% Wilson interval of 0.0%–6.0%.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- The 320×200 reconstruction matches every pixel of the emulator’s display window.

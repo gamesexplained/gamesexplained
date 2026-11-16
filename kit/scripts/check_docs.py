@@ -31,6 +31,9 @@
   games/*/*/kit-feedback.md   each maintainer ask filed (#123) or fileable (maintainer_asks.py)
   games/*/*/*.html   no class of the page's own that site/lib/site.css also styles: the build
                      links site.css after the page's <style>, so its rules land too (#143)
+  games/*/*/*.html   no rule that colours, borders, rounds or sets the typeface of a button, menu,
+                     field or slider: site.css draws them all alike from its --btn tokens, and a
+                     widget whose buttons are the picture is marked data-own-look
   games/*/*/*.html   no id on two elements: getElementById finds the first, so a script
                      meant for the second never reaches it
   kit/*/INSTALL.md   one section per system, and one measurements row per build on each kind
@@ -143,6 +146,79 @@ def class_collisions(site_css=SITE_CSS, template=TEMPLATE_PAGE, pages=None):
                 print(f"  x  {os.path.relpath(path, ROOT)}:{at}  {', '.join('.' + c for c in mine)} is a class of the"
                       f" page's own, and site.css styles it too ({os.path.relpath(site_css, ROOT)}:{line})")
                 print("        the built page gets both rules: give the page's class a name of its own (#143)")
+                bad += 1
+    return bad
+
+
+LOOK = re.compile(r"(background|color|border|font|font-family|font-weight|font-style|box-shadow|text-shadow|outline|"
+                  r"accent-color|appearance|-webkit-appearance)$|(background|border|outline)-[\w-]+$")
+CONTROL = re.compile(r"(button|select|textarea|input)(?![\w-])", re.I)
+
+
+def selectors(sel):
+    """The selectors of a list, split at the commas outside brackets."""
+    out, depth, cur = [], 0, ""
+    for ch in sel:
+        depth += ch in "([" and 1 or ch in ")]" and -1 or 0
+        if ch == "," and not depth:
+            out.append(cur.strip()); cur = ""
+        else:
+            cur += ch
+    return [s for s in out + [cur.strip()] if s]
+
+
+def control_names(html):
+    """The classes and ids a page gives only to buttons, menus, fields and sliders, in its markup
+    and in the markup its scripts write."""
+    ctl, other = set(), set()
+    for m in re.finditer(r"<([a-zA-Z][\w-]*)\b([^<>]*)>", html):
+        names = set()
+        for attr, mark in (("class", "."), ("id", "#")):
+            a = re.search(r"\b" + attr + r"\s*=\s*[\"']([^\"']*)[\"']", m.group(2))
+            if a:
+                names |= {mark + n for n in a.group(1).split() if re.fullmatch(r"-?[A-Za-z_][\w-]*", n)}
+        (ctl if CONTROL.fullmatch(m.group(1)) else other).update(names)
+    # and the elements its scripts make: createElement('button') given a className on the same line,
+    # or a helper called as el('button', 'name') or el('button', { class: 'name' })
+    made = (r"createElement\(\s*['\"]([a-z][\w-]*)['\"]\s*\)[^\n]{0,160}?\.className\s*=\s*['\"]([^'\"]+)['\"]",
+            r"\bel\(\s*['\"]([a-z][\w-]*)['\"]\s*,\s*['\"]([^'\"]+)['\"]",
+            r"\bel\(\s*['\"]([a-z][\w-]*)['\"]\s*,\s*\{[^}]*?\bclass(?:Name)?['\"]?\s*:\s*['\"]([^'\"]+)['\"]")
+    for pat in made:
+        for m in re.finditer(pat, html):
+            (ctl if CONTROL.fullmatch(m.group(1)) else other).update("." + n for n in m.group(m.lastindex).split())
+    return ctl - other
+
+
+def button_looks(pages=None):
+    """A page rule that colours, borders, rounds or sets the typeface of a button, menu, field or
+    slider. site.css draws every game page's controls from its --btn tokens, so they look alike
+    across the site; a page gives its own only size and place. A rule may use the tokens, as
+    var(--btn-on-bg) for a state of the page's own, and a widget whose buttons are the picture
+    marks its container data-own-look and puts [data-own-look] in its rules' selectors."""
+    if pages is None:
+        pages = sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "*.html")))
+    bad, told = 0, set()
+    for f in pages:
+        html = open(f, encoding="utf-8", errors="replace").read()
+        names = control_names(html)
+        for path, line, sel, decls in page_styles(f):
+            if (path, line) in told:
+                continue
+            hit = []
+            for s in selectors(sel):
+                if "[data-own-look]" in s or "::" in s:
+                    continue
+                subject = re.split(r"\s*[\s>+~]\s*(?![^\[(]*[\])])", s)[-1]
+                first = re.match(r"[#.]?[\w-]+", re.sub(r"^\*", "", subject))
+                if CONTROL.match(subject) or (first and first.group(0) in names):
+                    hit.append(s)
+            looks = [k for k, v in decls.items() if LOOK.match(k) and not v.startswith("var(--btn-")]
+            if hit and looks:
+                told.add((path, line))
+                print(f"  x  {os.path.relpath(path, ROOT)}:{line}  {hit[0]} sets {', '.join(looks)} on a control")
+                print("        site.css gives every game page's buttons, menus and sliders one look: keep size and place,"
+                      " use the --btn tokens for a state, or mark a picture-like widget data-own-look"
+                      " (kit/skills/core/70-minisite)")
                 bad += 1
     return bad
 
@@ -488,6 +564,7 @@ def main():
                       only=only)
     fails += class_collisions()
     fails += duplicate_ids()
+    fails += button_looks()
     fails += platform_notes()
     fails += steps_tables()
     based += skill_dated_records()

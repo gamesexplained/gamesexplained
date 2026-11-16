@@ -1,0 +1,63 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/hunter-page.css">
+<style>
+.hp-cv{display:block;max-width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.hp-scroll{overflow-x:auto}
+</style>
+
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The fourth level asks no more than the third, and the distance bar fills at the same pace on every level however many hits it needs.</p>
+</header>
+<main class="wrap">
+<section id="levels">
+  <p class="fig">01 · The four levels</p>
+  <h2 class="t">The same landscape, a new target, and more hits</h2>
+  <p class="lede">The game has no map: the hills wrap round every 40 columns and the fields are stripes, so every level is flown over the same country. The level, kept in <code>$44</code>, picks the hit counts and the target.</p>
+  <div class="plate"><div class="hp-scroll"><canvas id="hp-levels" class="hp-cv"></canvas></div>
+  <p class="cap">Each level's target at its nearest size, three sprites side by side, drawn from the level's set of shapes on the <a href="source.html#3000">Source tab</a> in the ground band's colours. The figures beside it come from <a href="source.html#0f60"><code>$0F60</code></a> and <a href="source.html#0f40"><code>$0F40</code></a>.</p></div>
+  <div class="plate"><table class="t">
+    <tr><th>Level</th><th>Hits for each kind</th><th>Hits to reach the target</th><th>Distance bar filled per hit</th><th>Target shapes</th></tr>
+    <tr><td>1</td><td>5</td><td>20</td><td>8 pixels</td><td><a href="source.html#3000"><code>$3000</code></a></td></tr>
+    <tr><td>2</td><td>10</td><td>40</td><td>4 pixels</td><td><a href="source.html#3800"><code>$3800</code></a></td></tr>
+    <tr><td>3</td><td>20</td><td>80</td><td>2 pixels</td><td><a href="source.html#9800"><code>$9800</code></a></td></tr>
+    <tr><td>4</td><td>20</td><td>80</td><td>2 pixels</td><td><a href="source.html#9000"><code>$9000</code></a></td></tr>
+  </table><p class="cap">The four kinds come in the same order on every level: tanks, lorries, guns, buildings (<a href="gameplay.html#defences">Gameplay</a>).</p></div>
+  <p><a href="source.html#0f60"><code>set_hits_needed</code></a> (<a href="source.html#0f60"><code>$0F60</code></a>) doubles 5 once for each level after the first, and treats the fourth level as the third, so the count stops at 20. The distance bar along the bottom gives each kind a section 40 pixels wide, and <a href="source.html#0f40"><code>bar_fill_bits</code></a> (<a href="source.html#0f40"><code>$0F40</code></a>) scales the hits to it with the same doubling, so the bar fills at the same pace on every level however many hits it needs.</p>
+  <p>The target comes from the table at <a href="source.html#8b80"><code>$8B80</code></a>, which names <code>$3000</code>, <code>$3800</code>, <code>$9800</code> and <code>$9000</code> for the four levels. <a href="source.html#2b00"><code>start_run</code></a> copies 32 shapes from there into the sprite area at <code>$7800</code> before each strafing run, and the <a href="graphics.html#cast">Graphics tab</a> shows each target at all ten sizes. After a target that took 16 hits or more the level goes up, and after the fourth it goes back to the first (<a href="source.html#2ead"><code>$2EAD</code></a>), with the lives carried over. A target that took fewer hits means the same level again from its first kind.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
+<script src="../../lib/c64.js"></script>
+<script>
+(function () {
+  const cv = document.getElementById('hp-levels');
+  if (typeof C64 === 'undefined') { cv.replaceWith('The pictures need the site\'s shared scripts: open the page from the built site.'); return; }
+  C64.load('listing.json').then(M => {
+    const ram = M.ram, P = C64.PAL, g = r => ram[0x8090 + r - 0xD000] & 15;
+    const SETS = [0x3000, 0x3800, 0x9800, 0x9000], NEED = [5, 10, 20, 20], S = 2, W = 3 * 24 * S + 180, H = 21 * S + 24;
+    const ctx = C64.canvas(cv, 2 * W, 2 * H);
+    cv.style.width = Math.min(2 * W, 900) + 'px';
+    ctx.fillStyle = P[g(0xD021)]; ctx.fillRect(0, 0, cv.width, cv.height);
+    SETS.forEach((base, i) => {
+      const x = (i % 2) * W + 8, y = Math.floor(i / 2) * H + 4;
+      ctx.fillStyle = P[0]; ctx.font = 'bold 12px "IBM Plex Mono", monospace';
+      ctx.fillText('Level ' + (i + 1), x, y + 12);
+      ctx.font = '11px "IBM Plex Mono", monospace';
+      ctx.fillText(NEED[i] + ' hits a kind', x, y + 28);
+      ctx.fillText(4 * NEED[i] + ' to the target', x, y + 42);
+      for (let n = 0; n < 3; n++) {
+        const s = 27 + n, data = ram.subarray(base + s * 64, base + s * 64 + 63);
+        C64.drawSpriteMC(ctx, data, x + 150 + n * 24 * S, y + 12, S, P[1], P[g(0xD025)], P[g(0xD026)]);
+      }
+    });
+  });
+})();
+</script>

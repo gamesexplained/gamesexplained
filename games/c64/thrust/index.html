@@ -35,8 +35,7 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 .th-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
-.th-btn{font-family:var(--fm);font-size:13px;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-.th-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.th-btn{font-size:13px;padding:6px 12px}
 .th-scroll{overflow:auto;max-height:640px;background:#000;border-radius:6px}
 .th-scroll canvas{display:block;image-rendering:pixelated}
 .th-cv{display:block;max-width:100%;image-rendering:pixelated;background:#000;border-radius:6px}
@@ -64,7 +63,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Steal the pod and fly it out</h2>
   <p class="lede">You fly a small ship down into a planet's caves to steal a pod, the Klystron pod, and tow it back out into space.</p>
   <div class="th-pics">
-    <figure style="margin:0"><img src="reference/title-loading-picture.png" alt="The loading picture: the ship towing the pod past a planet"><figcaption class="cap">The loading picture, with "TCI" added by the crackers.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/title-loading-picture.png" alt="The loading picture: the ship towing the pod past a planet"><figcaption class="cap">The loading picture, with "TCI" added by the crackers. Firebird's own is on <a href="graphics.html#loading">Graphics</a>.</figcaption></figure>
     <figure style="margin:0"><img src="reference/attract-towing-pod.png" alt="The ship towing the pod on its rod over level 1"><figcaption class="cap">The ship towing the pod on its rod.</figcaption></figure>
   </div>
   <p>The ship turns and thrusts against gravity, and it keeps moving until something slows it. Guns on the cave walls fire at it, a reactor powers them, and fuel tanks stand on ledges. The pod waits on a stand. The tractor beam picks it up, and from then on the ship and the pod swing together at the two ends of a rod. Leaving the planet with the pod completes the mission. Shoot the reactor enough and it goes critical: the planet blows up a few seconds later, and a ship still inside goes with it.</p>
@@ -76,7 +75,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="th-bar" id="th-f-bar"></div>
     <div style="position:relative;max-width:768px"><canvas id="th-frame" class="th-cv" width="384" height="272" style="width:100%" aria-label="A frame of level 1, drawn by this page from the game's memory"></canvas><canvas id="th-frame-hi" width="384" height="272" style="position:absolute;inset:0;width:100%;pointer-events:none" aria-hidden="true"></canvas></div>
-    <p class="cap" id="th-f-cap">A frame of level 1, drawn by this page from the memory and the register writes recorded in the emulator (VICE). Of its 104,448 pixels, 104,446 match the emulator's own picture of the same frame. The two that differ are on line 191, where a sprite is moved in the middle of the line.</p>
+    <p class="cap" id="th-f-cap">A frame of level 1, drawn by this page from the memory and the game's writes to the video chip. Two pixels on line 191 come out differently from the game's own picture: a sprite is moved in the middle of that line.</p>
   </div>
   <p>The frame begins with the status bar. <code>raster_handler_0</code> (<code>$89C4</code>) runs at the top of each frame, sets the video chip to text mode, and points it at the screen at <code>$5C00</code> and the character set at <code>$5800</code>. The status bar is two rows of 40 characters, and each of its 80 cells holds a character of its own, codes 0 to 79. The character set is therefore a tiny bitmap. The game writes the fuel, lives and score into it with its own five-line font (<code>$8E52</code>).</p>
   <p>At lines $41-$43 <code>raster_handler_3</code> (<code>$8A4D</code>) turns on the bitmap at <code>$6000</code>, in multicolour, and the rest of the frame is the cave. Below that, <code>raster_handler_1</code> (<code>$8AA1</code>) moves sprites 0-5 down the screen band by band. The guns, fuel tanks, reactor, pod stand and rod all go through those six sprites. The ship is sprite 7, and the towed pod is sprite 6.</p>
@@ -90,7 +89,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="th-dial"><canvas id="th-dial" width="240" height="240" class="th-cv" aria-label="The ship's sprite for the chosen direction, with its thrust vector"></canvas><div class="th-read" id="th-d-out"></div></div>
     <p class="cap">The ship's sprite for each direction, from <code>$4000</code> on, and its vector from <code>direction_tables</code> (<code>$B8E7</code>), drawn to scale. The sideways number is half the scale of the up-and-down one, because a column of the cave is twice as wide as a row is high.</p>
   </div>
-  <p>A and S turn the ship one direction at a time, on three passes of the main loop in four (<code>rotate_ship</code>, <code>$9E09</code>). A pass is not a frame: the main loop waits for three ticks of a timer (<code>wait_pass</code>, <code>$B44C</code>). Measured in the emulator, it ran 131 times in 250 frames, about 26 times a second.</p>
+  <p>A and S turn the ship one direction at a time, on three passes of the main loop in four (<code>rotate_ship</code>, <code>$9E09</code>). A pass is not a frame: the main loop waits for three ticks of a timer (<code>wait_pass</code>, <code>$B44C</code>). It runs 131 times in 250 frames, about 26 times a second.</p>
   <p>Gravity, thrust and friction all happen in <code>ship_physics</code> (<code>$9588</code>), and only on 6 passes in 16. On those passes the level's gravity is added to the falling speed. Shift adds a sixteenth of the direction's vector to the speeds, or a thirty-second while the pod is towed, and burns one unit of fuel. Then friction takes a 64th of the sideways speed and a 256th of the falling speed. Gravity rises from 5 on level 1 to 13 on level 6 (<a href="levels.html#table">Levels</a>).</p>
 </section>
 <section id="pod">
@@ -108,7 +107,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="th-bar" id="th-w-bar"><button type="button" class="th-btn" id="th-w-left" aria-pressed="true">Left wall</button><button type="button" class="th-btn" id="th-w-right" aria-pressed="false">Right wall</button></div>
     <canvas id="th-w-cv" class="th-cv" width="480" height="200" aria-label="Level 1's walls, with the chosen run picked out"></canvas>
     <table class="th-tab" id="th-w-tab"><thead><tr><th>Run</th><th>Rows</th><th>Slope a row</th></tr></thead><tbody></tbody></table>
-    <p class="cap">Level 1's walls, drawn by this page with a port of the game's generators, from the run lists at <code>$A03C</code>. Press a row of the table to pick out its run. The port matches the game's own code on every row of all six levels (<code>test_levels.js</code>).</p>
+    <p class="cap">Level 1's walls, drawn by this page with a port of the game's generators, from the run lists at <code>$A03C</code>. Press a row of the table to pick out its run.</p>
   </div>
   <p>Each wall has two generators (<code>walls_step</code>, <code>$841C</code>). Each generator keeps an x position, the rows left in its run and its place in the lists. Every row it adds the run's slope to x, and when the run is used up it reads the next. The results go into two rings of 256 rows at <code>$0400</code> and <code>$0500</code>, one per wall. <code>draw_walls</code> (<code>$828B</code>) then fills the rock from the edge of the screen to each wall. It does that on every second pixel line, which gives the rock its stripes. It draws only the pixels that changed since the last pass, by exclusive-or (EOR).</p>
   <p>The first runs of every level are long and flat: open sky, with the left wall at 0 and the right wall at 255. The cave starts a few hundred rows down. All six levels are drawn whole on the <a href="levels.html">Levels</a> tab.</p>
@@ -134,7 +133,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">08 · This copy</p>
   <h2 class="t">What the crackers changed</h2>
   <p class="lede">This is TCI's cracked copy, packed into one file. A few things in it differ from what reviews of Firebird's release describe.</p>
-  <p>The start-up code ends with a jump to <code>crack_start</code> (<code>$AF82</code>), which starts a game at once, with the player in control. The high score table and the demo pilot appear only once that game is over. In the emulator, with no key pressed, the ship fell and was lost three times. After about 35 seconds the table came up.</p>
+  <p>The start-up code ends with a jump to <code>crack_start</code> (<code>$AF82</code>), which starts a game at once, with the player in control. The high score table and the demo pilot appear only once that game is over. With no key pressed, the ship falls and is lost three times. After about 35 seconds the table comes up.</p>
   <p>This copy has no music. <code>raster_handler_0</code> calls <code>$3000</code> once a frame, where a music player would be called, and the start and end of every life call <code>music_hook</code> (<code>$A951</code>) with a tune number. Both reach an <code>RTS</code>. No instruction in memory writes to the sound chip (SID) at <code>$D400</code>. The game's own sound effects write it through its mirror at <code>$D500</code> instead (<code>sound_tick</code>, <code>$9B58</code>). The odds and ends the crackers left are on the <a href="discoveries.html">Discoveries</a> tab.</p>
 </section>
 </main>

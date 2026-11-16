@@ -350,3 +350,37 @@ the frame advance stopping the machine between steps.
 - Earlier, by hand: every pause key, F1, F2, F5 and F6 on the title,
   "Lowest Score of the Day!" after games of 0 and 50 points, and the
   briefing naming the first ship "Paradroid".
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Tested in VICE: the 001 left alone lost two points of its limit in 800 frames, and with the limit set to 1 the next fall emptied its energy and the game ended, as above.
+- The editor running in VICE after one instruction of the game was changed so that the main loop calls it: the status bar as the editor starts, at address `$0010`, and after a press of J, with the chosen digit blinking and the byte at the new address, `$4C`.
+- Tested in VICE from a snapshot of the first deck: two robots walked into the window while no sprite was free, and both were taken off the ship with no points paid.
+- Tested in VICE: a transfer started against a robot on the first deck with the stick left alone, so the robot's side won.
+- The 001's page in VICE reads "Height: 1.00 m".
+- Tested in VICE: on deck 7's energiser for 200 frames with the energy set to 16, the host gained 17 points of energy and the score fell by 85.
+- A game that ended on 50 points, under 6502, in VICE: the lowest score of the day, and a prompt for initials.
+
+### graphics.html
+
+- The robots' numbers and turning symbols are written into their shapes by the game's own routines, run on the kit's 6502 in this page, a pass of the game at a time; a pass is about three frames.
+- The robots' and the player's shapes are made by `sprite_number` (`$3C77`) and turned by `energy_symbols` (`$3CFB`) on the kit's 6502 over the listing's memory, one memory for each robot, and the deck's characters by `animate_tiles` (`$2605`) and `rotate_chars` (`$38A5`) the same way.
+- The console's pictures are `droid_picture` (`$3629`) as the page's port of it builds them, held against the game's own code by `test_droids.js`.
+
+### index.html
+
+- The page runs the game's own sound driver, `sound_frame` (`$0500`-`$0767`, with the effects at `$C610` and the instruments at `$EAA0`), on the kit's 6502 once a frame, as the deck's raster interrupt calls it, and plays what it writes through the site's model of the SID.
+- Every register write of every button matches the driver run in the kit's simulator for 3,000 frames.
+- Drawn by the page from one frame of play recorded in VICE: every write to the video chip with the line and cycle it landed on, and the memory the drawing reads, rebuilt with the site's renderer.
+- 0 of the 104,448 pixels differ from VICE's own picture of the same frame.
+- The map matches `build_deck` run in the kit's simulator for all 16 decks.
+- It gives the same table and the same count as the game's routine run in the kit's simulator on 645 ships, each fed the same random numbers, and on ships where every random number is 0, 3, 12, 15 or 255.
+- Seconds assume 16.5 passes a second, the pace of play recorded in VICE; a busy deck runs slower.
+
+### levels.html
+
+- Each deck is unpacked from its plan (`plan_ptrs`, `$F100`) into blocks of 4 by 4 characters (`map_blocks`, `$E800`), as `build_deck` (`$3590`) does, and drawn one character at a time in the deck's colour scheme; the map matches `build_deck` run in the kit's simulator for all sixteen.

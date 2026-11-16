@@ -47,9 +47,7 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-over[hidden]{display:none}
 .pl-over button{font-size:16px}
 .pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
-.pl-bar button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
-.pl-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
-.pl-bar button:hover{border-color:var(--ink-mute)}
+.pl-bar button,.pl-over button{font-size:14px;padding:7px 12px}
 .pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
@@ -57,7 +55,7 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-keys .pl-keys-tap,.pl-keys .pl-type{display:none}
 .pl-keys.pc-keys-touch .pl-keys-tap{display:list-item}
 .pl-keys.pc-keys-touch .pl-type{display:inline}
-.pl-type input{font-family:var(--fm);font-size:16px;text-transform:uppercase;width:8.5em;max-width:60vw;margin:3px 0;padding:7px 8px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:6px;-webkit-user-select:text;user-select:text}
+.pl-type input{font-size:16px;width:8.5em;max-width:60vw;margin:3px 0;padding:7px 8px;-webkit-user-select:text;user-select:text}
 .pl-keys.pc-keys-touch .pl-keys-pad{display:none}
 .pl-keys .pl-start{grid-column:1/-1}
 .pl-plate .pl-keys .pl-start{font-size:15px;color:var(--ink)}
@@ -66,8 +64,8 @@ section table{margin:6px 0 18px}
 .pl-list li{margin:0 0 6px}
 .pl-tape{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;font-size:14px;color:var(--ink-soft)}
 .pl-tape[hidden]{display:none}
-.pl-tape a,.pl-tape button{font-family:var(--fb);font-size:14px;font-weight:700}
-.pl-tape button{background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer}
+.pl-tape a{font-family:var(--fb);font-size:14px;font-weight:700}.pl-tape button{font-size:14px}
+.pl-tape button{padding:5px 10px}
 .pl-answer{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-top:10px}
 .pl-answer[hidden]{display:none}
 @media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
@@ -109,18 +107,10 @@ section table{margin:6px 0 18px}
 </section>
 <section id="port">
   <p class="fig">01 · The port</p>
-  <h2 class="t">Every routine of the game, checked against the original</h2>
-<p class="lede">The game is a Z80 program in five parts: the engine, always in memory, and above it the wizard designer or one of the three scenarios, about 29,800 bytes of code in all. The port is the same program written again in JavaScript, one function for each of the game's 412 routines, reading and writing the game's variables at the game's own addresses. The page runs only the port: the game's code is in the tests, as the original the port is held to.</p>
-<table>
-  <tr><th>Check</th><th>What it showed</th></tr>
-  <tr><td>Each routine alone</td><td>Seventeen test files take each routine at the moments the game itself calls it, in 494 moments of play saved from the emulator (132 at a human turn, 326 at the computer's and 36 in the designer); others run on inputs made at random: keys and joysticks held at random, the sounds' steps, the cassette and the file panels' values. The port's routine and the game's own, on the kit's Z80, run from the same machine, and every byte of memory, the border and the writes to the beeper must come out the same, and for the sounds and the key repeat the T-states between the writes too. On the last run all 47,497 cases came out the same, across 387 routines tested alone; the rest (the turn loop, the menus that only call others, the routines that only wait) are held by the lockstep.</td></tr>
-  <tr><td>The whole program in lockstep</td><td>The port's program runs beside the game's, read by read: from the loader's hand-over through SELECT CONTROLS, the designer and a scenario's load into play, through the designer saving a wizard and loading it back, and from each of the 132 moments at a human turn for 500 reads, with a player that moves its creatures, casts spells, fights and ends its turns. On the last runs every one was in step: three games from the hand-over, two of them for 200,000 reads, about three and a half hours of play each, and the third for 93,557 reads, 52 minutes, to the game's own hang below; the designer saving a wizard and loading it back, 40,000 reads, 37 minutes; and 500 reads from each of the 132 moments. Every byte of memory and the border were the same at every read, but for the stack.</td></tr>
-  <tr><td>A game that never ends</td><td>In one game against the computer, run in lockstep from the hand-over, the game itself stopped for good after 52 minutes of play. The list of what lies on a square holds ten objects, and computer_pick_up ($A0F0) looks in it for the object a computer creature wants with no end to the search. The computer's wizard stood on fifteen objects and wanted the twelfth, a magic mushroom, so the search ran on through memory to the first byte of that type and took the byte before it as the object's number. At first the byte before was 3, and the marks went on the fourth wizard's entry, empty in a game of two. A turn later one of the computer's spell priorities, which go up as it tries spells, reached the mushroom's type, and the byte before it, another priority, was 255: the marks landed on the operand of the turn loop's LD HL,$5B11, so the loop counted up a byte of the ROM instead of the player, and after the end-of-turn menu the game went round it for ever with a blank screen (<a href="discoveries.html#hang">Discoveries</a> tells the whole story). The port reads that operand from memory, as the instruction does, and hung beside the game.</td></tr>
-  <tr><td>The ROM</td><td>The game prints in the ROM's font and turns KEY-SCAN's codes into characters with a copy of the ROM's key table. The page carries those two pieces of the 48K ROM ($3D00-$3FFF and $0205-$022B) and nothing else of it; KEY-SCAN, LD-BYTES and SA-BYTES, as far as the game uses them, are ported with the game's own routines.</td></tr>
-  <tr><td>The page's memory</td><td>The page carries the game's memory as the loader leaves it, and the cassette's four files, with 29,635 bytes of instructions set to zero; it keeps 169 bytes of code that the game also keeps state in, operands it rewrites as counters and pointers. The page's machine on that memory and on the whole memory ran the same, frame for frame, on every session below.</td></tr>
-  <tr><td>The pace</td><td>The port executes no instructions, so the page charges each stretch between two reads of the controls, each routine and each square a creature looks at, entry and word printed and number drawn the T-states they cost the game. 341 routines are priced from their own T-states, measured on the game, the heaviest by the work inside them (the squares a creature looks at, the entries and words printed, the numbers drawn); the ten kinds of stretch between two checkpoints are fitted around them on 111,889 stretches timed on the kit's model of the 48K, and the interrupt the same way, with each routine it calls. On 8,602 waits of more than a frame that it was not fitted on, 41 minutes of play, the median wait is 0.1 % short of the game's time, eight in ten are within 3.2 %, and the whole is 0.6 % longer than the game's. Replaying 26 sessions played on the game, a minute each, with the same keys and random numbers, from the hand-over into a scenario, through the designer, and from moments of play, every session reaches its last read within 3.2 % of the game's time and every wait of more than a second (a computer player's turn, a spell, a battle) within 5.5 %.</td></tr>
-  <tr><td>The listing</td><td>Porting read every instruction, and the lockstep showed where the listing's reading of them was wrong: eight comments were corrected, among them the key repeat's two waits, which had their order the wrong way round, and the random numbers' limit of 0, which never returns rather than meaning 256.</td></tr>
-</table>
+  <h2 class="t">Every routine of the game, written again in JavaScript</h2>
+<p class="lede">The game is a Z80 program in five parts: the engine, always in memory, and above it the wizard designer or one of the three scenarios, about 29,800 bytes of code in all. The port is the same program written again in JavaScript, one function for each of the game's 412 routines, reading and writing the game's variables at the game's own addresses. The page runs only the port.</p>
+<p>The game can stop for good. In a game against the computer, a computer creature standing on more than ten objects sends its search for the one it wants on through memory, and the mark it leaves can land on the turn loop's own instruction: the loop then counts up a byte of the ROM instead of the player, and the screen stays blank for ever (<a href="discoveries.html#hang">Discoveries</a> tells the whole story). The port reads that instruction's operand from memory, as the Z80 does, so it hangs in the same place.</p>
+<p>The game prints in the ROM's font and turns KEY-SCAN's codes into characters with a copy of the ROM's key table. The page carries those two pieces of the 48K ROM ($3D00-$3FFF and $0205-$022B) and nothing else of it; KEY-SCAN, LD-BYTES and SA-BYTES, as far as the game uses them, are ported with the game's own routines.</p>
 </section>
 <section id="differences">
   <p class="fig">02 · Differences</p>

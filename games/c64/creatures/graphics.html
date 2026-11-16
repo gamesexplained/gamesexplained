@@ -34,18 +34,14 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 .cap b{color:var(--ink);font-weight:700}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
 .pick{display:flex;align-items:stretch;gap:6px;margin:0 0 12px;font-family:var(--fm);font-size:12.5px}
-.pick select{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:6px 8px;border-radius:6px;font:inherit}
-.pick .step{flex:none;display:flex;align-items:center;justify-content:center;width:30px;border:1px solid var(--line);border-radius:6px;color:var(--ink-soft);background:var(--surface);text-decoration:none;font-size:16px;line-height:1;cursor:pointer}
-.pick .step:hover{color:var(--ink);border-color:var(--ink-mute);text-decoration:none}
-.pick .step.off{opacity:.35;cursor:default}
-.pick select:focus-visible,.pick .step:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.pick select{flex:1;min-width:0}
+.pick .step{flex:none;display:flex;align-items:center;justify-content:center;width:30px;font-size:16px;line-height:1}
+.pick .step.off{opacity:.35}
 a{color:var(--link)}
 a:hover{color:var(--link-hover)}
 p{margin:0 0 1em}
 .cr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin:0 0 16px}
-.cr-cell{border:1px solid var(--line-soft);border-radius:8px;padding:8px 6px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--surface);font:inherit;color:inherit;text-align:center}
-.cr-cell:hover{border-color:var(--ink-mute)}
-.cr-cell.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.cr-cell{padding:8px 6px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
 .cr-cell canvas{image-rendering:pixelated;border-radius:4px;max-width:100%}
 .cr-cell .cr-nm{font-size:12.5px;line-height:1.25;color:var(--ink)}
 .cr-cell .cr-n{font-family:var(--fm);font-size:10.5px;color:var(--ink-mute)}
@@ -63,9 +59,7 @@ p{margin:0 0 1em}
 .cr-strip canvas{image-rendering:pixelated;border:1px solid var(--line-soft);border-radius:3px}
 .cr-strip canvas.now{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
 .cr-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px;font-size:13px}
-.cr-btn{font:inherit;font-size:12.5px;font-family:var(--fm);border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink-soft);padding:4px 9px;cursor:pointer}
-.cr-btn:hover{color:var(--ink);border-color:var(--ink-mute)}
-.cr-btn.on{color:var(--ink);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.cr-btn{font-size:12.5px;padding:4px 9px}
 .cr-key{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px;margin:0 0 1em}
 .cr-key code{justify-self:start}
 .cr-miss{font-size:14px;color:var(--coral);margin:0}
@@ -97,7 +91,7 @@ p{margin:0 0 1em}
   <div class="plate">
     <div class="cr-row"><button type="button" class="cr-btn" id="cl-run">Pause</button><button type="button" class="cr-btn" id="cl-step">One frame</button></div>
     <div id="cl-tiles"></div>
-    <p class="cap">The page runs <b>the engine's own code</b> for each scene, from the listings, on the kit's 6502 simulator (the <code>cr-clyde</code> block): <a href="source-engine.html#2E82"><code>player_animate</code></a> chooses Clyde's frame, <a href="source-engine.html#31CA"><code>player_fire</code></a> throws, charges and breathes the flame, <a href="source-engine.html#3102"><code>weapon_setup</code></a> gives each weapon its path and colour, <a href="source-engine.html#ACB6"><code>player_dead</code></a> plays his death, and <a href="source-engine.html#1E0E"><code>weapons_tablet</code></a>, <a href="source-engine.html#2B3D"><code>tablet_open</code></a> and <a href="source-engine.html#1F83"><code>tablet_close</code></a> work the tablet. The page holds the joystick for them and draws the sprites where the game's sprite tables put them.</p>
+    <p class="cap">The page runs <b>the engine's own code</b> for each scene, from the listings (the <code>cr-clyde</code> block): <a href="source-engine.html#2E82"><code>player_animate</code></a> chooses Clyde's frame, <a href="source-engine.html#31CA"><code>player_fire</code></a> throws, charges and breathes the flame, <a href="source-engine.html#3102"><code>weapon_setup</code></a> gives each weapon its path and colour, <a href="source-engine.html#ACB6"><code>player_dead</code></a> plays his death, and <a href="source-engine.html#1E0E"><code>weapons_tablet</code></a>, <a href="source-engine.html#2B3D"><code>tablet_open</code></a> and <a href="source-engine.html#1F83"><code>tablet_close</code></a> work the tablet. The page holds the joystick for them and draws the sprites where the game's sprite tables put them.</p>
   </div>
   <p>Clyde's three sprites are set from a few bytes each frame (<a href="source-engine.html#29B4"><code>sprites_player</code></a>): a frame, a place and a colour for each, his own colour light red, and all three multicoloured with dark grey and yellow. A shot not in the air has the frame <code>$0F</code>, which leaves the sprite blank. The flame takes both shot sprites, which is why Clyde cannot breathe it while a shot is still flying.</p>
   <p>The weapons tablet is drawn in the score panel's own band of the screen: while it is open, the band's eight sprites take the tablet's places, frames and colours instead of the panel's (<a href="source-engine.html#24AB"><code>panel_sprites_tablet</code></a>). Its eleven shapes are kept at <code>$B100</code>, outside the 16 KB the video chip can see, and opening it swaps them, a shape a frame, with the flame's in blocks <code>$54</code>-<code>$5E</code> (<a href="source-engine.html#2B1E"><code>tablet_swap_step</code></a>); closing swaps them back. The tablet's sprites stay off while the shapes are on the move.</p>
@@ -112,7 +106,7 @@ p{margin:0 0 1em}
     <div class="cr-grid" id="cr-grid"></div>
     <div class="cr-detail" id="cr-detail"></div>
     <div class="cr-row" style="margin:14px 0 0"><span>Speed</span><button class="cr-btn on" data-s="1">as the game</button><button class="cr-btn" data-s="0.25">a quarter</button><button class="cr-btn" data-s="0">stopped</button><button class="cr-btn" id="cr-step">step a frame</button></div>
-    <p class="cap">Every creature is stepped by <b>the engine's own rules, ported</b> (the <code>cr-anim</code> block in this page), over its script and colour list as the level file holds them, at 50 frames a second. <code>test_gallery.js</code> runs the engine's <code>animate_objects</code> and <code>object_colours</code> on a 6502 simulator beside the port for 3,000 frames of each script here and finds every frame and colour the same. The colours are those of most of the creature's spawn records. The background is the colour behind the top of the world's first stage, or black for a creature drawn in that colour. A few creatures move only when Clyde shoots them, and here they are shot twice a second.</p>
+    <p class="cap">Every creature is stepped by <b>the engine's own rules, ported</b> (the <code>cr-anim</code> block in this page), over its script and colour list as the level file holds them, at 50 frames a second. The colours are those of most of the creature's spawn records. The background is the colour behind the top of the world's first stage, or black for a creature drawn in that colour. A few creatures move only when Clyde shoots them, and here they are shot twice a second.</p>
   </div>
   <p>A creature is an object in one of fifteen slots, and the level's spawn records fill the slots as the landscape scrolls in. A record names a type, and the type names an animation script and a speed in the level file's tables (<code>anim_lo</code>, <code>anim_hi</code> and <code>anim_speed</code>, from <a href="source-level-1-1.html#8D5A"><code>$8D5A</code></a> in every level file). The engine's <a href="source-engine.html#C764"><code>animate_objects</code></a> reads one byte of the script at a time:</p>
   <div class="cr-key">
@@ -132,7 +126,7 @@ p{margin:0 0 1em}
   <p class="lede">The 1990 cassette first shows its loader's banner, CYBERLOAD NOW LOADING FLUFFY THANGS. Then, 53 seconds in, it puts up its picture whole: CREATURES on a slant across rainbow stripes, and beside it a list whose first letters, picked out in cyan, spell the game's name: Clyde Radcliffe Exterminates All The Unfriendly Repulsive Earth-ridden Slime. It stays up, in silence, for nearly three minutes.</p>
   <div class="plate">
     <canvas class="cr-l-cv" id="cr-l-cv" width="384" height="272" role="img" aria-label="Creatures' loading picture: the word CREATURES in white slanted letters across diagonal stripes of many colours, and beside it AN APEX COMPUTER PRODUCTION, the words CLYDE RADCLIFFE EXTERMINATES ALL THE UNFRIENDLY REPULSIVE EARTH-RIDDEN SLIME one to a line, (C) THALAMUS 1990, and LOADING... PLEASE WAIT"></canvas>
-    <p class="cap">The cassette's own screen, recorded in VICE and drawn as the video chip draws it. The page carries only the 37 characters the screen shows, 296 bytes of Commodore's character ROM 901225-01.</p>
+    <p class="cap">The cassette's own screen, drawn as the video chip draws it. The page carries only the 37 characters the screen shows, 296 bytes of Commodore's character ROM 901225-01.</p>
   </div>
   <p>Every part of it is the C64's own character set in ROM, with no picture of its own: the slanted letters and the stripes are built from the set's triangle and block pieces.</p>
 </section>

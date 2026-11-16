@@ -31,7 +31,7 @@ class BrowserTests(unittest.TestCase):
     def test_profile_and_environment_are_local(self):
         with tempfile.TemporaryDirectory() as folder:
             state = Path(folder) / 'firefox'
-            with patch.object(browser, 'STATE', state), patch.object(browser, 'LOG', Path(folder)/'firefox.log'), patch.object(browser.shutil, 'which', return_value='/usr/bin/firefox'), patch.object(browser, 'up', side_effect=[False, True]), patch.object(browser.subprocess, 'Popen') as start:
+            with patch.object(browser, 'STATE', state), patch.object(browser.node, 'chromium', return_value=None), patch.object(browser, 'LOG', Path(folder)/'firefox.log'), patch.object(browser.shutil, 'which', return_value='/usr/bin/firefox'), patch.object(browser, 'up', side_effect=[False, True]), patch.object(browser.subprocess, 'Popen') as start:
                 browser.start()
                 args, kw = start.call_args
                 command = args[0]
@@ -56,6 +56,24 @@ class BrowserTests(unittest.TestCase):
                 for name in ['XDG_CONFIG_HOME', 'XDG_STATE_HOME', 'XDG_CACHE_HOME', 'XDG_DATA_HOME', 'TMPDIR']:
                     self.assertTrue(Path(start.call_args.kwargs['env'][name]).is_relative_to(state))
 
+    def test_the_kits_chromium_comes_before_firefox(self):
+        # #912: once tools.py get-chromium has put one in tools/, it is the browser started
+        with tempfile.TemporaryDirectory() as folder:
+            kit = Path(folder) / 'tools/playwright/chromium_headless_shell-1255/chrome-headless-shell-linux64/chrome-headless-shell'
+            state = Path(folder) / 'state'
+            with patch.dict(browser.os.environ, {'KIT_BROWSER_CHROMIUM': ''}), patch.object(browser.node, 'chromium', return_value=str(kit)), patch.object(browser, 'firefox', return_value='/usr/bin/firefox'), patch.object(browser, 'CHROMIUM_STATE', state), patch.object(browser, 'LOG', Path(folder)/'browser.log'), patch.object(browser, 'up', side_effect=[False, True]), patch.object(browser.subprocess, 'Popen') as start:
+                browser.start()
+                command = start.call_args.args[0]
+                self.assertEqual(command[0], str(kit))
+                self.assertIn('--user-data-dir=' + str(state/'profile'), command)
+                self.assertRegex(' '.join(command).replace(str(state), '/tmp/kit/tools/chromium'),
+                                 browser.stop_pattern().replace(re.escape(str(state)), re.escape('/tmp/kit/tools/chromium')))
+            named = Path(folder) / 'chrome'
+            named.touch()
+            with patch.dict(browser.os.environ, {'KIT_BROWSER_CHROMIUM': str(named)}), patch.object(browser.node, 'chromium', return_value=str(kit)), patch.object(browser, 'CHROMIUM_STATE', state), patch.object(browser, 'LOG', Path(folder)/'browser.log'), patch.object(browser, 'up', side_effect=[False, True]), patch.object(browser.subprocess, 'Popen') as start:
+                browser.start()
+                self.assertEqual(start.call_args.args[0][0], str(named), 'KIT_BROWSER_CHROMIUM comes first')
+
     def test_chromium_stop_does_not_match_another_profile(self):
         with patch.object(browser, 'CHROMIUM_STATE', Path('/tmp/kit/tools/chromium')):
             owned = '/usr/bin/chrome --headless --user-data-dir=/tmp/kit/tools/chromium/profile --remote-debugging-port=9222 --no-first-run'
@@ -64,16 +82,17 @@ class BrowserTests(unittest.TestCase):
                 self.assertIsNone(re.search(browser.stop_pattern(), foreign))
 
     def test_occupied_port_does_not_start_another_browser(self):
-        with patch.object(browser.shutil, 'which', return_value='/usr/bin/firefox'), patch.object(browser, 'up', return_value=True), patch.object(browser.subprocess, 'Popen') as start:
+        with patch.object(browser.node, 'chromium', return_value=None), patch.object(browser.shutil, 'which', return_value='/usr/bin/firefox'), patch.object(browser, 'up', return_value=True), patch.object(browser.subprocess, 'Popen') as start:
             with self.assertRaises(SystemExit): browser.start()
             start.assert_not_called()
 
     def test_missing_browser_does_not_download(self):
         with patch.dict(browser.os.environ, {'KIT_BROWSER_CHROMIUM': ''}), \
              patch.object(browser, 'firefox', return_value=None), \
+             patch.object(browser.node, 'chromium', return_value=None), \
              patch.object(browser, 'installed_chromium', return_value=[]), \
              patch.object(browser.subprocess, 'Popen') as start:
-            with self.assertRaisesRegex(SystemExit, 'no installed Firefox'): browser.start()
+            with self.assertRaisesRegex(SystemExit, 'tools.py get-chromium'): browser.start()
             start.assert_not_called()
 
     def test_mac_firefox_outside_path_is_found(self):
@@ -89,7 +108,7 @@ class BrowserTests(unittest.TestCase):
     def test_no_firefox_names_the_chrome_it_found_and_starts_nothing(self):
         # #331: a Mac with Chrome and Safari only. The choice is the contributor's.
         chrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-        with patch.object(browser, 'firefox', return_value=None), patch.object(browser, 'installed_chromium', return_value=[chrome]), patch.object(browser.subprocess, 'Popen') as start:
+        with patch.object(browser, 'firefox', return_value=None), patch.object(browser.node, 'chromium', return_value=None), patch.object(browser, 'installed_chromium', return_value=[chrome]), patch.object(browser.subprocess, 'Popen') as start:
             with self.assertRaises(SystemExit) as stopped: browser.start()
             start.assert_not_called()
             self.assertIn("KIT_BROWSER_CHROMIUM='" + chrome + "'", str(stopped.exception.code))

@@ -73,6 +73,11 @@ All in VICE 3.14 from the snapshots in `orientation.md`, part `game` unless name
   with `safe_room_seen` (`$09ED`) 0 the friend kept wandering (state 4); with it set to 1, as a
   visit to the safe room leaves it, the touch sent the friend to shelter (state 5, target `$48`,
   shelter time 32, which is 90 minus exposure 58).
+- Jason stuck at the fence: the memory `$0800`-`$0A3F` of a round run on the kit's 6502 (block
+  `friday-camp`, seed 2) at count 2306, and again at count 2280 as Jason came up from room 15, poked
+  into the game in play. The game held Jason at place `$1A` (room 11), x `$1C`, y `$4D`, state 7,
+  while the clock ran; `reference/jason-stuck.png` is VICE's screen with the player moved into room 11
+  and the room redrawn (`draw_room` `$A2A2`, then `main_loop` `$9BE2`).
 
 Run on the kit's 6502 over the listing's memory (no emulator):
 
@@ -83,3 +88,51 @@ Run on the kit's 6502 over the listing's memory (no emulator):
   mean 106.9; `test_scream.js` holds the page's port to it.
 - The music: `test_music.js` holds the page's driver to the game's code for 3,000 frames of each
   tune; tunes 1 to 6 end after 1,117, 1,924, 1,120, 1,642, 1,270 and 1,290 frames.
+- Whole rounds with the player standing still in room 38 (`gameplay.html`, block `friday-camp`;
+  `test_camp.js`): of 40 rounds with seeds 1 to 40, 25 ended with the player dead and 15 ran out of
+  time, after 12,184 counts (96 steps of 128, less the 104 that `start_play` leaves on `pass_count`).
+  In 13 of the 40, Jason stood in room 11 at x 28, y 77 for the rest of the round, his victim in the
+  church (friend 7 or 8, or the player); in one, he stood in room 38 at x 148, y 39. Each death plays
+  the scream, wherever it happens.
+- Jason's stuck pass, traced: a step right to x 32; `$ADE0` moves him back 4 to x 28 and, his turn
+  (`actor_turn`, `$0965`) being 0, keeps it and sets the step to 1, -1 (`$AE08`, `$AE32`); the
+  retried place leaves him at y 77. Turn and step never change.
+- Frame by frame, the game's loop given 13,300 cycles a frame counts at 4.53 frames a count
+  (`test_camp.js`), against the 4.48 measured in play.
+- The jumpscare, frame by frame from room 13 into room 14 with friend 2 dead there: the scream at
+  frame 86; colour RAM of the play area all 9 for the head and all 1 for the skulls; fear 5 to 13
+  (Gerry's fear value is 4); `scare_seen` set; after the scream, the play area's bitmap and screen
+  equal room 14 as `levels.html` draws it.
+- `scare_check` (`$C8E9`) sets `scare_seen` before it rolls, so each body is rolled for once; with
+  more than one body in the room it looks only at the highest-numbered.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, with friend 6 dead, Jason as friend 5, and friend 6 given the highest exposure, the next try revealed Jason and friend 6's state at `actor_state` went through the three steps below.
+- Friend 6's state at `actor_state`, read in the emulator at each step.
+
+### gameplay.html
+
+- Times assume the 4.48 frames between counts measured in the emulator during play, and no blows on friends.
+- The jumpscare and the camp from above run the game's own loop on the kit's 6502 with the interrupt left out: no music and no joystick reading. The jumpscare holds the stick right, as the interrupt's `read_stick` would, and forces the roll to 40 or more; `show_gore`'s roll picks the head or the skulls as the page chooses, each half the time. The sound chip's noise comes from a seeded generator. Sprites touching (`$D01E`) is worked out from the sprites placed in the player's room; the room's picture never touches (`$D01F` reads 0). CHROUT and PLOT are stood in for by the page, as much as the game uses.
+- The camp's times: 4.48 frames a count, and 2 seconds for each scream.
+
+### graphics.html
+
+- The walk frames: `walk_frame_offset` (`$AEDF`) is 0 for left and 5 for right (`$B181`-`$B18D`, from the step's sign), and `walk_frames` (`$A677`) is read only for walks up and down, added to the set's first block plus `$0B`, plus 3 more going down (`$B2F9`-`$B30B`; the player's at `$9F5E`).
+
+### levels.html
+
+- Room 39, beside the emulator's screenshot of the same room. Of the play area's 32,768 pixels, 292 differ, all of them in the two places where people stand: people are sprites, which `draw_room` does not draw.
+
+### music.html
+
+- `test_music.js` runs each tune for 3,000 frames and checks every write to the sound chip against the same code run directly.
+- Each write reaches the model of the chip on the cycle of the driver's call it came on, as the game's own writes do. `play_tune` starts every note by turning the voice's gate off and, a few hundred cycles later, on again; landed at one instant, as the player first had them, a note following one held at full level wrapped its envelope to 0 and was silent. On 15 November 2026 all seven tunes were recorded from VICE 3.14 (reSIDfp, its default 8580 chip, PAL) after `play_tune`, and the page's sound compared frame by frame: the share of frames loud in the game and under a quarter as loud on the page was 42.8, 31.3, 16.9, 11.1 and 18.5 % in tunes 1, 2, 3, 4 and 0 with the writes at one instant, and 1.3, 3.1, 5.0, 2.0 and 0.1 % with them on their cycles; tunes 5 and 6 were whole either way (0.0 and 0.4 %).
+- The tunes the page names were read from the notes the driver plays: tune 0 opens C F G A A G B♭ A C B♭, the first line of Teddy Bears' Picnic; tune 2 opens A G A, G F E D C♯ D, Bach's Toccata in D minor, in three octaves at once; tune 5 opens C C C G A A G, E E D D C, Old MacDonald Had a Farm.
+- The player calls a port of `play_scream` once for each bit, every 107 cycles, the average gap between the game's own volume writes when its loop is run on the kit's processor; the gaps run from 104 to 125 cycles.
+- `test_scream.js` checks every write against the game's routine.

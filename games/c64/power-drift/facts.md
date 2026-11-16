@@ -367,3 +367,36 @@ the race's character set, `setup_stage` and the copy loops of
   0; `$E3F8` `$65` and `$E3FF` `$83` in the race.
 - `work/bendcheck.py`: bends below 4 and above 14 photographed; `$2D`
   below 9 is a left bend.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- `test_rivals.js` checks every point against a race run by the game's own code.
+- `test_rivals.js` runs the game's own sums for every unit of the road at every meeting with a rival or a roadside object on all 25 stages.
+- `test_bonus.js` runs the game's own routines on the kit's simulator for every second from 0 to 59, with three values of the minutes, and checks that the port shows the same digits at every count and pays the same points.
+- In the emulator, with the seconds set to 20, the bonus showed 25, counted 37 times and left 37,000 points.
+- The count partway through in the emulator: BONUS 1B000.
+- The table of ten seconds of play on Discoveries was run in the emulator. Race frames were counted with a checkpoint on `race_frame_loop`, and the clock read from `$53DF`-`$53E1` before and after.
+
+### graphics.html
+
+- The karts here are built by the game's own routines, run on the kit's 6502 in this page over the listing's memory, and drawn where the sprite tables place them.
+- Each is one frame recorded in VICE and drawn as the video chip draws it, the border as the loader had it in that frame:
+
+### index.html
+
+- `test_music.js` runs the game's own code beside it on the kit's simulator and checks every write to the sound chip, frame by frame, for 3,000 frames of each tune.
+- `test_music.js` checks these buttons against the game's own code as it checks the tunes.
+- The cassette's own copy of the game's sound driver, with the tunes it carries, runs on the kit's 6502 simulator from the bytes the cassette leaves in memory: the tune's number, 1, is already in `$B804`, and the cassette calls `sound_reset` (`$B80A`) once and then `sound_play` (`$B800`) once a frame.
+- It was checked against the cassette loading in VICE: after each of the first 4,399 calls, a minute and a half of music, the sound chip's registers are the player's.
+- `test_rivals.js` runs the game's own loop beside the page on the kit's simulator, with the same stand-ins, and checks every byte of memory after every race frame of whole races on every stage.
+- Both pictures are drawn on this page by the site's model of the C64's video chip, from a record of one whole frame in the emulator: memory as the frame began, and every write to the video chip during it, with the line it came on.
+- In both, every pixel matches the emulator's own picture of the frame.
+- Seen in the emulator: level 18 read 126 km/h, level 17 119 and level 10 70.
+
+### levels.html
+
+- `test_course.js` runs the game's own `race_frame_loop` beside it on the kit's simulator, with the same two things standing in for `move_player`, and checks every character and colour of the view, frame by frame, for a whole lap of every stage.

@@ -54,8 +54,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .hk-fig img{width:100%;height:auto;image-rendering:pixelated;border-radius:4px;display:block}
 .hk-fig figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
 .hk-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 12px}
-.hk-bar button{font:inherit;font-size:13.5px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;padding:5px 10px;cursor:pointer}
-.hk-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.hk-bar button{font-size:13.5px;padding:5px 10px}
+.hk-bar button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .hk-bar input[type=range]{flex:1;min-width:140px}
 .hk-num{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);min-width:9em}
 .hk-head{font-size:14px;margin-top:12px;display:flex;flex-direction:column;gap:4px}
@@ -86,13 +86,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
 .pl-over[hidden]{display:none}
 .pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
-.pl-bar button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
-.pl-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
-.pl-bar button:hover{border-color:var(--ink-mute)}
+.pl-bar button,.pl-over button{font-size:14px;padding:7px 12px}
 .pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-type{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:14px;color:var(--ink-soft)}
-.pl-type input{font-family:var(--fm);font-size:16px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;width:12em;text-transform:uppercase}
+.pl-type input{font-size:16px;padding:6px 8px;width:12em}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
 .pl-keys b{color:var(--ink)}
@@ -103,8 +101,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pl-parthead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
 .pl-parthead h3{margin:0}
 .pl-parthead span{font:12.5px var(--fm);color:var(--ink-mute)}
-.pl-parthead button{font:12.5px var(--fm);padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-.pl-parthead button:hover{border-color:var(--ink-mute)}
+.pl-parthead button{font-size:12.5px;padding:5px 10px}
 .pl-part>p{margin:6px 0 8px}
 .pl-steps{margin:0;padding-left:22px}
 .pl-steps li{margin:0 0 10px;padding:2px 6px;border-radius:5px}
@@ -166,10 +163,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <table class="pl-tab">
     <tr><th>On a C64</th><th>On this page</th></tr>
     <tr><td>BASIC loads the game and its database from the disk, and the game sends its fast loader into the drive.</td><td>There is no loading at the start. The page begins at the cold start, <code>$657B</code>, with memory as the loader leaves it.</td></tr>
-    <tr><td>Each picture and each item's piece comes off the disk through the fast loader when a room needs it.</td><td>The pictures are the disk's own files, carried by the page. A load takes as long as it takes on a C64 with a 1541, measured in the emulator, and a name with no file gets the same answer as from the drive. With <b>Skip loading times</b> on, the load and the drawing of each picture take no time at all.</td></tr>
+    <tr><td>Each picture and each item's piece comes off the disk through the fast loader when a room needs it.</td><td>The pictures are the disk's own files, carried by the page. A load takes as long as it takes on a C64 with a 1541, and a name with no file gets the same answer as from the drive. With <b>Skip loading times</b> on, the load and the drawing of each picture take no time at all.</td></tr>
     <tr><td>SAVE GAME writes the game's 574 bytes of state, <code>$1C00</code>-<code>$1E3D</code>, to the disk as a file named for the area, and the restore question reads one back. Areas A and D share three of the disk's blocks, so a save in one can spoil the other (<a href="discoveries.html">Discoveries</a>).</td><td>The page keeps the same bytes in this browser, one file to an area, and starts with the four on Commodore's disk. The four areas are kept apart. <b>Disk's saved games</b> puts the disk's four back.</td></tr>
-    <tr><td>Each instruction takes its cycles, and the video chip and the interrupt take some of the processor's time.</td><td>The port runs no instructions. A poll of the keyboard, a column of a picture, a fill, a copy and a delay each cost what the game's code costs, and the clock gives the game as many cycles a second as the emulator does: 111 polls of the keyboard a frame, as measured there. So a picture draws, and the cursor flashes, at the C64's pace.</td></tr>
-    <tr><td>A raster interrupt splits the screen: the picture's bitmap above line 210, the C64's own characters below.</td><td>The site's model of the video chip draws each frame from the port's memory, with the interrupt's eight writes at the lines and cycles the emulator recorded. The letters come from the C64's character ROM (901225-01): the page carries its lower-case set, the 1,024 bytes at <code>$0800</code>-<code>$0BFF</code>, and the first reversed character, <code>$0C00</code>-<code>$0C07</code>, and makes the other reversed characters by inverting the set, as the ROM holds them.</td></tr>
+    <tr><td>Each instruction takes its cycles, and the video chip and the interrupt take some of the processor's time.</td><td>The port runs no instructions. A poll of the keyboard, a column of a picture, a fill, a copy and a delay each cost what the game's code costs, and the clock gives the game as many cycles a second as a C64 has. So a picture draws, and the cursor flashes, at the C64's pace.</td></tr>
+    <tr><td>A raster interrupt splits the screen: the picture's bitmap above line 210, the C64's own characters below.</td><td>The site's model of the video chip draws each frame from the port's memory, with the interrupt's eight writes at the lines and cycles where the game makes them. The letters come from the C64's character ROM (901225-01): the page carries its lower-case set, the 1,024 bytes at <code>$0800</code>-<code>$0BFF</code>, and the first reversed character, <code>$0C00</code>-<code>$0C07</code>, and makes the other reversed characters by inverting the set, as the ROM holds them.</td></tr>
     <tr><td>The KERNAL's screen editor prints each character the game sends to it, scrolls the whole screen, and keeps the colour codes, reverse, and quote mode.</td><td>The page's copy of the screen editor does the same with the port's screen memory and colour RAM, from the KERNAL's code (901227-03). A logical line of two rows is never made: the game breaks every line at 39 characters.</td></tr>
     <tr><td>The keyboard's unshifted letters type the game's capitals, and SHIFT with a letter gives a character the game refuses.</td><td>A letter types the same, with or without Shift or Caps Lock. The other keys are the C64's keys of the same names; those the game refuses (the cursor keys, the function keys, quotes) are refused here too.</td></tr>
     <tr><td>The page beep opens the sound chip's gate for 1.3 milliseconds and closes it.</td><td>The site's model of the sound chip takes a frame's writes at one moment, so the gate stays open for a frame, 20 milliseconds, and the beep starts a little louder.</td></tr>

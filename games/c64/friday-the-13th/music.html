@@ -35,8 +35,7 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 .ft-grid{display:grid;gap:6px}
-.ft-grid button{padding:0;border:2px solid transparent;background:none;cursor:pointer;position:relative;line-height:0}
-.ft-grid button[aria-pressed="true"]{border-color:var(--ink)}
+.ft-grid button{padding:0;position:relative;line-height:0}
 .ft-grid canvas{width:100%;image-rendering:pixelated;display:block}
 .ft-tag{position:absolute;left:3px;top:3px;font:500 11px/1.3 var(--fm);background:rgba(255,255,255,.88);color:var(--ink);border-radius:3px;padding:1px 4px}
 .ft-mark{position:absolute;right:3px;bottom:3px;font:500 10px/1.3 var(--fm);background:var(--chip);color:var(--chip-ink);border-radius:3px;padding:1px 4px}
@@ -66,8 +65,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ft-swapped i{text-decoration:line-through;text-decoration-color:var(--amber)}
 .ft-table canvas{background:#222;border-radius:4px;image-rendering:pixelated}
 .ft-dead{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
-.ft-dead button{font:500 12px var(--fm);padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
-.ft-dead button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink)}
+.ft-dead button{font-size:12px;padding:4px 8px}
 @media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.ft-two,.ft-four,.ft-controls{grid-template-columns:1fr}}
 sup.fn{font-size:.7em;line-height:0}
 sup.fn a{text-decoration:none}
@@ -87,9 +85,9 @@ sup.fn + sup.fn::before{content:","}
 <section id="music">
   <p class="fig">01 · Music</p>
   <h2 class="t">Music: the theme and six tunes</h2>
-  <p class="lede">The theme plays throughout and starts again whenever nothing else plays. Five rooms have a tune of their own, and a sixth tune plays only when Jason throws off his disguise.</p>
+  <p class="lede">The theme plays throughout and starts again whenever nothing else plays. Five rooms have a tune of their own, and a sixth tune plays only when Jason throws off his disguise. Three are tunes everyone knows: the theme is Teddy Bears’ Picnic, the song that warns of a big surprise in the woods; the church’s organ plays the opening of Bach’s Toccata and Fugue in D minor; and the barn plays Old MacDonald Had a Farm.</p>
   <div class="plate"><div id="sidRoot"></div>
-    <p class="cap">The player runs the game's own music code, <a href="source-game.html#C4D8"><code>play_tune</code></a> and once a frame <a href="source-game.html#C604"><code>irq_music</code></a>, on a copy of the C64's processor in the page, over the game's bytes from the Source tab. <code>test_music.js</code> runs each tune for 3,000 frames and checks every write to the sound chip against the same code run directly.</p></div>
+    <p class="cap">The player runs the game's own music code, <a href="source-game.html#C4D8"><code>play_tune</code></a> and once a frame <a href="source-game.html#C604"><code>irq_music</code></a>, on a copy of the C64's processor in the page, over the game's bytes from the Source tab.</p></div>
   <p>The seven tunes lie under the KERNAL ROM, from <code>$E000</code> to <code>$EF02</code>. To read them, <a href="source-game.html#C81B"><code>music_swap</code></a> banks the ROM out for each step and back in after it. Each voice is a list of note and length pairs, with four commands: repeat, waveform, attack and decay, and sustain and release. A tune's speed is a number of frames between steps at <a href="source-game.html#C8DB"><code>tune_tempo</code></a>, and only the theme repeats.</p>
   <table class="ft-table" id="ftTunes"><thead><tr><th>Tune</th><th>Where it plays</th><th>Frames per step</th><th>Length</th></tr></thead><tbody></tbody></table>
   <p>A room's tune comes from <a href="source-game.html#CA51"><code>place_tune</code></a>, which looks the room up in six places at <a href="source-game.html#CA6B"><code>tune_places</code></a>. It starts one only when the last tune started was the theme, so a room's tune never cuts into another room's, or into Jason's. The fourth place is $FF, which no room has, so tune 4 is heard only when Jason reveals himself (<a href="source-game.html#A24C"><code>jason_reveal</code></a>).</p>
@@ -100,7 +98,7 @@ sup.fn + sup.fn::before{content:","}
   <h2 class="t">Sound: a scream in 18,416 bits</h2>
   <p class="lede">The scream that plays over the title and whenever someone dies is a recording, one bit per sample, played by turning the sound chip's volume fully up or fully down.</p>
   <div class="plate"><div id="screamRoot"></div>
-    <p class="cap">The player calls a port of <a href="source-game.html#3600"><code>play_scream</code></a> once for each bit, every 107 cycles, the average gap between the game's own volume writes when its loop is run on the kit's processor; the gaps run from 104 to 125 cycles. The volume steps are heard through the 6581 chip's mixer, whose voices carry a constant level that the volume scales. <code>test_scream.js</code> checks every write against the game's routine. The interrupts are off while the scream plays, so the game stops for its two seconds.</p></div>
+    <p class="cap">The player calls a port of <a href="source-game.html#3600"><code>play_scream</code></a> once for each bit, every 107 cycles, the average gap between the game's own volume writes; the gaps run from 104 to 125 cycles. The volume steps are heard through the 6581 chip's mixer, whose voices carry a constant level that the volume scales. The interrupts are off while the scream plays, so the game stops for its two seconds.</p></div>
   <p>The sample starts at <a href="source-game.html#36A0"><code>$36A0</code></a> with its length, $08FE bytes, and the bits follow, high bit first. For each 1 bit, <a href="source-game.html#366B"><code>scream_click</code></a> sets volume 15 and starts a triangle wave on voice 1; for each 0 bit, <a href="source-game.html#3680"><code>scream_quiet</code></a> sets volume 0. The two paths are padded with <code>NOP</code>s so that each takes about as long as the other. Before it plays, <a href="source-game.html#C37B"><code>scream</code></a> blanks the panel to the room's background colour, and redraws it afterwards. The introduction carries the same routine and the same bytes at the same address.</p>
 </section>
 
@@ -121,27 +119,31 @@ function createDriver(M, C64Cpu) {
   // the driver returns from at once. play_tune points the interrupt vector at irq_music, and puts
   // the old one back when a tune that does not repeat ends: the tune has ended when the vector's
   // high byte $0315 is no longer $C6. The vector starts at irq_play ($A71B), as in play.
+  // Each write keeps the cycle of the call it came on (times): a new note turns its voice's gate
+  // off and, a few hundred cycles later, on again, and the chip must run between the two.
   const mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
-  let writes = [], on = false, fresh = false;
+  let writes = [], times = [], on = false, fresh = false, t0 = 0;
   const cpu = new C64Cpu.CPU(mem, { port: 0x36, io: {
     read: a => (a === 0xD011 ? 0x80 : 0),
-    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); } },
+    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); times.push(cpu.cycles - t0); } },
   } });
   const hooks = { 0xA723: c => c.rts(), 0xA7A1: c => c.rts() };
   return {
-    init(n) { mem.set(M.ram); sid.fill(0); writes = []; mem[0x0314] = 0x1B; mem[0x0315] = 0xA7;
-              cpu.call(0xC4D8, { a: n }, { maxSteps: 1e6 }); on = true; fresh = true; },
-    stop() { on = false; writes = []; for (const r of [4, 11, 18]) { sid[r] &= 0xFE; writes.push(r, sid[r]); } },
-    play() { if (!fresh) writes = []; fresh = false; if (!on) return;
+    init(n) { mem.set(M.ram); sid.fill(0); writes = []; times = []; mem[0x0314] = 0x1B; mem[0x0315] = 0xA7;
+              t0 = cpu.cycles; cpu.call(0xC4D8, { a: n }, { maxSteps: 1e6 }); on = true; fresh = true; },
+    stop() { on = false; writes = []; times = []; for (const r of [4, 11, 18]) { sid[r] &= 0xFE; writes.push(r, sid[r]); times.push(0); } },
+    play() { if (!fresh) { writes = []; times = []; } fresh = false; if (!on) return;
+             t0 = cpu.cycles - (times.length ? times[times.length - 1] : 0);
              cpu.call(0xC604, {}, { maxSteps: 1e6, hooks }); if (mem[0x0315] !== 0xC6) on = false; },
-    sid, get writes() { return writes; }, playing: () => on,
+    sid, get writes() { return writes; }, get times() { return times; }, playing: () => on,
     voice(x) { return { gate: sid[x * 7 + 4] & 1 ? 'on' : 'off' }; },
     mem,
   };
 }
-const FRIDAY_TUNES = ['Tune 0: theme', 'Tune 1: room 37', 'Tune 2: the church', 'Tune 3: room 2', 'Tune 4: Jason', 'Tune 5: room 40', 'Tune 6: room 14'];
+const FRIDAY_TUNES = ['Tune 0: the theme, Teddy Bears\u2019 Picnic', 'Tune 1: room 37', 'Tune 2: the church, Bach\u2019s Toccata in D minor', 'Tune 3: room 2', 'Tune 4: Jason', 'Tune 5: the barn, Old MacDonald', 'Tune 6: room 14'];
 // end of createDriver
 
+/* createScreamDriver */
 function createScreamDriver(M) {
   // play_scream ($3600) as a driver that sid.js calls once a bit (every M.period cycles). M.sample
   // is the bytes from $36A0: two bytes of length ($08FE), then the bits, high bit first, from

@@ -234,3 +234,29 @@ October 2026.
 | TIPTREE at the codename screen | episode three | play begins |
 | the defusing, step by step | episode three | as `parts/sas-assault/facts.md`, ending in the good epilogue |
 | the 144th command, odd and even counts at an explosion, PUSH ALL, CUT BOX, CUT BLUE, USE FIRST, EIOK, LOOK, HIDE | episode three | `parts/sas-assault/facts.md`, "Live tests" |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, VICE v3.14.0, from your new office.
+- In VICE v3.14.0: from Gordon Street with the wallet carried, MOVE, TAXI until a cab stopped, then BOMB.
+- In VICE v3.14.0, with `random`'s state at `$88`-`$8A` set so that its next number is 0 and the failing branch of `judge_security` run from `$7CAC`: `random` returned 0 with the Z flag clear, and the game went on to memo 32.
+- In VICE v3.14.0, at the accounts office (location 91) with the authorization carried and £60: afterwards `money` held 4.
+- In VICE v3.14.0, LOOK, then LOOK AROUND at the gate.
+- In VICE v3.14.0, from the start of play: USE SECOND, 12051987, CUT CABLE, PUSH RED, PUSH YELLOW, PUSH GREEN, CUT RED, CUT YELLOW, CUT GREEN.
+- In VICE v3.14.0, from the start of play: USE SECOND, 12051987, PUSH ALL.
+- In VICE v3.14.0, CUT RED, CUT BOX and CUT GREEN with the timer showing counted the wires 1, 2 and 3, and the bomb was defused.
+- In VICE v3.14.0: an empty line, USE FIRST and 12051987 set the bomb off on the third line, with the first epilogue; `commands_typed` set to 143 and an empty line gave A CLICK ISSUES FROM WITHIN THE CABINET and the second.
+
+### index.html
+
+- The page draws this from one frame of episode one, recorded in the emulator: the video chip's registers, the bitmap at `$2000`, its colours at `$0C00` and the two sprites of the pointer, run through the site's model of the video chip.
+- All 104,448 pixels match the emulator's own picture of the same frame.
+
+### sas-assault.html
+
+- The page draws this from one frame of episode three, recorded in the emulator with the drawer open and the alarm ringing: the video chip's registers at the top of the frame and the 49 writes the interrupts make on the way down, run through the site's model of the video chip.
+- All 104,448 pixels match the emulator's own picture of the same frame.

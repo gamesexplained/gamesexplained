@@ -382,3 +382,22 @@ comment against the code by an agent that wrote none of them
   rug and which the ladder was not tested in a two-floor embassy.
 - The bytes `$1BBF`-`$1BCE`, `$1430`-`$148A`, `$24B1`-`$24D1` and
   `$FBC4`-`$FBFF` are read by nothing found.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+
+### index.html
+
+- One frame of a two-player game, rebuilt from memory by the site's renderer from the video chip's registers, the bitmap at `$4000` and the screen matrix at `$6000`, recorded in the emulator (NTSC).
+- 94,840 of its 94,848 pixels match the emulator's picture.
+- Checked against the original code run in a 6502 simulator: 20,000 frames, with the music switched off and on again with S, every register write the same and in the same order.
+- Checked against the game's own routine in a 6502 simulator, with every level built by the game itself: all 6,667 pairs of start and goal give the same rounds and the same route.
+- Checked against both routines in a 6502 simulator over 600,000 random events and 3,000 escapes, including scores below zero and above 9,900.
+- Measured in the emulator: in 600 frames the interrupt ran 600 × 2 times and a spy's clock lost 6 seconds.
+- Tested in the emulator on level 1: with the trap count set to 10 the trapulator handed over a bomb; with 11 it refused.
+- Seen in the emulator: on PAL the load ends in that loop; on NTSC the same image plays.

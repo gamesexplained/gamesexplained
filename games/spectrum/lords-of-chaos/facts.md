@@ -591,3 +591,62 @@ the last two, which ran on the kit's 48K machine.
 - A pegasus carrying the wizard, on wasteland put at row 5, column 22,
   was offered FLY, flew south over the walls to row 15, column 20 in
   the hall, was offered LAND there and landed.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, with a tape holding four copies of MORDRED2.WIZ and then MERLIN1.WIZ.
+- The page follows find_file (`$C675`), held to the game's code by test_discoveries.js on every pairing of six names.
+- The six lava terrains, `$18` to `$1D`, have a step cost of 4 and nothing else in the scenario hurts a creature standing in them, so the independent creatures and the computer's wizard's take the lava as a road. test_discoveries.js runs the hook on the game's code for a SPECTRE on each terrain from `$16` to `$1F`: moved by a player it loses 7 points in the lava, moved by the computer none.
+- Only a ghost, which pays 4 for any square (classify_step, `$CA2B`), could stand there. computer_choose_target (`$9992`) moves a creature on to its next waypoint only once it stands on the one it is heading for, so a creature on one of these routes never gets past the rock: whenever it follows its route, it heads for row 8, column 7, until the portal opens and it makes for that instead. test_discoveries.js runs computer_choose_target on the game's own code.
+- The turns a potion from a vial lasts, by the vial's strength, for each potion consumption the creatures of scenario 1 have. test_discoveries.js runs the game's drink (`$73D0`) on every strength from 0 to 255 for consumptions 1 to 12.
+- In a game of scenario 2 started in the emulator, the two strength vials on the map held 255 and the other vials 4 to 7.
+- Experience points left at EXIT In the emulator, MERLIN at level 1. test_discoveries.js runs the game's division on every total from 0 to 1023.
+- In the emulator, a game of scenario 1 against the computer, 52 minutes in.
+- The objects lying on TORQUEMADA's square, row 24, column 17, in the order of the table of things on the map, read from the game's memory in the emulator at the moment of the screenshot above.
+- A new game turn sets the player number to 0, for the creatures that belong to no one, and from then on it stays 0: it never reaches the number of players, so the turn loop goes round for ever, clearing the screen each time and never coming to a wizard's turn. test_discoveries.js runs computer_pick_up on the game's own code with fifteen objects on a square: the list holds the first ten, the search for the twelfth runs past it and marks the entry named by the byte before the first match, and with 255 there the turn loop's operand becomes `$0191`.
+- The routine called in the emulator from a game of scenario 1: the 1 is the count, in the Spectrum ROM's own font.
+
+### graphics.html
+
+- Drawn from the listings the way draw_block (`$A7B6`) draws a square, and animated the way the interrupt animates them (`$A891`, next_frame `$A936`), one working frame every second frame of the 48K's picture. test_graphics.js holds both to the game's own code in all three scenarios: every frame of every thing, the sparkle's too, drawn by the game's draw_thing_at (`$A843`), the four cursors drawn by its draw_map (`$A94C`), and 300 working frames of its interrupt.
+- A port of the game's routine (`$8C0C`, death_animation_frame `$8C6A`), held to the game's code by test_graphics.js, which compares the screen after every step.
+- The pause after each step is the time the game's sound takes, counted in T-states on the kit's Z80 running the game's code, without the slowing a 48K's screen memory adds.
+- HitEight times slower A port of draw_hit (`$AEC2`), held to the game's code by test_graphics.js.
+- Each graphic stays for the time the game's sound after it takes, counted on the kit's Z80. draw_hit does not go through the table of things.
+- The two shapes as shapes (`$AD4E`) lists them, line and column offsets from the missile's place, and the seven styles in missile_styles (`$B60E`), eight bytes each. test_graphics.js plots each shape with the game's draw_shape (`$AD1D`) and compares the pixels. set_missile copies a style's eight bytes into place before the flight: the shape, how many pixels it moves a frame, how long its tail is, how far it reaches, its colour, its combat strength, whether it is magic, and its sound. draw_missile then steps along the line from the middle of the window and plots the shape at each place, keeping the last places in its tail and wiping the oldest.
+
+### index.html
+
+- Drawn by the page from the engine's character sets and the scenario's things, graphics and colour sets (`$A94C` draw_map, `$A7B6` draw_block). test_map.js runs the game's own draw_map on the kit's Z80 for 864 windows, every byte of the screen they cover.
+- Drawn from three play snapshots taken in ZEsarUX, with the creatures and objects in them, the window matches the emulator's screen with 0 pixels different.
+- The squares next to the viewer are always seen. test_sight.js holds the page's line to the game's code on 20,000 pairs of squares in each scenario.
+- The blow follows `$8645`; test_combat.js runs the game's code for every combat and defence from 0 to 255 with the random number fixed at each value it can take, and compares the damage with the page's.
+- A spell with nothing to leave shows its flight, the missile drawn in its colour. test_spells.js runs every spell's routine in the game's own code, in all three scenarios, and checks that it puts on the screen what this table says.
+- Played from the edges of the speaker that the page works out from each sound's eight bytes at `$C7B0`, timed as the game's loop at `$C856` takes them. test_sound.js runs the game's routine on the kit's Z80 for all sixteen and compares the time of every click.
+
+### play.html
+
+- Each routine alone: Seventeen test files take each routine at the moments the game itself calls it, in 494 moments of play saved from the emulator (132 at a human turn, 326 at the computer's and 36 in the designer); others run on inputs made at random: keys and joysticks held at random, the sounds' steps, the cassette and the file panels' values.
+- The port's routine and the game's own, on the kit's Z80, run from the same machine, and every byte of memory, the border and the writes to the beeper must come out the same, and for the sounds and the key repeat the T-states between the writes too.
+- On the last run all 47,497 cases came out the same, across 387 routines tested alone; the rest (the turn loop, the menus that only call others, the routines that only wait) are held by the lockstep..
+- The whole program in lockstep: The port's program runs beside the game's, read by read: from the loader's hand-over through SELECT CONTROLS, the designer and a scenario's load into play, through the designer saving a wizard and loading it back, and from each of the 132 moments at a human turn for 500 reads, with a player that moves its creatures, casts spells, fights and ends its turns.
+- On the last runs every one was in step: three games from the hand-over, two of them for 200,000 reads, about three and a half hours of play each, and the third for 93,557 reads, 52 minutes, to the game's own hang below; the designer saving a wizard and loading it back, 40,000 reads, 37 minutes; and 500 reads from each of the 132 moments.
+- Every byte of memory and the border were the same at every read, but for the stack..
+- A game that never ends: In one game against the computer, run in lockstep from the hand-over, the game itself stopped for good after 52 minutes of play.
+- The list of what lies on a square holds ten objects, and computer_pick_up ($A0F0) looks in it for the object a computer creature wants with no end to the search.
+- The computer's wizard stood on fifteen objects and wanted the twelfth, a magic mushroom, so the search ran on through memory to the first byte of that type and took the byte before it as the object's number.
+- At first the byte before was 3, and the marks went on the fourth wizard's entry, empty in a game of two.
+- A turn later one of the computer's spell priorities, which go up as it tries spells, reached the mushroom's type, and the byte before it, another priority, was 255: the marks landed on the operand of the turn loop's LD HL,$5B11, so the loop counted up a byte of the ROM instead of the player, and after the end-of-turn menu the game went round it for ever with a blank screen (Discoveries tells the whole story).
+- The port reads that operand from memory, as the instruction does, and hung beside the game..
+- The ROM: The game prints in the ROM's font and turns KEY-SCAN's codes into characters with a copy of the ROM's key table.
+- The page carries those two pieces of the 48K ROM ($3D00-$3FFF and $0205-$022B) and nothing else of it; KEY-SCAN, LD-BYTES and SA-BYTES, as far as the game uses them, are ported with the game's own routines..
+- The page's memory: The page carries the game's memory as the loader leaves it, and the cassette's four files, with 29,635 bytes of instructions set to zero; it keeps 169 bytes of code that the game also keeps state in, operands it rewrites as counters and pointers.
+- The page's machine on that memory and on the whole memory ran the same, frame for frame, on every session below..
+- The pace: The port executes no instructions, so the page charges each stretch between two reads of the controls, each routine and each square a creature looks at, entry and word printed and number drawn the T-states they cost the game.
+- 341 routines are priced from their own T-states, measured on the game, the heaviest by the work inside them (the squares a creature looks at, the entries and words printed, the numbers drawn); the ten kinds of stretch between two checkpoints are fitted around them on 111,889 stretches timed on the kit's model of the 48K, and the interrupt the same way, with each routine it calls.
+- On 8,602 waits of more than a frame that it was not fitted on, 41 minutes of play, the median wait is 0.1 % short of the game's time, eight in ten are within 3.2 %, and the whole is 0.6 % longer than the game's.
+- Replaying 26 sessions played on the game, a minute each, with the same keys and random numbers, from the hand-over into a scenario, through the designer, and from moments of play, every session reaches its last read within 3.2 % of the game's time and every wait of more than a second (a computer player's turn, a spell, a battle) within 5.5 %..

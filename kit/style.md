@@ -1,15 +1,19 @@
 # House style for minisite copy
 
-The audience is technical gamers who love game design and want to know how
-a game works, and who are not assembly programmers. Assembly is evidence,
-not the deliverable. The tone is Hacker News, not Buzzfeed: quiet,
-precise, generous with the interesting detail, never breathless.
+The audience is adults: technical gamers who love game design and want
+to know how a game works, and who are not assembly programmers. Picture
+a clever reader of 45 who knows games well and has never read this
+game's code, and never talk down to them. Assembly is evidence, not the
+deliverable. The tone is Hacker News, not Buzzfeed: quiet, precise,
+generous with the interesting detail, never breathless.
 
 Article copy is written as a separate, final pass, after the analysis is
-done. It is never produced by the same run that produced the facts. The
+done. Give that pass the verified findings and working pages, and focus
+on what the reader will learn. It can be done by the same agent. The
 final pass has three steps, described in `kit/skills/core/70-minisite`:
-the draft, a rewrite pass that applies the rules below mechanically,
-paragraph by paragraph, and a rewrite for a reader of fifteen.
+a draft written to these rules, `kit/scripts/copy_lint.py` for the rules
+a pattern can catch, and one edit for the rest. The reader review
+(`kit/skills/core/75-review`) then checks the finished pages.
 
 ## What copy is for
 
@@ -20,19 +24,111 @@ paragraph by paragraph, and a rewrite for a reader of fifteen.
 - Secrets, quirks and bugs are the best part. Give them room. The
   unintended corner case, reachable by a player who knows the code, is
   the pick of them.
-- Interactivity beats description. If the reader can press it, let them.
+- Interactivity lets the reader try the rule and see its consequences.
+  Choose controls for the experiment they enable.
+
+## Depth and clarity
+
+Plain language can carry a detailed explanation. For an important
+mechanic, connect what the player notices to the rule that causes it,
+then work through a concrete situation. Explain a boundary or exception
+when it changes what the player can do. The reader should be able to
+predict another case after reading the section and using its widget.
+
+A counter value or a table entry is the beginning of an explanation.
+Work out what it means during play: how often an enemy moves, how long
+a resource lasts, which choice earns more, or why a familiar tactic
+fails. Check that consequence against the code or a live observation
+before publishing it. What the evidence does not settle stays in
+`facts.md` as a lead, and the page states what was shown.
+
+Give a discovery room in proportion to what it teaches. Add the context,
+causal steps, and examples a newcomer needs; remove repetition and
+irrelevant detail. There is no target word count or paragraph count.
+The sentence rules below control how each sentence is built, not the
+depth of the section. Rewriting a sentence must keep its explanation.
+
+Use the game's own pictures, words, and sounds where they carry the
+point. A message beside the situation that triggers it and its sound
+can explain more than a description of the message interpreter. Keep
+source links beside the explanation so a reader can investigate further.
+
+## Sentences
+
+These rules take the sentence rules of Simplified Technical English
+(ASD-STE100), the standard that aircraft maintenance manuals are written
+in so that a reader gets one meaning on the first reading, and leave out
+its fixed dictionary, because a page about a game needs the game's own
+words. The rest come from a study of why AI-written text is hard to read
+(Clark, Martin and Mahowald, "Why is AI-generated language so hard to
+understand?", arXiv 2610.29162). Its finding matches what the pages
+show: the fault in an agent's sentence is rarely its length. It is
+compression, more meaning packed into fewer words than a reader can
+take in at reading speed. A long sentence that reads at once is fine; a
+short one that has to be unpacked is not. Each rule below undoes one
+kind of compression.
+
+- One idea to a sentence. A cause and its consequence can share a
+  sentence; two findings cannot.
+- Say who or what acts: "the game clears the flag", not "the flag is
+  cleared". A passive is fine when the actor does not matter.
+- Give a thing a thing's verb. A routine reads, sets, checks and skips;
+  it does not "swallow" an error or "cheer" a side. Write "the check
+  ignores the error".
+- Use a noun as a noun. "Footnote it" and "the routine tables the
+  scores" make the reader turn a noun into an action; write "add a
+  footnote" and "puts the scores in a table".
+- Use words in pairings the reader has met before. A phrase made up for
+  the page ("a slip in the frame counter", "once a pass", "ten pictures
+  apart") stops the reader to decode it. Say the literal thing ("a bug
+  in the frame counter", "once each time round the main loop"), or
+  explain the term once and keep it.
+- Put a negation on the verb, not on a noun. "Nothing reads the flag"
+  and "an exit found by no player" make an absence a thing in the
+  sentence; "the game never reads the flag" and "an exit that players
+  never find" do not ("'No X' in place of a thing", below).
+- Keep the subject next to its verb. "The routine that the game calls
+  every frame while the player is in the air sets the flag" holds the
+  reader through a clause before the verb arrives; "every frame while
+  the player is in the air, the game calls a routine that sets the
+  flag" does not.
+- Keep the small words: the articles, "that", "which", the verb. A
+  sentence with them squeezed out reads like a telegram, and the reader
+  has to rebuild it, as with a telegram heading ("Section headings",
+  below). Keep "that" before a clause with a subject of its own: "the
+  picture that its neighbour had", not "the picture its neighbour had".
+- No more than three nouns in a row. "The enemy spawn timer reset value"
+  becomes "the value that the spawn timer starts from".
+- One name for one thing. Once a page calls something "the energy bar",
+  it stays the energy bar, not "the fuel gauge" or "the meter": a reader
+  takes a new word for a new thing. Use the game's own name where it has
+  one.
+- Explain a term where it first appears on each page, in a few words,
+  since a reader can open any tab first: a keyword of the game's
+  language, a chip or its register, a hexadecimal address, a kind of
+  variable. Keep the code, the addresses and the numbers, which are the
+  evidence.
+- The plainest exact verb, in a simple tense: "starts" for
+  "initialises", "the game reads the stick" for "the game will be
+  reading the stick". The present tense for what the code does, the past for
+  what happened to the game.
 
 ## Rules
 
-- Plain sentences. One idea each. Say the thing.
+- Say the thing.
 - Numbers go in tables, not prose, unless the number is the point.
 - No hype adjectives: elegant, clever, fascinating, remarkable, brilliant,
   masterful, beautiful, ingenious. If it is clever, the explanation will
   show it.
 - No stage directions to the reader: "let's dive in", "here's the thing",
-  "buckle up", "spoiler alert", "in other words", "put simply".
+  "buckle up", "spoiler alert", "in other words", "put simply". Do not
+  tell the reader to notice, listen to or imagine something; say what is
+  there ("The last note is held twice as long as the rest"). An
+  instruction is fine when it names a control ("Press a direction").
 - No rhetorical question followed by its answer.
-- No "it's not X, it's Y", "not just X but Y", "more than just".
+- No "it's not X, it's Y", "not just X but Y", "more than just". A
+  one-beat correction is fine when the reader would genuinely expect
+  the wrong thing ("A reconstruction, not a screenshot").
 - The page title is the game's name, never a claim ("The X Is A Y").
   The standfirst, the subtitle under the title, carries the hook: the
   most interesting thing inside the game, in a sentence or two. The agent
@@ -42,7 +138,8 @@ paragraph by paragraph, and a rewrite for a reader of fifteen.
   ("The landing test" over "The gauge lies").
 - No tidy triplets for rhythm. Two things or four things are fine when
   there are two or four things.
-- No em-dashes as the default joint between clauses. Write two sentences.
+- No em-dashes as the default joint between clauses. Write two sentences,
+  or use a colon or parentheses.
 - Use the Oxford comma: a list of three or more items takes a comma before
   the final "and" or "or" ("the Doctor, a robot cat, and a mine"). The
   comma removes the doubt over whether the last two items are a pair.
@@ -54,7 +151,12 @@ paragraph by paragraph, and a rewrite for a reader of fifteen.
   to a chamber. Once it is delivered, it gives him a power." but "... A
   delivered scroll gives the hero a power."
 - Do not describe the tooling or the process ("we pointed an AI at the
-  bytes"). The reader is here for the game.
+  bytes", "all 104,448 pixels match the emulator's picture", "checked
+  against the game's code on 6,400 cases"). The reader is here for the
+  game. A caption says what the reader is looking at or listening to;
+  how it was checked goes in its test and `facts.md`. When a widget
+  differs from the game in a way a reader would see or hear, say what
+  differs and why.
 
 ### Paragraphs
 
@@ -88,14 +190,15 @@ villain needs the base", "how the game picks a walking frame". Then:
 
 The test is a human reading the page without noticing how it was made.
 
-### "No X" as the subject
+### "No X" in place of a thing
 
-Do not make an absence the thing that acts. "No gate leads to it" and
-"no player is told" put "no X" where the subject goes, and the reader
-has to turn the sentence round to find what is true. If "no X" would be
-the actor, rewrite the sentence so that a real thing acts, or state the
-absence plainly. "There is no X" is fine: "There is no music in this
-game."
+Do not make an absence a thing in the sentence. "No gate leads to it",
+"nothing reads the flag" and "an exit found by no player" put "no X" or
+"nothing" where a thing goes: the one acting, the one behind "by", or
+the one something belongs to. The reader has to turn the sentence round
+to find what is true. Rewrite it so that a real thing acts and the verb
+carries the negation, or state the absence plainly. "There is no X" and
+"has no X" are fine: "There is no music in this game."
 
 Real examples:
 
@@ -104,6 +207,8 @@ Real examples:
 | Secret: no Malir gate leads to Ja-Karn | Secret: there is no Malir gate that leads to Ja-Karn |
 | Its map lists no gates, and no gate in the other eight leads to it | Its map does not list any gates, and none of the other eight systems have a gate leading to it |
 | What the code does that no player is told | What the code does that the game never tells the player |
+| An exit which is found by no player | An exit that players never find |
+| Tunes 1, 2 and 3 are in the table, and nothing starts them either | Tunes 1, 2 and 3 are in the table, and the game never starts them either |
 
 ### Section headings
 

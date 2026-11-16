@@ -12,7 +12,7 @@ samples checked (`facts.md`, "Comment sample"), and the copy
 
 ## For Gold
 
-A human pass over every section of the seven authored tabs, from the
+A human pass over every section of the authored tabs, from the
 Overview to Disks and saves, and of the facts, rewriting, cutting and
 adding; `copy` then records what the pass did, and `steward` names
 whoever starts it (`silver-claimed` while it runs).
@@ -29,21 +29,66 @@ known bug in the port.
 `features.md` holds 50 features traced in the code and not exercised in
 play. The ones a reader is likeliest to ask about:
 
+- The Leftovers sections of the Discoveries tab, apart from the ending,
+  which was run live: the blade storm with $15 and with $16, a Use of the
+  utilities' report with a printer on device 4, and space and S in a
+  fight. `test_leftovers.js` runs each on the game's code outside the
+  emulator. Open: what was to drop a party under map 17's railing, and
+  whether an Apple II disk of the game has the routines that map 26
+  carries at the addresses it names.
 - Start's N, which loads the side with the latest autosave (startup
   `$8228-$827C`).
 - The Ranger Center's entrance coming back after module 3 has saved it
   away (`parts/module-3/facts.md`).
 - The radio's promotion points after Base Cochise (radio `$7EBC-$7EFD`).
-- Map 23's blade storm, which a party passes with less than 16 in cash
-  (`parts/map-23/facts.md`).
+- Map 23's blade storm, which the party's first Ranger passes with less
+  than 16 in cash (`parts/map-23/facts.md`).
+
+## The Solution tab
+
+- A walk on the game's real dice. `solution.html` takes every throw as
+  passed, and its table gives each one's chance for the four starting
+  Rangers. A party that could pass them needs skills and levels from
+  the maps the walk leaves out, so that walk is a longer one, with its
+  fights played (`reference/wasteland-fight.js`).
+- Trade between Rangers. The walk never moves an item from one Ranger
+  to another, which is why it picks who stays at a station by what the
+  others still need.
+- The walk tried in the emulator: the rope over Base Cochise's dome
+  wall, the weapons pod, and four Rangers disbanded at the stations.
+  `test_solution.js` runs each on the game's code outside the emulator.
+- The shortest walk. This one is short and was not searched for: no
+  count says a shorter order of its legs does not exist.
 
 ## Article ideas
 
+- The Paragraphs tab's finds, tried in the emulator: AZRAEL at Ugly's
+  hideout, PHOENIX at Faran Brygo's door, ATOM in the Temple of Blood,
+  and PASTEL to the bishop. `test_paragraphs.js` runs each on the game's
+  code outside the emulator.
+- Whether a party can reach map 4's "Read paragraph 35." (check square
+  41) and map 36's "Read paragraph 162." (message 67): no square and no
+  change that was walked leads to either.
 - Map 11's wall square with no record, which may be the "buggy wall
   square" of Per Jorner's guide.
+- The rules on The party tab, tried in the emulator: a Ranger at −15
+  with and without Rabies, timed to death; a second visit to a doctor
+  asking for a cure without a new exam; the three squares that read a
+  Ranger's sex; and Control with R at the Ranger Center's skill list on
+  an Apple II.
 - The older start-up on side 3, its credits and the sounds it does not
   make, beside side 1's.
 - The parties: how splitting the group keeps each party's square, map and
   return point (game `$9C17`).
 - Pictures 37 and 75, which the disks hold and no code in the listings
   shows.
+- The Bestiary tab's finds, tried in the emulator: three digs at the
+  mine's north-west vein and a walk; a failure at the reactor's light
+  plates; a Night Terror attacked until one runs with full hit points.
+  `test_bestiary.js` runs each on the game's code outside the emulator.
+- The Items tab's finds, tried in the emulator: a pack sorted with a
+  RETURN before the Power armor and the suit traded on; a sale in Quartz
+  looked for in Needles; the machine reset after leaving the sell list.
+  `test_items.js` runs each on the game's code outside the emulator. The
+  stock counts of item-table files 1, 2 and 4 are in no listing: a part
+  for each file would let the test hold them.

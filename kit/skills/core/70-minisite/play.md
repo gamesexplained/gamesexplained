@@ -4,7 +4,9 @@ Read this when you build a Play tab (`70-minisite`, "Play"). The port is
 checked against the game itself, not against a reading of it, in one of
 two ways: by the game's own demonstration, or by running the game's code
 beside the port. The game's code runs only there, in the tests: the page
-runs the port (`SKILL.md`, "Play").
+runs the port (`SKILL.md`, "Play"). The tab says what the reader is
+playing and where it can differ from the machine; the runs, passes and
+cases that checked it go in `facts.md`, since the reader came to play.
 
 ## A demonstration is the test
 

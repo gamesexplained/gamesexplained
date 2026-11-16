@@ -327,3 +327,30 @@ of what is wrong. The run made no audit of every comment.
   to 30, 107. The lid as it lies at the start, on the basket, never
   touches it (`sprites_touch` at `$1CBD`, no hits): only a lid taken off
   and put back runs `persia_lid`.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Both were tried in the emulator.
+- From the emulator: the objects put in the closet, then the button held from the living room for 400 frames.
+- In the emulator the hidden row held `0E 7F 00 0B 02 06 03 7B 19 19 7F` after the controls were drawn.
+
+### graphics.html
+
+- Each picture is copied into a sprite by the game's own `sprite_draw`, run on the kit's 6502 in this page over the listing's memory, and changes when the game would change it.
+
+### index.html
+
+- `test_music.js` runs the game's own starts (`era_enter`'s and the flute's) on the kit's simulator and checks that both write the same values to the sound chip, frame by frame, for 3,000 frames a tune.
+- `test_music.js` checks these against the game's own code as it does the tunes.
+- The living room, drawn on this page from the memory and the video chip's registers (the settings it draws the screen by) that the emulator recorded over one frame of play.
+- All 104,448 pixels match the emulator's picture of the same frame.
+
+### levels.html
+
+- The time machine's controls are drawn in the C64's built-in letters (its character ROM), which this site does not carry, so that room shows the emulator's picture.
+- Eight of these pictures were checked against the emulator, with the gnome brought into each room at the start of a game by the game's own routine for entering an era (`era_enter`): the mansion's hall, the gold rush's saloon street, Persia's sunset hills, the Stone Age's first cliffs, Greece's temples, a spaceship corridor, Salem's church street, and the throne room.
+- Apart from the gnome, and the staff in the throne room, which flickers through colours every frame, every pixel matches (`test_rooms.js`, against the pictures in `reference/`).

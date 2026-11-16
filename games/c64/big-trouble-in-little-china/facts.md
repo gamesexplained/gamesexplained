@@ -111,3 +111,26 @@ Sample `sample-2611` (seed 2611): 80 of the listing's 669 comments, drawn in two
 - Fire on port 1 stopped the energy timers and the scroll; a second press started them again.
 - Energy timers: `$228E` fell from 119 to 173 through 0 (202 steps) in 20 seconds with no input; no energy was lost in that time.
 - Winning: with `$1EED` set to 10 and the hero placed at the prize, taking it showed GAME OVER and restarted the game.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### controls.html
+
+- The keys and the hero switch were tried in the emulator: B, C and S changed the active hero, and I walked the heroes left.
+- In the emulator a press stopped the energy timers and the street, and a second press started them again.
+
+### discoveries.html
+
+- For these pictures the prize was placed beside the hero by setting its object's bytes in the emulator, rather than by playing to the temple; the code that runs when it is taken is the game's own.
+- In the emulator the timer stepped 202 times in 20 seconds with nobody touching the controls.
+- Tried in the emulator: the energy timers and the street stood still until the second press.
+
+### graphics.html
+
+- AgainSkipLight up the hidden line Two frames of the cassette, recorded in VICE and drawn as the video chip draws them: B.T.L.C, for two seconds here, then the credits as they came in, at the tape's pace, from the bottom of the screen up.
+
+### music.html
+
+- The player below runs the game's own sound routines, `start_sound` (`$2A8C`) and `sound_update` (`$2AA6`), on the kit's 6502, over the game's bytes, once a game loop as the game calls them, and plays what they write through a model of the SID.

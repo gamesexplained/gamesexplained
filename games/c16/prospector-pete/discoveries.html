@@ -38,9 +38,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pp-pair img{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
 .pp-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-size:14px}
 .pp-bar>div{margin:0;min-width:150px}
-.pp-bar button,.pp-pad button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer;touch-action:manipulation;user-select:none}
-.pp-bar button:hover,.pp-pad button:hover{border-color:var(--ink-mute)}
-.pp-bar button.on,.pp-pad button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pp-bar button,.pp-pad button{font-size:13px;padding:5px 11px;touch-action:manipulation;user-select:none}
+.pp-bar button.on,.pp-pad button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .pp-bar label{display:flex;gap:6px;align-items:center;color:var(--ink-soft)}
 .pp-map{width:100%;display:block;image-rendering:pixelated;background:#000;border-radius:4px}
 .pp-map:focus{outline:2px solid var(--accent);outline-offset:2px}
@@ -94,7 +93,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
         <p class="pp-state" id="pp-boxstate"></p>
       </div>
     </div>
-    <p class="cap">Left, level 6 in plus4emu after the recipe below: the water has filled the shaft and covers Pete, who does not drown, and nothing else moves. Right, the game's <code>move_creatures</code> (<code>$2778</code>) on the kit's 6502, for a creature at the bottom of the shaft at the end of a cell. Click a cell round it to open or shut it. With all four shut, the run is stopped after 100,000 instructions, still in the loop.</p>
+    <p class="cap">Left, level 6 after the recipe below: the water has filled the shaft and covers Pete, who does not drown, and nothing else moves. Right, the game's own <code>move_creatures</code> (<code>$2778</code>), for a creature at the bottom of the shaft at the end of a cell. Click a cell round it to open or shut it. With all four shut, the run is stopped after 100,000 instructions, still in the loop.</p>
   </div>
   <p>At the end of each cell a creature that does not chase Pete looks for an open way, starting from a random one (<code>move_creatures</code>). The loop at <code>$281E</code>-<code>$2827</code> masks the way's number to 0 to 3, looks at that way, and if it is shut adds one and goes round again. The <code>BNE</code> at <code>$2827</code> tests the number after the add and before the mask, 1 to 4, which is never zero, so it always branches. While any way is open the loop finds it. With all four shut it goes round for ever.</p>
   <p><code>move_creatures</code> runs inside <code>irq_play</code>, in the raster interrupt at line <code>$AC</code>. Stuck there, the interrupt never returns to the main loop, so <code>main_loop</code> never runs again: goodies are not collected, sticks do not go off, Pete cannot die, and ESC does nothing. The interrupt's other raster lines still fire, because <code>irq_play</code> lets interrupts in again as soon as it starts (<code>CLI</code> at <code>$1997</code>): the screen is still drawn, Pete still walks, and the water still rises. Only a reset ends it.</p>
@@ -177,7 +176,7 @@ $2DAB  B0 94     BCS $2D41    ; then try another place</pre>
     <p class="cap">From <code>find_space</code>. The block starts one row above and one column left of the place and runs four rows down.</p>
   </div>
   <p>Before placing a goodie, <code>find_space</code> checks the four-by-four block round the place it has picked for any byte of <code>$70</code> or more, so that goodies never touch. For a one-cell or two-wide goodie in row 21, the lowest it can go, the block's last row is row 23, below the map. The map ends at <code>$3FFF</code>, and on the C16, whose 16 KB of RAM repeats through the 64 KB, the address after it is the zero page again. Row 23 is the game's variables from <code>$00</code> to <code>$5A</code>, and where one of them holds <code>$70</code> or more, a goodie in the row above is refused and placed again elsewhere.</p>
-  <p>A player could never tell. It shows when the level builder runs on 64 KB of plain memory: from the same timer readings it made a different mine for level 16 than the game did in plus4emu, and the same mine once <code>$4000</code> read the zero page, as this site's pages run it. On a Plus/4, with 64 KB of real RAM, the same tape would read whatever lies at <code>$4000</code> instead (inferred from the memory map).</p>
+  <p>A player could never tell. It shows when the level builder runs on 64 KB of plain memory: from the same timer readings it makes a different mine for level 16 than the game does on a C16, and the same mine once <code>$4000</code> reads the zero page, as it does on a C16 and on this site's pages. On a Plus/4, with 64 KB of real RAM, the same tape would read whatever lies at <code>$4000</code> instead (inferred from the memory map).</p>
 </section>
 
 <section id="small">

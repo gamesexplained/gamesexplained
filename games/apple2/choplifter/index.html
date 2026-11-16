@@ -37,8 +37,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ch-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
 .ch-pair img,.ch-screen{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
 .ch-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
-.ch-bar button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}
-.ch-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ch-bar button{font-size:13px;padding:5px 11px}
+.ch-bar button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .ch-bar label{font-size:13px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
 .ch-bar input[type=range]{width:200px}
 .ch-stat{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
@@ -50,8 +50,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ch-scroll{overflow-x:auto}
 .ch-note{font-size:14px;color:var(--ink-soft)}
 .ch-tilts{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin:10px 0 0}
-.ch-tilts button{padding:0 0 3px;border:2px solid transparent;background:#000;border-radius:5px;cursor:pointer;overflow:hidden}
-.ch-tilts button.on{border-color:var(--amber)}
+.ch-tilts[data-own-look] button{padding:0 0 3px;border:2px solid transparent;background:#000;border-radius:5px;cursor:pointer;overflow:hidden}
+.ch-tilts[data-own-look] button.on{border-color:var(--amber)}
 .ch-tilts canvas{width:100%;display:block;image-rendering:pixelated}
 .ch-tilts span{display:block;font-family:var(--fm);font-size:11px;color:#ccc;text-align:center}
 .ch-sound{background:#111;border-radius:6px;padding:8px 10px;color:#ddd}
@@ -76,7 +76,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <img src="reference/title.png" alt="The title screen: Broderbund Software presents Choplifter, by Dan Gorlin, copyright 1982">
       <img src="reference/hostages-running.png" alt="The helicopter over the battlefield, hostages running towards it">
     </div>
-    <p class="cap">The title screen, and hostages running to the helicopter on the first sortie. Apple2TS 3.7.0 as an Apple II Plus, from the original disk (<code>reference/</code>).</p>
+    <p class="cap">The title screen, and hostages running to the helicopter on the first sortie, on an Apple II Plus from the original disk.</p>
   </div>
 </section>
 
@@ -93,7 +93,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <span class="ch-stat" id="dm-stat">loading the listing</span>
     </div>
     <canvas id="dm-cv" class="ch-screen" width="560" height="384"></canvas>
-    <p class="cap">The game's code runs from <code>start</code> (<code>$0800</code>) on the kit's 6502 over the listing's bytes, and stops at each call of <code>gfx_show_page</code> (<code>$12E3</code>); the page it is about to show is drawn by the site's Apple II library (<code>reference/demo.js</code>). The run starts from both screen pages as the disk loads them, the loading screen, because the listing leaves the screen out and the attract mode never redraws the counters' bar or the ground band. <b>At frames 1, 2, 40, 200, 400 and 800, both pages hold the same 16,384 bytes as in Apple2TS</b> at the same call, run from the loader's hand-over (<code>test_demo.js</code>). The highlight marks every byte that differs from the last time the same page was shown, two frames earlier.</p>
+    <p class="cap">The game's own code runs from <code>start</code> (<code>$0800</code>) over the listing's bytes, and stops at each call of <code>gfx_show_page</code> (<code>$12E3</code>) to draw the page it is about to show. The run starts from both screen pages as the disk loads them, the loading screen, because the listing leaves the screen out and the attract mode never redraws the counters' bar or the ground band. The highlight marks every byte that differs from the last time the same page was shown, two frames earlier.</p>
   </div>
   <p>The game never clears the screen. It draws on the page that is not shown, and puts back only the boxes where something was drawn on that page two frames before, so the highlight shows the work of one frame: the shapes that move and the stars that twinkle, with the rest of the screen left as it was. The <a href="graphics.html#frame">Graphics</a> tab steps through a frame as it is drawn, and shows the planet and the stars, which are not shapes at all.</p>
 </section>
@@ -104,7 +104,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The Apple II's speaker makes a click each time the program touches <code>$C030</code>, and a tone is clicks at a steady spacing. Choplifter makes all of its sounds that way, from three routines, and there is no engine sound and no music.</p>
   <div class="plate">
     <div class="ch-sound" id="snd"><span class="ch-err" id="snd-msg">Loading the listing…</span></div>
-    <p class="cap">Each button runs the code that makes that effect in the game, from the listing, on the kit's 6502, and plays the clicks it makes through the site's model of the speaker (<code>site/lib/apple2-speaker.js</code>); the drawing shows each note's pitch and, along the foot, every click. <b>The same code run in Apple2TS clicks at the same spacings, click for click, for all nine effects</b> (<code>test_sound.js</code>). The noise of a tank or a jet firing takes its delays from the bytes of the jet's own code at <code>$8101</code> onwards (<a href="discoveries.html">Discoveries</a>).</p>
+    <p class="cap">Each button runs the code that makes that effect in the game, from the listing, and plays the clicks it makes on the speaker; the drawing shows each note's pitch and, along the foot, every click. The noise of a tank or a jet firing takes its delays from the bytes of the jet's own code at <code>$8101</code> onwards (<a href="discoveries.html">Discoveries</a>).</p>
   </div>
   <p><code>tone</code> (<code>$7370</code>) clicks the speaker Y times, waiting X turns of a delay loop between clicks and adding A to X after each. A turn is five cycles, so a tone of period X has its clicks 5X + 30 cycles apart and sounds at 1,020,484 / (2 × (5X + 30)) Hz. <code>noise</code> (<code>$7373</code>) clicks in pairs, and <code>click</code> (<code>$736D</code>) clicks once. Every click is followed by a read of <code>$C020</code>, the cassette output, so a speaker plugged into the cassette socket plays the same sound.</p>
   <div class="ch-scroll"><table class="ch-tbl">
@@ -136,8 +136,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <span class="ch-stat" id="ld-stat">loading the listing</span>
     </div>
     <canvas id="ld-cv" class="ch-screen" width="240" height="80"></canvas>
-    <div class="ch-tilts" id="ld-strip"></div>
-    <p class="cap">Every picture here is drawn by the game's own routines from the listing, on the kit's 6502 (<code>reference/tilt.js</code>). The demonstration flight runs to its first frame, with the helicopter level on its pad. Then <code>rock</code> tips it to the tilt, and the helicopter's object (<code>heli_object</code>, <code>$8276</code>) draws its body and both rotors on that frame's screen. The amber helicopter behind is the same one level. <b>Eighteen frames of helicopters landing with a lean in Apple2TS, facing either way, hold the same bytes as these routines draw from the same state</b> (<code>test_tilt.js</code>); there, a helicopter that landed at a tilt of 4 was level two frames later. Only a level helicopter opens its door (<code>door_open</code>, <code>$0D</code>), so a tilted landing neither picks up nor crushes anyone.</p>
+    <div class="ch-tilts" id="ld-strip" data-own-look></div>
+    <p class="cap">Every picture here is drawn by the game's own routines from the listing. The demonstration flight runs to its first frame, with the helicopter level on its pad. Then <code>rock</code> tips it to the tilt, and the helicopter's object (<code>heli_object</code>, <code>$8276</code>) draws its body and both rotors on that frame's screen. The amber helicopter behind is the same one level. A helicopter that lands at a tilt of 4 is level two frames later. Only a level helicopter opens its door (<code>door_open</code>, <code>$0D</code>), so a tilted landing neither picks up nor crushes anyone.</p>
   </div>
   <p>On the ground and level, the door opens and the hostages come. One that reaches 8 or 9 dots right of the helicopter's X, or 10 or 11 dots left, climbs in, up to sixteen aboard (<code>boarding</code>, <code>$6139</code>). One that is closer, from 7 dots right to 9 dots left, is under the helicopter and is crushed (<code>crush</code>, <code>$62D7</code>). Coming down at more than about 4.4 dots a frame bounces the helicopter, and touching the ground at full speed crashes it.</p>
 </section>
@@ -149,7 +149,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="ch-bar" id="lv-btns"></div>
     <div class="ch-scroll"><table class="ch-tbl" id="lv-tbl"></table></div>
-    <p class="cap">The most of each kind in play, read from <code>max_tanks</code> (<code>$68D9</code>), <code>max_jets</code> (<code>$68DD</code>) and <code>max_drones</code> (<code>$68E1</code>) in the listing, and the share of jets that are bold from <code>bold_masks</code> (<code>$6536</code>). In Apple2TS the most of each kind seen at each level matched the table (<code>facts.md</code>, "Live tests").</p>
+    <p class="cap">The most of each kind in play, read from <code>max_tanks</code> (<code>$68D9</code>), <code>max_jets</code> (<code>$68DD</code>) and <code>max_drones</code> (<code>$68E1</code>) in the listing, and the share of jets that are bold from <code>bold_masks</code> (<code>$6536</code>).</p>
   </div>
   <p>Tanks drive towards the helicopter until they are 128 dots away, then decide every 8 to 23 frames: fire if the helicopter is inside the arc of the gun's aim, and stop, come on or back off (<code>tank_impl</code>, <code>$65C3</code>). The gun turns a step a frame towards the helicopter, through five aims. Only a blast in front of the ground's depth destroys a tank, and only a shot fired while the helicopter faces the viewer or is turning comes forward as it falls, so a side-on shot never reaches one.</p>
   <p>Jets follow scripts of four-byte steps, each a picture and the steps in X, height and depth: a cruise, a turn towards the viewer, a pass coming forward, and the attack run, with missiles at a helicopter in the air and a bomb at one on the ground (<code>jet_scripts</code>, <code>$8262</code>). Drones turn their speed a dot a frame towards the helicopter and close on its height; one that touches it destroys it, and at level 3 they drop shells (<code>drone</code>, <code>$8C42</code>). Every picture of the helicopter, the hostages and the enemies, moving as the game moves them, is on the <a href="graphics.html">Graphics</a> tab.</p>

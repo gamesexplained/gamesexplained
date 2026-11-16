@@ -374,3 +374,16 @@ not been established. These are code properties, not analog sound-quality claims
 **BLDR statements:** seed `202610043` selects 20 of 3,830 decoded statements at `$3320–$530C`, from baseline `db7640a`. All twenty sampled decodings agree with the original instructions: 0/20 incorrect (0%); Wilson 95% interval **0–16.11%**. No sampled statement needed an edit. A separate review of all 43 region descriptions found four wrong details: ordinary cursor steps are four pixels in X and one in Y, minus signs are rejected, portal placement can overwrite the unchecked upper-left and upper-middle cells, and the title loop allows 7,501 passes. Those descriptions now state these behaviors. The zero-error statement sample is not a measurement of the region prose.
 
 The four populations differ; their intervals are not pooled into a whole-page error rate. Full selections, baseline texts, evidence and scripts are retained privately in `work/`. Eighteen interpreter entries retain limits from static review. These agent checks are not maintainer certification.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- All 104,448 visible pixels match the captured emulator frame.
+- Movement and collision state were compared with the emulator.
+- The test agrees with the original callback in 4,096 cases; matching and mismatching pickups were also checked in the emulator.
+- Safe updates, all thirty-two protected reports and the following death were checked in the emulator.
+- The fatal drop continues through the game's death script, recorded in the emulator one video frame at a time, including both animated sprites and the final effect.
+- Seven prepared placements in the emulator confirmed the blank-space case and each occupied cell.

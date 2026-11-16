@@ -1,18 +1,26 @@
 # Short Circuit — kit feedback
 
-Written in the retrospective (`kit/skills/core/80-retro`).
+Written in the retrospective (`kit/skills/core/80-retro`), first by the Bronze run of 1 November 2026, then by the Silver run of 13 November 2026.
 
 ## Skill text that changed what I did
 
-- `10-orient`: "a stopping checkpoint on the game's first instruction (the loader's jump into it)": I first stopped at the load address of the big program, `$0400`; that checkpoint never fired in two minutes, so I read the loader's last instructions and found the jump to `$9548`.
-- `50-coverage`: "Find what writes the operand, parse every table it reads": the three raster handlers and the voices' command tables were reached through pointers the disassembler did not follow; I printed each table and seeded its entries.
-- `50-coverage`: "Data the ledger cannot see": the list after the first listing build showed 42,000 bytes of uncounted graphics, maps and music, which I then typed and described.
-- `40-sweep`: "Relocating loaders can leave a second copy": it made me test the stale-looking block at `$3DE0` against the live routines instead of annotating it as code.
+- `50-coverage`: "Bytes no instruction reads may still be read.": in the Silver run's audit it sent the checker to the video bank settings, which turned the 1,192 "unread" bytes after the title picture into the credits screen.
+- `60-verify`: "For each wrong comment, whether the sample is bad or not, say what it believed, search the listing for every comment that says the same": after the cigarette routine was renamed, four comments still called it the laser pickup, and the Silver run corrected them with the audit.
+- `10-orient`: "a stopping checkpoint on the game's first instruction (the loader's jump into it)": the Bronze run first stopped at the load address of the big program, `$0400`; that checkpoint never fired, so it read the loader's last instructions and found the jump to `$9548`.
+- `50-coverage`: "Find what writes the operand, parse every table it reads": the three raster handlers and the voices' command tables were reached through pointers the disassembler did not follow; the Bronze run printed each table and seeded its entries.
+- `40-sweep`: "Relocating loaders can leave a second copy": it made the Bronze run test the stale-looking block at `$3DE0` against the live routines instead of annotating it as code.
 
 ## What was changed in the kit
 
-- `kit/scripts/launcher.py`: `unpack_dmg` tries the mount point inside the clone and, when `hdiutil attach` refuses it, mounts the image in the system's temporary folder. On this Mac the clone is on an external drive (`/Volumes/...`), where the first mount point was refused and `get-vice download` stopped with a traceback.
-- `kit/c64/INSTALL.md`, `kit/c64/tools.py`: `cargo install --locked ...`, with the reason. Without `--locked` the compile of regenerator2000 0.9.20 stopped with `expected anyhow::Error, found CoreError`.
+Silver run:
+
+- `kit/c64/tap.py`: a second kind of row in `TURBO`, `"kind": "pages"`, and `page_blocks`, which read Ocean's 1987 tape format (a lead-in of 0 bits, a 1, then pages of flags, page number and 256 bytes until page 0); each run of consecutive pages is a turbo block. `kit/c64/test_tap_pages.py` holds it to a made-up tape. Lesson: `kit/lessons/2026-11-13-short-circuit.md`.
+- `kit/skills/core/70-minisite`: a map or screen drawn from the game's data takes its character set and mode from a recorded frame's registers, and its test checks them; the same mistake in another form was made on `games/c64/into-the-eagles-nest` (tiles drawn in the wrong colour mode). Lesson: `kit/lessons/2026-11-13-short-circuit.md`.
+
+Bronze run:
+
+- `kit/scripts/launcher.py`: `unpack_dmg` tries the mount point inside the clone and, when `hdiutil attach` refuses it, mounts the image in the system's temporary folder.
+- `kit/c64/INSTALL.md`, `kit/c64/tools.py`: `cargo install --locked ...`, with the reason.
 
 ## Candidates
 
@@ -26,4 +34,6 @@ None.
 
 ## What cost the most time
 
-The disassembler follows no table of address-minus-one words, so every handler of a game that dispatches with `PHA` and `RTS` has to be found by hand: a script that lists every `PHA`/`PHA`/`RTS` dispatch and prints the table it reads would have saved the most time.
+Silver run: the audit itself, seven checkers one after another, about two hours. The change that would have saved the most is in the lesson: a self-sample on an unproven model understated the error rate by half, so the audit was always going to be the measure.
+
+Bronze run: the disassembler follows no table of address-minus-one words, so every handler of a game that dispatches with `PHA` and `RTS` has to be found by hand.

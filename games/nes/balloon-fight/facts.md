@@ -595,3 +595,41 @@ mark of 2, so the listing's comments should be taken as about one in
 five wrong in a detail until an audit: the rate is a lower bound on what
 a checker finds. An audit of every comment is recommended for a later
 run.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- This was tested in the emulator on 19 October 2026.
+- The last six entries of the ranking table and the signature, as the emulator held them: filled at power-on (`$C043`), after the title screen's first frame, and after a Balloon Trip that ended on 200 points.
+- Counted in the emulator with the player in the air: B held for 120 frames gave 14 flaps, A tapped every 12 frames gave 10 flaps from 10 taps, and 60 taps of two frames each gave only 10.
+- Measured on the kit's model of the console, playing a recorded game of the Play tab with the byte set each way before switch-on.
+
+### index.html
+
+- The pictures come from an emulator, a program that behaves like the console.
+- Both run on this page, on the kit's model of the console's 6502 processor.
+- The page was checked against the emulator.
+- Compared pixel by pixel with the emulator's own picture of the same frame, 0 of 61,440 pixels differ.
+
+### levels.html
+
+- The pictures were checked against the emulator's own screen for all sixteen layouts, and every cell below the status bar matches (`work/test_phases_vs_emulator.js`).
+- The pictures use the palette of jsnes, the emulator the kit runs.
+
+### play.html
+
+- `test_play.js` holds the port to the game's code with every switch off.
+- `test_mods.js` checks the switches: a saved moment, restored, runs on exactly as the game it came from for 3,000 frames, and each cheat is played for thousands of frames beside the same game with the cheat off.
+- A search on the kit's model of the console found the games.
+- Each recording reaches the same checkpoints at the same read on the kit's model of the console, running the cartridge's own code, and on this page's port: every phase begun, every change of score, every bonus balloon popped, and the player's place every 60 reads.
+- The earlier recording also played to the end in two emulators, jsnes and MesenCE, once jsnes had its memory cleared. jsnes fills the console's memory with `$FF` at switch-on, where MesenCE and the kit start with 0, and the bonus round reads a byte it never sets: the timer that counts down to the next balloon (`$05CC`).
+- `test_route.js` plays every recording on the kit's model and on this page's machine every time the site is checked, and holds both to each game's checkpoints.
+- `test_play.js` runs the port in lockstep beside the cartridge's own code: the two run side by side, frame by frame, and are compared.
+- The cartridge's code runs on the kit's NES (`kit/nes/machine.js`), a model of the console that was checked frame for frame against the jsnes emulator.
+- The port reads those two through the lockstep, which hands it the values the game's own reads got when the handler ran in the middle of the loop.
+- There, the loop's `INC` (add one) of the twinkle count and the handler's `DEC` (take one away) land in an order no replay can fix, and before the port read them this way, the lockstep showed the difference once in 100,000 frames.
+- Each stretch of the game's loop, from one call to the next, costs the cycles it cost the game on the kit's machine, the median over the lockstep's run.
+- $('pl-cost').textContent = keys.length + ' stretches costed from the lockstep; the NMI handler ' + c.nmi.median + ' cycles; a frame 29,780.5.';

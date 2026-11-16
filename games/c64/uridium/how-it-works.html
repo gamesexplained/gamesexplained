@@ -37,11 +37,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ur-cv{display:block;max-width:100%;image-rendering:pixelated;background:#000}
 .ur-scroll{overflow-x:auto;max-width:100%}
 .ur-ctl{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;align-items:center}
-.ur-ctl button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer}
-.ur-ctl button:hover{border-color:var(--accent)}
-.ur-ctl button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.ur-ctl button{font-size:12.5px;padding:6px 12px}
 .ur-ctl label{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
-.ur-ctl select,.ur-ctl input[type=range]{font-family:var(--fm);font-size:12.5px}
+.ur-ctl select,.ur-ctl input[type=range]{font-size:12.5px}
 .ur-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.4em}
 .ur-tbl{border-collapse:collapse;font-size:14px;margin:6px 0 18px;width:100%}
 @media (max-width:640px){.ur-tbl{display:block;overflow-x:auto;max-width:100%}}
@@ -75,9 +73,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">01 · The screen</p>
   <h2 class="t">One frame, rebuilt from memory</h2>
-  <p class="lede">A frame of play drawn by this page from the memory and video registers recorded in the emulator.</p>
+  <p class="lede">A frame of play drawn by this page from the memory and video registers.</p>
   <div class="plate"><canvas id="ur-frame" class="ur-cv" width="384" height="272"></canvas>
-  <p class="cap">Drawn by the site's renderer from a recorded frame: all 104,448 pixels match the emulator's picture. The status lines use one character set at <code>$7000</code> and the playfield another at <code>$7800</code>.</p></div>
+  <p class="cap">Drawn by the site's renderer from one frame. The status lines use one character set at <code>$7000</code> and the playfield another at <code>$7800</code>.</p></div>
   <p>Three raster interrupts split the screen. At line 82, <code>$3F38</code> switches to the playfield's character set and multicolour mode and sets the fine scroll. At line 97, <code>$3F73</code> clears a flag that lets the main loop start its frame. At line 252, <code>$3F00</code> switches back for the bottom status line and the top of the next frame, and runs the sound driver.</p>
   <p>The playfield's background colour is white. Space is a character filled with solid colour, drawn in black, so the white background shows only in the hull's plating. The stars are characters too, and the next section shows how they stay still.</p>
 </section>
@@ -94,7 +92,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" id="ur-ports" aria-pressed="false">Ports</button></div>
     <div class="ur-scroll"><canvas id="ur-map" class="ur-cv" width="640" height="272"></canvas></div>
     <p class="ur-out" id="ur-mapout"></p>
-    <p class="cap">The map as <code>build_map</code> (<code>$2CB2</code>) builds it, from the level's list and the piece store at <code>$E100</code>, in the level's colours and tile set, 40 columns wide as the screen shows it. The port matches the game's own builder, run in a 6502 simulator, byte for byte on all fifteen levels and the title message (<code>test_ports.py</code>). The <b>Levels</b> tab shows every Dreadnought whole.</p>
+    <p class="cap">The map as <code>build_map</code> (<code>$2CB2</code>) builds it, from the level's list and the piece store at <code>$E100</code>, in the level's colours and tile set, 40 columns wide as the screen shows it. The <b>Levels</b> tab shows every Dreadnought whole.</p>
   </div>
   <p>A level's list fills columns 64 to 511 with pieces side by side, and a second list lays more pieces over them at a given row and column, the targets, ports and markings among them. Columns 0 to 63 are open space where the Manta turns.</p>
   <p>Every Dreadnought draws on the same store of 148 pieces at <code>$E100</code>. The routine that indexes the store (<code>$2C66</code>) never reads the level number: a level chooses only its two lists, its colours and one of three tile sets, which is copied into the characters <code>$80</code> to <code>$FF</code> (<code>$1A54</code>). The same piece therefore looks different from one Dreadnought to the next.</p>
@@ -128,7 +126,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="ur-stars"><canvas id="ur-sview" class="ur-cv ur-wide" width="320" height="136"></canvas>
       <canvas id="ur-szoom" class="ur-cv" width="176" height="136"></canvas></div>
     <p class="ur-out" id="ur-sout"></p>
-    <p class="cap">Zinc's hull scrolling past the ten stars of the frame recorded in the emulator, drawn as <code>$2BEB</code> copies the map and <code>$2ED7</code> puts back the stars. On the right, star character <code>$42</code> and the hole in it for the current fine scroll. The star drawing was checked against the game's code in a 6502 simulator on 2,000 random screens.</p>
+    <p class="cap">Zinc's hull scrolling past the ten stars of one frame of the game, drawn as <code>$2BEB</code> copies the map and <code>$2ED7</code> puts back the stars. On the right, star character <code>$42</code> and the hole in it for the current fine scroll.</p>
   </div>
   <p>The map is copied to the screen whole every frame, and that copy wipes out the stars. Straight after it, <code>$2ED7</code> goes through the star list. A star whose screen cell holds a space gets its character back, <code>$42</code> or <code>$43</code>, in the star colour. A star whose cell holds a piece of hull stays hidden, and its colour cell gets the map's colour back. So the hull passes over the stars, and they reappear behind it.</p>
   <p>Each star is a character that is solid in the dark colour of space except for one pixel, a hole through which the white background shows. The screen scrolls a pixel at a time by the fine scroll in <code>$D016</code>, and moves a whole character only when the fine scroll wraps. Every frame the game moves the hole the other way, by writing the byte for the current fine scroll from <code>$311E</code> into the star characters' rows (<code>$7A15</code>, <code>$7A1A</code>, <code>$7A1B</code>). The screen cell moves right by the fine scroll and the hole moves left by the same amount, so the star's pixel stays where it was.</p>
@@ -137,7 +135,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>A game</td><td>10</td><td><code>$0B8F</code></td></tr>
     <tr><td>The demo</td><td>8</td><td><code>$21CB</code></td></tr>
   </tbody></table>
-  <p>At the start of each level, <code>$2E17</code> places 16 stars in screen rows 7 to 22, each in its own row where it can, from the random table at <code>$0800</code>. No star goes in columns 20 to 24, which <code>$2E17</code> marks as taken before it starts. The table above shows how many of the 16 each screen draws, the number at <code>$8D</code>, set to 10 in a game (<code>$0ADA</code>), all 16 for the giant message (<code>$0B8F</code>) and 8 in the demo (<code>$21CB</code>), measured in the emulator. The rows above and below the playfield get scattered stars of their own (<code>$2532</code>), which the same hole trick keeps still.</p>
+  <p>At the start of each level, <code>$2E17</code> places 16 stars in screen rows 7 to 22, each in its own row where it can, from the random table at <code>$0800</code>. No star goes in columns 20 to 24, which <code>$2E17</code> marks as taken before it starts. The table above shows how many of the 16 each screen draws, the number at <code>$8D</code>, set to 10 in a game (<code>$0ADA</code>), all 16 for the giant message (<code>$0B8F</code>) and 8 in the demo (<code>$21CB</code>). The rows above and below the playfield get scattered stars of their own (<code>$2532</code>), which the same hole trick keeps still.</p>
 </section>
 
 <section id="shots">
@@ -152,7 +150,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="ur-scroll"><canvas id="ur-bview" class="ur-cv" width="640" height="96"></canvas></div>
     <div class="ur-bglyphs"><canvas id="ur-bglyph" class="ur-cv" width="352" height="112"></canvas></div>
     <p class="ur-out" id="ur-bout"></p>
-    <p class="cap">A stretch of Zinc's map around the chosen row, with the shot run by a port of <code>$2A17</code> and <code>$2AE9</code>, which matched the game's code in a 6502 simulator over 18,000 frames of random volleys on every Dreadnought. Below, the character the shot covers and the shot's own character as this frame builds it.</p>
+    <p class="cap">A stretch of Zinc's map around the chosen row, with the shot run by a port of <code>$2A17</code> and <code>$2AE9</code>. Below, the character the shot covers and the shot's own character as this frame builds it.</p>
   </div>
   <p>A shot moves two columns, 16 pixels, every frame (<code>$29A1</code>). It has no sprite. Each frame, <code>$2A17</code> first puts back the character every shot is covering. Then it moves each shot and looks at the map character it has reached. A wall, codes <code>$80</code> to <code>$8F</code>, ends it. A target, <code>$90</code> to <code>$9F</code>, is destroyed whole: every character of it becomes its wreck, 32 codes lower, and the score is paid (<code>$2AE9</code>). Anything else, space or plating, the shot flies over.</p>
   <p>To fly over a character, the shot copies it into a character of its own and draws itself on top: two pixel rows, one of background pixels (<code>$00</code>) and one of the second multicolour (<code>$AA</code>), at the height of the gun that fired it. Then it writes its own character's code into the map, and the map copy puts it on the screen like any other piece of the Dreadnought. A shot leaves the screen when its column passes the visible ones.</p>
@@ -172,9 +170,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" id="ur-wplay" aria-pressed="false">Fly</button></div>
     <div class="ur-scroll"><canvas id="ur-wview" class="ur-cv" width="640" height="300"></canvas></div>
     <p class="ur-out" id="ur-wout"></p>
-    <p class="cap">The wave's fighters flown by a port of <code>$1A98</code> and <code>$1C73</code> with the Manta stopped, so the hull does not scroll and the picture shows the fighters' own flight. The box is the screen; the dot is the Manta. The port matched the game's code in a 6502 simulator on all 57 wave records, both entry sides and two Manta heights: 157,298 fighter positions, frame by frame. Firing is left out.</p>
+    <p class="cap">The wave's fighters flown by a port of <code>$1A98</code> and <code>$1C73</code> with the Manta stopped, so the hull does not scroll and the picture shows the fighters' own flight. The box is the screen; the dot is the Manta. Firing is left out.</p>
   </div>
-  <p>A wave record (<code>$C200</code>, 16 bytes) gives each of its six fighters a path number, or 0 for none, and a start height, or 0 for the Manta's height. It also gives the frames between one fighter starting its path and the next, the side byte and the wave's type (<code>$1A98</code>). All the fighters of a wave are placed at once at the same sprite X, <code>$1A2</code> or <code>$1A4</code>, in the stretch between the right and left borders that no screen position uses. They wait there, one after another, until their path begins; the emulator shows every fighter launched at one of those two X positions.</p>
+  <p>A wave record (<code>$C200</code>, 16 bytes) gives each of its six fighters a path number, or 0 for none, and a start height, or 0 for the Manta's height. It also gives the frames between one fighter starting its path and the next, the side byte and the wave's type (<code>$1A98</code>). All the fighters of a wave are placed at once at the same sprite X, <code>$1A2</code> or <code>$1A4</code>, in the stretch between the right and left borders that no screen position uses. They wait there, one after another, until their path begins; every fighter is launched at one of those two X positions.</p>
   <p>Which edge a fighter enters by depends only on which way it moves from there. Moving right, its X runs past 511 and comes back at 0, on the left edge. Moving left, it comes in from the right. The side byte decides: 0 and <code>$FF</code> choose one way or the other, judged from the Manta's direction, and any other value lets the random noise choose. A fighter entering from the other side flies the mirror image of its shape (<code>$6C00</code>), and its forwards and back swap.</p>
   <p>A path (<code>$C648</code> on) is a list of bytes, one step each. The low bits choose forwards or back and up or down, which add the type's acceleration to the fighter's speed every frame; the other bits stop it dead, fire once, or steer it towards the Manta's height. With bit 7 set the next byte is the step's length in frames, otherwise it lasts one frame, and <code>$FF</code> holds the last step for good (<code>$1C73</code>). Speeds are kept in 256ths of a pixel, so eight frames of forwards with an acceleration of 160 give a speed of five pixels a frame. Every path but four starts with such a burst, which carries the fighter onto the screen; the gliding steps after it keep that speed.</p>
   <p>Every eighth frame, on a frame of its own, a fighter on the screen may fire. It fires when a noise byte is no higher than the wave's firing chance, so the chance is out of 256: the type's base, plus half the lives left, the level and the difficulty. A fighter that leaves the screen is switched off once it is well past the edge it left by.</p>
@@ -197,7 +195,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" id="ur-hmgo">Launch</button></div>
     <div class="ur-scroll"><canvas id="ur-hmview" class="ur-cv ur-click" width="640" height="300"></canvas></div>
     <p class="ur-out" id="ur-hmout">Choose a point on the screen for the generator port, then Launch.</p>
-    <p class="cap">A mine flown by a port of <code>$1F62</code>, <code>$2021</code> and <code>$205F</code> with the Manta stopped. The port matched the game's code in a 6502 simulator on 600 random mines, every frame from the port to the burst. Recorded live on Zinc, a mine's height swung between 156 and 192 round the Manta's 176.</p>
+    <p class="cap">A mine flown by a port of <code>$1F62</code>, <code>$2021</code> and <code>$205F</code> with the Manta stopped. On Zinc, a mine's height swings between 156 and 192 round the Manta's 176.</p>
   </div>
   <p>Every eighth frame the play loop calls <code>$1F7F</code>, and it launches a mine only while a wave is in progress: from the moment <code>$1A98</code> sends a wave until <code>$1A75</code> finds every sprite of it gone, the top bit of <code>$6C</code> is set. Then a noise byte no higher than a quarter of the wave's firing chance launches one. On Zinc with three Mantas that is 4 to 8 chances in 256 at each check, a mine every five to ten seconds on average; the later Dreadnoughts and the higher difficulties raise it to as much as 24 in 256. The mine needs a generator port on the screen, and takes the last one the map recorded (<code>$0240</code>), and a free one of the six enemy sprites. Without either, nothing happens.</p>
   <p>The mine appears over the port and materialises for 37 to 40 frames, depending on where in the four-frame cycle it starts: its shape steps from <code>$1D</code> down through the sparkle shapes every fourth frame until it becomes the mine itself, <code>$11</code> (<code>$1F62</code>). It moves only with the hull while it does.</p>
@@ -243,7 +241,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <label>Frame <input id="ur-tframe" type="range" min="0" max="567" value="0"></label></div>
     <div class="ur-scroll"><canvas id="ur-tview" class="ur-cv" width="640" height="272"></canvas></div>
     <p class="ur-out" id="ur-tout"></p>
-    <p class="cap">The Manta's flight is the one recorded in the emulator on Zinc, frame by frame, with no input from the player; the autopilot flies every Dreadnought the same way. The vaporising is run by a port of <code>$173B</code> and <code>$16D2</code>, which matched the game's code in a 6502 simulator on every Dreadnought, given the same noise. Its random edge is new each time you play it.</p>
+    <p class="cap">The Manta's flight is the game's own on Zinc, frame by frame, with no input from the player; the autopilot flies every Dreadnought the same way. The vaporising is run by a port of <code>$173B</code> and <code>$16D2</code>. Its random edge is new each time you play it.</p>
   </div>
   <p>The take-off is run by <code>$150F</code> on. The autopilot holds the horizontal input to the right (<code>$5F</code>) and the Manta speeds away from the runway, climbing one step a frame to height <code>$18</code>. Near the right-hand end of the map the usual turn at the edge (<code>$268C</code>) swings it round in a half-loop. From then on its speed is held at 7 pixels a frame to the left, and once in a while, one frame in 64 on average, it does a full roll for show (<code>$1582</code>).</p>
   <p>The vaporising starts when the map position falls below <code>$0E00</code>, at column 480, and moves one column, 8 pixels, every frame (<code>$16D2</code>). That is one pixel a frame faster than the Manta. The edge starts at least 14 columns behind it. Its leading rows draw level about 120 frames later, near column 360, and then run ahead, so that for the rest of the way the Manta flies over hull that has already gone. The take-off ends when the map position falls below <code>$0200</code>, near the left end, and the next level begins.</p>

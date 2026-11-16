@@ -1,0 +1,86 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/hunter-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The title tune runs on a timer of its own, 53 ticks a second, a little faster than the screen, and it stops only because play takes the interrupt back.</p>
+</header>
+<main class="wrap">
+<section id="tunes">
+  <p class="fig">01 · The tunes</p>
+  <h2 class="t">Two tunes: one for the title screen, one nobody hears</h2>
+  <p class="lede">Press a tune to hear it. The title tune plays whenever the title screen is up, before the first game and after each one. The second tune is on the disk but nothing in the game plays it.</p>
+  <div class="plate"><div id="hp-tunes"></div><div id="hp-unused" style="margin-top:12px"></div>
+    <p class="cap">The game's own music code playing the bytes on the <a href="source.html#a000">Source tab</a>: Rob Hubbard's driver (<a href="source.html#a006"><code>music_play</code></a>, <code>$A006</code>) for the title tune and the small player at <a href="source.html#10a0"><code>$10A0</code></a> for the other. Every write to the sound chip matched the game's own, in order.</p></div>
+  <h3>The title tune</h3>
+  <p>Before each title screen <a href="source.html#14f0"><code>start_music</code></a> (<code>$14F0</code>) clears the sound chip's filter routing and calls <a href="source.html#a000"><code>$A000</code></a>, the first of the driver's three entry points. <a href="source.html#add0"><code>music_start</code></a> (<code>$ADD0</code>) takes over the interrupt: it turns off the raster interrupt the game uses in play and starts timer A of CIA 1, one of the C64's two timer chips, with a period of <code>$4800</code> + 1 cycles. That is 53.45 calls a second on a PAL machine, a little faster than the screen's 50 frames. Each call of <a href="source.html#ae03"><code>music_irq</code></a> plays one tick and hands on to the KERNAL's own interrupt routine, which still reads the keyboard while the title is up.</p>
+  <p>The driver's second entry, <code>$A003</code>, stops the music (<a href="source.html#ae09"><code>music_stop</code></a>), but the game never calls it. When play starts, <a href="source.html#1370"><code>setup_raster_irq</code></a> (<code>$1370</code>) turns off the timer's interrupt and points the vector back at the game's raster routine, and that alone ends the tune.</p>
+  <p>The tune is three tracks, one for each voice (<a href="source.html#a527"><code>$A527</code></a>). A track is a list of pattern numbers, and each of the 40 patterns (<a href="source.html#a52d"><code>$A52D</code></a>) is a run of notes. A note byte gives the note's length, whether it is tied to the last one, and whether an instrument number follows; then comes the note itself, whose pitch the table at <a href="source.html#a32d"><code>$A32D</code></a> gives. Fifteen instruments of eight bytes each (<a href="source.html#a427"><code>$A427</code></a>) set the waveform, the pulse width and the envelope, and switch on the driver's effects: vibrato, a sweeping pulse width, portamento, a drum and a falling pitch, and an octave jump on alternate ticks. A track ends with <code>$FF</code>, which sends it back to its start, so the tune repeats until the game starts. One time through takes 10,801 ticks, 3 minutes 22 seconds.</p>
+  <h3 id="unused">The tune nobody hears</h3>
+  <p>The bytes from <a href="source.html#1000"><code>$1000</code></a> to <code>$116F</code> hold a second, much simpler player, and its notes are at <a href="source.html#8200"><code>$8200</code></a>. Nothing in the game reaches it: no instruction or pointer in memory names <code>$1000</code>, and none of it ran in play. Its start routine would set CIA 1's timer to <code>$3000</code> + 1 cycles, about 80 calls a second, and point the interrupt at <a href="source.html#102e"><code>$102E</code></a>.</p>
+  <p>The player gives all three voices the same sawtooth sound from the settings at <a href="source.html#8010"><code>$8010</code></a>. It reads its notes two bytes at a time, and whichever voice finishes its note first takes the next one, so one list of notes is shared out among the three voices. The first byte picks one of twelve notes from <a href="source.html#1145"><code>$1145</code></a>, and the second its octave and its length, one of five from 8 to 128 ticks. A note of 32 ticks or more lets go 16 ticks before its end; the shorter ones are held to the last tick. At the end marker (<code>$FF</code> at <code>$8346</code>), after 2,241 ticks or 28 seconds, the player starts the tune again. The <a href="discoveries.html#unused-tune">Discoveries page</a> sets it beside the game's other leftovers.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* hp-music */
+// Each tune: the routine the game (or the unused start routine) calls to start it, the routine
+// one timer interrupt runs, and the timer's period in cycles (CIA 1 timer A's latch plus 1).
+const HP_TUNES = [
+  { name: 'Title tune (Rob Hubbard)', start: 0xADD0, period: 0x4800 + 1 },
+  { name: 'Unused tune at $1000 (never played)', start: 0x1050, period: 0x3000 + 1 },
+];
+// The player's code and data, as the Source tab holds them.
+const HP_RANGES = [[0x1000, 0x116F], [0x8010, 0x8028], [0x8200, 0x8368], [0xA000, 0xAE3F]];
+function createDriver(M, C64Cpu) {
+  // Hunter Patrol's own music code on the kit's 6502. Title tune: music_start ($ADD0), then each
+  // call music_play ($A006), as music_irq ($AE03) runs it before going on to the KERNAL. Unused
+  // tune: tune2_init ($1050), as tune2_start ($1000) calls it, then each call what tune2_irq
+  // ($102E) does: tune2_init again when the end flag $12 is set, then tune2_tick ($10A0).
+  const mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
+  let writes = [], bus = 0, on = false, tune = 0;
+  const io = {
+    read(a) { if (a >= 0xD400 && a < 0xD800) return bus; return 0; },
+    write(a, v) { if (a >= 0xD400 && a < 0xD800) { const r = (a - 0xD400) & 31; bus = v; if (r < 25) { sid[r] = v; writes.push(r, v); } } },
+  };
+  const cpu = new C64Cpu.CPU(mem, { port: 0x35, io });
+  const call = a => cpu.call(a, {}, { maxSteps: 200000 });
+  return {
+    init(t) {
+      mem.fill(0); for (const [a, b] of M.mem) mem.set(b, a);
+      sid.fill(0); writes = []; bus = 0; tune = t;
+      call(M.tunes[t].start); on = true;
+    },
+    stop() { writes = []; on = false; },
+    play() {
+      writes = []; if (!on) return;
+      if (M.tunes[tune].start === 0xADD0) call(0xA006);
+      else { if (mem[0x12]) call(0x1050); call(0x10A0); }
+    },
+    readback(e3, o3, b) { bus = b; },
+    sid, get writes() { return writes; }, playing: () => on,
+    voice(x) { return { gate: sid[x * 7 + 4] & 1 ? 'on' : 'off' }; },
+    mem,
+  };
+}
+// end of createDriver
+// end of hp-music
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined' || typeof C64Sid === 'undefined' || typeof C64Cpu === 'undefined') { $('hp-unused').textContent = ''; $('hp-tunes').textContent = 'This player needs the site\'s shared scripts: open the page from the built site.'; return; }
+  C64.load('listing.json').then(L => {
+    const mem = HP_RANGES.map(([a, b]) => [a, L.ram.slice(a, b + 1)]);
+    // One player for each tune, because each runs at its own timer period.
+    HP_TUNES.forEach((t, i) => C64Sid.mount($(i ? 'hp-unused' : 'hp-tunes'), { driver: createDriver, data: { mem, tunes: [t] }, tunes: [t.name], period: t.period, rows: [{ k: 'Gate', f: v => v.gate }] }));
+  });
+})();
+</script>

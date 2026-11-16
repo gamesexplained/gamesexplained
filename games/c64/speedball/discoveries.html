@@ -34,8 +34,7 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 .cap b{color:var(--ink);font-weight:700}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .sb-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
-.sb-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
-.sb-btn:hover{border-color:var(--ink-mute)}
+.sb-btn{font-size:12.5px;padding:5px 11px}
 .sb-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
 .sb-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
 .sb-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
@@ -46,14 +45,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .sb-wrapx{overflow-x:auto}
 .sb-grid{display:grid;grid-template-columns:28px repeat(10,minmax(0,1fr));gap:3px;max-width:520px}
 .sb-grid span{font-family:var(--fm);font-size:12px;text-align:center;color:var(--ink-mute);align-self:center}
-.sb-grid button{font:inherit;font-family:var(--fm);font-size:11px;aspect-ratio:1;border:1px solid var(--line);border-radius:4px;background:var(--surface-2);color:var(--ink);cursor:pointer;padding:0}
-.sb-grid button.sb-ok{background:#d7ecdc;border-color:#9fcaa9}
-.sb-grid button.sb-bad{background:#f4d6d1;border-color:#e0a59b}
-.sb-grid button.sb-more{background:#f6e7bf;border-color:#dcc27a}
-.sb-grid button.sb-read{outline:3px solid var(--amber);outline-offset:-1px}
-.sb-grid button[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:-1px}
+.sb-grid[data-own-look] button{font:inherit;font-family:var(--fm);font-size:11px;aspect-ratio:1;border:1px solid var(--line);border-radius:4px;background:var(--surface-2);color:var(--ink);cursor:pointer;padding:0}
+.sb-grid[data-own-look] button.sb-ok{background:#d7ecdc;border-color:#9fcaa9}
+.sb-grid[data-own-look] button.sb-bad{background:#f4d6d1;border-color:#e0a59b}
+.sb-grid[data-own-look] button.sb-more{background:#f6e7bf;border-color:#dcc27a}
+.sb-grid[data-own-look] button.sb-read{outline:3px solid var(--amber);outline-offset:-1px}
+.sb-grid[data-own-look] button[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:-1px}
 .sb-field{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:14px;margin:0 0 12px}
-.sb-field select{font:inherit;font-size:14px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);max-width:100%}
+.sb-field select{font-size:14px;max-width:100%}
 @media (max-width:640px){:root{--gx:16px;--h1:36px;--pp:14px}}
 </style>
 <!-- tabs -->
@@ -84,7 +83,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Bug: red's players run straight through green's keeper</h2>
   <p class="lede">Speedball is a game of tackles: when two opponents touch, the game decides which of them goes down. Yet green's keeper can never touch a red player, and four more pairs of opponents pass through each other as if the other were not there. Green is your side in a one player game.</p>
   <div class="plate">
-    <div class="sb-grid" id="sb-pairs"></div>
+    <div class="sb-grid" id="sb-pairs" data-own-look></div>
     <p class="sb-out" id="sb-pairs-out"></p>
     <p class="cap">Each square is a pair of players, its row the first and its column the second: 0 to 4 are green (0 the keeper), 5 to 9 red (5 the keeper). For each square the page sets that pair touching and the rest apart, then runs the game's own <code>pair_distances</code> (<code>$B038</code>) and <code>tackles_check</code> (<code>$8DD6</code>) on the site's 6502. Green squares are seen to touch, amber ones are seen and set off other pairs as well, and red ones are never seen. Press a square to see what the game does.</p>
   </div>
@@ -99,7 +98,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Bug: skill makes your players easier to bring down</h2>
   <p class="lede">The SKILL on a team's card is 255 less a tackle figure. In play the figure decides only whether a slide into one of the team's players works, and a higher skill makes that slide more likely to work.</p>
   <div class="plate sb-wrapx"><table class="sb-tbl" id="sb-skill"></table>
-    <p class="cap">The chance that a slide brings down a player of each team, from the test in <code>tackle_resolve</code> (<code>$8EC2</code>, and <code>$9057</code> the other way): the slide works when a random byte is at least the victim's tackle figure. Run on the site's simulator with every value of the random byte, a slide into a side with skill 224 worked for 225 of the 256 (88 %), and into one with skill 48 for 49 (19 %), whatever the slider's own skill.</p>
+    <p class="cap">The chance that a slide brings down a player of each team, from the test in <code>tackle_resolve</code> (<code>$8EC2</code>, and <code>$9057</code> the other way): the slide works when a random byte is at least the victim's tackle figure. Over every value of the random byte, a slide into a side with skill 224 works for 225 of the 256 (88 %), and into one with skill 48 for 49 (19 %), whatever the slider's own skill.</p>
   </div>
   <p>The shop sells extra skill, which takes 10 off your own tackle figure (<code>shop_extra_skill</code>, <code>$AE59</code>), and reduce skill, which adds 26 to the computer's for the next match (<code>shop_reduce_skill</code>, <code>$AE6F</code>). Both work against the buyer: extra skill makes your players easier to slide down, and reduce skill makes the computer's harder. The figure's one other use in a match is the computer's aiming, which tests only whether it is above 127 (<code>ai_side1_target</code>, <code>$A898</code>). Between other teams in a league the figure works the way the card suggests: the random results of the week's other matches favour the team with the lower figure (<code>league_week_end</code>, <code>$8519</code>).</p>
 </section>

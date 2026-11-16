@@ -38,8 +38,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .en-row > figure{margin:0;flex:1 1 300px}
 .en-row img{width:100%;height:auto;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px;display:block}
 .en-row figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px}
-.en-btn{font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer;color:var(--ink)}
-.en-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.en-btn{font-size:13px;padding:6px 11px}
 .en-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
 .en-key{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin-right:4px}
 .en-cv{image-rendering:pixelated;display:block;max-width:100%;height:auto;background:#000;border-radius:6px}
@@ -79,7 +78,7 @@ table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-t
   <p class="lede">The attract loop's tune, played here by the game's own driver.</p>
   <div class="plate">
     <div id="en-sid"></div>
-    <p class="cap">The driver at <code>$1947</code>, ported to JavaScript and fed the game's own tables from the listing. It plays through the site's model of the SID. <b>Checked</b> against the game's code run on the kit's 6502 simulator, every register after every call for 2,000 calls (<code>test_music.js</code>).</p>
+    <p class="cap">The driver at <code>$1947</code>, ported to JavaScript and fed the game's own tables from the listing. It plays through the site's model of the SID.</p>
   </div>
   <p>The C64 makes its sound with a chip called the SID, which has three voices, and a short piece of code called a driver tells it what to play. The game calls its driver once a frame, and this one acts on every third call: on a PAL machine, the European one that draws 50 frames a second, that is about 16.7 times a second. Each of the three voices has a stream of note numbers of its own, kept at the addresses <code>$15E2</code>, <code>$1680</code> and <code>$1768</code> (written in hexadecimal, base 16, as every address on this machine is), and a counter saying how many ticks of the current note are left. When a counter runs out, the voice takes the next number from its stream and looks it up in three tables: the frequency's high byte at <code>$17F8</code>, its low byte at <code>$1842</code>, and the note's length at <code>$188C</code>.</p>
   <p>A note number of <code>$FF</code> ends the tune, and the driver then starts all three streams again from the beginning, so the music never stops. The test for it reads voice one's number whichever voice is being served, so it is voice one that decides when the tune goes round.</p>
@@ -104,7 +103,7 @@ table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-t
   <p class="lede">Not a screenshot. This is the play screen drawn from the bytes in the listing, the way the video chip would read them.</p>
   <div class="plate">
     <canvas id="en-frame" class="en-cv" width="384" height="272"></canvas>
-    <p class="cap">One frame of play recorded in VICE: the video chip's registers as the frame began and every write to them afterwards, with the memory the drawing reads. <b>All 104,448 pixels match</b> the emulator's own picture of the same frame.</p>
+    <p class="cap">One frame of play: the video chip's registers as the frame began and every write to them afterwards, with the memory the drawing reads.</p>
   </div>
   <p>The picture is drawn twice in one frame. Everything on the screen is made of characters, as on a typewriter, and the shapes those characters take come from a character set the game supplies. This game has two. The set at <code>$2000</code> holds the castle's walls and floors, and the set at <code>$2800</code> holds the letters the message line at the bottom is written in.</p>
   <p>The video chip can point at only one set at a time, so the game moves the pointer part way down the screen. It does that with an interrupt: a routine the chip starts itself when the beam drawing the picture reaches a line the game has named. In the recorded frame the set changes on line 228, just below the play area, and multicolour is turned off there for the message line.</p>
@@ -154,7 +153,6 @@ table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-t
       <tr><td>SPACE</td><td>Pauses, and pauses again to carry on. The message line reads <code>...PAUSING...</code>.</td><td><code>$5FCB</code>, <code>$4899</code></td></tr>
       <tr><td>RESTORE</td><td>Abandons the game and returns to the attract loop.</td><td><code>$8031</code></td></tr>
     </table>
-    <p class="cap">Every one of these was tried in the emulator from a snapshot of play, one input at a time.</p>
   </div>
   <p>The game does not use the KERNAL's keyboard scan. Its own interrupt never passes control to the system's handler, so the keyboard is never read for it, and the pause key is read by hand: <code>$5FCB</code> drives one row of the keyboard matrix and reads one column, which is SPACE, and leaves the answer in <code>$C5</code>. That is the byte the KERNAL itself uses for the last key it saw, borrowed for a single key.</p>
 </section>

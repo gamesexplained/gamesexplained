@@ -457,3 +457,44 @@ through `kit/c16/plus4emu.py`, reading memory frame by frame.
   and the hiss at volume 1 in every frame of the fuse. plus4emu made
   them 697 to 855 cycles into the frame, within 41 cycles of where the
   6502's count puts them.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Left, level 6 in plus4emu after the recipe below: the water has filled the shaft and covers Pete, who does not drown, and nothing else moves.
+- Right, the game's `move_creatures` (`$2778`) on the kit's 6502, for a creature at the bottom of the shaft at the end of a cell.
+- It shows when the level builder runs on 64 KB of plain memory: from the same timer readings it made a different mine for level 16 than the game did in plus4emu, and the same mine once `$4000` read the zero page, as this site's pages run it.
+
+### graphics.html
+
+- Pete digging is the game's `move_pete` (`$1F89`), called every other frame with the joystick held right and then left, and the figures are drawn by `stamp_figures`, `draw_figures` and `unstamp_figures`, all run on the kit's 6502 over a mine that `start_level` built.
+- The game's `stamp_figures`, `draw_figures` and `unstamp_figures`, as `irq_play` calls them before and after copying the view, run on the kit's 6502 over frames that `build_figures` made at start-up.
+
+### index.html
+
+- The title screen and level 1, in plus4emu.
+- The game's own routines, run on the kit's 6502 over the listing: `start_level` (`$1C54`) builds the mine with random numbers in place of TED's timers.
+- From the same memory and the same joystick, the game in plus4emu made the same map in each of 1,166 frames of play, and the same mine on levels 1, 6, and 16 from the same timer readings.
+- Each effect is started by the game's own code from the listing, the code that starts it in the game, and then `sound` (`$3689`) runs once a frame, on the kit's 6502; the timer and beam readings it mixes into the pitch are this browser's random numbers, new each time.
+- The writes it makes to TED's sound registers play through the site's model of TED, which matches plus4emu's output to within 1 %.
+- Run so, all seven write what the game wrote in plus4emu, frame by frame (`test_pete.js`).
+- Against plus4emu's own picture of the same frame, 0 of the 64,000 pixels differ; drawn with one set of registers, as they stand at the end of the frame, 30,259 differ: the mine slides back seven pixels and the sky takes the mine's colours.
+- The answer is the game's own `can_enter` (`$218C`), which calls `check_ring`, run on the kit's 6502.
+- The game's `move_creatures` (`$2778`), run on the kit's 6502 once for each of the 1,584 cells Pete can stand in (columns 1 to 88, rows 4 to 21), for a creature moving left with every way round it open.
+- Each goodie drawn from its characters at `$1380`-`$14FF` in the mine's colours, and scored by the game's own `score_item` (`$2E3B`) on the kit's 6502, which reads the points from `points_lo`.
+- The game's own choice, the code at `$3009`-`$3045` in `title`, run on the kit's 6502 with the score in `$AA`-`$AC`, and the message it points at decoded from `scroller_text` in the game's alphabet.
+
+### levels.html
+
+- `start_level` (`$1C54`) run on the kit's 6502 from the listing, with random numbers where it reads TED's timers and raster.
+
+### play.html
+
+- The game's writes to TED's sound registers go to the site's model of TED's two voices, made from the plus4emu emulator's, each write at the place in the frame where the page's clock made it.
+- Each routine alone: Seven test files call 67 of the port's functions and the game's own routines on the kit's 6502 simulator from the same state, 131,250 cases in all, and compare every byte of memory each one leaves, its writes to TED in order, and the registers it hands back. The states are 432 moments of play saved on every one of the sixteen levels, with the registers, variables, and controls changed at random. The other 12 functions, five small look-ups among them, run inside the routines that call them and in the lockstep.
+- The whole game in lockstep: The port runs beside the game's own code on the kit's Commodore 16, from the game's first instruction, and the two memories are compared at the start of every pass of the main loop. Four sessions of 12,000 frames each, about four minutes of play apiece, made 26,409 passes with every byte the same at each one. A scripted player drives both: on the title it changes the level, switches the controls, and types a name for the high scores; in play it moves the stick, or the keys, at random and lays dynamite now and then. One game is left with ESC, in another a level is finished, and in a third the score is high enough for a name in the table.
+- The interrupt's bytes: The game's main program reads eight bytes that the interrupts write, among them the frame counter and the controls. Where the C16 could take the interrupt between two of those reads, the lockstep gave the port the values the game read, so the check holds the port's logic and not the moment an interrupt happened to come.
+- The pace: The port executes no instructions, so the page charges each stretch of the main program and of the interrupt, and each call it makes, the cycles they cost the game, fitted on the kit's C16's timings of three of the sessions, some 500,000 stretches. Six routines the fit could not price, most of them run while the mine is built with the screen off, were timed alone, 2,000 calls each. On the fourth session, which the fit never saw, the page's cycles for its stretches are 1.0 % from the game's. The page's own test plays it beside the C16 from the same first instruction: level 1's first pass comes 146 frames after fire, the C16's 145, and in play both run 200 passes in 200 frames.

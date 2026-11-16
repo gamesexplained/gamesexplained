@@ -275,3 +275,32 @@ the same.
 - The theme, the kingdom's tune and the Witch, recorded from the sound chip;
   and SOUND's flush and synchronise digits, and the queue, in a bare machine.
 - Each dead end and quirk in the part files, played on the route named there.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The bytes free between BASIC's variables and its stack at each of the game's waits, in jsbeeb, on the way to Tom.
+- Played in jsbeeb on 14 October 2026.
+- The first two were played in jsbeeb; the third is read from the code.
+- Typed in jsbeeb on 14 October 2026 at the first question of Part 1, the answer read from the game's variable in$.
+- The route that calls the bee in the wood was played to the dog in jsbeeb.
+
+### index.html
+
+- alt="The emulator's picture of the City of the Dragons">The emulator's picture of the same moment.
+- Left, the page's own drawing of the 1,000 bytes jsbeeb showed at this moment, with `BBC.drawTeletext` from the site's library.
+- Left, the trees as jsbeeb showed them, redrawn by the page; the six that can be magic are outlined.
+- Checked against the game in jsbeeb on 35 sequences of letters, DELETEs and other keys, 236 keys in all: after every key the port's answer, count and cursor matched the game's own in$, l and x, and its field matched the screen.
+- Checked against the game in jsbeeb on 30 games of random throws, 208 in all: before every throw the port's counters and its c() and e() matched the game's, and each game ended the same way, in the Witch, four collars or neither.
+- The counts at each visit and each journey, read from BASIC's own counters (&24 for REPEATs, &25 for GOSUBs) in jsbeeb, on routes that go in and out of the backroom and back and forth across the map.
+
+### levels.html
+
+- The map, as the page draws it from the 1,000 bytes jsbeeb showed on arriving.
+
+### solution.html
+
+- Every answer that finds the six children, taken from one play-through of both programs in an emulator.

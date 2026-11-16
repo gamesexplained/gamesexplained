@@ -256,3 +256,48 @@ in `work/scripts/`.
 - Caber toss: 64 reads of `$D800` gave colour 6 with upper bits that
   changed (`live_ct_inch.py`); three throws in play each read the speed
   up's entry from `$1DC7` (`live_ct_release.py`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Secrets, quirks and bugs in the eight events, each checked in the emulator or traced in the code, with the evidence beside it.
+- `wl_plates` (`$1985`) and `wl_strip` (`$1C31`), held by `test_widgets.js` to the game's code for every weight and every strip, with the lifter standing, as while a weight is chosen: the bar's line, `$2F`, is `$31`.
+- Checked in VICE on 30 October 2026: with the weight set to 860 kg the plates were drawn, and at 865 kg the processor stopped at `$1C63` and stayed there.
+- Seen in VICE on 30 October 2026, with the two names in the first two players' records.
+- Checked in VICE on 30 October 2026: with the weight set to 230, 235, 240, 245 and 250 kg, `$1482` left `$A2`, `$00`, `$86`, `$1E` and `$86` in `$4B`.
+- The rule of `sl_keep_result` (`$F20C`) from `$F24D`, held by `test_widgets.js` to the game's routine on 23,600 pairs of times.
+- Checked in VICE on 30 October 2026 with five pairs: it kept the slower time in two of them.
+- Checked in VICE on 30 October 2026: 15 frames moved the clock on 10 hundredths.
+- Checked in VICE on 30 October 2026: three throws, with fire held 10, 30 and 90 frames, each read `$1DC7`.
+- Checked in VICE on 30 October 2026: with the counter at 0, 50 and 99 the skier fell, and at 100, 150 and 255 the flag bent.
+- A clean dive from the top level in VICE on 31 October 2026, its score set to 101 just before the game showed it: the gull flies in at the top right.
+- Checked in VICE on 30 October 2026: the end of a dive called with scores of 101, 100, 102, 99 and 1 started the gull for 101 alone, and not for 101 after a fault.
+- `lr_step` (`$2183`) as `test_widgets.js` holds it to the game's routine, for every speed in both directions.
+- Checked in VICE on 30 October 2026: called with -121 it gave -128, and with -122 and -128 it gave $FFFF.
+- Checked in VICE on 30 October 2026: called with sums of 64, 381 and 511, it gave a high byte of 0 each time.
+- Checked in VICE on 30 October 2026: `$16F5` held `$43` and the limit came to `$4F`; random numbers `$00` and `$4E` played script 5, and `$4F`, `$80` and `$FF` script 6.
+- The random numbers are 256 readings of the sound chip's noise, taken once as the event starts (`wl_random`, `$197D`), and they are not spread evenly: in a table read in VICE on 30 October 2026, 160 of the 256 were `$4F` or more.
+- The S key was tried in VICE on 30 October 2026: it played the anthem under the frame, and a move of the joystick stopped it.
+- Checked in VICE on 30 October 2026 as a slalom run began: the loop wrote 1 to `$DC4D` down to `$DC47`, and colour RAM at `$D847`-`$D84D` already held 1.
+
+### graphics.html
+
+- Every pose is made from the listing's bytes by the event's own code, run on the kit's 6502 in this page, with the video chip's registers caught as the code writes them.
+
+### index.html
+
+- `test_music.js` holds every button to the game's code over the part's whole listing, every write to the sound chip in order, for a minute of each tune or until it ends.
+- `test_music.js` holds every button to the menu's code, write for write, to each tune's end.
+- Recorded in VICE as the thrower runs up with the caber, and drawn by the site's C64 library line by line, with each register as it was when the beam reached it.
+- 0 of the 104,448 pixels differ from VICE's own picture of the same frame.
+- `test_widgets.js` holds the page's lift, judges and plates to the game's routines, frame by frame.
+- Checked in VICE on 31 October 2026 in a snatch at 75 kg, both ways.
+- Seen in VICE on 31 October 2026, in a bout played with the stick, the lean read from `$0F70`.
+- `test_widgets.js` holds the page's sum to the game's routine for every speed and lean, either side of 0:30.
+- Seen in VICE on 31 October 2026: each bull chosen in practice and caught at the same frame in the chute, the pictures the same pixel for pixel above the text row.
+- `test_widgets.js` holds the page's rule to the game's routine for every bull, every move and every pair of random numbers.
+- A throw in VICE on 31 October 2026, its landing set to a good one by hand (the caber's pose, `$3C`, made `$10` as it touched the ground), then measured by the game; the sprites' places read from the video chip as `ct_show_result` ran.
+- `test_widgets.js` holds the page's sum to the game's routine on thousands of totals and lengths.

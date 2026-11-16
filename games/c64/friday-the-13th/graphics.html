@@ -35,8 +35,7 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 .ft-grid{display:grid;gap:6px}
-.ft-grid button{padding:0;border:2px solid transparent;background:none;cursor:pointer;position:relative;line-height:0}
-.ft-grid button[aria-pressed="true"]{border-color:var(--ink)}
+.ft-grid button{padding:0;position:relative;line-height:0}
 .ft-grid canvas{width:100%;image-rendering:pixelated;display:block}
 .ft-tag{position:absolute;left:3px;top:3px;font:500 11px/1.3 var(--fm);background:rgba(255,255,255,.88);color:var(--ink);border-radius:3px;padding:1px 4px}
 .ft-mark{position:absolute;right:3px;bottom:3px;font:500 10px/1.3 var(--fm);background:var(--chip);color:var(--chip-ink);border-radius:3px;padding:1px 4px}
@@ -66,15 +65,15 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ft-swapped i{text-decoration:line-through;text-decoration-color:var(--amber)}
 .ft-table canvas{background:#222;border-radius:4px;image-rendering:pixelated}
 .ft-dead{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
-.ft-dead button{font:500 12px var(--fm);padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
-.ft-dead button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink)}
+.ft-dead button{font-size:12px;padding:4px 8px}
 @media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.ft-two,.ft-four,.ft-controls{grid-template-columns:1fr}}
 .ft-sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:4px}
 .ft-sheet figure{margin:0;background:#222;border-radius:4px;padding:3px;text-align:center}
 .ft-sheet canvas{width:100%;image-rendering:pixelated;display:block}
 .ft-sheet figcaption{font:500 10px/1.3 var(--fm);color:#ddd}
 .ft-strip{display:block;width:100%;max-width:720px;height:auto;background:#222;border-radius:4px;image-rendering:pixelated;margin:12px 0 0}
-.ft-btn{font:500 13px var(--fm);padding:5px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer;margin:10px 0 0}
+.ft-row canvas.ft-black,.ft-sheet canvas.ft-black,.ft-strip.ft-black{background:#8a8a8a}
+.ft-btn{font-size:13px;padding:5px 12px;margin:10px 0 0}
 .ft-group{font:700 15px var(--fb);margin:18px 0 8px}
 .ft-group:first-child{margin-top:0}
 .ft-group span{font:500 12px var(--fm);color:var(--ink-mute);margin-left:8px}
@@ -87,26 +86,26 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Domark</p>
   <h1>Friday the 13th: graphics</h1>
-  <p class="sub">Every sprite the game draws people and weapons with, the eight heads of the fear meter, and the two pictures a body can bring up, all drawn from the game's own bytes.</p>
+  <p class="sub">Every sprite the game draws people and weapons with, the eight heads of the fear meter, and the two jumpscare pictures, all drawn from the game's own bytes.</p>
 </header>
 <main class="wrap" data-part="game">
 
 <section>
   <p class="fig">01 · People</p>
   <h2 class="t">Four looks for eleven people, and Jason's own</h2>
-  <p class="lede">Everyone in the camp is one of four sets of sprites, recoloured. The men's set starts at block $6D and the women's at $88; the ten others use those and two more, and Jason without his disguise has a set of his own.</p>
+  <p class="lede">Everyone in the camp is one of four sets of sprites, recoloured. The men's set starts at block $6D and the women's at $88; the ten others use those and two more. Jason, once he throws off his disguise, has a set of his own and is drawn in black.</p>
   <div class="plate"><div class="pick"><a class="step" id="pPrev" aria-label="Previous person">‹</a><select id="pSel" aria-label="Person"></select><a class="step" id="pNext" aria-label="Next person">›</a></div>
-    <div class="ft-row"><figure><canvas id="pWalk"></canvas><figcaption id="pWalkCap"></figcaption></figure><figure><canvas id="pWalk2"></canvas><figcaption id="pWalk2Cap"></figcaption></figure><figure><canvas id="pDead"></canvas><figcaption>dead</figcaption></figure></div>
+    <div class="ft-row ft-people"><figure><canvas id="pLeft"></canvas><figcaption id="pLeftCap"></figcaption></figure><figure><canvas id="pRight"></canvas><figcaption id="pRightCap"></figcaption></figure><figure><canvas id="pUp"></canvas><figcaption id="pUpCap"></figcaption></figure><figure><canvas id="pDown"></canvas><figcaption id="pDownCap"></figcaption></figure><figure><canvas id="pDead"></canvas><figcaption id="pDeadCap">dead</figcaption></figure></div>
     <canvas id="pStrip" class="ft-strip" width="720" height="63" aria-label="The person walking across and back"></canvas>
     <button type="button" class="ft-btn" id="pPlay" aria-pressed="true">Pause the walk</button>
-    <p class="cap">Sprites are multicolour, with the shared colours 6 and 10 that <a href="source-game.html#9A7D"><code>start_play</code></a> sets and each person's own colour: the counsellors' from <a href="source-game.html#9423"><code>counsellor_colour</code></a>, the others' from the high nibble of <a href="source-game.html#BB88"><code>actor_looks</code></a>. Jason unmasked is drawn here in white. The walk steps through <a href="source-game.html#A677"><code>walk_frames</code></a>, 0, 1, 2, 1, with 5 added for the other direction (<a href="source-game.html#AEDF"><code>walk_frame_offset</code></a>).</p></div>
-  <p>A person's first block is at <a href="source-game.html#AED6"><code>actor_sprite_base</code></a> for the look, and the body at <a href="source-game.html#AEDB"><code>actor_sprite_dead</code></a>. The blocks after each set's body hold the frames for being hit and for swinging a weapon; the whole run is below.</p>
+    <p class="cap">Sprites are multicolour, with the shared colours 6 and 10 that <a href="source-game.html#9A7D"><code>start_play</code></a> sets and each person's own colour: the counsellors' from <a href="source-game.html#9423"><code>counsellor_colour</code></a>, the others' from the high nibble of <a href="source-game.html#BB88"><code>actor_looks</code></a>, and black for Jason once he has revealed himself (<a href="source-game.html#9C0F"><code>place_next_sprite</code></a>). Walking left, a person steps through the set's first five blocks, one a step; walking right, through the next five (<a href="source-game.html#AEDF"><code>walk_frame_offset</code></a> is 0 or 5). Walking up the screen, away from you, it shows blocks 12 to 14 of the set, and walking down, towards you, blocks 15 to 17, in the order of <a href="source-game.html#A677"><code>walk_frames</code></a>: 0, 1, 2, 1. The set's eleventh block is the body.</p></div>
+  <p>A person's first block is at <a href="source-game.html#AED6"><code>actor_sprite_base</code></a> for the look, and the body at <a href="source-game.html#AEDB"><code>actor_sprite_dead</code></a>. The blocks after each set's walks up and down hold the frames for being hit and for swinging a weapon; the whole run is below.</p>
 </section>
 
 <section>
   <p class="fig">02 · Every sprite</p>
   <h2 class="t">Sprite blocks $6D to $FF</h2>
-  <p class="lede">All 147 blocks from <a href="source-game.html#5B40"><code>$5B40</code></a> to the end of video bank 1, in one colour. Pick a colour to see them as each person.</p>
+  <p class="lede">All 147 blocks from <a href="source-game.html#5B40"><code>$5B40</code></a> to the end of video bank 1. The game colours the four looks for each person, so pick a colour to see them as each one; Jason's own set is always black, and the weapons are always white.</p>
   <div class="plate"><div class="pick"><a class="step" id="cPrev" aria-label="Previous colour">‹</a><select id="cSel" aria-label="Colour"></select><a class="step" id="cNext" aria-label="Next colour">›</a></div>
     <div id="sheet"></div>
     <p class="cap">Block numbers are the sprite pointers the game writes; block n is 64 bytes at <code>$4000</code> plus 64 times n.</p></div>
@@ -129,11 +128,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">05 · Bodies</p>
-  <h2 class="t">The two pictures of a body</h2>
-  <p class="lede">The first time you walk into a room with a body in it, one time in five <a href="source-game.html#C8E9"><code>scare_check</code></a> fills the play area with one of two pictures and plays <a href="music.html#scream">the scream</a>. Your fear rises by twice <a href="gameplay.html#counsellors">your counsellor's fear value</a>.</p>
-  <div class="plate"><div class="ft-row"><figure><canvas id="gore0" width="256" height="128" style="width:384px;max-width:100%"></canvas><figcaption>first picture, <code>$F000</code></figcaption></figure><figure><canvas id="gore1" width="256" height="128" style="width:384px;max-width:100%"></canvas><figcaption>second picture, <code>$F930</code></figcaption></figure></div>
-    <p class="cap">Drawn by the game's own <a href="source-game.html#C93B"><code>show_gore</code></a> on a copy of the C64's processor, with its random choice set each way. Each picture is a 16 by 32 map of cells, its cells, and its screen colours; colour RAM is filled with one colour, 9 for the first and 1 for the second. Both lie under the KERNAL ROM.</p></div>
+  <p class="fig">05 · Jumpscares</p>
+  <h2 class="t">A severed head and a pile of skulls</h2>
+  <p class="lede">The first time you walk into a room with a body in it, one time in five <a href="source-game.html#C8E9"><code>scare_check</code></a> blacks out the play area, fills it with one of these two pictures and plays <a href="music.html#scream">the scream</a>: a man's head with a blade through it, or seven bloody skulls. Your fear rises by twice <a href="gameplay.html#counsellors">your counsellor's fear value</a>. <a href="gameplay.html#jumpscare">The jumpscare</a> plays the whole thing as the game does.</p>
+  <div class="plate"><div class="ft-row"><figure><canvas id="gore0" width="256" height="128" style="width:384px;max-width:100%"></canvas><figcaption>the head, <code>$F000</code></figcaption></figure><figure><canvas id="gore1" width="256" height="128" style="width:384px;max-width:100%"></canvas><figcaption>the skulls, <code>$F930</code></figcaption></figure></div>
+    <p class="cap">Drawn by the game's own <a href="source-game.html#C93B"><code>show_gore</code></a> on a copy of the C64's processor, with its random choice set each way: a number below 20 out of 40 brings up the head, so each comes up half the time. Each picture is a 16 by 32 map of cells, its cells, and its screen colours; colour RAM is filled with one colour, 9 for the head and 1 for the skulls. Both lie under the KERNAL ROM.</p></div>
 </section>
 
 </main>
@@ -186,6 +185,7 @@ function fridayPaint(cv, r, PAL) {
   C64.load('parts/game/listing.json').then(L => {
     const ram = L.ram;
     const spr = (cv, blk, colour, s) => { cv.width = 24 * s; cv.height = 21 * s; const ctx = cv.getContext('2d'); ctx.clearRect(0, 0, cv.width, cv.height);
+      cv.classList.toggle('ft-black', colour === 0);       // Jason's black, on a grey that shows it
       C64.drawSpriteMC(ctx, ram.subarray(0x4000 + blk * 64, 0x4000 + blk * 64 + 63), 0, 0, s, P[colour], P[6], P[10]); return cv; };
     const pick = (sel, prev, next, n, on) => { sel.onchange = () => on(+sel.value); prev.onclick = () => { sel.value = (+sel.value + n - 1) % n; on(+sel.value); }; next.onclick = () => { sel.value = (+sel.value + 1) % n; on(+sel.value); }; };
 
@@ -194,23 +194,26 @@ function fridayPaint(cv, r, PAL) {
     const base = i => ram[0xAED6 + i], deadOf = i => ram[0xAEDB + i];
     const people = CS.map((n, i) => { const b = ram[0x9414 + i], look = b === base(0) ? 0 : 1; return [n + ' (you)', b, deadOf(look), ram[0x9423 + i]]; });
     for (let i = 0; i < 10; i++) { const v = ram[0xBB88 + i], look = v & 3; people.push(['Friend ' + i + ', look ' + look, base(look), deadOf(look), v >> 4]); }
-    people.push(['Jason unmasked', base(4), null, 1]);
+    people.push(['Jason, revealed', base(4), deadOf(4), 0]);
     const pSel = $('pSel');
     people.forEach((p, i) => { const o = document.createElement('option'); o.value = i; o.textContent = p[0]; pSel.appendChild(o); });
     let who = 0, step = 0;
-    const WALK = Array.from(ram.subarray(0xA677, 0xA67B)), OFF = 5;   // walk_frame_offset ($AEDF) is 0 or 5
+    // Sideways: the set's first five blocks walking left, the next five walking right (walk_frame_offset,
+    // $AEDF, 0 or 5), one a step (actor_anim counts 0 to 4). Up and down: walk_frames ($A677), 0 1 2 1,
+    // added to the set's block $0B, and 3 more walking down (update_actors at $B2F6).
+    const WALK = Array.from(ram.subarray(0xA677, 0xA67B)), RIGHT = 5, UP = 0x0B, DOWN = 0x0E;
+    const show = (id, blk, label) => { const p = people[who]; spr($(id), blk, p[3], 4); $(id + 'Cap').textContent = label + ', ' + hx(blk); };
     const drawPerson = () => {
-      const p = people[who], f = WALK[step % 4];
-      spr($('pWalk'), p[1] + f, p[3], 4); $('pWalkCap').textContent = 'block ' + hx(p[1] + f) + ', frame ' + f;
-      spr($('pWalk2'), p[1] + f + OFF, p[3], 4); $('pWalk2Cap').textContent = 'block ' + hx(p[1] + f + OFF) + ', frame ' + f + ' + ' + OFF;
-      const d = $('pDead'); if (p[2] === null) { d.width = 96; d.height = 84; d.getContext('2d').clearRect(0, 0, 96, 84); } else spr(d, p[2], p[3], 4);
+      const p = people[who], a = step % 5, w = WALK[step % 4];
+      show('pLeft', p[1] + a, 'left'); show('pRight', p[1] + RIGHT + a, 'right');
+      show('pUp', p[1] + UP + w, 'up'); show('pDown', p[1] + DOWN + w, 'down'); show('pDead', p[2], 'dead');
     };
     pick(pSel, $('pPrev'), $('pNext'), people.length, i => { who = i; drawPerson(); });
-    // the strip: the person walks right with the first set of frames and back with the second
+    // the strip: the person walks right with the right-facing blocks and back with the left-facing ones
     let x = 0, dir = 1, playing = true;
     const strip = () => {
-      const cv = $('pStrip'), ctx = cv.getContext('2d'), p = people[who], f = WALK[step % 4] + (dir < 0 ? OFF : 0);
-      ctx.clearRect(0, 0, cv.width, cv.height);
+      const cv = $('pStrip'), ctx = cv.getContext('2d'), p = people[who], f = step % 5 + (dir > 0 ? RIGHT : 0);
+      ctx.clearRect(0, 0, cv.width, cv.height); cv.classList.toggle('ft-black', p[3] === 0);
       C64.drawSpriteMC(ctx, ram.subarray(0x4000 + (p[1] + f) * 64, 0x4000 + (p[1] + f) * 64 + 63), x, 0, 3, P[p[3]], P[6], P[10]);
     };
     setInterval(() => { if (!playing) return; step++; x += dir * 12; if (x >= 720 - 72) { x = 720 - 72; dir = -1; } else if (x <= 0) { x = 0; dir = 1; } drawPerson(); strip(); }, 180);
@@ -230,7 +233,8 @@ function fridayPaint(cv, r, PAL) {
       GROUPS.forEach(([a, z, name, note]) => {
         const h = document.createElement('h3'); h.className = 'ft-group'; h.textContent = name; const sp = document.createElement('span'); sp.textContent = hx(a) + ' to ' + hx(z) + ', ' + note; h.appendChild(sp); el.appendChild(h);
         const g = document.createElement('div'); g.className = 'ft-sheet';
-        for (let b = a; b <= z; b++) { const f = document.createElement('figure'); f.appendChild(spr(document.createElement('canvas'), b, COLS[+cSel.value][0], 2));
+        const colour = a === 0xC9 ? 0 : a >= 0xE4 ? ram[0xA594] : COLS[+cSel.value][0];   // Jason black, the objects white (object_colour)
+        for (let b = a; b <= z; b++) { const f = document.createElement('figure'); f.appendChild(spr(document.createElement('canvas'), b, colour, 2));
           const c = document.createElement('figcaption'); c.textContent = hx(b); f.appendChild(c); g.appendChild(f); }
         el.appendChild(g);
       });
@@ -250,7 +254,7 @@ function fridayPaint(cv, r, PAL) {
       const f = document.createElement('figure'), c = document.createElement('figcaption'); c.textContent = 'head ' + h + ': fear ' + (h * 10) + (h === 7 ? ' to 79' : ' to ' + (h * 10 + 9)) + (h === 0 ? ', and 80' : '');
       f.appendChild(cv); f.appendChild(c); $('heads').appendChild(f); }
 
-    // Bodies: show_gore with its random choice made each way (a number below 20 picks $F000)
+    // Jumpscares: show_gore with its random choice made each way (a number below 20 picks $F000)
     [0, 25].forEach((pickv, k) => {
       const r = fridayRoom(ram, C64Cpu, 38), m = r.m, colour = r.colour;
       const cpu = new C64Cpu.CPU(m, { port: 0x36, io: { read: a => (a === 0xD41B ? pickv : 0), write: (a, v) => { if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15; } } });

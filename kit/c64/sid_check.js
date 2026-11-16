@@ -16,14 +16,16 @@
 //
 // <site> is the built site's folder (_site, from kit/scripts/build.py), served here on a free
 // port of 127.0.0.1. <page> is a path under it, such as c64/<slug>/index.html; with none, every
-// game page that loads lib/sid.js. Exits 1 on a failing button. It needs Playwright (the
-// playwright or playwright-core package), which the kit does not install, as kit/scripts/shoot.js
-// does: --chromium <path> launches that browser, --cdp <url> drives one already running, and with
-// neither it launches Playwright's own. CI installs playwright-core and passes the runner's Chrome.
+// game page that loads lib/sid.js. Exits 1 on a failing button. It needs Playwright's client and a
+// Chromium, found as kit/scripts/chromium.js says (`tools.py get-node` and `tools.py get-chromium`
+// put both in tools/): --chromium <path> launches that browser, --cdp <url> drives one already
+// running, and with neither it launches the kit's, else Playwright's own. CI installs
+// playwright-core and passes the runner's Chrome.
 // Checked by kit/c64/test_sid_check.js.
 const fs = require('fs');
 const http = require('http');
 const path = require('path');
+const { playwright, launchOptions, NO_CLIENT, NO_BROWSER } = require('../scripts/chromium.js');
 
 const USAGE = 'usage: node kit/c64/sid_check.js [<site>] [<page> ...] [--seconds 10] [--jobs 4] [--chromium <path>] [--cdp <url>]';
 const RATE = 22050;
@@ -69,10 +71,11 @@ function pagesWithSid(site) {
 // What one button's run found, as a line: null when it sounded or its label says it is silent
 function verdict(r, seconds) {
   if (r.error) return 'the driver stopped in the AudioWorklet: ' + r.error;
-  if (r.heard || r.moves >= MOVES) return null;
+  if ((r.heard && r.moves > 0) || r.moves >= MOVES) return null;
   if (/\bsilen(t|ce)\b/i.test(r.name)) return null;
   if (r.env && !r.vol) return `silent: its voices play, but the chip's volume ($D418) stays at 0 for ${seconds} s`;
   if (!r.env) return `silent: no voice's envelope rises in ${seconds} s`;
+  if (r.heard && r.moves === 0) return `silent: active envelopes, but the rendered output stays flat for ${seconds} s`;
   return `silent for ${seconds} s`;
 }
 
@@ -165,13 +168,6 @@ function serve(site) {
   return new Promise((go) => server.listen(0, '127.0.0.1', () => go(server)));
 }
 
-function playwright() {
-  for (const name of ['playwright', 'playwright-core']) {
-    try { return require(name); } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e; }
-  }
-  return null;
-}
-
 async function checkPage(context, base, p, seconds) {
   const page = await context.newPage();
   const thrown = [];
@@ -202,15 +198,15 @@ async function main(argv) {
   const pages = o.pages.length ? o.pages : pagesWithSid(o.site);
   const pw = playwright();
   if (!pw) {
-    console.error('Playwright is not installed here, and the kit does not install it (kit/INSTALL.md, "Browser checks").');
+    console.error(NO_CLIENT);
     return 2;
   }
   let browser;
   try {
     browser = o.cdp ? await pw.chromium.connectOverCDP(o.cdp)
-      : await pw.chromium.launch(o.chromium ? { executablePath: o.chromium } : {});
+      : await pw.chromium.launch(launchOptions(o.chromium));
   } catch (e) {
-    console.error(`no browser: ${String(e.message).split('\n')[0]}`);
+    console.error(`no browser: ${String(e.message).split('\n')[0]}\n${NO_BROWSER}`);
     return 2;
   }
   const server = await serve(o.site);

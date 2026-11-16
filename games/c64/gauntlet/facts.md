@@ -519,3 +519,36 @@ has been made.
   level 2 with both players in.
 - The rebuilt frame: one frame of level 2 recorded with `frame.py
   capture`, drawn by `site/lib/c64.js`: 104,448 of 104,448 pixels match.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- `test_poison.js` holds the port against the game's code in the kit's 6502 simulator: poison_health (`$9F62`) for all 256 values of the hundreds byte, and one tick of health_tick (`$B933`) from all 65,536 health values, every result and every death the same.
+- In the emulator, a Warrior poisoned with 50 health had `$FF` `$47` after the message, two stray glyphs on the panel, and `$FF` `$07` forty ticks later, still in the game.
+- In the emulator a level-three grunt was put beside a standing player: in 187 attacks the game read monster_damage 93 times, on alternate attacks, and the six armour values not once.
+- In the emulator, the two routines left exactly those counts for each player at each stage.
+
+### levels.html
+
+- The page puts the file at `$0A00`, as level_start (`$99CF`) loads it, and runs level_build (`$C625`), grid_draw (`$CBC2`) and monsters_draw_all (`$C00E`) on the kit's 6502 simulator over the game's bytes from the listing, then draws the 64 by 64 character map at `$3000` with the colour map at `$2000` and the first maze font, `$4800`, as maze_style (`$8CC5`) has just set it for this level.
+- `test_levels.js` calls the same code on the simulator directly for all 128 files: every byte of the tile grid, both maps, the fonts' wall glyphs, and the tile colours is the same, with 4,341 monsters placed.
+
+### mechanics.html
+
+- In the emulator, with the Warrior and the Valkyrie playing, the Warrior's values matched his column.
+- In the emulator, a Wizard who joined on level 1 had shots of `$40`, magic of `$40` against monsters and 1 against generators, and could hurt generators by hand; the Wizard's own values come in only after a death.
+- The picture below is drawn by this page from the game's memory and the video chip's registers, as the emulator recorded them for one frame of level 2.
+- Drawn by the site's renderer from the frame `kit/c64/frame.py` recorded: all 104,448 pixels match the emulator's own picture of the same frame.
+- `test_chase.js` runs the same routines on the kit's 6502 simulator for 400 passes of each of these levels: the monster table, the maps and the hero's health come out the same, byte for byte, after every pass.
+- In the emulator, with 52 monsters on level 2, every working pass visited 26 slots, the even ones and the odd ones in turn, and one pass stopped after 10.
+- The monster still heads the right way, but it can pick the wrong player: in the emulator, with both players near the bottom of level 2 and monsters seen across the seam at the top, 13 of 60 aims went to the farther player.
+- In the emulator, from 129 seconds left the walls became exits within 6,250 frames.
+
+### music.html
+
+- Each button runs the game's code on the kit's 6502 simulator in the page and plays what it writes through the site's model of the SID.
+- `test_music.js` runs the page's players beside the same code called on the simulator directly, on the committed listing: every register write of every frame is the same for all three tunes, to their ends.
+- `test_sfx.js` runs the page's core beside the kit's 6502 simulator on the committed listing: every register write of every frame is the same for all eighteen effects, to their ends.

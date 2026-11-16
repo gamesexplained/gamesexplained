@@ -55,12 +55,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .sf-picks figure{margin:0;text-align:center;font-size:13px;line-height:1.35}
 .sf-picks .sf-n{font-family:var(--fm)}
 .sf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
-.sf-grid button{background:#000;border:2px solid transparent;border-radius:5px;padding:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:52px}
-.sf-grid button[aria-pressed="true"]{border-color:var(--amber)}
+.sf-grid[data-own-look] button{background:#000;border:2px solid transparent;border-radius:5px;padding:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:52px}
+.sf-grid[data-own-look] button[aria-pressed="true"]{border-color:var(--amber)}
 .sf-grid canvas{image-rendering:pixelated;max-width:100%}
 .sf-strip{display:grid;grid-template-columns:repeat(25,minmax(0,1fr));gap:3px;margin:0 0 6px}
-.sf-strip button{font-family:var(--fm);font-size:10px;padding:5px 0;border:1px solid var(--line);border-radius:4px;cursor:pointer;color:#fff}
-.sf-strip button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.sf-strip[data-own-look] button{font-family:var(--fm);font-size:10px;padding:5px 0;border:1px solid var(--line);border-radius:4px;cursor:pointer;color:#fff}
+.sf-strip[data-own-look] button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
 .sf-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin:8px 0 0}
 .sf-key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .sf-code{font-family:var(--fm);font-size:12px;line-height:1.5;background:#1d1f24;color:#e9e7e1;padding:14px;border-radius:6px;overflow-x:auto;margin:0 0 14px;white-space:pre}
@@ -70,8 +70,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .sf-ring>span{color:var(--ink-mute)}
 @media (max-width:720px){.sf-two{grid-template-columns:1fr}.sf-strip{grid-template-columns:repeat(10,minmax(0,1fr))}}
 .gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
-.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
-.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button{padding:5px 11px}
 .gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
 .gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
 .gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
@@ -98,7 +97,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="cast">
   <p class="fig">01 · Everything that moves</p>
   <h2 class="t">The iris, the monitor and the cursor</h2>
-  <p class="lede">The three things that move on their own, each played by the game's own routine on the kit's 6502 in this page.</p>
+  <p class="lede">The three things that move on their own, each played by the game's own routine in this page.</p>
   <div class="plate">
     <div class="gx-bar">
       <button type="button" id="gx-run">Pause</button>
@@ -106,7 +105,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <span class="gx-stat" id="gx-stat"></span>
     </div>
     <div class="gx-tiles" id="gx-cast"></div>
-    <p class="cap">The iris is <code>iris_open</code> (<code>$45E2</code>) and <code>iris_close</code> (<code>$4646</code>) over the four sprites' bytes at <code>$0900</code>-<code>$09FF</code>, a circle at a time, each shown after the cycles it takes on the kit's 6502; the game's interrupt and the video chip take some of the real machine's time, so the game's iris is a little slower. Behind it is what the view screen shows for a place off the ship's map: the team's attack craft. The monitor is <code>show_portrait</code> (<code>$48B1</code>), one roll a frame, as <code>roll_monitor</code> (<code>$49A3</code>) waits for line <code>$64</code> before each.</p>
+    <p class="cap">The iris is <code>iris_open</code> (<code>$45E2</code>) and <code>iris_close</code> (<code>$4646</code>) over the four sprites' bytes at <code>$0900</code>-<code>$09FF</code>, a circle at a time, each shown after the cycles it takes; the game's interrupt and the video chip take some of the real machine's time, so the game's iris is a little slower. Behind it is what the view screen shows for a place off the ship's map: the team's attack craft. The monitor is <code>show_portrait</code> (<code>$48B1</code>), one roll a frame, as <code>roll_monitor</code> (<code>$49A3</code>) waits for line <code>$64</code> before each.</p>
   </div>
   <p>The iris is four sprites, 1 to 4, each stretched to twice its width and height, so that together they cover the view screen with a square 96 pixels by 84 in dark grey (<code>restart</code>, <code>$40A3</code>). To open it, <code>iris_circle</code> (<code>$4698</code>) clears the sprites' pixels round a circle of growing radius, working out the points by a shift-and-add rotation rather than by sines, and twice as many points from radius 8 and again from 17, so that the bigger circles have no gaps. The map is drawn in the bitmap behind, so it shows through the hole. Closing sets the same pixels again from the outside in.</p>
   <p>A portrait does not appear at once. <code>show_portrait</code> rolls the monitor's eight rows down a line at a time, and in seven passes copies one line of every cell of the portrait into the top line of the cell before rolling it on, like a picture coming through on a television. Line 0 of a cell is never copied, so the monitor shows line 1 twice.</p>
@@ -121,7 +120,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div id="gx-sets"></div>
     <div class="gx-key" id="gx-key"></div>
     <p class="gx-read" id="gx-read">Point at a picture to see what it is and where it is used.</p>
-    <p class="cap">Each picture is drawn by the game's <code>draw_picture</code> on the kit's 6502 from the listing's bytes, then shown from the bitmap, the screen colours and colour RAM it wrote, as the video chip shows a multicolour bitmap. The portraits are drawn whole here; the monitor never shows line 0 of their cells. A picture with no bar under it is drawn by nothing in the game.</p>
+    <p class="cap">Each picture is drawn by the game's <code>draw_picture</code> from the listing's bytes, then shown from the bitmap, the screen colours and colour RAM it wrote, as the video chip shows a multicolour bitmap. The portraits are drawn whole here; the monitor never shows line 0 of their cells. A picture with no bar under it is drawn by nothing in the game.</p>
   </div>
   <p>Pictures are of a few sizes. The map icons are two cells by two, the figures and objects four by two, the commands three by two, the team's full figures four by six, the direction arrows four by four or two by two, and the portraits ten by eight. The attack craft that the view screen shows from outside the ship is the biggest, two pictures of ten by five.</p>
 </section>

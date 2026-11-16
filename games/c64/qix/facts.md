@@ -299,3 +299,19 @@ routines, from qix_reset to pixel_op, were audited against the port
 (Mechanics): six of their comments were wrong, among them the fallback
 line (the oldest, not the newest), the line length (a maximum only) and
 the erase (a clear, not an XOR), and the listing carries the checked text.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- One frame of level 1 drawn by the site's renderer from the memory and register writes recorded in the emulator.
+- 94,822 of its 94,848 pixels match the emulator's own picture; the 26 that differ are on the Qix's newest line, which the game draws while the beam is passing.
+- The tunes played by the game's own music player: its bytes from `$E000`, run once a frame on the kit's 6502 simulator inside the page and heard through the site's model of the SID.
+- Checked against the original code in a 6502 simulator: every register write of every frame of all eleven tunes, 14,159 frames, matches.
+- The arithmetic of `$8E60`, ported and checked against the game's own routine in a 6502 simulator over 3,150 cases (areas from 0 to 65,535, slow and fast, 0 to 4 splits): every result matches.
+- In 1,600 steps watched in the emulator, nothing read `$0273`.
+- Given the random numbers the game drew, it repeats 1,000 steps of one Qix and 400 of two, recorded in the emulator, exactly, in an open field and in fields with claimed corners.
+- In the emulator, a pixel of a line being drawn was placed under trail lines of different ages, six times.
+- In the emulator, a peninsula of claimed edge was added to the field; in 500 steps the Qix fell back five times, and each time it landed on its line from exactly eight steps earlier.

@@ -1,0 +1,756 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/wasteland-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">One suit of Power armor <a href="#wl-suit">can protect the whole party</a>, and a shop <a href="#wl-shelf">sells back whatever the Rangers sold it</a>, in another town if need be. Below them is <a href="#wl-list">every item in the game</a>, with where it is found, who sells it, and what it is good for.</p>
+</header>
+<main class="wrap">
+<section id="wl-suit" data-part="engine">
+  <p class="fig">01 · Armour</p>
+  <h2 class="t">Bug: one suit of Power armor can protect the whole party</h2>
+  <p class="lede">A Ranger's armour class is a number the game writes down when the armour is put on, and it takes the number away only when the item it has marked as worn leaves the pack. Sorting the pack with one stray press of RETURN moves that mark onto the wrong item. The suit can then be traded to the next Ranger, and the first Ranger keeps its armour class.</p>
+
+  <div class="plate wl-be" id="wl-it-suit" data-scene="suit">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">The party</p>
+        <ol class="wl-be-types wl-it-party" aria-label="The Rangers and their armour"></ol>
+        <p class="wl-be-odds"></p>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">The game's item list appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-do="sort">Sort the pack, pressing RETURN before the suit</button>
+      <button type="button" class="wl-xp-btn" data-do="pass">Trade the suit to the next Ranger</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-do="plain">Sort the pack without RETURN</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-do="reset">Start again</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">Four Rangers on the game's own code. Each button types keys into the game's item list (<code>$0FB1</code>) and the screens the game prints come back as text, with the line the game shows in reverse video picked out. The Ranger who is handed the suit puts it on with unE)quip.</p>
+  </div>
+
+  <p>Power armor is the best armour in the game. A Ranger who wears it rolls 14 dice against every blow and takes that much off the damage, which is 49 points on average. Seven suits lie in bags late in the game, one recruit carries an eighth, and no shop sells one.</p>
+
+  <p>The game keeps two numbers for a Ranger's armour. One is the line of the pack that holds the armour being worn. The other is the armour class, which the game copies from the item when the Ranger puts it on (<code>$10C9</code>). Every blow in a fight reads the armour class and never looks at the pack (<span data-part="game"><code>$A8B2</code></span>).</p>
+
+  <p>The armour class goes back to 0 when the worn line is emptied. Dropping an item, trading it, selling it, or using it up all end by asking whether that line was the worn one (<code>$10D8</code>). If the line is the worn one, the game clears both numbers. If the line is any other, the game leaves the armour class alone.</p>
+
+  <p>Sorting a pack is where the two numbers come apart. R on the item list starts a reorder: the player picks the items one at a time, and the pack is rebuilt in that order. The game counts the picks so that it can note which new line the worn armour lands on. RETURN, space, R, and the back-arrow pick nothing, but the count goes up for each of them all the same (<code>$1015</code>). After one such key, the note for every item picked later is one line too low.</p>
+
+  <p>So a Ranger in Power armor sorts the pack and presses RETURN once before picking the suit. The suit keeps its armour class of 14, and the worn mark sits on the item below it. The suit is now an ordinary item that can be traded away, and the trade asks about the suit's own line, which is not the worn one. The next Ranger puts the suit on and does the same. The plate ends with four Rangers at armour class 14 and one suit between them.</p>
+
+  <p>The armour class is part of the saved game, so it lasts. A Ranger loses it by putting on other armour, or by losing the item that carries the mark: a Canteen that is dropped takes the armour class of 14 with it.</p>
+</section>
+
+<section id="wl-hand" data-part="engine">
+  <p class="fig">02 · Weapons</p>
+  <h2 class="t">Bug: sorting a pack can leave a Ranger holding a clip in place of a gun</h2>
+  <p class="lede">The mark for the weapon in a Ranger's hand goes wrong in the same way as the armour mark, and the weapon mark matters at once. A Ranger whose mark has slipped down a line fights with whatever is on that line. A Ranger with nothing in hand can be given a weapon mark by another Ranger's sort.</p>
+
+  <div class="plate wl-be" id="wl-it-hand" data-scene="hand">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">The party</p>
+        <ol class="wl-be-types wl-it-party" aria-label="The Rangers and what they hold"></ol>
+        <p class="wl-be-odds"></p>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">The game's item list appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-do="slip">Sort the first pack, pressing RETURN first</button>
+      <button type="button" class="wl-xp-btn" data-do="bare">Sort the bare-handed Ranger's pack</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-do="reset">Start again</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The same item list as above. The first Ranger holds a pistol, and the second holds nothing and fights with fists. Neither sort changes the order of the pack.</p>
+  </div>
+
+  <p>The first button sorts a pack without changing its order, with one press of RETURN before the first pick. The pistol stays on line 1 and the game notes line 2 for it. The Ranger now holds the 45 clip. The game lets a Ranger hold anything that is not armour (<code>$10A2</code>), so nothing complains. In a fight the clip is swung by hand for one die of damage, where the pistol fired for four.</p>
+
+  <p>The second button shows the other way the mark goes wrong. The game writes the line it noted for the weapon into the Ranger's record when the sort ends (<code>$1023</code>). It never clears the note. A Ranger with nothing in hand picks no weapon, so the note still holds the line from the last sort that moved one, by any Ranger. The bare-handed Ranger ends the sort holding whatever is on that line of their own pack.</p>
+
+  <p>This costs a Ranger who fights with fists more than it seems. Fists are the one weapon that Pugilism helps with, and a Canteen in the hand is not fists. The Ranger hits no harder with the Canteen and loses four points on every attack roll for each level of Pugilism. The note starts at 0 when the game is loaded, so the first sort of a session is safe for a bare-handed Ranger.</p>
+</section>
+
+<section id="wl-shelf" data-part="module-1">
+  <p class="fig">03 · Shops</p>
+  <h2 class="t">Secret: what the party sells in Quartz goes on sale in Needles</h2>
+  <p class="lede">A shop keeps a count of every item, and the count goes up by one whenever a Ranger sells it that item. Anything with a count above 0 is on the shelf, so a shop sells back whatever it was sold. The Emporium in Quartz and Leroy's arms counter in Needles read the same counts, so what is sold to one can be bought from the other.</p>
+
+  <div class="plate wl-be" id="wl-it-shelf" data-scene="shelf">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">Hell Razor</p>
+        <p class="wl-be-hp"></p>
+        <p class="wl-be-mood"></p>
+        <p class="wl-fi-h">The shelf the two shops share</p>
+        <p class="wl-be-odds"></p>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">The shop's screens appear here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-do="sell">Sell the Power armor in Quartz</button>
+      <button type="button" class="wl-xp-btn" data-do="look">Look at the shelf in Needles</button>
+      <button type="button" class="wl-xp-btn" data-do="buy">Buy it there</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-do="reset">Start again</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The shop program (<code>$CA00</code>) on the game's own code, with the shop records of <a href="levels.html#map-1">Quartz</a> (map 1) and <a href="levels.html#map-32">downtown Needles</a> (map 32). The buttons type the keys. The counts are the ones on side 2 of the game disk.</p>
+  </div>
+
+  <p>Every item has a stock count beside its price. A sale adds 1 to the count (<code>$CB2C</code>) and a purchase takes 1 off (<code>$CC12</code>). The buy list shows every item whose count is not 0 and whose kind the shop deals in (<code>$CC5D</code>). No shop starts with Power armor, but a shop that has been sold one has a count of 1 and lists it, at the full price of $30,000.</p>
+
+  <p>The counts are kept in four files on the disks, and each shop's record names one of them. The Emporium and Leroy's counter both name file 2, and both deal in every kind of weapon, armour, and gear. They are one shelf with two doors. The same is true on paper of the two shops in Darwin and of the Trading car and the Agricultural Center's store, but those pairs deal in different kinds of item, so neither can show what the other was sold.</p>
+
+  <p>A count stops at 255 when it goes up and has no floor when it goes down. The items a shop stocks from the start have a count of 255, which looks like a mark for endless stock and is treated as a plain number. Each purchase takes one off. A party that buys 255 Jugs at $1 each has bought the last Jug that shelf will ever hold, unless somebody sells one back.</p>
+</section>
+
+<section id="wl-twice" data-part="module-1">
+  <p class="fig">04 · Shops</p>
+  <h2 class="t">Bug: an item sold just before the machine is switched off is in the pack and on the shelf</h2>
+  <p class="lede">The shop saves its shelf and the party at two different moments. The shelf goes to the disk as soon as a Ranger leaves the list of things to sell. The party is saved only when the Rangers leave the shop. Switching the machine off between the two leaves a game in which the item was sold and was never given up.</p>
+
+  <div class="plate wl-be" id="wl-it-twice" data-scene="twice">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">Hell Razor</p>
+        <p class="wl-be-hp"></p>
+        <p class="wl-be-mood"></p>
+        <p class="wl-fi-h">On the disk</p>
+        <p class="wl-be-odds"></p>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">The shop's screens appear here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-do="half">Sell the Power armor and leave the list</button>
+      <button type="button" class="wl-xp-btn" data-do="off">Switch the machine off and on</button>
+      <button type="button" class="wl-xp-btn" data-do="again">Go back in and buy it</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-do="reset">Start again</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The Emporium in Quartz on the game's own code. In place of a disk drive, the page keeps what the game writes: the shelf when the game calls <span data-part="engine"><code>$26D6</code></span> and the party when it calls <span data-part="engine"><code>$18EA</code></span>. Switching off puts back the party as it was last saved.</p>
+  </div>
+
+  <p>Leaving the sell list writes the shelf to the disk at once (<code>$CB51</code>). The sale is then on the disk for good. The Ranger's pack and money are still only in memory. The shop saves the party when the player presses the back-arrow at <q>Who wants to enter?</q> (<code>$CA85</code>).</p>
+
+  <p>A machine switched off in between loads the last saved game, in which the Ranger still has the item, and finds a shelf that has one more of it. The money from the sale is gone with the rest of what was in memory, so the second suit still costs its full price. What the party gains is a second copy of something no shop would otherwise sell: Power armor, a Meson cannon, or a Proton ax.</p>
+
+  <p>A Ranger who travels alone has longer to do it. The shop skips <q>Who wants to enter?</q> for a party of one, and that Ranger leaves by the back-arrow at <q>B)uy or S)ell?</q>, which goes past the save (<code>$CA98</code>). The game saves by itself the next time the party changes map.</p>
+</section>
+
+<section id="wl-list" data-part="game">
+  <p class="fig">05 · The list</p>
+  <h2 class="t">Every item in the wasteland, with the numbers the game never shows</h2>
+  <p class="lede">The game shows an item's name, and a shop shows its price. Each item also has eight bytes that say how hard it hits, how many shots it holds, what loads it, and which skill it uses. The table has all 95, with the bags that hold each one and the squares that take it. Press a row for the rest.</p>
+
+  <div class="plate wl-be-roster" id="wl-it-roster">
+    <div class="wl-fi-opts">
+      <input type="search" id="wl-it-q" class="wl-fi-sel wl-be-q" placeholder="Search by name" aria-label="Search items by name">
+      <select id="wl-it-kind" class="wl-fi-sel" aria-label="Kind"><option value="">every kind</option></select>
+      <select id="wl-it-shop" class="wl-fi-sel" aria-label="Shop"><option value="">sold or not</option></select>
+      <select id="wl-it-sort" class="wl-fi-sel" aria-label="Order">
+        <option value="n">in the game's order</option>
+        <option value="name">by name</option>
+        <option value="price">dearest first</option>
+        <option value="dice">most dice first</option>
+        <option value="found">most often found first</option>
+      </select>
+    </div>
+    <p class="wl-be-count" id="wl-it-count" role="status"></p>
+    <div class="wl-tw wl-tall" id="wl-it-scroll"><table class="wl-t wl-be-t">
+      <thead><tr><th>Item</th><th class="wl-be-c2">Kind</th><th>Price</th><th>Dice</th><th class="wl-be-c2">Holds</th><th>Sold by</th><th class="wl-be-c2">Found</th></tr></thead>
+      <tbody id="wl-it-rows"></tbody>
+    </table></div>
+    <div class="wl-be-about" id="wl-it-about" hidden></div>
+    <p class="cap">Dice are six-sided: a weapon's damage, or the dice a suit of armour takes off each blow. Holds is the rounds in a full gun, or how many times a thing can be used before it is gone. Found counts the bags on the 42 maps that hold the item when the game starts.</p>
+  </div>
+</section>
+
+<section id="wl-ammo" data-part="map-28">
+  <p class="fig">06 · Loot</p>
+  <h2 class="t">Secret: ten bags under the Temple of Blood roll their ammunition when they are first opened</h2>
+  <p class="lede">Almost every bag in the game holds what its map says it holds. Eleven bags name a kind of item instead, and the game picks the item when a Ranger first opens the bag. All eleven name ammunition. One time in five the pick is Power packs, which no shop sells, and one time in five it is Howitzer shells.</p>
+
+  <div class="plate wl-be" id="wl-it-ammo" data-map="28" data-bag="1">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">This bag</p>
+        <p class="wl-be-hp">Not opened</p>
+        <p class="wl-be-mood"></p>
+        <p class="wl-fi-h">Bags opened</p>
+        <ol class="wl-be-types wl-it-tally" aria-label="What the bags held"></ol>
+      </div>
+      <div class="wl-fi-log wl-be-log-short" role="log" aria-label="What the bag held"><p class="wl-fi-dim">Each bag's ammunition appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-do="open">Open a fresh bag</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-do="many">Open 1,000 fresh bags</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">Bag 1 <a href="levels.html#map-28">under the Temple of Blood</a> (map 28) on the game's own code (<span data-part="game"><code>$9194</code></span>), put back as the disk has it before each opening. The random bytes come from this browser, where the C64 reads its raster line and a timer.</p>
+  </div>
+
+  <p>A bag is a list of pairs: an item and how many. When the item byte is a kind of item, the game counts the items of that kind, rolls a number up to the count, and writes the chosen item into the bag (<span data-part="game"><code>$91C8</code></span>). The roll is fair, so each of the five kinds of ammunition comes up as often as the others: 45 clips, 7.62mm clips, 9mm clips, Howitzer shells, and Power packs. The number of them is rolled too, from 1 to 7.</p>
+
+  <p>The game makes the roll once. It writes the result into the map, and the map goes back to the disk when the party leaves, so a bag that has been opened holds the same thing ever after. Until the party leaves, the disk still has the bag unopened. A party that does not like the roll can switch the machine off, come back, and open the bag again.</p>
+
+  <p>Ten of the eleven bags are under the Temple of Blood, and each also holds a weapon and some money. The eleventh is in the Las Vegas sewers and rolls from 1 to 10 of its ammunition. The game's code would roll any kind of item this way, and the maps only ever ask it for ammunition.</p>
+</section>
+
+<section id="wl-shops" data-part="module-1">
+  <p class="fig">07 · Shops</p>
+  <h2 class="t">Seven shops, and what each one has on the shelf</h2>
+  <p class="lede">Every shop sells at the full price. They differ in what they pay: the Trading car, the Agricultural Center's store, and the store in Highpool pay three quarters of an item's price, and the other four pay half. The table gives each shop's shelf as it is on the game disks.</p>
+
+  <div class="wl-tw"><table class="wl-t wl-it-shops">
+    <thead><tr><th>Shop</th><th>Where</th><th>Pays</th><th>On the shelf at the start</th></tr></thead>
+    <tbody>
+      <tr><td><b>Q. Emporium</b><br><small>“Welcome to the Quartz Emporium.”</small></td><td><a href="levels.html#map-1">Quartz</a></td><td>half</td><td>Ax, Club, Knife, TNT, M1911A1 45 pistol, Spear, Throwing knife, VP91Z 9mm pistol, Flamethrower, M17 carbine, M19 rifle, 45 clip, 7.62mm clip, 9mm clip, Bullet proof shirt, Leather jacket, Book, Canteen, Crowbar, Gas mask, Geiger counter, Hand mirror, Jug, Map, Match, Pick ax, Rope, Shovel, Sledge hammer, Snake squeezin</td></tr>
+      <tr><td><b>Trading car</b><br><small>“The Trading Car”</small></td><td><a href="levels.html#map-8">Desert Nomads</a></td><td>three quarters</td><td>Book, Canteen, Crowbar, Engine, Gas mask, Geiger counter, Hand mirror, Jug, Map, Match, Pick ax, Rope, Sledge hammer</td></tr>
+      <tr><td><b>AG. store</b><br><small>“Agricultural Station general store.”</small></td><td><a href="levels.html#map-9">Agricultural Center</a></td><td>three quarters</td><td>Clay pot, Fruit, Jewelry</td></tr>
+      <tr><td><b>Store</b><br><small>“Welcome to the shop.”</small></td><td><a href="levels.html#map-10">Highpool</a></td><td>three quarters</td><td>Book, Canteen, Crowbar, Gas mask, Geiger counter, Hand mirror, Jug, Map, Match, Pick ax, Rope, Shovel, Sledge hammer, Snake squeezin, Clay pot, Fruit, Jewelry</td></tr>
+      <tr><td><b>Market</b><br><small>“The Darwin general store.”</small></td><td><a href="levels.html#map-21">Darwin Village</a></td><td>half</td><td>Book, Canteen, Crowbar, Gas mask, Geiger counter, Hand mirror, Jug, Map, Match, Pick ax, Rope, Shovel, Sledge hammer, Snake squeezin, Clay pot, Fruit, Jewelry</td></tr>
+      <tr><td><b>Blackmarket</b><br><small>“The Black Market.”</small></td><td><a href="levels.html#map-21">Darwin Village</a></td><td>half</td><td>Ax, Club, Chainsaw, Knife, Grenade, Plastic explosive, TNT, Mangler, Sabot rocket, LAW rocket (20), M1911A1 45 pistol, Spear, Throwing knife, VP91Z 9mm pistol, Flamethrower, M17 carbine, M19 rifle, Mac 17 SMG, Uzi SMG Mark 27, AK 97 assault rifle, M1989A1 Nato assault rifle, 45 clip, 7.62mm clip, 9mm clip, Howitzer shell (2), Bullet proof shirt, Kevlar vest, Leather jacket, Kevlar suit, Rad suit, Robe</td></tr>
+      <tr><td><b>Thrift shop</b><br><small>“Leroy&#x27;s arms counter.”</small></td><td><a href="levels.html#map-32">Downtown Needles</a></td><td>half</td><td>Ax, Club, Knife, TNT, M1911A1 45 pistol, Spear, Throwing knife, VP91Z 9mm pistol, Flamethrower, M17 carbine, M19 rifle, 45 clip, 7.62mm clip, 9mm clip, Bullet proof shirt, Leather jacket, Book, Canteen, Crowbar, Gas mask, Geiger counter, Hand mirror, Jug, Map, Match, Pick ax, Rope, Shovel, Sledge hammer, Snake squeezin</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>A shop buys only the kinds of item it sells. The store in Highpool deals in gear and trade goods, so its sell list leaves a Ranger's pistol out.</p>
+
+  <p>A shop pays the same for a gun whether it is full, empty, or jammed, and the same for a box of Matches with one match left (<code>$CCC7</code>). What it sells is always full: a gun comes loaded and Matches come as 40 (<code>$CBFD</code>).</p>
+
+  <p>These things are never on any shelf at the start, so the party has to find every one of them: Proton ax, RPG-7, Red Ryder, Laser pistol, Ion beamer, Laser carbine, Laser rifle, Meson cannon, Power pack, Power armor, and Pseudo-chitin armor.</p>
+
+  <p>Three of the shops list a kind of weapon that has nothing in it. Item kinds are numbered, and 4 is the rifles and 6 the submachine guns. The Emporium, Leroy's counter, and the Blackmarket all deal in kind 5, and the fight code lets a gun of kind 5 fire bursts, as kinds 6 and 7 do (<span data-part="game"><code>$AC04</code></span>). None of the 95 items is of kind 5.</p>
+</section>
+
+<section id="wl-rounds" data-part="engine">
+  <p class="fig">08 · Guns</p>
+  <h2 class="t">Secret: reloading a gun throws away the rounds that were left in it</h2>
+  <p class="lede">A gun's rounds are one number in the Ranger's pack, and the game only ever sets that number to full or to nothing. A reload does not top the gun up. A jam costs every round in the gun.</p>
+
+  <div class="wl-tw"><table class="wl-t">
+    <thead><tr><th>What happens</th><th>Rounds in the gun afterwards</th><th>Where</th></tr></thead>
+    <tbody>
+      <tr><td>The Ranger reloads</td><td>A full clip, whatever was left. One clip is used up.</td><td class="wl-n"><code>$1281</code></td></tr>
+      <tr><td>The gun jams in a fight</td><td>None. The rounds are lost with the jam.</td><td class="wl-n"><span data-part="game"><code>$A5B5</code></span></td></tr>
+      <tr><td>The Ranger clears the jam</td><td>None. The gun needs a clip before it fires again.</td><td class="wl-n"><code>$153E</code></td></tr>
+      <tr><td>The gun is bought, or taken from a bag</td><td>A full clip.</td><td class="wl-n"><span data-part="module-1"><code>$CBFD</code></span>, <span data-part="game"><code>$928C</code></span></td></tr>
+      <tr><td>A recruit joins the party</td><td>Every gun the recruit carries is filled.</td><td class="wl-n"><span data-part="game"><code>$A47A</code></span></td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The M1911A1 pistol holds 7 rounds. A Ranger who reloads with 6 left has spent a 45 clip to gain one round. The game asks <q>Reload (Y/N)?</q> whenever the Ranger picks a clip that fits the gun in hand, and it does not look at how many rounds the gun has.</p>
+
+  <p>The Flamethrower is the one gun that cannot be reloaded at all. Its record names no ammunition, so the game never offers a reload, and its 60 shots are all it will ever have. It is also the one weapon that no skill helps with. Selling an empty Flamethrower for half its price and buying a full one is the only way to fill it.</p>
+</section>
+
+<section id="wl-tools" data-part="game">
+  <p class="fig">09 · Gear</p>
+  <h2 class="t">Secret: a Crowbar hits as hard as an Ax, and a Book does nothing at all</h2>
+  <p class="lede">Everything in the item table has a number of damage dice, because the game lets a Ranger hold anything that is not armour. Four tools roll the same three dice as an Ax. A few things for sale are never asked for by any square, any fight, or any line of the game's code.</p>
+
+  <div class="wl-tw"><table class="wl-t">
+    <thead><tr><th>In the hand</th><th>Dice</th><th>Skill that helps</th><th>Price</th></tr></thead>
+    <tbody>
+      <tr><td>Ax</td><td class="wl-n">3</td><td>Brawling</td><td class="wl-n">$25</td></tr>
+      <tr><td>Club</td><td class="wl-n">3</td><td>Brawling</td><td class="wl-n">$15</td></tr>
+      <tr><td>Knife</td><td class="wl-n">3</td><td>Knife fight</td><td class="wl-n">$20</td></tr>
+      <tr><td>Crowbar</td><td class="wl-n">3</td><td>none</td><td class="wl-n">$15</td></tr>
+      <tr><td>Pick ax</td><td class="wl-n">3</td><td>none</td><td class="wl-n">$75</td></tr>
+      <tr><td>Shovel</td><td class="wl-n">3</td><td>none</td><td class="wl-n">$15</td></tr>
+      <tr><td>Sledge hammer</td><td class="wl-n">3</td><td>none</td><td class="wl-n">$25</td></tr>
+      <tr><td>Canteen</td><td class="wl-n">1</td><td>none</td><td class="wl-n">$10</td></tr>
+      <tr><td>45 clip</td><td class="wl-n">1</td><td>none</td><td class="wl-n">$25</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The Crowbar, the Pick ax, the Shovel, and the Sledge hammer each roll 3 dice in a fight, the same as an Ax or a Club. In fights with the same dice rolls, four Rangers with no skills did exactly the same with Crowbars as with Axes. The difference is the skill: Brawling adds to the attack roll with an Ax, and no skill adds to it with a tool. Anything else held in the hand, a Canteen or a clip, rolls 1 die.</p>
+
+  <p>Some items have no use beyond their price. The table lists the things in the game that no square takes when a Ranger uses them, that no map's code looks for, and that are neither weapons, armour, nor ammunition.</p>
+
+  <div class="wl-tw"><table class="wl-t">
+    <thead><tr><th>Item</th><th>Price</th><th>Where it comes from</th><th>What it is for</th></tr></thead>
+    <tbody>
+      <tr><td>Book</td><td class="wl-n">$10</td><td>12 bags on 7 maps, and 5 shops</td><td>Nothing. A shop will buy it back.</td></tr>
+      <tr><td>Hand mirror</td><td class="wl-n">$10</td><td>6 bags on 4 maps, and 5 shops</td><td>Nothing. A shop will buy it back.</td></tr>
+      <tr><td>Map</td><td class="wl-n">$50</td><td>3 bags on 1 map, and 5 shops</td><td>Nothing. A shop will buy it back.</td></tr>
+      <tr><td>Toaster</td><td class="wl-n">$30</td><td>The four toasters in the Inner Sanctum, once a Ranger has repaired them</td><td>Nothing, and no shop deals in it.</td></tr>
+      <tr><td>Clay pot</td><td class="wl-n">$15</td><td>9 bags on 6 maps, and 3 shops</td><td>Selling.</td></tr>
+      <tr><td>Jewelry</td><td class="wl-n">$100</td><td>19 bags on 7 maps, and 3 shops</td><td>Selling.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The game's code looks for three items by number. Whoever carries a Geiger counter lets the party hear the clicking near radiation (<code>$B180</code>). A Ranger without a Gas mask is knocked out by the gas in Fat Freddy's office in Las Vegas (<span data-part="map-40"><code>$3EAE</code></span>). A Rad suit that is worn stops the damage of a radiation square.</p>
+</section>
+
+<section id="wl-cut" data-part="game">
+  <p class="fig">10 · Left in the table</p>
+  <h2 class="t">Items that are in the table and never reach the player</h2>
+  <p class="lede">Three of the 95 items have prices and no names. Two others sit out of alphabetical order in a list that is otherwise sorted, which is what a renamed item looks like. One rifle rolls 200 dice and is in none of the bags.</p>
+
+  <div class="wl-tw"><table class="wl-t wl-be-bytes">
+    <thead><tr><th>Item</th><th>Name</th><th>Price</th><th>What its record says</th></tr></thead>
+    <tbody>
+      <tr><td class="wl-n">70</td><td><i>none</i></td><td class="wl-n">$500</td><td>Holds 5 charges, rolls 3 dice, and is loaded with Power packs.</td></tr>
+      <tr><td class="wl-n">71</td><td><i>none</i></td><td class="wl-n">$4,500</td><td>Used up after one use.</td></tr>
+      <tr><td class="wl-n">72</td><td><i>none</i></td><td class="wl-n">$4,000</td><td>Never used up, like a key.</td></tr>
+      <tr><td class="wl-n">20</td><td>Red Ryder</td><td class="wl-n">$12,345</td><td>A rifle with 200 dice and 63 rounds, loaded with 7.62mm clips.</td></tr>
+      <tr><td class="wl-n">94</td><td>Cash</td><td class="wl-n"></td><td>Not an item: the eight bytes after the table.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The quest items, 58 to 90, are stored in alphabetical order: Android head, Antitoxin, and on through the keys and the Secpasses to Toaster. The three items with no names are 70, 71, and 72, between Grazer bat fetish and Nova key, so their names began with a letter from G to N. Item 70 is the odd one. It holds 5 charges, rolls 3 dice, and is loaded with Power packs, which makes it a small energy weapon that was filed with the quest items.</p>
+
+  <p>Two names break the order. Finster's head is between Antitoxin and Blackstar key, and the Visa card is between Clone fluid and Fusion cell. Each fits its place under some other name: a second head beside the Android head, and a card whose name began with C, D, E, or F. What those names were is not on the disks.</p>
+
+  <p>The Red Ryder is a rifle with 200 damage dice and a price of $12,345. It is not in any bag, on any recruit, or on any shelf, and it has <a href="discoveries.html#wl-ryder">a section of its own</a>. There are also two Bloodstaffs, items 62 and 63, with the same name and the same eight bytes. Seven bags hold one and four hold the other, and every square that takes a Bloodstaff takes either.</p>
+
+  <p>The last record in the table is called Cash and is not an item. A bag's money is marked with its number, 94, and the game treats that number as money wherever it meets it. The eight bytes of its record are whatever lay after the table when each file was made, and they differ from file to file.</p>
+</section>
+
+<section id="wl-record" data-part="game">
+  <p class="fig">11 · The record</p>
+  <h2 class="t">How eight bytes make an item</h2>
+  <p class="lede">The item table starts at <code>$3108</code> and gives each item eight bytes. A shop loads its own copy of the table over the one in memory, and the copies differ only in the stock counts.</p>
+
+  <div class="wl-tw"><table class="wl-t wl-be-bytes">
+    <thead><tr><th>Byte</th><th>Holds</th><th>Read by</th></tr></thead>
+    <tbody>
+      <tr><td class="wl-n">0-1</td><td>The price. A shop sells at this price and pays the price less a half or a quarter of it.</td><td class="wl-n"><span data-part="module-1"><code>$CD18</code></span></td></tr>
+      <tr><td class="wl-n">2</td><td>The stock count of the shop file that is loaded: 0 for not sold.</td><td class="wl-n"><span data-part="module-1"><code>$CC6A</code></span></td></tr>
+      <tr><td class="wl-n">3</td><td>The kind of item in the top five bits, 1 to 18. The low three bits are 1 for the seven explosives and rockets, which shake the screen when a Ranger uses one on a square.</td><td class="wl-n"><span data-part="engine"><code>$144A</code></span>, <span data-part="engine"><code>$1454</code></span></td></tr>
+      <tr><td class="wl-n">4</td><td>The rounds in a full gun, or the number of uses. An item with 0 here is never used up: a Crowbar, a key, a Secpass. An item with 1 is gone after one use: a Rope, a rocket, a Fruit.</td><td class="wl-n"><span data-part="engine"><code>$1470</code></span>, <span data-part="engine"><code>$14A5</code></span></td></tr>
+      <tr><td class="wl-n">5</td><td>The skill that adds to the attack roll and that the weapon can teach, or 0 for none.</td><td class="wl-n"><span data-part="engine"><code>$0DD0</code></span></td></tr>
+      <tr><td class="wl-n">6</td><td>The damage dice of anything held in the hand. For armour, the armour class.</td><td class="wl-n"><span data-part="engine"><code>$146D</code></span></td></tr>
+      <tr><td class="wl-n">7</td><td>The item that reloads a gun, or 0.</td><td class="wl-n"><code>$AC39</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <p>A Ranger's pack is 30 pairs of bytes: an item number and a count. The count holds the rounds left or the uses left, and its top bit marks a jammed gun. The game never stacks items, so ten 45 clips take ten lines.</p>
+
+  <p>A bag on a map is a list of the same kind of pair, with one difference: the count is how many of the item the bag holds, and a count with its top bit set is rolled from 1 to that number when the bag is first opened. Money is the pair's item number 94 followed by two bytes, and each byte is rolled on its own from 1 to its value. A bag whose two bytes are 232 and 3 is not worth from 1 to 1,000 dollars. The low byte is rolled from 1 to 232 and the high byte from 1 to 3, so the bag holds from 257 to 1,000 dollars and never a number that ends between 233 and 256 above a multiple of 256.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script type="application/json" id="wl-items">{"maps":{"0":"The world map","1":"Quartz","2":"Quartz, Scott's Bar","3":"Quartz, the Stagecoach Inn","4":"Quartz, Ugly's hideout","5":"Quartz, the abandoned buildings","6":"Quartz, the courthouse","7":"Sleeper Base, level 1","8":"Desert Nomads","9":"Agricultural Center","10":"Highpool","11":"Las Vegas, the beat-up buildings","12":"Las Vegas","13":"Sleeper Base, level 2","15":"Sleeper Base, level 3","16":"Base Cochise, outside","17":"Base Cochise, the computer","18":"Base Cochise, the testing facility","19":"Base Cochise, robot assembly","20":"Base Cochise, the reactor","21":"Darwin Village","22":"Darwin, the base","23":"Finster's mind maze","24":"Las Vegas sewers","25":"Las Vegas sewers, the lab","26":"Needles","27":"Temple of Blood","28":"Under the Temple of Blood","29":"Agricultural Center, the Root Cellar","31":"Needles, waste pit and ammo bunker","32":"Needles downtown, Leroy's","33":"Needles downtown, Hobo Dogs","34":"Needles, police station, gas station, church","35":"Guardian Citadel","36":"Guardian Citadel, the Outer Sanctum","38":"Las Vegas, the Mushroom Cloud temple","39":"Las Vegas, Faran Brygo's hideout","40":"Las Vegas, jail and Fat Freddy's","41":"Las Vegas, Spade's Casino","42":"Guardian Citadel, the Inner Sanctum","43":"Mine shaft","49":"Savage Village"},"items":[{"i":0,"n":"Fists","p":"Fists","r":[0,0,0,8,0,5,1,0],"loot":[],"npc":[],"use":[],"carry":[[3,1]]},{"i":1,"n":"Ax","p":"Axes","r":[25,0,0,8,0,1,3,0],"loot":[[3,1,1,1],[8,1,2,2],[35,1,1,1],[38,1,1,1],[43,1,1,2],[49,3,3,23]],"npc":[],"use":[[4,4],[6,3],[9,2],[22,1],[32,2],[33,2],[35,6],[36,1],[41,4],[42,2],[43,2],[49,1]],"carry":[]},{"i":2,"n":"Club","p":"Clubs","r":[15,0,0,8,0,1,3,0],"loot":[[9,1,1,1],[12,1,1,1],[38,1,1,4],[49,1,1,9]],"npc":[],"use":[[6,1]],"carry":[]},{"i":3,"n":"Chainsaw","p":"Chainsaws","r":[244,1,0,8,0,1,6,0],"loot":[[25,1,1,1],[36,1,1,1]],"npc":[],"use":[],"carry":[]},{"i":4,"n":"Knife","p":"Knives","r":[20,0,0,8,0,4,3,0],"loot":[[2,2,4,4],[3,2,2,2],[8,4,6,6],[10,1,1,1],[12,1,1,1],[27,1,2,2],[32,9,10,16],[35,1,2,2],[38,1,3,3],[40,6,6,6],[41,2,2,6],[43,1,1,2],[49,4,4,19]],"npc":[[10,"JACKIE"],[38,"DR. MIKE SCOT"]],"use":[[6,1],[23,1]],"carry":[]},{"i":5,"n":"Proton ax","p":"Proton axes","r":[16,39,0,8,0,1,14,0],"loot":[[36,1,1,1],[40,1,1,1]],"npc":[],"use":[[9,2],[18,1],[27,1],[32,2],[33,2],[36,3],[41,7],[42,2],[43,1],[49,3]],"carry":[]},{"i":6,"n":"Grenade","p":"Grenades","r":[150,0,0,105,1,20,7,0],"loot":[[3,1,5,5],[4,1,1,5],[8,1,1,5],[12,2,2,10],[29,2,2,2],[31,1,1,15],[36,1,1,4],[38,1,3,3],[40,2,2,20],[41,3,3,5],[43,1,1,1],[49,1,1,3]],"npc":[],"use":[[1,1],[3,5],[4,4],[6,8],[7,1],[15,2],[16,1],[19,9],[20,1],[27,1],[28,2],[34,1],[49,1]],"carry":[]},{"i":7,"n":"Plastic explosive","p":"Plastic explosives","r":[44,1,0,105,1,20,10,0],"loot":[[3,1,1,1],[4,1,1,1],[12,3,3,15],[29,1,1,1],[31,1,1,3],[35,1,2,2],[36,1,1,7],[38,1,1,5],[42,1,1,6]],"npc":[],"use":[[1,1],[3,5],[4,7],[6,8],[7,1],[9,2],[10,1],[13,4],[15,2],[16,4],[17,4],[19,11],[20,4],[22,5],[23,1],[24,1],[25,1],[27,1],[28,3],[31,2],[32,7],[33,3],[34,3],[35,10],[36,3],[38,7],[39,2],[40,1],[41,7],[42,2],[43,3],[49,5]],"carry":[]},{"i":8,"n":"TNT","p":"TNT","r":[50,0,0,105,1,20,5,0],"loot":[[3,1,1,1],[12,2,2,10],[31,1,1,1],[34,1,1,10],[43,2,2,2]],"npc":[],"use":[[1,1],[3,5],[4,7],[6,8],[7,1],[9,2],[10,1],[13,4],[16,4],[17,4],[19,11],[20,1],[22,5],[23,1],[24,1],[25,1],[27,1],[28,3],[31,2],[32,7],[33,3],[34,3],[35,10],[36,3],[38,6],[39,1],[40,1],[41,7],[42,2],[43,3],[49,5]],"carry":[]},{"i":9,"n":"Mangler","p":"Manglers","r":[244,1,0,65,1,11,4,0],"loot":[[3,1,2,2],[10,2,2,2],[12,1,1,10]],"npc":[[32,"CHRISTINA"]],"use":[[1,1],[3,5],[4,7],[6,8],[7,1],[9,2],[10,2],[16,1],[17,2],[19,9],[20,1],[22,5],[23,1],[24,1],[25,1],[27,1],[28,2],[31,2],[32,7],[33,3],[34,3],[35,10],[36,3],[38,7],[39,2],[40,1],[41,6],[43,2],[49,5]],"carry":[]},{"i":10,"n":"Sabot rocket","p":"Sabot rockets","r":[76,4,0,65,1,11,7,0],"loot":[[4,1,1,2],[13,1,1,20],[25,1,1,5],[39,1,1,5]],"npc":[],"use":[[1,1],[3,5],[4,7],[6,8],[7,1],[9,2],[10,1],[13,4],[16,4],[17,4],[19,11],[20,4],[22,5],[23,1],[24,1],[25,1],[27,1],[28,2],[31,2],[32,7],[33,3],[34,3],[35,10],[36,3],[38,7],[39,2],[40,1],[41,7],[43,2],[49,5]],"carry":[]},{"i":11,"n":"LAW rocket","p":"LAW rockets","r":[196,9,0,73,1,11,10,0],"loot":[[12,2,2,20],[13,1,1,20],[16,2,3,7],[19,1,10,10],[25,1,1,5],[28,5,5,10],[36,1,1,3],[39,1,1,10],[49,1,1,3]],"npc":[],"use":[[1,1],[3,5],[4,7],[6,8],[7,1],[9,2],[10,1],[13,4],[16,4],[17,4],[19,11],[20,4],[22,5],[23,1],[24,1],[25,1],[27,1],[28,3],[31,2],[32,7],[33,3],[34,3],[35,10],[36,3],[38,7],[39,2],[40,1],[41,7],[42,2],[43,2],[49,5]],"carry":[]},{"i":12,"n":"RPG-7","p":"RPG-7s","r":[136,19,0,73,1,11,13,0],"loot":[[7,1,1,5],[12,3,3,15],[13,1,1,20],[16,1,1,5],[17,1,1,5],[19,1,10,10],[25,1,1,3],[39,1,1,5]],"npc":[],"use":[[1,1],[3,5],[4,7],[6,8],[7,1],[9,2],[10,1],[13,4],[16,4],[17,4],[19,11],[20,4],[22,5],[23,1],[24,1],[25,1],[27,1],[28,2],[31,2],[32,7],[33,3],[34,3],[35,10],[36,3],[38,7],[39,2],[40,1],[41,7],[43,2],[49,5]],"carry":[]},{"i":13,"n":"M1911A1 45 pistol","p":"M1911A1 45 pistols","r":[150,0,0,16,7,3,4,30],"loot":[[2,2,2,2],[3,2,3,3],[10,1,1,1],[13,1,1,10],[31,1,2,2],[32,1,1,1],[33,1,1,1],[38,1,1,1],[40,6,6,22],[41,4,4,4],[43,1,1,1],[49,3,3,5]],"npc":[],"use":[],"carry":[]},{"i":14,"n":"Spear","p":"Spears","r":[35,0,0,16,1,1,5,0],"loot":[[49,3,3,18]],"npc":[],"use":[[49,1]],"carry":[]},{"i":15,"n":"Throwing knife","p":"Throwing knives","r":[20,0,0,16,1,8,2,0],"loot":[[27,1,1,5],[41,1,2,2],[43,2,2,4],[49,1,1,15]],"npc":[[32,"CHRISTINA"]],"use":[],"carry":[]},{"i":16,"n":"VP91Z 9mm pistol","p":"VP91Z 9mm pistols","r":[150,0,0,16,18,3,3,32],"loot":[[2,1,3,3],[8,2,2,5],[10,1,1,1],[13,1,1,10],[29,1,2,2],[32,1,2,2],[40,4,4,20],[41,1,1,1],[43,1,1,1]],"npc":[[32,"CHRISTINA"]],"use":[],"carry":[]},{"i":17,"n":"Flamethrower","p":"Flamethrowers","r":[184,11,0,24,60,0,11,0],"loot":[],"npc":[],"use":[[49,1]],"carry":[]},{"i":18,"n":"M17 carbine","p":"M17 carbines","r":[250,0,0,24,10,6,5,31],"loot":[[27,1,2,2]],"npc":[],"use":[],"carry":[]},{"i":19,"n":"M19 rifle","p":"M19 rifles","r":[94,1,0,32,8,6,5,31],"loot":[[4,1,1,1],[13,1,1,10],[28,6,6,11],[40,1,1,3],[41,1,1,1]],"npc":[],"use":[],"carry":[]},{"i":20,"n":"Red Ryder","p":"Red Ryders","r":[57,48,0,32,63,6,200,31],"loot":[],"npc":[],"use":[],"carry":[]},{"i":21,"n":"Mac 17 SMG","p":"Mac 17 SMGs","r":[244,1,0,48,30,12,4,30],"loot":[[13,1,1,10],[27,1,1,1],[28,1,1,1],[34,1,1,1],[40,1,2,2],[41,3,3,5],[49,1,1,1]],"npc":[],"use":[],"carry":[]},{"i":22,"n":"Uzi SMG Mark 27","p":"Uzi SMG Mark 27s","r":[238,2,0,48,40,12,4,32],"loot":[[4,2,2,2],[13,1,1,10],[21,2,2,2],[28,1,1,1],[34,1,1,1],[38,2,2,2],[41,1,1,1],[49,2,2,2]],"npc":[[32,"CHRISTINA"]],"use":[],"carry":[]},{"i":23,"n":"AK 97 assault rifle","p":"AK 97 assault rifles","r":[20,5,0,56,30,10,6,31],"loot":[[7,1,2,2],[12,2,2,4],[13,1,1,10],[32,1,1,1],[34,1,1,2],[35,1,12,12]],"npc":[],"use":[],"carry":[]},{"i":24,"n":"M1989A1 Nato assault rifle","p":"M1989A1 Nato assault rifles","r":[220,5,0,56,35,10,6,31],"loot":[[13,1,1,10],[28,1,1,1],[31,1,2,2],[34,1,1,2],[38,1,1,1],[39,1,1,5],[41,1,1,1],[49,4,4,8]],"npc":[],"use":[],"carry":[]},{"i":25,"n":"Laser pistol","p":"Laser pistols","r":[64,31,0,80,40,34,6,34],"loot":[[7,1,1,1],[24,2,2,2],[25,1,1,1],[36,2,3,3],[38,1,1,1],[41,2,2,2]],"npc":[],"use":[],"carry":[]},{"i":26,"n":"Ion beamer","p":"Ion beamers","r":[104,66,0,88,20,34,14,34],"loot":[[35,1,1,1]],"npc":[],"use":[],"carry":[]},{"i":27,"n":"Laser carbine","p":"Laser carbines","r":[236,44,0,88,30,34,8,34],"loot":[[22,1,2,2],[24,1,1,1],[35,1,1,1],[36,2,2,2]],"npc":[],"use":[],"carry":[]},{"i":28,"n":"Laser rifle","p":"Laser rifles","r":[200,50,0,96,20,34,12,34],"loot":[[7,1,1,1],[35,1,2,2]],"npc":[[19,"VAX"]],"use":[],"carry":[]},{"i":29,"n":"Meson cannon","p":"Meson cannons","r":[80,70,0,96,10,34,19,34],"loot":[[13,1,1,1],[35,1,1,1]],"npc":[],"use":[],"carry":[]},{"i":30,"n":"45 clip","p":"45 clips","r":[25,0,0,112,0,0,1,0],"loot":[[2,2,3,3],[3,4,13,13],[4,11,11,55],[6,6,6,24],[8,1,1,6],[10,1,1,1],[13,1,1,100],[24,1,3,3],[27,1,1,4],[28,1,1,5],[31,2,6,30],[32,1,3,3],[33,1,2,2],[38,1,5,5],[40,5,5,25],[41,6,12,20],[43,2,2,4],[49,3,3,22]],"npc":[],"use":[],"carry":[]},{"i":31,"n":"7.62mm clip","p":"7.62mm clips","r":[30,0,0,112,0,0,1,0],"loot":[[4,12,12,65],[6,7,8,26],[7,2,6,15],[10,1,1,1],[12,2,2,16],[13,1,1,100],[24,2,7,7],[27,1,1,7],[28,2,2,10],[31,2,8,17],[32,1,5,5],[33,1,1,3],[34,2,6,25],[35,1,50,50],[36,1,1,5],[38,3,3,25],[39,1,1,20],[40,1,1,6],[41,2,3,6],[49,2,2,13]],"npc":[],"use":[],"carry":[]},{"i":32,"n":"9mm clip","p":"9mm clips","r":[30,0,0,112,0,0,1,0],"loot":[[2,1,1,6],[3,4,10,10],[4,12,12,70],[6,5,5,20],[8,1,1,6],[10,4,11,17],[13,1,1,100],[21,2,2,20],[28,1,1,5],[29,1,1,1],[31,1,1,15],[32,2,7,7],[34,3,9,28],[38,2,3,7],[40,4,4,20],[41,2,4,5],[43,1,1,2],[49,2,2,12]],"npc":[],"use":[],"carry":[]},{"i":33,"n":"Howitzer shell","p":"Howitzer shells","r":[50,0,0,112,1,0,1,0],"loot":[[31,1,1,3]],"npc":[],"use":[[33,1]],"carry":[]},{"i":34,"n":"Power pack","p":"Power packs","r":[75,0,0,112,0,0,1,0],"loot":[[7,3,3,15],[13,2,26,35],[15,1,1,1],[16,6,6,32],[17,2,2,20],[19,1,20,20],[22,1,6,6],[24,2,4,13],[25,3,5,11],[31,1,1,1],[35,5,19,24],[36,13,25,84],[38,1,1,2],[41,2,2,5],[42,7,10,43]],"npc":[[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"],[19,"VAX"]],"use":[],"carry":[]},{"i":35,"n":"Power armor","p":"Power armors","r":[48,117,0,120,0,0,14,0],"loot":[[19,1,2,2],[42,5,5,5]],"npc":[[19,"VAX"]],"use":[],"carry":[]},{"i":36,"n":"Bullet proof shirt","p":"Bullet proof shirts","r":[244,1,0,120,0,0,2,0],"loot":[[4,1,1,1],[6,2,2,2],[27,1,2,2],[31,1,1,1],[41,1,1,1],[43,1,1,1]],"npc":[],"use":[],"carry":[]},{"i":37,"n":"Kevlar vest","p":"Kevlar vests","r":[232,3,0,120,0,0,4,0],"loot":[[4,1,1,1],[27,1,1,1]],"npc":[],"use":[],"carry":[]},{"i":38,"n":"Leather jacket","p":"Leather jackets","r":[200,0,0,120,0,0,1,0],"loot":[[2,1,1,1],[3,1,1,1],[10,3,8,8],[23,1,1,1],[36,1,1,3],[40,1,1,1],[41,3,3,4]],"npc":[],"use":[],"carry":[]},{"i":39,"n":"Kevlar suit","p":"Kevlar suits","r":[214,6,0,120,0,0,6,0],"loot":[[12,1,1,1],[25,2,2,2],[34,1,1,1],[41,1,1,1]],"npc":[],"use":[],"carry":[]},{"i":40,"n":"Pseudo-chitin armor","p":"Pseudo-chitin armors","r":[136,19,0,120,0,0,10,0],"loot":[[13,7,7,7],[22,1,1,1]],"npc":[[19,"VAX"]],"use":[[18,1]],"carry":[]},{"i":41,"n":"Rad suit","p":"Rad suits","r":[70,5,0,120,0,0,5,0],"loot":[[13,1,1,12],[31,1,2,2],[38,1,1,3]],"npc":[[32,"CHRISTINA"]],"use":[],"carry":[]},{"i":42,"n":"Robe","p":"Robes","r":[250,0,0,120,0,0,1,0],"loot":[[8,1,1,1],[23,1,1,1],[33,1,1,5],[35,1,3,3],[36,3,5,6],[38,1,1,5],[42,1,1,5]],"npc":[[38,"DR. MIKE SCOT"]],"use":[[27,2]],"carry":[]},{"i":43,"n":"Book","p":"Books","r":[10,0,255,128,0,0,1,0],"loot":[[3,3,8,8],[7,1,3,3],[10,1,1,1],[35,1,4,4],[36,4,12,12],[38,1,1,1],[40,1,1,1]],"npc":[],"use":[],"carry":[]},{"i":44,"n":"Canteen","p":"Canteens","r":[10,0,255,128,0,0,1,0],"loot":[[40,1,1,1],[41,1,1,1],[43,2,2,4]],"npc":[[10,"JACKIE"],[32,"CHRISTINA"]],"use":[[0,6],[6,1]],"carry":[]},{"i":45,"n":"Crowbar","p":"Crowbars","r":[15,0,255,128,0,0,3,0],"loot":[[3,1,1,1],[7,1,1,1],[8,4,5,5],[9,1,1,1],[40,1,1,1]],"npc":[],"use":[[1,1],[3,4],[4,4],[6,3],[7,1],[9,1],[10,1],[13,1],[15,2],[16,1],[17,2],[19,6],[20,1],[22,4],[27,1],[28,1],[31,1],[32,1],[33,1],[35,6],[36,2],[41,3],[42,1],[43,2],[49,2]],"carry":[]},{"i":46,"n":"Engine","p":"Engines","r":[244,1,255,128,1,0,1,0],"loot":[[34,1,1,1],[42,1,1,1]],"npc":[],"use":[[10,1],[34,1]],"carry":[]},{"i":47,"n":"Gas mask","p":"Gas masks","r":[150,0,255,128,0,0,1,0],"loot":[[35,1,2,2],[36,1,1,1],[43,1,4,4]],"npc":[],"use":[],"carry":[]},{"i":48,"n":"Geiger counter","p":"Geiger counters","r":[44,1,255,128,0,0,1,0],"loot":[[32,1,1,1]],"npc":[[32,"CHRISTINA"]],"use":[],"carry":[]},{"i":49,"n":"Hand mirror","p":"Hand mirrors","r":[10,0,255,128,0,0,1,0],"loot":[[10,1,1,1],[24,1,1,1],[32,1,1,1],[43,3,3,4]],"npc":[],"use":[],"carry":[]},{"i":50,"n":"Jug","p":"Jugs","r":[1,0,255,128,1,0,1,0],"loot":[[3,1,3,3],[4,2,2,6],[6,1,1,3],[10,1,1,1],[13,8,8,14],[23,1,1,1],[27,1,1,5],[32,2,2,2],[38,1,1,1],[41,2,2,2]],"npc":[],"use":[[13,1]],"carry":[]},{"i":51,"n":"Map","p":"Maps","r":[50,0,255,128,0,0,1,0],"loot":[[41,3,3,3]],"npc":[],"use":[],"carry":[]},{"i":52,"n":"Match","p":"Matches","r":[10,0,255,128,40,0,1,0],"loot":[[32,2,2,2],[41,3,7,27]],"npc":[[10,"JACKIE"]],"use":[[10,1],[29,1]],"carry":[]},{"i":53,"n":"Pick ax","p":"Pick axes","r":[75,0,255,128,0,0,3,0],"loot":[[3,1,1,1],[43,1,1,1]],"npc":[],"use":[[1,1],[3,4],[4,1],[6,3],[7,1],[9,2],[15,2],[16,1],[19,6],[20,1],[22,1],[24,1],[25,1],[27,1],[28,1],[32,2],[33,1],[35,6],[36,1],[41,5],[42,2],[43,4],[49,2]],"carry":[]},{"i":54,"n":"Rope","p":"Ropes","r":[25,0,255,128,1,0,1,0],"loot":[[24,1,1,1],[32,2,2,2],[41,2,2,2],[42,1,1,1],[43,3,3,3]],"npc":[],"use":[[1,1],[4,1],[6,1],[10,1],[16,4],[17,1],[22,2],[24,12],[41,1]],"carry":[]},{"i":55,"n":"Shovel","p":"Shovels","r":[15,0,0,128,0,0,3,0],"loot":[[3,1,1,1],[4,1,1,1],[8,2,2,2],[41,1,1,1],[43,1,1,2]],"npc":[],"use":[[6,1],[8,1],[12,1],[24,1],[25,1],[41,1]],"carry":[]},{"i":56,"n":"Sledge hammer","p":"Sledge hammers","r":[25,0,255,128,0,0,3,0],"loot":[[8,1,1,1],[32,1,1,1],[42,1,1,1]],"npc":[],"use":[[1,1],[3,5],[4,4],[6,3],[7,1],[9,2],[10,1],[15,2],[16,1],[17,2],[19,9],[20,1],[22,4],[23,1],[24,1],[25,1],[27,1],[28,1],[32,2],[33,1],[34,1],[35,6],[36,2],[39,1],[42,1],[43,2],[49,3]],"carry":[]},{"i":57,"n":"Snake squeezin","p":"Snake squeezins","r":[10,0,0,128,1,0,1,0],"loot":[[2,1,1,1],[3,2,2,2],[6,2,2,2],[8,1,1,1],[32,1,1,1],[33,2,2,2],[36,4,4,36],[41,1,1,5],[42,1,1,1]],"npc":[[32,"CHRISTINA"]],"use":[[3,4],[6,1],[8,10],[33,3]],"carry":[]},{"i":58,"n":"Android head","p":"Android heads","r":[32,78,0,144,1,0,1,0],"loot":[[23,1,1,1],[25,1,1,1]],"npc":[],"use":[[22,1],[25,1]],"carry":[]},{"i":59,"n":"Antitoxin","p":"Antitoxins","r":[200,0,0,144,1,0,1,0],"loot":[[21,3,3,3],[41,1,1,1]],"npc":[],"use":[[21,2]],"carry":[[18,1]]},{"i":60,"n":"Finster's head","p":"Finster's heads","r":[48,117,0,144,1,0,1,0],"loot":[[22,1,1,1]],"npc":[],"use":[[22,1]],"carry":[]},{"i":61,"n":"Blackstar key","p":"Blackstar keys","r":[136,19,0,144,0,0,1,0],"loot":[[36,1,1,1]],"npc":[],"use":[[20,1]],"carry":[]},{"i":62,"n":"Bloodstaff","p":"Bloodstaffs","r":[220,5,0,144,1,0,1,0],"loot":[[28,1,1,1],[33,2,2,2],[34,1,1,1]],"npc":[],"use":[[33,1],[34,1],[38,1]],"carry":[]},{"i":63,"n":"Bloodstaff","p":"Bloodstaffs","r":[220,5,0,144,1,0,1,0],"loot":[[27,1,1,1],[28,2,2,2],[31,1,1,1],[32,1,1,1],[33,1,1,1],[34,1,1,1]],"npc":[],"use":[[33,1],[34,1],[38,1]],"carry":[]},{"i":64,"n":"Broken toaster","p":"Broken toasters","r":[1,0,0,144,1,0,1,0],"loot":[[1,1,1,1],[8,1,1,1],[25,2,2,2],[35,1,1,1]],"npc":[],"use":[[42,4]],"carry":[]},{"i":65,"n":"Chemical","p":"Chemicals","r":[20,0,0,144,1,0,1,0],"loot":[[3,1,1,1],[4,1,3,3]],"npc":[],"use":[[21,2]],"carry":[]},{"i":66,"n":"Clone fluid","p":"Clone fluids","r":[232,3,0,144,1,0,1,0],"loot":[[13,2,2,2]],"npc":[],"use":[[13,1]],"carry":[]},{"i":67,"n":"Visa card","p":"Visa cards","r":[20,0,0,144,1,0,1,0],"loot":[[8,1,1,1],[36,2,3,12],[40,1,1,1],[41,1,1,2],[42,1,2,2]],"npc":[],"use":[[2,1]],"carry":[]},{"i":68,"n":"Fusion cell","p":"Fusion cells","r":[136,19,0,144,1,0,1,0],"loot":[[15,1,1,1],[16,2,5,5],[22,1,1,1],[24,1,1,1]],"npc":[],"use":[[25,1]],"carry":[]},{"i":69,"n":"Grazer bat fetish","p":"Grazer bat fetishs","r":[232,3,0,144,1,0,1,0],"loot":[[35,1,1,1]],"npc":[],"use":[[49,1]],"carry":[]},{"i":70,"n":"","p":"","r":[244,1,0,144,5,0,3,34],"loot":[],"npc":[],"use":[],"carry":[]},{"i":71,"n":"","p":"","r":[148,17,0,144,1,0,1,0],"loot":[],"npc":[],"use":[],"carry":[]},{"i":72,"n":"","p":"","r":[160,15,0,144,0,0,1,0],"loot":[],"npc":[],"use":[],"carry":[]},{"i":73,"n":"Nova key","p":"Nova keys","r":[136,19,0,144,0,0,1,0],"loot":[[36,4,4,4],[42,1,1,1]],"npc":[],"use":[[20,1]],"carry":[]},{"i":74,"n":"Onyx ring","p":"Onyx rings","r":[244,1,0,144,1,0,1,0],"loot":[[36,2,2,2],[39,1,1,1]],"npc":[],"use":[[40,1]],"carry":[]},{"i":75,"n":"Passkey","p":"Passkeys","r":[2,0,0,144,0,0,1,0],"loot":[[3,1,1,1]],"npc":[],"use":[[3,2],[40,1]],"carry":[]},{"i":76,"n":"Plasma coupler","p":"Plasma couplers","r":[248,42,0,144,1,0,1,0],"loot":[[15,1,1,1],[16,1,1,1],[42,1,1,1]],"npc":[],"use":[[20,1]],"carry":[]},{"i":77,"n":"Power converter","p":"Power converters","r":[184,11,0,144,1,0,1,0],"loot":[[15,1,1,1],[16,2,2,2],[24,1,1,1]],"npc":[],"use":[[13,1],[25,1]],"carry":[]},{"i":78,"n":"Pulsar key","p":"Pulsar keys","r":[136,19,0,144,0,0,1,0],"loot":[[35,1,1,1],[42,1,1,1]],"npc":[],"use":[[20,1]],"carry":[]},{"i":79,"n":"Quasar key","p":"Quasar keys","r":[136,19,0,144,0,0,1,0],"loot":[[4,1,1,1],[35,1,1,1]],"npc":[],"use":[[20,1]],"carry":[]},{"i":80,"n":"Rom board","p":"Rom boards","r":[196,9,0,144,1,0,1,0],"loot":[[16,1,1,1],[24,1,1,1],[25,2,2,2]],"npc":[],"use":[[15,1],[25,2]],"carry":[]},{"i":81,"n":"Room key #18","p":"Room key #18s","r":[184,11,0,144,0,0,1,0],"loot":[[2,1,1,1]],"npc":[],"use":[[3,1]],"carry":[]},{"i":82,"n":"Ruby ring","p":"Ruby rings","r":[184,11,0,144,0,0,1,0],"loot":[[31,1,1,1]],"npc":[],"use":[[34,2]],"carry":[]},{"i":83,"n":"Secpass 1","p":"Secpass 1s","r":[220,5,0,144,0,0,1,0],"loot":[[7,1,1,1]],"npc":[],"use":[[7,1]],"carry":[]},{"i":84,"n":"Secpass 3","p":"Secpass 3s","r":[220,5,0,144,0,0,1,0],"loot":[[7,1,1,1]],"npc":[],"use":[[7,2],[13,1],[15,2],[22,1]],"carry":[]},{"i":85,"n":"Secpass 7","p":"Secpass 7s","r":[220,5,0,144,0,0,1,0],"loot":[[15,1,1,1]],"npc":[],"use":[[13,1],[15,1],[22,2]],"carry":[]},{"i":86,"n":"Secpass A","p":"Secpass As","r":[184,11,0,144,0,0,1,0],"loot":[[13,2,2,2]],"npc":[],"use":[[13,1],[15,3]],"carry":[]},{"i":87,"n":"Secpass B","p":"Secpass Bs","r":[88,27,0,144,0,0,1,0],"loot":[[23,1,1,1],[42,1,1,1]],"npc":[],"use":[[13,1],[15,1],[16,1],[20,1]],"carry":[]},{"i":88,"n":"Servo motor","p":"Servo motors","r":[238,2,0,144,1,0,1,0],"loot":[[3,2,2,2],[16,1,1,1],[24,2,2,2],[25,2,2,2]],"npc":[],"use":[[3,1],[25,4]],"carry":[]},{"i":89,"n":"Sonic key","p":"Sonic keys","r":[184,11,0,144,0,0,1,0],"loot":[[6,1,1,1],[12,3,3,3]],"npc":[],"use":[[25,1],[38,1]],"carry":[]},{"i":90,"n":"Toaster","p":"Toasters","r":[30,0,0,144,0,0,1,0],"loot":[[42,4,4,4]],"npc":[],"use":[],"carry":[]},{"i":91,"n":"Clay pot","p":"Clay pots","r":[15,0,255,136,1,0,1,0],"loot":[[4,2,2,6],[10,1,1,1],[32,1,1,1],[33,1,1,1],[35,1,4,4],[43,3,3,5]],"npc":[],"use":[],"carry":[]},{"i":92,"n":"Fruit","p":"Fruits","r":[30,0,255,136,1,0,1,0],"loot":[[3,1,2,2],[4,2,2,10],[9,2,15,15],[29,4,4,4],[32,1,1,1],[36,1,1,15],[38,1,1,3],[41,1,1,3],[42,1,2,2]],"npc":[],"use":[[21,2]],"carry":[]},{"i":93,"n":"Jewelry","p":"Jewelry","r":[100,0,255,136,1,0,1,0],"loot":[[4,1,1,4],[6,4,5,5],[8,2,3,6],[10,7,11,11],[24,2,2,2],[40,2,2,2],[41,1,1,1]],"npc":[],"use":[],"carry":[]},{"i":94,"n":"Cash","p":"Cash","r":[7,191,17,251,185,196,126,8],"loot":[],"npc":[],"use":[],"carry":[]}],"shops":[{"map":1,"rec":15316,"name":"Q. Emporium","table":2,"buy":0,"sell":1,"greet":"Welcome to the Quartz Emporium.","cls":[1,13,8,9,2,3,4,5,6,7,10,11,12,14,15,16,17],"after":[253,253]},{"map":8,"rec":15584,"name":"Trading car","table":0,"buy":0,"sell":2,"greet":"The Trading Car","cls":[16],"after":[253,253]},{"map":9,"rec":15634,"name":"AG. store","table":0,"buy":0,"sell":2,"greet":"Agricultural Station general store.","cls":[17],"after":[253,253]},{"map":10,"rec":16239,"name":"Store","table":1,"buy":0,"sell":2,"greet":"Welcome to the shop.","cls":[16,17],"after":[253,253]},{"map":21,"rec":15383,"name":"Market","table":4,"buy":0,"sell":1,"greet":"The Darwin general store.","cls":[16,17],"after":[253,253]},{"map":21,"rec":15405,"name":"Blackmarket","table":4,"buy":0,"sell":1,"greet":"The Black Market.","cls":[1,13,8,9,2,3,4,5,6,7,10,11,12,14,15],"after":[10,10]},{"map":32,"rec":15856,"name":"Thrift shop","table":2,"buy":0,"sell":1,"greet":"Leroy's arms counter.","cls":[1,13,8,9,2,3,4,5,6,7,10,11,12,14,15,16,17],"after":[253,253]}],"stock":{"0":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,255,255,255,255,255,255,255,255,255,0,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,17],"1":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,0,255,255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,17],"2":[0,255,255,0,255,0,0,0,255,0,0,0,0,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,255,255,255,0,0,0,255,0,255,0,0,0,0,255,255,255,0,255,255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,235],"4":[0,255,255,255,255,0,255,255,255,255,255,20,0,255,255,255,255,255,255,255,0,255,255,255,255,0,0,0,0,0,255,255,255,2,0,0,255,255,255,255,0,255,255,255,255,255,0,255,255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,225]},"cash":{"0":[7,191,17,251,185,196,126,8],"1":[7,191,17,251,185,196,126,8],"2":[190,255,235,195,190,40,0,60],"4":[88,159,225,8,211,17,49,252]}}</script>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="reference/wasteland-fight.js"></script>
+<script>
+/* items/play.js */
+// Wasteland (C64): the game's own item screens, run key by key. Nothing here is a port. WLFight
+// (reference/wasteland-fight.js) lays the engine's, the game's and a map's listing over each
+// other and runs them on the kit's 6502; this block adds the shop (location module 1, laid over
+// them at $CA00) and stands in for three things a page does not have:
+// - the keyboard: wait_key ($24F2) takes the next key of a list the caller gives; when the list
+//   runs out the run stops there, and what the game has printed since the last key is the screen;
+// - the disk drive: load_item_table ($26BD), save_item_table ($26D6) and save_game ($18EA) read
+//   and write a copy the caller holds, so the order the game writes in can be seen;
+// - the picture, the sound and the pauses, which return at once.
+// A session is replayed from where it began for every key, so a key can be taken back.
+// test_items.js runs this block in node and holds the page's claims to it.
+const WLItems = (function () {
+  'use strict';
+  const A = { waitKey: 0x24F2, lineLabel: 0x1AB4, moreLine: 0x1A89, poolLine: 0xCD28, inverseOn: 0x1FA6, inverseOff: 0x1FA9,
+    loadTable: 0x26BD, saveTable: 0x26D6, saveGame: 0x18EA,
+    silent: [0x055D, 0x26E7, 0x241C, 0x2422, 0x1ADC],     // show_picture_e000, unpack_map_stream, play_sound_1, delay_x_times, list_flash_line
+    selectMember: 0x0335, equipToggle: 0x10A2, itemsPage: 0x0FB1, itemsMember: 0x0E20, shop: 0xCA00,
+    table: 0x3100, records: 0xF400 };
+  const KEY = { RETURN: 0x8D, SPACE: 0xA0, BACK: 0x9B };
+  const key = k => typeof k === 'number' ? k : KEY[k] || (/^[1-9]$/.test(k) ? 0xB0 + +k : k.toUpperCase().charCodeAt(0) | 0x80);
+  class NeedKey extends Error {}
+
+  // F: a WLFight fight. disk: { tables: {n: Uint8Array(768)}, party: null | Uint8Array, log: [] }
+  function attach(F, disk, module1) {
+    const m = F.m, h = F.hooks;
+    if (module1) for (let a = 0; a < 0x10000; a++) if (module1.has[a]) m[a] = module1.ram[a];
+    let keys = [], frames = [];
+    h[A.waitKey] = c => { frames.push(F.text); F.text = ''; if (!keys.length) throw new NeedKey(); const k = keys.shift(); c.a = k; c.c = k === KEY.BACK ? 1 : 0; c.rts(); };
+    h[A.lineLabel] = () => { F.text += '\n'; };
+    h[A.moreLine] = () => { F.text += '\n'; };
+    if (module1) h[A.poolLine] = () => { F.text += '\n'; };
+    h[A.inverseOn] = () => { F.text += '\u0001'; };
+    h[A.inverseOff] = () => { F.text += '\u0002'; };
+    for (const a of A.silent) h[a] = c => { c.rts(); };
+    h[A.loadTable] = c => { const n = m[0x75]; if (disk.tables[n]) m.set(disk.tables[n], A.table); m[0x76] = n; c.rts(); };
+    h[A.saveTable] = c => { disk.tables[m[0x76]] = m.slice(A.table, A.table + 768); disk.log.push('shelf'); c.rts(); };
+    h[A.saveGame] = c => { disk.party = m.slice(A.records, A.records + 0x800); disk.log.push('party'); c.rts(); };
+    const P = {};
+    P.rec = F.rec;
+    P.slot = (i, s) => ({ item: m[F.rec(i) + 0xBB + 2 * s], count: m[F.rec(i) + 0xBC + 2 * s] });
+    P.pack = i => { const out = []; for (let s = 1; s <= 30; s++) { const q = P.slot(i, s); if (q.item || q.count) out.push({ slot: s, item: q.item, count: q.count }); } return out; };
+    P.give = (i, list) => { const r = F.rec(i); m.fill(0, r + 0xBD, r + 0xF9); m[r + 0x1F] = m[r + 0x25] = m[r + 0x1A] = 0; list.forEach((q, k) => { m[r + 0xBD + 2 * k] = q[0]; m[r + 0xBE + 2 * k] = q[1] || 0; }); };
+    P.marks = i => { const r = F.rec(i); return { weapon: m[r + 0x1F], armour: m[r + 0x25], ac: m[r + 0x1A] }; };
+    P.cash = i => { const r = F.rec(i); return m[r + 0x15] | m[r + 0x16] << 8 | m[r + 0x17] << 16; };
+    P.setCash = (i, v) => { const r = F.rec(i); m[r + 0x15] = v & 0xFF; m[r + 0x16] = (v >> 8) & 0xFF; m[r + 0x17] = (v >> 16) & 0xFF; };
+    // unE)quip as the engine does it (equip_toggle $10A2)
+    P.equip = (i, s) => { F.call(A.selectMember, { a: i }); F.call(A.equipToggle, { a: s }); };
+    P.stock = n => m[A.table + 8 + 8 * n + 2];
+    // run `start` with these keys from the state `from` (F.save() and the disk as they were); the
+    // screens are what the game printed before each key it asked for
+    P.play = (start, list) => {
+      keys = list.map(key); frames = []; F.text = '';
+      let ended = true;
+      try { start(); } catch (e) { if (!(e instanceof NeedKey)) throw e; ended = false; }
+      if (ended) frames.push(F.text);
+      F.text = '';
+      return { ended, screens: frames.map(tidy), left: keys.length };
+    };
+    P.itemsPage = (i, list) => P.play(() => { m[A.itemsMember] = i; F.call(A.itemsPage, {}, 4e6); }, list);
+    // record: the address of the shop's record in the map's listing
+    P.shop = (record, list) => P.play(() => { m[0x5F] = record & 0xFF; m[0x60] = record >> 8; F.call(A.shop, {}, 2e7); }, list);
+    // the machine switched off and on: the party as last saved, the shelf as last written
+    P.powerOff = () => { if (disk.party) m.set(disk.party, A.records); m[0x76] = 0xFF; disk.log.push('off'); };
+    return P;
+  }
+  // One loot bag of the map in F, opened as loot_square ($9194) opens it, up to the question of who
+  // takes the loot ($921D). rec: the bag's record. open() puts the map back as it was first, so each
+  // opening is of a fresh bag, and returns what the bag then holds.
+  function bag(F, rec) {
+    const m = F.m, base = F.save();
+    F.hooks[0x921D] = c => { c.rts(); };
+    const read = () => {
+      const out = [];
+      for (let a = rec + 2; m[a] !== 0xFF && out.length < 16;) {
+        const b = m[a];
+        if (b === 0x5E || b === 0xDE) { out.push({ cash: m[a + 1] | m[a + 2] << 8, rolled: b === 0xDE }); a += 3; }
+        else { out.push(b & 0x80 ? { item: b & 0x7F, count: m[a + 1] } : { kind: b, count: m[a + 1] }); a += 2; }
+      }
+      return out;
+    };
+    const stored = read();
+    return { stored, open() { F.load(base); m[0x5F] = rec & 0xFF; m[0x60] = rec >> 8; F.call(0x9194, {}); return read(); } };
+  }
+  function tidy(t) { return t.replace(/\n+/g, '\n').replace(/[ \t]+\n/g, '\n').replace(/^\n+|\s+$/g, ''); }
+  return { attach, bag, key, KEY, A };
+})();
+// end of items/play.js
+</script>
+<script>
+/* items/page.js */
+// The Items tab's widgets: the list from the embedded records, and the plates that type keys into
+// the game's own item list and shop through WLItems.
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const num = n => (n || 0).toLocaleString('en-GB');
+  const pause = () => new Promise(r => setTimeout(r, 0));
+  const LOST = 'The game’s code did not load here. Open this page on the built site.';
+  const data = $('wl-items');
+  if (!data) return;
+  const D = JSON.parse(data.textContent), I = D.items;
+  const mapLink = (n, t) => '<a href="levels.html#map-' + n + '">' + esc(t || D.maps[n]) + '</a>';
+  const cls = it => it.r[3] >> 3, price = it => it.r[0] | it.r[1] << 8;
+  const name = n => I[n] && I[n].n || 'item ' + n;
+  const plural = (n, k) => k === 1 ? I[n].n : I[n].p;
+  const KIND = c => c === 1 ? 'Hand weapon' : c === 2 ? 'Pistol or thrown weapon' : c === 3 ? 'Carbine or flamethrower' : c === 4 ? 'Rifle' : c === 6 ? 'Submachine gun'
+    : c === 7 ? 'Assault rifle' : c === 8 || c === 9 ? 'Rocket' : c >= 10 && c <= 12 ? 'Energy weapon' : c === 13 ? 'Explosive' : c === 14 ? 'Ammunition'
+    : c === 15 ? 'Armour' : c === 16 ? 'Gear' : c === 17 ? 'Trade goods' : c === 18 ? 'Quest item' : 'Not an item';
+  const SKILL = { 1: 'Brawling', 3: 'Clip pistol', 4: 'Knife fight', 5: 'Pugilism', 6: 'Rifle', 8: 'Knife throw', 10: 'Assault rifle', 11: 'AT weapon', 12: 'SMG', 20: 'Demolitions', 34: 'Energy weapon' };
+  const SHOP = { '1:Q. Emporium': 'Quartz', '8:Trading car': 'the Desert Nomads', '9:AG. store': 'the Agricultural Center', '10:Store': 'Highpool', '21:Market': 'Darwin Village', '21:Blackmarket': 'Darwin Village', '32:Thrift shop': 'downtown Needles' };
+  const shopKey = s => s.map + ':' + s.name;
+  const sellers = it => D.shops.filter(s => it.i >= 1 && it.i <= 93 && D.stock[s.table][it.i] && s.cls.includes(cls(it)));
+  const pays = (s, it) => price(it) - (price(it) >> s.sell);
+  const NOTE = {
+    0: 'What a Ranger with nothing in hand fights with. Pugilism is its skill.',
+    14: 'Thrown, and gone after one throw.', 15: 'Thrown, and gone after one throw.',
+    17: 'No skill helps with it, and nothing reloads it: its 60 shots are all it has. See <a href="#wl-rounds">section 08</a>.',
+    20: 'The game never hands it out. See <a href="discoveries.html#wl-ryder">its section on Discoveries</a>.',
+    34: 'Loads every energy weapon. No shop sells it.',
+    35: 'One suit can protect the whole party. See <a href="#wl-suit">section 01</a>.',
+    41: 'Worn as armour, it stops the damage of a radiation square.',
+    43: 'No square, fight, or code asks for it.', 49: 'No square, fight, or code asks for it.', 51: 'No square, fight, or code asks for it.',
+    45: 'Held as a weapon it rolls 3 dice, like an Ax.', 53: 'Held as a weapon it rolls 3 dice, like an Ax.', 55: 'Held as a weapon it rolls 3 dice, like an Ax.', 56: 'Held as a weapon it rolls 3 dice, like an Ax.',
+    47: 'A Ranger without one is knocked out by the gas in Fat Freddy’s office.',
+    48: 'While anyone carries one, the party hears the clicking near radiation.',
+    62: 'The same as item 63 in name and in every byte.', 63: 'The same as item 62 in name and in every byte.',
+    70: 'It has no name. See <a href="#wl-cut">section 10</a>.', 71: 'It has no name. See <a href="#wl-cut">section 10</a>.', 72: 'It has no name. See <a href="#wl-cut">section 10</a>.',
+    90: 'What a Broken toaster becomes: each of the four toasters in the Inner Sanctum holds one once it is repaired.',
+    94: 'Not an item. A bag’s money carries this number.',
+  };
+
+  // ---- the game's code, loaded when a plate first needs it ----
+  const ready = typeof WLFight !== 'undefined' && typeof WLItems !== 'undefined' && window.C64 && C64.load && window.C64Cpu;
+  const pool = new Uint8Array(256); let left = 0;
+  const rnd = () => { if (!left) { crypto.getRandomValues(pool); left = 256; } return pool[--left]; };
+  const parts = {};
+  const part = id => parts[id] || (parts[id] = C64.load('parts/' + id + '/listing.json').catch(e => { delete parts[id]; throw e; }));
+  // one map with the party on it; `disk` is shared by the shops of one plate
+  const open = (map, disk, shop) => {
+    if (!ready) return Promise.reject(new Error('the scripts of this page did not load'));
+    return Promise.all([part('engine'), part('game'), part('map-' + String(map).padStart(2, '0')), shop ? part('module-1') : null])
+      .then(([engine, game, m, mod]) => {
+        const F = WLFight.create({ engine, game, map: m, mapNumber: map, CPU: C64Cpu.CPU, random: rnd, size: 4 });
+        return { F, P: WLItems.attach(F, disk, mod), map: m };
+      });
+  };
+  // the four stock files, as the disks have them: the table in memory with each file's counts
+  const tables = F => {
+    const out = {}, base = F.m.slice(WLItems.A.table, WLItems.A.table + 768);
+    for (const k of Object.keys(D.stock)) { const t = base.slice(); D.stock[k].forEach((v, n) => { t[8 + 8 * n + 2] = v; }); t.set(D.cash[k], 8 + 8 * 94); out[k] = t; }
+    return out;
+  };
+  const KEYNAME = k => k === 'BACK' ? '←' : k;
+  // the screens of one run, each followed by the key that was pressed
+  function show(log, runs) {
+    let h = '';
+    for (const r of runs) {
+      r.res.screens.forEach((s, i) => {
+        let lines = s.split('\n');
+        // the shop draws its list twice after a trade: show it once
+        for (let k = lines.length >> 1; k > 1; k--) if (lines.slice(0, k).join('\n') === lines.slice(k, 2 * k).join('\n')) { lines = lines.slice(k); break; }
+        for (const l of lines) {
+          if (!l.replace(/[\u0001\u0002]/g, '').trim()) continue;
+          const hot = l.includes('\u0001');
+          h += '<p' + (hot ? ' class="wl-fi-hot"' : '') + '>' + esc(l.replace(/[\u0001\u0002]/g, '')) + '</p>';
+        }
+        if (i < r.keys.length) h += '<p class="wl-fi-dim">key: ' + esc(KEYNAME(r.keys[i])) + '</p>';
+      });
+    }
+    log.innerHTML = h || '<p class="wl-fi-dim">Nothing was printed.</p>';
+    log.scrollTop = log.scrollHeight;
+  }
+  function guard(el, tally, fn) {
+    let busy = false;
+    return async function (b) {
+      if (busy) return;
+      busy = true; el.classList.add('wl-be-busy');
+      try { await fn(b); } catch (e) { tally.innerHTML = '<span class="wl-err">' + LOST + '</span>'; }
+      busy = false; el.classList.remove('wl-be-busy');
+    };
+  }
+  const packText = (P, i) => P.pack(i).map(q => name(q.item)).join(', ') || 'nothing';
+  const lineOf = (P, i, item) => P.pack(i).findIndex(q => q.item === item) + 1;
+
+  // ---- the item list: sorting a pack, trading, putting on ----
+  function packPlate(el) {
+    const scene = el.dataset.scene, side = el.querySelector('.wl-it-party'), note = el.querySelector('.wl-be-odds'), log = el.querySelector('.wl-fi-log'), tally = el.querySelector('.wl-be-tally');
+    const PACKS = scene === 'suit' ? [[[13, 7], [35, 0], [44, 0], [30, 0]], [[16, 18], [38, 0], [54, 1]], [[19, 8], [44, 0]], [[4, 0], [44, 0]]]
+      : [[[13, 7], [30, 0], [44, 0]], [[54, 1], [44, 0], [43, 0]], [[19, 8], [44, 0]], [[4, 0], [44, 0]]];
+    const WORN = scene === 'suit' ? [[1, 2], [1, 2], [1], [1]] : [[1], [], [1], [1]];
+    let W = null, fresh = null, holder = 1;
+    const load = () => W ? Promise.resolve(W) : open(1, { tables: {}, party: null, log: [] }, false).then(o => {
+      W = o;
+      PACKS.forEach((p, k) => { W.P.give(k + 1, p); WORN[k].forEach(s => W.P.equip(k + 1, s)); });
+      fresh = W.F.save();
+      return W;
+    });
+    const what = (i, s) => { if (!s) return 'nothing'; const q = W.P.slot(i, s); return q.item ? name(q.item) : 'an empty line'; };
+    function draw() {
+      let h = '';
+      for (let i = 1; i <= 4; i++) {
+        const k = W.P.marks(i);
+        if (scene === 'suit') h += '<li class="wl-be-on' + (k.ac === 14 ? ' wl-be-new' : '') + '"><b>' + esc(W.F.name(i)) + '</b><br>armour class ' + k.ac + '<br>worn: ' + esc(what(i, k.armour)) + '</li>';
+        else h += '<li class="wl-be-on' + (i <= 2 && k.weapon && cls(I[W.P.slot(i, k.weapon).item] || I[0]) > 13 ? ' wl-be-new' : '') + '"><b>' + esc(W.F.name(i)) + '</b><br>holds: ' + esc(k.weapon ? what(i, k.weapon) : 'nothing (fists)') + '</li>';
+      }
+      side.innerHTML = h;
+      if (scene === 'suit') { const n = [1, 2, 3, 4].filter(i => W.P.marks(i).ac === 14).length; note.innerHTML = '<b>' + n + '</b> of 4 Rangers at armour class 14. The suit is in ' + esc(W.F.name(holder)) + '’s pack.'; }
+      else note.textContent = 'The packs: ' + [1, 2].map(i => W.F.name(i) + ' has ' + packText(W.P, i)).join('; ') + '.';
+    }
+    // sort Ranger i's pack in the order it is in, with RETURN pressed before the pick of `before`
+    const sortKeys = (i, before) => { const keys = ['R']; W.P.pack(i).forEach((q, k) => { if (k + 1 === before) keys.push('RETURN'); keys.push('1'); }); keys.push('BACK'); return keys; };
+    const run = (i, keys) => ({ keys, res: W.P.itemsPage(i, keys) });
+    const act = guard(el, tally, async b => {
+      await load(); await pause();
+      const P = W.P, what = b.dataset.do;
+      if (what === 'reset') { W.F.load(fresh); holder = 1; log.innerHTML = '<p class="wl-fi-dim">The game’s item list appears here.</p>'; tally.textContent = ''; draw(); return; }
+      if (what === 'sort' || what === 'plain') {
+        const line = lineOf(P, holder, 35);
+        show(log, [run(holder, sortKeys(holder, what === 'sort' ? line : 0))]);
+        const k = P.marks(holder);
+        tally.innerHTML = what === 'sort' ? 'The suit is on line ' + line + ', and the game has marked line <b>' + k.armour + '</b> as worn. The armour class is still ' + k.ac + '.'
+          : 'A sort with no stray key keeps the mark on the suit, line ' + k.armour + '.';
+      } else if (what === 'pass') {
+        if (holder === 4) { tally.textContent = 'The suit has been round the whole party.'; return; }
+        const line = lineOf(P, holder, 35), next = holder + 1, runs = [run(holder, [String(line), 'T', String(next), 'BACK'])];
+        runs.push(run(next, [String(lineOf(P, next, 35)), 'E', 'BACK']));
+        show(log, runs);
+        const was = P.marks(holder).ac;
+        tally.innerHTML = esc(W.F.name(holder)) + ' gave the suit to ' + esc(W.F.name(next)) + ' and ' + (was === 14 ? '<b>kept armour class 14</b>.' : 'is back at armour class ' + was + ': the worn mark was on the suit.');
+        holder = next;
+      } else if (what === 'slip') {
+        show(log, [run(1, ['R', 'RETURN'].concat(P.pack(1).map(() => '1'), ['BACK']))]);
+        tally.innerHTML = esc(W.F.name(1)) + ' now holds the <b>' + esc(what2(1)) + '</b>.';
+      } else if (what === 'bare') {
+        show(log, [run(2, ['R'].concat(P.pack(2).map(() => '1'), ['BACK']))]);
+        const k = P.marks(2);
+        tally.innerHTML = k.weapon ? esc(W.F.name(2)) + ' picked no weapon and now holds the <b>' + esc(what2(2)) + '</b>, on line ' + k.weapon + '.'
+          : esc(W.F.name(2)) + ' still holds nothing. No sort has moved a weapon mark yet in this game.';
+      }
+      draw();
+    });
+    const what2 = i => { const k = W.P.marks(i), q = W.P.slot(i, k.weapon); return q.item ? name(q.item) : 'empty line'; };
+    el.querySelectorAll('.wl-xp-btn').forEach(b => b.addEventListener('click', () => act(b)));
+    if (ready) load().then(draw).catch(() => {});
+  }
+
+  // ---- the shop ----
+  function shopPlate(el) {
+    const scene = el.dataset.scene, cash = el.querySelector('.wl-be-hp'), packP = el.querySelector('.wl-be-mood'), shelf = el.querySelector('.wl-be-odds'), log = el.querySelector('.wl-fi-log'), tally = el.querySelector('.wl-be-tally');
+    const SUIT = 35, shopOf = (map, nm) => D.shops.find(s => s.map === map && s.name === nm);
+    const QUARTZ = shopOf(1, 'Q. Emporium'), NEEDLES = shopOf(32, 'Thrift shop');
+    let disk = null, Q = null, N = null, freshM = null, freshDisk = null, saved = 'before the shop';
+    const cloneDisk = d => ({ tables: Object.fromEntries(Object.entries(d.tables).map(([k, v]) => [k, v.slice()])), party: d.party && d.party.slice(), log: d.log.slice() });
+    const setDisk = d => { disk.tables = d.tables; disk.party = d.party; disk.log = d.log; };
+    const load = () => Q ? Promise.resolve(Q) : (disk = { tables: {}, party: null, log: [] }, open(1, disk, true).then(o => {
+      Q = o; disk.tables = tables(Q.F);
+      Q.P.give(1, [[13, 7], [SUIT, 0], [44, 0]]); Q.P.equip(1, 1); Q.P.equip(1, 2); Q.P.setCash(1, 40000);
+      disk.party = Q.F.m.slice(WLItems.A.records, WLItems.A.records + 0x800);
+      freshM = Q.F.save(); freshDisk = cloneDisk(disk);
+      return Q;
+    }));
+    const needles = () => N ? Promise.resolve(N) : open(32, disk, true).then(o => (N = o));
+    // the party walks from one map's memory to the other's
+    const carry = (from, to) => to.F.m.set(from.F.m.slice(WLItems.A.records, WLItems.A.records + 0x800), WLItems.A.records);
+    const stock = () => disk.tables[QUARTZ.table][8 + 8 * SUIT + 2];
+    function draw() {
+      const P = Q.P;
+      cash.textContent = '$' + num(P.cash(1));
+      const suits = P.pack(1).filter(q => q.item === SUIT).length;
+      packP.innerHTML = 'Carries: ' + esc(packText(P, 1)) + '.' + (suits > 1 ? ' <b>' + suits + ' suits.</b>' : '');
+      if (scene === 'shelf') shelf.innerHTML = 'Power armor on the shelf: <b>' + stock() + '</b>';
+      else shelf.innerHTML = 'The shelf: <b>' + stock() + '</b> Power armor' + (disk.log.includes('shelf') ? ', written when Hell Razor left the list' : '') + '.<br>The party: as saved ' + saved + '.';
+    }
+    // a run that is replayed from the same state until the list page shows the suit
+    function browse(W, shop, lead) {
+      const m0 = W.F.save(), d0 = cloneDisk(disk);
+      let keys = lead.slice(), res, line = 0;
+      for (let page = 0; page < 12; page++) {
+        W.F.load(m0); setDisk(cloneDisk(d0));
+        res = W.P.shop(shop.rec, keys);
+        const last = (res.screens[res.screens.length - 1] || '').replace(/[\u0001\u0002]/g, ''), hit = /(?:^|\n)(\d)[>_] *\d+ Power armor/.exec(last);
+        if (hit) { line = +hit[1]; break; }
+        // K is the next page; the list's last line has _ after its number where the others have >
+        if (/(?:^|\n)\d_/.test(last)) break;
+        keys.push('K');
+      }
+      return { keys, res, line, again: more => { W.F.load(m0); setDisk(cloneDisk(d0)); const k = keys.concat(more); return { keys: k, res: W.P.shop(shop.rec, k) }; } };
+    }
+    const act = guard(el, tally, async b => {
+      await load(); await pause();
+      const P = Q.P, what = b.dataset.do;
+      if (what === 'reset') { Q.F.load(freshM); setDisk(cloneDisk(freshDisk)); saved = 'before the shop'; log.innerHTML = '<p class="wl-fi-dim">The shop’s screens appear here.</p>'; tally.textContent = ''; draw(); return; }
+      if (what === 'sell' || what === 'half') {
+        const line = lineOf(P, 1, SUIT);
+        if (!line) { tally.textContent = 'Hell Razor has no suit to sell.'; return; }
+        const keys = ['1', 'S', String(line), 'BACK'].concat(what === 'sell' ? ['BACK'] : []);
+        show(log, [{ keys, res: P.shop(QUARTZ.rec, keys) }]);
+        if (what === 'sell') { saved = 'on leaving the shop'; tally.innerHTML = 'The Emporium paid $' + num(pays(QUARTZ, I[SUIT])) + ' and has <b>' + stock() + '</b> Power armor to sell.'; }
+        else tally.innerHTML = 'The shelf is on the disk with <b>' + stock() + '</b> Power armor. Hell Razor is still in the shop, and the party has not been saved.';
+      } else if (what === 'look' || what === 'buy') {
+        await needles(); carry(Q, N);
+        const br = browse(N, NEEDLES, ['1', 'B']);
+        if (!br.line) { show(log, [br]); tally.textContent = 'Leroy has no Power armor: nobody has sold one to either shop.'; br.again(['BACK', 'BACK']); carry(N, Q); draw(); return; }
+        if (what === 'look') { show(log, [br]); br.again(['BACK', 'BACK']); tally.innerHTML = 'Leroy’s counter in Needles lists the suit that was sold in Quartz, at <b>$' + num(price(I[SUIT])) + '</b>.'; }
+        else {
+          const had = N.P.pack(1).filter(q => q.item === SUIT).length, r = br.again([String(br.line), 'BACK', 'BACK']); show(log, [r]); saved = 'on leaving the shop';
+          tally.innerHTML = N.P.pack(1).filter(q => q.item === SUIT).length > had ? 'Bought in Needles. The shelf has <b>' + stock() + '</b> left.' : 'Hell Razor cannot pay for it.';
+        }
+        carry(N, Q);
+      } else if (what === 'off') {
+        P.powerOff(); saved = 'before the shop';
+        log.innerHTML = '<p class="wl-fi-dim">The machine is switched off and on, and the game loads what is on the disk.</p>';
+        tally.innerHTML = 'Hell Razor has the suit again, and the shelf still has <b>' + stock() + '</b>.';
+      } else if (what === 'again') {
+        const br = browse(Q, QUARTZ, ['1', 'B']);
+        if (!br.line) { show(log, [br]); br.again(['BACK', 'BACK']); tally.textContent = 'The Emporium has no Power armor to sell.'; draw(); return; }
+        const had = P.pack(1).filter(q => q.item === SUIT).length;
+        const r = br.again([String(br.line), 'BACK', 'BACK']); show(log, [r]); saved = 'on leaving the shop';
+        const n = P.pack(1).filter(q => q.item === SUIT).length;
+        tally.innerHTML = n > had ? 'Hell Razor now carries <b>' + n + '</b> suit' + (n === 1 ? '' : 's') + ' of Power armor.'
+          : 'The suit is on the shelf, and Hell Razor has $' + num(P.cash(1)) + ', which does not buy it.';
+      }
+      draw();
+    });
+    el.querySelectorAll('.wl-xp-btn').forEach(b => b.addEventListener('click', () => act(b)));
+    if (ready) load().then(draw).catch(() => {});
+  }
+
+  // ---- a bag that rolls its ammunition ----
+  function ammoPlate(el) {
+    const now = el.querySelector('.wl-be-hp'), sub = el.querySelector('.wl-be-mood'), list = el.querySelector('.wl-it-tally'), log = el.querySelector('.wl-fi-log'), tally = el.querySelector('.wl-be-tally');
+    const map = +el.dataset.map, AMMO = I.filter(it => cls(it) === 14).map(it => it.i), count = {};
+    let B = null, at = -1, opened = 0;
+    const load = () => B ? Promise.resolve(B) : open(map, { tables: {}, party: null, log: [] }, false).then(o => {
+      B = WLItems.bag(o.F, o.map.byName.get('loot_' + String(el.dataset.bag).padStart(2, '0')));
+      at = B.stored.findIndex(e => e.kind === 14);
+      return B;
+    });
+    const draw = () => { list.innerHTML = AMMO.map(n => '<li class="wl-be-on">' + esc(I[n].p) + ': <b>' + num(count[n] || 0) + '</b></li>').join(''); };
+    const act = guard(el, tally, async b => {
+      await load(); await pause();
+      const n = b.dataset.do === 'many' ? 1000 : 1;
+      let e, h = '';
+      for (let k = 0; k < n; k++) { e = B.open()[at]; count[e.item] = (count[e.item] || 0) + 1; opened++; if (n === 1) h = '<p>' + e.count + ' ' + esc(plural(e.item, e.count)) + '</p>'; }
+      if (n === 1) { if (log.querySelector('.wl-fi-dim')) log.innerHTML = ''; log.insertAdjacentHTML('beforeend', h); log.scrollTop = log.scrollHeight; }
+      now.textContent = e.count + ' ' + plural(e.item, e.count);
+      sub.textContent = 'What the last bag held, with ' + B.stored.filter((x, k) => k !== at).map(x => x.item !== undefined ? name(x.item) : 'money').join(' and ') + '.';
+      tally.innerHTML = '<b>' + num(opened) + '</b> bag' + (opened === 1 ? '' : 's') + ' opened. Power packs in ' + num(count[34] || 0) + ', Howitzer shells in ' + num(count[33] || 0) + '.';
+      draw();
+    });
+    el.querySelectorAll('.wl-xp-btn').forEach(b => b.addEventListener('click', () => act(b)));
+    draw();
+  }
+
+  // ---- the list of every item ----
+  function roster() {
+    const q = $('wl-it-q'), kindSel = $('wl-it-kind'), shopSel = $('wl-it-shop'), sortSel = $('wl-it-sort'), rows = $('wl-it-rows'), countP = $('wl-it-count'), about = $('wl-it-about');
+    if (!rows) return;
+    const kinds = [...new Set(I.map(it => KIND(cls(it))))];
+    kindSel.insertAdjacentHTML('beforeend', kinds.map(k => '<option>' + esc(k) + '</option>').join(''));
+    shopSel.insertAdjacentHTML('beforeend', D.shops.map(s => '<option value="' + esc(shopKey(s)) + '">' + esc(s.name + ', ' + SHOP[shopKey(s)]) + '</option>').join('') + '<option value="none">sold nowhere at the start</option>');
+    const bags = it => it.loot.reduce((a, l) => a + l[1], 0);
+    const holds = it => { const c = cls(it), u = it.r[4]; if (!u || c > 18 || c === 14 || c === 15) return ''; if (it.r[7]) return u + ' rounds'; if (c === 3 && u > 1) return u + ' shots'; return u + (u === 1 ? ' use' : ' uses'); };
+    const dice = it => { const c = cls(it); return c > 18 ? '' : c <= 13 || c === 15 || it.r[6] > 1 ? String(it.r[6]) : ''; };
+    let chosen = -1;
+    function draw() {
+      const text = q.value.trim().toLowerCase(), kind = kindSel.value, shop = shopSel.value, order = sortSel.value;
+      let list = I.filter(it => (!text || (it.n || '').toLowerCase().includes(text)) && (!kind || KIND(cls(it)) === kind)
+        && (!shop || (shop === 'none' ? !sellers(it).length && cls(it) <= 18 : sellers(it).some(s => shopKey(s) === shop))));
+      const by = { n: (a, b) => a.i - b.i, name: (a, b) => (a.n || 'zz').localeCompare(b.n || 'zz'), price: (a, b) => (cls(b) > 18 ? -1 : price(b)) - (cls(a) > 18 ? -1 : price(a)), dice: (a, b) => (+dice(b) || 0) - (+dice(a) || 0), found: (a, b) => bags(b) - bags(a) };
+      list = list.slice().sort((a, b) => by[order](a, b) || a.i - b.i);
+      countP.textContent = list.length + ' of ' + I.length + ' items';
+      rows.innerHTML = list.map(it => {
+        const s = sellers(it), c = cls(it);
+        return '<tr tabindex="0" data-i="' + it.i + '"' + (it.i === chosen ? ' aria-selected="true"' : '') + '><td>' + (it.n ? esc(it.n) : '<i>no name</i>') + '</td><td class="wl-be-c2">' + esc(KIND(c)) + '</td><td>' + (c > 18 || !it.i ? '' : '$' + num(price(it)))
+          + '</td><td>' + dice(it) + '</td><td class="wl-be-c2">' + holds(it) + '</td><td>' + (s.length === 0 ? '–' : s.length === 1 ? esc(s[0].name) : s.length + ' shops') + '</td><td class="wl-be-c2">' + (bags(it) || '–') + '</td></tr>';
+      }).join('');
+    }
+    function card(i) {
+      chosen = i; const it = I[i], c = cls(it), s = sellers(it), row = (dt, dd) => dd ? '<dt>' + dt + '</dt><dd>' + dd + '</dd>' : '';
+      let h = '<p class="wl-be-name">' + (it.n ? esc(it.n) : 'Item ' + i + ', which has no name') + '</p><p class="wl-be-sub">' + esc(KIND(c)) + ' · item ' + i + (c <= 18 ? ' · kind ' + c : '') + '</p><dl>';
+      if (c <= 18 && i) h += row('Price', '$' + num(price(it)) + (c <= 17 ? '. A shop pays $' + num(price(it) - (price(it) >> 1)) + ', or $' + num(price(it) - (price(it) >> 2)) + ' where it pays three quarters.' : '. No shop deals in quest items.'));
+      h += row('Sold by', s.length ? s.map(x => esc(x.name) + ' in ' + (/^the /.test(SHOP[shopKey(x)]) ? 'the ' : '') + mapLink(x.map, SHOP[shopKey(x)].replace(/^the /, '')) + (D.stock[x.table][i] === 255 ? '' : ' (' + D.stock[x.table][i] + ' on the shelf)')).join(', ') : c <= 17 && i ? 'No shop at the start. A shop that deals in this kind sells one for each one it is sold.' : '');
+      if (c <= 13) h += row('In the hand', it.r[6] + (it.r[6] === 1 ? ' die' : ' dice') + ' of damage' + (c === 8 || c === 9 ? ', doubled against armour it can beat' : '') + '. ' + (SKILL[it.r[5]] ? 'The skill is ' + SKILL[it.r[5]] + '.' : 'No skill helps.'));
+      else if (c === 15) h += row('Worn', 'Armour class ' + it.r[6] + ': ' + it.r[6] + (it.r[6] === 1 ? ' die' : ' dice') + ' off every blow.');
+      else if (c <= 18 && c !== 14) h += row('In the hand', it.r[6] + (it.r[6] === 1 ? ' die' : ' dice') + ' of damage. No skill helps.');
+      if (c <= 18) h += row('Holds', it.r[7] ? it.r[4] + ' rounds, reloaded with a ' + esc(name(it.r[7])) + '.' : it.r[4] === 0 ? (c === 14 || c === 15 || i === 0 ? '' : 'Never used up.') : it.r[4] === 1 ? 'Gone after one use.' : it.r[4] + (c === 3 ? ' shots.' : ' uses.'));
+      h += row('Found', it.loot.length ? it.loot.map(l => mapLink(l[0]) + ' (' + l[1] + (l[1] === 1 ? ' bag' : ' bags') + ')').join(', ') : c <= 18 && i ? 'In no bag.' : '');
+      h += row('Carried by', it.npc.map(x => esc(x[1][0] + x[1].slice(1).toLowerCase()) + ' in ' + mapLink(x[0])).join(', '));
+      h += row('Used on', it.use.length ? it.use.map(u => mapLink(u[0]) + ' (' + u[1] + (u[1] === 1 ? ' square' : ' squares') + ')').join(', ') : '');
+      h += row('Note', NOTE[i] || '');
+      about.innerHTML = h + '</dl>'; about.hidden = false;
+      rows.querySelectorAll('tr').forEach(tr => tr.setAttribute('aria-selected', String(+tr.dataset.i === i)));
+    }
+    const pick = e => { const tr = e.target.closest('tr[data-i]'); if (tr) card(+tr.dataset.i); };
+    rows.addEventListener('click', pick);
+    rows.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(e); } });
+    [q, kindSel, shopSel, sortSel].forEach(x => x.addEventListener('input', draw));
+    draw();
+  }
+
+  roster();
+  for (const id of ['wl-it-suit', 'wl-it-hand']) if ($(id)) packPlate($(id));
+  for (const id of ['wl-it-shelf', 'wl-it-twice']) if ($(id)) shopPlate($(id));
+  if ($('wl-it-ammo')) ammoPlate($('wl-it-ammo'));
+})();
+// end of items/page.js
+</script>

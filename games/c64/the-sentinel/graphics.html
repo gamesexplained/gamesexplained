@@ -39,10 +39,8 @@ a{color:var(--link)}
 .ctl{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:0 0 14px;font-size:14px}
 .ctl .grp{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 .ctl label{color:var(--ink-soft)}
-button.b{font:500 13px var(--fm);background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
-button.b:hover{border-color:var(--ink-mute)}
-button.b[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
-input.num{font:500 18px var(--fm);width:5.2em;padding:4px 8px;border:1px solid var(--line);border-radius:6px;text-align:center;letter-spacing:.08em}
+button.b{font-size:13px;padding:5px 10px}
+input.num{font-size:18px;width:5.2em;padding:4px 8px;text-align:center}
 input[type=range]{width:220px}
 canvas{max-width:100%;display:block}
 .cv-dark{background:#000;border-radius:6px}
@@ -78,9 +76,7 @@ table.d th{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transf
 .note{font-size:14px;color:var(--ink-soft)}
 .unsure li{margin-bottom:6px}
 .gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
-.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
-.gx-bar button:hover{border-color:var(--ink-mute)}
-.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-bar button{padding:5px 11px}
 .gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
 .gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
 .gx-group{margin:0 0 22px}
@@ -104,7 +100,7 @@ table.d th{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transf
 .gx-line{display:block;max-width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px;touch-action:pan-y;cursor:ew-resize}
 .gx-names{display:flex;max-width:100%;font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin:4px 0 0}
 .gx-names span{text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gx-sel{font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);max-width:100%}
+.gx-sel{padding:4px 6px;max-width:100%}
 .gx-order{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:start}
 @media (max-width:700px){.gx-order{grid-template-columns:1fr}}
 #gx-o-cv{display:block;max-width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
@@ -134,7 +130,7 @@ table.d th{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transf
     </div>
     <div id="gx-cast"><p class="gx-miss">The objects are drawn by the game's own code in the built site.</p></div>
     <p class="gx-read" id="gx-read">Point at an object for its numbers.</p>
-    <p class="cap">Drawn by the game's routines on the kit's 6502 in the page, over the listing's bytes. <code>place_title_object</code> (<code>$8819</code>) sets up the viewer as the game-over picture does, then the object is moved 10 tiles in front of the viewer and a unit below, and the view's pitch set to −14 in place of the picture's −12, so that all ten fit at one size; <code>draw_object</code> (<code>$8533</code>) draws it with its yaw (<code>$09C0</code> + n) a step of 4 further on, 16 steps a second. Each picture is a window of the 320 × 200 bitmap at <code>$E000</code>, wide enough for the object at every turn. Landscape colours are the play palette at <code>$869D</code> with colours 2 and 3 from <code>$14F3</code> and <code>$14D4</code> by the number of enemies, as <code>$1420</code> sets them.</p>
+    <p class="cap">Drawn by the game's routines in the page, over the listing's bytes. <code>place_title_object</code> (<code>$8819</code>) sets up the viewer as the game-over picture does, then the object is moved 10 tiles in front of the viewer and a unit below, and the view's pitch set to −14 in place of the picture's −12, so that all ten fit at one size; <code>draw_object</code> (<code>$8533</code>) draws it with its yaw (<code>$09C0</code> + n) a step of 4 further on, 16 steps a second. Each picture is a window of the 320 × 200 bitmap at <code>$E000</code>, wide enough for the object at every turn. Landscape colours are the play palette at <code>$869D</code> with colours 2 and 3 from <code>$14F3</code> and <code>$14D4</code> by the number of enemies, as <code>$1420</code> sets them.</p>
   </div>
   <p>An object is a list of points and a list of faces. Each point is three bytes in three tables: its angle around the object's upright axis (<code>$9DE0</code>), its distance from that axis (<code>$A060</code>) and its height (<code>$9F20</code>). To draw an object, <code>draw_object</code> adds the object's yaw to every point's angle and multiplies the distance by the sine and cosine of the sum, so turning an object is changing one byte. The ten types share 160 points, numbered on from each other: the robot's are 0 to 28 and the tower's 124 to 135 (<code>$9CA0</code>).</p>
   <p>Each face is one byte at <code>$A1A0</code>, and a list of its corners. Bits 0 and 1 give three or four sides, bits 2 and 3 the colour it is filled with, bits 4 and 5 the colour of its edges, and bit 7 the pass it is drawn in. The colours are the four of the screen, not fixed ones. On the title they are blue, black, red and yellow. In play they are blue, black and two colours set by the number of enemies on the landscape, so the robot that is red and yellow on the title is white and green on a landscape with one enemy.</p>
@@ -143,7 +139,7 @@ table.d th{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transf
   <h3 id="sprites">The sights and the scanner</h3>
   <div class="plate">
     <div id="gx-sprites"></div>
-    <p class="cap">The sights are sprite 0, its shape at <code>$7000</code> as the game writes it, in the colours <code>$98FF</code>-<code>$9909</code> give it, white with black, over each of the four screen colours of the palette above. The scanner is sprites 1 to 3 in white, black and green, drawn by <code>draw_scanner</code> (<code>$163F</code>) on the kit's 6502, 50 times a second as the raster interrupt calls it while an enemy is draining the player.</p>
+    <p class="cap">The sights are sprite 0, its shape at <code>$7000</code> as the game writes it, in the colours <code>$98FF</code>-<code>$9909</code> give it, white with black, over each of the four screen colours of the palette above. The scanner is sprites 1 to 3 in white, black and green, drawn by <code>draw_scanner</code> (<code>$163F</code>), 50 times a second as the raster interrupt calls it while an enemy is draining the player.</p>
   </div>
   <p>The BBC Micro original drew the sights and the scanner into the screen. The Commodore 64 version makes both of them sprites. The sights are a cross 11 lines high whose pixels alternate between white and black, so it shows on any ground. The scanner at the top right is three sprites side by side, of which only the top four lines are used. <code>draw_scanner</code> fills them a byte at a time with one of four patterns for the state, chosen by two bits of a random number from the page of them at <code>$0200</code>. It reads 32 of those 256 numbers on each redraw, so the static repeats every eight redraws, six times a second. When an enemy can see the player but not the tile the player stands on, the right half is drawn in the quiet pattern. Paused, the whole scanner is solid green.</p>
 </section>
@@ -167,7 +163,7 @@ table.d th{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transf
         <div class="seq" id="gx-o-seq"></div>
       </div>
     </div>
-    <p class="cap">The bottom right-hand corner of the title's bitmap, 100 × 156 pixels, as <code>draw_title_pair</code> (<code>$887E</code>) draws them on the kit's 6502: the object on top in configuration 1, then the tower in configuration 2 (<code>$8819</code>). Each picture is the bitmap after one face; the outline marks what that face changed. In the list, faces of the second pass are underlined, and faces that changed nothing are faint.</p>
+    <p class="cap">The bottom right-hand corner of the title's bitmap, 100 × 156 pixels, as <code>draw_title_pair</code> (<code>$887E</code>) draws them: the object on top in configuration 1, then the tower in configuration 2 (<code>$8819</code>). Each picture is the bitmap after one face; the outline marks what that face changed. In the list, faces of the second pass are underlined, and faces that changed nothing are faint.</p>
   </div>
   <p><code>draw_object</code> draws the faces in the order of the table, each one painted over whatever is already there. A face turned away from the viewer draws nothing. Seen from above, as in the pictures in the first part, six of the boulder's ten faces draw nothing; turned half round, three of those six swap places with three that drew.</p>
   <p>A fixed order is right from only some viewpoints. For three types, the robot, the sentry and the Sentinel, when the object stands above the viewer, <code>draw_object</code> makes two passes (<code>$854D</code>-<code>$856D</code>): first the faces with bit 7 clear, then those with it set. On the title the Sentinel stands a unit above the viewer, so its faces go 102 to 104 and 126 to 136 first, then 105 to 125. Seen level or from above, all 35 go in order. A meanie makes two passes too, chosen by which way it faces rather than by its height. The other six types are always drawn in one.</p>

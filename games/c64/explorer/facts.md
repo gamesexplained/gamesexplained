@@ -288,3 +288,24 @@ All on VICE 3.14.0 from the snapshots in `orientation.md`.
   gave "WOW, YOU DID IT!".
 - Compass: turning right from north (heading 16 to 14) changed the
   compass from 0 to 10, as the routine computes.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, a doorway trip to CSBBII arrived at 57,921 east and 7,081 north, and one step north found fragment 9.
+- The rest of the table comes from the page's copy of the game's sums, which gives the game's own answer for 20,007 names (`test_names.js`).
+- The fragment positions are the table `fragments` at `$2213`, the same in three new games started in the emulator.
+- A JavaScript copy of the sum at `$0ED0`-`$0F31`, from "the landing place" on the How it works page (65,376 east, 144 north), checked against the game's own code for 20,007 names (`test_names.js`).
+- In the emulator, a trip to HOME left the energy where it was, apart from the 15 that drawing every view costs.
+- Both use a JavaScript copy of `bearing_of` at `$383F` and its tables, which gives the game's own answer for 100,196 pairs of distances (`test_bearing.js`).
+- In the emulator, the sonar said 249 degrees for a fragment whose true bearing was 201, and "Fix 3 nearest" said 252 for a beacon at 197.
+
+### index.html
+
+- At "the landing place" in the jump list, facing north, both pictures match the emulator's screen exactly: 0 pixels of the map's 61,440 differ, and 0 of the ground view's 64,000.
+- The JavaScript copy of the ground routine gives the game's answer at 200,072 points tested (`test_terrain.js`).
+- A JavaScript copy of the game's sums (`name_destination` at `$0E23`), checked against the game's own code on 20,007 names (`test_names.js`).
+- In the emulator, HOME arrived at 48,356 east and 48,609 north.

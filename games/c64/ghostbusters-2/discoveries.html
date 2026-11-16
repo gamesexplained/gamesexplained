@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}} — Discoveries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.controls{display:flex;flex-wrap:wrap;gap:8px}
+.controls button,#sprites,#panel-sprites{min-height:44px;padding:8px 14px}
+.screen{display:block;width:100%;max-width:640px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.plate .controls{margin:0 0 12px;align-items:center}
+.plate select{min-height:44px}
+.panel{display:block;width:100%;max-width:640px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.words{display:block;width:100%;max-width:480px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+#clock-result{margin:8px 0 0;min-height:1.6em}
+.lede{color:var(--ink-soft);margin:0 0 18px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>Discoveries</h1>
+</header>
+<main class="wrap">
+<section id="switch">
+  <h2 class="t">Secret: a switch that would stop Broadway’s clock</h2>
+  <p class="lede">The walk down Broadway can be lost two ways: the clock reaches twelve, or the slime runs out. One byte in the game turns both off, and nothing ever sets it.</p>
+  <p>Before the game ends the walk at twelve o’clock, it looks at that byte. It looks again before a fresh fireball, or a ghost reaching the statue, takes a row from the <a href="index.html#broadway">slime supply</a>. With the byte set, the clock carries on past twelve and the fireballs and ghosts take nothing. The byte is zero when Broadway loads, on the original disk as on the cracked copies, and Broadway’s code only ever reads it. A switch like this was probably for the team’s own testing, so they could ride the whole street without losing.</p>
+  <div class="plate">
+    <div class="controls">
+      <button type="button" class="switch" id="clock-switch" aria-pressed="false">Switch off</button>
+      <button type="button" id="clock-run">Run the clock from 11:55</button>
+    </div>
+    <canvas id="clock" class="panel" width="320" height="48" aria-label="Broadway’s panel with its clock"></canvas>
+    <p id="clock-result" aria-live="polite"></p>
+    <p class="cap">Broadway’s panel, with the clock moved on by the game’s own clock routine, faster than in play. Turn the switch on and run it again.</p>
+  </div>
+</section>
+<section id="dazed">
+  <h2 class="t">Secret: a third word for the panel, DAZED</h2>
+  <p class="lede">In the museum, the equipment panel writes OK or DEAD under each Ghostbuster. The game also keeps a third word, DAZED, ready to go beside them.</p>
+  <p>Each word is drawn from two sprites, and DAZED is stored right next to the other two, in the same style. The code that chooses the word for each Ghostbuster only ever picks OK or DEAD, so DAZED never reaches the screen. Perhaps a Ghostbuster was once meant to be knocked out for a while before getting back up.</p>
+  <div class="plate">
+    <canvas id="words" class="words" width="196" height="23" aria-label="The words OK, DEAD and DAZED as the museum stores them"></canvas>
+    <p class="cap">The three words as the museum stores them, drawn from their sprites: the two the <a href="index.html#museum">panel</a> shows, and DAZED.</p>
+  </div>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script id="clock-frame-data" type="application/json">{"frame":{"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[35,216,40,181,48,181,229,181,5,181,112,120,48,175,72,175,30,27,0,209,0,255,216,0,31,241,241,0,255,0,255,255,240,240,246,254,243,251,250,247,250,250,246,246,250,245,245],"cia2":[198,63],"cpu":[47,53],"writes":[[0,47,53270,208,208],[0,53,53283,241,1],[6,61,53264,0,0],[7,10,53286,255,15],[7,34,53248,243,243],[7,46,53264,128,null],[7,54,53250,13,13],[8,3,53264,64,null],[8,11,53252,227,227],[8,23,53264,160,null],[8,31,53254,227,227],[8,43,53264,208,null],[8,51,53256,227,227],[8,63,53264,232,null],[9,10,53264,116,null],[9,16,53260,0,0],[9,26,53264,58,null],[9,32,53262,0,0],[9,42,53264,29,null],[9,55,53249,56,56],[10,5,53251,86,86],[10,18,53253,84,84],[10,31,53255,84,84],[10,44,53257,84,84],[10,52,18424,105,105],[10,60,18425,105,105],[11,5,18426,8,8],[11,13,18427,8,8],[11,21,18428,8,8],[11,27,53287,252,12],[11,31,53288,252,12],[11,35,53289,252,12],[11,39,53290,252,12],[11,43,53291,252,12],[89,48,53260,56,56],[89,54,53261,91,91],[90,8,18430,0,0],[98,13,53270,215,23],[98,19,53282,249,89],[98,25,53283,253,61],[98,31,53272,29,29],[112,10,53261,112,112],[112,14,53263,112,112],[112,20,53262,80,80],[112,26,18430,1,1],[112,32,18431,2,2],[133,21,18430,32,32],[133,27,18431,33,33],[133,37,53261,133,133],[133,41,53263,133,133],[133,45,53260,48,48],[133,49,53262,72,72],[154,21,53261,154,154],[154,25,53263,154,154],[154,31,18430,34,34],[154,37,18431,35,35],[175,21,53261,175,175],[175,25,53263,175,175],[175,31,18430,36,36],[175,37,18431,37,37],[178,51,53287,250,10],[178,55,53288,250,10],[178,59,53289,250,10],[179,2,53290,246,6],[179,56,53291,246,6],[179,62,53249,181,181],[180,3,53251,181,181],[180,14,53253,181,181],[180,18,53255,181,181],[180,22,53257,181,181],[180,30,53248,32,32],[180,38,53250,40,40],[180,46,53252,48,48],[180,54,53254,228,228],[180,62,53256,4,4],[181,14,53264,16,16],[181,20,18424,85,85],[181,26,18425,80,80],[181,32,18426,82,82],[181,38,18427,10,10],[181,44,18428,11,11],[202,54,53282,246,6],[202,60,53283,254,14],[203,3,53272,31,31],[203,58,53270,216,216],[204,1,53264,30,30],[204,7,53249,216,216],[204,13,53248,35,35],[204,19,18424,6,6],[204,31,53286,250,10],[204,37,53287,247,7]],"colour":"CwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwEBAQEBAQEBAQEBAQEBAQELCwcHBwcHCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw==","ram":[{"a":16384,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAABSABWNAH5oAL+0AL2kAWlZAeW+AVb/AVv+AVvkBVmYBVnsBZb8BVX8BZb4"},{"a":16448,"b":"BVW0BVW0AVVgAVVQAVUABblABv2QBurVFl7lFa/mFr/2G/v5Wvv9W/v5b77+ZVa6WbnuZfarVuvuVt7ZV5/V"},{"a":16512,"b":"AAAAAAAAAAAAAAAAAAEAAAIAUANAUBtAkC9A1H4A1H8A2L9A2L9Amb9AZm4AdVkAZdUAVVUAVZkAWZUAZVAA"},{"a":16640,"b":"AAAAAEAAAZAAAfAAGrQAb/UAv/YA7/UA7/kAr/4Ab/kAL/QAL+gAG6QAC1AABpAAAUAAAAAAAAAAAAAAAAAA"},{"a":16768,"b":"VVVVavVRflABF3UAHu1UF7REHu0UF6REHu0UF7dEHu0UF7REHuUEF6tEHu0UF7hEHu0EF3dEFREUBVVQAAAA"},{"a":16896,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":17024,"b":"BkAAC4AABoAAB4AAC0AAAlAAAaAABvQAn/QA6bQAQGAAAFAAAeAAB5AAB1AABtAAAaAAA5AAClQAABgAAKgA"},{"a":17088,"b":"AAAABkAAC4AABoAAB4AAC0AAAlAAAaAABvQAn/QA6bQAQGAAAFAAApAAA9AAC5QADhQADAUAGAWA9AGAPAJA"},{"a":17408,"b":"GxsbGxsbGxsbGxsbi4wbG42Oj5CRkpOUGxuVlpeYmZqbnJ2en6AbGxuhG6KjpKWmpxuoqaqrrK2uG6+wsbKztBsbtba3G7i5ursbvL2+GxsbvxvAwcHCw8TFxsfIycrLzBvNzhvP0NHS09QbG9XW19jZ2tsb3N0bG97f4OHi4xvk5ebnGxsbGxsb6Onq6+zq6Ozr6+jp7Ogb6+js6Rvp6hvt7u8b8Bsb8fIbG/Mb9Bsb9RsbGxv29/j5GxsbGxsbGxsbGxsbGxv/////////////////////////////////////////////////////ZWQgZW5vdWdoIHNsaW1lIHRvIGFuYWx5c2UhICAgICAgICAgcHJlMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwhDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMAmjozAwMDAwMDAwMDChoTAwMDAwMKSkpKSkMDAwMKSkpDAwMDAwMDAJo6MwMDAwMDAwMDChe3uhoaEwMDCioqKioqMwMDCCoqWjMDAwpKSkCaOjMDAwMGU6BQQweHh4e2U6BQQwooCAgICjMDAwf6KlozAwMICigAn//6QwMDADGRkZMHh+fX0DAAADVS14BPwE/PwwMICiVFVVVVVVVIIxf39/ozAwAxkZGVUtOgUaAxgZGRkVGxkYJicoMDCiolNQUFBQUFOiMQQEeAT8LQMAAANQKAAAAAMYGRlBGBJMxWDiKDAwoqJTUFBQUFBTojErKw4KKioDARgDUCgAAAADAAADBPwGbDBR8SgwOgUaOgVQUFBQU6JZKysODgwpAwAAA1AoAAAAAwAAAygoK5Sdnp8oLaupqamseAT8BPwGWQ4ONzc3NgOmpwNQKAAAAAPIyQPOzytQKCgoKGU6BRo6BQQoKCgoK1nV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1QABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhsbGxwdHh8AAQIDBAUmGxsbGycoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AQUJDRAECAwRFRhsbGxtHSElK/f39/f39/f39/f39/f39/f39/f39G0tMTU4BAgMET1AbGxsbUVJTVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFVWV1hZAQIDBFpbGxsbG1xdXor6GxsbGxsbGxsbGxsbG/obGyEgiSGIG19gYQECAwRiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhGNkZWZnaA=="},{"a":18424,"b":"BlBTCgsEJCUAWu4AV78AZu4AVbsAZqoAVXcAZWYAlWYAZVYAWVUAZWUAeVkAZmYAf9sAb6sAru8Af78Ar/4Ae78Abv8Ae/8="},{"a":18496,"b":"mrmgr//Qn/+QWr9Ala5AmlUA3lUAmmQA3VQAnVAAbUAAfkAAukAA90AA+0AA/kAA/0AA/kAA/0AA/kAA7UAA"},{"a":18560,"b":"AG77AH+/AG7+AFu/AGqvAFu6AGauAFppAGWpAFZVAGVWAFVVAGVWAFVVAHVWAGlVAHlZAGpVAH1VALpWAfVp"},{"a":18624,"b":"/kAA+UAApUAAl5AAXpAAe5AAblAAv1AAb1QAv1QAbmQAfaQAavQAV6UAb/UAn+kAa/kAX+0Aa/kAbuUAa+UA"},{"a":18688,"b":"Af5VAq+lA1ZVA1VVB1VVB5VVC9VVGbVpGm/lGVqVBlVVBVVVFVVVGVVWaVVlaUFVWoAAllAAZZQAGVQABqQA"},{"a":18752,"b":"XpUAWlUAVVkAVWkAVf0Al+0AW/kAW20AVb1AVe1AVv1AW9VAbVUA1XQAULkAAfukAfu1AadfAVf5AH9AAOQA"},{"a":21504,"b":"AAFAAAWAAAZAAAeAAAaAABUAACoAACoAAKYAAKWAAPmAAPmAAC4AABuAABuAAFYAAFwAAF8AAFfAAKAAAKgA"},{"a":21632,"b":"AAFAAAWAAAZAAAeAAAaAABUAAGoAAaVAAarAAGrAAFVAAHkAAB4AAB4AAB5AADlAA6VAA1FAAwEAAwKAAAKg"},{"a":21824,"b":"AAFAAAWAAAZAAAeAAAaAABUAAGoAAKoAAJoAAKYAAG8AAB8AABYAABsAABcAAJoAAJ0AAKgAAKQAADwAAD8A"},{"a":23104,"b":"AAAAAAAAAAAAAAAAAERQFJm1aXdmvnZRl2ERZlUA1R1ArRrQHQGkbQB4GQbkFC9AAL0AAMwAAIQAABAAAAAA"},{"a":28672,"b":"qv6qu6r7qu+q7rKvgsOq1w=="},{"a":28696,"b":"3av1rde5372rqqv/Vb+praqqqv9V+6rvAAABEXZvfRU="},{"a":28744,"b":"vdC99L3UvfT//////////w=="},{"a":28768,"b":"/+fT/9PD79c="},{"a":28784,"b":"qb+91QC9rb0="},{"a":28816,"b":"AMDi4sDi4sA="},{"a":28840,"b":"AFW13VXVXm0="},{"a":28864,"b":"ALW01VRQRBEAEUcZL2qqqwAEeOywwDDBBQRBAAAAAFQ="},{"a":28928,"b":"ANDQQAAAAAAAAAEMNT///Q=="},{"a":28976,"b":"AAARH8/8VEAAABAw8NBAAP91/93/df9X/2HD1cNB60P/aevV62nrQ/2Uvd283by1"},{"a":29032,"b":"qv//VQBd/3U="},{"a":29056,"b":"AAAAAAAAAAD0wLTQ5MC00A=="},{"a":29104,"b":"rrfdVQC1nbXud91VAHfddw=="},{"a":29136,"b":"4uLA4uL/fxU="},{"a":29192,"b":"rLDcQQMGDgo="},{"a":29280,"b":"AQDQ0PD09PQ="},{"a":29312,"b":"VRBVRFUQVQFVAEFUQQB9AQ=="},{"a":29336,"b":"VMDURNRE1ND81dQAAEDU0P9VVQAABFUQ"},{"a":29384,"b":"UETQQHBE0EQ="},{"a":29440,"b":"AAA9Nx00EDEAANBEAEAHNA=="},{"a":29472,"b":"BxEUFRU6JSX1dRVAUVXe6Q=="},{"a":29496,"b":"VFRUbNjYbFQABEAAEABBAAoKCg4GAgPA"},{"a":29536,"b":"rKykpLCQ0EDyU1EAAABBAD8cVEQAAAAEMxEREwMTBxMAAAAAAAAAAA=="},{"a":29584,"b":"1/389P3//xf99/xRAwff/fT08PDQwEAAUwEAAAAAAAA="},{"a":29632,"b":"VXdmd1V3ZndVREREVURERA=="},{"a":29656,"b":"VUdGR1V0ZHQ="},{"a":29672,"b":"VUdGR1V3ZndVREREVXdmd0REVUREZndEREZXRERmd0Q="},{"a":29712,"b":"RGZ3RERkdUQ="},{"a":29728,"b":"AP+q633X/1U="},{"a":29856,"b":"AQAAAAHDHOo="},{"a":29928,"b":"AAAAAAAAAEUAAAAAAAEE9wMDBxMHH3//"},{"a":29960,"b":"AAAAAAD/VQBEZndERGZ3REBAQEBAQEBAAAAAAAD/VQBERFVERERVRFH3jqaK/1EAFOsiq+YyEQA="},{"a":30024,"b":"Vf9V/1X/Vf8="},{"a":30040,"b":"qf2ntp/af2oqfgpbAlcAVQ=="},{"a":30248,"b":"zMdAF330AAA="},{"a":30272,"b":"r7WQkJDQutX6XgcKCwuqVw=="},{"a":30320,"b":"UfXPps/1UQAUfTOtdxMRAA=="},{"a":30376,"b":"AAAAAP0AAAA="},{"a":30480,"b":"//////////8="},{"a":30600,"b":"//////////8="},{"a":30688,"b":"AAAA12XtdRQ="},{"a":30712,"b":"AAAAAAAAAAAAAUYbH29+fQBVqv/+qVBVAFWq/6tVAFUAVan/+lUAVQBVVf+qVQBUAFBEkFQRVFkAAAVbFgAAAAAAVf+qVQAVAABQ5ZQAAEAAAABFEAQEAAAAAFZvFQABAAAApe5VAFUAAABVqVAAVQAABRsgUQAaAABQ7AVTAZUAAAAAAASJjgAAAAAAVar/AAAAAABVqv8AAAAAAFWq/wAAAAAAVar/AAAAAABVqv8AAAAAAFWq/wAAAAAHEWCyAAAAAJFHHdAAAAAWbZQBAAAAAOVeFUAAAAAAAECQYBQAAAAAAAAAAAAAAAAFGlUAAAAAAFW+VQAAAAUWAFFGBwAAVeQAlOQAfP4O3vbm/nw4OBgYGBg8PA=="},{"a":31024,"b":"fX15eXllYXFkYGSkpKTk5FUBBgYBAQQZar////+/ahWV5vv7+uWVUKX5/v75pVRVVQZGQUAAAFG///6qVQAAVer6pVAAAABVf2pVQEBAQVX+pVAAAABVVU5JBAAAAABE/6pVAAAAAFX/qlUAAAAAVf+qVQAAAABV/6pVAAAAAFX/qlUAAAAAVf+qVQAAAABVsmEQAAABABVVAAAAABQAVVUAAAAAVQBVVQAAAABVAFVVAAAAAFkAVVUAAAVavwBVVQAAVKr/AFVVAAAAVakAVVUAAARUVABVWm9vb39/f38Ll9fn5+fn5wAAQERAREBEfX15eXllYXFkYGSkpKTk5GFRUVFRQUVF5OTk5PT09PQaGxsHBgYGBkVAkNHk5PT0QQEBRZV5JRC/f29vb25uWdeXl5eXV1deSERISERIRBRhUVFRUUFFReTk5OT09PT0RUlZWV1dXW34+Pj4+Pj49AYGBgsbGxsb9PT09PT09PQAVf9VAABVABU/Pz8qJRAVQPr5qJRAAFUNbbm4ZABUVRAAAAAAAERURUlZWV1dXW34+Pj4+Pj49G1tfX19fX199PT05OTk5OQbGxsLBgYGBvT09PT09PT1Wm5vb25ubn1UVFRQEBAQEG1tfX19fX199PT05OTk5OR9fm9vWhUQBVWq/pVAAQBVVa+VABVuAFVr/6oVBVAAVf//qlVVAABV5JRUVFAAAVQGBgIBAQAAAPT5/r+qVhUAbgBV//+qVQD+AFX/+qVVAGYBVeSklFAAVb+qFW8abxpV+6pV/6r/qVWpV/6r/pVAVf+q/6pVAGRA0bTkublpeQVab28aFQAVUKX+6qVUAFUAVf+lUAAAVQBV/1UAAABVAFX/VQAAAFUAVf9VAAAAVQBV/1UAAABVAFX/VQAAAFUAVf9VAAAAVQBV/1UAAABVAFXrVQAAFVUAVf+qVQBVVQBW/6tWBVBVVar//6pVAFVVqv//qlUAVVWq//+qVRVAvfj45JFEUABAQEQECBwsVA=="},{"a":31808,"b":"fP7G/n4GfnwAGBgAABgYAAD///////8AAAAARBEAQQAAAAAA4DAA5AABAUcTA0MBAFEAAAAAAAAAAABAEXQddwAAAMDAtQC0AAAAAAAAEQAAAAIAAgACAAAAtQC1APQAAABFAAEAAQEAAAAAAP1A1QAAAAABEAAAAAAAAAAABAEAAAAAQQAAVQABAAARAABEAAABABAAQAAAPRA1EDQtJADUBEAEAEQAAAQAAAAAAABAEEAQQQAAAAAAEAAAAQAAAAAAAAAQAAARBAAAAERRRwAAAQMGDho6BV/qqqqqqqpQ9a+qqqqqqgAAQMCQsKSsAAAAAAAAPRAAAAAAAABABwA9EDUQNC0kANQEQAQARAAAAgACAABRAEDQAOBAwJHAAAAAAAAAHwAAAAABAABRAAMBBQMRRR15EQRAEABEUUcA9ADQANwA1EQAAAAARNFEKwArQDsFIEL0gNUAtVAA5EEBEAEQAQEBwNHA1EDUQNUBQARAAEAAABF1EUUBAQQB0EQAEAEQAABAEAAABAAAECs1JzQlNDX00AVEAQQRAAEAAAcMDA0MBQAA/AAAQABAAABAAABAQECk/Fj4eNwcTCpqaurqqqr6qqqqqqqqqqqoqamrq6qq/wAQAAAQABBQDgcADAAOAAvAQACwAHAAESs1JzQlNDX00AVEAQQRAAEAQwABARFBAEAwAPAAwAAAawAbAO0A1ABHBEQEBAAABNFEABAAAAAA0W1RRABUAAAAUQBAAEAAACwGID4AOgAPAbQAlQDAAAAAAwADAPsA1gBrAK8QXQC+AJAAUACTAJFAVEBFAPcAUAADAAMA+wDWAGsArxBdAL4AkABQAJMAkUBUQEUA9wBQAJAAUACTAJFAV0BFAPcAUQT0AAAAAAAAQEBAAEAAFUAAAAA9MBBwABQEHQwUTxUABRAAAAC6VwIeBwBQdWtqKq/QAB976qr/6x8Fq6urq+tEEQAQAAAQAAAMAAQAAwQBANAAQACwQABRBBAEEAAEAAAQBAAAEAAAAAAAAAAHEABAAAAABXAAAAAAAAAEGQQAAQAFHhoeBQBAAEDRkNBAAAABAAB9EAAAAAUAAAAAAAAWegYCVwEAADoaDgYDUQAA6+v1UOzv9VAECAQAAAAAAABAAAAAQAAAAQEBAQEAAQEAABAAEBAwMMBAQEAAAEBFAAAAAAAAf9EAAAAAAADVVQAAAAAAAP1UAMDAwMDAwAA="},{"a":32744,"b":"8PDw8PDw8PA="},{"a":32760,"b":"AAAAAAAAAAA="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19664,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":35,"colour_cells_changed_during_frame":0}},"glyphs":[{"a":30976,"b":"fP4O3vbm/nw4OBgYGBg8PPz+Bn78wP7+/P4GPj4G/vzGxsb+fgYGBv7+APz+Bv78fX15eXllYXFkYGSkpKTk5FUBBgYBAQQZar////+/ahU="},{"a":31784,"b":"fPwA/P7G/nz+/gAGBgYGBnz+xnz+xv58fP7G/n4GfnwAGBgAABgYAA=="}]}</script>
+<script id="status-words-data" type="application/json">{"ok":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,124,0,0,162,0,0,162,0,0,162,0,0,162,0,0,162,0,0,124,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,226,0,0,162,0,0,164,0,0,184,0,0,164,0,0,162,0,0,226,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"dead":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,252,254,0,162,160,0,162,160,0,162,188,0,162,160,0,162,160,0,252,254,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,124,252,0,162,162,0,162,162,0,190,162,0,162,162,0,162,162,0,226,252,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"dazed":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,252,124,254,162,162,10,162,162,20,162,190,40,162,162,80,162,162,160,252,226,254,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,254,252,0,160,162,0,160,162,0,188,162,0,160,162,0,160,162,0,254,252,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]}</script>
+<script id="clock-model">
+/* clock-model */
+// One call of Broadway's clock routine ($8423). s.count, s.ones and s.tens are its counters
+// at $8024, $8420 and $8421; s.digits the five characters at $47B2-$47B6; s.on the switch at
+// $8016. Returns 'over' when the game would end the walk ($CA30).
+function clockStep(s) {
+  const T = [0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x85, 0x86, 0x87, 0x88, 0x89];
+  const d = s.digits.slice();
+  let {count, ones, tens} = s, over = false;
+  count = (count + 1) & 0xFF;
+  if (count === 0x3A) {
+    count = 0;
+    if (ones !== 0x0A) { d[4] = T[ones]; ones++; }
+    else {
+      ones = 1; d[4] = 0x20;
+      if (tens !== 6) { d[3] = T[tens]; tens++; }
+      else {
+        d[1] = (d[1] + 1) & 0xFF; d[3] = d[4] = 0x20; ones = tens = 1;
+        if (d[1] === 0x22 && !s.on) over = true;
+      }
+    }
+  }
+  return {count, ones, tens, digits: d, on: s.on, over};
+}
+</script>
+<script>
+(() => {
+  const canvas = document.getElementById('clock'), result = document.getElementById('clock-result');
+  if (typeof C64 === 'undefined') { canvas.insertAdjacentText('afterend', 'This needs the site’s shared C64 drawing script.'); return; }
+  const D = JSON.parse(document.getElementById('clock-frame-data').textContent);
+  const bytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const mem = new Uint8Array(0x10000);
+  for (const r of D.frame.ram) mem.set(bytes(r.b), r.a);
+  for (const g of D.glyphs) mem.set(bytes(g.b), g.a);
+  const frame = {...D.frame, mem, colourMem: bytes(D.frame.colour), keep: {}};
+  const full = document.createElement('canvas'), ctx = canvas.getContext('2d');
+  const sw = document.getElementById('clock-switch'), run = document.getElementById('clock-run');
+  let state, raf = 0, last = 0, done = false;
+  const time = d => String.fromCharCode(...d.map(c => c === 0x89 ? 58 : c >= 0x85 ? c - 0x85 + 54 : c - 0x20 + 48));
+  function draw() {
+    mem.set(state.digits, 0x47B2);
+    frame.keep = {};
+    C64.drawFrame(full, frame, 1);
+    // rows 19 to 24 of the screen: the panel under the street
+    const top = (full.height - 200) / 2, left = (full.width - 320) / 2;
+    ctx.drawImage(full, left, top + 152, 320, 48, 0, 0, 320, 48);
+  }
+  function reset() {
+    state = {count: 0, ones: 6, tens: 6, digits: [0x21, 0x21, 0x89, 0x25, 0x25], on: sw.getAttribute('aria-pressed') === 'true', over: false};
+    done = false;
+  }
+  function tick(t) {
+    raf = 0;
+    if (done) return;
+    const minutes = state.digits[1] >= 0x22 ? 1 : 0.25;   // a minute every 58 calls
+    const calls = Math.max(1, Math.round(58 * minutes * Math.min(60, t - last || 16) / 16));
+    last = t;
+    for (let i = 0; i < calls && !done; i++) {
+      state = clockStep(state);
+      if (state.over) { done = true; result.textContent = 'Twelve o’clock: the walk is over.'; }
+      else if (state.digits[1] === 0x26 && state.digits[4] === 0x20 && state.digits[3] === 0x20) {
+        done = true; result.textContent = 'With the switch on, twelve o’clock comes and goes. After 15:59 the hour runs off the end of the digits.';
+      }
+    }
+    if (!done && state.digits[1] === 0x22) result.textContent = 'With the switch on, the clock carries on past twelve.';
+    draw();
+    if (!done) raf = requestAnimationFrame(tick);
+  }
+  run.addEventListener('click', () => {
+    reset(); result.textContent = 'The clock is running.';
+    last = 0; if (!raf) raf = requestAnimationFrame(tick);
+  });
+  sw.addEventListener('click', () => {
+    const on = sw.getAttribute('aria-pressed') !== 'true';
+    sw.setAttribute('aria-pressed', String(on));
+    sw.textContent = on ? 'Switch on' : 'Switch off';
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    reset(); draw(); result.textContent = on ? 'The switch is on. Run the clock.' : '';
+  });
+  reset(); draw();
+})();
+(() => {
+  const canvas = document.getElementById('words'), ctx = canvas.getContext('2d');
+  const W = JSON.parse(document.getElementById('status-words-data').textContent);
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#fff';
+  // each word is two sprites side by side; the letters sit on rows 7 to 13
+  ['ok', 'dead', 'dazed'].forEach((name, n) => {
+    W[name].forEach((sprite, half) => {
+      for (let y = 7; y < 14; y++) for (let x = 0; x < 24; x++) {
+        if (sprite[y * 3 + (x >> 3)] & (0x80 >> (x & 7))) ctx.fillRect(10 + n * 60 + half * 24 + x, y + 1, 1, 1);
+      }
+    });
+  });
+})();
+</script>

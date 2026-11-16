@@ -45,10 +45,10 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
 .nes-mark span{position:absolute;right:4px;top:-20px;font-family:var(--fm);font-size:11px;color:#fff;background:rgba(0,0,0,.7);padding:1px 5px;border-radius:3px}
 .nes-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 12px;font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
 .nes-bar label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
-.nes-bar select,.nes-bar input[type=text]{font:inherit;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:5px 8px;border-radius:6px;max-width:100%}
-.nes-bar input[type=text]{min-width:min(100%,320px);text-transform:uppercase}
+.nes-bar select{max-width:100%}.nes-bar input[type=text]{padding:5px 8px;max-width:100%}
+.nes-bar input[type=text]{min-width:min(100%,320px)}
 .nes-bar input[type=range]{width:min(100%,260px)}
-.nes-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:4px 9px;border-radius:6px;cursor:pointer}
+.nes-bar button{padding:4px 9px}
 .nes-bytes{display:flex;flex-wrap:wrap;gap:3px;margin:10px 0 4px;font-family:var(--fm);font-size:12px}
 .nes-bytes span{padding:2px 4px;border-radius:3px;background:var(--surface-2);border-bottom:3px solid var(--c,#ccc)}
 .nes-bytes span.nes-on{background:var(--hl)}
@@ -83,8 +83,6 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
 .nes-two figure img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
 .nes-two figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
 .nes-tbl tr.nes-bad td{background:#fbe3df}
-.nes-bar button:disabled{opacity:.4;cursor:default}
-.nes-bar button.nes-on{outline:2px solid #ff932f}
 .nes-unseen{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
 .nes-unseen canvas{image-rendering:pixelated;border-radius:3px;background:#000}
 #nes-ucv{width:128px;height:128px}
@@ -117,7 +115,7 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
   <h2 class="t">Bug: restarting after Part 2 loads Part 3</h2>
   <p>Die in Part 2, or type QUIT and answer Y, and the game asks for Part one: "Game over!", then "Hit space to load part one!". Press Space and the drive loads Part 3. The game carries on as if it were in Part 1, reading Part 3's tables, and fills the screen with letters that make no sense.</p>
   <div class="nes-pics">
-    <figure><img src="reference/restart-part2-prompt.png" alt="The game after QUIT and Y in Part 2: Are you sure? Game over! Hit space to load part one!" width="384" height="272"><figcaption>QUIT and Y in Part 2's first room, recorded in the emulator.</figcaption></figure>
+    <figure><img src="reference/restart-part2-prompt.png" alt="The game after QUIT and Y in Part 2: Are you sure? Game over! Hit space to load part one!" width="384" height="272"><figcaption>QUIT and Y in Part 2's first room.</figcaption></figure>
     <figure><img src="reference/restart-part2-after.png" alt="The play screen after the load, its text window full of unreadable characters" width="384" height="272"><figcaption>After Space: the load returned with the name "PART 3", and Part 3's first bytes at <code>$2F00</code>.</figcaption></figure>
   </div>
   <p>The fault is in the loader the crackers wrote for their disk copy. The game asks for a part by number: <code>SHOW_PART_LOAD_SCREEN</code> (<code>$0439</code>) prints the name of the part from <code>CURRENT_PART_NO</code>, then calls the loader. The loader ignores the number. It adds one to the digit of the file name "PART 0" (<code>$C009</code>, copied to <code>$9709</code> when the opening ends) and loads whatever that names, so the files come in the order they were first loaded and never go back. A restart from Part 1 is safe, because the game reloads Part 1 only when another part has been loaded since (<code>LOADED_PART_NO</code>, <code>$14E9</code>).</p>
@@ -134,7 +132,7 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
   <p class="fig">02 · The end of the game</p>
   <h2 class="t">Bug: winning asks the drive for a Part 4</h2>
   <p>The game ends in the Empress's quarters at the top of the Ivory Tower (room <code>$7C</code> in Part 3), and the win restarts the game. The restart asks for Part one, as above, and the loader, which has loaded three files, asks the drive for "PART 4". There is no such file. The KERNAL's LOAD returns with the error for a missing file, the game carries on with Part 3 still in memory, and the screen fills with the same nonsense as after the restart from Part 2. Press <b>Win</b> in the stepper above to follow it.</p>
-  <figure class="nes-pics nes-one"><img src="reference/ending-restart.png" alt="The play screen after the ending's restart: a picture from Part 3 and unreadable text" width="384" height="272"><figcaption>After the ending, recorded in the emulator: LOAD came back with carry set and A = 4, file not found, for "PART 4", and <code>$2F00</code> still held Part 3.</figcaption></figure>
+  <figure class="nes-pics nes-one"><img src="reference/ending-restart.png" alt="The play screen after the ending's restart: a picture from Part 3 and unreadable text" width="384" height="272"><figcaption>After the ending: LOAD comes back with carry set and A = 4, file not found, for "PART 4", and <code>$2F00</code> still holds Part 3.</figcaption></figure>
 </section>
 
 <section id="nes-ne">
@@ -142,11 +140,11 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
   <h2 class="t">Quirk: "N E", as the instructions spell it, does not go north-east</h2>
   <p>Ocean's instructions list the directions as "North (or N)", "North East (or N E)" and so on. Type N E, or NORTH EAST, and the game answers "You can't do that." Only NE and NORTHEAST work.</p>
   <div class="nes-two">
-    <figure><img src="reference/n-e.png" alt="N E and NORTH EAST typed in the first room, each answered: You can't do that." width="384" height="272"><figcaption>N E and NORTH EAST in the first room, where NE leads to the forest track. Recorded in the emulator.</figcaption></figure>
+    <figure><img src="reference/n-e.png" alt="N E and NORTH EAST typed in the first room, each answered: You can't do that." width="384" height="272"><figcaption>N E and NORTH EAST in the first room, where NE leads to the forest track.</figcaption></figure>
     <div class="plate">
       <div class="nes-bar" id="nes-neb"></div>
       <div class="nes-out" id="nes-neo"></div>
-      <p class="cap">The parser on the How it works page, a port of <code>PARSE_INPUT</code> (<code>$122F</code>), <code>RESOLVE_VERB_NOUN</code> and <code>DISPATCH_COMMAND</code>, held to the game's code by <code>test_parser.js</code>.</p>
+      <p class="cap">The parser on the How it works page, a port of <code>PARSE_INPUT</code> (<code>$122F</code>), <code>RESOLVE_VERB_NOUN</code> and <code>DISPATCH_COMMAND</code>.</p>
     </div>
   </div>
   <p>The parser looks each word up by its first three letters, and N and E are each a verb, north and east. <code>RESOLVE_VERB_NOUN</code> (<code>$1396</code>) takes the first verb, and takes the next word, whatever it is, as the noun: N with the noun E. The ten direction verbs have one pair each in the table of 70 (<code>$19A0</code>), all with no noun, so N with a noun matches nothing and prints sentence 3. NORTHEAST works because the parser looks at letters 4-6 of NORTH and SOUTH: THE or THW turns the word into one of the diagonals (<code>$1335</code>). The instructions are the cassette's, as transcribed for the Amstrad release: the C64 copy's own were not found.</p>
@@ -156,7 +154,7 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
   <p class="fig">04 · Words that do nothing</p>
   <h2 class="t">Secret: MUSIC and NOM answer "Ok!" and do nothing else</h2>
   <p>Two verbs are in the vocabulary that the instructions never mention: any word starting MUS, and NOM. Each has a pair of its own (pairs 28 and 29), whose scripts run an action that does nothing, then print "Ok!" (<code>$2B25</code>, <code>$2B29</code>). The actions, <code>$0B</code> and <code>$0C</code>, lead to single <code>RTS</code> instructions at <code>$0699</code> and <code>$069A</code>. TEST, or T, runs pair 30, whose one action, <code>$0F</code>, is a <code>NOP</code> and an <code>RTS</code> (<code>$118F</code>): it prints nothing at all.</p>
-  <figure class="nes-pics nes-one"><img src="reference/mus-nom-test.png" alt="MUSIC and NOM, each answered Ok!, and TEST, answered by nothing" width="384" height="272"><figcaption>MUSIC, NOM and TEST in the first room, recorded in the emulator.</figcaption></figure>
+  <figure class="nes-pics nes-one"><img src="reference/mus-nom-test.png" alt="MUSIC and NOM, each answered Ok!, and TEST, answered by nothing" width="384" height="272"><figcaption>MUSIC, NOM and TEST in the first room.</figcaption></figure>
   <p>What the three verbs did before their actions were emptied is not in this copy.</p>
 </section>
 
@@ -164,7 +162,7 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
   <p class="fig">05 · Saving</p>
   <h2 class="t">Secret: SAVE and LOAD were switched off, but the tape code is still there</h2>
   <p>The instructions explain how to save a game to tape and load it again, and say that the game asks, when it starts, whether to restore a saved game. In this copy SAVE and LOAD print nothing at all, and the question is never asked.</p>
-  <figure class="nes-pics nes-one"><img src="reference/save-load.png" alt="SAVE and LOAD typed in the first room, each followed by nothing" width="384" height="272"><figcaption>SAVE and LOAD in the first room, recorded in the emulator.</figcaption></figure>
+  <figure class="nes-pics nes-one"><img src="reference/save-load.png" alt="SAVE and LOAD typed in the first room, each followed by nothing" width="384" height="272"><figcaption>SAVE and LOAD in the first room.</figcaption></figure>
   <p>The SAVE and LOAD actions each jump to a single <code>RTS</code> (<code>$1189</code> to <code>$0491</code>, <code>$118C</code> to <code>$045F</code>). The routines they once called are still in the engine, whole: <code>DISK_SAVE_GAME</code> (<code>$0494</code>) and <code>DISK_LOAD_GAME</code> (<code>$0461</code>), with a prompt for the file's name ("Please enter the filename", <code>$04C8</code>), and they name device 1, the cassette (<code>$050C</code>). <code>INIT_GAME</code> (<code>$14D6</code>) is a jump over <code>ASK_RESTORE_GAME</code>, the routine that asks the question. Two of the engine's 68 sentences read like parts of the same feature, and nothing prints them:</p>
   <div class="plate"><canvas class="nes-cv" id="nes-scv" width="640" height="96"></canvas><p class="cap">Sentences <code>$33</code> and <code>$11</code>, printed by the page's port of <code>PRINT_SENTENCE</code> (<code>$099B</code>).</p></div>
   <p>Whether Ocean shipped the game this way or the crackers switched saving off is not known: the original cassette was not examined.</p>
@@ -177,7 +175,7 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
   <p>Picture 49, Atreyu buried to the waist in rubble, is one of Part 3's. No room has it as its picture (<code>OBJ_ROOM_TABLE</code>, <code>$0D4F</code>), and no script of the engine or the three parts shows it.</p>
   <div class="plate">
     <div class="nes-unseen"><canvas id="nes-ucv" width="128" height="128"></canvas><canvas class="nes-cv" id="nes-pcv" width="640" height="160"></canvas></div>
-    <p class="cap">Icon 27 and picture 49 over the backdrop, drawn from the game's bytes by the page's port of <code>BLIT_ROOM_GRAPHIC</code> (<code>$05BF</code>), which <code>test_pictures.js</code> holds to the game's routine.</p>
+    <p class="cap">Icon 27 and picture 49 over the backdrop, drawn from the game's bytes by the page's port of <code>BLIT_ROOM_GRAPHIC</code> (<code>$05BF</code>).</p>
   </div>
 </section>
 
@@ -195,8 +193,8 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
 <section id="nes-loading">
   <p class="fig">08 · The crack</p>
   <h2 class="t">Secret: the crack keeps Ocean's tape loading picture</h2>
-  <p>This copy is a crack of the cassette by MrL and Dr Bakterius, "CRACKED AT 11/23/85". After the crackers' scrolling intro it shows the picture Ocean's tape showed while it loaded: the title, Auryn's two snakes and the Ocean logo. The crack's code at <code>$CA00</code> copies the game's first kilobyte into place from <code>$C200</code>, shows the picture (its bitmap at <code>$4000</code>, its colours at <code>$6000</code> and <code>$C600</code>) until a key is pressed, and starts the game at <code>$0400</code>. Part 1's load then overwrites the picture.</p>
-  <figure class="nes-pics nes-one"><img src="reference/loading-picture.png" alt="Ocean's loading picture: The Neverending Story, two snakes biting each other's tails, the Ocean logo and 1985" width="384" height="272"><figcaption>The loading picture, recorded in the emulator before the game starts.</figcaption></figure>
+  <p>This copy is a crack of the cassette by MrL and Dr Bakterius, "CRACKED AT 11/23/85". After the crackers' scrolling intro it shows the picture Ocean's tape showed while it loaded: the title, Auryn's two snakes and the Ocean logo. The crack's code at <code>$CA00</code> copies the game's first kilobyte into place from <code>$C200</code>, shows the picture (its bitmap at <code>$4000</code>, its colours at <code>$6000</code> and <code>$C600</code>) until a key is pressed, and starts the game at <code>$0400</code>. Part 1's load then overwrites the picture. Ocean's cassette shows the same picture, the same in every pixel (<a href="graphics.html#loading">Graphics</a>).</p>
+  <figure class="nes-pics nes-one"><img src="reference/loading-picture.png" alt="Ocean's loading picture: The Neverending Story, two snakes biting each other's tails, the Ocean logo and 1985" width="384" height="272"><figcaption>The loading picture, before the game starts.</figcaption></figure>
 </section>
 
 <section id="nes-leftovers">

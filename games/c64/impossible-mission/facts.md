@@ -455,3 +455,22 @@ Three checks, all verified:
 
 - The meaning of the agent's frame `$0F` (tested against lifting
   platforms by `platform_at`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### ending.html
+
+- The emulator's own picture of the same moment is here.
+
+### levels.html
+
+- Drawn by a port of `$A39C` that gives the same screen and colour bytes as the game for all 32 rooms (checked in a 6502 simulator).
+- The map is made by a port of `$B2BD` that gives the same bytes as the game's own routine for every random stream it was given (200 tested in a 6502 simulator);
+
+### mechanics.html
+
+- The port matches the game's own routine, run in a 6502 simulator, on all 36 pieces of the game in the snapshot this page was made from.
+- The pocket computer, captured in an emulator.
+- A security terminal, captured in an emulator.

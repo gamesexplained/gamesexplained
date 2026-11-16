@@ -48,12 +48,11 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
 .ln-chip{display:inline-block;font-family:var(--fm);font-size:12px;padding:3px 9px;border-radius:12px;border:1px solid var(--line);color:var(--ink-mute);margin:10px 0 0}
 .ln-chip.on{background:var(--amber);border-color:var(--amber);color:#fff}
 .ln-steps{display:flex;flex-wrap:wrap;gap:4px;margin:16px 0 0}
-.ln-steps button{font:inherit;font-family:var(--fm);font-size:13px;min-width:34px;padding:3px 0;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);cursor:pointer}
-.ln-steps button.done{background:#dbe8f7;border-color:#b8cfe9}
-.ln-steps button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.ln-steps[data-own-look] button{font:inherit;font-family:var(--fm);font-size:13px;min-width:34px;padding:3px 0;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);cursor:pointer}
+.ln-steps[data-own-look] button.done{background:#dbe8f7;border-color:#b8cfe9}
+.ln-steps[data-own-look] button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
 .ln-ticker{display:block;width:100%;max-width:576px;aspect-ratio:12/1;background:#000;image-rendering:pixelated;border:12px solid #000;border-radius:6px;box-sizing:content-box}
-.ln-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
-.ln-btn:hover{border-color:var(--ink-mute)}
+.ln-btn{font-size:12.5px;padding:5px 11px;line-height:1.3}
 .ln-whole{font-family:var(--fm);font-size:13px;line-height:1.6;color:var(--ink-soft);margin:10px 0 0}
 @media (max-width:640px){:root{--gx:16px}.ln-two{grid-template-columns:minmax(0,1fr)}}
 </style>
@@ -74,8 +73,8 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
       <div><div class="ln-pad" id="ln-pad"></div><span class="ln-chip" id="ln-btn2">second button</span></div>
       <div><p class="ln-out" id="ln-skip-out" style="margin-top:0">The sequence is read from the level's listing in the built site.</p></div>
     </div>
-    <div class="ln-steps" id="ln-skip-steps"></div>
-    <p class="cap">Each step is an entry of the table at <code>$95D6</code>, read from the listing, and the count is the one the game keeps in <code>$BF</code>. The page's recogniser is a port of the check at <code>$95AB</code>-<code>$95D5</code>; <code>test_discoveries.js</code> runs it and the game's code on the kit's 6502 side by side on 20,000 joystick readings, random and with the sequence among them, and they agree on every one. All seven levels carry the same check and the same table.</p>
+    <div class="ln-steps" id="ln-skip-steps" data-own-look></div>
+    <p class="cap">Each step is an entry of the table at <code>$95D6</code>, read from the listing, and the count is the one the game keeps in <code>$BF</code>. The page's recogniser is a port of the check at <code>$95AB</code>-<code>$95D5</code>. All seven levels carry the same check and the same table.</p>
   </div>
   <p>The check runs each time the game reads the joystick (<code>ScanAndNormalizeInput</code>, <code>$9418</code>). It keeps each reading in <code>$AD</code> and acts on one only when the next scan finds <code>$7C</code> the same, so a direction held counts once and a reading that lasts a single scan is passed over. It does this only while Armakuni faces heading 1 (<code>$69</code>), up and to the right: facing anywhere else puts the count back to 0. Each reading it acts on must be the next entry of the table, the stick's bits with bit 5, the second button, set in every one, or the count starts again. After the eighteenth the check sets <code data-part="">$02AF</code> to <code>$FF</code>, the request to end the level that an exit leading out of the level makes too (<code>$92C4</code>).</p>
   <p>The question comes from the routine that ends a level, <code>ResolveLevelCompletion</code>, which asks it only when the player lacks an object the level needs. Answering YES goes on all the same. In Central Park the sequence brings the question up, and facing any other way the same pushes put the count back to 0 every time.</p>
@@ -89,7 +88,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
     <canvas class="ln-ticker" id="ln-ticker" width="96" height="8" aria-label="The hidden credits, scrolling"></canvas>
     <p><button type="button" class="ln-btn" id="ln-ticker-go">Play</button></p>
     <details><summary>The whole text</summary><p class="ln-whole" id="ln-whole" data-part="intro">The text is read from the intro's listing in the built site.</p></details>
-    <p class="cap" data-part="intro">The text is the intro's own, at <code>$8002</code> up to the <code>$</code> that ends it at <code>$8424</code>, read from the listing. The ticker is the badge's strip of twelve cells, drawn in the intro's font at <code>$8425</code> by a port of <code>RunCreditsScroller</code> (<code>$112E</code>) and <code>ScrollCreditsRow</code> (<code>$1197</code>): one multicolour pixel a frame, a new letter every fourth frame. The font's pixels come in pairs, so every letter takes the cells' colour RAM, light grey. <code>test_discoveries.js</code> runs the port and the intro's routines side by side through the whole text, and the strip agrees in every frame.</p>
+    <p class="cap" data-part="intro">The text is the intro's own, at <code>$8002</code> up to the <code>$</code> that ends it at <code>$8424</code>, read from the listing. The ticker is the badge's strip of twelve cells, drawn in the intro's font at <code>$8425</code> by a port of <code>RunCreditsScroller</code> (<code>$112E</code>) and <code>ScrollCreditsRow</code> (<code>$1197</code>): one multicolour pixel a frame, a new letter every fourth frame. The font's pixels come in pairs, so every letter takes the cells' colour RAM, light grey.</p>
   </div>
   <p data-part="intro">The intro scans the keyboard twice a frame (<code>ScanKeys</code>, <code>$1105</code>). With L held while the logo is up it sets <code>credits_state</code> (<code>$3D</code>) to <code>$80</code>, and the interrupt then draws the text into cell row 22, columns 14 to 25, a character every fourth frame, in a font of its own at <code>$8425</code>. The whole text, 1,058 characters, takes 4,232 frames, about 85 seconds, and the temple scene waits for it. The text credits Stan Schembri with the programming and Robin Levy with the graphics, then thanks people at System 3 and others by name, among them JOHN TWIDDY A PROGRAMMER OF STUNNING BRILLIANCE.</p>
 </section>
@@ -101,7 +100,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
   <div class="plate" data-part="central-park-title">
     <canvas id="ln-old" class="ln-cv" width="384" height="272"></canvas>
     <p class="ln-note" id="ln-old-out" style="margin-top:10px">The screen is drawn in the built site, which serves the listings it comes from.</p>
-    <p class="cap">The leftover routine at <code>$6000</code>, run in the page on the kit's 6502 over the engine and the title load, up to its wait for the fire button at <code>$606B</code>, and drawn by the site's renderer. <code>test_discoveries.js</code> runs it the same way and checks that it reaches the wait with the text drawn, its interrupt vector set to <code>$60A0</code>, and an <code>RTI</code> at <code>$4002</code>.</p>
+    <p class="cap">The leftover routine at <code>$6000</code>, run in the page over the engine and the title load, up to its wait for the fire button at <code>$606B</code>, and drawn by the site's renderer.</p>
   </div>
   <p data-part="central-park-title">The routine saves the zero page to <code data-part="">$8000</code>, draws the card with <code>DrawTitleCard</code> (<code>$4E00</code>) and puts the zero page back, then sets a raster interrupt at line 0 with its handler at <code>$60A0</code> and prints PRESS FIRE TO CONTINUE with the engine's text routine. When fire on port 2 is pressed it paints the window's bottom row and fades the volume from 14 to 0. The loader never goes near it: it calls <code>$4E00</code> directly and plays the tune itself.</p>
   <p data-part="central-park-title">The handler calls <code>$4002</code>, as if the tune's player answered there. In this tune <code>$4000</code> is a <code>JMP</code>, and <code>$4002</code> is the high byte of its address, <code>$40</code>, which as an instruction is <code>RTI</code>, the return from an interrupt. Run in place of a return from a subroutine, it takes the top of the stack for a status byte and a return address: the first frame's interrupt would send the processor to <code data-part="">$0060</code>, in the middle of the game's variables.</p>

@@ -78,7 +78,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
     <div class="pick"><a class="step" id="cm-dprev" aria-label="One fewer">‹</a><select id="cm-d" aria-label="Spirits destroyed"></select><a class="step" id="cm-dnext" aria-label="One more">›</a></div>
     <canvas id="cm-mcv" class="cm-cv" width="760" height="320" aria-label="The spirit meter against time"></canvas>
     <p class="cm-read" id="cm-mread"></p>
-    <p class="cap">The solid line is the meter as the game works it out, through the port of <code>$7286-$72A9</code> in this page; the dashed line is the same sum done without the overflow. <code>test_meter.js</code> runs the game's own <code>MUL_S8_S8_TO_S16</code> (<code>$2643</code>) and <code>DIV_S24_BY_S16</code> (<code>$259F</code>) for every clock value and every count of spirits, 5,632 cases, and finds the port the same in all of them. <i>Live</i> (<code>work/scripts/meter.py</code>): with 11 and with 12 destroyed the game ended as the clock went from 127 to 128; with 13 and with 20 it did not.</p>
+    <p class="cap">The solid line is the meter as the game works it out, through the port of <code>$7286-$72A9</code> in this page; the dashed line is the same sum done without the overflow. In the game, with 11 and with 12 destroyed the game ends as the clock goes from 127 to 128; with 13 and with 20 it does not.</p>
   </div>
   <p>The meter is a clock. <code>$246A</code> starts at 32 and goes up one step every two minutes, and the meter is that clock times the spirits still free, 21 minus those destroyed, divided by 21 (<a href="index.html#cm-strength">Strength, keys and spirits</a>). With no spirit destroyed the meter reaches 64 at 64 minutes. Each spirit destroyed slows it down.</p>
   <p>The multiply at <code>$2643</code> treats the clock as a signed byte. From 128, which the clock reaches 192 minutes into a game, the clock reads as a negative number, and so does the product. The divide at <code>$259F</code> is then given the product as an unsigned 16-bit number. With 11 destroyed, 128 reads as −128, the product is −1,280, <code>$FB00</code>, and 64,256 divided by 21 is 3,059, <code>$0BF3</code>. The game compares only the low byte, <code>$F3</code>, and that is over 64, so the game ends at once. With 13 destroyed the product is −1,024, <code>$FC00</code>, and 64,512 divided by 21 is exactly 3,072, <code>$0C00</code>, whose low byte is 0. Below 128 the meter could never get past 48 with 13 destroyed, and above it the low byte never reaches 64 again, so those spirits can never win.</p>
@@ -92,7 +92,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
   <div class="plate">
     <div class="cm-range"><label for="cm-drink">Drinks</label><input type="range" id="cm-drink" min="0" max="70" value="0"><b id="cm-dn">0</b></div>
     <div class="cm-stats"><div><span>Score</span><b id="cm-ps">17,500</b></div><div><span>Strength</span><b id="cm-pst">16</b></div><div><span>Variable 25</span><b id="cm-pv">0</b></div></div>
-    <p class="cap"><i>Live</i> (<code>work/scripts/stores.py</code>): from a new game, a script jump to the Stores (17,500 for the first visit), then the action on the potion 70 times, 150 frames apart, reading the score (<code>$2442</code>), strength (<code>$2455</code>) and variable 25 (<code>$2451</code>) after each. Strength stops at 24, the cap of script opcode <code>$13</code>; the score and the count stop at the 64th drink.</p>
+    <p class="cap">From a new game, a jump to the Stores (17,500 for the first visit), then the action on the potion 70 times, 150 frames apart, reading the score (<code>$2442</code>), strength (<code>$2455</code>) and variable 25 (<code>$2451</code>) after each. Strength stops at 24, the cap of script opcode <code>$13</code>; the score and the count stop at the 64th drink.</p>
   </div>
   <div class="cm-two">
     <div><p>The potion is the Stores' object 4, and its action script is the whole of the mechanism. A test on variable 25 guards everything else, and the script adds 1 to the variable each time, so the 65th drink finds the count at 64 and does nothing. No other script token reads or writes variable 25, and a new game clears it (<code>$4E27-$4E2D</code>). The other two potions hide themselves instead.</p>
@@ -107,10 +107,10 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
   <p class="lede">With sound effects on, an area with a sensor sounds an alarm. The raster interrupt starts the alarm's tune again on every frame, so only the tune's first frame is ever heard, fifty times a second.</p>
   <div class="plate">
     <div id="cm-asid"></div>
-    <p class="cap">The game's own driver, as on <a href="index.html#cm-music">How it works</a>. The first button plays tune 16 from its start to its end, 49 frames. The second plays it as the game does: <code>SID_PLAYER_INITIALIZE</code> (<code>$CF1B</code>) with 16, then <code>SID_PLAYER_TICK</code> (<code>$C885</code>), every frame. <code>test_music.js</code> holds the second against the same calls on the kit's 6502 simulator, frame by frame.</p>
+    <p class="cap">The game's own driver, as on <a href="index.html#cm-music">How it works</a>. The first button plays tune 16 from its start to its end, 49 frames. The second plays it as the game does: <code>SID_PLAYER_INITIALIZE</code> (<code>$CF1B</code>) with 16, then <code>SID_PLAYER_TICK</code> (<code>$C885</code>), every frame.</p>
   </div>
   <p>The raster interrupt does one of two things before it ticks the driver (<code>$738E-$73B0</code>). With music on, it restarts the theme whenever the driver has stopped. With effects on, it checks <code>ACTIVE_SENSOR_COUNT</code> (<code>$109A</code>), the sensors in the area that are not hidden, and while there are any and the game is running it calls the driver's start with tune 16. The start takes no notice of a tune that is already playing, so every frame begins tune 16 again.</p>
-  <p><i>Live</i> (<code>work/scripts/alarm.py</code>): in the Magister, with its one sensor, each frame the start wrote <code>$00</code>, <code>$FF</code> and <code>$FE</code> to the three voices' control registers, and the tick then wrote the tune's first frame, frequency <code>$45A0</code> on voices 1 and 3 and <code>$8B40</code> on voice 2. With music on, the theme played on and no alarm sounded.</p>
+  <p>In the Magister, with its one sensor, each frame the start wrote <code>$00</code>, <code>$FF</code> and <code>$FE</code> to the three voices' control registers, and the tick then wrote the tune's first frame, frequency <code>$45A0</code> on voices 1 and 3 and <code>$8B40</code> on voice 2. With music on, the theme played on and no alarm sounded.</p>
 </section>
 
 <section id="cm-tour">
@@ -121,7 +121,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
     <div class="pick"><a class="step" id="cm-tprev" aria-label="Previous stop">‹</a><select id="cm-tsel" aria-label="Stop"></select><a class="step" id="cm-tnext" aria-label="Next stop">›</a></div>
     <div id="cm-tview"></div>
     <p class="cap" id="cm-tcap"></p>
-    <p class="cap"><i>Live</i> (<code>work/scripts/ending.py</code>, <code>tour.py</code>): from a new game, a script jump to the Magister, then the move event on object 5. Each picture is the 3D view as the tour left that area. The score ended at 3,192,500: the escape, the Magister, and ten first visits.</p>
+    <p class="cap">From a new game, a jump to the Magister, then the move event on object 5. Each picture is the 3D view as the tour left that area. The score ended at 3,192,500: the escape, the Magister, and ten first visits.</p>
   </div>
   <p>The tour is ten GOTOs in one script, each followed by a redraw except the Hospital's, which the script enters and leaves before a picture is made. Every GOTO marks its area as visited and pays for a first visit (<code>$6D1B-$6D2D</code>). The Wilderness always pays at least once in a game: the player starts there, but the start never marks it as visited.</p>
 </section>
@@ -131,7 +131,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
   <h2 class="t">Secret: a sensor drains strength from anywhere in its area</h2>
   <p class="lede">Every 10 seconds the game takes a point of strength if the area holds a sensor that is not hidden. Where the sensor stands and where the player is make no difference.</p>
   <div class="plate cm-wrap"><table class="cm-tbl" id="cm-stab"></table>
-    <p class="cap">The 21 objects of type 2, read from the listing. All of them stand at 0, 0, 0 with no size. The count of sensors is made each time the view is rebuilt (<code>$27C6-$27D7</code>) and the drain is in the interrupt (<code>$7545-$754F</code>). <i>Live</i> (<code>work/scripts/drain.py</code>): in the Magister strength fell from 16 to 13 in 1,500 frames, 30 seconds.</p>
+    <p class="cap">The 21 objects of type 2, read from the listing. All of them stand at 0, 0, 0 with no size. The count of sensors is made each time the view is rebuilt (<code>$27C6-$27D7</code>) and the drain is in the interrupt (<code>$7545-$754F</code>). In the Magister strength falls from 16 to 13 in 1,500 frames, 30 seconds.</p>
   </div>
   <p>A sensor is stopped by destroying its spirit. 19 of the sensors have the id 125, 126 or 127, and the first three global scripts put up one of three shared spirits wherever such a sensor stands. A shot spirit destroys its sensor too, and once an area has no sensor left, its drain and its alarm stop. The other two have scripts of their own. The Courtyard's sensor appears with its spirit when the Courtyard's object 30 is shot. The Dragon's Lair's is hidden, with 13 other objects of the lair, once the lair's object 9 has taken 21 shots, which count only after 20 spirits are destroyed; that makes the 21st spirit.</p>
 </section>

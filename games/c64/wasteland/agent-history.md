@@ -239,6 +239,40 @@ alone animated the same as from the whole buffer, and
 `test_portraits.js` reads them from the page. The generated comments,
 and the sample that checked them, went with the parts.
 
+## 14 November 2026, the leftovers and the ending
+
+Aaron picked six breakouts of the game's hidden rules. This is the
+sixth: ten sections at the end of the Discoveries tab, and the ending's
+three pictures in the picture browser.
+
+The ending came first, live. `work/end.py` set the countdown to its last
+step in a saved game and followed the prompts through three runs.
+Poking the current party's map byte alone did not hold, because the
+main loop writes it back from `$09`; poking both gave the third run. The
+pictures were dumped from `$3400` at a checkpoint on `$CCE2`. The page's
+port then ran module 4 with the engine's calls answered in JavaScript,
+for 98 mixes of parties, and the two agreed with the three live runs.
+
+The first renders of Base Cochise made the channel switch after 60
+steps and left debris on the picture. Making it after eight, when
+channel 0 has run its seven entries once, gave the ruin the emulator
+showed. The game's own moment depends on its waits and the shake, which
+the page does not model.
+
+The printer report was known from the Silver run's listing as code that
+nothing calls. Running it showed the sheet, "Kni", and "Fists".
+
+Needles came last and by accident. A count of plain squares with a
+number, made to check the audit's note of stray code on map 26, gave
+2,229 on that map and a handful on seven others. Printing the rows
+showed `JSR $FDED` and the Apple's soft switches, and a search for the
+first row's branch pattern in the C64 game found the same routine at
+`$9A65`.
+
+The blade storm's plate showed a Ranger with Agility 30 cut, which read
+as a fault in the plate. It was the throw: at difficulty 5 an Agility of
+30 passed 11 times in 20.
+
 ## 8 October 2026, the NPCs (claude-opus-5-5[1m])
 
 Aaron asked for the feature where NPCs refuse requests, then for a cast
@@ -273,3 +307,230 @@ square_action_record found no record and the check returned at once.
 **Wrong turns.** The first count of the squares counted the words
 "difficulty" in the listing comments, which also say "at a difficulty
 above 0" for Dan's marker; counting pairs from the bytes fixed it.
+
+## 14 November 2026, the rules
+
+The fifth of the six pull requests that break the hidden rules out into
+tabs. It grows The party tab with nine sections instead of adding a tab.
+
+- The audit's count of 136 Perception tests came from a sweep of
+  starting squares. Counting every record that a change leads to gave
+  137, and then 122: map 18's check 15 has a test list with no end mark,
+  and the reader ran on through 48 pairs of the next records' bytes,
+  fifteen of them reading as Perception. The count now stops a list at
+  the first pair that means nothing (item 0 or 255, skill 0, a party of
+  59).
+- The first idea for the skills section was a plate that rolls a test.
+  The Dice and combat tab already has one, so the section links to it
+  and keeps the table.
+- The disease clock was meant to show only that four diseases cost
+  nothing. Starting a Ranger at −15 to see how fast a disease kills
+  showed the opposite: Rabies halves the loss, because the branch for
+  the four high bits is taken before the test for a dying Ranger.
+- Leroy's lady first read as giving the whole party Wasteland Herpes,
+  from the routine that loops over the party. Following the question's
+  chain showed a test for a party of exactly one before it, then the
+  test of the sex byte, then the $50.
+- The doctor's module ran on the kit's 6502 with keys fed to wait_key,
+  which is how the exam rule and the free point are tested. The page
+  has no doctor plate: the table and the rule say it in less room.
+
+## 12 November 2026, the fights
+
+Aaron asked what Wasteland still held after Pool of Radiance's tabs, and
+chose six pull requests. This was the first: seven sections for the Dice
+and combat tab, each a fight the page runs on the game's own code.
+
+**The disks.** The four sides came from the Internet Archive's C64
+Preservation Project collection. The masters refuse to play ("make a
+copy"), and the side check was switched off in memory for the session
+(engine `$18B0`, `D0 12` to `EA EA`) rather than run the Copy utility.
+Nothing from that session is in the listings.
+
+**Live.** Two things were tried in VICE before any page was written.
+Twelve rounds against two Mutants with Thrasher unconscious: a
+checkpoint on member_takes_damage counted 25 calls, none for him. Then
+two parties on the world map, one walked 64 steps: the walkers healed 8
+points and the others 16. A random encounter interrupted the first walk
+at step 2, so the world map's chance byte (`$4C2F`) was set to 0 for the
+measurement.
+
+**The fights on the page.** The engine's, the game's and one map's
+listing laid over each other make a machine the game's fight code runs
+on. What it needed besides: the zero page a map load leaves (`$09`,
+`$91`, `$8D`, `$55`, `$56`, `$61/$62`, `$63`), a party table, and
+stand-ins for random_byte, the two routines that draw a glyph, and the
+ones that wait for a key. Hooking print_char (`$1DF8`) printed both
+halves of every his/her and singular/plural switch; the glyph sinks
+(`$1FEA`, `$1F86`) come after the switch and gave the text as the screen
+shows it.
+
+**The slip in the planner.** The patrol's Guards kept running from
+Rangers given 250 CON so that a fight would last. The listing said a
+humanoid line flees under a quarter of the party's CON. The plans fitted
+a half for one Guard and a quarter for two. A hook on the compare at
+`$86B2` showed why: X came back from `$8600` holding the line's count.
+The comment at `$8600` had already said the two routines share the byte.
+
+**Wrong turns.** The scan found nothing until `$8D`, the battle map, was
+set. Zeroing an encounter's line types did not remove its group; the
+game's own change to the square does. Counting blows on monsters by a
+hook on monster_takes_damage counted its retries on dead monsters; the
+text's lines are one a blow. A sweep of 179 rounds of gunfire in the
+Outer Sanctum never printed "a final shot" (message 34), so the page
+does not describe it.
+
+## 14 November 2026, the paragraphs
+
+The fourth of the six tabs, on its own branch from main while the Items
+tab waited for review.
+
+The paragraph book is not on the disks, so the first step was to read a
+scan of it (archive.org, the vgmuseum copy) and split its text into the
+162 paragraphs. Every message of the 42 maps was then searched for
+"paragraph" and a number. That gave 82 paragraphs, and the Sleeper
+Base's terminal, whose numbers are messages of their own, gave seven
+more.
+
+The 73 left over were read one by one. Many turned out to be a true
+paragraph with one detail changed, and ten of the changed details were
+passwords. The listings already named the routines those words lead to
+(`swap_everyones_sex`, `infect_every_character`, `self_destruct_blast`),
+but no page said that the words that reach them are printed in the
+booklet.
+
+A first pass looked only at the questions on a map's starting squares
+and concluded that the game did not take BUZZARD or PASTEL. A walk of
+every record a change can lead to found the bishop's question, which
+the map only shows after the staff has been returned, and with it the
+reason the item table holds the Bloodstaff twice.
+
+The questions were run on the game's code by hooking the two routines
+the input line reads keys through. The first try printed a row of frame
+glyphs for ever, because the harness's text hook does not move the
+cursor that the frame drawing waits on; the frame drawing is now
+skipped. The 18-character form of Finster's name came out of that
+harness by accident: the echo line showed the game cutting it short.
+
+## 13 November 2026, the bestiary
+
+The second of the six pull requests: a Bestiary tab with a roster of
+every monster record and the things about monsters that the game does
+without saying.
+
+**The data.** A script read the 42 maps' listings into one table: each
+monster's eight bytes, its name's two forms, and for each map the
+meetings that use it. `test_bestiary.js` builds the same table again
+from the listings and compares.
+
+**Three monsters that looked unused.** The first pass called the mine's
+Gecko, Skink and Shell Cougar cut content: they have records, and no
+meeting on the map is made of them. The mine's own routines said
+otherwise. `$3E39` raises the count of kinds that a wandering group is
+picked from, and it runs when silver is taken from one of the two veins.
+The same reading of every map's routines turned up the reactor's light
+plates and the assembly floor's panels, which move the same byte. After
+that, a record was called unmet only when the map's code had been read
+too.
+
+**The Night Terror.** Its plate was meant to show hit points being
+rolled again. In the first try the group vanished after a round in
+which the Rangers only evaded, and a plan was never made for it. The
+planner's trace stopped at encounter_is_peaceful: byte 9 of its meeting
+is 3. A second surprise followed once it was attacked: a Night Terror
+with 38,720 hit points planned to run. A hook on the compare at `$845C`
+showed an average of 0. The sum is made with the engine's clamped add
+(`$079D`), which takes its addend as a signed number.
+
+**The pages' scripts.** The picture code was in two pages, byte for
+byte, and the fight code in one. Both moved to files in `reference/` so
+that the new tab could load them: `wasteland-pictures.js` and
+`wasteland-fight.js`.
+
+**Wrong turns.** A walk that looked at all 1,024 squares after every
+step through the CPU took minutes; reading the class-15 entries and the
+roll's own operands (`$B0E7`, `$B0E9`) took a fifth of a second for
+1,000 steps. The first table for the assembly floor gave each routine's
+limit from its code, 20 groups and 1 step in 2. The floor has only 8, 9
+and 5 panels of the three sorts, each of which breaks once, so the
+table gives what a party can reach.
+
+## 14 November 2026, the items
+
+The third of the six pull requests: an Items tab with every item's
+record, where it is found and who sells it, led by what the game does
+with items without saying.
+
+**The stock.** The item table in the game's listing is one of four
+files, and a shop loads its own. The other three were read from the
+master disks and differ only in the stock counts. Laying the seven shop
+records beside the four files showed that only Quartz and Needles share
+a file and deal in the same kinds, which is what makes a sale in one
+show up in the other.
+
+**The sort.** The engine notes say item_reorder counts a line for every
+key. Run with keys typed into the game's own item list, one RETURN
+before the suit's pick left the worn mark on the Canteen below it and
+the armour class at 14. The first try traded the suit and found the
+giver back at 0: the trade asks about the slot it empties, and without
+the stray key that slot is the worn one. With it, four Rangers ended at
+14 from one suit.
+
+**A wrong line.** The test for dropping the marked Canteen first typed
+the slot number as the line. The list closes the gap a traded item
+leaves, so the line is counted among the lines shown; the slot numbers
+keep the gap.
+
+**The two writes.** The shop's listing has two saves, and the page's
+stand-in for the disk drive logs each. Leaving the sell list writes the
+shelf; the party is saved on the way out of the shop. A reset between
+them gives a second suit for the suit's price, since the money from the
+sale is lost with the rest of memory.
+
+**Loot.** An earlier sweep of the bags read the three-byte money
+entries as pairs and reported bags naming several classes. Parsed
+properly, eleven bags name a class and all name ammunition, so the
+question the game notes left open, whether file 4's class-1 "Cash"
+record can be picked, has the answer no.
+
+## 14 November 2026, the solution
+
+A seventh tab, `solution.html`: what the game's code needs before it
+will run the ending, shown as one walk from the Ranger Center.
+
+**The walker.** `reference/wasteland-fight.js` runs one map's fights.
+The walk needed the rest of the game loop: a step, the square the party
+lands on, Use, a bag's prompts, a change of map, the clock. The page's
+block `solution/walk.js` lays the engine's, the game's and one map's
+listing in memory and calls those routines on the kit's 6502, with keys
+from a queue, and `solution/route.js` is the walk, 66 legs of a few
+calls each.
+
+**What the code wants.** Traced back from module 4: countdown_check,
+the flag at `$F4F9`, the four buttons, the four keys, the reactor's
+doors, and Base Cochise's square on the world map. That square led to
+`remote_01` and to Max. The helicopter looked like a second road until
+its skill turned out to be taught only on a map that the same square
+reveals.
+
+**Wrong turns.** The first walks handed the party what it needed, and
+each hand-out was replaced by a bag searched through its own prompts.
+The party stopped healing and KIT lay unconscious until the cause was
+found: a deadfall trap and Sewer rot. The countdown never fired until
+the walker ran countdown_check after every step, as the main loop does.
+The way out by the front door failed, because the inner door takes
+Secpass B from the inside too, and the rope under the weapons pod took
+its place. One party pressing the buttons sealed itself in, which
+became a finding. The party was first split by writing the party
+tables; the game's own Disband command ran on the walker with three
+keys, so the walk uses that, and its moves came out the same.
+
+**The dice.** With the game's real dice the starting party cannot do
+the walk: the rivers carry it off and the tests under Base Cochise
+would kill it. The page takes each throw as passed, says so, and gives
+a table of every throw with its chance from the engine's own dice.
+
+**A browser-only fault.** The page's script asked `globalThis` for the
+two blocks, which a `const` in another script does not put there. The
+node test could not see it, so `solution-browser.js` walks all 66 legs
+in Chromium.

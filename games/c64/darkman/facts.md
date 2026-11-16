@@ -179,3 +179,39 @@ Sample, seed 20261024: 60 of the 3,698 comments in the seven parts' `symbols.jso
 Audit (`kit/CHECKING.md`): fresh checkers on Claude Opus 5.5 went through all 3,698 comments, in 34 chunks of about 110 in address order, one part at a time, and then every claim in this file. 2,847 comments were right; 842 were wrong in a detail and 6 in the main claim, and all 848 were rewritten, with a few more that repeated the same beliefs (853 in all, about one in four); 1 was doubtful and was cut back to what could be checked; 2 could not be checked because the listing holds no bytes for the stretch they describe. 11 labels were renamed where they named the wrong thing. The commonest errors were lists of callers, readers or writers that missed some (often the mask game's setup, or the shared engine's other levels); "every frame" for calls the banner or wipe flags skip; a sound effect named by the value in X rather than its number; the status panel's screen bytes, which are colours behind a multicolour bitmap, called character codes; comments copied between the levels that share an engine and naming another level's addresses or values; and counts off by one. Of the 88 claims in this file, 11 were wrong in a detail and were corrected, and 3 could not be checked from the code.
 
 Sample, seed 5813, after the audit: 60 of the 3,698 comments, drawn at random across all seven parts and checked by a fresh checker on Claude Opus 5.5 that took no part in writing or auditing them. 57 were right and 2 were wrong in a detail, within the mark (95 % interval 0.9 % to 11.4 %): a caller in level 1's mask setup called the end-of-level code ($1FE5), which four other comments also said and which were corrected with it, and a sprite shape described with a pointed top it does not have (level 4, $DA80). The checker marked a third (level 1, $8BAA) for calling $B0C8 the level's sound driver; the driver's code does start there, so it is counted right. A checker misses some, so the rate is a lower bound.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Its player runs the game's own driver on the kit's 6502 simulator, and 18,547 writes over 400 frames of each effect match the page's player register for register, so the stray writes are in the player's output too.
+
+### index.html
+
+- The register values, and the raster line each was written on, come from running the game’s four interrupt handlers on the kit’s 6502 simulator for one frame; test_frame.js runs them again and compares every write.
+- Against the emulator’s screenshot, 2,467 of 104,448 pixels differ, almost all because the screenshot was saved a moment later: the men stand elsewhere and the energy bar is longer.
+- The character set, screen matrix, colour RAM, sprite shapes, sprite pointers, and panel bitmap are the play snapshot's bytes, 4,689 of them.
+- The register values, and the raster line and cycle each was written on, come from running the game's four interrupt handlers on the kit's 6502 simulator for the first whole frame after the snapshot; `test_frame.js` runs the handlers again on the listing and compares every write.
+- Against the emulator's screenshot of level 1, 2,467 of 104,448 pixels differ.
+- The screenshot was saved at a different moment from the snapshot.
+- The men stand in other places, and the energy bar is longer: in the snapshot Darkman holds 4 of 33 energy points and is drawn white because he has just been hit, and the bar's eight cells have 76 pixels that are not black where the screenshot's have 376.
+- So 2,166 of the differing pixels lie on lines 120 to 162, where the sprites are, and 300 lie in the energy bar.
+- The last pixel, at the right end of line 198, is the light grey dot that the emulator draws where a colour register is written.
+- This drawing leaves out the dot, and puts it 24 pixels to the right of its own write to the border colour.
+- The other 101,981 match, including every pixel of the black strip and of the panel outside its energy bar.
+- Inside it the game changes `$D018` from the character set at `$C000` to the bitmap at `$E000`, and interrupt 4 adds bitmap mode near the start of line 206 and removes extended colour mode near its end, as the simulator counts the cycles, so that the first line of the panel is 207.
+
+### levels.html
+
+- The Levels tab carried a section, "The drawing matches the emulator's first screen, except under the sprites", that redrew the first screen of each level from the embedded bytes and compared it, pixel by pixel, with the emulator's picture of that frame: three pictures (the page's drawing, the emulator's picture, and the differences boxed in white) and a table of the pixels that differ on each level. Level 5 has no tile map, and its snapshot holds no frame of play, so it had no picture to compare. `test_levels.js` makes the same comparison and holds every difference to a box where a sprite is.
+
+### music.html
+
+- The player below runs the game's own driver on the kit's 6502 simulator, calls it once a frame, and plays what the driver writes to the sound chip.
+- The player runs the game’s own title driver at `$A0C8` once a frame, and test_music.js checked every tune against the game write for write, with no difference.
+- How the tunes were checkedThe driver is the title copy at `$A0C8`, in the bytes of level 1's file from `$817C` to `$93AB`, and the player calls `$A242` once a frame, 50.12 times a second on a PAL machine.
+- The page supplies only the player, the note display, and the filter, which starts as a model of a 6581 chip; its cutoff curve is one chip's, and real chips differ.
+- Each tune was checked against the same calls on the kit's 6502 simulator (`test_music.js`): 520,674 writes to the sound chip over 12,000 frames of each tune, in order, with no difference.
+- Each effect was checked against the same calls on the kit's 6502 simulator: 18,547 writes to the sound chip over 400 frames of each effect, in order, with no difference.

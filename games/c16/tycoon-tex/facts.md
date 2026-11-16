@@ -455,3 +455,53 @@ made first.
   RETURN started the game; X moved Tex 10 columns in 30 frames and Z 4
   in 12; RETURN fired and `;` jumped; SPACE paused (the score stood for
   100 frames), C= carried on, and ESC went back to the menu.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Each try is the game's five raster interrupts on the kit's 6502, as on the How it works page.
+- In plus4emu the same search at speeds 1, 2 and 3, over four breaks at each, gave the same answer: none at speed 1, breaks of one middle at speed 2, of one or two middles at speed 3 (`test_tex.js` holds this page to it).
+- The game's `check_hiscore` (`$2625`) and `enter_hiscore` on the kit's 6502, over the table as loaded with the top entry's score changed, stopped where name entry begins (`$269C`); the digit that changed is marked.
+- In plus4emu, with GREMLIN's score poked to 150,000 and a game ended at 200,000, GREMLIN came back at 50,000.
+- The game's `lose_pressure` (`$21B1`) on the kit's 6502, from 10 whole cells and each part cell from 0 to 7, with the 4 eighths `break_pipe` takes and the 2 it takes where the pipe is broken already.
+- Run the same way in plus4emu, from `$21B1` with A set, it took the same.
+- The game's `next_level` (`$3A31`) on the kit's 6502, called on the level before, as the game calls it at the end of a level.
+- In plus4emu, levels 20, 40, 60, 80 and 99, entered by poking the level and then `$9D`, had delays of 100, 58, 1, 128 and 128.
+- The game's `next_level` on the kit's 6502 for each level, through every entry of `enemy_pairs` for 00.
+- In plus4emu, level 99 completed by poking `$9D` gave level 00 with the arrow and the crash explosive (mask `$09`) and threshold `$80`.
+- Both from the game's `shot_sound` and `tick_shot_sound` on the kit's 6502, as on the How it works page.
+- The first wrote what the game wrote in plus4emu, frame by frame.
+- Level 1 on the kit's 6502, where the jet is the only enemy: Tex jumps as it comes over and fires at the top of the jump.
+
+### graphics.html
+
+- Tex's legs are the game's `animate_legs` (`$1EF2`) on the kit's 6502, every `leg_delays` frames at the speed chosen.
+
+### index.html
+
+- The menu and the start of level 1, in plus4emu.
+- The game's five raster interrupts (`irq_frame`, `irq_skyline`, `irq_field`, `irq_pipe` and `irq_scroller`), run once a frame in their order on the kit's 6502 over the listing, after `start` and `start_game` (`$29D3`) have built the level.
+- Against the game in plus4emu, stopped at `irq_pipe` in each of 419 frames of level 2 with the joystick moved, jumping and firing, Tex, the scroll registers, his legs, the jump, the bullet and the message were the same in every frame, and again through a fall into a break and back.
+- Each effect is the game's own code from the listing on the kit's 6502: `shot_sound` or `hit_sound` once, then `tick_sounds` once a frame, as `irq_scroller` calls it; and for the count, `level_complete`'s loop from `$3916` with a full bar.
+- Run so, the sixgun and the hit write what the game wrote in plus4emu, frame by frame, and the count writes the same 208 values.
+- Each of its passes is played 42,290 cycles apart, the average in plus4emu, where they took 39,068 to 47,517 as the interrupts' work changed (`test_tex.js`).
+- Against plus4emu's own picture of the same frame, 0 of the 64,000 pixels differ.
+- The rebuilt frame draws it so, as plus4emu does.
+- The break is made by the game's `build_break` on the kit's 6502 and laid as `feed_pipe` lays a piece, and each of its columns is tested with the game's `check_hole`, as `draw_tex` calls it with Tex's left column above: red below a column means Tex falls there.
+- The bar drawn by the game's `draw_pressure_bar` on the kit's 6502 from the eighths left, and the loss taken by its `lose_pressure`.
+- The frames a pass were measured in plus4emu: 408, 610 and 1,214 main-loop passes in 1,500 frames with Tex standing still.
+- Each row is the game's `next_level` (`$3A31`) run on the kit's 6502 for the first level of the group, through every entry of `enemy_pairs` or `enemy_triples` where it chooses at random.
+- `read_controls` (`$182D`), `read_keys` with `key_columns` and `key_rows`, and `check_play_keys`; all tested in plus4emu.
+
+### levels.html
+
+- The game's raster interrupts on the kit's 6502, as on the How it works page, from the start of the scene's first level, or of the level clicked below, with `demo_mode` set, so that `read_controls` hands Tex to `demo_controls`: he runs to column 16, then wanders and jumps the breaks he sees coming.
+- Each row is the game's `next_level` (`$3A31`) on the kit's 6502, called on the level before; where it chooses at random, every entry of `enemy_pairs` or `enemy_triples` was tried.
+- In plus4emu, levels 2, 3, 4, 20, 40, 60, 80, 99 and 00 were entered and read back the same.
+
+### play.html
+
+- The game's writes to TED's sound registers go to the site's model of TED's two voices, made from the plus4emu emulator's, each write at the place in the frame where the page's clock made it.

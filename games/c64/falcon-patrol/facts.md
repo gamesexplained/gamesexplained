@@ -456,3 +456,11 @@ at `$5582` alone.
   plausible memory values and gives every checkpoint a hit count of zero.
   No negative result from this game is worth anything until the program
   counter has been sampled a few times and seen to move.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- The port was checked against the game's own routines running in a 6502 simulator on the game's bytes.

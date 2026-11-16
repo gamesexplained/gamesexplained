@@ -1,0 +1,925 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/wasteland-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Digging silver in the mine shaft <a href="#wl-mine">wakes three animals that are met no other way</a>, and the eleven light plates in Base Cochise's reactor <a href="#wl-reactor">are its eleven kinds of wandering robot</a>. Below them is <a href="#wl-roster">every monster in the game</a>, with the numbers the game keeps and never shows.</p>
+</header>
+<main class="wrap">
+<section id="wl-mine" data-part="map-43">
+  <p class="fig">01 · The mine shaft</p>
+  <h2 class="t">Secret: digging silver in the mine shaft wakes three animals that are met no other way</h2>
+  <p class="lede">The mine shaft has sixteen kinds of wandering monster and picks from the first thirteen. Each time the party chips silver out of the vein in the north-west corner, the game adds the next kind to the choice: a Gecko, then a Skink, then a Shell Cougar. These three stand nowhere on the map, so a party that leaves that vein alone never sees them.</p>
+
+  <div class="plate wl-be" id="wl-be-mine" data-map="43" data-at="8,22">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">What can wander into the party</p>
+        <ol class="wl-be-types" aria-label="The mine's wandering monsters"></ol>
+        <p class="wl-be-odds"></p>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">The game's text appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-act="mining_wakes_monsters" data-say="38">Dig at the north-west vein</button>
+      <button type="button" class="wl-xp-btn" data-act="mining_draws_attacks" data-say="38">Dig at the east vein</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-walk="1000">Walk 1,000 steps</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The <a href="levels.html#map-43">mine shaft</a> (map 43) on the game's own code. A dig runs the routine the map runs when a Ranger has chipped silver out of a vein: <code>$3E39</code> for the north-west vein and <code>$3E2A</code> for the east one. Walk takes 1,000 steps and makes the game's roll for a wandering group after each (<span data-part="game"><code>$B015</code></span>), with random bytes from this browser where the C64 reads its raster line and a timer. Each group is taken off the map again before the next step.</p>
+  </div>
+
+  <p>The mine has two veins. One is in the north-west corner of the map and the other is on its east side, and both squares say <q>There is a vein of silver here! Someone with a pickaxe could chip out a lot of money.</q> A Ranger who passes a Metallurgy check and then uses a pick ax reads <q>You get to work and chip out quite a bit of silver.</q>, and finds a bag holding 1 to 10 dollars. The map then fills the bag again (<code>$3E48</code>), so a vein can be dug for as long as the party likes.</p>
+
+  <p>Every dig has a second effect that the game says nothing about. The mine's record has a count of the kinds of monster that a wandering group is picked from, and it starts at 13. A dig at the north-west vein adds 1 to the count, up to 16 (<code>$3E39</code>). Kinds 14, 15, and 16 are the Gecko, the Skink, and the Shell Cougar, and none of the groups that stand on the map are made of them. The Shell Cougar is the strongest animal in the mine, with 38 to 187 hit points and more armour than anything else there.</p>
+
+  <p>A dig at the east vein makes every kind come more often. The mine rolls for a wandering group after each step, and a group appears on 1 roll in 70. Each dig at the east vein takes 2 off the 70, down to 2 (<code>$3E2A</code>). After 34 digs a group appears on every second step, on average.</p>
+
+  <p>Neither change wears off. The game writes a map back to the disk when the party leaves it (<span data-part="engine"><code>$2856</code></span>), and the two counts are part of the map. A mine that has been dug stays dangerous for the rest of the game.</p>
+</section>
+
+<section id="wl-reactor" data-part="map-20">
+  <p class="fig">02 · Base Cochise's reactor</p>
+  <h2 class="t">Secret: the eleven light plates in Base Cochise's reactor are its eleven kinds of wandering robot</h2>
+  <p class="lede">A panel in the reactor level of Base Cochise has eleven light plates, and the game says only that <q>several are lit</q>. Each plate is one kind of robot that can wander into the party, and the level starts with six. A Ranger who passes a check at the panel turns a plate off and takes the strongest of those kinds away. A Ranger who fails turns another plate on, and a stronger robot joins the patrols.</p>
+
+  <div class="plate wl-be" id="wl-be-reactor" data-map="20" data-at="8,24">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">The eleven light plates</p>
+        <ol class="wl-be-types wl-be-lamps" aria-label="The reactor's wandering robots"></ol>
+        <p class="wl-be-odds"></p>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">The game's text appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-act="fewer_monster_types" data-say="54">Pass the check at the panel</button>
+      <button type="button" class="wl-xp-btn" data-act="more_monster_types" data-say="55">Fail the check</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-walk="1000">Walk 1,000 steps</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The <a href="levels.html#map-20">reactor level</a> (map 20) on the game's own code. The two buttons run the routines that the panel's check leads to, <code>$405C</code> when it is passed and <code>$404D</code> when it is failed, and the text is the game's. Walk takes 1,000 steps with the game's roll for a wandering group after each (<span data-part="game"><code>$B015</code></span>).</p>
+  </div>
+
+  <p>The panel is in the south of the level and reads <q>There are eleven light plates on the panel and several are lit.</q> A Ranger can try Alarm Disarm, Electronics, luck, or IQ on it. Success prints <q>One of the light panels turned off.</q> and failure prints <q>Another light panel has turned on.</q> The game never says what a plate is for.</p>
+
+  <p>Each plate is one kind of robot. The reactor's record has the same count as the mine's, the number of kinds a wandering group is picked from, and it starts at 6: the Laser Pod Blaster, the Titanium Clawer, the Silver Strangler, the Silicon Sniper, the Hunter, and the Killer. A failure adds 1 to the count, up to 11 (<code>$404D</code>), and a success takes 1 off, down to 1 (<code>$405C</code>). The kinds come in a fixed order, so the plates that failures light are the VTOL Auto-fire Robot, the Threshing Crawler, the Steel Reaver, the Xenon Laser Cannon, and the Fusion Octotron.</p>
+
+  <p>The order matters because the list runs from weak to strong. The Fusion Octotron has 354 to 487 hit points, and a kill is worth more experience than any other in the game except the Night Terror's. A party that wants to meet one on its walks has to fail at the panel five times. A party that wants a quiet reactor can pass five times and meet nothing on its walks but the Laser Pod Blaster.</p>
+
+  <p>The level has a twelfth robot, the Particle Beam Gattlin, and the panel cannot reach it. Four of them stand guard at fixed places, and the count stops at 11.</p>
+</section>
+
+<section id="wl-assembly" data-part="map-19">
+  <p class="fig">03 · Base Cochise's robot assembly floor</p>
+  <h2 class="t">Secret: wrecking a security monitor on the robot assembly floor brings more robots</h2>
+  <p class="lede">The walls of Base Cochise's robot assembly floor carry security monitor panels, and a Ranger with a crowbar can smash one. Every panel that is smashed makes the floor worse: more groups of robots at once, robots more often, or a stronger kind of robot. The cure is in the cages. Wrecking a command console behind a cage door undoes one panel's harm.</p>
+
+  <div class="plate wl-be" id="wl-be-assembly" data-map="19" data-at="5,5">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">What can wander into the party</p>
+        <ol class="wl-be-types" aria-label="The assembly floor's wandering robots"></ol>
+        <p class="wl-be-odds"></p>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">The game's text appears here.</p></div>
+    </div>
+    <div class="wl-be-acts">
+      <p class="wl-fi-h">Smash a security monitor panel</p>
+      <div class="wl-be-row">
+        <button type="button" class="wl-xp-btn" data-act="more_encounter_groups" data-say="14" data-max="8">that adds a group</button>
+        <button type="button" class="wl-xp-btn" data-act="encounters_more_often" data-say="14" data-max="9">that brings groups sooner</button>
+        <button type="button" class="wl-xp-btn" data-act="more_monster_types" data-say="14" data-max="5">that adds a kind</button>
+      </div>
+      <p class="wl-fi-h">Wreck a command console</p>
+      <div class="wl-be-row">
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-act="fewer_encounter_groups" data-say="17" data-max="4">that takes a group away</button>
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-act="encounters_less_often" data-say="17" data-max="4">that makes groups rarer</button>
+        <button type="button" class="wl-xp-btn wl-xp-ghost" data-act="fewer_monster_types" data-say="17" data-max="4">that takes a kind away</button>
+      </div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-walk="1000">Walk 1,000 steps</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The <a href="levels.html#map-19">robot assembly floor</a> (map 19) on the game's own code. Each button runs the routine that the map runs when a panel or a console has been wrecked (<code>$3CEE</code> to <code>$3D37</code>), as many times as the floor has panels or consoles of that sort, and the text is the game's. Walk takes 1,000 steps with the game's roll for a wandering group after each (<span data-part="game"><code>$B015</code></span>).</p>
+  </div>
+
+  <p>A panel reads <q>A security monitor panel is set into the wall at this point.</q> Strength, a crowbar, a pick ax, a sledge hammer, or any explosive breaks it, and the game answers <q>You successfully damage it beyond any useful function.</q> A player would expect a blinded security system to send fewer robots. The game sends more. All 22 panels read the same, so there is no telling what a panel will do before it is smashed.</p>
+
+  <div class="wl-tw"><table class="wl-t wl-be-dials">
+    <thead><tr><th>What the party wrecks</th><th>What each one changes</th><th>With all of them wrecked</th></tr></thead>
+    <tbody>
+      <tr><td>Eight of the security monitor panels</td><td>One more group of robots can be on the floor at once</td><td>13 groups, from 5</td></tr>
+      <tr><td>Nine more of the panels</td><td>A group appears more often: 2 comes off the 1 in 60</td><td>1 step in 42</td></tr>
+      <tr><td>The last five panels</td><td>One more kind of robot can wander</td><td>10 kinds, from 5</td></tr>
+      <tr><td>Four of the command consoles</td><td>One group fewer at once</td><td>4 groups fewer</td></tr>
+      <tr><td>Four more of the consoles</td><td>A group appears less often: 2 goes on the 1 in 60</td><td>8 more steps</td></tr>
+      <tr><td>The last four consoles</td><td>One kind of robot fewer</td><td>4 kinds fewer</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The command consoles are harder to reach. Each one is behind a cage door that has to be picked or broken first, and the open cage reads <q>Inside you find a command console. The keyboard is locked, and the screen reports inside is a 99% complete robot.</q> Wrecking the console prints <q>You utterly destroy the command console and the machine dies.</q> and turns one of the three numbers back by one step.</p>
+
+  <p>The floor starts with five kinds of wandering robot, and it has five panels of the kind that adds one. The five robots that those panels bring are the Silver Strangler, the VTOL Auto-fire Robot, the Threshing Crawler, the Xenon Laser Cannon, and the Octotron.</p>
+</section>
+
+<section id="wl-interval" data-part="map-20">
+  <p class="fig">04 · The Security Check Interval screen</p>
+  <h2 class="t">Bug: the reactor's screen says Interval Reduced when it has made the robots come less often</h2>
+  <p class="lede">A second panel in the reactor sets how often a wandering group of robots appears. Its two messages are the wrong way round. A Ranger who passes the check reads <q>Interval Reduced.</q>, and the robots come less often than before. A Ranger who fails reads <q>Interval Increased.</q>, and the robots come more often.</p>
+
+  <div class="plate wl-be wl-be-small" id="wl-be-interval" data-map="20" data-at="8,24" data-share="wl-be-reactor">
+    <p class="wl-be-big"><span class="wl-be-odds"></span></p>
+    <div class="wl-fi-log wl-be-log-short" role="log" aria-label="The game's text"><p class="wl-fi-dim">The game's text appears here.</p></div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-act="encounters_less_often" data-say="57">Pass the check at the screen</button>
+      <button type="button" class="wl-xp-btn" data-act="encounters_more_often" data-say="58">Fail the check</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The screen's two routines on the game's own code: <code>$403C</code> after a pass and <code>$402B</code> after a failure. This plate and the light plates above share one reactor, so a change made here shows in the walks there.</p>
+  </div>
+
+  <p>The screen reads <q>A message on a screen reads Security Check Interval.</q> and takes the same four checks as the light plates. An interval is the time between two things, so a reduced interval ought to mean robots more often. The code does the opposite. After a pass the game adds 2 to the reactor's 1 in 70, which makes a group rarer, and prints <q>The screen reads Interval Reduced.</q> After a failure the game takes 2 off, and prints <q>The screen reads Interval Increased.</q></p>
+
+  <p>The result of each check is the fair one, and only the words are swapped. A pass helps the party, and a failure hurts it. The number can rise to 98 and fall to 2.</p>
+</section>
+
+<section id="wl-roster" data-part="">
+  <p class="fig">05 · The roster</p>
+  <h2 class="t">Every monster in the wasteland, with the numbers the game never shows</h2>
+  <p class="lede">The game tells the player a monster's name and how many there are. Each monster also has eight bytes that set its hit points, its attack, its armour, and what a kill is worth. The table holds every one of them. Press a row for the monster's portrait and the maps where the party meets it.</p>
+
+  <div class="plate wl-be-roster" id="wl-be-roster">
+    <div class="wl-fi-opts">
+      <input type="search" id="wl-be-q" class="wl-fi-sel wl-be-q" placeholder="Search by name" aria-label="Search monsters by name">
+      <select id="wl-be-map" class="wl-fi-sel" aria-label="Map"><option value="">every map</option></select>
+      <select id="wl-be-kind" class="wl-fi-sel" aria-label="Kind"><option value="">every kind</option></select>
+      <select id="wl-be-sort" class="wl-fi-sel" aria-label="Order">
+        <option value="name">by name</option>
+        <option value="hp">most hit points first</option>
+        <option value="dmg">hardest blow first</option>
+        <option value="armour">most armour first</option>
+        <option value="exp">most experience first</option>
+        <option value="runs">most likely to run first</option>
+      </select>
+    </div>
+    <p class="wl-be-count" id="wl-be-count" role="status"></p>
+    <div class="wl-tw wl-tall" id="wl-be-scroll"><table class="wl-t wl-be-t">
+      <thead><tr><th>Monster</th><th class="wl-be-c2">Kind</th><th>Hit points</th><th>Attack</th><th class="wl-be-c2">Armour</th><th>Experience</th><th class="wl-be-c2">Maps</th></tr></thead>
+      <tbody id="wl-be-rows"></tbody>
+    </table></div>
+    <div class="wl-be-card" id="wl-be-card" hidden>
+      <canvas id="wl-be-face" class="wl-be-face" width="192" height="168" aria-label="The monster's portrait"></canvas>
+      <div class="wl-be-about" id="wl-be-about"></div>
+    </div>
+    <p class="cap">Every monster record of the game's 42 maps that has a number in it. A monster that has the same name and the same eight bytes on several maps is one row, and a monster whose numbers differ from map to map has a row for each set. Hit points are the lowest and the highest the game can roll. Attack is the damage of one blow or one shot. The portraits are drawn and moved by the code of the <a href="pictures.html">Pictures and text</a> tab.</p>
+  </div>
+
+  <p>The table shows a few things at a glance when it is sorted. By hit points, the Night Terror of Finster's mind stands alone at the top with up to 40,000, and the Finster Leviathan beside it has 1,500. By experience, the list under the Night Terror is led by the robots of Base Cochise. By the hardest blow, the same robots lead, with one surprise among them: the barkeep of Spade's Casino, of whom the game says <q>Gus, the happy barkeep, wouldn't hurt a fly.</q></p>
+</section>
+
+<section id="wl-reroll" data-part="game">
+  <p class="fig">06 · Walking away</p>
+  <h2 class="t">Secret: a monster that the party walks away from gets new hit points when they come back</h2>
+  <p class="lede">The game does not remember how hurt a monster is once the party is out of its reach. When the party comes back, every monster that is still alive gets a fresh roll of hit points. A wounded monster is whole again, and a monster that rolled high the first time may roll low the second. The dead stay dead.</p>
+
+  <div class="plate wl-be" id="wl-be-reroll" data-map="31" data-enc="0">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">The Pit Ghoul's hit points</p>
+        <p class="wl-be-hp" aria-live="polite">not met</p>
+        <ol class="wl-be-trail" aria-label="The Pit Ghoul's hit points, roll by roll"></ol>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">The game's text appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-do="arrive">Walk up to the Pit Ghoul</button>
+      <button type="button" class="wl-xp-btn" data-do="round" disabled>Fight a round</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-do="leave" disabled>Walk away and come back</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The Pit Ghoul of the <a href="levels.html#map-31">waste pit in Needles</a> (map 31) and four Rangers with 250 CON each, on the game's own code. Walking up runs the scan that finds the monster and the routine that gives it hit points (<code>$94CC</code>, <code>$936E</code>). A round is the game's battle round with every Ranger attacking (<code>$B867</code>). Walking away puts the party at the far end of the map and runs the scan again. The game never shows a monster's hit points; the plate reads them from the game's memory.</p>
+  </div>
+
+  <p>A group of monsters lives in two places. The map holds the lasting part: where the group stands, what its monsters are, and how many of each are left. The hit points are kept apart, in a table that has room for the groups the party is dealing with at the moment (<code>$EE00</code>).</p>
+
+  <p>The table is cleared of a group as soon as the party cannot reach it. Before every round the game scans the squares around the party for groups (<code>$94CC</code>). A group counts when the party can see its square and is within the distance written in the group's record. A group in the table that the scan did not find is dropped, and its place is free for another.</p>
+
+  <p>When the scan finds the same group later, the game treats it as new. The routine that fills the table rolls hit points for every monster the map says is alive (<code>$936E</code>). The number of monsters was written back to the map after each round of the fight (<code>$B9F2</code>), so the ones the party killed are not rolled again.</p>
+
+  <p>For most monsters the fresh roll changes little. For a monster with a wide range it changes the fight. The Pit Ghoul rolls anything from 64 to 318, and a party that has met a strong one can walk off and meet a weak one in the same pit.</p>
+</section>
+
+<section id="wl-cowards" data-part="game">
+  <p class="fig">07 · Monsters that start out running</p>
+  <h2 class="t">Secret: a lone brawler often runs away before anyone has touched it</h2>
+  <p class="lede">A monster that fights hand to hand runs when its hit points fall below half of a number in its record. The roll that gives a monster its hit points can come out below that half. So a monster that is met alone starts one fight in every four or five already beaten, and spends it running. Animals are the exception: they never run.</p>
+
+  <div class="plate wl-be" id="wl-be-cowards" data-map="31" data-enc="0">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">This Pit Ghoul</p>
+        <p class="wl-be-hp" aria-live="polite">not met</p>
+        <p class="wl-be-mood"></p>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">The game's text appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-do="meet">Meet a Pit Ghoul</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-do="many" data-n="100">Meet 100</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The same Pit Ghoul, met afresh each time. The party walks up, the game rolls the Ghoul's hit points and plans its move (<code>$83D7</code>), and the Rangers stand and evade for a round. A Pit Ghoul runs when it has fewer than 127 hit points, half of the 255 in its record.</p>
+  </div>
+
+  <p>The number in the record does two jobs. A monster's hit points are a quarter of the number plus a roll from 1 up to the whole of it (<code>$9483</code>). The Pit Ghoul's number is 255, so a Ghoul has 63 hit points plus a roll of 1 to 255. The same number is the mark for running. Before each round the game takes the average hit points of a line of monsters, and when the average is below half the number, the line runs (<code>$8448</code>).</p>
+
+  <p>The two jobs overlap. A roll in the lowest quarter of its range gives fewer hit points than half the number, and the monster runs from the first round. The Pit Ghoul runs on a roll of 1 to 63, which is 24.7% of its rolls. A monster that is running makes no attack. It moves away from the party, and the game prints <q>The Pit Ghoul runs away.</q></p>
+
+  <p>A group is safer from this than a monster alone, because the game looks at the average of a line. In a line of ten, the weak rolls and the strong ones even out, and the average of a fresh line almost never falls below half.</p>
+
+  <p>Animals are left out of the test altogether (<code>$8448</code>). A rat or a lizard fights until it dies, whatever it rolled. Monsters with guns follow a rule of their own, which is on the <a href="combat.html#wl-nerve">Dice and combat</a> tab.</p>
+</section>
+
+<section id="wl-terror" data-part="game">
+  <p class="fig">08 · The Night Terror</p>
+  <h2 class="t">Bug: a Night Terror with more than 32,767 hit points runs away as if it had none</h2>
+  <p class="lede">The Night Terror of Finster's mind has more hit points than anything else in the game: from 8,256 to 40,000. The strongest ones run away. The game's sum for a monster's nerve cannot hold a number above 32,767, and counts a Night Terror that has more as having 0. With the weak rolls that run under the usual rule, nearly half of all Night Terrors turn and run once the fight starts.</p>
+
+  <div class="plate wl-be" id="wl-be-terror" data-map="23" data-enc="0" data-square="3,25">
+    <div class="wl-fi-grid">
+      <div class="wl-fi-side">
+        <p class="wl-fi-h">This Night Terror</p>
+        <p class="wl-be-hp" aria-live="polite">not met</p>
+        <p class="wl-be-mood"></p>
+      </div>
+      <div class="wl-fi-log" role="log" aria-label="The game's text"><p class="wl-fi-dim">The game's text appears here.</p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" data-do="arrive">Walk up to a Night Terror</button>
+      <button type="button" class="wl-xp-btn" data-do="wait" disabled>Wait a round</button>
+      <button type="button" class="wl-xp-btn" data-do="round" disabled>Attack it</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" data-do="provoke" data-n="100">Attack 100 Night Terrors</button>
+      <p class="wl-xp-say wl-be-tally" role="status"></p>
+    </div>
+    <p class="cap">The Night Terror of <a href="levels.html#map-23">Finster's mind</a> (map 23) and four Rangers, on the game's own code. Attack 100 meets a fresh Night Terror each time, has the Rangers attack it for one round, and reads the plan the game makes for the next round (<code>$83D7</code>).</p>
+  </div>
+
+  <p>The Night Terror's number is 32,000, far above any other monster's. Its hit points are a quarter of that, 8,000, plus 256 times a roll of 1 to 125. That gives 125 different totals from 8,256 to 40,000, in steps of 256.</p>
+
+  <p>The Night Terror runs under the usual rule when it has fewer than 16,000 hit points, which is 31 of the 125 rolls. The other rule is the bug. To take a line's average, the game adds up its monsters' hit points with a routine made for adding and subtracting (<code>$86E9</code>). That routine reads a number above 32,767 as a negative one, and holds a sum that would go below 0 at 0 (<span data-part="engine"><code>$079D</code></span>). So a Night Terror with 32,768 hit points or more has an average of 0, and 0 is below 16,000. That is another 29 of the 125 rolls. Together 60 rolls in 125 make a Night Terror that runs: 48%.</p>
+
+  <p>The Night Terror is also peaceful until it is attacked. Its meeting is marked as peaceful in the map, and the game plans no move for a peaceful group. A party that only waits beside it is never struck. The first Ranger to attack makes it hostile, and from the next round the Night Terror either fights or runs.</p>
+
+  <p>A kill is worth 32,000 experience, and <a href="combat.html#wl-melee">twice that in melee</a>. A Night Terror with 9,000 hit points pays the same as one with 32,000.</p>
+</section>
+
+<section id="wl-unmet" data-part="">
+  <p class="fig">09 · Never met</p>
+  <h2 class="t">Monsters and meetings that are on the disk and never reach the player</h2>
+  <p class="lede">The maps hold more than a player can find. Some monsters have a full record and stand nowhere. Some meetings are written out, with their monsters and their opening line, on squares that the map never makes. Two portraits belong to no monster at all.</p>
+
+  <div class="plate">
+    <p class="wl-fi-h">Meetings that the map never places</p>
+    <div class="wl-tw"><table class="wl-t wl-be-cut">
+      <thead><tr><th>Map</th><th>Who waits</th><th>The line the game would print</th></tr></thead>
+      <tbody id="wl-be-cut"></tbody>
+    </table></div>
+    <p class="cap">Each row is a meeting in a map's list that none of the map's squares, changes of square, or routines point to. A count such as 1-5 is rolled when the party first comes near.</p>
+  </div>
+
+  <p>The cut meetings hint at what was planned. In the Guardian Citadel, three named Brothers were to <q>leap up from behind the table and attack!</q>, and Brothers Robert, Carl, and Richard appear in no other meeting. In the sewers under Las Vegas a <q>rather large patrol of cyber warriors</q> was to come round a corner. In Savage Village the Junk Master and his wife each have a peaceful meeting that is never placed. The village uses a hostile copy of each.</p>
+
+  <div class="plate">
+    <p class="wl-fi-h">Monsters with a record and no meeting</p>
+    <div class="wl-tw"><table class="wl-t wl-be-lost">
+      <thead><tr><th>Monster</th><th>Map</th><th>Hit points</th><th>Attack</th></tr></thead>
+      <tbody id="wl-be-lost"></tbody>
+    </table></div>
+    <p class="cap">Monsters whose record is used by none of the meetings of their map, and which cannot wander there.</p>
+  </div>
+
+  <p>Base Cochise's testing facility has the longest list of these. The level carries the same ten robot records as the assembly floor and uses four: three kinds wander, and Xenon Laser Cannons stand guard. The testing facility has no panels to smash, so the other six stay in their records.</p>
+
+  <div class="plate wl-be-spare">
+    <div class="wl-be-faces">
+      <figure><canvas class="wl-be-face" data-portrait="37" width="192" height="168" aria-label="Portrait 37: a broad figure in banded blue armour with a red visor"></canvas><figcaption>Portrait 37</figcaption></figure>
+      <figure><canvas class="wl-be-face" data-portrait="75" width="192" height="168" aria-label="Portrait 75: a thin red machine with a ribbed body and a blue visor"></canvas><figcaption>Portrait 75</figcaption></figure>
+    </div>
+    <p class="cap">The two portraits on the disks that the game never shows. Every monster's record names its portrait, and neither number is in any of them. The other 73 portraits are on the <a href="pictures.html">Pictures and text</a> tab.</p>
+  </div>
+</section>
+
+<section id="wl-record" data-part="game">
+  <p class="fig">10 · A monster's record</p>
+  <h2 class="t">How eight bytes make a monster</h2>
+  <p class="lede">Every map carries its own list of monsters, and a monster is eight bytes and a name. The same name can have different numbers on different maps, which is why the Threshing Crawler of the reactor is a harder fight than the one on the assembly floor.</p>
+
+  <div class="plate">
+    <div class="wl-tw"><table class="wl-t wl-be-bytes">
+      <thead><tr><th>Byte</th><th>What it sets</th><th>The Pit Ghoul</th></tr></thead>
+      <tbody>
+        <tr><td class="wl-n">0, 1</td><td>The hit point number. Hit points are a quarter of it, plus a roll of 1 to its low byte, plus 256 times a roll of 1 to its high byte (<code>$9483</code>). Half of it is the mark for running. Multiplied by the armour plus 1, it is the experience for a kill (<code>$A9E8</code>).</td><td class="wl-n">255</td></tr>
+        <tr><td class="wl-n">2</td><td>Skill. In melee it is the number of attacks in a round. With a gun it is added to the two dice of each shot.</td><td class="wl-n">3</td></tr>
+        <tr><td class="wl-n">3</td><td>The six-sided dice of damage in a blow or a shot.</td><td class="wl-n">5</td></tr>
+        <tr><td class="wl-n">4</td><td>High half: the most of this monster in a wandering group. Low half: armour.</td><td class="wl-n">1, 3</td></tr>
+        <tr><td class="wl-n">5</td><td>High half: damage added to the dice. Low half: the weapon. 1 is hand to hand, and 2 to 13 are guns that differ in how many shots they fire and how fast their aim falls off with distance.</td><td class="wl-n">8, 1</td></tr>
+        <tr><td class="wl-n">6</td><td>Kind: animal, mutant, humanoid, cyborg, or robot. The kind picks the figure drawn on the map, and animals never run.</td><td class="wl-n">mutant</td></tr>
+        <tr><td class="wl-n">7</td><td>The portrait, which also picks <q>he</q>, <q>she</q>, or <q>it</q> for the fight's text.</td><td class="wl-n">7</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">The eight bytes of a monster's record, as the game reads them (<code>$9EA4</code> and the routines after it), with the Pit Ghoul's as an example: 64 to 318 hit points, three attacks a round of 13 to 38 damage, and 1,020 experience.</p>
+  </div>
+
+  <p>A name is stored once and bent into its plural by the game. The text holds the part that both forms share, then the singular ending, then the plural one: <q>Gunm</q>, <q>a</q>, <q>e</q>, and <q>n</q> make Gunman and Gunmen. Most plurals just add an s, and a few do more: one Policeman and two Police, one Juvenile and two Juvies, one Rodento Grosso and two Rodento Grossi. The Woman in the Las Vegas jail has the plural <q>Womans</q>, which the game never prints, because she is one of the monsters with no meeting.</p>
+
+  <p>The hit point roll explains two oddities in the table. A monster's lowest and highest totals are far apart, because the roll runs up to the whole number and the fixed part is only a quarter of it. And the reactor's Threshing Crawler has 322 to 325 hit points, a range of four. Its number is 260, which is a high byte of 1 and a low byte of 4. The assembly floor gives the same robot the number 235, and 59 to 293 hit points.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script type="application/json" id="wl-bestiary">{"maps":[[0,"The world map",100,5,10,5],[1,"Quartz",30,7,8,7],[2,"Quartz, Scott's Bar",100,4,5,4],[3,"Quartz, the Stagecoach Inn",0,0,0,0],[4,"Quartz, Ugly's hideout",0,0,0,0],[5,"Quartz, the abandoned buildings",0,0,0,0],[6,"Quartz, the courthouse",80,5,4,5],[7,"Sleeper Base, level 1",0,0,0,0],[8,"Desert Nomads",75,6,5,6],[9,"Agricultural Center",50,4,5,4],[10,"Highpool",0,0,0,0],[11,"Las Vegas, the beat-up buildings",0,0,0,0],[12,"Las Vegas",50,7,5,7],[13,"Sleeper Base, level 2",0,0,0,0],[15,"Sleeper Base, level 3",0,0,0,0],[16,"Base Cochise, outside",75,8,3,8],[17,"Base Cochise, the computer",70,5,3,5],[18,"Base Cochise, the testing facility",75,3,8,3],[19,"Base Cochise, robot assembly",60,5,5,10],[20,"Base Cochise, the reactor",70,6,6,11],[21,"Darwin Village",40,7,8,7],[22,"Darwin, the base",30,7,4,7],[23,"Finster's mind maze",0,0,0,0],[24,"Las Vegas sewers",70,4,6,4],[25,"Las Vegas sewers, the lab",70,4,6,4],[26,"Needles",80,6,8,6],[27,"Temple of Blood",80,4,6,4],[28,"Under the Temple of Blood",0,0,0,0],[29,"Agricultural Center, the Root Cellar",50,4,6,4],[31,"Needles, waste pit and ammo bunker",40,4,4,4],[32,"Needles downtown, Leroy's",50,2,3,2],[33,"Needles downtown, Hobo Dogs",50,2,3,2],[34,"Needles, police station, gas station, church",0,0,0,0],[35,"Guardian Citadel",0,0,0,0],[36,"Guardian Citadel, the Outer Sanctum",0,0,0,0],[38,"Las Vegas, the Mushroom Cloud temple",0,0,0,0],[39,"Las Vegas, Faran Brygo's hideout",0,0,0,0],[40,"Las Vegas, jail and Fat Freddy's",0,0,0,0],[41,"Las Vegas, Spade's Casino",0,0,0,0],[42,"Guardian Citadel, the Inner Sanctum",0,0,0,0],[43,"Mine shaft",70,13,3,16],[49,"Savage Village",0,3,0,3]],"beasts":[{"n":"Desert Dweller","p":"Desert Dwellers","r":[14,0,2,3,64,49,2,17],"w":[[0,1,0,0,0,1,0,0]]},{"n":"Wasteland Warrior","p":"Wasteland Warriors","r":[18,0,17,2,34,2,3,6],"w":[[0,2,0,0,0,1,0,0]]},{"n":"Radioactive Vermin","p":"","r":[5,0,1,1,80,17,1,16],"w":[[0,3,0,0,0,1,0,0]]},{"n":"Wild Canine","p":"Wild Canines","r":[14,0,2,2,64,33,1,10],"w":[[0,4,0,0,0,1,0,0]]},{"n":"Slithering Iguana","p":"Slithering Iguanas","r":[7,0,2,2,49,65,1,54],"w":[[0,5,0,0,0,1,0,0]]},{"n":"Biker Scum","p":"","r":[10,0,1,1,64,1,3,38],"w":[[1,1,0,0,0,1,0,0]]},{"n":"Rib Cracker","p":"Rib Crackers","r":[11,0,1,1,64,1,3,38],"w":[[1,2,0,0,0,1,0,0]]},{"n":"Cutthroat","p":"Cutthroats","r":[13,0,1,1,64,1,3,38],"w":[[1,3,0,0,0,1,0,0]]},{"n":"Leather Thug","p":"Leather Thugs","r":[10,0,1,1,65,1,3,38],"w":[[1,4,0,0,0,1,0,0]]},{"n":"Deserter","p":"Deserters","r":[10,0,10,1,65,2,3,50],"w":[[1,5,0,0,0,1,0,0]]},{"n":"Gunsel","p":"Gunsels","r":[13,0,12,1,49,2,3,44],"w":[[1,6,0,0,0,1,0,0]]},{"n":"Gunman","p":"Gunmen","r":[15,0,14,1,50,2,3,44],"w":[[1,7,0,0,0,1,0,0]]},{"n":"Shambler Ghoul","p":"Shambler Ghouls","r":[20,0,1,1,33,1,2,7],"w":[[1,8,2,1,3,0,0,0]]},{"n":"Ozoner","p":"Ozoners","r":[16,0,16,2,17,2,3,50],"w":[[2,1,1,1,1,1,0,0]]},{"n":"Outlaw","p":"Outlaws","r":[12,0,15,2,64,50,3,50],"w":[[2,2,3,1,2,1,0,0]]},{"n":"New Waver","p":"New Wavers","r":[14,0,1,2,33,17,3,5],"w":[[2,3,2,1,1,1,0,0]]},{"n":"Punker","p":"Punkers","r":[10,0,1,2,64,1,3,5],"w":[[2,4,2,1,3,1,0,0]]},{"n":"Bouncer","p":"Bouncers","r":[20,0,1,2,33,1,3,38],"w":[[2,5,1,3,3,0,0,0]]},{"n":"Gunman","p":"Gunmen","r":[16,0,16,3,17,2,3,44],"w":[[3,1,2,1,1,0,0,0]]},{"n":"Outlander","p":"Outlanders","r":[12,0,15,2,48,50,3,50],"w":[[3,2,2,1,2,0,0,0]]},{"n":"Cutthroat","p":"Cutthroats","r":[14,0,1,2,65,17,3,38],"w":[[3,3,3,1,4,0,0,1]]},{"n":"Spiker","p":"Spikers","r":[10,0,1,2,64,1,3,5],"w":[[3,4,0,0,0,0,0,0]]},{"n":"Rottweiler","p":"Rottweilers","r":[20,0,1,3,64,1,1,49],"w":[[3,5,2,1,1,0,0,0]]},{"n":"Squint","p":"Squints","r":[20,0,16,2,17,34,3,50],"w":[[3,6,1,1,1,0,0,0]]},{"n":"Clerk","p":"Clerks","r":[10,0,14,2,16,2,3,12],"w":[[3,7,1,1,1,0,0,0]]},{"n":"Mongrel","p":"Mongrels","r":[17,0,1,2,64,1,1,49],"w":[[3,8,3,1,3,0,0,0]]},{"n":"Mulefoot","p":"Mulefoots","r":[15,0,1,2,18,1,3,38],"w":[[3,9,1,1,1,0,0,0]]},{"n":"Laurie","p":"Lauries","r":[10,0,16,3,17,2,3,58],"w":[[3,10,1,1,1,0,0,0]]},{"n":"Housekeeper","p":"Housekeepers","r":[16,0,1,1,48,33,3,58],"w":[[3,11,2,1,2,0,0,1]]},{"n":"Bum","p":"Bums","r":[15,0,1,2,64,1,3,46],"w":[[3,12,5,1,2,0,0,1]]},{"n":"Madman","p":"Madmen","r":[16,0,14,3,17,3,3,50],"w":[[3,13,1,1,1,0,0,0]]},{"n":"Marksman","p":"Marksmen","r":[16,0,16,3,17,3,3,44],"w":[[4,1,2,1,2,0,0,0]]},{"n":"Gunman","p":"Gunmen","r":[12,0,10,2,48,50,3,44],"w":[[4,2,1,1,1,0,0,0]]},{"n":"Bouncer","p":"Bouncers","r":[14,0,1,2,65,17,3,38],"w":[[4,3,0,0,0,0,0,0]]},{"n":"Pistolero","p":"Pistoleros","r":[10,0,15,2,64,2,3,44],"w":[[4,4,29,1,2,0,0,0],[6,4,3,1,2,1,0,0]]},{"n":"Guard","p":"Guards","r":[20,0,20,3,65,2,3,44],"w":[[4,5,2,1,4,0,0,1]]},{"n":"Coydog","p":"Coydogs","r":[20,0,1,3,64,1,1,49],"w":[[4,6,9,1,2,0,0,8],[6,5,4,1,4,1,0,0]]},{"n":"Widowmaker","p":"","r":[16,0,14,3,17,2,3,60],"w":[[4,7,1,1,1,0,0,0]]},{"n":"Ugly John","p":"","r":[30,0,18,3,18,2,3,48],"w":[[4,8,1,1,1,0,0,0]]},{"n":"Felicia","p":"","r":[6,0,1,1,16,1,3,58],"w":[[4,9,1,1,1,0,0,1]]},{"n":"Ace","p":"","r":[15,0,1,2,16,1,3,12],"w":[[4,10,1,1,1,0,0,1]]},{"n":"Marksman","p":"Marksmen","r":[16,0,16,3,17,3,3,60],"w":[[6,1,4,1,4,1,0,0]]},{"n":"Gunman","p":"Gunmen","r":[12,0,10,2,48,50,3,60],"w":[[6,2,12,1,4,1,0,0]]},{"n":"Knifer","p":"Knifers","r":[14,0,1,2,65,17,3,5],"w":[[6,3,10,1,4,1,0,0]]},{"n":"Huey","p":"Hueys","r":[16,0,14,3,17,2,3,47],"w":[[6,6,2,1,1,0,0,0]]},{"n":"Dewey","p":"Deweys","r":[16,0,14,3,17,2,3,47],"w":[[6,7,2,1,1,0,0,0]]},{"n":"Louie","p":"Louies","r":[16,0,14,3,17,2,3,47],"w":[[6,8,1,1,1,0,0,0]]},{"n":"Mayor Pedros","p":"","r":[14,0,1,2,65,17,3,12],"w":[[6,9,1,1,1,0,0,1]]},{"n":"Citrine","p":"","r":[14,0,1,2,65,17,3,12],"w":[[6,10,1,1,1,0,0,1]]},{"n":"Wacko Prisoner","p":"","r":[20,0,1,2,65,17,3,5],"w":[[6,11,1,1,1,0,0,0]]},{"n":"Mailed Wolf","p":"Mailed Wolves","r":[40,0,2,5,84,129,1,61],"w":[[7,1,1,1,5,0,0,0]]},{"n":"Iron Wolf","p":"Iron Wolves","r":[100,0,3,7,49,193,1,61],"w":[[7,2,1,1,3,0,0,0]]},{"n":"Warbot","p":"Warbots","r":[80,0,20,5,17,2,5,62],"w":[[7,3,1,1,1,0,0,0]]},{"n":"Large Scorparundi","p":"Large Scorparundies","r":[100,0,4,5,81,145,1,71],"w":[[7,4,1,1,5,0,0,0]]},{"n":"Dire Coyote","p":"Dire Coyotes","r":[15,0,2,2,82,1,1,10],"w":[[8,1,0,0,0,1,0,0]]},{"n":"Nuke Pooch","p":"Nuke Pooches","r":[50,0,1,2,51,1,1,10],"w":[[8,2,0,0,0,1,0,0]]},{"n":"Gila Monitor","p":"Gila Monitors","r":[60,0,1,1,51,1,1,54],"w":[[8,3,0,0,0,1,0,0]]},{"n":"Rail Raider","p":"Rail Raiders","r":[25,0,1,3,82,1,3,44],"w":[[8,4,0,0,0,1,0,0]]},{"n":"Rail Raider","p":"Rail Raiders","r":[25,0,18,3,50,2,3,6],"w":[[8,5,0,0,0,1,0,0]]},{"n":"Rail Thief","p":"Rail Thieves","r":[20,0,1,1,82,1,3,44],"w":[[8,6,3,1,1,1,0,0]]},{"n":"Topekan Man","p":"Topekan Men","r":[20,0,1,2,82,1,3,44],"w":[[8,7,1,5,5,0,0,0]]},{"n":"Topekan Woman","p":"Topekan Women","r":[15,0,1,1,80,1,3,13],"w":[[8,8,1,6,6,0,0,0]]},{"n":"Topekan Child","p":"Topekan Children","r":[10,0,1,1,80,1,3,56],"w":[[8,9,1,2,2,0,0,0]]},{"n":"Topekan Elder","p":"Topekan Elders","r":[15,0,1,1,80,1,3,44],"w":[[8,10,1,5,5,0,0,0]]},{"n":"Baby Topeka","p":"Baby Topekas","r":[5,0,25,1,16,18,3,56],"w":[[8,11,1,1,1,0,0,0]]},{"n":"Bunny","p":"Bunnies","r":[10,0,1,1,65,1,1,16],"w":[[9,1,4,1,3,1,0,0]]},{"n":"Desert Lizard","p":"Desert Lizards","r":[30,0,1,1,65,1,1,54],"w":[[9,2,2,1,4,1,0,0]]},{"n":"Rat","p":"Rats","r":[30,0,1,1,64,1,1,16],"w":[[9,3,5,1,3,1,0,0],[29,2,4,1,3,1,0,0]]},{"n":"Opossum","p":"Opossums","r":[32,0,1,1,64,1,1,16],"w":[[9,4,4,1,3,1,0,0]]},{"n":"Prairie Dog","p":"Prairie Dogs","r":[40,0,1,1,81,1,1,16],"w":[[9,5,3,1,3,0,0,0]]},{"n":"Harry","p":"","r":[80,0,1,6,18,1,1,55],"w":[[9,6,1,1,1,0,0,0]]},{"n":"Deranged Farmer","p":"Deranged Farmers","r":[10,0,15,2,16,3,3,44],"w":[[9,7,1,1,1,0,0,0]]},{"n":"Brat","p":"Brats","r":[4,0,20,2,48,2,3,56],"w":[[10,1,6,1,3,0,0,6]]},{"n":"Chubby Kid","p":"Chubby Kids","r":[4,0,1,2,16,1,3,56],"w":[[10,2,1,1,1,0,0,1]]},{"n":"Red Ryder","p":"Red Ryders","r":[24,0,40,6,18,3,3,6],"w":[[10,3,1,1,1,0,0,0]]},{"n":"Rabid Dog","p":"Rabid Dogs","r":[45,0,1,4,18,1,1,10],"w":[[10,4,1,1,1,0,0,0]]},{"n":"Spiked Mut","p":"Spiked Muts","r":[45,0,1,4,16,1,1,10],"w":[[10,5,1,1,1,0,0,0]]},{"n":"Bobby","p":"Bobbies","r":[10,0,1,4,17,1,3,56],"w":[[10,6,1,1,1,0,0,0]]},{"n":"Juvenile","p":"Juvies","r":[10,0,1,3,48,1,3,56],"w":[[10,7,2,1,2,0,0,2]]},{"n":"Slicerdicer","p":"Slicerdicers","r":[30,0,3,3,164,81,5,39],"w":[[12,1,6,1,5,1,0,0]]},{"n":"Thug","p":"Thugs","r":[15,0,15,3,66,2,3,40],"w":[[12,2,2,1,3,1,0,0]]},{"n":"Scavenger","p":"Scavengers","r":[8,0,8,1,65,82,3,40],"w":[[12,3,1,3,3,1,0,0]]},{"n":"Chopter","p":"Chopters","r":[10,0,2,2,129,81,5,39],"w":[[12,4,5,1,5,1,0,0]]},{"n":"Sniperdroid","p":"Sniperdroids","r":[20,0,15,3,130,34,5,41],"w":[[12,5,5,1,5,1,0,0]]},{"n":"Warroid Mark 1","p":"Warroid Mark 1s","r":[50,0,15,5,131,3,5,41],"w":[[12,6,4,1,5,1,1,0]]},{"n":"Warroid Mark 2","p":"Warroid Mark 2s","r":[75,0,18,7,69,3,5,41],"w":[[12,7,3,1,5,1,1,0]]},{"n":"Warroid Mark 3","p":"Warroid Mark 3s","r":[120,0,25,8,39,3,5,41],"w":[[12,8,3,1,5,0,1,0]]},{"n":"Scorpitron","p":"Scorpitrons","r":[200,0,35,9,26,6,5,36],"w":[[12,9,1,1,1,0,0,0]]},{"n":"Gundroid","p":"Gundroids","r":[50,0,25,3,85,38,4,35],"w":[[12,10,1,1,5,0,0,0]]},{"n":"Cyborg Commando","p":"Cyborg Commandos","r":[50,0,30,6,83,38,4,35],"w":[[12,11,1,10,10,0,0,0]]},{"n":"RadAngel","p":"RadAngels","r":[40,0,20,6,2,3,3,27],"w":[[12,12,1,1,1,0,0,0]]},{"n":"Turbo Meson Cannon","p":"Turbo Meson Cannons","r":[200,0,30,8,23,7,5,73],"w":[[15,1,1,1,1,0,0,0]]},{"n":"Master Cylinder","p":"Master Cylinders","r":[100,0,20,6,52,6,5,77],"w":[[15,2,1,1,3,0,0,0]]},{"n":"Titanium Clawer","p":"Titanium Clawers","r":[70,0,7,8,83,209,5,14],"w":[[15,3,1,1,6,0,0,0]]},{"n":"Titanium Clawer","p":"Titanium Clawers","r":[70,0,3,12,168,129,5,64],"w":[[16,1,4,1,4,1,0,0]]},{"n":"Vanadium Vulture","p":"Vanadium Vultures","r":[80,0,2,17,168,65,5,74],"w":[[16,2,2,1,3,1,0,0]]},{"n":"Chopter","p":"Chopters","r":[60,0,0,12,168,6,5,67],"w":[[16,3,3,1,3,1,0,0]]},{"n":"Steel Reaver","p":"Steel Reavers","r":[160,0,30,12,121,6,5,67],"w":[[16,4,4,1,4,1,0,0]]},{"n":"Silicon Sniper","p":"Silicon Snipers","r":[75,0,30,13,121,38,5,67],"w":[[16,5,4,1,2,1,0,0]]},{"n":"Silver Strangler","p":"Silver Stranglers","r":[75,0,1,13,121,193,5,14],"w":[[16,6,1,1,3,1,0,0]]},{"n":"VTOL Auto-fire Robot","p":"VTOL Auto-fire Robots","r":[135,0,30,13,167,86,5,62],"w":[[16,7,1,1,2,1,0,0]]},{"n":"Threshing Crawler","p":"Threshing Crawlers","r":[235,0,3,17,23,81,5,64],"w":[[16,8,2,1,3,1,0,0],[17,5,1,1,1,1,0,0],[18,8,0,0,0,0,0,0],[19,8,0,0,0,2,0,0]]},{"n":"Laser Pod Blaster","p":"Laser Pod Blasters","r":[200,0,40,15,26,38,5,77],"w":[[16,9,2,1,1,0,0,0]]},{"n":"Plasma Constrictor","p":"Plasma Constrictors","r":[250,0,3,18,74,65,5,64],"w":[[16,10,1,1,5,0,0,0]]},{"n":"Laser Hypermortar","p":"Laser Hypermortars","r":[94,1,30,10,26,86,5,77],"w":[[16,11,3,1,1,0,0,0]]},{"n":"Stainless Steel Flechette rifle","p":"Stainless Steel Flechette rifles","r":[150,0,30,10,121,38,5,62],"w":[[16,12,1,1,3,0,0,0]]},{"n":"Mk 10 Turbo Meson Cannon","p":"Mk 10 Turbo Meson Cannons","r":[150,0,30,12,57,54,5,73],"w":[[16,13,1,1,1,0,0,0]]},{"n":"7mm Vulcan Cannon","p":"7mm Vulcan Cannons","r":[100,0,30,14,57,54,5,73],"w":[[16,14,1,1,3,0,0,0]]},{"n":"Life-seeking Flamethrower","p":"Life-seeking Flamethrowers","r":[80,0,30,15,57,86,5,73],"w":[[16,15,1,1,1,0,0,0]]},{"n":"Sonar-targetted Proton Carbine","p":"Sonar-targetted Proton Carbines","r":[90,0,30,12,57,86,5,73],"w":[[16,16,1,1,3,0,0,0]]},{"n":"Xray Laser Projector","p":"Xray Laser Projectors","r":[34,1,30,16,57,118,5,67],"w":[[16,17,1,1,1,0,0,0]]},{"n":"Wire-guided Anti-personel Missile","p":"Wire-guided Anti-personel Missiles","r":[90,0,30,13,57,6,5,67],"w":[[16,18,1,1,3,0,0,0]]},{"n":"Gauss Needle Projector","p":"Gauss Needle Projectors","r":[134,1,30,13,57,6,5,67],"w":[[16,19,1,1,1,0,0,0]]},{"n":"Steel Reaver","p":"Steel Reavers","r":[160,0,30,12,74,6,5,67],"w":[[17,1,0,0,0,1,0,0]]},{"n":"Silicon Sniper","p":"Silicon Snipers","r":[75,0,30,13,90,38,5,67],"w":[[17,2,1,1,1,1,0,0],[18,5,0,0,0,0,1,0],[19,5,0,0,0,1,0,0]]},{"n":"Silver Strangler","p":"Silver Stranglers","r":[75,0,1,13,58,193,5,14],"w":[[17,3,0,0,0,1,0,0]]},{"n":"VTOL Auto-fire Robot","p":"VTOL Auto-fire Robots","r":[135,0,30,13,55,86,5,62],"w":[[17,4,0,0,0,1,0,0]]},{"n":"Laser Pod Blaster","p":"Laser Pod Blasters","r":[50,0,30,10,28,86,5,77],"w":[[17,6,2,1,1,0,0,0]]},{"n":"Titanium Clawer","p":"Titanium Clawers","r":[70,0,3,12,88,193,5,14],"w":[[18,1,0,0,0,1,0,0],[19,1,0,0,0,1,0,0]]},{"n":"Steel Reaver","p":"Steel Reavers","r":[160,0,30,12,90,6,5,67],"w":[[18,2,0,0,0,1,0,0],[19,2,0,0,0,1,0,0]]},{"n":"Killer","p":"Killers","r":[100,0,30,13,72,38,5,77],"w":[[18,3,0,0,0,1,0,0],[19,3,1,1,1,1,0,0]]},{"n":"Hunter","p":"Hunters","r":[80,0,30,12,88,6,5,77],"w":[[18,4,0,0,0,0,0,0],[19,4,1,1,1,1,0,0]]},{"n":"Silver Strangler","p":"Silver Stranglers","r":[75,0,1,13,90,193,5,14],"w":[[18,6,0,0,0,0,0,0],[19,6,1,1,1,2,0,0]]},{"n":"VTOL Auto-fire Robot","p":"VTOL Auto-fire Robots","r":[135,0,30,13,87,86,5,62],"w":[[18,7,0,0,0,0,0,0],[19,7,0,0,0,2,0,0]]},{"n":"Xenon Laser Cannon","p":"Xenon Laser Cannons","r":[250,0,30,14,28,6,5,73],"w":[[18,9,5,1,1,0,0,0],[19,9,1,1,1,2,0,0]]},{"n":"Octotron","p":"Octotrons","r":[100,0,30,11,58,166,5,66],"w":[[18,10,0,0,0,0,0,0],[19,10,5,1,3,2,0,0]]},{"n":"Vax","p":"Vaxes","r":[75,0,30,13,122,38,5,76],"w":[[19,11,1,1,1,0,0,1]]},{"n":"Laser Pod Blaster","p":"Laser Pod Blasters","r":[50,0,30,10,44,86,5,77],"w":[[20,1,0,0,0,1,0,0]]},{"n":"Titanium Clawer","p":"Titanium Clawers","r":[70,0,3,14,88,193,5,14],"w":[[20,2,0,0,0,1,0,0]]},{"n":"Silver Strangler","p":"Silver Stranglers","r":[75,0,1,11,90,193,5,67],"w":[[20,3,15,1,1,1,0,0]]},{"n":"Silicon Sniper","p":"Silicon Snipers","r":[75,0,30,11,90,38,5,67],"w":[[20,4,0,0,0,1,0,0]]},{"n":"Hunter","p":"Hunters","r":[90,0,30,13,88,6,5,77],"w":[[20,5,0,0,0,1,0,0]]},{"n":"Killer","p":"Killers","r":[100,0,30,13,72,70,5,77],"w":[[20,6,0,0,0,1,0,0]]},{"n":"VTOL Auto-fire Robot","p":"VTOL Auto-fire Robots","r":[135,0,30,14,87,86,5,62],"w":[[20,7,0,0,0,2,0,0]]},{"n":"Threshing Crawler","p":"Threshing Crawlers","r":[4,1,3,17,23,81,5,64],"w":[[20,8,0,0,0,2,0,0]]},{"n":"Steel Reaver","p":"Steel Reavers","r":[160,0,30,15,90,6,5,67],"w":[[20,9,0,0,0,2,0,0]]},{"n":"Xenon Laser Cannon","p":"Xenon Laser Cannons","r":[250,0,30,16,28,6,5,73],"w":[[20,10,0,0,0,2,0,0]]},{"n":"Fusion Octotron","p":"Fusion Octotrons","r":[134,1,30,19,58,54,5,66],"w":[[20,11,1,1,1,2,0,0]]},{"n":"Particle Beam Gattlin","p":"Particle Beam Gattlins","r":[150,0,60,17,26,86,5,73],"w":[[20,12,4,1,1,0,0,0]]},{"n":"Spineless Ghoul","p":"Spineless Ghouls","r":[30,0,2,5,164,1,2,70],"w":[[21,1,0,0,0,1,0,0]]},{"n":"Night Screamer","p":"Night Screamers","r":[35,0,1,4,164,49,2,70],"w":[[21,2,0,0,0,1,0,0]]},{"n":"Desert Scum","p":"","r":[25,0,30,5,163,54,3,68],"w":[[21,3,2,1,1,1,0,0]]},{"n":"Bandit","p":"Bandits","r":[30,0,15,5,162,6,3,68],"w":[[21,4,0,0,0,1,0,0]]},{"n":"Biker Thug","p":"Biker Thugs","r":[33,0,25,4,162,50,3,68],"w":[[21,5,0,0,0,1,0,0]]},{"n":"Base Policeman","p":"Base Policemen","r":[43,0,35,4,165,54,3,45],"w":[[21,6,0,0,0,1,0,0]]},{"n":"Towny","p":"Townies","r":[10,0,8,2,160,54,3,69],"w":[[21,7,0,0,0,1,0,0]]},{"n":"Mad Dog Fargo","p":"","r":[10,0,8,2,160,54,3,69],"w":[[21,8,1,1,1,0,0,1]]},{"n":"Metal Maniac","p":"","r":[10,0,8,2,160,54,3,69],"w":[[21,9,1,1,1,0,0,1]]},{"n":"Spawn Wolf","p":"Spawn Wolves","r":[50,0,2,5,98,161,1,61],"w":[[22,1,2,1,7,1,0,0]]},{"n":"Rodento Grosso","p":"Rodento Grossi","r":[30,0,2,5,112,97,1,61],"w":[[22,2,0,0,0,1,0,0]]},{"n":"Spineback Puma","p":"Spineback Pumas","r":[70,0,3,5,68,1,1,61],"w":[[22,3,0,0,0,1,0,0]]},{"n":"Shadow Panther","p":"Shadow Panthers","r":[80,0,3,9,86,65,1,61],"w":[[22,4,0,0,0,1,0,0]]},{"n":"Carapaced Coyote","p":"Carapaced Coyotes","r":[45,0,2,4,151,129,1,61],"w":[[22,5,0,0,0,1,0,0]]},{"n":"Humongous Coyote","p":"Humongous Coyotes","r":[200,0,4,10,40,225,1,61],"w":[[22,6,0,0,0,1,0,0]]},{"n":"Spawnmaster","p":"Spawnmasters","r":[60,0,25,6,86,38,5,77],"w":[[22,7,4,1,3,1,0,0]]},{"n":"Irwin John Finster","p":"Irwin John Finsters","r":[150,0,30,8,5,6,5,65],"w":[[22,8,1,1,1,0,0,0]]},{"n":"Night Terror","p":"","r":[0,125,1,5,16,1,2,70],"w":[[23,1,1,1,1,0,0,1]]},{"n":"Lie Spider","p":"","r":[100,0,1,4,22,1,1,71],"w":[[23,2,1,1,1,0,0,0]]},{"n":"Android","p":"","r":[30,0,25,6,19,18,4,33],"w":[[23,3,1,1,1,0,0,0]]},{"n":"Psychopathic Android","p":"","r":[45,0,25,8,20,18,4,33],"w":[[23,4,1,1,1,0,0,0]]},{"n":"Irwin John Finster","p":"","r":[3,0,1,2,17,17,5,65],"w":[[23,5,1,1,1,0,0,0]]},{"n":"Finster Sinister","p":"","r":[40,0,40,6,20,22,5,65],"w":[[23,6,1,1,1,0,0,0]]},{"n":"Finster Dexter","p":"","r":[40,0,40,6,20,22,5,65],"w":[[23,7,1,1,1,0,0,0]]},{"n":"Finster Leviathan","p":"","r":[176,4,1,5,16,17,5,72],"w":[[23,8,1,1,1,0,0,0]]},{"n":"Tronodile","p":"Tronodiles","r":[50,0,1,8,70,49,4,4],"w":[[24,1,1,1,3,1,0,0],[25,1,1,1,3,1,0,0]]},{"n":"Tazel","p":"Tazels","r":[15,0,20,3,20,54,4,35],"w":[[24,2,2,1,1,1,0,0]]},{"n":"Turbo Cybertrike","p":"Turbo Cybertrikes","r":[35,0,20,5,22,34,4,35],"w":[[24,3,2,1,1,1,0,0]]},{"n":"Cybertrike","p":"Cybertrikes","r":[20,0,20,4,100,50,4,35],"w":[[24,4,4,1,6,1,0,0]]},{"n":"Clawer Leader","p":"Clawer Leaders","r":[35,0,2,7,23,49,4,4],"w":[[24,5,0,0,0,0,0,0],[25,5,0,0,0,0,0,0]]},{"n":"Clawman","p":"Clawmen","r":[30,0,2,6,102,49,4,4],"w":[[24,6,0,0,0,0,0,0],[25,6,0,0,0,0,0,0]]},{"n":"Cyclon","p":"Cyclons","r":[50,0,3,7,102,33,4,4],"w":[[24,7,4,1,3,0,0,0],[25,7,4,1,4,0,0,0]]},{"n":"Centron","p":"Centrons","r":[65,0,2,8,54,33,4,4],"w":[[24,8,3,1,3,0,0,0],[25,8,2,1,3,0,0,0]]},{"n":"Centron Deluxe Model","p":"Centron Deluxe Models","r":[65,0,20,8,54,38,4,35],"w":[[24,9,3,1,3,0,0,0]]},{"n":"Tronnosaurus","p":"Tronnosaurs","r":[200,0,6,10,22,193,4,34],"w":[[24,10,1,1,1,0,0,0]]},{"n":"Cyborg","p":"Cyborgs","r":[100,0,20,6,54,38,4,34],"w":[[24,11,5,1,4,0,0,0],[25,11,5,1,4,0,0,0]]},{"n":"Hexborg","p":"Hexborgs","r":[150,0,25,10,22,22,4,34],"w":[[24,12,2,1,1,0,0,0],[25,12,2,1,1,0,0,0]]},{"n":"Boa Tronstrictor","p":"Boa Tronstrictors","r":[80,0,1,8,22,17,4,4],"w":[[24,13,2,1,1,0,0,0],[25,13,1,1,1,0,0,0]]},{"n":"Tazel","p":"Tazels","r":[15,0,20,2,20,54,4,35],"w":[[25,2,2,1,1,1,0,0]]},{"n":"Clawer Leader","p":"Clawer Leaders","r":[35,0,20,5,22,34,4,35],"w":[[25,3,2,1,2,1,1,0]]},{"n":"Clawman","p":"Clawmen","r":[20,0,20,4,100,50,4,35],"w":[[25,4,2,1,6,1,1,0]]},{"n":"New and Improved Centron","p":"New and Improved Centrons","r":[65,0,20,8,54,38,4,35],"w":[[25,9,3,1,3,0,1,0]]},{"n":"Tronosaurus","p":"Tronosaurs","r":[200,0,6,10,22,193,4,34],"w":[[25,10,1,1,1,0,0,0]]},{"n":"Sand Bum","p":"Sand Bums","r":[10,0,1,1,64,49,3,46],"w":[[26,1,0,0,0,1,0,0]]},{"n":"Desert Nomad","p":"Desert Nomads","r":[11,0,1,1,64,49,3,38],"w":[[26,2,0,0,0,1,0,0]]},{"n":"Lost Soul","p":"Lost Souls","r":[25,0,1,1,16,49,2,7],"w":[[26,3,0,0,0,1,0,0]]},{"n":"Jerk","p":"Jerks","r":[25,0,1,2,17,49,3,38],"w":[[26,4,0,0,0,1,0,0]]},{"n":"Leather Jerk","p":"Leather Jerks","r":[33,0,1,4,17,49,3,38],"w":[[26,5,0,0,0,1,0,0]]},{"n":"Brass Jerk","p":"Brass Jerks","r":[45,0,12,4,17,2,3,60],"w":[[26,6,0,0,0,1,0,0]]},{"n":"Silicon Sniper","p":"Silicon Snipers","r":[25,0,30,3,68,38,5,9],"w":[[27,1,0,0,0,1,0,0]]},{"n":"Hunter","p":"Hunters","r":[30,0,30,5,68,6,5,9],"w":[[27,2,0,0,0,1,0,0]]},{"n":"Killer","p":"Killers","r":[40,0,30,5,68,38,5,9],"w":[[27,3,0,0,0,1,0,0]]},{"n":"Guard","p":"Guards","r":[20,0,20,3,34,18,3,60],"w":[[27,4,2,1,2,1,0,1]]},{"n":"Executioner","p":"Executioners","r":[20,0,4,2,34,17,3,5],"w":[[27,5,1,2,2,0,0,0]]},{"n":"Hobo","p":"","r":[20,0,1,2,32,1,3,46],"w":[[27,6,1,1,1,0,0,1]]},{"n":"Glowing Slime","p":"Glowing Slimes","r":[10,0,1,1,162,97,1,42],"w":[[28,1,5,1,6,0,0,0]]},{"n":"Sniper","p":"","r":[30,0,40,4,19,36,3,60],"w":[[28,2,4,1,1,0,0,0]]},{"n":"Guard","p":"Guards","r":[30,0,12,3,163,2,3,60],"w":[[28,3,12,1,4,0,0,0]]},{"n":"Auto Laser Turret","p":"","r":[20,0,20,6,26,107,5,9],"w":[[28,4,1,1,1,0,0,0]]},{"n":"Bloodbeast","p":"Bloodbeasts","r":[40,0,2,2,163,97,1,49],"w":[[28,5,12,1,4,0,0,0]]},{"n":"Blood Priest","p":"","r":[30,0,40,3,164,6,3,43],"w":[[28,6,1,1,1,0,0,0]]},{"n":"Bunny","p":"Bunnies","r":[10,0,1,1,67,1,1,16],"w":[[29,1,4,1,3,1,0,0]]},{"n":"Possum","p":"Possums","r":[32,0,1,1,65,1,1,16],"w":[[29,3,5,1,2,1,0,0]]},{"n":"Prairie Dog","p":"Prairie Dogs","r":[23,0,1,1,33,1,1,16],"w":[[29,4,5,1,2,1,0,0]]},{"n":"Desert Tube","p":"Desert Tubes","r":[1,0,1,1,160,1,1,42],"w":[[31,1,0,0,0,1,0,0]]},{"n":"Trash Slitherer","p":"Trash Slitherers","r":[5,0,5,2,81,17,1,42],"w":[[31,2,0,0,0,1,0,0]]},{"n":"Death Angler","p":"Death Anglers","r":[35,0,1,3,81,49,1,42],"w":[[31,3,0,0,0,1,0,0]]},{"n":"Waste Worm","p":"Waste Worms","r":[10,0,2,1,160,1,1,42],"w":[[31,4,0,0,0,1,0,0]]},{"n":"Pit Ghoul","p":"Pit Ghouls","r":[255,0,3,5,19,129,2,7],"w":[[31,5,1,1,1,0,0,0]]},{"n":"Jerk","p":"Jerks","r":[25,0,2,2,81,49,3,38],"w":[[32,1,8,1,6,1,0,2],[33,1,0,0,0,1,0,0]]},{"n":"Leather Jerk","p":"Leather Jerks","r":[33,0,2,4,65,81,3,38],"w":[[32,2,3,1,3,1,0,1],[33,2,0,0,0,1,0,0]]},{"n":"Brass Jerk","p":"Brass Jerks","r":[45,0,12,4,49,2,3,60],"w":[[32,3,1,3,3,0,0,0],[33,3,1,1,1,0,0,1]]},{"n":"Jerk Leader","p":"","r":[50,0,12,4,18,3,3,60],"w":[[32,4,1,1,1,0,0,0]]},{"n":"Gambler","p":"","r":[17,0,3,4,17,65,3,12],"w":[[32,5,0,0,0,0,0,0]]},{"n":"Woman","p":"","r":[73,0,17,6,17,102,3,78],"w":[[32,6,1,1,1,0,0,1]]},{"n":"Vandal","p":"Vandals","r":[9,0,2,1,33,65,3,5],"w":[[34,1,2,1,2,0,0,1]]},{"n":"Policeman","p":"Police","r":[20,0,20,4,49,2,3,45],"w":[[34,2,27,1,2,0,1,1]]},{"n":"Auto rifle","p":"Auto rifles","r":[75,0,16,6,21,22,5,9],"w":[[34,3,1,1,1,0,0,0]]},{"n":"City Slicker","p":"City Slicker","r":[77,0,13,2,16,2,3,12],"w":[[34,4,1,1,1,0,0,1]]},{"n":"Brother Raphael","p":"","r":[20,0,30,7,21,6,3,31],"w":[[35,1,1,1,1,0,0,0]]},{"n":"Brother Donatello","p":"","r":[20,0,30,7,21,6,3,31],"w":[[35,2,1,1,1,0,0,0]]},{"n":"Brother Phillip","p":"","r":[30,0,30,11,29,6,3,32],"w":[[35,3,1,1,1,0,0,0]]},{"n":"Brother Juaquin","p":"","r":[25,0,30,8,22,6,3,32],"w":[[35,4,1,1,1,0,0,0]]},{"n":"Brother Thomas","p":"","r":[25,0,30,8,22,6,3,32],"w":[[35,5,1,1,1,0,0,0]]},{"n":"Brother Lucas","p":"","r":[30,0,30,10,27,6,3,32],"w":[[35,6,1,1,1,0,0,0]]},{"n":"Brother Goliath","p":"","r":[42,0,7,6,29,209,3,31],"w":[[35,7,1,1,1,0,0,0]]},{"n":"Sister Theodosia","p":"","r":[20,0,30,10,24,38,3,29],"w":[[35,8,1,1,1,0,0,0]]},{"n":"Sister Lucretia","p":"","r":[20,0,30,10,24,38,3,30],"w":[[35,9,1,1,1,0,0,0]]},{"n":"Sister Ursula","p":"","r":[30,0,30,10,24,6,3,29],"w":[[35,10,1,1,1,0,0,0]]},{"n":"Brother Anthony","p":"","r":[20,0,30,6,24,6,3,31],"w":[[35,11,1,1,1,0,0,0]]},{"n":"Brother Boris","p":"","r":[25,0,30,8,24,54,3,32],"w":[[35,12,1,1,1,0,0,0]]},{"n":"Brother Nathan","p":"","r":[30,0,30,10,24,6,3,31],"w":[[35,13,1,1,1,0,0,0]]},{"n":"Brother David","p":"","r":[40,0,30,10,24,54,3,31],"w":[[35,14,1,1,1,0,0,0]]},{"n":"Brother Akira","p":"","r":[40,0,30,10,24,38,3,32],"w":[[35,15,1,1,1,0,0,0]]},{"n":"Sister Jade","p":"","r":[20,0,30,10,24,6,3,30],"w":[[35,16,1,1,1,0,0,0]]},{"n":"Sister Isolde","p":"","r":[30,0,30,8,24,70,3,30],"w":[[35,17,1,1,1,0,0,0]]},{"n":"Brother Diego","p":"","r":[50,0,40,10,28,38,3,31],"w":[[35,18,1,1,1,0,0,0]]},{"n":"Brother Donald","p":"","r":[20,0,30,10,26,6,3,31],"w":[[35,19,1,1,1,0,0,0]]},{"n":"Sister Marie","p":"","r":[25,0,30,10,25,6,3,30],"w":[[35,20,1,1,1,0,0,0]]},{"n":"Brother George","p":"","r":[60,0,30,10,21,6,3,31],"w":[[35,21,2,1,1,0,0,0]]},{"n":"Sister Grace","p":"","r":[15,0,30,8,26,6,3,29],"w":[[35,22,1,1,1,0,0,0]]},{"n":"Sister Wrath","p":"","r":[100,0,3,12,28,161,3,25],"w":[[35,23,1,1,1,0,0,0]]},{"n":"Brother Austin","p":"","r":[60,0,3,14,29,161,3,31],"w":[[35,24,1,1,1,0,0,0]]},{"n":"Brother Frederick","p":"","r":[30,0,30,10,26,6,3,31],"w":[[35,25,1,1,1,0,0,0]]},{"n":"Brother Broderick","p":"","r":[30,0,30,10,26,6,3,32],"w":[[35,26,1,1,1,0,0,0]]},{"n":"Brother Dominic","p":"","r":[30,0,30,10,26,6,3,31],"w":[[35,27,1,1,1,0,0,0]]},{"n":"Brother Greg","p":"","r":[30,0,30,10,26,6,3,32],"w":[[35,28,0,0,0,0,0,0]]},{"n":"Brother Weez","p":"","r":[30,0,30,8,25,6,3,32],"w":[[35,29,1,1,1,0,0,0]]},{"n":"Brother Joseph","p":"","r":[35,0,30,10,26,6,3,31],"w":[[35,30,1,1,1,0,0,0]]},{"n":"Brother James","p":"","r":[60,0,30,11,29,70,3,31],"w":[[35,31,1,1,1,0,0,0]]},{"n":"Brother Kenneth","p":"","r":[40,0,30,12,26,6,3,32],"w":[[35,32,1,1,1,0,0,0]]},{"n":"Brother Robert","p":"","r":[20,0,30,10,26,38,3,32],"w":[[35,33,0,0,0,0,1,0]]},{"n":"Brother Carl","p":"","r":[25,0,30,10,26,38,3,32],"w":[[35,34,0,0,0,0,1,0]]},{"n":"Brother Richard","p":"","r":[20,0,30,11,27,54,3,31],"w":[[35,35,0,0,0,0,1,0]]},{"n":"Sister June","p":"","r":[45,0,30,10,24,6,3,29],"w":[[35,36,1,1,1,0,0,0]]},{"n":"Sister May","p":"","r":[45,0,30,11,24,38,3,30],"w":[[35,37,1,1,1,0,0,0]]},{"n":"Sister April","p":"","r":[45,0,30,10,24,70,3,29],"w":[[35,38,1,1,1,0,0,0]]},{"n":"Warden Nicholas","p":"","r":[40,0,30,11,25,6,3,23],"w":[[36,1,1,1,1,0,0,0]]},{"n":"Jailer Corbett","p":"","r":[35,0,30,11,25,6,3,23],"w":[[36,2,1,1,1,0,0,0]]},{"n":"Jailer Patrick","p":"","r":[35,0,30,11,25,6,3,23],"w":[[36,3,1,1,1,0,0,0]]},{"n":"Brother Andrew","p":"","r":[40,0,30,10,25,6,3,32],"w":[[36,4,1,1,1,0,0,0]]},{"n":"Brother Mark","p":"","r":[35,0,30,11,27,6,3,32],"w":[[36,5,1,1,1,0,0,0]]},{"n":"Brother Matthew","p":"","r":[35,0,30,11,27,6,3,31],"w":[[36,6,1,1,1,0,0,0]]},{"n":"Warden Jethro","p":"","r":[70,0,2,12,29,113,3,23],"w":[[36,7,1,1,1,0,0,0]]},{"n":"Master Bruce","p":"","r":[20,0,2,3,16,129,3,23],"w":[[36,8,1,1,1,0,0,0]]},{"n":"Mistress Jennifer","p":"","r":[20,0,2,4,16,129,3,25],"w":[[36,9,1,1,1,0,0,0]]},{"n":"Monk Petall","p":"","r":[80,0,3,12,28,113,3,15],"w":[[36,10,1,1,1,0,0,0]]},{"n":"Monk Johan","p":"","r":[40,0,2,12,28,129,3,15],"w":[[36,11,1,1,1,0,0,0]]},{"n":"Mistress Krys","p":"","r":[70,0,30,12,26,54,3,25],"w":[[36,12,1,1,1,0,0,0]]},{"n":"Monk Russ","p":"","r":[30,0,30,12,28,6,3,15],"w":[[36,13,1,1,1,0,0,0]]},{"n":"Master Imaro","p":"","r":[40,0,30,11,28,38,3,23],"w":[[36,14,1,1,1,0,0,0]]},{"n":"Mistress Kerin","p":"","r":[40,0,30,11,26,38,3,25],"w":[[36,15,1,1,1,0,0,0]]},{"n":"Adept Roxanne","p":"","r":[35,0,30,10,26,6,3,25],"w":[[36,16,1,1,1,0,0,0]]},{"n":"Adept Mandisa","p":"","r":[40,0,30,12,26,6,3,25],"w":[[36,17,1,1,1,0,0,0]]},{"n":"Priestess Elexa","p":"","r":[50,0,40,8,26,6,3,25],"w":[[36,18,1,1,1,0,0,0]]},{"n":"Sister Faith","p":"","r":[30,0,30,9,20,34,3,30],"w":[[36,19,1,1,1,0,0,0]]},{"n":"Cardinal Scott","p":"","r":[60,0,40,13,29,6,3,23],"w":[[36,20,1,1,1,0,0,0]]},{"n":"Master Ciro","p":"","r":[50,0,30,12,26,6,3,23],"w":[[36,21,1,1,1,0,0,0]]},{"n":"Adept Kate","p":"","r":[30,0,30,10,26,6,3,25],"w":[[36,22,1,1,1,0,0,0]]},{"n":"Brother Nuris","p":"","r":[35,0,3,10,26,161,3,31],"w":[[36,23,1,1,1,0,0,0]]},{"n":"Master Griffin","p":"","r":[55,0,30,12,27,214,3,23],"w":[[36,24,1,1,1,0,0,0]]},{"n":"Sister Tracy","p":"","r":[40,0,30,11,26,6,3,29],"w":[[36,25,1,1,1,0,0,0]]},{"n":"Adept Alina","p":"","r":[30,0,30,11,26,6,3,25],"w":[[36,26,1,1,1,0,0,0]]},{"n":"Master Tomas","p":"","r":[60,0,30,14,23,6,3,23],"w":[[36,27,1,1,1,0,0,0]]},{"n":"Brother Dick","p":"","r":[30,0,30,10,23,6,3,32],"w":[[36,28,1,1,1,0,0,0]]},{"n":"Brother Harold","p":"","r":[30,0,30,10,21,6,3,32],"w":[[36,29,1,1,1,0,0,0]]},{"n":"Master Paz","p":"","r":[60,0,30,12,23,6,3,23],"w":[[36,30,1,1,1,0,0,0]]},{"n":"Brother Jackson","p":"","r":[30,0,30,10,21,66,3,31],"w":[[36,31,1,1,1,0,0,0]]},{"n":"Brother Nobel","p":"","r":[30,0,30,10,21,2,3,31],"w":[[36,32,1,1,1,0,0,0]]},{"n":"Redhawk","p":"","r":[30,0,30,10,21,2,3,26],"w":[[36,33,1,1,1,0,0,1]]},{"n":"Meditator","p":"Meditators","r":[22,0,2,1,48,129,3,26],"w":[[38,1,2,1,1,0,0,2]]},{"n":"Radiation Angel","p":"Radiation Angels","r":[33,0,2,2,67,161,3,27],"w":[[38,2,7,1,1,0,0,7]]},{"n":"Acolyte","p":"Acolytes","r":[15,0,2,1,160,97,3,23],"w":[[38,3,5,1,1,0,0,5]]},{"n":"Temple Guardian","p":"Temple Guardians","r":[55,0,15,5,37,82,3,23],"w":[[38,4,8,2,9,0,0,4]]},{"n":"Nuclear Techie","p":"Nuclear Techies","r":[15,0,1,0,32,49,3,15],"w":[[38,5,5,1,3,0,0,5]]},{"n":"Doctor","p":"Doctors","r":[75,0,2,1,21,97,3,15],"w":[[38,6,1,1,1,0,0,1]]},{"n":"Follower","p":"Followers","r":[5,0,1,1,16,97,3,26],"w":[[38,7,3,1,1,0,0,3]]},{"n":"Worshipper","p":"Worshippers","r":[10,0,1,1,17,81,3,26],"w":[[38,8,3,1,1,0,0,3]]},{"n":"Charmaine","p":"","r":[254,0,30,5,21,2,3,24],"w":[[38,9,1,1,1,0,0,1]]},{"n":"Guard","p":"Guards","r":[40,0,25,3,51,6,3,40],"w":[[39,1,13,1,1,0,0,0]]},{"n":"Lunatic","p":"Lunatics","r":[15,0,1,1,160,161,3,26],"w":[[39,2,1,1,1,0,0,0]]},{"n":"Faran Brygo","p":"","r":[80,0,30,3,20,166,3,28],"w":[[39,3,1,1,1,0,0,0]]},{"n":"Hired Gun","p":"Hired Guns","r":[18,0,18,3,4,18,3,40],"w":[[40,1,4,1,5,0,0,0]]},{"n":"Sniper","p":"Snipers","r":[20,0,15,6,3,3,3,40],"w":[[40,2,1,1,3,0,0,0]]},{"n":"Mercenary","p":"Mercenarys","r":[25,0,25,4,2,19,3,40],"w":[[40,3,1,1,1,0,0,0]]},{"n":"Bodyguard","p":"Bodyguards","r":[30,0,25,4,5,50,3,40],"w":[[40,4,1,1,1,0,0,0]]},{"n":"Casino Guard","p":"Casino Guards","r":[20,0,15,3,2,2,3,20],"w":[[40,5,3,3,5,0,0,0]]},{"n":"Gambler","p":"Gamblers","r":[12,0,1,1,1,33,3,22],"w":[[40,6,5,1,1,0,0,5]]},{"n":"Servant of the Mushroom Cloud","p":"Servant of the Mushroom Clouds","r":[15,0,1,1,18,49,3,15],"w":[[40,7,1,1,1,0,0,0]]},{"n":"Slicerdicer","p":"Slicerdicers","r":[30,0,1,3,4,81,5,39],"w":[[40,8,1,1,1,0,0,0]]},{"n":"Insect","p":"Insects","r":[1,0,1,1,0,17,1,21],"w":[[40,9,2,1,10,0,0,0]]},{"n":"Prostitute","p":"Prostitutes","r":[10,0,2,2,80,129,3,18],"w":[[40,10,5,1,1,0,0,5]]},{"n":"Thug","p":"Thugs","r":[15,0,15,3,162,2,3,20],"w":[[40,11,3,3,5,0,0,0]]},{"n":"Fat Freddy","p":"Fat Freddys","r":[40,0,25,6,7,18,3,19],"w":[[40,12,1,1,1,0,0,0]]},{"n":"Woman","p":"Womans","r":[10,0,1,1,0,129,3,57],"w":[[40,13,0,0,0,0,0,0]]},{"n":"Combat Hacker","p":"Combat Hackers","r":[50,0,1,5,131,129,5,39],"w":[[40,14,2,1,3,0,0,0]]},{"n":"Kesa the Beggar","p":"Kesa the Beggars","r":[40,0,15,5,131,6,3,26],"w":[[40,15,1,1,1,0,0,0]]},{"n":"Covenant","p":"","r":[30,0,1,1,0,129,3,12],"w":[[40,16,1,1,1,0,0,1]]},{"n":"Drunk","p":"Drunks","r":[10,0,1,1,16,145,3,22],"w":[[41,1,3,1,1,0,0,3]]},{"n":"Lady","p":"Ladies","r":[10,0,5,2,48,2,3,57],"w":[[41,2,6,1,1,0,0,6]]},{"n":"Man","p":"Men","r":[15,0,5,2,16,2,3,22],"w":[[41,3,2,1,1,0,0,2]]},{"n":"Card Shark","p":"Card Sharks","r":[75,0,50,3,18,2,3,22],"w":[[41,4,4,1,1,0,0,4]]},{"n":"Rich Dandy","p":"Rich Dandies","r":[50,0,2,2,17,65,3,22],"w":[[41,5,2,1,1,0,0,2]]},{"n":"Roving Guard","p":"Roving Guards","r":[75,0,30,4,17,6,3,20],"w":[[41,6,5,1,5,0,1,2]]},{"n":"Casino Thug","p":"Casino Thugs","r":[75,0,25,5,32,6,3,20],"w":[[41,7,4,1,5,0,1,2]]},{"n":"Guard Leader","p":"Guard Leaders","r":[100,0,45,5,19,6,3,20],"w":[[41,8,3,1,1,0,1,1]]},{"n":"Young Man","p":"Young Men","r":[50,0,2,1,16,49,3,12],"w":[[41,9,4,1,1,0,0,4]]},{"n":"Young Woman","p":"Young Women","r":[40,0,2,1,16,49,3,57],"w":[[41,10,1,1,1,0,0,1]]},{"n":"Casino Worker","p":"Casino Workers","r":[55,0,2,3,16,113,3,20],"w":[[41,11,4,1,1,0,0,4]]},{"n":"Barkeep","p":"Barkeeps","r":[65,0,35,15,20,115,3,20],"w":[[41,12,1,1,1,0,0,1]]},{"n":"Kutie","p":"Kuties","r":[50,0,65,5,16,6,3,57],"w":[[41,13,1,1,1,0,0,1]]},{"n":"Al","p":"Als","r":[100,0,45,3,19,2,3,20],"w":[[41,14,1,1,1,0,0,0]]},{"n":"Master Dalis","p":"","r":[40,0,30,12,27,6,3,23],"w":[[42,1,1,1,1,0,0,0]]},{"n":"Adept Flora","p":"","r":[40,0,30,12,25,38,3,25],"w":[[42,2,1,1,1,0,0,0]]},{"n":"Adept Nadine","p":"","r":[40,0,30,12,28,6,3,25],"w":[[42,3,1,1,1,0,0,0]]},{"n":"Sister Phaedra","p":"","r":[40,0,30,12,28,6,3,30],"w":[[42,4,1,1,1,0,0,0]]},{"n":"Adept Tara","p":"","r":[50,0,30,13,27,6,3,25],"w":[[42,5,1,1,1,0,0,0]]},{"n":"Sister Violet","p":"","r":[40,0,30,12,27,86,3,29],"w":[[42,6,1,1,1,0,0,0]]},{"n":"Mistress Ginger","p":"","r":[40,0,30,12,29,54,3,25],"w":[[42,7,1,1,1,0,0,0]]},{"n":"Mistress Zenobia","p":"","r":[40,0,30,13,26,6,3,25],"w":[[42,8,1,1,1,0,0,0]]},{"n":"Cardinal Chano","p":"","r":[40,0,30,12,28,38,3,23],"w":[[42,9,1,1,1,0,0,0]]},{"n":"Brother Darren","p":"","r":[50,0,30,12,28,54,3,32],"w":[[42,10,1,1,1,0,0,0]]},{"n":"Brother Harper","p":"","r":[40,0,30,12,28,38,3,31],"w":[[42,11,1,1,1,0,0,0]]},{"n":"Brother Jude","p":"","r":[45,0,30,12,29,54,3,32],"w":[[42,12,1,1,1,0,0,0]]},{"n":"Weez","p":"","r":[40,0,30,12,28,54,3,15],"w":[[42,13,1,1,1,0,0,0]]},{"n":"Adept Dale","p":"","r":[40,0,30,13,28,38,3,25],"w":[[42,14,1,1,1,0,0,0]]},{"n":"Rad Rat","p":"Rad Rats","r":[5,0,1,1,160,1,1,16],"w":[[43,1,1,6,6,1,0,0]]},{"n":"Cave Critter","p":"Cave Critters","r":[2,0,1,0,160,33,1,16],"w":[[43,2,1,10,10,1,0,0]]},{"n":"Slithering Lizard","p":"Slithering Lizards","r":[25,0,2,2,160,1,1,54],"w":[[43,3,2,1,5,1,0,0]]},{"n":"Naked Molerat","p":"Naked Molerats","r":[10,0,2,1,160,17,1,16],"w":[[43,4,1,1,1,1,0,0]]},{"n":"Blind Minecrawler","p":"Blind Minecrawlers","r":[20,0,1,2,80,49,1,54],"w":[[43,5,1,1,1,1,0,0]]},{"n":"Tunnel Lizard","p":"Tunnel Lizards","r":[40,0,1,4,50,33,1,54],"w":[[43,6,2,1,2,1,0,0]]},{"n":"Shaft Slider","p":"Shaft Sliders","r":[60,0,1,5,33,49,1,54],"w":[[43,7,1,1,1,1,0,0]]},{"n":"Shadowclaw","p":"Shadowclaws","r":[100,0,2,6,19,1,1,54],"w":[[43,8,1,1,1,1,0,0]]},{"n":"Rubble Fanger","p":"Rubble Fangers","r":[30,0,1,3,97,17,1,54],"w":[[43,9,1,1,1,1,0,0]]},{"n":"Dark Viper","p":"Dark Vipers","r":[8,0,1,2,49,1,1,54],"w":[[43,10,0,0,0,1,0,0]]},{"n":"Little Person","p":"Little People","r":[15,0,15,2,160,2,1,56],"w":[[43,11,3,1,10,1,0,0]]},{"n":"Undergrounder","p":"Undergrounders","r":[20,0,20,3,80,2,1,56],"w":[[43,12,0,0,0,1,0,0]]},{"n":"Drool","p":"Drools","r":[10,0,2,2,82,1,1,17],"w":[[43,13,3,1,10,1,0,0]]},{"n":"Gecko","p":"Geckos","r":[50,0,2,4,83,17,1,54],"w":[[43,14,0,0,0,2,0,0]]},{"n":"Skink","p":"Skinks","r":[75,0,2,4,67,17,1,54],"w":[[43,15,0,0,0,2,0,0]]},{"n":"Shell Cougar","p":"Shell Cougars","r":[150,0,2,5,36,17,1,10],"w":[[43,16,0,0,0,2,0,0]]},{"n":"Scav","p":"Scavs","r":[15,0,15,1,18,50,3,44],"w":[[43,17,1,3,3,0,0,0]]},{"n":"Glowviper","p":"Glowvipers","r":[50,0,2,3,32,65,1,54],"w":[[43,18,1,1,1,0,0,0]]},{"n":"Dog","p":"Dogs","r":[5,0,1,1,97,209,1,10],"w":[[49,1,4,1,5,0,0,4]]},{"n":"Pack Rat","p":"Pack Rats","r":[15,0,1,2,160,161,1,16],"w":[[49,2,4,1,4,0,0,4]]},{"n":"Desert Scav","p":"Desert Scavs","r":[20,0,23,3,160,50,3,44],"w":[[49,3,5,1,4,0,2,5]]},{"n":"Reclaimer","p":"Reclaimers","r":[30,0,24,4,82,6,3,6],"w":[[49,4,2,1,4,0,0,2]]},{"n":"Woman","p":"Women","r":[7,0,1,1,48,161,3,13],"w":[[49,5,7,1,10,0,1,6]]},{"n":"Kid","p":"Kids","r":[3,0,1,0,80,193,3,56],"w":[[49,6,4,2,3,0,0,4]]},{"n":"Junk Master","p":"Junk Masters","r":[50,0,27,5,20,86,3,6],"w":[[49,7,1,1,1,0,1,0]]},{"n":"Lizard","p":"Lizards","r":[1,0,1,0,80,193,1,54],"w":[[49,8,1,10,10,0,0,0]]}],"cut":[{"map":12,"enc":15,"lines":[["Warroid Mark 1","1-5"],["Warroid Mark 1","1-5"],["Warroid Mark 1","1-5"]],"msg":"Warroids!","peace":false},{"map":12,"enc":20,"lines":[["Warroid Mark 2","1-5"],["Warroid Mark 2","1-5"],["Warroid Mark 3","1"]],"msg":"Warroids!","peace":false},{"map":18,"enc":1,"lines":[["Silicon Sniper","1-3"],["Silicon Sniper","1-3"],["Silicon Sniper","1-3"]],"msg":"Intruder alert! Intruder alert!","peace":false},{"map":25,"enc":3,"lines":[["Clawer Leader","1"],["Clawman","1-6"],["New and Improved Centron","1-3"]],"msg":"Around the corner you see a rather large patrol of cyber warriors, and boy are they mad!","peace":false},{"map":34,"enc":21,"lines":[["Policeman","1-2"],["Policeman","1-2"],["Policeman","1-2"]],"msg":"A lot of angry robot-cops are coming your way.","peace":false},{"map":35,"enc":17,"lines":[["Brother Robert","1"],["Brother Carl","1"],["Brother Richard","1"]],"msg":"Guardians leap up from behind the table and attack!","peace":false},{"map":41,"enc":35,"lines":[["Roving Guard","5"],["Casino Thug","5"],["Guard Leader","1"]],"msg":"You are being checked out very carefully.","peace":false},{"map":49,"enc":15,"lines":[["Woman","1"]],"msg":"The Junk Master's wife is very beautiful.","peace":true},{"map":49,"enc":20,"lines":[["Junk Master","1"]],"msg":"","peace":true},{"map":49,"enc":22,"lines":[["Desert Scav","1-5"]],"msg":"Desert Scavs scream and yell at you.","peace":true},{"map":49,"enc":23,"lines":[["Desert Scav","1-5"]],"msg":"The axes that these Desert Scavs are holding look very sharp.","peace":true}]}</script>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="reference/wasteland-pictures.js"></script>
+<script src="reference/wasteland-fight.js"></script>
+<script>
+/* bestiary/beasts.js */
+// Wasteland (C64): the Bestiary's numbers and scenes. numbers() reads a monster's eight bytes as
+// the game does; the rest stages meetings on the game's own code through WLFight
+// (reference/wasteland-fight.js): the roll for a wandering group after a step (random_encounter
+// $B015), the map routines that change what wanders (the map's code list), and the scan and the
+// placing that give a group its hit points and its plan ($94CC, $936E, $83D7).
+// test_bestiary.js runs this block in node and holds the page's figures to it.
+const WLBeasts = (function () {
+  'use strict';
+  const RANDOM_ENCOUNTER = 0xB015, PRINT_MAP_MESSAGE = 0x0317, ENC_X = 0xB0E7, ENC_Y = 0xB0E9;
+  const GROUPS = 0xEE00, POSITIONS = 0x5B4F;
+  const KINDS = ['', 'Animal', 'Mutant', 'Humanoid', 'Cyborg', 'Robot'];
+
+  // The chance that one monster, met alone, is placed with fewer hit points than half its seed,
+  // which is when a hand-to-hand monster that is not an animal plans to run ($8448-$8461). The
+  // hit points are a quarter of the seed + 1 to its low byte + 256 x (1 to its high byte), and a
+  // roll of "1 to 0" gives 0 ($9483-$94B9, random_1_to_a $24C4). The line's hit points are added
+  // up as signed numbers held at 0 or above (line_average_hp $86E9, num1_add_clamped $079D), so
+  // hit points of 32,768 or more count as 0.
+  function runs(r) {
+    const seed = r[0] | r[1] << 8, cls = r[5] & 15;
+    if ((cls >= 2 && cls <= 13) || r[6] === 1) return 0;
+    const as = r[0] ? r[0] : 1, bs = r[1] ? r[1] : 1;
+    let n = 0;
+    for (let a = 1; a <= as; a++) for (let b = 1; b <= bs; b++) {
+      const hp = (seed >> 2) + (r[0] ? a : 0) + 256 * (r[1] ? b : 0);
+      if ((hp > 0x7FFF ? 0 : hp) < seed >> 1) n++;
+    }
+    return n / (as * bs);
+  }
+
+  // A monster's record as the game reads it (monster_record $9EA4 and the readers after it).
+  function numbers(r) {
+    const seed = r[0] | r[1] << 8, cls = r[5] & 15, ranged = cls >= 2 && cls <= 13;
+    const dice = r[3], bonus = r[5] >> 4, armour = r[4] & 15;
+    return {
+      seed, hpMin: (seed >> 2) + (r[0] ? 1 : 0) + (r[1] ? 256 : 0), hpMax: (seed >> 2) + r[0] + 256 * r[1],
+      skill: r[2], dice, bonus, dmgMin: dice + bonus, dmgMax: 6 * dice + bonus, most: r[4] >> 4, armour,
+      cls, ranged,
+      // how a gun fires ($9D0B-$9D67): 0 one shot, 1 a burst of 1 to 3, 2 automatic, 3d4 shots
+      mode: !ranged ? -1 : cls === 11 || cls === 12 ? 2 : cls >= 5 && cls <= 7 ? 1 : 0,
+      // how fast its aim falls off with distance (range_target $BD48): 0 short, 1 medium, 2 long
+      reach: !ranged ? -1 : [2, 5, 10, 13].includes(cls) ? 0 : [3, 6, 8, 11].includes(cls) ? 1 : 2,
+      kind: r[6], picture: r[7], exp: seed * (armour + 1), runs: runs(r),
+    };
+  }
+
+  // What wanders on F's map, and the map routines that change it. map is the map's listing.
+  function roam(F, map, at) {
+    const m = F.m, hdr = map.byName.get('map_record'), w = F.width;
+    const list = m[hdr + 6 + 30] | m[hdr + 6 + 31] << 8;                 // the class 15 list
+    const entry = n => m[list + 2 * n] | m[list + 2 * n + 1] << 8;
+    const read = () => ({ oneIn: m[hdr + 0x2F], types: m[hdr + 0x31], groups: m[hdr + 0x32] });
+    const name = (t, many) => {
+      let a = map.byName.get('monster_name_' + String(t).padStart(2, '0')), part = 0, s = '';
+      for (; m[a]; a++) { if (m[a] === 0x0A) part++; else if (part === 0 || part === 3 || part === (many ? 2 : 1)) s += String.fromCharCode(m[a]); }
+      return s;
+    };
+    F.place(at[0], at[1]);
+    return {
+      read, name,
+      // one of the map's own routines, by its label in the listing
+      act(label) { F.call(map.byName.get(label)); return read(); },
+      // `steps` steps: the game's roll after each, and every group it puts on the map, which is
+      // then taken off again so that the next roll finds the map as it was
+      walk(steps) {
+        const met = [];
+        for (let s = 0; s < steps; s++) {
+          F.call(RANDOM_ENCOUNTER);
+          for (let n = 0; n < m[hdr + 0x32]; n++) {
+            const e = entry(n);
+            if (!(m[e + 3] | m[e + 5] | m[e + 7])) continue;
+            const type = m[e + 3], count = m[e + 4], x = m[ENC_X], y = m[ENC_Y];
+            const text = F.setup().text;
+            met.push({ step: s + 1, type, count, name: name(type, count > 1), text });
+            m[e + 3] = m[e + 5] = m[e + 7] = 0;
+            setSquare(F, x, y, 0, 0);
+            m.fill(0, GROUPS, GROUPS + 4 * 376); m.fill(0, POSITIONS, POSITIONS + 64);
+          }
+        }
+        return met;
+      },
+    };
+  }
+
+  // Message n of the map's text, printed by the game's own printer (api_print_map_message $0317).
+  function say(F, n) { F.take(); F.call(PRINT_MAP_MESSAGE, { a: n }); return F.take(); }
+
+  // Square (x, y) of the map made class cls, number num: both layers, as the map holds them.
+  function setSquare(F, x, y, cls, num) {
+    const m = F.m, w = F.width, c = 0x3400 + ((y * w + x) >> 1);
+    m[c] = x & 1 ? (m[c] & 0xF0) | cls : (m[c] & 0x0F) | cls << 4;
+    m[0x3400 + (w * w >> 1) + y * w + x] = num;
+  }
+
+  // One group that stands on the map, met, fought, left and met again. n is its encounter.
+  // o.square: where to put the encounter first, for a group that the map brings in by a change
+  // of square; o.con: the Rangers' CON (250 when left out).
+  function meeting(F, n, o) {
+    const m = F.m, con = (o && o.con) || 250;
+    for (let i = 1; i <= F.size; i++) { F.setMaxCon(i, con); F.setCon(i, con); }
+    if (o && o.square) setSquare(F, o.square[0], o.square[1], 3, n);
+    const start = F.save(), rec = F.encounterRecord(n);
+    const NEAR = [[-1, 0], [1, 0], [0, 1], [0, -1], [-2, 0], [2, 0], [0, 2], [0, -2]];
+    const flees = g => g.plan !== 255 && g.plan >> 6 === 1;
+    const first = () => { const g = F.groups()[0]; return g ? { hp: g.lines[0].hp.slice(), name: g.lines[0].name, runs: flees(g) } : null; };
+    const round = order => {
+      F.look();
+      const o = F.round(Array.from({ length: F.size }, () => [order, 0]));
+      const g = first();
+      return { text: o.text, moves: o.moves, blows: F.look().blows.length, hp: g ? g.hp : [], gone: !g };
+    };
+    return {
+      again() { F.load(start); },
+      // walk up to it: the scan finds it and the game places it, with new hit points
+      arrive() {
+        const sq = F.encounterSquare(n);
+        if (!sq) return null;
+        for (const [dx, dy] of NEAR) {
+          const x = sq.x + dx, y = sq.y + dy;
+          if (x < 1 || y < 1 || x >= F.width || y >= F.width || F.square(x, y).cls !== 0) continue;
+          F.place(x, y);
+          const text = F.setup().text, g = first();
+          if (g) return Object.assign(g, { text });
+        }
+        return null;
+      },
+      // a round with every Ranger attacking its first line
+      round() { return round(2); },
+      // a round of standing and evading
+      wait() { return round(5); },
+      // walk out of its reach, to the far corner of the map when no square is given: the next
+      // scan drops the group ($94CC)
+      leave(x, y) {
+        if (x === undefined) { const sq = F.encounterSquare(n) || { x: 0, y: 0 }, w = F.width; x = sq.x > w >> 1 ? 1 : w - 2; y = sq.y > w >> 1 ? 1 : w - 2; }
+        F.place(x, y); F.setup();
+        return F.groups().length === 0 && m[GROUPS] === 0;
+      },
+      // how many monsters the map says are left in the meeting's first line
+      left() { return m[rec + 4] & 0x7F; },
+      // true while the meeting is peaceful (its record's byte 9, bit 1)
+      peaceful() { return (m[rec + 9] & 2) !== 0; },
+      // the plan the game makes for the next round: true when the group will run, false when it
+      // will not, null when no group is in reach
+      plans() { F.setup(); const g = F.groups()[0]; return g ? flees(g) : null; },
+    };
+  }
+  return { numbers, runs, roam, meeting, say, setSquare, KINDS };
+})();
+// end of bestiary/beasts.js
+</script>
+<script>
+/* page.js */
+// The Bestiary tab's widgets: the roster from the embedded records, and the plates that run the
+// game's own code through WLFight and WLBeasts.
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const num = n => (n || 0).toLocaleString('en-GB');
+  const pause = () => new Promise(r => setTimeout(r, 0));
+  const LOST = 'The game’s code did not load here. Open this page on the built site.';
+  const data = $('wl-bestiary');
+  if (!data || typeof WLBeasts === 'undefined') return;
+  const D = JSON.parse(data.textContent);
+  const TITLE = {}, MAP = {};
+  for (const m of D.maps) { TITLE[m[0]] = m[1]; MAP[m[0]] = m; }
+  const mapLink = n => '<a href="levels.html#map-' + n + '">' + esc(TITLE[n]) + '</a>';
+  const numbers = b => b.x || (b.x = WLBeasts.numbers(b.r));
+  const range = (a, b) => a === b ? num(a) : num(a) + '–' + num(b);
+  const span = (a, b) => a === b ? num(a) : num(a) + ' to ' + num(b);
+  // the monster a map's record number names
+  const beastOf = (map, type) => D.beasts.find(b => b.w.some(w => w[0] === map && w[1] === type));
+  const SECTION = { 43: 'wl-mine', 20: 'wl-reactor', 19: 'wl-assembly' };
+
+  // ---- the game's code, loaded when a plate first needs it ----
+  const ready = typeof WLFight !== 'undefined' && window.C64 && C64.load && window.C64Cpu;
+  // random bytes from the browser, where the game reads its raster line and a timer
+  const pool = new Uint8Array(256); let left = 0;
+  const rnd = () => { if (!left) { crypto.getRandomValues(pool); left = 256; } return pool[--left]; };
+  const parts = {};
+  const part = id => parts[id] || (parts[id] = C64.load('parts/' + id + '/listing.json').catch(e => { delete parts[id]; throw e; }));
+  const open = map => {
+    if (!ready) return Promise.reject(new Error('the scripts of this page did not load'));
+    return Promise.all([part('engine'), part('game'), part('map-' + String(map).padStart(2, '0'))])
+      .then(([engine, game, m]) => ({ F: WLFight.create({ engine, game, map: m, mapNumber: map, CPU: C64Cpu.CPU, random: rnd, size: 4 }), map: m }));
+  };
+  const lines = (s, cls) => (s || '').split('\n').filter(Boolean).map(l => '<p' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(l) + '</p>').join('');
+  // a plate's buttons run one at a time; a failure to load says so in the plate
+  function guard(el, tally, fn) {
+    let busy = false;
+    return async function (b) {
+      if (busy) return;
+      busy = true; el.classList.add('wl-be-busy');
+      try { await fn(b); } catch (e) { tally.innerHTML = '<span class="wl-err">' + LOST + '</span>'; }
+      busy = false; el.classList.remove('wl-be-busy');
+    };
+  }
+
+  // ---- what wanders on a map, and the map's routines that change it ----
+  const roams = {};
+  // One map's state, shared by the plates that name the same plate in data-share.
+  function roamOf(el) {
+    const key = el.dataset.share || el.id, src = $(key) || el, map = +src.dataset.map;
+    if (!roams[key]) {
+      const S = roams[key] = { watchers: [], map, now: { oneIn: MAP[map][2], types: MAP[map][3], groups: MAP[map][4] }, tally: {}, steps: 0, met: 0, state: null };
+      S.load = () => S.state || (S.state = open(map).then(o => {
+        S.F = o.F; S.R = WLBeasts.roam(o.F, o.map, src.dataset.at.split(',').map(Number)); return S;
+      }).catch(e => { S.state = null; throw e; }));
+    }
+    return roams[key];
+  }
+  function roamPlate(id) {
+    const el = $(id);
+    if (!el) return;
+    const S = roamOf(el), map = S.map, first = { oneIn: MAP[map][2], types: MAP[map][3], groups: MAP[map][4] }, most = MAP[map][5];
+    const log = el.querySelector('.wl-fi-log'), tally = el.querySelector('.wl-be-tally');
+    const odds = el.querySelector('.wl-be-odds'), list = el.querySelector('.wl-be-types');
+    const name = t => { const b = beastOf(map, t); return b ? b.n : 'monster ' + t; };
+    const used = new Map();
+    function paint() {
+      const now = S.now;
+      if (list) {
+        list.innerHTML = Array.from({ length: most }, (_, i) => {
+          const t = i + 1, on = t <= now.types;
+          return '<li class="' + (on ? 'wl-be-on' : '') + (on && t > first.types ? ' wl-be-new' : '') + '">' + esc(name(t)) + '</li>';
+        }).join('');
+      }
+      if (odds) {
+        odds.innerHTML = 'A group can appear on <b>1 step in ' + now.oneIn + '</b>' +
+          (first.groups !== now.groups || el.querySelector('[data-act*="groups"]') ? ', and up to <b>' + now.groups + '</b> groups can be on the map at once' : '') + '.';
+      }
+      for (const b of el.querySelectorAll('button[data-max]')) {
+        const n = +b.dataset.max - (used.get(b) || 0);
+        b.disabled = n <= 0; b.title = n + ' left';
+      }
+    }
+    S.watchers.push(paint);
+    const repaint = () => S.watchers.forEach(f => f());
+    function changed(a, b) {
+      const out = [];
+      if (b.types > a.types) out.push('The ' + name(b.types) + ' can now wander into the party.');
+      if (b.types < a.types) out.push('The ' + name(a.types) + ' no longer wanders.');
+      if (b.oneIn !== a.oneIn) out.push('A group now appears on 1 step in ' + b.oneIn + ', where it was 1 in ' + a.oneIn + '.');
+      if (b.groups !== a.groups) out.push('Up to ' + b.groups + ' groups can now be on the map at once.');
+      return out.length ? out.join(' ') : 'Nothing changed: the number is at its limit.';
+    }
+    const run = guard(el, tally, async b => {
+      if (!S.F) { tally.textContent = 'Loading the game’s code…'; await S.load(); }
+      if (b.dataset.act) {
+        const before = S.R.read();
+        S.now = S.R.act(b.dataset.act);
+        used.set(b, (used.get(b) || 0) + 1);
+        log.innerHTML = lines(WLBeasts.say(S.F, +b.dataset.say), 'wl-fi-hot') + lines(changed(before, S.now), 'wl-fi-dim');
+        S.tally = {}; S.steps = 0; S.met = 0;
+        tally.textContent = '';
+        repaint();
+        return;
+      }
+      const steps = +b.dataset.walk;
+      tally.textContent = 'Walking…'; await pause();
+      const met = S.R.walk(steps);
+      S.steps += steps; S.met += met.length;
+      for (const e of met) S.tally[e.type] = (S.tally[e.type] || 0) + 1;
+      log.innerHTML = met.length ? met.slice(0, 60).map(e => {
+        const what = e.count + ' ' + S.R.name(e.type, e.count > 1);
+        const seen = e.text ? e.text.replace(/\n\s*/g, ' ') : what + ', out of the party’s sight';
+        return '<p' + (e.type > first.types ? ' class="wl-fi-hot"' : '') + '><span class="wl-be-step">step ' + num(e.step) + '</span> ' + esc(seen) + '</p>';
+      }).join('') : '<p class="wl-fi-dim">No group appeared in these steps.</p>';
+      log.scrollTop = 0;
+      const kinds = Object.keys(S.tally).map(Number).sort((a, b) => a - b)
+        .map(t => (t > first.types ? '<b>' : '') + esc(name(t)) + ' ' + S.tally[t] + (t > first.types ? '</b>' : ''));
+      tally.innerHTML = num(S.steps) + ' steps, ' + num(S.met) + (S.met === 1 ? ' group' : ' groups') + (kinds.length ? ': ' + kinds.join(', ') + '.' : '.');
+    });
+    for (const b of el.querySelectorAll('button[data-act],button[data-walk]')) b.addEventListener('click', () => run(b));
+    paint();
+  }
+  ['wl-be-mine', 'wl-be-reactor', 'wl-be-assembly', 'wl-be-interval'].forEach(roamPlate);
+
+  // ---- one monster, met on the game's code ----
+  // The parts of a meeting plate, and its meeting once the game's code has loaded.
+  function meetPlate(id) {
+    const el = $(id);
+    if (!el) return null;
+    const P = {
+      el, log: el.querySelector('.wl-fi-log'), tally: el.querySelector('.wl-be-tally'), hp: el.querySelector('.wl-be-hp'),
+      mood: el.querySelector('.wl-be-mood'), trail: el.querySelector('.wl-be-trail'),
+      btn: k => el.querySelector('button[data-do="' + k + '"]'), state: null,
+    };
+    P.load = () => P.state || (P.state = open(+el.dataset.map).then(o => {
+      const sq = el.dataset.square;
+      P.F = o.F; P.M = WLBeasts.meeting(o.F, +el.dataset.enc, sq ? { square: sq.split(',').map(Number) } : null);
+      return P;
+    }).catch(e => { P.state = null; throw e; }));
+    P.on = handlers => {
+      const run = guard(el, P.tally, async b => {
+        if (!P.M) { P.tally.textContent = 'Loading the game’s code…'; await P.load(); P.tally.textContent = ''; }
+        await handlers[b.dataset.do](b);
+      });
+      for (const b of el.querySelectorAll('button[data-do]')) b.addEventListener('click', () => run(b));
+    };
+    P.enable = (keys, yes) => keys.forEach(k => { const b = P.btn(k); if (b) b.disabled = !yes; });
+    return P;
+  }
+
+  // Walking away: the Pit Ghoul's hit points, rolled again each time the party comes back.
+  (function reroll() {
+    const P = meetPlate('wl-be-reroll');
+    if (!P) return;
+    let trail = [];
+    const draw = () => {
+      P.trail.innerHTML = trail.map(t => '<li' + (t.fresh ? ' class="wl-be-fresh"' : '') + '><b>' + num(t.hp) + '</b> ' + t.how + '</li>').join('');
+      P.hp.textContent = trail.length ? num(trail[trail.length - 1].hp) : 'not met';
+    };
+    P.on({
+      arrive() {
+        P.M.again();
+        const g = P.M.arrive();
+        trail = [{ hp: g.hp[0], how: 'the first roll', fresh: true }];
+        P.log.innerHTML = lines(g.text);
+        P.tally.textContent = 'The game has rolled this Pit Ghoul’s hit points.';
+        P.enable(['round', 'leave'], true); draw();
+      },
+      round() {
+        const r = P.M.round();
+        P.log.innerHTML = lines(r.text) + lines(r.moves);
+        if (r.gone) {
+          const dead = P.M.left() === 0;
+          P.hp.textContent = dead ? 'dead' : 'gone';
+          P.tally.textContent = dead ? 'The Pit Ghoul is dead, and the map remembers that.' : 'The Pit Ghoul has run out of reach.';
+          P.enable(['round', 'leave'], false);
+          return;
+        }
+        trail.push({ hp: r.hp[0], how: 'after a round' }); draw();
+        if (P.F.cons().every(c => c <= 0)) { P.tally.textContent = 'Every Ranger is down. Walk up again to start afresh.'; P.enable(['round', 'leave'], false); }
+        else P.tally.textContent = 'The Pit Ghoul has lost ' + num(trail[trail.length - 2].hp - r.hp[0]) + ' hit points this round.';
+      },
+      leave() {
+        P.M.leave();
+        const g = P.M.arrive(), was = trail[trail.length - 1].hp;
+        trail.push({ hp: g.hp[0], how: 'a new roll, after walking away', fresh: true });
+        P.log.innerHTML = '<p class="wl-fi-dim">The party walks out of the Pit Ghoul’s reach and comes back.</p>' + lines(g.text);
+        P.tally.textContent = 'It had ' + num(was) + ' hit points when the party left, and has ' + num(g.hp[0]) + ' now.';
+        draw();
+      },
+    });
+  })();
+
+  // Monsters that start out running: a Pit Ghoul's first roll against half its number.
+  (function cowards() {
+    const P = meetPlate('wl-be-cowards');
+    if (!P) return;
+    let met = 0, ran = 0;
+    const say = () => { P.tally.innerHTML = num(met) + ' met, <b>' + num(ran) + '</b> of them running from the start' + (met >= 20 ? ' (' + Math.round(100 * ran / met) + '%)' : '') + '.'; };
+    P.on({
+      meet() {
+        P.M.again();
+        const g = P.M.arrive(), r = P.M.wait();
+        met++; if (g.runs) ran++;
+        P.hp.textContent = num(g.hp[0]);
+        P.mood.textContent = g.runs ? 'Fewer than 127 hit points: this one runs.' : '127 hit points or more: this one fights.';
+        P.log.innerHTML = lines(g.text, 'wl-fi-dim') + lines(r.text) + lines(r.moves, 'wl-fi-hot');
+        say();
+      },
+      async many(b) {
+        const n = +b.dataset.n;
+        let last = null;
+        for (let i = 0; i < n; i++) {
+          P.M.again();
+          last = P.M.arrive(); met++; if (last.runs) ran++;
+          if (i % 20 === 19) { say(); await pause(); }
+        }
+        P.hp.textContent = num(last.hp[0]);
+        P.mood.textContent = 'The last of ' + n + '. ' + (last.runs ? 'This one runs.' : 'This one fights.');
+        P.log.innerHTML = lines(last.text, 'wl-fi-dim');
+        say();
+      },
+    });
+  })();
+
+  // The Night Terror: peaceful until attacked, and running when its hit points are low or huge.
+  (function terror() {
+    const P = meetPlate('wl-be-terror');
+    if (!P) return;
+    const HALF = 16000, WRAP = 32768;
+    const t = { n: 0, low: 0, high: 0 };
+    const why = (runs, hp) => !runs ? 'It is hostile now, and it fights.'
+      : hp >= WRAP ? 'It is hostile now, and it runs: its ' + num(hp) + ' hit points count as 0.'
+      : 'It is hostile now, and it runs: it has fewer than 16,000 hit points.';
+    P.on({
+      arrive() {
+        P.M.again();
+        const g = P.M.arrive();
+        P.hp.textContent = num(g.hp[0]);
+        P.mood.textContent = 'It is peaceful. It does nothing until a Ranger attacks.';
+        P.log.innerHTML = lines(g.text);
+        P.enable(['wait', 'round'], true);
+      },
+      wait() {
+        const peaceful = P.M.peaceful(), r = P.M.wait();
+        let note = '';
+        if (peaceful) {
+          // nothing happened in the round, so the game dropped the group; the next scan rolls it again
+          const g = P.M.arrive();
+          P.hp.textContent = g ? num(g.hp[0]) : 'gone';
+          note = '<p class="wl-fi-dim">The Night Terror did nothing. The game let go of it after the round and has rolled its hit points again.</p>';
+        } else if (r.gone) { P.hp.textContent = 'gone'; P.enable(['wait', 'round'], false); }
+        else P.hp.textContent = num(r.hp[0]);
+        P.log.innerHTML = lines(r.text) + lines(r.moves, 'wl-fi-hot') + note;
+      },
+      round() {
+        const r = P.M.round();
+        P.log.innerHTML = lines(r.text) + lines(r.moves, 'wl-fi-hot');
+        if (r.gone) { P.hp.textContent = 'gone'; P.mood.textContent = 'It has run out of reach.'; P.enable(['wait', 'round'], false); return; }
+        P.hp.textContent = num(r.hp[0]);
+        const runs = P.M.plans();
+        if (runs === null) { P.hp.textContent = 'gone'; P.mood.textContent = 'It has run out of reach.'; P.enable(['wait', 'round'], false); return; }
+        P.mood.textContent = why(runs, r.hp[0]);
+        if (P.F.cons().every(c => c <= 0)) { P.mood.textContent = 'Every Ranger is down. Walk up again to start afresh.'; P.enable(['wait', 'round'], false); }
+      },
+      async provoke(b) {
+        const n = +b.dataset.n;
+        P.enable(['wait', 'round'], false);
+        for (let i = 0; i < n; i++) {
+          P.M.again();
+          P.M.arrive();
+          const r = P.M.round(), runs = P.M.plans(), hp = r.hp[0];
+          t.n++;
+          if (runs && hp >= WRAP) t.high++; else if (runs && hp < HALF) t.low++;
+          if (i % 5 === 4) { P.tally.textContent = 'Attacking… ' + (i + 1) + ' of ' + n; await pause(); }
+          if (i === n - 1) { P.hp.textContent = num(hp); P.mood.textContent = 'The last of ' + n + '. ' + why(runs, hp); P.log.innerHTML = lines(r.text); }
+        }
+        const ran = t.low + t.high;
+        P.tally.innerHTML = num(t.n) + ' attacked. <b>' + num(ran) + '</b> ran (' + Math.round(100 * ran / t.n) + '%): ' + num(t.low) + ' with fewer than 16,000 hit points and ' + num(t.high) + ' with 32,768 or more.';
+      },
+    });
+  })();
+
+  // ---- portraits, drawn and moved by the Pictures tab's code ----
+  const faces = new Map();   // canvas -> { stop }
+  const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function face(cv, n) {
+    const old = faces.get(cv);
+    if (old) old.stop();
+    if (typeof WLPictures === 'undefined' || !window.C64) return;
+    const pic = WLPictures.PICTURES.find(p => p.n === n);
+    if (!pic) return;
+    let live = true, frame = 0;
+    faces.set(cv, { stop() { live = false; cancelAnimationFrame(frame); } });
+    WLPictures.sources('', pic).then(([listing, engine]) => {
+      if (!live) return;
+      const p = WLPictures.prepare(pic, listing, engine), eng = new WLPictures.Engine(p.m);
+      eng.start(p.base);
+      const area = { c0: eng.left, c1: eng.right, r0: eng.top, r1: eng.bottom }, s = 2;
+      const rgb = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+      cv.width = (area.c1 - area.c0 + 1) * 8 * s; cv.height = (area.r1 - area.r0 + 1) * s;
+      const ctx = cv.getContext('2d'), img = ctx.createImageData(cv.width, cv.height);
+      const draw = () => { WLPictures.render(p.m, area, s, rgb, null, img); ctx.putImageData(img, 0, 0); };
+      draw();
+      if (still) return;
+      let last = 0, acc = 0;
+      const tick = now => {
+        if (!live) return;
+        frame = requestAnimationFrame(tick);
+        const dt = last ? Math.min(now - last, 250) : 0; last = now;
+        const r = cv.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > innerHeight || !cv.offsetParent) return;
+        acc += dt / 1000 * WLPictures.PASSES_PER_SECOND;
+        let moved = false;
+        while (acc >= 1) { acc--; eng.step(); moved = true; }
+        if (moved) draw();
+      };
+      frame = requestAnimationFrame(tick);
+    }).catch(() => {});
+  }
+  document.querySelectorAll('canvas[data-portrait]').forEach(cv => face(cv, +cv.dataset.portrait));
+
+  // ---- the roster ----
+  (function roster() {
+    const body = $('wl-be-rows'), q = $('wl-be-q'), selMap = $('wl-be-map'), selKind = $('wl-be-kind'), selSort = $('wl-be-sort');
+    const count = $('wl-be-count'), card = $('wl-be-card'), about = $('wl-be-about'), cv = $('wl-be-face');
+    if (!body) return;
+    const KINDS = WLBeasts.KINDS;
+    const met = w => w[2] > 0 || w[5] > 0;
+    for (const m of D.maps) if (D.beasts.some(b => b.w.some(w => w[0] === m[0]))) selMap.insertAdjacentHTML('beforeend', '<option value="' + m[0] + '">' + esc(m[1]) + '</option>');
+    for (let k = 1; k < KINDS.length; k++) selKind.insertAdjacentHTML('beforeend', '<option value="' + k + '">' + KINDS[k].toLowerCase() + 's</option>');
+    const attack = x => range(x.dmgMin, x.dmgMax) + (x.ranged ? ' <small>gun</small>' : x.skill > 1 ? ' <small>× ' + x.skill + '</small>' : '');
+    const SORT = {
+      name: null, hp: x => x.hpMax, dmg: x => x.dmgMax, armour: x => x.armour, exp: x => x.exp, runs: x => x.runs,
+    };
+    let chosen = null;
+    function draw() {
+      const text = q.value.trim().toLowerCase(), map = +selMap.value || 0, kind = +selKind.value || 0, key = SORT[selSort.value];
+      let list = D.beasts.map((b, i) => ({ b, i })).filter(({ b }) =>
+        (!text || b.n.toLowerCase().includes(text)) && (!map || b.w.some(w => w[0] === map)) && (!kind || b.r[6] === kind));
+      list.sort((p, r) => (key ? key(numbers(r.b)) - key(numbers(p.b)) : 0) || p.b.n.localeCompare(r.b.n) || p.i - r.i);
+      body.innerHTML = list.map(({ b, i }) => {
+        const x = numbers(b);
+        return '<tr data-i="' + i + '" tabindex="0"' + (i === chosen ? ' aria-selected="true"' : '') + '><td>' + esc(b.n) + (b.w.some(met) ? '' : ' <small>never met</small>') + '</td>' +
+          '<td class="wl-be-c2">' + KINDS[x.kind].toLowerCase() + '</td><td>' + range(x.hpMin, x.hpMax) + '</td><td>' + attack(x) + '</td>' +
+          '<td class="wl-be-c2">' + x.armour + '</td><td>' + num(x.exp) + '</td><td class="wl-be-c2">' + b.w.map(w => w[0]).join(', ') + '</td></tr>';
+      }).join('');
+      count.textContent = list.length === D.beasts.length ? num(list.length) + ' monsters' : num(list.length) + ' of ' + num(D.beasts.length) + ' monsters';
+    }
+    const GUN = ['one shot at a time', 'a burst of 1 to 3 shots', 'automatic fire of 3 to 12 shots'];
+    const REACH = ['aim that falls off quickly with distance', 'aim that falls off with distance', 'aim that holds over a long distance'];
+    function where(b, x, w) {
+      const out = [];
+      if (w[2]) out.push('stands in ' + w[2] + (w[2] === 1 ? ' group' : ' groups') + ' of ' + span(w[3], w[4]) +
+        (w[7] === w[2] ? ', peaceful until attacked' : w[7] ? ', ' + w[7] + ' of them peaceful until attacked' : ''));
+      if (w[5] === 1) out.push(x.most > 1 ? 'wanders in groups of up to ' + x.most : 'wanders alone');
+      if (w[5] === 2) out.push('wanders only after the party has <a href="#' + SECTION[w[0]] + '">changed what the map sends</a>');
+      if (w[6]) out.push('is in ' + (w[6] === 1 ? 'a meeting' : w[6] + ' meetings') + ' that <a href="#wl-unmet">the map never places</a>');
+      if (!out.length) out.push('has a record and <a href="#wl-unmet">no meeting</a>');
+      return '<li>' + mapLink(w[0]) + ': ' + out.join(', and ') + '.</li>';
+    }
+    function show(i) {
+      chosen = i;
+      const b = D.beasts[i], x = numbers(b);
+      for (const tr of body.children) tr.setAttribute('aria-selected', String(+tr.dataset.i === i));
+      const hit = x.ranged
+        ? 'A gun with ' + GUN[x.mode] + ' and ' + REACH[x.reach] + '. A shot does ' + span(x.dmgMin, x.dmgMax) + ' damage, and ' + x.skill + ' is added to the two dice that aim it.'
+        : 'Hand to hand, ' + (x.skill === 1 ? 'one attack' : x.skill + ' attacks') + ' a round. A blow does ' + span(x.dmgMin, x.dmgMax) + ' damage.';
+      const nerve = x.ranged ? 'Guns follow <a href="combat.html#wl-nerve">a rule of their own</a>.'
+        : x.kind === 1 ? 'An animal never runs.'
+        : x.runs ? 'Met alone, it starts ' + (100 * x.runs).toFixed(1).replace(/\.0$/, '') + '% of its fights <a href="#wl-cowards">already running</a>.'
+        : 'Its first roll never puts it below the mark for running.';
+      about.innerHTML = '<p class="wl-be-name">' + esc(b.n) + '</p>' +
+        '<p class="wl-be-sub">' + KINDS[x.kind] + (b.p && b.p !== b.n + 's' ? ' · two or more are ' + esc(b.p) : '') + ' · portrait ' + x.picture + '</p>' +
+        '<dl><dt>Hit points</dt><dd>' + span(x.hpMin, x.hpMax) + '</dd>' +
+        '<dt>Attack</dt><dd>' + hit + '</dd>' +
+        '<dt>Armour</dt><dd>' + x.armour + '</dd>' +
+        '<dt>Experience</dt><dd>' + num(x.exp) + ' for a kill, and <a href="combat.html#wl-melee">' + num(2 * x.exp) + ' in melee</a></dd>' +
+        '<dt>Nerve</dt><dd>' + nerve + '</dd>' +
+        '<dt>Where</dt><dd><ul>' + b.w.map(w => where(b, x, w)).join('') + '</ul></dd></dl>';
+      card.hidden = false;
+      face(cv, x.picture);
+    }
+    const pick = e => { const tr = e.target.closest('tr[data-i]'); if (tr) { show(+tr.dataset.i); card.scrollIntoView({ block: 'nearest', behavior: still ? 'auto' : 'smooth' }); } };
+    body.addEventListener('click', pick);
+    body.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(e); } });
+    q.addEventListener('input', draw);
+    [selMap, selKind, selSort].forEach(s => s.addEventListener('change', draw));
+    draw();
+    const start = D.beasts.findIndex(b => b.n === 'Pit Ghoul');
+    if (start >= 0) show(start);
+  })();
+
+  // ---- never met: the meetings no square leads to, and the monsters no meeting uses ----
+  (function unmet() {
+    const cut = $('wl-be-cut'), lost = $('wl-be-lost');
+    if (cut) {
+      cut.innerHTML = D.cut.map(c => '<tr><td>' + mapLink(c.map) + '</td><td>' +
+        c.lines.map(l => esc(l[1].replace('-', ' to ') + ' ' + l[0])).join('<br>') + (c.peace ? '<br><small>peaceful</small>' : '') + '</td><td>' +
+        (c.msg ? '<q>' + esc(c.msg) + '</q>' : 'nothing') + '</td></tr>').join('');
+    }
+    if (lost) {
+      const met = w => w[2] > 0 || w[5] > 0, rows = [];
+      for (const b of D.beasts) for (const w of b.w) {
+        if (met(w)) continue;
+        const x = numbers(b);
+        const note = w[6] ? 'only in a meeting that the map never places'
+          : b.w.some(met) ? 'met on other maps'
+          : D.beasts.some(o => o !== b && o.n === b.n && o.w.some(met)) ? 'another ' + b.n + ', with other numbers, is met elsewhere'
+          : 'met nowhere';
+        rows.push('<tr><td>' + esc(b.n) + '<br><small>' + note + '</small></td><td>' + mapLink(w[0]) + '</td><td class="wl-n">' + range(x.hpMin, x.hpMax) + '</td><td class="wl-n">' +
+          range(x.dmgMin, x.dmgMax) + (x.ranged ? ' gun' : x.skill > 1 ? ' × ' + x.skill : '') + '</td></tr>');
+      }
+      lost.innerHTML = rows.join('');
+    }
+  })();
+})();
+// end of page.js
+</script>

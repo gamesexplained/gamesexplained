@@ -37,13 +37,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .zk-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
 .zk-pair img{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
 .zk-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
-.zk-bar button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer;max-width:100%}
-.zk-bar button:hover{border-color:var(--ink-mute)}
-.zk-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.zk-bar button{font-size:13px;padding:5px 11px;max-width:100%}
+.zk-bar button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .zk-bar label{font-size:14px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
 .zk-label{display:block;font-size:14px;color:var(--ink-soft);margin:0 0 6px}
-.zk-input{width:100%;font-family:var(--fm);font-size:16px;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:#000;color:#fff;margin:0 0 10px}
-.zk-input:focus{outline:2px solid var(--green)}
+.zk-input{width:100%;font-size:16px;padding:9px 12px;margin:0 0 10px}
 .zk-table{border-collapse:collapse;font-size:14px;margin:10px 0;width:100%}
 .zk-table th,.zk-table td{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
 .zk-table th{font-weight:700;color:var(--ink-soft);font-size:13px}
@@ -115,7 +113,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="zk-bar" id="zk-tries"></div>
     <div id="zk-words" class="zk-words"></div>
     <div id="zk-word" class="zk-detail"></div>
-    <p class="cap">The interpreter's own code, ported to the page: the copy of the line into the text buffer (<code>$1D69</code>), the split into words (<code>$130B</code>), the encoder (<code>$1A25</code>) and the dictionary search (<code>$1432</code>), reading the dictionary from the listing's bytes. A test runs each routine on the same bytes in the kit's 6502 simulator beside the port: every dictionary word, 2,000 random words with capitals and punctuation in them, 511 whole lines, and every object's name, with the same result every time. What each bit of a dictionary entry's data means is read from the words that carry it: the story's own parser, which reads them, is Z-code on the disk, and it was not traced.</p>
+    <p class="cap">The interpreter's own code, ported to the page: the copy of the line into the text buffer (<code>$1D69</code>), the split into words (<code>$130B</code>), the encoder (<code>$1A25</code>) and the dictionary search (<code>$1432</code>), reading the dictionary from the listing's bytes. What each bit of a dictionary entry's data means is read from the words that carry it: the story's own parser, which reads them, is Z-code on the disk, and it was not traced.</p>
   </div>
   <p>A space, a question mark, or a RETURN ends a word and is thrown away. The story's dictionary names three more separators (the comma, the full stop, and the quotation mark), and each of those ends a word and is a word of its own, so <code>take lamp, sword</code> is four words. For each word the interpreter writes four bytes into the parse buffer: the address of its dictionary entry, or 0 for a word it does not know, then its length and where it starts in the line. The story's parser takes over from there.</p>
   <p>A word becomes six 5-bit characters before the search (<code>$1A25</code>). The small letters are 6 to 31. A digit or a punctuation mark takes two characters, a shift and then its place in a third alphabet, and a character in none of the alphabets takes four. A capital would take a shift too, but the interpreter makes every capital small as it copies the line (<code>$1D82</code>), so none reaches the encoder. A word shorter than six is padded with 5s. The six pack into two 16-bit words, three to a word, with the top bit of the second set to mark the end. Those four bytes are what the dictionary holds, and the search compares them with its 617 entries one by one (<code>$1432</code>).</p>
@@ -192,11 +190,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="screen">
   <p class="fig">07 · The screen</p>
   <h2 class="t">The screen, read back from memory</h2>
-  <p class="lede">The game draws on the Apple II's 40-column text page, a kilobyte of memory where each byte is a letter. This is that kilobyte from the emulator, set in type.</p>
+  <p class="lede">The game draws on the Apple II's 40-column text page, a kilobyte of memory where each byte is a letter. This is that kilobyte at one moment of play, set in type.</p>
   <div class="plate">
     <div class="zk-bar"><button type="button" class="on" data-screen="west">At the first prompt</button><button type="button" data-screen="cellar">Eleven moves later</button><label><input type="checkbox" id="zk-rows"> Show where each row is in memory</label></div>
-    <div class="zk-pair"><pre id="zk-screen" class="zk-screen" aria-label="The text screen, rebuilt from memory"></pre><img id="zk-shot" src="reference/play-west-of-house.png" alt="The same screen as the emulator drew it" class="zk-shot"></div>
-    <p class="cap">Left: <code>$0400-$07FF</code> from the snapshot, read by the site's Apple II library (<code>Apple2.text</code>, which the kit holds to its own screen reader for every byte value). Right: the kit's picture of the same snapshot. The letters agree on every row.</p>
+    <div class="zk-pair"><pre id="zk-screen" class="zk-screen" aria-label="The text screen, rebuilt from memory"></pre><img id="zk-shot" src="reference/play-west-of-house.png" alt="The same screen on the Apple II" class="zk-shot"></div>
+    <p class="cap">Left: <code>$0400-$07FF</code>, set in type. Right: the same moment on the Apple II's screen.</p>
   </div>
   <p>Row 0 is the status line, redrawn before every input (<code>$1CD7</code>). The text window is rows 1 to 23, so the Monitor's scrolling leaves the status line where it is. The words on the status line are in inverse, and the spaces between are not: the interpreter turns inverse on and then clears the row with the Monitor's <code>CLREOL</code>, which writes ordinary spaces.</p>
   <p>Everything the game prints is in capitals (<code>$1B90</code>), the one case every Apple II can show. The interpreter collects each line at <code>$0200</code> and breaks it at the last space before column 40, so a word never splits across two rows (<code>$1BB5</code>). It counts the lines since the last input, and when they fill the window it prints <code>[MORE]</code> in inverse and waits for a key (<code>$1C5B</code>).</p>

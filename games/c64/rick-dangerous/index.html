@@ -44,9 +44,8 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
 .rd-stack canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
 .rd-stack canvas.rd-over{position:absolute;left:0;top:0}
 .rd-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0}
-.rd-ctl button,.rd-ctl label{font:inherit;font-size:14px}
-.rd-ctl button{border:1px solid var(--line);background:var(--surface-2);border-radius:6px;padding:4px 10px;cursor:pointer}
-.rd-ctl button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink)}
+.rd-ctl label{font:inherit;font-size:14px}.rd-ctl button{font-size:14px}
+.rd-ctl button{padding:4px 10px}
 .rd-key{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:14px;margin-top:10px}
 .rd-key span{display:inline-flex;align-items:center;gap:6px}
 .rd-key i{display:inline-block;width:14px;height:14px;border-radius:3px}
@@ -74,11 +73,11 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
 <section id="frame">
   <p class="fig">02 · One frame</p>
   <h2 class="t">What the game sees in a room</h2>
-  <p>The picture below is drawn by this page from the memory of one frame of play, recorded in the emulator: the screen, the character set and the video chip's registers as they change during the frame. Every one of its 104,448 pixels matches the emulator's own picture.</p>
+  <p>The picture below is drawn by this page from the memory of one frame of play: the screen, the character set and the video chip's registers as they change during the frame.</p>
   <div class="plate"><div class="rd-stack"><canvas id="rd-frame"></canvas><canvas id="rd-over" class="rd-over"></canvas></div>
     <div class="rd-ctl"><button type="button" id="rd-overbtn" aria-pressed="false">Show what each tile is</button></div>
     <div class="rd-key" id="rd-key" hidden></div>
-    <p class="cap">Drawn by the site's C64 renderer from the recorded frame, pixel for pixel the emulator's picture. The overlay takes each tile's code from the screen and looks it up the way <code>$4081</code> does, with the eight codes of graphics set 0 from <code>$185B</code>.</p></div>
+    <p class="cap">Drawn by the site's C64 renderer from the same frame. The overlay takes each tile's code from the screen and looks it up the way <code>$4081</code> does, with the eight codes of graphics set 0 from <code>$185B</code>.</p></div>
   <p>The room is made of characters, and the game decides what each one is by its code alone. Eight codes in zero page (<code>$38</code>-<code>$3F</code>, copied from <code>$185B</code> for each graphics set) mark where each kind begins: background first, then ladders, deadly tiles, scenery that stands in front of Rick, platforms, springy floors (<a href="discoveries.html#trampoline">Discoveries</a>), ordinary floors and walls, and the tops of ladders. <code>$4081</code> turns those eight numbers into a table of 256 flags at <code>$0600</code>, and every collision test reads it. The tile graphics only have to be kept in that order.</p>
 </section>
 
@@ -91,7 +90,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
     <div class="rd-ctl" id="rd-beatbtn"></div>
     <table class="rd-tab" id="rd-beattab" style="margin-top:12px"></table>
     <p class="cap">The recorded frame from section 02, with the lines at which each handler of the chosen list runs. The lists and the lines are read from the listing (<code>$3B9D</code>, <code>$3BA7</code>, <code>$3BD7</code>). The two lines marked "follows the objects" are put where the bottoms of the second and fourth sprite in height order fall, so they move every frame; here they are drawn at an example height.</p></div>
-  <p>One step calls, in order, Rick's move (<code>$0B2A</code>), the exits and the scroll (<code>$186F</code>, <code>$3018</code>), every object (<code>$1990</code>), the bullet, the dynamite, the room bonus, the panel's sprites, the masked sprite images (<code>$0F83</code>) and the panel. Nothing in the step waits for the beam. In the emulator, 141 steps took 284 frames.</p>
+  <p>One step calls, in order, Rick's move (<code>$0B2A</code>), the exits and the scroll (<code>$186F</code>, <code>$3018</code>), every object (<code>$1990</code>), the bullet, the dynamite, the room bonus, the panel's sprites, the masked sprite images (<code>$0F83</code>) and the panel. Nothing in the step waits for the beam. 141 steps take 284 frames.</p>
 </section>
 
 <section id="move">
@@ -102,7 +101,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
   <div class="plate"><canvas id="rd-move" class="rd-wide"></canvas>
     <div class="rd-ctl" id="rd-movebtn"></div>
     <div class="rd-out" id="rd-moveout"></div>
-    <p class="cap">Rick's height at each step, from left to right, the numbers counting steps; yellow in the air, green on the floor. Drawn by <code>rickStep</code>, a port of <code>$0B2A</code> and <code>$0C92</code> for open ground. <code>test_move.js</code> holds it to the game's own code run in the kit's simulator on the first room with its ceiling taken away: 400 runs of 80 steps of random stick, on both kinds of floor, the same position and speed at every step.</p></div>
+    <p class="cap">Rick's height at each step, from left to right, the numbers counting steps; yellow in the air, green on the floor. Drawn by <code>rickStep</code>, a port of <code>$0B2A</code> and <code>$0C92</code> for open ground.</p></div>
   <p>Before each move the game tests the tiles at the new place (<code>$3F04</code>). A move that runs into a solid tile is tried again without its sideways part, so Rick slides down a wall rather than sticking to it. Rising into a ceiling turns the speed into a fall of half a pixel a step. Falling onto a floor lands him: his height is put back on the row of tiles (<code>$0C20</code>) and his speed set to one pixel down. On the next step that pixel is blocked again, so a Rick standing still is landing on the floor 25 times a second. One kind of floor does not land him at all: "Springy floor" above shows it (<a href="discoveries.html#trampoline">Discoveries</a>).</p>
 </section>
 
@@ -140,7 +139,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
   <div class="plate"><div class="rd-stack"><canvas id="rd-boulder"></canvas></div>
     <div class="rd-ctl"><button type="button" id="rd-bplay">Set it off</button></div>
     <div class="rd-out" id="rd-bout"></div>
-    <p class="cap">The recorded frame of the first room, with the path of trap type 42 from where the game had placed it in that frame (object 5). Drawn by <code>trapRun</code>, a port of <code>$1ACF</code>; <code>test_trap.js</code> holds it to the game's own code for all 47 trap types, every step's position and frame.</p></div>
+    <p class="cap">The recorded frame of the first room, with the path of trap type 42 from where the game had placed it in that frame (object 5). Drawn by <code>trapRun</code>, a port of <code>$1ACF</code>.</p></div>
   <p>The boulder of the manual's drawing is type 42 (<code>$44B6</code>). It waits at the far left of the first room, level with Rick, drawn with the blank frame <code>$AB</code>, until he walks into its zone. Its script has nine records: right for 96 steps at two pixels a step, a drop, back to the left, another drop. The boulder never finishes it. On the seventh record, its third drop, it reaches the bottom of the 320 lines an object can be in, and that ends the script.</p>
   <p>The enemies have no scripts. Their handler (<code>$11AB</code>) walks each one two pixels a step towards Rick's column, takes a ladder when Rick is above or below it, lets it fall where there is no floor and turns it at walls. The stick stuns an enemy for 25 steps; a bullet or an explosion kills it for 50 points.</p>
 </section>
@@ -159,7 +158,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
   <div class="plate"><canvas id="rd-mux" class="rd-wide"></canvas>
     <div class="rd-ctl" id="rd-muxbtn"></div>
     <div class="rd-out" id="rd-muxout"></div>
-    <p class="cap">A room of random objects, on the play area in sprite coordinates. Drawn by <code>multiplex</code>, a port of <code>$3559</code>, <code>$36D9</code> and the handlers at <code>$3831</code> and <code>$387D</code>; <code>test_mux.js</code> holds it to the game's own code on 3,000 random rooms: the order, the sprites, the split lines and the ninth X bits.</p></div>
+    <p class="cap">A room of random objects, on the play area in sprite coordinates. Drawn by <code>multiplex</code>, a port of <code>$3559</code>, <code>$36D9</code> and the handlers at <code>$3831</code> and <code>$387D</code>.</p></div>
 </section>
 
 <section>
@@ -167,7 +166,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
   <h2 class="t">Music: seven tunes by Dave Pridmore</h2>
   <p>A tune plays on each story screen before a level, on the ending, on the title and Hall of Fame, and on GAME OVER. None plays during play: while a tune runs, the sound effects and Rick's footsteps are silent (<code>$4F86</code>).</p>
   <div class="plate"><div id="rd-music"></div>
-    <p class="cap">The game's own music player, its code (<code>$5042</code>-<code>$5730</code>) and the tunes' data (<code>$5732</code>-<code>$5F8D</code>) as the listing holds them, run once a frame on the kit's 6502 simulator in this page, through the site's model of the SID. <code>test_music.js</code> compares every SID write of every frame of all seven tunes with the same code called on the simulator directly: 117,097 writes. The tunes do not use the filter.</p></div>
+    <p class="cap">The game's own music player, its code (<code>$5042</code>-<code>$5730</code>) and the tunes' data (<code>$5732</code>-<code>$5F8D</code>) as the listing holds them, run once a frame in this page, through the site's model of the SID. The tunes do not use the filter.</p></div>
   <p>Each tune has a header of three addresses at <code>$5732</code>, one track list a voice. A track list is a run of pattern numbers with a few commands mixed in (transpose, repeat, change an instrument); a pattern is notes and their lengths, rests, and changes of instrument, arpeggio and slide. Tunes 5 and 6 leave voice 3 alone.</p>
 </section>
 

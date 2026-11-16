@@ -24,9 +24,9 @@ bare: the last two of the seven stub JMPs in the title screen).
 - The meaning of $8460/$8480 (set to 3 per object, no reader found), the
   ring of eight inactive objects 24-31 before an explosion, and the
   sprite frames $CF and $D0-$DB that nothing points at.
-- The seven bytes at $9FF9 and the six no-op calls into the title screen:
-  compare against another dump of the game (tape original) to see what
-  was there.
+- The six no-op calls into the title screen: Novagen's cassette has
+  the same jumps, so what they were for needs an earlier build or the
+  disk release.
 - Whether the tape version has the same PAL-only check.
 - Why the start samples sprite 3's collision ($9D70, 8 in $C0 on the
   kit's C64, where the sprite parked at X 503 runs on into the left of

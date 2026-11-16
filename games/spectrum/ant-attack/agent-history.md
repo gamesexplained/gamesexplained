@@ -74,3 +74,36 @@ published by the site build.
 The sound test accepts either the contained SkoolKit installation or a
 Python-importable pip installation, matching the CI workflow. Both lookup
 paths were exercised locally without installing another package.
+
+## 15 November 2026
+
+A quality pass at Aaron's request (a second model, `claude-opus-5-5`).
+He asked for a better intro, a working FLASH demo, a section on the
+game's messages, plainer and more visual follow and ant sections, one
+gallery of every moving picture, and the walking-frame and test sections
+cut.
+
+The game was run on the kit's 48K machine from the earlier play state.
+Each message was captured as it finished, and the BASIC screens (welcome,
+score card, time up, hero, medal) were reached through real escapes. The
+first medal route left the long rescue-1 story in `c$` and stopped at
+line 3610 with out of memory; a route with the right story text did not,
+so no bug is claimed. The old FLASH demo toggled a screen with no flashing
+cells; the page now uses the READY WHEN YOU ARE screen.
+
+New live checks: the follow distances and SCAN colours, the bite lift,
+the retry clock (957 then 956), and ant speeds (349 of 367 passes for ant
+1, about 184 for the others). Reading BASIC lines 140–190 showed why ant 1
+is fast. A search of every write to an actor's picture field showed that
+no code selects `$F0–$F3`, which the Discoveries tab now shows. The page's
+facing rule is checked against `$8A91` on the kit's CPU in
+`test_widgets.js`, and `site-browser.js` was rewritten for the new widgets.
+The process paragraphs moved from the pages to facts.md.
+
+Later the same day Aaron pointed out that the four unused pictures at
+`$BC00` are an aeroplane, which Unseen64 reported in 2009. Comparing the
+four showed exact mirror pairs (`$F0`/`$F3`, `$F1`/`$F2`), so they are one
+plane facing four ways. Discoveries, Graphics and facts.md now say so and
+credit Unseen64. Neither Unseen64 nor the current Wikipedia article gives a
+reason for the plane.
+

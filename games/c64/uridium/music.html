@@ -37,11 +37,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ur-cv{display:block;max-width:100%;image-rendering:pixelated;background:#000}
 .ur-scroll{overflow-x:auto;max-width:100%}
 .ur-ctl{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;align-items:center}
-.ur-ctl button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer}
-.ur-ctl button:hover{border-color:var(--accent)}
-.ur-ctl button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.ur-ctl button{font-size:12.5px;padding:6px 12px}
 .ur-ctl label{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
-.ur-ctl select,.ur-ctl input[type=range]{font-family:var(--fm);font-size:12.5px}
+.ur-ctl select,.ur-ctl input[type=range]{font-size:12.5px}
 .ur-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.4em}
 .ur-tbl{border-collapse:collapse;font-size:14px;margin:6px 0 18px;width:100%}
 @media (max-width:640px){.ur-tbl{display:block;overflow-x:auto;max-width:100%}}
@@ -69,7 +67,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Music: the title tune</h2>
   <p class="lede">Steve Turner's title tune, played by the game's own sound driver ported to JavaScript.</p>
   <div class="plate"><div id="ur-tune"></div>
-  <p class="cap">The driver at <code>$0E23</code>, ported and run once a frame through the site's model of the SID. The port was checked against the game's code in a 6502 simulator: 99,762 calls, the tune to its end and every effect on every voice, with every SID write in the same order. <code>test_ports.py</code> beside this page repeats the check.</p></div>
+  <p class="cap">The driver at <code>$0E23</code>, ported and run once a frame through the site's model of the SID.</p></div>
   <p>Music and sound effects share one driver, and a note of music is a sound effect. The song (<code>$3D2C</code>) is 22 rows of three pattern numbers, one per voice. Each pattern byte is a note: its length in the high four bits and its pitch in the low four, with control bytes that set the octave and the instrument. The sequencer (<code>$0E6B</code>) steps every fifth frame. For each new note it writes the note's frequency into the instrument's 16-byte effect record and asks for that effect on the voice, exactly as the game asks for an explosion. The seven instruments are effects <code>$27</code> to <code>$2D</code>.</p>
   <p>An effect record holds a voice set-up (waveform, envelope and how long the gate stays open), a start frequency and a step added to it every frame, a pulse width that sweeps, a time after which the step reverses or the frequency restarts, a duration, and the effect to chain after it.</p>
 </section>
@@ -79,7 +77,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Sound: the effects voice that doubles as the dice</h2>
   <p class="lede">Every effect the game asks for, on the voices it uses.</p>
   <div class="plate"><div id="ur-fx"></div>
-  <p class="cap">The same port, given the requests the game makes for each event, on the voices it uses. An effect asked for with bit 7 set starts even over a forced effect already sounding; others wait their turn. Each effect, on each voice, with and without bit 7, was compared with the game's code to its end, and <code>test_ports.py</code> plays every button here through the SID model to check that it sounds.</p></div>
+  <p class="cap">The same port, given the requests the game makes for each event, on the voices it uses. An effect asked for with bit 7 set starts even over a forced effect already sounding; others wait their turn.</p></div>
   <p>Voice 3 has a second job. Whenever no effect is using it, the driver sets it to noise at the highest frequency and turns its output off through bit 7 of <code>$D418</code>. Every random choice in the game, from a fighter's decision to fire to the order of the stars, reads its waveform at <code>$D41B</code>. The table of 256 random bytes at <code>$0800</code> starts life as a copy of the sound driver's own code and is stirred with that noise at each life.</p>
 </section>
 

@@ -41,12 +41,10 @@ a{color:var(--link)}a:hover{color:var(--link-hover)}
 .fc-focus{outline:2px solid transparent;border-radius:4px}
 .fc-focus:focus{outline-color:#2e7d32}
 .fc-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
-.fc-bar button{font:inherit;font-size:14px;padding:5px 12px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}
-.fc-bar button:hover{border-color:var(--ink-mute)}
-.fc-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-.fc-bar button:disabled{opacity:.45;cursor:default}
+.fc-bar button{font-size:14px;padding:5px 12px}
+.fc-bar button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .fc-bar label{font-size:14px;color:var(--ink-soft);display:flex;gap:6px;align-items:center;flex-wrap:wrap;max-width:100%}
-.fc-bar select{font:inherit;font-size:14px;padding:4px 6px;border-radius:6px;border:1px solid var(--line);background:var(--surface);max-width:100%;min-width:0}
+.fc-bar select{font-size:14px;max-width:100%;min-width:0}
 .fc-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-top:10px;min-height:1.6em;white-space:pre-wrap}
 .fc-out b{color:var(--ink)}
 .fc-miss{font-size:14px;color:var(--amber)}
@@ -78,9 +76,9 @@ a{color:var(--link)}a:hover{color:var(--link-hover)}
 .fc-bars .hd{font-weight:700;color:var(--ink-soft);font-size:12px}
 .fc-spells{display:grid;grid-template-columns:6.5em repeat(5,1fr);gap:4px;margin-top:4px}
 .fc-spells span{font-size:13px;color:var(--ink-soft);align-self:center}
-.fc-spells button{font:inherit;font-family:var(--fm);font-size:13px;padding:6px 0;border:1px solid var(--line);border-radius:5px;background:var(--surface-2);color:var(--ink-mute);cursor:pointer}
-.fc-spells button.s1{background:#7a1f6e;color:#fff;border-color:#7a1f6e}
-.fc-spells button.s2{background:#e8d3e5;color:#7a1f6e;border-color:#c9a3c4;text-decoration:line-through}
+.fc-spells[data-own-look] button{font:inherit;font-family:var(--fm);font-size:13px;padding:6px 0;border:1px solid var(--line);border-radius:5px;background:var(--surface-2);color:var(--ink-mute);cursor:pointer}
+.fc-spells[data-own-look] button.s1{background:#7a1f6e;color:#fff;border-color:#7a1f6e}
+.fc-spells[data-own-look] button.s2{background:#e8d3e5;color:#7a1f6e;border-color:#c9a3c4;text-decoration:line-through}
 .fc-bits{font-family:var(--fm);font-size:13px;margin-top:12px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:baseline}
 .fc-bits dt{color:var(--ink-mute)}.fc-bits dd{margin:0;color:var(--ink);overflow-wrap:anywhere}
 .fc-bits .b1{color:#7a1f6e;font-weight:500}
@@ -129,7 +127,7 @@ a{color:var(--link)}a:hover{color:var(--link-hover)}
     </ol>
     <dl class="fc-bits" id="rvars"></dl>
     <div class="fc-bar"><button id="rback">Back</button><button id="rnext">Next step</button></div>
-    <p class="cap">The variables at each step, read from the computer's memory in jsbeeb. BBC BASIC stores TRUE as −1 and FALSE as 0. Steps 1 to 3 started at the river with <var>Z%</var> at 9 and <var>S%</var> at 7; step 5 started at the flight with <var>B%</var> at −1 and spells 6, 7 and 8, each used to make a danger vanish. A dash is a value that was not read.</p>
+    <p class="cap">The variables at each step, read from the computer's memory during play. BBC BASIC stores TRUE as −1 and FALSE as 0. Steps 1 to 3 started at the river with <var>Z%</var> at 9 and <var>S%</var> at 7; step 5 started at the flight with <var>B%</var> at −1 and spells 6, 7 and 8, each used to make a danger vanish. A dash is a value that was not read.</p>
   </div>
   <p>The flight ends at line 4052 (<code>$25D9</code>): <code>Z%=2:IFB%=TRUE Z%=10:B%=FALSE</code>. The line sends the player to Rumala's Row, place 2, unless <var>B%</var> is TRUE, when it sends them to the castle, place 10, and clears <var>B%</var>. The river sets <var>B%</var> when the player crosses and then turns down the spell (<code>$3DE9</code>), so that the flight that follows ends at the castle. Only the end of a flight clears it.</p>
   <p>A fresh start in part 2 is <code>RUN</code>, which starts the program again, with <var>A%</var> set to 0. Line 100 then clears the progress: the place, the two numbers that hold the spells, and the six parts of the dream. All of these are resident integers, BBC BASIC's 26 variables <var>A%</var> to <var>Z%</var>, which keep their values through a <code>RUN</code>. <var>B%</var> is one too, and survives the <code>RUN</code> like them, but line 100 never clears it. So a player who turns down the river's spell and then loses, to the storm or anything else, starts the next game with <var>B%</var> still set. The next flight that survives its three dangers goes to the castle, where the dream's fourth part is found and the game ends, instead of to Rumala's Row.</p>
@@ -143,7 +141,7 @@ a{color:var(--link)}a:hover{color:var(--link-hover)}
     <div class="fc-bar"><label>Map or Carry, typed at one place <input type="range" id="rep" min="0" max="19" value="0"></label></div>
     <div class="fc-bars" id="repbar"></div>
     <div id="repout" class="fc-out"></div>
-    <p class="cap">In jsbeeb, at the Centre's <code>Where do you wish to go next?</code>, <code>Map</code> was typed again and again. BASIC's count of open REPEAT loops, kept in the byte at &amp;24, was 2 at the question and went up by one after each map. The 19th map stopped with error 44 and started the game again at <code>To begin press &lt; S &gt;</code>.</p>
+    <p class="cap">At the Centre's <code>Where do you wish to go next?</code>, <code>Map</code> was typed again and again. BASIC's count of open REPEAT loops, kept in the byte at &amp;24, was 2 at the question and went up by one after each map. The 19th map stopped with error 44 and started the game again at <code>To begin press &lt; S &gt;</code>.</p>
   </div>
   <p>PROCds, the procedure that asks where to go next, asks it inside a <code>REPEAT</code> loop (<code>$2083</code>), a loop that runs until its <code>UNTIL</code> is true. <code>Map</code> shows the map and <code>Carry</code> the belongings, and both then <code>GOTO 480</code>, the line the <code>REPEAT</code> is on. BASIC treats that <code>REPEAT</code> as the start of a brand-new loop and keeps the old one open as well. BASIC II has room for 20 open loops, two are open at the question already, and the 19th look asks for a 21st.</p>
   <p>The error is <code>Too many REPEATs</code>, and the game's error handler, <code>ON ERROR A%=0:RUN</code>, turns any error into a fresh start. Every journey ends with <code>RUN</code>, which starts the program again and closes every loop, so the count starts again at each place: a player has to look 19 times without moving. <a href="../grannys-garden/index.html#starting-again">Granny's Garden</a>, by the same author, starts again on the 20th visit to its hallway for the same reason.</p>
@@ -167,7 +165,7 @@ a{color:var(--link)}a:hover{color:var(--link-hover)}
   <h2 class="t">Fibber says three of his instructions are lies, and four are</h2>
   <p class="lede">Before he starts, Fibber of the Lake warns the player: <q>He will give you 6 instructions. 3 of the instructions will be the opposite of what they should be.</q> Four of the six are lies.</p>
   <div class="plate"><table class="fc-table" id="ftable"><tr><th>Instruction</th><th>Lie or truth</th><th>The right choice</th></tr></table>
-    <p class="cap">The first instruction is line 12150 (<code>$51CF</code>); the other five are the DATA at <code>$56BE</code>, read from the listing, with 1 for a lie and 2 for the truth. In jsbeeb the lie detector said NO to the three lies among the five and YES to the two truths, and Stay was right for the first.</p></div>
+    <p class="cap">The first instruction is line 12150 (<code>$51CF</code>); the other five are the DATA at <code>$56BE</code>, read from the listing, with 1 for a lie and 2 for the truth. In play the lie detector said NO to the three lies among the five and YES to the two truths, and Stay was right for the first.</p></div>
   <p>The first instruction, <q>You will have to leave my lake.</q>, is always asked, and Stay is the right choice, so it is a lie. Three of the five in the DATA are marked as lies, which makes four. The warning may be one more of Fibber's fibs, but the lie detector cannot check it: the detector only switches on after the first instruction. The questions are on the <a href="index.html#fibber-of-the-lake">How it works tab</a>.</p>
 </section>
 
@@ -179,7 +177,7 @@ a{color:var(--link)}a:hover{color:var(--link-hover)}
     <div class="fc-chips" id="bchips"></div>
     <div class="fc-bar"><button data-h="5">Fright Freak: leave your belongings and run</button><button data-h="7">Pouncer: tell it to go away</button><button data-h="8">Grabbers: stay and fight</button><button id="breset">Choose the equipment again</button></div>
     <div id="btt" class="fc-tt"></div>
-    <p class="cap">The eleven items the game keeps in <code>e%</code>, in its order, from the DATA at <code>$6CE5</code>; the messages are lines 3064, 3086, 3092 and 3094. The Pouncer and the Grabbers take the belongings only one time in four, and the buttons show that time. In jsbeeb the Fright Freak, met with a raincoat, a metal detector and a fright stick, left all eleven bytes of <code>e%</code> at 0.</p>
+    <p class="cap">The eleven items the game keeps in <code>e%</code>, in its order, from the DATA at <code>$6CE5</code>; the messages are lines 3064, 3086, 3092 and 3094. The Pouncer and the Grabbers take the belongings only one time in four, and the buttons show that time. In play the Fright Freak, met with a raincoat, a metal detector and a fright stick, left all eleven bytes of <code>e%</code> at 0.</p>
   </div>
   <p>The game keeps the equipment in eleven bytes, <code>e%?1</code> to <code>e%?11</code>, one for each item the player could carry, where 0 means not carried. Each message is followed by <code>PROCc(11)</code> (<code>$2065</code>), which sets all eleven to 0. The Fright Freak's <q>Some of your belongings are taken back to the Centre.</q> is line 3064, and the Pouncer's <q>The Pouncer takes some of your belongings.</q> and the Grabbers' <q>Some of your belongings are stolen.</q> both go on to line 3092, <q>You will have to continue without them.</q> PROCe, which hands out the equipment at the Centre, starts with the same <code>PROCc(11)</code>, so the next visit to the Centre puts things right.</p>
 </section>
@@ -189,7 +187,7 @@ a{color:var(--link)}a:hover{color:var(--link-hover)}
   <h2 class="t">Secret: LIST shows the copyright and then nothing</h2>
   <p class="lede">Load one of the adventures and <code>LIST</code> it, the command that prints a BASIC program on the screen, and only four lines appear: the first two, then <code>(C) 4MAT 1984</code> and <code>MIKE MATSON</code> in green, with the bell ringing. After that the screen stays blank.</p>
   <div class="fc-pair">
-    <div class="plate"><img src="reference/15-part1-list-protection.png" alt="A BASIC listing of four lines: line 1, line 2, then (C) 4MAT 1984 and MIKE MATSON in green"><p class="cap">Part 1 loaded with <code>LOAD"AD1"</code> and listed, in jsbeeb. The operating system's status byte at &amp;D0 then held &amp;80: screen output switched off.</p></div>
+    <div class="plate"><img src="reference/15-part1-list-protection.png" alt="A BASIC listing of four lines: line 1, line 2, then (C) 4MAT 1984 and MIKE MATSON in green"><p class="cap">Part 1 loaded with <code>LOAD"AD1"</code> and listed. The operating system's status byte at &amp;D0 then held &amp;80: screen output switched off.</p></div>
     <div class="plate"><table class="fc-table"><tr><th>Line</th><th>Bytes after REM</th><th>On the screen</th></tr>
       <tr><td>3</td><td>ten bells (7), a quote, green (&amp;82), <code>(C) 4MAT 1984</code></td><td>the bell, then the copyright in green</td></tr>
       <tr><td>4</td><td>bells, a quote, green, <code>MIKE MATSON</code>, more bells, then 21</td><td>the name in green, and code 21 turns the screen off</td></tr></table>
@@ -207,7 +205,7 @@ a{color:var(--link)}a:hover{color:var(--link-hover)}
     <tr><td><code>IFzp PROCzp</code></td><td>a shot hit the bubble: ZAP, and the game starts again</td><td>skipped</td></tr>
     <tr><td><code>ELSEPROCsf</code></td><td><q>You are safe.</q></td><td><q>You are safe.</q></td></tr>
     <tr><td><code>Z%=2:IFB%=TRUE Z%=10:B%=FALSE</code></td><td>Rumala's Row, or the castle</td><td>the same</td></tr></table>
-    <p class="cap">Line 4052, the sky spitter's (<code>$25D9</code>); the storm's line 4010 and the cave's line 4048 are built the same way. In jsbeeb, with each danger made to vanish, each said <q>The ... disappears.</q> and then <q>You are safe.</q></p></div>
+    <p class="cap">Line 4052, the sky spitter's (<code>$25D9</code>); the storm's line 4010 and the cave's line 4048 are built the same way. With each danger made to vanish, each said <q>The ... disappears.</q> and then <q>You are safe.</q></p></div>
   <p>BBC BASIC has no <code>ENDIF</code>, so an <code>IF</code> and its <code>ELSE</code> share one line. When an <code>IF</code> is false, BASIC looks along the line for an <code>ELSE</code> and carries on after the first one it finds, whichever <code>IF</code> it belongs to. Each of the three lines puts its danger inside <code>IF NOT sk%</code>, and the line's only <code>ELSE</code> belongs to the next <code>IF</code>, the one that asks whether the bubble was hit. A vanished danger makes the first <code>IF</code> false, so BASIC jumps to the second one's <code>ELSE</code>: <code>PROCsf</code>, <q>You are safe.</q>, the same words a player who dodged the danger gets.</p>
   <p>On the spitter's line the same <code>ELSE</code> also holds the end of the flight: <code>Z%=2</code>, Rumala's Row, and the test of <var>B%</var> that sends the player to the castle instead. A flight whose spitter vanished reaches them through the <code>ELSE</code> and ends where a dodged one would (<a href="#river">the river's flag</a>).</p>
 </section>
@@ -217,10 +215,10 @@ a{color:var(--link)}a:hover{color:var(--link-hover)}
   <h2 class="t">Bug: on this disc, the story stops at once with Bad program</h2>
   <p class="lede">Choosing 1, the story, from the menu gives <code>Bad program</code> and BASIC's prompt. The file on the disc is saved one byte short.</p>
   <div class="fc-pair">
-    <div class="plate"><img src="reference/03-story-bad-program.png" alt="The menu's screen with Bad program and BASIC's prompt under it"><p class="cap">Menu choice 1, in jsbeeb.</p></div>
+    <div class="plate"><img src="reference/03-story-bad-program.png" alt="The menu's screen with Bad program and BASIC's prompt under it"><p class="cap">Menu choice 1.</p></div>
     <div class="plate"><img src="reference/04-story-title.png" alt="The story's first page"><p class="cap">The story, after &amp;FF was written at the end of the program, <code>OLD</code> typed and <code>RUN</code>.</p></div>
   </div>
-  <p>A BBC BASIC program ends with the byte &amp;0D and then a byte of &amp;80 or more, which BASIC II writes as &amp;FF. The disc's catalogue, its list of files, gives <code>STORY</code> a length that stops just after the &amp;0D. So the &amp;FF is never loaded, and the byte after the program is whatever was already in memory. In jsbeeb it is &amp;01, which BASIC takes for the start of one more line, and the program stops with <code>Bad program</code>. The other seven programs are saved whole. The disc is a copy, so the short file may be the copy's fault rather than 4Mation's.</p>
+  <p>A BBC BASIC program ends with the byte &amp;0D and then a byte of &amp;80 or more, which BASIC II writes as &amp;FF. The disc's catalogue, its list of files, gives <code>STORY</code> a length that stops just after the &amp;0D. So the &amp;FF is never loaded, and the byte after the program is whatever was already in memory. It can be &amp;01, which BASIC takes for the start of one more line, and then the program stops with <code>Bad program</code>. The other seven programs are saved whole. The disc is a copy, so the short file may be the copy's fault rather than 4Mation's.</p>
 </section>
 
 <section id="end" data-part="adventure-1">
@@ -229,7 +227,7 @@ a{color:var(--link)}a:hover{color:var(--link-hover)}
   <p class="lede">Part 1's last screen offers two keys: F to finish and S to start again. F prints <code>END</code>, and then the same two lines come back.</p>
   <div class="plate"><div id="ett" class="fc-tt"></div>
     <div class="fc-bar"><button id="ef">F</button><button id="es">S</button><button id="ex">Any other key</button></div>
-    <p class="cap">Line 19037 (<code>$6B31</code>), ported key for key. In jsbeeb F printed <code>END</code> and waited at line 19037 again, and S started a fresh game.</p></div>
+    <p class="cap">Line 19037 (<code>$6B31</code>), ported key for key. In the game F prints <code>END</code> and waits at line 19037 again, and S starts a fresh game.</p></div>
   <p>Line 19037 waits for a key with <code>GET</code>. S starts a fresh game with <code>A%=0:RUN</code>. F clears the screen, prints the word <code>END</code> and goes back to line 19037, which prints <q>Press key S to start again.</q> and waits once more, now without the F line. Any other key goes back to line 19035, which shows both lines. The program never reaches an <code>END</code> statement, so it never stops, and S is the only way on.</p>
 </section>
 

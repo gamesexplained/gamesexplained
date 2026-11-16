@@ -36,9 +36,8 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
 canvas{image-rendering:pixelated;max-width:100%;display:block}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
-button{font-family:var(--fm);font-size:13px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer}
-button:hover{border-color:var(--ink-mute)}
-button.on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+button{font-size:13px;padding:6px 11px}
+button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 input[type=range]{width:220px}
 .lab{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
 table{border-collapse:collapse;width:100%;font-size:15px;margin:8px 0 0}
@@ -52,7 +51,6 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
 .out{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin:12px 0 0;min-height:3.2em}
 .stages{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;margin:12px 0 0}
 .stages button{padding:5px 0;font-size:12px}
-.stages button.hz{border-bottom:3px solid var(--amber)}
 .msg{font-size:14px;color:var(--coral)}
 @media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.two{grid-template-columns:1fr}.stages{grid-template-columns:repeat(8,1fr)}}
 </style>
@@ -69,7 +67,7 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
   <p class="fig">01 · The screen</p>
   <h2 class="t">One frame of round 1, rebuilt from memory</h2>
   <div class="plate"><div class="scroll"><canvas id="frameCv"></canvas></div>
-    <p class="cap">One frame of play recorded in the emulator: the video chip's registers, every change made to them during the frame, and the memory they read, drawn line by line. It matches the emulator's own picture of the same frame with 0 pixels different.</p></div>
+    <p class="cap">One frame of play: the video chip's registers, every change made to them during the frame, and the memory they read, drawn line by line.</p></div>
   <p>Play uses video bank 3: the screen at <code>$C000</code> and one character set at <code>$C800</code>, in multicolour mode. Characters <code>$00</code>-<code>$3F</code> are the font and the logo, <code>$40</code>-<code>$7F</code> the background tiles, copied in each round, and <code>$80</code>-<code>$FF</code> the bricks, walls and panel. The bricks are character pairs, not sprites: <code>$80 $81</code> for a coloured brick, <code>$85 $89</code> for silver and <code>$8D $91</code> for gold (<code>draw_wall</code>, <code>$F40E</code>).</p>
   <p>The Vaus, the balls, the capsule, the laser shots and the enemies are twelve sprite objects on eight hardware sprites. A chain of three raster interrupts (<code>$F720</code>, <code>$F75E</code>, <code>$FBEE</code>) sorts the objects by height once a frame and places them down the screen. The right-hand panel is drawn once from a template of 25 rows of 13 screen codes at <code>$7800</code> (<code>$F2B5</code>).</p>
 </section>
@@ -104,7 +102,7 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
   <p class="fig">04 · Round 33</p>
   <h2 class="t">Doh takes 23 hits</h2>
   <div class="plate"><img src="reference/round33-doh.png" alt="Round 33: Doh" width="384">
-    <p class="cap">Round 33 in the emulator, reached by setting the round number and the bricks-left count so that the next brick broken in round 1 ended the round.</p></div>
+    <p class="cap">Round 33, reached by setting the round number and the bricks-left count so that the next brick broken in round 1 ended the round.</p></div>
   <p>Doh is not a sprite. The round copies a 26 × 24 screen of characters from <code>$7B90</code> into the playfield and swaps in its own character set (<code>doh_setup</code>, <code>$9C59</code>). The bricks-left counter becomes a hit counter, set to 22 (<code>$95F4</code>); every ball hit on one of Doh's characters takes one off (<code>$B11E</code>), and the ending starts when it goes below zero (<code>$9637</code>): the 23rd hit. Doh fires one shot per cycle of its mouth, aimed at the Vaus (<code>$9819</code>-<code>$987B</code>).</p>
   <p>After the last hit Doh dissolves, the ending tune and the title picture play, and the story's last page is printed (<code>$B8B0</code>): "DIMENSION CONTROLLING FORT DOH HAS NOW BEEN DEMOLISHED AND TIME STARTED FLOWING BACKWARDS". Then the game sets the player's lives to none and goes to game over (<code>$96B7</code>).</p>
 </section>
@@ -116,7 +114,7 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
   <h2 class="t">The Break exit pays nothing</h2>
   <p>In the arcade game, leaving through the Break exit is worth 10,000 points. Here the exit ends the round (<code>$A41F</code> to <code>round_cleared</code>, <code>$95CF</code>) and nothing on that path adds to the score.</p>
   <h2 class="t">An extra life every 20,000 points, all at once</h2>
-  <p>The threshold starts at 20,000 and rises by 20,000 with each life awarded (<code>check_extra_life</code>, <code>$FAA5</code>). In the emulator a score set to 199,900 paid out ten lives in a row, taking the lives from 3 to 13 and the threshold to 220,000. The published cheat <code>POKE 39801,189</code> turns the store at <code>$9B79</code> that takes a life away into a load, so a lost ball costs nothing: in the emulator three lost balls left the lives at 3.</p>
+  <p>The threshold starts at 20,000 and rises by 20,000 with each life awarded (<code>check_extra_life</code>, <code>$FAA5</code>). A score set to 199,900 pays out ten lives in a row, taking the lives from 3 to 13 and the threshold to 220,000. The published cheat <code>POKE 39801,189</code> turns the store at <code>$9B79</code> that takes a life away into a load, so a lost ball costs nothing.</p>
   <h2 class="t">Two programs in one file</h2>
   <p>The 63 KB file carries an older build of much of the game beside the one that runs: an earlier assembly of <code>$A971</code>-<code>$B5FF</code> from <code>$096B</code>, of the interrupt and input code at <code>$BA6B</code>-<code>$BFFF</code> (with a 30-sprite multiplexer and a joystick reader for port 2 only), and of the sound driver at <code>$3B8B</code>, assembled <code>$1000</code> higher. Nothing reads or runs any of it. The enemies' second gate is unused in the same way: its path needs <code>$0246</code>, which nothing writes, so every enemy comes in through the gate at X <code>$47</code>.</p>
 </section>

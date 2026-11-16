@@ -28,3 +28,7 @@ Euan went through the four pages one at a time and approved the changes for each
 ## 10 November 2026 (layout)
 
 Euan asked for his own layout, the one The Goonies and Darkman use. The Overview became four story sections (the game, the people behind it, the reception, what the reviewers did not see) with numbered sources on a new `about-layout.html`; the mechanics moved to Gameplay, the controls to Controls, the tunes and the scream to Music, and the room beside the emulator's screenshot to Maps. A search of Wikipedia, GameBase64, Every Game Going, MobyGames, World of Spectrum and the Centre for Computing History found no programmer, artist or musician credited for any version; MobyGames credits only the Spectrum cover artist.
+
+## 15 November 2026 (Aaron's asks)
+
+Aaron asked for the walk in the Graphics tab to face the right way, Jason in black, the weapons left white, the two body pictures named for what they are, a jumpscare on the page, and a view of the whole camp as Jason hunts. The listing had `walk_frame_offset` the wrong way round, and the page drew from it; both are corrected. The camp view runs whole rounds of the game's own loop on the kit's 6502, and it was there that Jason first showed up standing still in room 11 for the rest of a round; poking the same memory into the game in VICE held him there too. The music fix that came out of the same asks is the site's sound player's, in its own pull request.

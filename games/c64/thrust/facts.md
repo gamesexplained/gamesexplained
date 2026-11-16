@@ -291,3 +291,28 @@ recommended; the rate is a lower bound.
   way; thrust cost 5 units of fuel; the shield 8.
 - Pause: F5 held for 10 frames paused the game, F7 continued it
   (`work/scripts/pause_test2.py`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, with no key pressed, the ship fell and was lost three times.
+
+### graphics.html
+
+- The ship turns one direction on three passes of the main loop in four, and the loop ran about 26 passes a second in the emulator, so the animation turns about 20 directions a second.
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, at the tape's pace, with the border taking each new colour at the moment it did on the recorded load.
+
+### index.html
+
+- A frame of level 1, drawn by this page from the memory and the register writes recorded in the emulator (VICE).
+- Of its 104,448 pixels, 104,446 match the emulator's own picture of the same frame.
+- Measured in the emulator, it ran 131 times in 250 frames, about 26 times a second.
+- The port matches the game's own code on every row of all six levels (`test_levels.js`).
+- In the emulator, with no key pressed, the ship fell and was lost three times.
+
+### levels.html
+
+- The port is checked against the game's own generator code, run on the kit's 6502 for all six levels: `test_levels.js`, beside this page, compares 12,240 rows.

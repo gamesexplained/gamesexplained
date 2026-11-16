@@ -55,12 +55,10 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-over[hidden]{display:none}
 .pl-over button{font-size:16px}
 .pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
-.pl-bar button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
-.pl-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
-.pl-bar button:hover{border-color:var(--ink-mute)}
+.pl-bar button,.pl-over button{font-size:14px;padding:7px 12px}
 .pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
 .pl-speed{display:inline-flex;align-items:center;gap:6px;font-family:var(--fb);font-size:14px;font-weight:700;color:var(--ink)}
-.pl-speed input{width:76px;accent-color:var(--ink);cursor:pointer}
+.pl-speed input{width:76px}
 .pl-speed output{font-family:var(--fm);font-size:12px;font-weight:400;min-width:2.4em}
 .pl-speed[aria-disabled="true"]{color:var(--ink-mute)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
@@ -113,38 +111,22 @@ section table{margin:6px 0 18px}
 </section>
 <section id="port">
   <p class="fig">01 · The port</p>
-  <h2 class="t">Every routine of the game, checked against the original</h2>
-  <p class="lede">The game is a 6502 program of about 28,000 bytes of code. The port is the same program written again in JavaScript, one function for each routine the game calls, 123 in all, reading and writing the game's variables at the game's own addresses. The page runs only the port: the game's code is in the tests, as the original the port is held to.</p>
-<table>
-  <tr><th>Check</th><th>What it showed</th></tr>
-  <tr><td>Each routine alone</td><td>Fifteen test files call each routine of the port and the game's own routine on the kit's 6502 simulator from the same state, made from saved moments of play with registers, variables and keys changed at random, and compare every byte each one leaves.</td></tr>
-  <tr><td>The main loop in lockstep</td><td>The port's main loop runs beside the game's, pass by pass, from 199 moments: a walk in the Wilderness and every area and entrance the game's scripts lead to, each 150 passes with keys pressed at random. Every byte of memory, colour RAM, the video chip and the sound chip was the same at the start of every pass.</td></tr>
-  <tr><td>The title and its menus</td><td>From the loader's jump, through the title, the language and the character to the first view, beside the game in each of the six choices, with every byte the same at each stop.</td></tr>
-  <tr><td>Saving and loading</td><td>The information screen's save, to tape and to disk, writes the same file as the game's, and a load puts back the same bytes; a file that is not a saved game prints INVALID FILE, as the game's does.</td></tr>
-  <tr><td>The page's memory</td><td>The page carries the game's memory as the loader leaves it, with every instruction set to zero but 192 bytes of instructions the game rewrites and reads as variables, and the music driver, which the port runs on the site's 6502, the kit's simulator. The page's machine on that memory and on the whole memory runs the same, frame for frame, from the loader's jump in each language and from every one of the 199 moments.</td></tr>
-  <tr><td>The pace</td><td>The port executes no instructions, so the page charges each routine, and each row, byte and edge step it draws, the cycles they cost the game, fitted on some 9,700 passes timed on the simulator: play from the moments, the title's menus in each of the six choices, and the information screen opened again and again with keys shown, saves and loads. The viewport's opening steps and the keyboard's scan, which run only while the game waits for the clock, were timed alone, 2,000 calls each. From 25 moments, with the same turns, walks and looks on both, the page takes within 5 % of the game's time for the same passes, and on average 0.3 % more. From the loader's jump each of the title's keys is taken within 2 % of the game's time, each of the information screen's within 1 %, and a letter held for ten frames types twice on both, as it does on the C64.</td></tr>
-  <tr><td>The listing</td><td>Porting a routine means reading every instruction of it. A checker that had written none of the port then compared the comments of the 114 routines it covers with the port and the instructions, and found six wrong; each has been corrected in the Source code tab.</td></tr>
-</table>
+  <h2 class="t">Every routine of the game, written again in JavaScript</h2>
+  <p class="lede">The game is a 6502 program of about 28,000 bytes of code. The port is the same program written again in JavaScript, one function for each routine the game calls, 123 in all, reading and writing the game's variables at the game's own addresses. The page runs only the port.</p>
+<p>The music is the game's own driver, which the page runs on a model of the 6502.</p>
+<p>The information screen's save, to tape or disk, writes the same file the game writes, and a load puts back the same game; a file that is not a saved game prints INVALID FILE, as in the game.</p>
 </section>
 <section id="modern">
   <p class="fig">02 · The 3D view</p>
   <h2 class="t">The 3D view at the screen's own resolution</h2>
-  <p class="lede">Native resolution changes how the page draws the 3D view, the window in the middle of the castle's frame, and nothing else. The game runs underneath as it does without it: two copies of it, one with the view watching it, keep every byte of memory the same at every frame.</p>
+  <p class="lede">Native resolution changes how the page draws the 3D view, the window in the middle of the castle's frame, and nothing else. The game runs underneath as it does without it.</p>
 <p>The game draws the view into a buffer of 120 by 120 pixels, each twice as wide as it is tall on the screen, and copies the buffer into the bitmap when the picture is done. Many of its colours are patterns: two colours in alternating pixels, which the screen blurs into a shade between them.</p>
 <p>With <b>Native resolution</b> on, the page works each picture out again from what the game keeps for it: where the player stands and which way they look, and the records of the area's objects. It applies the game's own rules to them: the objects the game queued for the picture, each one's corners from its record, each face's colour from the side of it the player is on or from the way it winds, the faces that turn away left out by the game's own test on the corners as the game rounds them, and the order from farthest to nearest by the game's own bubble sort on the same bounds. Then it draws the same faces as sharp shapes at the screen's own resolution, each pattern as the shade the eye mixes from it, with the sky, the floor and the Wilderness's mountains where the game puts them, and the sight in the middle in the colours the game's XOR gives it.</p>
 <div class="pl-pair">
   <figure class="pl-fig"><img src="reference/play-view-c64.png" alt="The 3D view in the Wilderness, in the C64's pixels: grey castle walls in dithered patterns, a small tower with a green door, white and grey mountains and a dithered green floor" width="720" height="360"><figcaption class="cap">A picture of the Wilderness as the game draws it.</figcaption></figure>
   <figure class="pl-fig"><img class="pl-sharp" src="reference/play-view-native.png" alt="The same view drawn at three times the C64's resolution: the same walls, tower and door with straight edges and solid shades, the mountains and the sight as before" width="720" height="360"><figcaption class="cap">The same picture with Native resolution on.</figcaption></figure>
 </div>
-<table>
-  <tr><th>At each picture the game drew, the page's scene against the game's own drawing</th><th>The same</th></tr>
-  <tr><td>The painter's order, sorted from the game's bounds</td><td>1,633 of 1,633 sorts</td></tr>
-  <tr><td>Objects: which, and in what order</td><td>8,796 of 8,796, in the game's order in all 1,633 pictures</td></tr>
-  <tr><td>Faces: which, in which colour, with how many corners</td><td>11,526 of 11,587</td></tr>
-  <tr><td>Faces with every corner within 2 pixels of the game's</td><td>11,461 of 11,521</td></tr>
-  <tr><td>The view's pixels, the page's scene painted in the C64's pixels</td><td>99.16 %</td></tr>
-</table>
-<p>The pictures are the 1,633 the game drew in 82,600 frames of play, from the loader's jump and from 199 moments in every area, walking, turning and looking up and down. The game works out each corner in whole numbers and drops the fraction toward the middle of the view. The page works it out exactly, which moves a corner by less than 2 pixels. The 60 faces that are further out are all cut by an edge of the view, where the game's cut and the page's put a corner up to 35 pixels apart; why is not known.</p>
+<p>The game works out each corner in whole numbers and drops the fraction toward the middle of the view. The page works it out exactly, which moves a corner by less than 2 pixels. A face cut by an edge of the view can have a corner up to 35 pixels from where the game puts it; why is not known.</p>
 </section>
 <section id="fast">
   <p class="fig">03 · Fast CPU</p>

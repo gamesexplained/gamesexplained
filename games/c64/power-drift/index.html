@@ -40,9 +40,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pd-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
 .pd-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
 .pd-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
-.pd-btn{font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer;color:var(--ink)}
-.pd-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
-.pd-sel{font-family:var(--fm);font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.pd-btn{font-size:13px;padding:6px 11px}
+.pd-sel{font-size:13px;padding:5px 8px}
 .pd-bar label{font-family:var(--fm);font-size:13px;color:var(--ink-soft);display:flex;gap:8px;align-items:center}
 .pd-bar input[type=range]{width:200px;max-width:50vw}
 .pd-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
@@ -55,7 +54,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pd-pic{display:block;width:100%;max-width:624px;height:auto}
 #pd-roster{cursor:pointer}
 #pd-screen{max-width:640px;margin:0 auto}
-.pd-btn:disabled{opacity:.45;cursor:default}
 @media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}}
 </style>
 <!-- tabs -->
@@ -83,7 +81,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Music: the game's own driver plays both tunes</h2>
   <p class="lede">The game holds two tunes. The race tune plays through every stage, and the other plays while a high score's name is entered.</p>
   <div class="plate"><div id="pd-sid"></div>
-  <p class="cap">The game's own sound driver runs on the site's model of the 6502 processor, from the listing's bytes. A button starts a tune as the game does, with the tune's number in <code>$B804</code> and a call to <code>sound_reset</code> (<code>$B80A</code>), then calls <code>sound_play</code> (<code>$B800</code>) once a frame, as the race's interrupt does. <code>test_music.js</code> runs the game's own code beside it on the kit's simulator and checks every write to the sound chip, frame by frame, for 3,000 frames of each tune. The bass of the name-entry tune, on the second voice, stays between 46 and 220 Hz, and the race tune's goes down to 82 Hz: laptop and phone speakers barely play notes that low.</p></div>
+  <p class="cap">The game's own sound driver runs on the site's model of the 6502 processor, from the listing's bytes. A button starts a tune as the game does, with the tune's number in <code>$B804</code> and a call to <code>sound_reset</code> (<code>$B80A</code>), then calls <code>sound_play</code> (<code>$B800</code>) once a frame, as the race's interrupt does. The bass of the name-entry tune, on the second voice, stays between 46 and 220 Hz, and the race tune's goes down to 82 Hz: laptop and phone speakers barely play notes that low.</p></div>
   <p>Numbers written with a $ are addresses in the computer's memory, in hexadecimal; each one links to the game's code on the Source code tab. The driver plays the SID sound chip's three voices. Each voice reads an order list, a list of patterns to play in turn (<code>tune_table</code>, <code>$C4BA</code>). A pattern is a run of notes, each a note number and a length, and of commands, each <code>$FE</code> and a number: change the instrument, slide the pitch, add vibrato, sweep the pulse width (which changes the tone's colour), or end the pattern (<code>command_table</code>, <code>$BBFB</code>). An instrument is a short list of waveforms, stepped once a frame (<code>wave_tables</code>, <code>$C241</code>). The chip's filter is never used.</p>
   <p>The select screen is silent. Its interrupts never call the driver; only the race's interrupt (<code>$5253</code>) and the text screens' (<code>$5181</code>) do.</p>
 </section>
@@ -93,7 +91,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Sound: four effects, two of them never heard</h2>
   <p class="lede">The driver stores four sound effects and plays them on the third voice. The game starts only two.</p>
   <div class="plate"><div id="pd-sfx"></div>
-  <p class="cap">The same driver as the music, from the listing's bytes. A button leaves the driver as the game does before the select screen, with the music off, and writes the effect's number to <code>sound_effect</code> (<code>$B805</code>), as the game does. <code>test_music.js</code> checks these buttons against the game's own code as it checks the tunes. The spin's effect repeats its last note until <code>kart_spin</code> ends it as the spin stops, so here it plays until it is stopped.</p></div>
+  <p class="cap">The same driver as the music, from the listing's bytes. A button leaves the driver as the game does before the select screen, with the music off, and writes the effect's number to <code>sound_effect</code> (<code>$B805</code>), as the game does. The spin's effect repeats its last note until <code>kart_spin</code> ends it as the spin stops, so here it plays until it is stopped.</p></div>
   <p>The game writes <code>$B805</code> in three places: 2 when the player's place changes (<code>update_place</code>) or a rival comes alongside (<code>rival_near</code>), and 3 when the kart spins (<code>kart_spin</code>). Effect 1 has no writer at all. Effect 4 is a steady tone with a sweeping pulse, which starts itself again whenever it ends; it sounds like an engine. Only starting effect 4 sets the flag at <code>$B808</code> that keeps it going, and only a routine nothing calls clears it (<code>sound_engine_off</code>). So the game carries an engine sound it never plays.</p>
 </section>
 
@@ -103,7 +101,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The 1989 cassette plays a tune while it loads, over its credits, its logo and its portrait of Jason (<a href="graphics.html#loading">Graphics</a>), for about five minutes, and then fades it out: the last minute and a half of the load is silent. The High Voltage SID Collection names it Poker Face, one of Hiroshi Kawaguchi's tunes for Sega's arcade game, arranged for the C64 by Dave Lowe. It is neither of the two tunes the game plays, and the disk loads without it.</p>
   <div class="plate">
     <div id="pd-load"></div>
-    <p class="cap">The cassette's own copy of the game's sound driver, with the tunes it carries, runs on the kit's 6502 simulator from the bytes the cassette leaves in memory: the tune's number, 1, is already in <code>$B804</code>, and the cassette calls <code>sound_reset</code> (<code>$B80A</code>) once and then <code>sound_play</code> (<code>$B800</code>) once a frame. It was checked against the cassette loading in VICE: after each of the first 4,399 calls, a minute and a half of music, the sound chip's registers are the player's.</p>
+    <p class="cap">The cassette's own copy of the game's sound driver, with the tunes it carries, runs from the bytes the cassette leaves in memory: the tune's number, 1, is already in <code>$B804</code>, and the cassette calls <code>sound_reset</code> (<code>$B80A</code>) once and then <code>sound_play</code> (<code>$B800</code>) once a frame.</p>
   </div>
   <p>The driver is the disk's, byte for byte but for its variables, from <code>$B800</code> to <code>$C4B9</code>. What differs is the music after it: the cassette's tunes from <code>tune_table</code> (<code>$C4BA</code>) on are not the disk's. The tune comes round every 61 seconds.</p>
 </section>
@@ -136,7 +134,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <canvas class="pd-cv" id="pd-screen" width="320" height="200" aria-label="The race screen, drawn from the game's memory"></canvas>
     <p class="pd-out" id="pd-state" style="margin:10px 0 4px">&nbsp;</p>
     <canvas class="pd-pic" id="pd-chart" width="624" height="350" aria-label="How far each kart has gone, against the race clock"></canvas>
-    <p class="cap">The race is the game's own code, from the listing's bytes, run on the site's model of the 6502 processor: <code>setup_stage</code> and the rest of <code>stage_loop</code> (<code>$086F</code>) through the start lights, without their waits, then <code>race_frame_loop</code> (<code>$08AC</code>) once a race frame, about 17 times a second at the game's speed, with the race clock, the finish and the podium. The page stands in for the stick: up held all race, fire pressed to be in low gear below speed level 14 and in high gear from 14, which gains speed fastest, and the kart held in the middle of the road, or in the band of the left or the right lane, as if steered perfectly. <b>Spin out</b> does what <code>place_rivals</code> does when the kart runs into a slower rival. The picture is drawn by the site's model of the video chip from the game's memory, with the registers the race's interrupts set; the lines on which the sprites are moved down the screen are worked out by the page rather than counted in cycles. Below it, each kart's distance from the start line, in laps, against the race clock: the rivals in their karts' colours, the player in black. <code>test_rivals.js</code> runs the game's own loop beside the page on the kit's simulator, with the same stand-ins, and checks every byte of memory after every race frame of whole races on every stage.</p>
+    <p class="cap">The race is the game's own code, from the listing's bytes, run on the site's model of the 6502 processor: <code>setup_stage</code> and the rest of <code>stage_loop</code> (<code>$086F</code>) through the start lights, without their waits, then <code>race_frame_loop</code> (<code>$08AC</code>) once a race frame, about 17 times a second at the game's speed, with the race clock, the finish and the podium. The page stands in for the stick: up held all race, fire pressed to be in low gear below speed level 14 and in high gear from 14, which gains speed fastest, and the kart held in the middle of the road, or in the band of the left or the right lane, as if steered perfectly. <b>Spin out</b> does what <code>place_rivals</code> does when the kart runs into a slower rival. The picture is drawn by the site's model of the video chip from the game's memory, with the registers the race's interrupts set; the lines on which the sprites are moved down the screen are worked out by the page rather than counted in cycles. Below it, each kart's distance from the start line, in laps, against the race clock: the rivals in their karts' colours, the player in black.</p>
   </div>
   <p>Driven perfectly, the kart crosses the line at 2'14 on the race clock, eight clock seconds before the fastest rival, on every stage. A spin at full speed costs five and a half: the kart slows to a stop while it turns and has to build its speed again. So a perfect race can take one spin and still win. Two or three spins put it second, four or five third, and a sixth ends the game.</p>
   <p>Nor does a rival ever get out of the way. Held in the left lane, the kart runs into the third fastest rival as it catches it, 80 race frames in, and spins to a stop while the field drives past. Then it catches the sixth fastest and hits that, and again 176 race frames later, and again: each spin leaves the kart the same distance behind the same rival, so each approach ends the same way, ten times, until the game is over.</p>
@@ -153,7 +151,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button class="pd-btn" type="button" data-f="hill" aria-pressed="false">Raised track</button>
     </div>
     <canvas class="pd-cv" id="pd-frame" width="384" height="272"></canvas>
-    <p class="cap">Both pictures are drawn on this page by the site's model of the C64's video chip, from a record of one whole frame in the emulator: memory as the frame began, and every write to the video chip during it, with the line it came on. In both, every pixel matches the emulator's own picture of the frame. <b>Flat road</b>: course B, stage 1, five seconds in, with poplars along the road. <b>Raised track</b>: the same stage later, at 119 km/h, on a stretch built high above the ground.</p>
+    <p class="cap">Both pictures are drawn on this page by the site's model of the C64's video chip, from one whole frame: memory as the frame began, and every write to the video chip during it, with the line it came on. <b>Flat road</b>: course B, stage 1, five seconds in, with poplars along the road. <b>Raised track</b>: the same stage later, at 119 km/h, on a stretch built high above the ground.</p>
   </div>
   <p>The panel is rows 0 to 4 of a text screen at <code>$E000</code>, drawn with its own character set, the shapes of 256 characters, at <code>$F000</code>. At line <code>$5A</code> of the picture an interrupt, a routine the video chip calls when it reaches a set line, points the chip at the view's screen and at the race's character set at <code>$F800</code> (<code>race_irq_view</code>). The sky and the ground are one background colour that a timer changes partway down the screen (<code>irq_handler</code>), and the track's hills move the line where it changes. The karts are sprites, the C64's movable pictures, which lie over the characters.</p>
   <p>The view is drawn into one of two screens while the other is shown, and the two swap when a picture is done (<code>race_frame_loop</code>). A whole picture takes about three video frames, so the race moves about 17 times a second.</p>
@@ -198,7 +196,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <tr><td>Low</td><td class="n">18</td><td class="n">126 km/h</td><td>a level every other race frame</td></tr>
       <tr><td>High</td><td class="n">32</td><td class="n">224 km/h</td><td>a level one race frame in four below level 14, then every other</td></tr>
     </table>
-    <p class="cap">From <code>move_player</code> and <code>speed_up</code>. Seen in the emulator: level 18 read 126 km/h, level 17 119 and level 10 70.</p>
+    <p class="cap">From <code>move_player</code> and <code>speed_up</code>. Level 18 reads 126 km/h, level 17 119 and level 10 70.</p>
   </div>
   <p>Fire changes gear, once a press (<code>gear_change</code>). With neither up nor down held the kart slows a level every other race frame, and twice as fast with down held. Off the road, above level 3, it slows whatever the stick says. Each race frame adds a quarter of the speed level to the score (<code>add_speed_score</code>), so a fast lap scores more than a slow one.</p>
   <p>The clock counts race frames, not time. A digit after the seconds goes up every other race frame and runs from 0 to 5, so a second on the clock is 12 race frames (<code>race_clock</code>). The race makes about 17 race frames a second, so the clock gains on real time; <a href="discoveries.html#clock">the Discoveries tab</a> has the figures. At the end of a stage won, the seconds on the clock decide a time bonus, which the game <a href="discoveries.html#bonus">counts out in the wrong number system</a>.</p>
@@ -241,7 +239,7 @@ function createDriver(D, C64Cpu) {
   const base = new Uint8Array(0x10000);
   for (const [ad, bytes] of D.mem) base.set(bytes, ad);
   const sid = new Uint8Array(25);
-  let m, cpu, c, writes = [], over = false;
+  let m, cpu, c, writes = [], times = [], t0 = 0, over = false;
   const io = {
     read(ad) {
       if (ad === 0xD012) return 0;
@@ -249,7 +247,7 @@ function createDriver(D, C64Cpu) {
       throw new Error('read $' + ad.toString(16));
     },
     write(ad, val) {
-      if (ad >= 0xD400 && ad < 0xD419) { sid[ad - 0xD400] = val; writes.push(ad - 0xD400, val); return; }
+      if (ad >= 0xD400 && ad < 0xD419) { sid[ad - 0xD400] = val; writes.push(ad - 0xD400, val); times.push(cpu.cycles - t0); return; }
       if (ad >= 0xD419 && ad < 0xD41C) return;
       throw new Error('write $' + ad.toString(16));
     },
@@ -257,18 +255,18 @@ function createDriver(D, C64Cpu) {
   const run = (ad) => cpu.call(ad, {}, { maxSteps: 100000 });
   return {
     sid,
-    get writes() { return writes; },
+    get writes() { return writes; }, get times() { return times; },
     get mem() { return m; },
     init(t) {
       c = D.list[t];
       m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x35, io });
-      sid.fill(0); over = false; writes = [];
+      sid.fill(0); over = false; writes = []; times = []; t0 = cpu ? cpu.cycles : 0;
       if (c.tune) { m[0xB806] = 0; m[0xB804] = c.tune; run(0xB80A); }
       else { run(0xB80A); m[0xB806] = 1; m[0xB805] = c.sfx; }
     },
-    stop() { over = true; writes = []; },
+    stop() { over = true; writes = []; times = []; t0 = cpu ? cpu.cycles : 0; },
     play() {
-      writes = [];
+      writes = []; times = []; t0 = cpu ? cpu.cycles : 0;
       if (over) return;
       run(0xB800);
       if (c.sfx && !m[0xC0BB] && !m[0xB805]) over = true;
@@ -718,18 +716,18 @@ function raceFrame(m, colour) {
 function createLoaderTune(D, C64Cpu) {
   const mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
   const image = D.blocks.map(([a, s]) => [a, Uint8Array.from(atob(s), (c) => c.charCodeAt(0))]);
-  let writes = [], on = false;
+  let writes = [], times = [], t0 = 0, on = false;
   const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: {
     read: (a) => (a >= 0xD400 && a <= 0xD41F ? 0 : mem[a]),
-    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); } else mem[a] = v; },
+    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); times.push(cpu.cycles - t0); } else mem[a] = v; },
   } });
-  const set = (list) => { for (const [r, v] of list || []) { sid[r] = v; writes.push(r, v); } };
+  const set = (list) => { for (const [r, v] of list || []) { sid[r] = v; writes.push(r, v); times.push(cpu.cycles - t0); } };
   return {
-    init() { mem.fill(0); for (const [a, b] of image) mem.set(b, a); sid.fill(0); writes = [];
+    init() { mem.fill(0); for (const [a, b] of image) mem.set(b, a); sid.fill(0); writes = []; times = []; t0 = cpu.cycles;
       set(D.before); cpu.call(D.init, {}, { maxSteps: 200000 }); set(D.after); on = true; },
     stop() { on = false; },
-    play() { writes = []; if (on) cpu.call(D.play, {}, { maxSteps: 200000 }); },
-    sid, get writes() { return writes; }, playing: () => on, mem,
+    play() { writes = []; times = []; t0 = cpu.cycles; if (on) cpu.call(D.play, {}, { maxSteps: 200000 }); },
+    sid, get writes() { return writes; }, get times() { return times; }, playing: () => on, mem,
   };
 }
 // end of pd-loader-tune

@@ -596,3 +596,46 @@ earlier record (`admin/first-discoveries/SKILL.md`).
 - **None found.** [Secret: the sound chip is the random number generator](https://gamesexplained.com/c64/into-the-eagles-nest/discoveries.html#the-dice), 29 Oct 2026. Searched `"Into the Eagle's Nest" C64 random chests SID noise random number`.
 - **None found.** [Secret: the tape turns its own title picture on](https://gamesexplained.com/c64/into-the-eagles-nest/discoveries.html#the-title-picture), 29 Oct 2026. Searched `"Into the Eagle's Nest" C64 tape loading screen picture colour RAM loader blocks`.
 - **Known.** [Secret: you never see your own bullet](https://gamesexplained.com/c64/into-the-eagles-nest/discoveries.html#the-bullet), 29 Oct 2026. [Review-o-matic](https://review-o-matic.com/into-the-eagles-nest-c64/), 18 May 2011: "all bullets are invisible".
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Tested in the emulator: with the word in place a mission starts with `$603F` = 1 and a key in hand, and without it there is no key.
+- Taken in the emulator, one after the other: three pushes down and fire.
+- 256 bytes built by the game's own loop at `$67CA`, run in the emulator with the sound chip running, one column a byte.
+- The frames above are the game's own, recorded in the emulator with the player firing to the right across open floor: the flash for four frames, and the shot moving 8 pixels on two frames of every three until it meets the wall eighty pixels on.
+
+### graphics.html
+
+- One frame of play recorded in VICE and drawn from its memory.
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+
+### index.html
+
+- Checked against the game's code run on the kit's 6502 simulator, every register after every call for 2,000 calls (`test_music.js`).
+- One frame of play recorded in VICE: the video chip's registers as the frame began and every write to them afterwards, with the memory the drawing reads.
+- All 104,448 pixels match the emulator's own picture of the same frame.
+- Every one of these was tried in the emulator from a snapshot of play, one input at a time.
+
+### levels.html
+
+- The maps here are built the same way, and a test runs the game's own builder on the kit's 6502 for all four floors and checks that the page builds the same map, tile for tile (`test_maps.js`).
+
+### play.html
+
+- `test_play.js` runs the port beside the game's own code on the kit's model of the C64, from the hand-over, with the same input to both.
+- The port has no stand-ins: a call to any routine of the game's that it had not written would throw.
+- At the start of every pass of the main loop at `$4871` the two memories are compared, and so are colour RAM and every register written to the video chip and the SID.
+- Out of play, where no pass begins, the comparison is made at checkpoints in the title, the menus, the briefings and the end screens.
+- In play the input comes from a player that searches the floor breadth first for the squares it has seen least, heads for a key, a pickup or the lift, and fires at a guard or a chest ahead, and now and then it pauses with SPACE and goes on with SPACE, the stick or fire.
+- Every so often the test forces the next of the four ends of a mission, in both at once, so that it goes through all four: a lift ride, a prisoner brought home, the castle destroyed and the game over.
+- A third session goes round the attract loop before it starts, and holds the stick still and then moves it on each screen between missions.
+- The page's own runtime then runs alone for 20,000 frames with SPACE, RESTORE and every end of a mission, and must never stop.
+- In a second session the mission's prisoner is put on the floor play starts on and moved beside the player, so that his own code runs.
+- Over ten tables the model gave one chest in seven jewels and one in ten explosives, as the game did in VICE with the SID on.
+- Between two of the port's checkpoints the clock moves on by the average of the cycles the game's own code took over that stretch on the kit's machine, with its interrupts taken out.
+- Those costs were fitted, none below zero, to 6,809 interrupts of the test's two sessions, and their total comes within a hundredth of a percent of the game's.
+- The test then runs the page and the game from the hand-over with a stick that moves at random, input the costs were not fitted on, for 4,000 frames. On 28 October 2026 the page reached play at frame 692 and the game at frame 694.

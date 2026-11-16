@@ -281,3 +281,49 @@ through OpenAI's Codex CLI, at high reasoning effort.
 - The calendar, from `work/play-start.sna` with the day (`$8D14`) poked
   to 31 and the clock (`$BF2A`) to `$2FF0`: within 100 frames the panel
   showed MAY 1, the day was 1 and the month (`$8D15`) 0 (`work/calendar_test.py`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The page turn is bank 0's `$F465`, written again here and held to the game's own code by `test_calendar.js`.
+- In ZEsarUX, from the start of play with the day set to 31 and the clock to just before midnight, the panel turned to MAY 1 and the month byte `$8D15` was 0.
+
+### graphics.html
+
+- Drawn by this page from the frame lists and pictures in banks 0, 1 and 6; `test_cast.js` runs the game's own drawing (`$A6F8` to `$A6F4`) on the kit's Z80 for every frame of every class, plain and mirrored, at four pixel positions across and on every row of a character row, and the screen it leaves is the same as this page's, byte for byte.
+
+### index.html
+
+- The control selection screen, and the start of play beside the wreck, in ZEsarUX 13.0.
+- The recordings are the game's own sound driver (`$7000`) run on the kit's Z80 from the listing, one call at a time as the interrupt makes them, 50 calls a second, and played here through a model of the 128K's sound chip.
+- `test_music.js` makes them again from the listing and holds the page to them.
+- In ZEsarUX 13.0 the chip's registers followed the recording frame for frame through 79 seconds of the title tune and of the second tune.
+- Every byte is the same as the view the game builds in its buffer at `$AE10`, both in ZEsarUX at the start of play and in `test_maps.js`, which runs the game's own drawing (`$A012`).
+- In ZEsarUX, standing still at the start of play, the clock counted 2,441 in 3,000 frames.
+
+### levels.html
+
+- `test_routes.js` runs both routines from the listings for every place drawn, and the zone search ($FB9E) at 10,989 places, and the page agrees with every one.
+- Each map is what the game's own area loader (`$87CF`) leaves in bank 0, run on the kit's Z80 from the listings.
+- `test_maps.js` runs the game's own view drawing (`$A012`) at the start of play and at a place in every area, and holds this drawing to it byte for byte.
+- The loader's map for area 13 is the same as the one in memory at the start of play in the emulator.
+
+### play.html
+
+- Each routine alone: Sixteen test files take each routine at the moments the game itself calls it, in 148 saved moments of play, some with registers and variables changed at random.
+- The port's routine and the game's own, on the kit's Z80, run from the same machine, and every byte of the eight banks, the paging, the AY's registers and the writes to the chips must come out the same..
+- The whole program in lockstep: The port's program runs beside the game's, pass by pass: from the loader's hand-over through the control selection and 1,500 passes of play, and from each of the 148 moments for 400 passes, with the stick, fire and the menus played at random.
+- Every byte of the eight banks, the paging, the border and the AY was the same at every stop, but for the stack and the two bytes where the sound driver keeps the stack pointer..
+- Area 14 and the ROM: Area 14's map and the mask of one frame of the arm that reaches out of a rock run on past the end of memory into the 128's ROM.
+- The page carries those 171 bytes of ROM 0 and nothing else of it, and the port reads them where the game does.
+- The lockstep runs through area 14..
+- The page's memory: The page carries the game's memory as the loader leaves it.
+- Of the main memory's 12,863 bytes of instructions, all but 1,068 are set to zero: 858 the game rewrites and reads as variables, and 210 it reads as data, the start-up code that becomes the sprites' visibility mask and tune 18's code, which tune 17 plays as notes.
+- Bank 3 is carried whole, its code included, because the game's random numbers are bank 3's bytes read one after another.
+- The page's machine on that memory and on the whole memory ran the same, frame for frame, from the hand-over for 2,100 frames and from 37 of the moments for 600 frames each, with input at random..
+- The pace: The port executes no instructions, so the page charges each stretch of the main loop, each routine, and each byte, row and character it copies or draws the T-states they cost the game, fitted on 22,798 passes timed on the kit's model of the 128: from the hand-over and from the moments, with walks and runs that drag the windows and scroll the view.
+- On 14,799 passes it was not fitted on, four in five come within 1.1 % of the game's time.
+- From 25 other moments, with the same walks, runs and shots on both for 30 seconds, the page takes within 4 % of the game's time for the same passes, 1.6 % less on average, and from the hand-over it reaches play within 2.2 % of the game's time..

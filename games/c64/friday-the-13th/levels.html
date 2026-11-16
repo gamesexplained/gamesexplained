@@ -35,8 +35,7 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 .ft-grid{display:grid;gap:6px}
-.ft-grid button{padding:0;border:2px solid transparent;background:none;cursor:pointer;position:relative;line-height:0}
-.ft-grid button[aria-pressed="true"]{border-color:var(--ink)}
+.ft-grid button{padding:0;position:relative;line-height:0}
 .ft-grid canvas{width:100%;image-rendering:pixelated;display:block}
 .ft-tag{position:absolute;left:3px;top:3px;font:500 11px/1.3 var(--fm);background:rgba(255,255,255,.88);color:var(--ink);border-radius:3px;padding:1px 4px}
 .ft-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
@@ -101,8 +100,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">One room drawn by the game's own routine</h2>
   <p class="lede">Rooms are built from tiles of cells laid over a background, by <a href="source-game.html#A2A2"><code>draw_room</code></a>. The page runs that routine, unchanged, on the game's bytes.</p>
   <div class="plate"><div class="pick"><a class="step" id="rmPrev" aria-label="Previous room">‹</a><select id="rmSel" aria-label="Room"></select><a class="step" id="rmNext" aria-label="Next room">›</a></div>
-    <div class="ft-two"><canvas id="rmCv" width="256" height="128" class="ft-px"></canvas><img src="reference/play-church.png" alt="The emulator's picture of room 39" id="rmShot" class="ft-px"></div>
-    <p class="cap" id="rmCap">Room 39, beside the emulator's screenshot of the same room. Of the play area's 32,768 pixels, 292 differ, all of them in the two places where people stand: people are sprites, which <code>draw_room</code> does not draw.</p></div>
+    <div class="ft-two"><canvas id="rmCv" width="256" height="128" class="ft-px"></canvas><img src="reference/play-church.png" alt="The game's picture of room 39" id="rmShot" class="ft-px"></div>
+    <p class="cap" id="rmCap">Room 39, beside a screenshot of the same room in play. The drawing leaves out the two people standing there: people are sprites, which <code>draw_room</code> does not draw.</p></div>
   <p>Each room is 8 tiles across and 4 down, 32 bytes at <a href="source-game.html#0C00"><code>$0C00</code></a> plus 32 times the room's number. A tile is 4 by 4 cells, and a cell is 8 by 8 multicolour pixels. The cells' see-through pixels let the background show: plain grey outdoors, and indoors one perspective picture of walls and floor that every building room shares, recoloured for each room from two bytes at <a href="source-game.html#AA5E"><code>room_colours</code></a>.</p>
   <p>The room is also the collision map. Its 32 tiles are copied to <a href="source-game.html#0894"><code>room_map</code></a>, and <a href="source-game.html#AE8F"><code>tile_kind</code></a> sorts the tile under each foot into open, solid, or climbable. Outdoors, walking off a side of the screen moves you one room across the 4 by 6 grid; in a building, the floor narrows with depth, and you leave through the doorways in the walls.</p>
 </section>
@@ -211,8 +210,8 @@ function fridayPaint(cv, r, PAL) {
       rcur = (n + 44) % 44; sel.value = rcur;
       fridayPaint($('rmCv'), rooms[rcur], C64.PAL);
       $('rmShot').style.display = rcur === 39 ? '' : 'none';
-      if (rcur !== 39) $('rmCap').textContent = 'Room ' + rcur + ', drawn by draw_room from its 32 tiles at $' + (0x0C00 + rcur * 32).toString(16).toUpperCase() + '. Room 39 has the emulator\'s picture beside it.';
-      else $('rmCap').textContent = 'Room 39, beside the emulator\'s screenshot of the same room. Of the play area\'s 32,768 pixels, 292 differ, all of them where the two people stand: people are sprites, which draw_room does not draw.';
+      if (rcur !== 39) $('rmCap').textContent = 'Room ' + rcur + ', drawn by draw_room from its 32 tiles at $' + (0x0C00 + rcur * 32).toString(16).toUpperCase() + '. Room 39 has a screenshot beside it.';
+      else $('rmCap').textContent = 'Room 39, beside a screenshot of the same room in play. The drawing leaves out the two people standing there: people are sprites, which draw_room does not draw.';
     };
     sel.onchange = () => showRoom(+sel.value); $('rmPrev').onclick = () => showRoom(rcur - 1); $('rmNext').onclick = () => showRoom(rcur + 1);
     showRoom(39);

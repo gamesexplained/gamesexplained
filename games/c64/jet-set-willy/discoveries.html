@@ -39,9 +39,7 @@ table.jw-t th{font-weight:700;color:var(--ink-soft)}
 table.jw-t td.jw-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
 .jw-scroll{overflow-x:auto}
 .jw-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
-button.jw-b{font-family:var(--fm);font-size:13px;padding:6px 11px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-button.jw-b[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
-button.jw-b:hover{border-color:var(--ink-mute)}
+button.jw-b{font-size:13px;padding:6px 11px}
 .jw-pics{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
 .jw-pics img{width:100%;height:auto;display:block;image-rendering:pixelated;border-radius:4px}
 .jw-scr{width:100%;height:auto;display:block;image-rendering:pixelated;border-radius:4px;background:#000}
@@ -52,8 +50,8 @@ button.jw-b:hover{border-color:var(--ink-mute)}
 .jw-hex span[data-f]{cursor:pointer}
 .jw-hex span.jw-on{outline:2px solid var(--ink);outline-offset:-1px}
 .jw-fields{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
-.jw-fields button{font-family:var(--fm);font-size:12.5px;padding:4px 9px;border-radius:5px;border:1px solid var(--line);cursor:pointer;color:var(--ink)}
-.jw-fields button[aria-pressed="true"]{outline:2px solid var(--ink)}
+.jw-fields[data-own-look] button{font-family:var(--fm);font-size:12.5px;padding:4px 9px;border-radius:5px;border:1px solid var(--line);cursor:pointer;color:var(--ink)}
+.jw-fields[data-own-look] button[aria-pressed="true"]{outline:2px solid var(--ink)}
 .jw-say{min-height:3.2em;font-size:15px;margin:6px 0 0}
 .jw-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:3px;background:#101114;padding:6px;border-radius:6px}
 .jw-gal canvas{width:100%;height:auto;image-rendering:pixelated;cursor:pointer;border-radius:2px;display:block}
@@ -71,7 +69,7 @@ input.jw-range{width:100%;max-width:480px}
 .jw-two pre,.jw-pre{font-family:var(--fm);font-size:12px;line-height:1.5;background:#17181c;color:#e8e6e1;border-radius:6px;padding:10px 12px;margin:0;overflow:auto;max-height:420px;tab-size:8;white-space:pre}
 .jw-two h3{margin:0 0 6px;font-size:14px}
 .jw-card{width:100%;max-width:640px;height:auto;display:block;cursor:pointer;background:#f6f4ee;border-radius:6px}
-.jw-sel{font-family:var(--fm);font-size:14px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.jw-sel{font-size:14px;padding:5px 8px}
 .jw-shot{width:100%;max-width:768px;height:auto;display:block;image-rendering:pixelated;border-radius:4px}
 .jw-cmd{font-family:var(--fm);font-size:14px;background:#17181c;color:#e8e6e1;border-radius:6px;padding:10px 12px;margin:0 0 1em;overflow-x:auto}
 td.jw-no{color:var(--coral);font-weight:700}
@@ -97,12 +95,12 @@ td.jw-yes{color:var(--green);font-weight:700}
     <canvas id="jw-fc" class="jw-scr" width="512" height="576" style="max-width:512px"></canvas>
     <div class="jw-scroll"><table class="jw-t" style="max-width:512px;margin-top:10px"><tr><th>Room</th><th>Height</th><th>Fall count</th><th>Deadly</th><th>Spare lives</th></tr>
       <tr><td id="jw-f0"></td><td class="jw-n" id="jw-f1"></td><td class="jw-n" id="jw-f2"></td><td class="jw-n" id="jw-f3"></td><td class="jw-n" id="jw-f4"></td></tr></table></div>
-    <p class="cap"><b>The fall code at <code>$11FB</code>, ported</b> and run on the cells of the two rooms, the Watch Tower above We Must Perform a Quirkafleeg: two pixels and one count each update, the count tested each time Willy reaches a whole cell, and the cells under his feet looked at by the rules of <code>$12E9</code>. The jump over the wall is left out, and the fall starts where it started in VICE, in column 3 at height <code>$48</code>. In VICE the same jump took all nine lives, one landing after another, and the game went back to the title.</p>
+    <p class="cap"><b>The fall code at <code>$11FB</code>, ported</b> and run on the cells of the two rooms, the Watch Tower above We Must Perform a Quirkafleeg: two pixels and one count each update, the count tested each time Willy reaches a whole cell, and the cells under his feet looked at by the rules of <code>$12E9</code>. The jump over the wall is left out, and the fall starts where the jump leaves Willy, in column 3 at height <code>$48</code>. In the game the same jump takes all nine lives, one landing after another, and the game goes back to the title.</p>
   </div>
   <p>On every room entry, <code>$2E7C</code> saves a checkpoint of eight values that the death sequence at <code>$38EF</code> puts back: Willy's state, height, fall count, phase, column, room, frame and place in a jump. Coming in through the top of a room, <code>$2DC6</code> puts him at height 0, still falling, and keeps his count. So the checkpoint holds Willy in mid-air. Willy cannot steer a fall, and if that fall ends in a deadly landing, every life replays it and ends the same way.</p>
   <p>The Watch Tower's roof is a platform with a low wall at each end. Jump left over the wall and the jump ends level with the roof, over nothing. Willy falls five cells to the bottom of the room, which takes 20 counts, and carries them into the room below. A count of 17 at a whole cell marks a fall deadly, so he dies when he lands on the stair seven cells further down, and starts again at the top with his 20 counts. Even a count of 0 would not save him there, because a seven-cell fall is deadly on its own.</p>
-  <p>The Entrance to Hades does the same with guardians. Walk left along the floor of The Security Guard and Willy drops off its end, through a gap, into room 6, where the guardians in his path kill him on the way down. He restarts at the top of the room, falling, and meets them again. In VICE that took the nine lives in ten entries into the room. Had he got past them, he could never have left: all four of room 6's exits lead back to room 6.</p>
-  <figure class="plate" style="margin:16px 0 0"><img class="jw-shot" src="reference/hades.png" alt="The Entrance to Hades, its walls spelling DIE MORTAL, with Willy falling towards a devil's face at the top left"><figcaption class="cap">From VICE, on the seventh of the nine falls into the Entrance to Hades: Willy, top left, just above the guardians, with two spare lives left on the status line.</figcaption></figure>
+  <p>The Entrance to Hades does the same with guardians. Walk left along the floor of The Security Guard and Willy drops off its end, through a gap, into room 6, where the guardians in his path kill him on the way down. He restarts at the top of the room, falling, and meets them again. In one game that took the nine lives in ten entries into the room. Had he got past them, he could never have left: all four of room 6's exits lead back to room 6.</p>
+  <figure class="plate" style="margin:16px 0 0"><img class="jw-shot" src="reference/hades.png" alt="The Entrance to Hades, its walls spelling DIE MORTAL, with Willy falling towards a devil's face at the top left"><figcaption class="cap">On the seventh of the nine falls into the Entrance to Hades: Willy, top left, just above the guardians, with two spare lives left on the status line.</figcaption></figure>
 </section>
 
 <section id="faces">
@@ -119,7 +117,7 @@ td.jw-yes{color:var(--green);font-weight:700}
     <p class="cap"><b>The room the two digits choose</b>, drawn by the port of the room builder from How it works (<a href="index.html#rooms">A room is 256 bytes</a>). The first digit, 0 to 5, picks the tens from the table at <code>$1C46</code>, and the second the units, so the cheat reaches every room from 0 to 59 and no other.</p>
   </div>
   <p>The player code calls <code>$1BBC</code> on every tick. With its first byte back as <code>$A5</code>, which makes the first instruction <code>LDA $43</code>, it looks at the keys the scan at <code>$3791</code> has decoded. ↑ on its own starts it. The sound goes quiet and interrupts go off while it waits for F, A, C, E and S, each pressed on its own, and any other letter makes it give up. The border turns white, the two digits choose the room, and Willy goes there through <code>$1027</code>, the same way he would through an exit. He keeps his place on the screen unless one of the old room's exits names the new room, because <code>$2DC6</code> places him by that exit. The cheat means to put the border's colour back afterwards, but stores it in <code>$D014</code> instead of <code>$D020</code>; the new room sets the border anyway.</p>
-  <p>In VICE, with the byte restored, ↑ FACES 5 7 took Willy to The Beach, 4 9 to the Watch Tower and 0 5 to The Security Guard. To try it, put the byte back from the emulator's monitor before starting a game:</p>
+  <p>With the byte restored, ↑ FACES 5 7 takes Willy to The Beach, 4 9 to the Watch Tower and 0 5 to The Security Guard. To try it, put the byte back from the emulator's monitor before starting a game:</p>
   <pre class="jw-cmd">&gt; 1bbc a5</pre>
 </section>
 
@@ -129,7 +127,7 @@ td.jw-yes{color:var(--green);font-weight:700}
   <p class="lede">The arrows are 16 records of four bytes at <code>$2403</code>. The loop that flies them stops after 15, and three of those 15 name a room the house does not have.</p>
   <div class="plate">
     <div class="jw-scroll"><table class="jw-t" id="jw-at"><tr><th>Record</th><th>At</th><th>Room it names</th><th>Flies</th></tr></table></div>
-    <p class="cap"><b>The 16 records, read from the game's bytes.</b> In VICE, over 600 frames in each room, sprite 6 showed an arrow in no frame in The Beach, in 83 in Cuckoo's Nest and in 51 in I'm Sure I've Seen This Before.</p>
+    <p class="cap"><b>The 16 records, read from the game's bytes.</b> Over 600 frames in each room, sprite 6 shows an arrow in no frame in The Beach, in 83 in Cuckoo's Nest and in 51 in I'm Sure I've Seen This Before.</p>
   </div>
   <p><code>$314D</code> starts its count at 15 and stops when the count reaches 0 (<code>$3247</code>), so the sixteenth record, at <code>$243F</code>, is never looked at. The arrow in a record flies only while Willy is in the room its first byte names, less bit 7 (<code>$315D</code>). Records 7, 11 and 12 name room 99, <code>$63</code>, and the house has rooms 0 to 59, so the loop passes over those three in every room.</p>
 </section>
@@ -144,14 +142,14 @@ td.jw-yes{color:var(--green);font-weight:700}
     <p class="cap"><b>The whole card, worked out the way <code>$3B20</code> works out one cell:</b> the low two bits of each of four bytes from <code>$2C57</code> plus four times the cell's number, shown red, green, blue and yellow as the card's keycaps are (<code>$3A74</code>). Click a cell for its colours and the bytes they come from.</p>
   </div>
   <p>The card has 20 rows, 0 to 19, and 18 columns, A to R: 360 cells of four colours each. The code picks a row and a column at random from SID voice 3's oscillator (<code>$3B12</code>), prints ENTER CODE AT GRID LOCATION with the cell's name, and works out the four colours it expects from the four bytes at <code>$2C57</code> plus four times the cell's number (<code>$3A61</code>). <code>$2C57</code> is where the game's initialiser starts, so the answers are the first 1,440 bytes of the game's own code, read two bits at a time. The player types 1 to 4 for each colour and presses Return. A wrong code gets a second cell, and a second wrong code turns the screen red and stops (<code>$3C6B</code>).</p>
-  <p>The crackers' start-up at <code>$080D</code> goes straight to the title, so none of this runs. In VICE, with the processor sent to <code>$3A02</code> in the middle of a game, the card asked for A14, cell 252. Its bytes, <code>$3047</code>-<code>$304A</code>, give green, yellow, green and green, and those four were accepted: the code put its success header at <code>$8000</code> and the title started. That header points RESTORE back at the title, but a reset jams the processor at <code>$A005</code>, because it leaves BASIC's ROM switched in where the title should be (seen in VICE). Whether a printed card shows these colours is not known; it would only if it was made from the same build of the code.</p>
+  <p>The crackers' start-up at <code>$080D</code> goes straight to the title, so none of this runs. With the processor sent to <code>$3A02</code> in the middle of a game, the card asks for A14, cell 252. Its bytes, <code>$3047</code>-<code>$304A</code>, give green, yellow, green and green, and those four are accepted: the code puts its success header at <code>$8000</code> and the title started. That header points RESTORE back at the title, but a reset jams the processor at <code>$A005</code>, because it leaves BASIC's ROM switched in where the title should be. Whether a printed card shows these colours is not known; it would only if it was made from the same build of the code.</p>
 </section>
 
 <section id="bed">
   <p class="fig">05 · Bug</p>
   <h2 class="t">Bug: the bed Maria guards does nothing</h2>
   <p>Maria leaves the Master Bedroom after 50 of the 80 items, as How it works shows (<a href="index.html#items">Maria leaves after 50 items</a>). With her gone, Willy can walk to the bed, but nothing in the code is waiting for him there. The only flag the items set, <code>$0400</code>, is read by one routine, the one that draws Maria (<code>$3284</code>), and the game goes on until the clock reaches twelve or the lives run out.</p>
-  <figure class="plate" style="margin:16px 0 0"><img class="jw-shot" src="reference/bed.png" alt="The Master Bedroom with Willy standing on the bed, and no Maria"><figcaption class="cap">From VICE, with <code>$0400</code> set: Willy on the bed and Maria gone. Two hundred frames later nothing had happened.</figcaption></figure>
+  <figure class="plate" style="margin:16px 0 0"><img class="jw-shot" src="reference/bed.png" alt="The Master Bedroom with Willy standing on the bed, and no Maria"><figcaption class="cap">With <code>$0400</code> set: Willy on the bed and Maria gone. Two hundred frames later nothing has happened.</figcaption></figure>
 </section>
 
 <section id="rope">
@@ -163,19 +161,19 @@ td.jw-yes{color:var(--green);font-weight:700}
 <section id="volume">
   <p class="fig">07 · Secret</p>
   <h2 class="t">Secret: + and − set the volume, while the music plays</h2>
-  <p>The title's instructions give the keys for walking, jumping, pausing and the music, and leave two out. Every 15 frames, while the music is on, the play interrupt reads + and −, which raise and lower the volume in <code>$5F</code> between 0 and 15, starting from 12 (<code>$34EC</code>). In VICE + took it from 12 to 15, and − from 15 to 10. With the music turned off with Return, the keys do nothing: the same branch walks the spare lives along the status line, and they stand still too.</p>
+  <p>The title's instructions give the keys for walking, jumping, pausing and the music, and leave two out. Every 15 frames, while the music is on, the play interrupt reads + and −, which raise and lower the volume in <code>$5F</code> between 0 and 15, starting from 12 (<code>$34EC</code>). In one game + took it from 12 to 15, and − from 15 to 10. With the music turned off with Return, the keys do nothing: the same branch walks the spare lives along the status line, and they stand still too.</p>
 </section>
 
 <section id="turn">
   <p class="fig">08 · Bug</p>
   <h2 class="t">Bug: Willy never turns round on the spot</h2>
-  <p>The code for standing and walking, and the code for the rope, each have a branch that turns Willy round where he stands (<code>$1091</code>, <code>$1ABC</code>), taken when <code>$4B</code> is <code>$FE</code>. The key scan sets <code>$4B</code> to <code>$FE</code> only when the direction held, <code>$49</code>, exclusive-ORed with <code>$60</code> gives <code>$FE</code> (<code>$382C</code>). The only store to <code>$60</code> comes after that test passes, and the game's clearing of the zero page at <code>$2C93</code> stops at <code>$5F</code>, so <code>$60</code> stays 0. The test then needs <code>$49</code> to be <code>$FE</code>, and the game only ever stores <code>$FF</code> there for left, 1 for right and 0. In VICE a watch on <code>$60</code> through a stretch of random play saw no store at all.</p>
+  <p>The code for standing and walking, and the code for the rope, each have a branch that turns Willy round where he stands (<code>$1091</code>, <code>$1ABC</code>), taken when <code>$4B</code> is <code>$FE</code>. The key scan sets <code>$4B</code> to <code>$FE</code> only when the direction held, <code>$49</code>, exclusive-ORed with <code>$60</code> gives <code>$FE</code> (<code>$382C</code>). The only store to <code>$60</code> comes after that test passes, and the game's clearing of the zero page at <code>$2C93</code> stops at <code>$5F</code>, so <code>$60</code> stays 0. The test then needs <code>$49</code> to be <code>$FE</code>, and the game only ever stores <code>$FF</code> there for left, 1 for right and 0.</p>
 </section>
 
 <section id="conveyors">
   <p class="fig">09 · Bug</p>
   <h2 class="t">Bug: five conveyors stand still, and one turns the wrong way</h2>
-  <p>The play interrupt makes conveyors move by rotating a byte of every room's conveyor glyph, in the room records themselves: 19 rows to the right from the pointers at <code>$2271</code> and 22 to the left from <code>$2297</code>. Then it copies the current room's glyph to the screen's glyph <code>$25</code>. Five rooms with a conveyor have no pointer in either table: Ballroom West, the Master Bedroom, the Emergency Generator, the Conservatory Roof and The Bow. Their conveyors still carry Willy, the way the room's record says, but never move on screen. West of Kitchen's top row is in the right-hand table while its record sends Willy left. In VICE the glyph at <code>$7928</code> changed within 60 frames in The Bathroom and stayed the same in the Master Bedroom.</p>
+  <p>The play interrupt makes conveyors move by rotating a byte of every room's conveyor glyph, in the room records themselves: 19 rows to the right from the pointers at <code>$2271</code> and 22 to the left from <code>$2297</code>. Then it copies the current room's glyph to the screen's glyph <code>$25</code>. Five rooms with a conveyor have no pointer in either table: Ballroom West, the Master Bedroom, the Emergency Generator, the Conservatory Roof and The Bow. Their conveyors still carry Willy, the way the room's record says, but never move on screen. West of Kitchen's top row is in the right-hand table while its record sends Willy left. The glyph at <code>$7928</code> changes within 60 frames in The Bathroom and stays the same in the Master Bedroom.</p>
   <p>Halfway up the East Wall has a conveyor its record does not hold at all. The record gives the room a ramp of six cells, from row 2, column 6, down to the right; once the room is drawn, <code>$30E1</code> turns those six cells into conveyor cells, at addresses written into the code, and sets the conveyor to carry right. They keep the ramp's colour.</p>
 </section>
 

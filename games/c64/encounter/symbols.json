@@ -12900,12 +12900,12 @@
   {
    "address": 40122,
    "type": "line",
-   "text": "Title screen loop. JSR $6A0E is a stub inside the title-screen memory (jmp $6A1D = rts). Calls cassette_motor_toggle and read_key_column0 (result unused here), sets CIA1 DDR A=$FF, runs KERNAL SCNKEY, shows the title screen ($D018=$AE: screen $6800, charset $7800). Compares the key code in $C5 with the 8-entry table at $6931 (keys 8..1, index 0..7); a match sets $A8 = index*16 (level 1 = $70, level 8 = $00), beeps voice 1 (sawtooth $21, freq $0606) and restarts the demo timer. The compare against $68CB (highest level index reached, stored in the title screen's invisible row 5) at $9CE3 is followed by two NOPs: the branch that restricted the keys to levels already completed has been patched out, so any level 1-8 can be selected. No level key: gate voice 1 off, advance the random generator ($BC1E), decrement the attract timer (expired -> start_demo), read the joystick ($BC2C: $6E=0 means fire held). Fire held: title_fire_start waits for release then starts the game. Otherwise $C5=3 (F7) starts the game, $C5=6 (F5) cycles the skill in $62 downward 2,1,0,2.. (0 EXPERT, 1 ADVANCED, 2 NOVICE = default) and copies its 16-cell wide-font name from the hidden strip at $6B20+skill*16 (title rows 20-21, coloured invisibly) to $6B88 (row 22 col 24, the F5 label)."
+   "text": "Title screen loop. JSR $6A0E is a stub inside the title-screen memory (jmp $6A1D = rts). Calls cassette_motor_toggle and read_key_column0 (result unused here), sets CIA1 DDR A=$FF, runs KERNAL SCNKEY, shows the title screen ($D018=$AE: screen $6800, charset $7800). Compares the key code in $C5 with the 8-entry table at $6931 (keys 8..1, index 0..7); a match sets $A8 = index*16 (level 1 = $70, level 8 = $00), beeps voice 1 (sawtooth $21, freq $0606) and restarts the demo timer. The compare against $68CB (highest level index reached, stored in the title screen's invisible row 5) at $9CE3 is followed by two NOPs: the branch that restricted the keys to levels already completed has been patched out, so any level 1-8 can be selected. Novagen's 1984 cassette keeps it, BCC $9CFA. No level key: gate voice 1 off, advance the random generator ($BC1E), decrement the attract timer (expired -> start_demo), read the joystick ($BC2C: $6E=0 means fire held). Fire held: title_fire_start waits for release then starts the game. Otherwise $C5=3 (F7) starts the game, $C5=6 (F5) cycles the skill in $62 downward 2,1,0,2.. (0 EXPERT, 1 ADVANCED, 2 NOVICE = default) and copies its 16-cell wide-font name from the hidden strip at $6B20+skill*16 (title rows 20-21, coloured invisibly) to $6B88 (row 22 col 24, the F5 label)."
   },
   {
    "address": 40163,
    "type": "side",
-   "text": "compare with highest level reached ($68CB); the following NOP NOP replaced the branch that enforced it"
+   "text": "compare with highest level reached ($68CB); the following NOP NOP replaced the branch that enforced it, BCC $9CFA on Novagen's cassette"
   },
   {
    "address": 40211,
@@ -12990,12 +12990,12 @@
   {
    "address": 40868,
    "type": "line",
-   "text": "Per-level reset (also jumped from $ABE7 after the player is destroyed). Clears $33 (missile pending count), $44-$47 (saucer behaviour timers), $91. If $69 (stargate/warp phase flag) was set, restores the level index $63 from $7C (the level saved at the last spawn: a death in the warp returns to the previous level). Clears $69, $A5 (warp progress), $83 (entered-gate flag), object lifetimes $83E0-$83FF, sets $8460-$849F to 3, $58 (time counter, 256-frame units) = $35 = 0, $90=$5F, $4C=$1F, state vector $A3/$A4 = state_between_enemies, $4D=$34 (52-pass delay before the first spawn), border $0B, $A7=7 (enemy colour pair), $AE=1 (firing allowed), then the unexplained bytes at $9FF9 and level_start."
+   "text": "Per-level reset (also jumped from $ABE7 after the player is destroyed). Clears $33 (missile pending count), $44-$47 (saucer behaviour timers), $91. If $69 (stargate/warp phase flag) was set, restores the level index $63 from $7C (the level saved at the last spawn: a death in the warp returns to the previous level). Clears $69, $A5 (warp progress), $83 (entered-gate flag), object lifetimes $83E0-$83FF, sets $8460-$849F to 3, $58 (time counter, 256-frame units) = $35 = 0, $90=$5F, $4C=$1F, state vector $A3/$A4 = state_between_enemies, $4D=$34 (52-pass delay before the first spawn), border $0B, $A7=7 (enemy colour pair), $AE=1 (firing allowed), then the bytes at $9FF9, text written over a call (see there), and level_start."
   },
   {
    "address": 40953,
    "type": "line",
-   "text": "Seven bytes A9 4B 53 54 41 3A 2A executed in line: LDA #$4B, SRE ($54),Y (illegal: shifts right the byte at ($54)+Y and EORs it into A; with Y = $FF and $54/$55 = $0012 that byte is $0111, in the stack page), EOR ($3A,X), ROL A. A is loaded again at $A000, so the shifted byte is all they leave. Read as ASCII they spell 'KSTA:*' preceded by $A9. Why they are here is unknown."
+   "text": "Seven bytes A9 4B 53 54 41 3A 2A executed in line: LDA #$4B, SRE ($54),Y (illegal: shifts right the byte at ($54)+Y and EORs it into A; with Y = $FF and $54/$55 = $0012 that byte is $0111, in the stack page), EOR ($3A,X), ROL A. A is loaded again at $A000, so the shifted byte is all they leave. Read as ASCII they spell 'KSTA:*' preceded by $A9. Novagen's 1984 cassette has A9 02 A2 00 20 70 AA here (LDA #$02, LDX #$00, JSR $AA70), the call that colours the console's top row of lamps red as each game starts: in this copy the text was written over it."
   },
   {
    "address": 40960,

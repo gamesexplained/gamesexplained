@@ -43,11 +43,9 @@ table.pl-t{border-collapse:collapse;width:100%;font-size:14.5px;margin:16px 0 0}
 table.pl-t th,table.pl-t td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--line-soft);vertical-align:top}
 table.pl-t th{font-weight:700;color:var(--ink-soft)}
 .pl-bar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:16px 0 0}
-.pl-bar button,.pc-above button{font-family:var(--fm);font-size:13px;line-height:1.3;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 13px;cursor:pointer}
-.pl-bar button:hover,.pc-above button:hover{border-color:var(--accent)}
-.pl-bar button:focus-visible,.pc-above button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.pl-bar button.pl-main{background:var(--accent);border-color:var(--accent);color:#fff}
-.pl-bar button.pl-main:hover{background:var(--link-hover)}
+.pl-bar button,.pc-above button{font-size:13px;line-height:1.3;padding:7px 13px}
+.pl-bar button.pl-main{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
+.pl-bar button.pl-main:hover{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .pl-bar button[aria-pressed="true"]::after,.pc-above :is([data-sound],[data-crt])[aria-pressed="true"]::after{content:" on"}
 .pl-bar button[aria-pressed="false"]::after,.pc-above :is([data-sound],[data-crt])[aria-pressed="false"]::after{content:" off"}
 .pl-status{font-size:14px;color:var(--ink-soft);margin-left:4px}
@@ -107,12 +105,10 @@ table.pl-t th{font-weight:700;color:var(--ink-soft)}
 </section>
 
 <section>
-  <p class="fig">02 · The test</p>
-  <h2 class="t">Every pass checked against the game's own code</h2>
-  <p><code>test_play.js</code> runs the port beside the game's own code on the kit's model of the C64, from the first instruction on, and compares the two at the start of every pass of the world <code>$08CC</code>: all of memory, colour memory, every register written to the video chip and the SID, and CIA 1's ports. Its interrupts run in both, from the same moments. The model plays the game's demonstration as VICE does, pass for pass, and in the run the two stay identical through 4,458 passes: the title and the whole story, the demonstration to its end and the wait after it, a player who reads the instructions, picks every verb the menus offer, runs about with the stick and the keys, turns the music off and on, wins and dies, and a game recorded with CTRL and R, ended with F and played back by the title.</p>
-  <p>Two bytes are left out of the comparison: <code>$0385</code> and <code>$0386</code>, where the random number routine saves its caller's X and Y registers. The port keeps no registers, so it has no values to put there, and nothing reads them back but the routine's own exit.</p>
-  <p>Walls are found by the video chip. Each frame the play interrupt copies its sprite-to-background collision register <code>$D01F</code> into <code>$038D</code>, and the game reads it before each step. The site's model of the collisions, <code>collide.js</code>, works them out as the beam draws the sprites and the graphics, on the kit's machine and on this page alike. The page keeps the C64's pace by keeping a clock: each piece of work the port does moves it on by what the game's own code took for it on the kit's machine, the interrupts run on their raster lines and on CIA 1's timer, and the video chip takes its cycles from the processor on each bad line and each sprite's fetch. Run on that clock alone, the page plays the game's demonstration as the game's code does, every one of its 2,371 passes, beginning in the frame the kit's machine begins it and ending 30 of its 14,119 frames sooner, 0.21 % fast.</p>
-  <p>The screen is drawn by the site's model of the video chip from the port's memory, with each change to memory where the game's code made it. On the title the picture half of the interrupt, at line <code>$30</code>, shows video bank 3 and moves the story's line a character on in bank 0, which the scroller half, at line <code>$EE</code>, shows with the fine scroll it writes. <code>test_screen.js</code> draws the title sixty times a second and holds the story to a move of 0 or 2 pixels left from one drawing to the next.</p>
+  <p class="fig">02 · Speed</p>
+  <h2 class="t">Walls, speed and the screen work as on the C64</h2>
+  <p>Walls are found by the video chip. Each frame the play interrupt copies its sprite-to-background collision register <code>$D01F</code> into <code>$038D</code>, and the game reads it before each step. The site's model of the collisions, <code>collide.js</code>, works them out as the beam draws the sprites and the graphics. The page keeps the C64's pace by keeping a clock: each piece of work the port does moves it on by what the game's own code takes for it, the interrupts run on their raster lines and on CIA 1's timer, and the video chip takes its cycles from the processor on each bad line and each sprite's fetch. On that clock the page plays the game's demonstration, all 2,371 passes of it, 0.21 % faster than the C64.</p>
+  <p>The screen is drawn by the site's model of the video chip from the port's memory, with each change to memory where the game's code made it. On the title the picture half of the interrupt, at line <code>$30</code>, shows video bank 3 and moves the story's line a character on in bank 0, which the scroller half, at line <code>$EE</code>, shows with the fine scroll it writes.</p>
 </section>
 
 <section>

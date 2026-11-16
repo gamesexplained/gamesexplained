@@ -747,3 +747,35 @@ Run on VICE via vice-mcp (build in `game.json`), from the snapshots in
 | A skeleton with body 10, MAGIC MISSILE | "YOU KILLED THE SKELETON.", body `$FF`, a band-2 sprite enabled (`$3A30` = 1): DEAD over the picture |
 | The trainer's two patches (cheats.md) | body 5 kept through twelve of the minotaur's hits; MAGIC MISSILE left mind at 30 (24 without) |
 | Wearing armour and two shields (60), PICK UP a shield, a mace, a potion | the shield refused with the weight message; the mace (68) and the potion (69) taken; PUT DOWN, SWAP and DRINK then offered |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Tested in the emulator: casting from six different random states gave the same result every time.
+- A port of the creature clock `$2205`, the decisions `$2308` and the move chooser `$2566`, checked pass by pass against the game running in the emulator.
+- The next time the title's story runs out, the demonstration plays the new recording: in the emulator, a short walk recorded this way was replayed through the same cells to the same pixel.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+
+### index.html
+
+- In the emulator, pushing up level 3's long corridor from five neighbouring columns, only the middle one moved.
+- The comparison picture on the Play tab is a VICE screenshot.
+
+### play.html
+
+- `test_play.js` runs the port beside the game's own code on the kit's model of the C64, from the first instruction on, and compares the two at the start of every pass of the world `$08CC`: all of memory, colour memory, every register written to the video chip and the SID, and CIA 1's ports.
+- Its interrupts run in both, from the same moments.
+- The model plays the game's demonstration as VICE does, pass for pass, and in the run the two stay identical through 4,458 passes: the title and the whole story, the demonstration to its end and the wait after it, a player who reads the instructions, picks every verb the menus offer, runs about with the stick and the keys, turns the music off and on, wins and dies, and a game recorded with CTRL and R, ended with F and played back by the title.
+- Two bytes are left out of the comparison: `$0385` and `$0386`, where the random number routine saves its caller's X and Y registers.
+- The port keeps no registers, so it has no values to put there, and nothing reads them back but the routine's own exit.
+- Walls are found by the video chip.
+- The site's model of the collisions, `collide.js`, works them out as the beam draws the sprites and the graphics, on the kit's machine and on this page alike.
+- The page keeps the C64's pace by keeping a clock: each piece of work the port does moves it on by what the game's own code took for it on the kit's machine, the interrupts run on their raster lines and on CIA 1's timer, and the video chip takes its cycles from the processor on each bad line and each sprite's fetch.
+- Run on that clock alone, the page plays the game's demonstration as the game's code does, every one of its 2,371 passes, beginning in the frame the kit's machine begins it and ending 30 of its 14,119 frames sooner, 0.21 % fast.
+- `test_screen.js` draws the title sixty times a second and holds the story to a move of 0 or 2 pixels left from one drawing to the next.

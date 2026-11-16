@@ -311,3 +311,34 @@ by the strata's sizes. It is a lower bound, since a checker misses some.
 - A jump: the hero's legs (`hero_bot_y`) read each frame from a standing
   jump on the Missile Base's bottom floor went from line 226 to 196 and
   back in 42 frames, four of them at the top (Controls, above).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Yellow: the stack the game uses below them, down to 17 bytes under the main loop's, as measured in the emulator, and purple where it runs into the sprites' tables.
+- The verdicts are from the emulator, with the stack pointer moved where that many would leave it and the hero walking and stabbing on the Missile Base.
+- In the emulator the stack pointer at the top of the main loop went from `$FC` to `$FA` after a death in the Missile Base's fight, and stayed there.
+- In the emulator the stack pointer at the top of the main loop was two bytes lower after the Bridge was won than before.
+- In the emulator, held during a jump, his Y stayed at 194 for 50 frames, and the jump went on when the key was let go.
+- In the emulator, a score of 29,990 plus 10 gave a third life and moved the next to 100,000; with nine lives, 99,990 plus 10 left nine and moved the next to 170,000.
+- The jet, from the emulator, after the hero had stood still since the start of the stage.
+- The first game after loading, in the emulator: HI SCORE 0003560.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE once the picture was in, and drawn as the video chip draws them.
+
+### index.html
+
+- The title page and the first stage, the Missile Base, in the emulator.
+- `test_music.js` holds every button to the game's code, every write to the sound chip in order, for 3,000 frames each.
+- Each button runs the game's own routine that starts the effect (`sfx_hit`, `sfx_gun` and the rest), then the driver once a frame until the sound has died away, checked by `test_music.js` like the tunes.
+- The player runs the tune's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette calls it.
+- It was checked against the cassette loading in VICE: the sound chip's registers after each of the first 12,200 calls, four minutes of music, are the player's.
+- One frame of the Harbour, drawn by the page from memory and from every write the game made to the video chip during the frame, recorded in the emulator.
+- All 104,448 pixels match the emulator's own picture of the frame.
+- `test_map.js` runs the game's own drawing routine, `column_draw`, for every column of every stage and checks that it writes what the page draws.
+- Measured in the emulator, the hero's legs went from line 226 to 196 and back in 42 frames.

@@ -38,9 +38,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .am-stack{position:relative}
 .am-stack canvas+canvas{position:absolute;left:0;top:0;width:100%;height:100%;background:transparent}
 .am-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
-.am-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
-.am-btn:hover{border-color:var(--ink-mute)}
-.am-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.am-btn{font-size:12.5px;padding:5px 11px;line-height:1.3}
 .am-pics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .am-pics.am-two{grid-template-columns:repeat(2,minmax(0,1fr))}
 .am-pics figure{margin:0}
@@ -55,8 +53,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .am-wrapx{overflow-x:auto}
 .am-field{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:14px;margin:0 0 12px}
 .am-field label{color:var(--ink-soft)}
-.am-field select{font:inherit;font-size:14px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);max-width:100%}
-.am-range{width:100%;max-width:420px;accent-color:var(--accent)}
+.am-field select{font-size:14px;max-width:100%}
+.am-range{width:100%;max-width:420px}
 .am-mono{font-family:var(--fm);font-size:13px}
 .am-out{font-size:15px;color:var(--ink);margin:12px 0 0;line-height:1.55}
 .am-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
@@ -73,8 +71,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .am-memo.am-quiet{background:var(--surface-2);color:var(--ink-mute);border-color:var(--line)}
 .am-radio{background:#edf171;color:#56ac4d;border:3px solid #813338;padding:8px 12px;font-family:var(--fm);font-size:14px;line-height:1.45;height:11.2em;overflow:hidden;white-space:pre-wrap;word-break:break-all}
 .am-filters{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
-.am-filters button{font-family:var(--fm);font-size:13px;min-width:46px;padding:6px 0;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-.am-filters button[aria-pressed="true"]{background:#813338;border-color:#813338;color:#fff}
+.am-filters button{font-size:13px;min-width:46px;padding:6px 0}
 .am-meter{display:flex;gap:3px;margin:10px 0 0}
 .am-meter i{display:block;flex:1;height:8px;border-radius:2px;background:var(--line-soft)}
 .am-meter i.am-ok{background:var(--green)}
@@ -123,7 +120,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" class="am-btn" data-ov="boxes" aria-pressed="false">Country boxes</button>
     </div>
     <div class="am-stack"><canvas id="am-frame" class="am-cv" width="384" height="272"></canvas><canvas id="am-frame-ov" width="768" height="544" aria-hidden="true"></canvas></div>
-    <p class="cap" id="am-frame-cap">Drawn by the page from the listing: the bitmap at <code>$E000</code> as it loads, the colour cells that <code>hardware_init</code> (<code>$62CD</code>) and <code>cold_start</code> (<code>$7C52</code>) fill in, and the arrow's two sprites that <code>cursor_shape1</code> (<code>$5F14</code>) builds. The video chip's registers are those of a frame recorded in VICE, where the cursor stood. Compared with VICE's picture of that frame, none of its 104,448 pixels differ.</p>
+    <p class="cap" id="am-frame-cap">Drawn by the page from the listing: the bitmap at <code>$E000</code> as it loads, the colour cells that <code>hardware_init</code> (<code>$62CD</code>) and <code>cold_start</code> (<code>$7C52</code>) fill in, and the arrow's two sprites that <code>cursor_shape1</code> (<code>$5F14</code>) builds. The video chip's registers are those of one frame of the game, with the cursor where it stood.</p>
   </div>
   <p>The C64's memory is a row of 65,536 bytes, each a number from 0 to 255. Numbers that start with a $ are hexadecimal, and those in dark boxes are addresses in that memory, or the names the listing gives them: each opens the Source code tab at that point.</p>
   <p>The screen is a high-resolution bitmap, a picture of 320 by 200 dots stored a bit a dot, with a pair of colours for each 8 by 8 cell. The game uses only the 32 by 24 cells that start at column 4 and row 1, the size of the Spectrum's screen, and leaves a striped frame around them. Its table of row addresses, <code>screen_rows</code> (<code>$4FD3</code>), starts at that corner, and a leftover routine for placing sprites, <code>unused_sprite_at</code> (<code>$51C9</code>), still takes Spectrum coordinates and adds the C64's border.</p>
@@ -137,7 +134,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The tune starts on the options panel and plays without a break for as long as the game runs. Three more tunes and seventeen sound effects sit beside it, and nothing ever starts them.</p>
   <div class="plate">
     <div id="am-music"></div>
-    <p class="cap">The page runs the game's own sound code, <code>$4000</code>-<code>$4DEB</code> from the listing, on the site's model of the C64's processor, the 6502, and through its model of the sound chip, the SID: <code>mus_start_tune</code> (<code>$4000</code>) once with the tune's number, as <code>options_panel</code> (<code>$7D0B</code>) does for tune 0, then <code>sound_irq</code> (<code>$413A</code>) once a frame, as the game's raster interrupt does: a routine the video chip sets off when it reaches a chosen line of the screen. Every write it makes to the chip, frame by frame for 3,000 frames of each button, is checked against the same calls made on the listing in the kit's simulator. Tunes 1, 2 and 3 are never played in the game.</p>
+    <p class="cap">The page runs the game's own sound code, <code>$4000</code>-<code>$4DEB</code> from the listing, on the site's model of the C64's processor, the 6502, and through its model of the sound chip, the SID: <code>mus_start_tune</code> (<code>$4000</code>) once with the tune's number, as <code>options_panel</code> (<code>$7D0B</code>) does for tune 0, then <code>sound_irq</code> (<code>$413A</code>) once a frame, as the game's raster interrupt does: a routine the video chip sets off when it reaches a chosen line of the screen. Tunes 1, 2 and 3 are never played in the game.</p>
   </div>
   <p>The driver plays three voices from patterns of notes and commands: arpeggio tables, vibrato, slides, a glide from note to note and drums made of a burst of noise on every other frame. Each tune has a speed, the number of calls between steps of its patterns (<code>tune_table</code>, <code>$46E3</code>). The raster interrupt calls the driver once a frame, but <code>sound_irq</code> skips one call in ten, so the music gets 45 calls a second rather than 50.</p>
   <p>Tune 0, at speed 6, is the music the manual credits to Millers. Tunes 1 and 2, at speed 8, and tune 3, at speed 5, are jingles a few seconds long. Nothing in the game starts them, and the sound effects are just as silent (<a href="#sound">below</a>).</p>
@@ -149,7 +146,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">A player for two-voice sound effects and an alarm sits in the sound code, ready to call, and no instruction in the game calls it.</p>
   <div class="plate">
     <div id="am-sfx"></div>
-    <p class="cap">The game's own sound code from the listing on the site's 6502: <code>sfx_start</code> (<code>$4A8E</code>) with the effect's number, or <code>alarm_start</code> (<code>$4A48</code>) with a period, then <code>sound_irq</code> once a frame. The game never calls either, so these are the calls their code expects, made by the page; the alarm's period is the page's choice. Every write to the chip is checked against the same calls on the listing in the kit's simulator.</p>
+    <p class="cap">The game's own sound code from the listing on the site's 6502: <code>sfx_start</code> (<code>$4A8E</code>) with the effect's number, or <code>alarm_start</code> (<code>$4A48</code>) with a period, then <code>sound_irq</code> once a frame. The game never calls either, so these are the calls their code expects, made by the page; the alarm's period is the page's choice.</p>
   </div>
   <p>Each effect is a record of twenty bytes, from <code>sfx_0</code> (<code>$4B39</code>) on, found through <code>sfx_table</code> (<code>$4B17</code>): a frequency, an envelope (how the volume rises and dies away), a waveform and a pulse width for voices 1 and 3, a step that sweeps each frequency up or down, how many steps the effect lasts, and how often and how many times it goes back to its starting pitches. While an effect plays, the music gives up voices 1 and 3 and keeps voice 2. The alarm takes voice 2 instead: a steady tone with the period 7, noise with the period 0, and a tone broken by bursts of noise with any period between.</p>
   <p>No instruction calls <code>sfx_start</code> or <code>alarm_start</code>, and no table holds their addresses. The effects, the alarm and their records fill <code>$4A48</code> to <code>$4DB0</code>, 873 bytes, and what the game would have played them for is not known.</p>
@@ -161,7 +158,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The world moves on a clock that counts frames on the main screen, and it stops while a window waits for the player.</p>
   <div class="plate">
     <div class="am-ticks" id="am-ticks" role="table" aria-label="What runs on each tick of a week"></div>
-    <p class="cap"><code>game_clock</code> (<code>$7DD1</code>) counts 192 passes of the main loop to a tick (<code>clock_count</code>, <code>$5B54</code>) and numbers the ticks (<code>clock_ticks</code>, <code>$5B55</code>). In VICE the main loop made 100 passes in 100 frames of the main screen, and 136 passes in 400 frames with a memo open for most of them.</p>
+    <p class="cap"><code>game_clock</code> (<code>$7DD1</code>) counts 192 passes of the main loop to a tick (<code>clock_count</code>, <code>$5B54</code>) and numbers the ticks (<code>clock_ticks</code>, <code>$5B55</code>). The main loop makes 100 passes in 100 frames of the main screen, and 136 passes in 400 frames with a memo open for most of them.</p>
   </div>
   <p>The main loop makes one pass a frame, so a tick is 192 frames, 3.8 seconds on a European (PAL) machine. Every tick one country may act on another (<a href="#events">next</a>). Every fourth tick the radio may pick up a message, and on the tick after it a Big Bird satellite may report. Every eighth tick ends the week, and a week of 1,536 frames lasts about 31 seconds. A year of 52 weeks is 27 minutes of the main screen, and much longer in practice, because the clock is the main loop's: a window that waits for an answer holds the whole world still.</p>
 </section>
@@ -184,7 +181,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <div class="am-ladder" id="am-ladder" aria-label="Country A's 32 event levels"></div>
       <div><div class="am-memo" id="am-memo" aria-live="polite"></div><p class="am-out" id="am-ev-out"></p></div>
     </div>
-    <p class="cap">A's levels are its 32 bytes of <code>event_levels</code> (<code>$958C</code>), and the memo is the event's text from <code>event_texts</code> (<code>$55B8</code>) with the two names filled in, as <code>expand_text</code> (<code>$AB96</code>) does. The choice is <code>country_events</code> (<code>$AE77</code>) written again in JavaScript and checked against the game's own code in the kit's simulator: every hostility for every country, and 3,000 random tables of relationships, destroyed countries and random numbers, in which the page and the game picked the same pair and the same event every time.</p>
+    <p class="cap">A's levels are its 32 bytes of <code>event_levels</code> (<code>$958C</code>), and the memo is the event's text from <code>event_texts</code> (<code>$55B8</code>) with the two names filled in, as <code>expand_text</code> (<code>$AB96</code>) does. The choice is <code>country_events</code> (<code>$AE77</code>) written again in JavaScript.</p>
   </div>
   <p>The game keeps a table of 256 hostilities at <code>relations</code> (<code>$5C5C</code>): how much each country dislikes each of the others, from 0, the friendliest, to 255. Each country also has a ladder of 32 levels, one for each event it can start, from a Total Missile Attack at 255 down to a Mutual Defence Pact, between 4 and 40. A level of 0 means the country never starts that event: Canada never assassinates a diplomat.</p>
   <p>On each tick <code>country_events</code> picks a country A at random, skipping one that has been destroyed. It then goes through the other countries from a random one on, and for each it compares A's hostility to that country with A's ladder from the top. The first level within one of the hostility wins, and its event happens. A country with no match anywhere grows more hostile to everyone by one, and every country grows more hostile to every other by one at the end of each week, so a world left alone drifts up its ladders towards war.</p>
@@ -215,7 +212,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="am-bar"><span class="am-mono" id="am-sat-pos">Satellite at x 160, y 60</span></div>
     <div class="am-stack"><canvas id="am-map" class="am-cv" width="504" height="336" tabindex="0" aria-label="The map. Click or drag to move the satellite; the arrow keys move it a pixel at a time"></canvas></div>
     <p class="am-out">Covered: <span id="am-sat-out"></span></p>
-    <p class="cap">Click or drag on the map to put the satellite in orbit; the arrow keys move it a pixel. The rectangles are the countries' boxes from their records at <code>$5DA4</code>, filled where the satellite covers them. The test is <code>in_cover</code> (<code>$C0AC</code>) written again in JavaScript, with the carries of its byte arithmetic, and checked against the game's own code in the kit's simulator: every x and every y from 0 to 255 for each country, and 20,000 random positions and reaches, all the same.</p>
+    <p class="cap">Click or drag on the map to put the satellite in orbit; the arrow keys move it a pixel. The rectangles are the countries' boxes from their records at <code>$5DA4</code>, filled where the satellite covers them. The test is <code>in_cover</code> (<code>$C0AC</code>) written again in JavaScript, with the carries of its byte arithmetic.</p>
   </div>
   <p>A satellite is placed from the satellite panel: the cursor carries it to the map and fire puts it in orbit, a dot of two by two pixels. Its record (<code>satellites</code>, <code>$5D5C</code>) keeps its position and a reach of 5 in each direction. The test <code>in_cover</code> (<code>$C0AC</code>) asks whether the satellite's x lies from 4 pixels left of a country's rectangle to 5 pixels right of its last column, and its y the same way. The rectangles are small, so a satellite covers one country, or two or three where they crowd together around Israel.</p>
   <p>Each frame a missile flies, every laser satellite in orbit has a 1 in 4 chance of trying for it, and catches it when the missile is under the satellite by the same test. A Big Bird does not catch anything. Every fourth tick, one after the radio, it may report a country beneath it, and the eye in the satellite panel lists what each kind covers. With no Big Bird over a country the eye says "No Foot prints!", even when the laser satellites cover half the map.</p>
@@ -232,9 +229,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="am-filters" id="am-filters" role="group" aria-label="The eight filters"></div>
     <div class="am-meter" id="am-meter" aria-hidden="true"></div>
     <p class="am-out" id="am-rad-out"></p>
-    <p class="cap">The filters start off, as they do in the game, and the message prints a character every second frame, over and over. The scrambling is <code>scramble_char</code> (<code>$7B51</code>) and the game's random numbers, <code>random</code> (<code>$7BAE</code>), written again in JavaScript and checked against the game's own code in the kit's simulator: 65,536 pairs of key and setting, and 100 seeds run for 1,000 numbers each. The message is intercept 0 from <code>intercept_texts</code> (<code>$560E</code>), from the sender about the next country on its list, after the line of R and Y the game puts first (<code>radio_header</code>, <code>$ABFE</code>).</p>
+    <p class="cap">The filters start off, as they do in the game, and the message prints a character every second frame, over and over. The scrambling is <code>scramble_char</code> (<code>$7B51</code>) and the game's random numbers, <code>random</code> (<code>$7BAE</code>), written again in JavaScript. The message is intercept 0 from <code>intercept_texts</code> (<code>$560E</code>), from the sender about the next country on its list, after the line of R and Y the game puts first (<code>radio_header</code>, <code>$ABFE</code>).</p>
   </div>
-  <figure style="margin:0 0 18px"><img src="reference/radio-message.png" alt="A yellow window over the map: RYRYRY, then Advise H.Q of possibility of U.N.N getting Supreme Commander Replaced. End Of Message. From U.S.A, above the pink panel of filters f0 to f7" width="384" height="272" style="display:block;width:100%;max-width:480px;height:auto;image-rendering:pixelated;border-radius:4px"><figcaption class="cap">A message from the U.S.A, picked up in VICE with the radio stopped, so it came through clear.</figcaption></figure>
+  <figure style="margin:0 0 18px"><img src="reference/radio-message.png" alt="A yellow window over the map: RYRYRY, then Advise H.Q of possibility of U.N.N getting Supreme Commander Replaced. End Of Message. From U.S.A, above the pink panel of filters f0 to f7" width="384" height="272" style="display:block;width:100%;max-width:480px;height:auto;image-rendering:pixelated;border-radius:4px"><figcaption class="cap">A message from the U.S.A, picked up with the radio stopped, so it comes through clear.</figcaption></figure>
   <p>Each country transmits in one of six bands, from 1,800 to 50,000 kHz (<code>country_bands</code>, <code>$7C31</code>), and every fourth tick the game may pick up a message from a country on the radio's band. While the radio scans, the message is shown under eight filters, f0 to f7, each a bit of a byte the player sets by clicking. Each country has its own key, one byte in <code>scramble_keys</code> (<code>$7C41</code>).</p>
   <p>Every message starts with RYRYRY, the line of R and Y that teleprinter operators sent to test a link, before the text itself.</p>
   <p>The scrambling counts the bits where the filters agree with the key. With all eight right the text comes through whole. Otherwise each character survives when a random byte falls below 32 times the number that agree, and is replaced by a random space, digit or sign when it does not. So each filter set right lets another eighth of the message through, and with none right the screen fills with noise. A message picked up while the radio is stopped uses the key <code>$00</code>, which the filters match as they start, so it arrives clear.</p>
@@ -265,7 +262,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <div class="am-wrapx"><table class="am-tbl" id="am-ratings"></table></div>
       <div class="am-wrapx"><table class="am-tbl" id="am-rads"></table></div>
     </div>
-    <p class="cap">The words from <code>rating_texts</code> (<code>$5A27</code>), <code>radiation_words</code> (<code>$590F</code>) and <code>text_background</code> (<code>$BB95</code>). In VICE, every country's confidence set to 255 gave "rated as Excellent", and radiation set to 255 ended the game at the week's end.</p>
+    <p class="cap">The words from <code>rating_texts</code> (<code>$5A27</code>), <code>radiation_words</code> (<code>$590F</code>) and <code>text_background</code> (<code>$BB95</code>). With every country's confidence at 255 the rating is "rated as Excellent", and radiation at 255 ends the game at the week's end.</p>
   </div>
   <p>The rating is the sixteen countries' confidence in the Commander added up and divided by 512, which gives 0 to 7 (<code>week_end</code>, <code>$BAA1</code>). Every country starts at 128, a total of 2,048, so a new Commander is rated Acceptable, the fifth of the eight words. The radiation, 0 to 255, is divided by 32 for its word, and a world with no radiation at all reads "Background." instead.</p>
 </section>

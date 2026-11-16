@@ -33,8 +33,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gs-pic{width:100%;max-width:576px;height:auto;image-rendering:pixelated;display:block;border-radius:4px}
 .gs-ctl{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:0 0 12px;font-size:15px}
 .gs-k{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin-right:4px}
-.gs-btn{font:inherit;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
-.gs-btn[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gs-btn{font-size:14px;padding:5px 12px}
 .gs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
 .gs-cell{font-family:var(--fm);font-size:13px;text-align:center;border-radius:6px;padding:8px 4px;background:var(--surface-2)}
 .gs-cell.hit{background:#d04a3a;color:#fff}
@@ -85,8 +84,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">The cannon fires only at a target</h2>
   <p class="lede">The fire button does nothing to the cannon unless the CRT shows the target view. With the map or a message on the CRT, fire moves the CRT on instead.</p>
   <div class="plate">
-    <p style="margin:0">In the emulator, from a snapshot in flight with the CRT on the map and no target picked, the fire button was pressed ten times. The cannon's 60 rounds stayed at 60. The code is at <code>$3C2D</code>. When the CRT shows the map or a message (the variable <code>zpa_FF</code> is not 0) and a target is picked (<code>zpa_FA</code> = 2), fire steps the CRT on to its next display, with sound 8, and the cannon stays silent. The firing itself starts at <code>$3D60</code>, on the path that only the target view reaches.</p>
-    <p class="cap">Tested live in VICE on 31 October 2026, from the flight's snapshot in Western Europe.</p>
+    <p style="margin:0">With the CRT on the map and no target picked, ten presses of the fire button leave the cannon's 60 rounds at 60. The code is at <code>$3C2D</code>. When the CRT shows the map or a message (the variable <code>zpa_FF</code> is not 0) and a target is picked (<code>zpa_FA</code> = 2), fire steps the CRT on to its next display, with sound 8, and the cannon stays silent. The firing itself starts at <code>$3D60</code>, on the path that only the target view reaches.</p>
   </div>
 </section>
 
@@ -102,7 +100,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
         <tr><td>Timer B stopped (<code>$DD0F</code> = 0)</td><td><code>$7C</code> and <code>$C9</code>, <code>$B3</code> apart</td><td>nothing (<code>zpa_84</code> = 0)</td></tr>
       </tbody>
     </table>
-    <p class="cap">Tested live in VICE on 31 October 2026, from the flight's snapshot in Western Europe.</p>
   </div>
   <p>The routine <code>joystick</code> (<code>$E40C</code>) reads the stick in port 2 as two directions, across and up or down, then subtracts the high byte of timer B from the high byte of timer A (<code>$E423</code>). Unless the difference is <code>$7D</code> to <code>$80</code>, it sets both directions to 0. The flight never starts those timers, so the gap was set before side 2 was ever read, and holds as long as both timers keep counting from where they started. What the check guards against is not in the code. A copy of side 2 run on its own, without the side 1 programs before it, would fly with a dead stick.</p>
 </section>
@@ -115,12 +112,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <table class="gs-tab">
       <thead><tr><th>POKE</th><th>What it changes here</th><th>Result</th></tr></thead>
       <tbody>
-        <tr><td><code>POKE 23082,189</code></td><td>In <code>use_store</code> at <code>$5A2A</code>, the instruction that takes one away from the store's count, <code>DEC $53D8,X</code>, becomes one that only reads it, <code>LDA $53D8,X</code></td><td>Unlimited ammunition: in the kit's 6502, five shots leave 60 rounds at 60</td></tr>
+        <tr><td><code>POKE 23082,189</code></td><td>In <code>use_store</code> at <code>$5A2A</code>, the instruction that takes one away from the store's count, <code>DEC $53D8,X</code>, becomes one that only reads it, <code>LDA $53D8,X</code></td><td>Unlimited ammunition: five shots leave 60 rounds at 60</td></tr>
         <tr><td><code>POKE 22840,5:POKE 22885,5</code></td><td>The fuel burn at <code>$5937</code> and <code>$5964</code> subtracts <code>zpa_05</code>, which is 0 in flight, instead of the burn</td><td>No fuel used: both tanks unchanged after 6 seconds, where the game burns 126 from each</td></tr>
         <tr><td><code>POKE 22837,5:POKE 22882,5</code></td><td>The wiki's: the tanks' <code>LDA zpa_70</code> and <code>LDA zpa_72</code> read <code>zpa_05</code> instead</td><td>The tanks fall faster, by 136 and 339 in 6 seconds</td></tr>
       </tbody>
     </table>
-    <p class="cap">The fuel POKEs tested live in VICE on 31 October 2026, from the flight's snapshot in Western Europe. The wiki gives its fuel and damage POKEs for another version of the game; on this disk the damage POKEs land in the middle of other instructions.</p>
+    <p class="cap">The wiki gives its fuel and damage POKEs for another version of the game; on this disk the damage POKEs land in the middle of other instructions.</p>
   </div>
 </section>
 
@@ -130,7 +127,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Five of the game's six BASIC programs start with a line that stops LIST before it shows anything. Only <code>B</code>, the debriefing, lists as usual.</p>
   <div class="plate">
     <img class="gs-pic" src="reference/list-guard-syntax-error.png" alt="LIST on a C64 prints nothing and stops with a syntax error">
-    <p class="cap"><code>G2</code>'s bytes put into a freshly reset C64 in VICE and listed, on 31 October 2026.</p>
+    <p class="cap"><code>G2</code>'s bytes, listed on a freshly reset C64.</p>
   </div>
   <p>The line is <code>REM</code>, BASIC's word for a remark that the program skips, then five DEL characters and a shifted L. It is line 0, or line 1 in <code>BEGIN</code>. LIST prints the line's number and "REM", five characters, then the five DELs, which rub them out again. BASIC stores each of its keywords as a single byte. The shifted L is the byte <code>$CC</code>, past the last of the keywords, so LIST cannot print it and stops with <code>?SYNTAX ERROR</code>. RUN never reaches the problem, because it skips the rest of a line after REM.</p>
 </section>

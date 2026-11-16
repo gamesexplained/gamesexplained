@@ -37,8 +37,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gr-two img{width:100%;image-rendering:pixelated;border-radius:6px;display:block}
 .gr-cv{width:100%;image-rendering:pixelated;display:block;background:#000;border-radius:6px}
 .gr-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-family:var(--fm);font-size:13px}
-.gr-btn{font:inherit;font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;color:var(--ink)}
-.gr-btn[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gr-btn{font-size:13px;padding:5px 10px}
 .gr-range{flex:1;min-width:160px}
 .gr-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-top:10px;min-height:1.5em}
 .gr-tbl{border-collapse:collapse;width:100%;font-size:14px}
@@ -56,6 +55,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gr-shot{width:100%;max-width:640px;image-rendering:pixelated;border-radius:6px;display:block}
 sup.fn{font-size:.7em;line-height:0}
 sup.fn a{text-decoration:none}
+.pu-figs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(340px,100%),1fr));gap:22px 18px;margin:0 0 26px}
+.pu-fig{margin:0;font-size:13px;color:var(--ink-soft);line-height:1.45}
+.pu-fig canvas{display:block;width:100%;image-rendering:pixelated;border-radius:6px;margin-bottom:8px;background:#000}
+.pu-fig b{color:var(--ink)}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -71,7 +74,7 @@ sup.fn a{text-decoration:none}
   <p class="lede">Gradius is the American release of Konami's Commodore 64 shooter, sold in Europe as Nemesis.<sup class="fn"><a href="about.html#src-7" title="C64-Wiki, Nemesis (Konami)">7</a></sup> It loads once and never touches the disk again: all eight stages sit in memory from the start. It also carries <a href="#music">music it never plays</a>, and <a href="#splits">times its screen for American machines</a>, so on a European one the picture falls apart.</p>
   <div class="plate">
     <div class="gr-three"><img src="reference/loading.png" alt="The loading screen: the Gradius logo over a space station"><img src="reference/title.png" alt="The title screen: GRADIUS and ONE PLAYER GAME over a star field"><img src="reference/stage1.png" alt="Stage 1: the Vic Viper over ground and trees, the power-up bar along the bottom"></div>
-    <p class="cap">The loading screen, the title and stage 1, in VICE. The loading screen credits the programming to Simon Pick and dates the game KONAMI 1986. The title and the stage are from an NTSC C64, where the <a href="#splits">screen splits</a> land where the game expects them.</p>
+    <p class="cap">The loading screen, the title and stage 1. The loading screen credits the programming to Simon Pick and dates the game KONAMI 1986. The title and the stage are from an NTSC C64, where the <a href="#splits">screen splits</a> land where the game expects them.</p>
   </div>
   <p>You fly the Vic Viper from left to right while the screen scrolls on its own. Shooting a red enemy, or the sixth of a group of fliers, leaves a <a href="#powerups">capsule</a>. Each capsule you pick up moves a light along the power-up bar at the bottom of the screen: SPEEDUP, MISSILE, DOUBLE, LASER, MULTI and ?. Right SHIFT takes the <a href="#powerups">power-up</a> that is lit, and the light goes out.</p>
   <p>Each stage's <a href="#map">scenery</a> is read from a map one column at a time. When it runs out, the scroll stops and the stage's own attack begins: rocks from volcanoes, darts, bursting blocks or a block to shoot through. Then comes a <a href="#bosses">boss</a>, most often the Big Core. One to four players take turns, each with three lives, and a lost life past the stage's <a href="levels.html">checkpoint</a> starts again from there.</p>
@@ -82,6 +85,14 @@ sup.fn a{text-decoration:none}
   <h2 class="t">What each box gives</h2>
   <p class="lede">Right SHIFT takes the lit box. The joystick has no way to take one: the only call to <code>take_powerup</code> is in the keyboard reader.</p>
   <div class="plate">
+    <div class="pu-figs">
+      <figure class="pu-fig"><canvas id="pu-0" width="448" height="200" aria-label="The Vic Viper flying right and back, with a flame behind it that grows as its speed goes up"></canvas><figcaption><b>SPEEDUP</b> · A flame behind the ship, short at speeds 2 and 3 and long at 4, shown only while it moves right. At speed 1 there is none.</figcaption></figure>
+      <figure class="pu-fig"><canvas id="pu-1" width="448" height="200" aria-label="Fire held over stage 1's ground: a missile falls, runs along the ground and stops at a tree, while shots fly straight on"></canvas><figcaption><b>MISSILE</b> · Fire held over stage 1's ground. The missile falls a cell down for each cell on, runs along the ground and stops at the first tree.</figcaption></figure>
+      <figure class="pu-fig"><canvas id="pu-2" width="448" height="200" aria-label="Fire held: ordinary shots fly straight on and a rising shot climbs away"></canvas><figcaption><b>DOUBLE</b> · The rising shot climbs a cell for each cell it moves on; the ordinary shot moves two cells at a time along its row.</figcaption></figure>
+      <figure class="pu-fig"><canvas id="pu-3" width="448" height="200" aria-label="Fire held: a five-cell laser beam leaves the ship's nose"></canvas><figcaption><b>LASER</b> · Five cells of beam, moving three cells at a time, the last one white. Its characters are picked so the beam sits level with the ship's nose to the pixel.</figcaption></figure>
+      <figure class="pu-fig"><canvas id="pu-4" width="448" height="200" aria-label="The Vic Viper flying a loop with two glowing red Options following its path"></canvas><figcaption><b>MULTI</b> · Two Options, eight and fifteen moves back along the ship's path, glowing through three shapes. They share one sprite with the flame, so with two of them the flame never shows.</figcaption></figure>
+      <figure class="pu-fig"><canvas id="pu-5" width="448" height="200" aria-label="The Vic Viper with two shield pods at its nose, climbing and dropping; the pods vanish while it tilts"></canvas><figcaption><b>?</b> · The shield is a second picture of the ship with two pods at its nose. Only the level picture has them, so the pods vanish whenever the ship tilts up or down.</figcaption></figure>
+    </div>
     <div class="gr-scroll"><table class="gr-tbl">
       <tr><th>Box</th><th>What it gives</th><th>Until</th></tr>
       <tr><td>SPEEDUP</td><td>One more step of speed, across and up and down</td><td>Speed 4</td></tr>
@@ -117,7 +128,7 @@ sup.fn a{text-decoration:none}
   <p class="lede">Most stages end with the Big Core. Stage 7 ends with a block to shoot through, and stage 8 with a boss drawn dot by dot.</p>
   <div class="plate">
     <img class="gr-shot" src="reference/big-core.png" alt="The Big Core, six double-size sprites, facing the Vic Viper">
-    <p class="cap">The Big Core at the end of stage 6, in VICE.</p>
+    <p class="cap">The Big Core at the end of stage 6.</p>
   </div>
   <p>The Big Core is six double-size sprites (shapes <code>$A7</code>-<code>$AC</code>) with five walls across its middle (<code>boss_phase</code>, <code>$7768</code>). A shot that strikes the two middle rows counts toward a wall, and every sixth such hit takes one away (<code>core_shots</code>, <code>$7829</code>); a laser takes one every eighth touch. As each wall goes, <code>core_walls_draw</code> rewrites the rows of two sprite shapes so the gap shows. With all five gone the stage is cleared for 500 points. If the Core's timer runs out first, the stage is cleared without them.</p>
   <p>Stage 7's block takes 40 hits (<code>target_struck</code>, <code>$6A16</code>). The last boss is four double-size sprites whose shapes are cleared and then drawn in from a picture at <code>$9C49</code>, 25 dots a frame, until all 2,048 are in (<code>grow_brain</code>, <code>$9985</code>). It has six layers of 20 hits each (<code>brain_struck</code>, <code>$9A4B</code>). After it, the ending prints YOU HAVE SAVED THE PEOPLE OF NEMESIS over rolling bands of grey for 250 frames (<code>ending</code>, <code>$CE66</code>), and play goes back to stage 1.</p>
@@ -309,6 +320,114 @@ function grSplits(lines, perLine, frame) {
 // end of gr-splits
 </script>
 <script>
+/* gr-powerups */
+// What each power-up looks like, from the game's rules. Positions are the video chip's: a sprite at
+// (x, y), and the character in column c of row r drawn at x = 24 + 8c, y = 51 + 8r.
+// puShip(s): a ship and the state its routines keep, at speed n (ship_speed_x and _y, $4CE8/$4CE9).
+// puShipFrame(s, joy): one frame of ship_control ($4E4F) and shield_shape ($7809). read_stick moves
+// it by its speed (up unless Y is under $4E, down unless it is $CB or more, right while X is under
+// $12C, left while it is $38 or more) and sets ship_tilt and moved_right; ship_shape, every sixth
+// frame (bank_tick), tilts it one step toward the way it moved up or down, or back toward level
+// (bank_level), and sets its shape from ship_shapes; record_trail adds a moved ship's place to the
+// 16-place trail (trail_head); shield_shape shows shape $82 in place of $80 while the shield holds.
+// puSlot7(s): one call of draw_options ($6F7E), what sprite slot 7 shows: on even frames
+// (option_beat) the first Option, 8 places back along the trail; on odd ones the second, 15 back,
+// or with fewer than two the exhaust flame, 24 pixels left of the ship and only on a frame it moved
+// right faster than speed 1, shape $CC at speeds 2 and 3 and $CD at 4, its colour stepping through
+// flame_colours. The Options' shape steps through option_shades every frame. null when slot 7 is off.
+// puPlace(x, y): the cell a shot or missile starts from (place_shot, $4FEB): column X / 8 - 3, row
+// (Y - 42) / 8. A laser keeps its row to the pixel, Y - 40 (start_laser, $5112).
+// puShot(scr, t, limit), puMissile(scr, t, limit), puLaser(scr, colour, t, length, limit): one step
+// of move_shots ($4F18), move_missiles ($531A, on the frames missile_rate lets it move) and
+// move_lasers ($5151) for one shot, missile or laser t on the 40-column screen scr (and colour RAM
+// colour for a laser); they change scr as the game does and give t's new place, or null once it
+// has gone. A character from $80 up to limit (scenery_limit) less one is solid.
+const PU_SHAPES = [0x87, 0x86, 0x80, 0x84, 0x85];
+const PU_LEVEL = [1, 2, 2, 2, 3];
+const PU_SHADES = [0x81, 0x89, 0x88, 0x88, 0x89, 0x81, 0x88, 0x88];
+const PU_FLAME = [6, 4, 6, 14];
+function puShip(x, y, speed) {
+  const s = { x, y, speed, tilt: 0, bank: 2, tick: 6, shape: 0x80, moved: 0, right: 0, head: 0, trail: [],
+    shield: 0, emitters: 1, beat: 0, shade: 0, flameClock: 0, flameColour: 6 };
+  for (let i = 0; i < 16; i++) s.trail.push([x, y]);
+  return s;
+}
+function puShipFrame(s, joy) {
+  s.moved = 0; s.tilt = 0; s.right = 0;
+  if (joy.up && s.y >= 0x4E) { s.y = (s.y - s.speed) & 255; s.tilt = 0xFF; s.moved = 1; }
+  if (joy.down && s.y < 0xCB) { s.y = (s.y + s.speed) & 255; s.tilt = 1; s.moved = 1; }
+  if (joy.right && s.x < 0x12C) { s.x += s.speed; s.moved = 1; s.right = 1; }
+  if (joy.left && s.x >= 0x38) { s.x -= s.speed; s.moved = 1; }
+  s.tick = (s.tick - 1) & 255;
+  if (s.tick === 0) {
+    s.tick = 6;
+    if (s.tilt === 0xFF) { if (s.bank !== 4) s.bank++; }
+    else if (s.tilt === 1) { if (s.bank !== 0) s.bank--; }
+    else s.bank = PU_LEVEL[s.bank];
+    s.shape = PU_SHAPES[s.bank];
+  }
+  if (s.moved) { s.head = (s.head + 1) & 255; s.trail[s.head & 15] = [s.x, s.y]; }
+  if (s.shield && s.shape === 0x80) s.shape = 0x82;
+}
+function puSlot7(s) {
+  s.beat = (s.beat + 1) & 255; s.shade = (s.shade + 1) & 255;
+  const shape = PU_SHADES[s.shade & 7];
+  const back = (n) => { const t = s.trail[(s.head - n) & 15]; return { x: t[0], y: t[1], shape, colour: 2 }; };
+  if ((s.beat & 1) === 0) return s.emitters === 1 ? null : back(8);
+  if (s.emitters === 3) return back(15);
+  if (s.speed === 1 || !s.right) return null;
+  const f = { x: s.x - 24, y: s.y, shape: 0xCC + (s.speed >> 2), colour: s.flameColour };
+  s.flameClock = (s.flameClock + 1) & 255; s.flameColour = PU_FLAME[s.flameClock & 3];
+  return f;
+}
+function puPlace(x, y) {
+  return { col: ((x & 255) >> 3) + (x > 255 ? 32 : 0) - 3, row: ((y - 42) & 255) >> 3, y: (y - 40) & 255 };
+}
+const puSolid = (c, limit) => c >= 0x80 && c < limit;
+function puShot(scr, t, limit) {
+  if (puSolid(scr[t.row * 40 + t.col], limit)) return null;
+  scr[t.row * 40 + t.col] = 0x20;
+  const col = t.col + (t.kind === 1 ? 2 : 1), c = scr[t.row * 40 + col];
+  if (c !== 0x20 && c < limit && c >= 0x80) return null;
+  if (col >= 0x27 || t.row < 4 || t.row >= 0x15) return null;
+  const row = t.kind === 1 ? t.row : t.row - 1;
+  if (puSolid(scr[row * 40 + col], limit)) return null;
+  scr[row * 40 + col] = t.kind === 1 ? 0x29 : 0x28;
+  return { col, row, kind: t.kind };
+}
+function puMissile(scr, t, limit) {
+  if (puSolid(scr[t.row * 40 + t.col], limit)) return null;
+  scr[t.row * 40 + t.col] = 0x20;
+  let col = t.col + 1, row = t.row + 1, code = 0x2A;
+  if (puSolid(scr[row * 40 + col], limit)) { row--; code = 0x29; }
+  if (row >= 0x15 || row < 3 || col >= 0x26) return null;
+  if (puSolid(scr[row * 40 + col], limit)) return null;
+  scr[row * 40 + col] = code;
+  return { col, row };
+}
+function puLaser(scr, colour, t, length, limit) {
+  const base = (t.y >> 3) * 40;
+  for (let i = t.col, n = length; ; ) {
+    const c = scr[base + i];
+    if (puSolid(c, limit) && c !== 0x96) return null;
+    scr[base + i] = 0x20;
+    if (++i === 0x27 || --n === 0) break;
+  }
+  const col = (t.col + 3) & 255;
+  if (col >= 0x25) return null;
+  let i = col, n = length;
+  for (;;) {
+    if (puSolid(scr[base + i], limit)) return { col, y: t.y };
+    scr[base + i] = 0x5C + (t.y & 7); colour[base + i] = 11;
+    if (++i === 0x27) return { col, y: t.y };
+    if (--n === 0) break;
+  }
+  colour[base + i - 1] = 9;
+  return { col, y: t.y };
+}
+// end of gr-powerups
+</script>
+<script>
 (function () {
   const $ = (id) => document.getElementById(id);
   const P = C64.PAL, hex = C64.hex;
@@ -405,5 +524,116 @@ function grSplits(lines, perLine, frame) {
     range.oninput = show;
     pick(0);
   }).catch((e) => { $('gr-map-out').textContent = 'Could not load the listing: ' + e.message; });
+})();
+</script>
+<script>
+// 02: what each power-up box gives, played out in stage 1's colours by the gr-powerups block, with
+// the box underneath as the bar draws it.
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const P = C64.PAL, S = 2, W = 224, H = 80;
+  C64.load('listing.json').then(({ ram }) => {
+    const st = grStage(ram, 0), MC1 = st.mc1, MC2 = st.mc2;
+    const cs = new Uint8Array(0x800); cs.set(ram.subarray(0x3800, 0x3C00), 0); cs.set(ram.subarray(st.charset, st.charset + 0x400), 0x400);
+    const rowColour = (r) => ram[st.colours + r] & 15;
+    const LIMIT = 0xAB;
+    const empty = () => new Uint8Array(1000).fill(0x20);
+    // the start of stage 1's scenery
+    const ground = (() => {
+      const scr = empty();
+      let p = st.map;
+      for (let c = 0; c < 40; c++) { const k = grColumn(ram, p, false); p += k.read; k.rows.forEach((code, r) => { scr[(r + 3) * 40 + c] = code; }); }
+      return scr;
+    })();
+    // the scenes: each a window on the screen from column c0, row r0, 28 columns by 10 rows
+    const ship = (sc, s, joy) => { puShipFrame(s, joy); const t = puSlot7(s); sc.slot7 = [sc.slot7[1], t]; };
+    const scenes = [
+      { // SPEEDUP: right and back at each speed in turn
+        c0: 4, r0: 8, rate: 1, still: 6,
+        reset(sc) { sc.s = puShip(88, 145, 2); sc.dir = 1; sc.slot7 = [null, null]; },
+        step(sc) {
+          const s = sc.s;
+          if (sc.dir > 0 && s.x >= 168) sc.dir = -1;
+          if (sc.dir < 0 && s.x <= 88) { sc.dir = 1; s.speed = s.speed % 4 + 1; }
+          ship(sc, s, sc.dir > 0 ? { right: 1 } : { left: 1 });
+        },
+        label: (sc) => 'SPEED ' + sc.s.speed,
+      },
+      { // MISSILE: fire held, ordinary shots and one missile at a time
+        c0: 4, r0: 12, rate: 2, still: 9, weapons: { missile: 1 },
+        reset(sc) { sc.s = puShip(64, 148, 1); sc.scr = ground.slice(); weaponsReset(sc); },
+      },
+      { // DOUBLE
+        c0: 4, r0: 6, rate: 2, still: 5, weapons: { double: 1 },
+        reset(sc) { sc.s = puShip(64, 156, 1); sc.scr = empty(); weaponsReset(sc); },
+      },
+      { // LASER
+        c0: 4, r0: 8, rate: 2, still: 3, weapons: { laser: 1 },
+        reset(sc) { sc.s = puShip(64, 148, 1); sc.scr = empty(); weaponsReset(sc); },
+      },
+      { // MULTI: two Options, a loop at speed 3
+        c0: 4, r0: 8, rate: 1, still: 52,
+        path: 'RRRRRRRRRRRRRRddddddDDLLLLLLLLLLLLLLuuuuuuUU',
+        reset(sc) { sc.s = puShip(152, 135, 3); sc.s.emitters = 3; sc.k = 0; sc.slot7 = [null, null]; for (let i = 0; i < 64; i++) sc.step(sc); },
+        step(sc) { const m = sc.path[sc.k++ % sc.path.length]; ship(sc, sc.s, MOVES[m]); },
+      },
+      { // ?: shield up, climbing and dropping at speed 2
+        c0: 4, r0: 8, rate: 1, still: 6,
+        path: '....................UUUUUUUUUUUU....................DDDDDDDDDDDD',
+        reset(sc) { sc.s = puShip(152, 165, 2); sc.s.shield = 4; sc.k = 0; sc.slot7 = [null, null]; },
+        step(sc) { const m = sc.path[sc.k++ % sc.path.length]; ship(sc, sc.s, MOVES[m]); },
+      },
+    ];
+    const MOVES = { R: { right: 1 }, L: { left: 1 }, U: { up: 1 }, D: { down: 1 }, '.': {}, d: { right: 1, down: 1 }, u: { left: 1, up: 1 } };
+    // fire held: fire_button fires every 17 frames, each kind into a free slot (two ordinary shots,
+    // one DOUBLE shot, one missile, one laser with no Options); shots move every frame, the
+    // missile every other frame (missile_rate after one MISSILE)
+    function weaponsReset(sc) { sc.shots = [null, null]; sc.double = null; sc.missile = null; sc.laser = null; sc.frame = 0; sc.colour = new Uint8Array(1000); sc.slot7 = [null, null]; }
+    function weaponsStep(sc) {
+      const w = sc.weapons, s = sc.s, scr = sc.scr;
+      if (sc.frame % 17 === 0) {
+        const p = puPlace(s.x, s.y);
+        if (w.laser) { if (!sc.laser) sc.laser = { col: p.col, y: p.y }; }
+        else { const i = sc.shots.indexOf(null); if (i >= 0) sc.shots[i] = { col: p.col, row: p.row, kind: 1 }; }
+        if (w.double && !sc.double) sc.double = { col: p.col, row: p.row, kind: 2 };
+        if (w.missile && !sc.missile) sc.missile = { col: p.col, row: p.row };
+      }
+      if (sc.laser) sc.laser = puLaser(scr, sc.colour, sc.laser, 5, LIMIT);
+      if (sc.missile && sc.frame % 2 === 1) sc.missile = puMissile(scr, sc.missile, LIMIT);
+      for (let i = 0; i < 2; i++) if (sc.shots[i]) sc.shots[i] = puShot(scr, sc.shots[i], LIMIT);
+      if (sc.double) sc.double = puShot(scr, sc.double, LIMIT);
+      sc.frame++;
+    }
+    function draw(sc, i) {
+      const cv = $('pu-' + i), ctx = C64.canvas(cv, W * S, (H + 20) * S);
+      ctx.fillStyle = P[0]; ctx.fillRect(0, 0, cv.width, cv.height);
+      for (let r = 0; r < 10; r++) for (let c = 0; c < 28; c++) {
+        const a = (sc.r0 + r) * 40 + sc.c0 + c, code = sc.scr ? sc.scr[a] : 0x20;
+        if (code === 0x20) continue;
+        const col = code >= 0x5C && code <= 0x63 ? sc.colour[a] : rowColour(sc.r0 + r);
+        if (col & 8) C64.drawGlyphMC(ctx, cs, code, c * 8 * S, r * 8 * S, S, [P[0], P[MC1], P[MC2], P[col & 7]]);
+        else C64.drawGlyph(ctx, cs, code, c * 8 * S, r * 8 * S, S, P[col], P[0]);
+      }
+      const ox = 24 + 8 * sc.c0, oy = 51 + 8 * sc.r0;
+      const sprite = (shape, x, y, colour) => C64.drawSpriteMC(ctx, ram.subarray(shape * 64, shape * 64 + 63), (x - ox) * S, (y - oy) * S, S, P[colour], P[12], P[1]);
+      for (const t of sc.slot7 || []) if (t) sprite(t.shape, t.x, t.y, t.colour);
+      sprite(sc.s.shape, sc.s.x, sc.s.y, 11);
+      // the box, as draw_bar and bar_reset leave it: its five characters from bar_text in
+      // extended colour mode, colour 11 on the stage's second colour ($D023)
+      for (let k = 0; k < 5; k++) C64.drawGlyph(ctx, cs, ram[0x41E6 + 2 + 6 * i + k] & 63, (92 + 8 * k) * S, (H + 8) * S, S, P[11], P[MC2]);
+      if (sc.label) { ctx.fillStyle = '#ffd34d'; ctx.font = '600 11px "IBM Plex Mono", monospace'; ctx.textBaseline = 'top'; ctx.fillText(sc.label(sc), 5, 5); }
+    }
+    scenes.forEach((sc) => { if (sc.weapons) sc.step = weaponsStep; sc.reset(sc); });
+    const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (still) { scenes.forEach((sc, i) => { for (let k = 0; k < sc.still; k++) sc.step(sc); draw(sc, i); }); return; }
+    scenes.forEach(draw);
+    let seen = true, tick = 0;
+    if ('IntersectionObserver' in window) new IntersectionObserver((e) => { seen = e[0].isIntersecting; }).observe($('pu-0').closest('.pu-figs'));
+    setInterval(() => {
+      if (!seen || document.hidden) return;
+      tick++;
+      scenes.forEach((sc, i) => { if (tick % sc.rate === 0) { sc.step(sc); draw(sc, i); } });
+    }, 1000 / 30);
+  }).catch((e) => { const f = document.querySelector('.pu-figs'); if (f) f.insertAdjacentText('beforeend', 'Could not load the listing: ' + e.message); });
 })();
 </script>

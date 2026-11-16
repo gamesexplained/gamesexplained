@@ -38,9 +38,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .tt-pair img{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
 .tt-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-size:14px}
 .tt-bar>div{margin:0;min-width:190px}
-.tt-bar button,.tt-pad button,.tt-table button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer;touch-action:manipulation;user-select:none;white-space:nowrap}
-.tt-bar button:hover,.tt-pad button:hover,.tt-table button:hover{border-color:var(--ink-mute)}
-.tt-bar button.on,.tt-pad button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tt-bar button,.tt-pad button,.tt-table button{font-size:13px;padding:5px 11px;touch-action:manipulation;user-select:none;white-space:nowrap}
+.tt-bar button.on,.tt-pad button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .tt-bar label{display:flex;gap:6px;align-items:center;color:var(--ink-soft)}
 .tt-screen{width:100%;max-width:640px;display:block;image-rendering:pixelated;background:#000;margin:0 auto;border-radius:4px}
 .tt-screen:focus{outline:2px solid var(--accent);outline-offset:2px}
@@ -90,7 +89,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <canvas id="tt-demo" class="tt-screen" width="640" height="400" aria-label="The play screen in the chosen scene, Tex played by the demo."></canvas>
     <p class="tt-state" id="tt-sstate"></p>
-    <p class="cap">The game's raster interrupts on the kit's 6502, as on the <a href="index.html#run">How it works</a> page, from the start of the scene's first level, or of the level clicked below, with <code>demo_mode</code> set, so that <code>read_controls</code> hands Tex to <code>demo_controls</code>: he runs to column 16, then wanders and jumps the breaks he sees coming. The main loop is left out, so no enemies are sent and the bars stand still, and Tex keeps his lives when he falls.</p>
+    <p class="cap">The game's own raster interrupts, as on the <a href="index.html#run">How it works</a> page, from the start of the scene's first level, or of the level clicked below, with <code>demo_mode</code> set, so that <code>read_controls</code> hands Tex to <code>demo_controls</code>: he runs to column 16, then wanders and jumps the breaks he sees coming. The main loop is left out, so no enemies are sent and the bars stand still, and Tex keeps his lives when he falls.</p>
   </div>
   <p>A scene sets the colours of every band (<code>scene_colours</code>), the skyline's characters, the pipe's decorated pieces (<code>scene0_pieces</code>, <code>scene1_pieces</code>; the surface pipe has only the four every scene shares) and the shapes of the arrow, the bouncing bomb and the crash explosive (<a href="index.html#enemies">How it works</a>). The skyline is five pictures of eight columns picked at random, and the pipe is a piece at a time, also at random, with a break every 18th piece made while a random byte is negative. No two plays of a level have the same pipe.</p>
   <p>A level ends when % COMPLETED is full: 26 cells of eight eighths, filled by running and by scoring. Running right from the start of level 2 without a shot filled it in 5,462 frames on EASY, 110 seconds, and in 1,833 on IMPOSSIBLE, where the main loop that counts it runs faster.</p>
@@ -102,7 +101,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">What <code>next_level</code> sets for each. Click a level to show its scene above.</p>
   <div class="plate">
     <div class="tt-scroll"><table class="tt-table tt-levels" id="tt-all"></table></div>
-    <p class="cap">Each row is the game's <code>next_level</code> (<code>$3A31</code>) on the kit's 6502, called on the level before; where it chooses at random, every entry of <code>enemy_pairs</code> or <code>enemy_triples</code> was tried. Delay is the least time an enemy stays away after it has gone, in frames for the arrow and the jet and main-loop passes for the bombs (<code>enemy_delays</code>); threshold is the random byte a frame needs for that time to count down (<code>spawn_threshold</code>). In plus4emu, levels 2, 3, 4, 20, 40, 60, 80, 99 and 00 were entered and read back the same.</p>
+    <p class="cap">Each row is the game's <code>next_level</code> (<code>$3A31</code>), called on the level before; where it chooses at random, every entry of <code>enemy_pairs</code> or <code>enemy_triples</code> was tried. Delay is the least time an enemy stays away after it has gone, in frames for the arrow and the jet and main-loop passes for the bombs (<code>enemy_delays</code>); threshold is the random byte a frame needs for that time to count down (<code>spawn_threshold</code>).</p>
   </div>
   <p>Levels 1 to 3 bring one enemy each, 4 to 6 two kinds and 7 to 9 three, picked at random when the level starts, and from 10 all four. From level 4 a break can have three middles, and from level 7 the jet's bombs break the pipe where they land. The delay falls at 20, 40 and 60 and goes back up at 80, and 00 follows 99 (<a href="discoveries.html#bcd">Discoveries</a>).</p>
 </section>

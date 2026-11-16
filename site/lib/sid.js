@@ -25,6 +25,16 @@
 //               applies the writes in order instead of the frame's final registers, so a gate
 //               turned off and on again within one frame restarts the envelope, as on the chip,
 //               and the display counts it as a note (again, startsNote)
+//   times       optional, with writes: the cycle of the call at which each write landed, one number
+//               per write, counted from the call's start (the cycles kit/cpu/cpu6502.js counts).
+//               The player then has each write land on its own cycle of the frame rather than all
+//               at the frame's start, so the chip runs between them as it does on a C64. The gap
+//               matters: an envelope sustaining at full level ($FF) that is released and attacked
+//               again at one instant wraps to 0 and stays silent until the next note, which a
+//               driver that turns the gate off and on a few hundred cycles apart never meets. A
+//               write lands no earlier than the one before it, and to the nearest sample. A driver
+//               that runs the game's code on the kit's 6502 has them from cpu.cycles: the count at
+//               each write less the count when its play() began
 // A driver that reads a register it writes ($D400-$D418) does not get back what it wrote there:
 // the chip answers only $D419-$D41C, and a read of any other register returns the data bus, the
 // last value written to any register (or read from $D41B or $D41C), until it fades (createBus,
@@ -63,9 +73,10 @@
 // curve is one chip's: real 6581s differ from each other in cutoff by large factors, and distort,
 // which this does not. Not modelled either way: combined
 // waveforms (approximated by AND), the mixer's DC level unless a page asks for it (opts.digi,
-// below), the time between writes inside a frame (a frame's writes land at one instant, so
-// a gate opened and closed inside one frame is silent here, where the chip runs the attack for the
-// cycles between; the test bit set and cleared inside one frame still resets the oscillator). The clock is PAL's (985,248 Hz, frames of 312 lines of 63 cycles) unless a page
+// below), and, for a driver that does not time its writes (times, above), the time between writes
+// inside a frame (a frame's writes land at one instant, so a gate opened and closed inside one
+// frame is silent here, where the chip runs the attack for the cycles between; the test bit set
+// and cleared inside one frame still resets the oscillator). The clock is PAL's (985,248 Hz, frames of 312 lines of 63 cycles) unless a page
 // passes ntsc: true to mount or host (1,022,727 Hz, frames of 263 lines of 65 cycles).
 // The player calls the driver once a frame of that clock unless a page passes period, a number of
 // cycles (1 or more), to mount or host: then once a period, for a game that calls its driver from
@@ -613,12 +624,32 @@ globalThis.C64Sid = (function () {
     function createPlayer(drv, sampleRate, opts) {
       const sid = createSID(sampleRate, opts), cps = clockOf(opts) / sampleRate, FRAME = periodOf(opts);
       let toFrame = 0, frames = 0, on = false, run = 0;
+      // A driver that times its writes (times, above) has each land on its own cycle of the frame:
+      // due holds the frame's writes still to land, from the di'th, and the registers the frame
+      // ends with, which the player sets once the last write has landed.
+      let due = null, di = 0;
+      function land(c) {                                     // the writes due by cycle c of the frame
+        if (!due) return;
+        const w = due.w;
+        for (; di + 1 < w.length && (+due.t[di >> 1] || 0) <= c; di += 2) sid.write(w[di], w[di + 1]);
+        if (di + 1 >= w.length) { sid.setRegs(due.regs); due = null; }
+      }
+      function quiet() {                                     // a frame with no sound, writes on time
+        let at = 0;
+        while (due) {
+          const t = Math.min(Math.max(at, +due.t[di >> 1] || 0), FRAME);
+          if (t > at) { sid.skip(t - at); at = t; }
+          land(t >= FRAME ? Infinity : t);
+        }
+        sid.skip(FRAME - at);
+      }
       function command(c) {
         if (c.cmd === 'start') {
+          land(Infinity);
           drv.init(c.tune); frames = 0; on = true; run = c.run || 0;
           if (c.at > 0) {
             frame();                                         // init's writes, and the first frame
-            while (frames < c.at && drv.playing()) { sid.skip(FRAME); frame(); }
+            while (frames < c.at && drv.playing()) { quiet(); frame(); }
             toFrame = FRAME;                                 // the last frame is heard
           }
         }
@@ -637,11 +668,15 @@ globalThis.C64Sid = (function () {
         return { t, run, frame: frames, vol: s[24] & 15, playing: drv.playing(), v };
       }
       function frame() {                                     // the game calls its driver
+        land(Infinity);                                      // what the last frame left to land
         if (drv.readback) drv.readback(...sid.read3(), sid.peek());
         drv.play();
-        const w = drv.writes;                                // in order, where the driver keeps them
-        if (w) for (let k = 0; k + 1 < w.length; k += 2) sid.write(w[k], w[k + 1]);
-        sid.setRegs(drv.sid);
+        const w = drv.writes, t = drv.times;                 // in order, where the driver keeps them
+        if (w && w.length && t && t.length) { due = { w: w.slice(), t: Array.from(t), regs: drv.sid.slice() }; di = 0; land(0); }
+        else {
+          if (w) for (let k = 0; k + 1 < w.length; k += 2) sid.write(w[k], w[k + 1]);
+          sid.setRegs(drv.sid);
+        }
         if (drv.playing()) frames++;
       }
       // fill out[0..n) from time t0; post(snapshot) after each driver frame
@@ -654,6 +689,7 @@ globalThis.C64Sid = (function () {
               if (post) post(snapshot(t0 + i / sampleRate));
             }
           }
+          if (due) land(FRAME - toFrame);                    // timed writes, as the frame reaches them
           out[i] = sid.sample();
           toFrame -= cps;
         }
@@ -805,10 +841,11 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   // ------------------------------------------------------------------ the player
   const CSS = `
 .sid-player{font-family:var(--fb,'Lato',system-ui,sans-serif);color:var(--ink,#2f3136);font-size:14px;line-height:1.5}
-.sid-player button{font-family:var(--fm,'IBM Plex Mono',ui-monospace,Menlo,monospace);font-size:12.5px;line-height:1.3;
-  background:var(--surface-2,#f1efea);color:var(--ink,#2f3136);border:1px solid var(--line,#d5d3cc);border-radius:7px;padding:6px 12px;cursor:pointer}
-.sid-player button:hover{border-color:var(--accent,#1f5fa8)}
-.sid-player button[aria-pressed="true"]{background:var(--accent,#1f5fa8);border-color:var(--accent,#1f5fa8);color:#fff}
+.sid-player button{font-family:var(--btn-font,var(--fb,'Lato',system-ui,sans-serif));font-size:var(--btn-fs,14px);font-weight:var(--btn-fw,400);line-height:1.3;
+  background:var(--btn-bg,#f1efea);color:var(--btn-ink,#2f3136);border:1px solid var(--btn-line,#d5d3cc);border-radius:var(--btn-r,6px);padding:6px 12px;cursor:pointer}
+.sid-player button:hover{border-color:var(--btn-line-hover,#80838a)}
+.sid-player button[aria-pressed="true"]{background:var(--btn-on-bg,#2f3136);border-color:var(--btn-on-line,#2f3136);color:var(--btn-on-ink,#fff)}
+.sid-player button:focus-visible{outline:2px solid var(--btn-focus,#1f5fa8);outline-offset:2px}
 .sid-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}
 .sid-filt{display:inline-flex;align-items:center;gap:4px;margin-left:8px}
 .sid-fsw{display:inline-flex;align-items:center;gap:4px}
@@ -821,7 +858,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 .sid-vol i{display:block;width:4px;height:12px;border-radius:1px;background:var(--line,#d5d3cc)}
 .sid-vol i.sid-lit{background:var(--accent,#1f5fa8)}
 .sid-seek{display:flex;align-items:center;gap:12px;margin:0 0 10px;font-family:var(--fm,'IBM Plex Mono',ui-monospace,monospace);font-size:12.5px}
-.sid-seek input{flex:1;min-width:0;margin:0;accent-color:var(--accent,#1f5fa8)}
+.sid-seek input{flex:1;min-width:0;margin:0;accent-color:var(--btn-accent,#2f3136)}
 .sid-seek input:disabled{opacity:.45}
 .sid-seek span{white-space:nowrap;font-variant-numeric:tabular-nums}
 .sid-roll{display:block;width:100%;height:190px;border:1px solid var(--line,#d5d3cc);border-radius:8px;background:#fff}
@@ -986,11 +1023,15 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         const starts = noteStarts(mark);
         const semis = (freq) => 12 * Math.log2(freq * HZ / C0);
         const collect = BOUNCE ? (d, k) => {
-          const w = d.writes, s = d.sid;                     // as the player sets the chip
-          if (w) for (let i = 0; i + 1 < w.length; i += 2) chip.write(w[i], w[i + 1]);
+          const w = d.writes, s = d.sid, tm = d.times;      // as the player sets the chip
+          let at = 0;                                        // timed writes land on their cycles
+          if (w) for (let i = 0; i + 1 < w.length; i += 2) {
+            if (tm && tm.length) { const t = Math.min(Math.max(at, +tm[i >> 1] || 0), PERIOD); if (t > at) { chip.skip(t - at); at = t; } }
+            chip.write(w[i], w[i + 1]);
+          }
           chip.setRegs(s);
           const env = chip.V.map((c) => c.env), again = E.restarted(w);
-          chip.skip(PERIOD);
+          chip.skip(PERIOD - at);
           for (let x = 0; x < 3; x++) {
             const r = 7 * x;
             const v = Object.assign({}, d.voice ? d.voice(x) : null, { freq: s[r] | s[r + 1] << 8,

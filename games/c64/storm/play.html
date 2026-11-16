@@ -42,9 +42,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .st-fig img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
 .st-row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:12px 0;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
 .st-row label{display:flex;gap:6px;align-items:center}
-.st-btn{font:inherit;font-family:var(--fm);font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
-.st-btn:hover{border-color:var(--ink-mute)}
-.st-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.st-btn{font-size:13px;padding:5px 12px}
 .st-out{font-family:var(--fm);font-size:13px;color:var(--ink);margin:10px 0 0;min-height:1.5em;line-height:1.55}
 .st-note{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
 .st-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:12px 0 18px}
@@ -52,7 +50,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .st-tbl th{font-weight:700;color:var(--ink-soft)}
 .st-wide{overflow-x:auto}
 .st-form{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
-.st-form input,.st-form select,.st-row select{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.st-form input{font-size:13px;padding:4px 6px}.st-form select,.st-row select{font-size:13px}
 .st-form input{width:6.5em}
 .st-slots{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;margin:10px 0 0;font-family:var(--fm);font-size:11px;text-align:center}
 .st-slots div{border:1px solid var(--line);border-radius:5px;padding:4px 2px;color:var(--ink-mute);background:var(--surface-2)}
@@ -130,10 +128,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="port">
   <p class="fig">03 · The port</p>
-  <h2 class="t">Every pass checked against the game's own code</h2>
+  <h2 class="t">Every routine of the game, written again in JavaScript</h2>
   <p>Nothing on this page emulates a 6502, except for the title tune, whose player is the game's own code. The rest of the game is written out in JavaScript, one function for each routine of the listing, and runs on the game's own 64 KB, loaded from the bytes the Source code tab shows. Every variable stays where the game keeps it, so the map and the guide read the same addresses the game does.</p>
-  <p><code>test_play.js</code> runs the port beside the game's own code on the kit's model of the C64, with the same joysticks, through 40,000 passes of the main loop at <code>$78D7</code>: whole games of one player and of two, and the title screens between them. At every pass the two memories are compared, and so are colour RAM and every register written to the video chip and the SID. One race of the game's is left out of the port: on the title, the tune's driver shares a pointer with the routine that colours a block, and an interrupt in the middle of a block sends the rest of its colours elsewhere, so a few cells keep their old colours. The port draws every block whole.</p>
-  <p>The page keeps the C64's pace by keeping its clock. Each routine the port calls moves the clock on by the cycles the game's own routine took on the kit's machine, on average over the same 40,000 passes; for the routines that draw a block, by the block's width and height. The clock runs the raster interrupt on its lines and takes from the processor the 43 cycles of each bad line, as the video chip does. In <code>test_pace.js</code>, over 24,000 frames with both driven by the same autopilot, a pass of play took the page 0.45 % longer than the game with one player and 0.41 % with two.</p>
+  <p>One race of the game's is left out of the port: on the title, the tune's driver shares a pointer with the routine that colours a block, and an interrupt in the middle of a block sends the rest of its colours elsewhere, so a few cells keep their old colours. The port draws every block whole.</p>
+  <p>The page keeps the C64's pace by keeping its clock. Each routine the port calls moves the clock on by the cycles the game's own routine takes, on average; for the routines that draw a block, by the block's width and height. The clock runs the raster interrupt on its lines and takes from the processor the 43 cycles of each bad line, as the video chip does. A pass of play takes the page less than half a per cent longer than it takes the game.</p>
   <p>The screen is drawn by the site's model of the video chip from the port's memory, with each write the interrupt makes to the video chip at the line and cycle where the game makes it. The font the game copies from the character ROM is carried on this page: the first 512 bytes of the C64's character ROM (901225-01, <code>$D000</code>-<code>$D1FF</code>), which <code>copy_rom_font</code> reads.</p>
 </section>
 

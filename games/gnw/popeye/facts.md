@@ -248,3 +248,29 @@ All on the kit's machine (`kit/gnw/sm5a.js`), from power on, scripts in
 - `s10.js`: a held left after power on repeats.
 - `s11.js`, `s13.js`, `s14.js`: the difficulty table and the step's
   timing.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Both from Game A on the kit's model, with Popeye standing still in the middle.
+- Tested on the kit's model: two miss marks lit, Popeye stepping under the lowered mallet, then right pressed and 30 seconds waited.
+
+### index.html
+
+- Both are drawn from the segments the chip lit on the kit's model of the unit, on MAME's outlines of the segments.
+- Step through 45 seconds of Game A, recorded on the kit's model of the chip.
+- Recorded on the kit's Sharp SM5A (`kit/gnw/sm5a.js`, held to MAME 0.289 instruction for instruction) with a player that moves under the lowest item.
+- The page turns them into segments with a port of `$0640`, the game's drawing routine; `test_frame.js` holds the port to the chip's own picture on every screen of three minutes of play, and on this one.
+- Game A on the kit's model, with Popeye left standing still.
+- The level for every score from 0 to 999, from a port of `$0080`; `test_difficulty.js` runs the game's own routine on the kit's model for all 1,000 scores and compares.
+- Each sound is the list of moments the chip's R1 pin changed while its routine ran on the kit's model (`$02AE`, `$02A7`), played here as a square wave.
+- `test_sound.js` runs the routines again on the listing's bytes and compares every edge.
+- Twenty seconds of the clock, recorded on the kit's model: each frame is one redraw, once a second.
+
+### play.html
+
+- The whole unit, clock and alarm included, written again in JavaScript routine by routine, and run in lockstep with the chip's own program in the tests.
+- The test beside this page, `test_play.js`, runs the port in lockstep with the game's code on the kit's model of the chip, which is held to MAME instruction for instruction.

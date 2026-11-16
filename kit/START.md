@@ -42,8 +42,8 @@ step needs something only they have.
    they supply their own.
 
    - **Silver** (recommended) aims to explain 100 % of the program and
-     builds the minisite. Recent runs took one to three hours, mostly
-     unattended.
+     builds a minisite meant to stand on its own. Recent runs took one to
+     three hours, mostly unattended; that is an estimate, not a cutoff.
    - **Bronze** gets the game running, lists its features and sweeps the
      code, then stops. Most of the code is left unexplained for a later
      run to pick up. About 20 to 45 minutes.
@@ -233,7 +233,8 @@ step needs something only they have.
      easier to use (scrollback, a way out of a dead end, a download), and
      a claim finished with its concrete case (the commands that should
      have won, every character in one table). Start from the ideas in
-     `TODO.md`.
+     `TODO.md`. A weakness the reader review (`75-review`) found is fixed
+     before the pull request, never offered here as an idea.
 
    A change they ask for goes on the same branch, with the checks before
    each commit, or on a new branch from `main` once the pull request has
@@ -249,11 +250,14 @@ models, before the first step: `game.json` records the answer, and
 **If the contributor points you at a game folder that already exists**,
 the job is not a new run. A Bronze game is continued to Silver: read its
 `TODO.md`, pick up the workflow at the step it stopped, and everything
-above still applies. A Silver game is curated to Gold, and that is the
-contributor's work with your hands: they say what is dull, what deserves
-more, and what reads like an agent wrote it; you cut, expand, verify
-anything new against the code, and rewrite to `kit/style.md`. When the
-first edit pass begins, set `tier` in `game.json` to `silver-claimed`
+above still applies. A request to improve a Silver game can be an agent's
+quality pass: use `70-minisite`, its leads list included, and
+`75-review`, and keep its tier and copy provenance honest. Curating it to
+Gold is the contributor's work with your hands: they say what is dull,
+what deserves more, and what reads like an agent wrote it; you cut,
+expand, verify anything new against the code, and rewrite to
+`kit/style.md`. When the contributor begins that curation, set `tier` in
+`game.json` to `silver-claimed`
 (a Platinum game keeps `platinum`) and `steward` to their GitHub login:
 the page then says who is editing
 it. The pass ends with `80-retro`, as a run does. Set `gold` when every

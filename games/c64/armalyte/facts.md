@@ -23,8 +23,8 @@ engine's routine at `$B3CC`.
   Armalyte, 2 Loading picture, 3 Walker's Warbles"
   (`reference/disk-menu.png`). The first loads the engine and the third
   a music demo of Martin Walker's, a part of its own
-  (`parts/warbles/facts.md`); the second, the loading picture on its
-  own, was not followed.
+  (`parts/warbles/facts.md`); the second shows the cassette's loading
+  picture to the demo's tune ("Loading picture", below).
 - The credits are title strings 8-18 (engine `$90B9`): programming and
   game design Dan Phillips; system programming and game design John
   Kemp; graphics, level and game design Robin Levy; music and sound
@@ -176,6 +176,36 @@ screen codes:
   entry's own text, and the one string left in its memory above it, are
   in `parts/warbles/facts.md`.
 
+## Loading picture
+
+*Live*, in VICE 3.10 (vice-mcp 3.14.0) on 12 November 2026, from the
+Ultimate Tape Archive's `Armalyte_Side_1.tap` (395,637 bytes, SHA-256
+`1116f44d75d91cf8e7ef2d908eb8556c4080c74a55bb60c75f2872c7e22eb3a9`),
+Thalamus's 1988 cassette, and side 1 of the disk named in
+`orientation.md`:
+
+- The cassette shows ARMALYTE over COPYRIGHT 1988 THALAMUS LTD in text,
+  starts a tune 53 seconds into the tape, and puts the picture up whole
+  at about 100 seconds: a multicolour bitmap in bank 3, screen `$CC00`,
+  bitmap `$E000` (`$D018` = `$39`, `$DD00` = `$C0`), black border and
+  background. It goes at 218 seconds; the game's own sound starts at
+  224.6. Times from the video chip and sound chip read every 10 frames.
+- The tune is played by a copy of the engine's music driver at `$B000`
+  (init) and `$B059` (play), called from the loader's raster interrupt
+  (`$C15C`); its code is the engine's `$C000` driver moved down `$1000`,
+  with its zero-page pointers at `$3B`-`$3C`. It carries one tune, the
+  engine's tune 1, the demo's: run from init in the kit's 6502 simulator,
+  it makes the same SID registers as the engine's tune 1 in all 26,000
+  frames once the one variable init leaves alone (engine `$C525`, tape
+  `$B525`) holds the same value in both.
+- When the load ends the interrupt sets the volume to 15 and takes one
+  off every 16 frames (`$C1BA`-`$C1D7`): silent at 212 seconds.
+- The disk's menu entry 2 shows the same bitmap, screen and colour bytes
+  (bank 1, `$D018` = `$81`, `$DD00` = `$C2`), drawn the same in all
+  104,448 pixels, with the same driver at `$B000` playing the same tune.
+- The page's frame, drawn by `site/lib/c64.js`, equals VICE's own
+  picture in all 104,448 pixels (`kit/c64/frame.py compare`).
+
 ## Hardware registers
 
 Every access to `$D000-$DFFF` outside colour RAM in the engine's and the
@@ -290,3 +320,29 @@ Run in VICE 3.13.2 (x64sc, PAL), from the snapshots in `orientation.md`:
   `$D022`/`$D023` pixels.
 - The ending's first four pictures appeared in turn in the frame, each
   with its message typed beneath.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, a shot character written onto a released enemy during level 1's mid-level fight stayed on the screen and the enemy flew on untouched, while the same character on the core took a hit off it.
+- In the emulator the shields lasted 103 and 205 frames counted from the main loop's first pass, the extra frame being the one before the countdown's first step.
+- In the emulator a `$FB` character written onto level 1's mid-level core took one hit off its 90 and was gone the next frame.
+- With the I/O chips in that address is a copy of the border colour register, and 96 sets the border to black, which it already is; in the emulator a 5 written there turned the border green.
+- Each page's ten lines, read from `$B953` and decoded from the strings at `$9000`, beside a screenshot of that page from the emulator.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE with the picture up, 150 seconds into the tape, and drawn as the video chip draws them.
+
+### index.html
+
+- One frame of level 1 at tile column 36, recorded in VICE with every write to the video chip during the frame, and drawn here line by line with the state in force when the beam got there: 104,448 of 104,448 pixels match the emulator's own picture.
+- Run beside the game's code in a 6502 simulator, the port made the same writes to the SID, in the same order, in every frame of each tune (ten minutes of the two that repeat) and of 200 random tunes, which with the four run every instruction of the routine.
+- Measured in the emulator from an empty generator: the rebuild count stepped every 61 frames with no generator and every 19 with four, and the charge was full after 488 and 152 frames.
+- Checked against the routine itself on a 6502 simulator from level 1's memory: 1,810 starting states, every counter value from 0 to 255 among them, and 291,200 calls with no difference; with no batteries it charges the generator in 488 frames with no generators and 152 with four, as measured in the emulator.
+- The main loop never fell behind: run through all of level 1 in the emulator it made 25,299 passes in 25,298.5 frames, one a frame.
+- Pictures 0 to 3 were seen this way in the emulator.
+- Run beside the demo's code in a 6502 simulator, the port made the same writes to the SID, in the same order, in every frame of all sixteen headers for twenty thousand frames each, and of 200 random tunes with random instruments, which together run every instruction of the routine.
