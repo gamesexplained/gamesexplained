@@ -32,7 +32,7 @@
   <h2 class="t">A slow fuse in the jump sound</h2>
   <p class="lede">The game checks a block of bytes that its loader leaves at <code>$CF00</code>-<code>$CFB1</code> in several places. At start-up, <code>check_cf8f</code> (<code>$512F</code>) hangs unless two of them are <code>$B9</code>, and another check (<code>$06DD</code>) writes over memory for ever unless six of them XOR to zero. Every frame, <code>protect_fill</code> (<code>$1703</code>) wrecks memory unless the loader’s mark <code>$32</code> is in <code>$02</code>.</p>
   <p>The cleverest check is hidden in <code>jump_sound</code> (<code>$1FC4</code>). While a byte worked out from the block is zero (<code>$1166</code>, set from <code>$CF79</code> XOR <code>$CF99</code>), every jump moves the operands of another check one byte along. After <code>$99</code> jumps it writes a <code>TXS</code> instruction over the first byte of the random-number routine, which wrecks the stack the next time it runs. A second byte, <code>$2007</code>, drives the same kind of fuse against the <code>CLC</code> at <code>$1FFE</code>.</p>
-  <p>In the copy studied neither byte is zero, so nothing burns. A copy whose protection bytes were wrong would play normally at first, then crash some 150 jumps in.</p>
+  <p>In the copy studied neither byte is zero, so the fuses never burn. A copy whose protection bytes were wrong would play normally at first, then crash some 150 jumps in.</p>
 </section>
 
 <section id="idle">
