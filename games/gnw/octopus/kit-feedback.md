@@ -22,7 +22,7 @@ time, operating system and tool versions.
 
 ## Maintainer asks
 
-- **Correct the click's count in Popeye's listing.** Popeye's comment at $02A7 says R1 is written 16 times, about 64 cycles; Octopus has the same bytes there, and its sample's checker found the count is 24 writes, about 100 cycles (98 on the model, `games/gnw/octopus/facts.md`, "Sound"). The same belief is on Popeye's How it works page, section 08. A one-line fix in `games/gnw/popeye/symbols.json` (with `listing.py --recomment`) and the page's sentence.
+- #953: Popeye (Game & Watch): Fix the click's count in the listing
 
 ## What cost the most time
 
