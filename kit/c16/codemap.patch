@@ -1,8 +1,8 @@
 diff --git a/plus4lib/plus4api.cpp b/plus4lib/plus4api.cpp
-index 494c654..62ef4a5 100644
+index 494c654..adf6410 100644
 --- a/plus4lib/plus4api.cpp
 +++ b/plus4lib/plus4api.cpp
-@@ -1103,6 +1103,11 @@ extern "C" PLUS4EMU_EXPORT void Plus4VM_SetSingleStepModeNextAddress(
+@@ -1103,6 +1103,16 @@ extern "C" PLUS4EMU_EXPORT void Plus4VM_SetSingleStepModeNextAddress(
    vm->getVM().setSingleStepModeNextAddress(addr);
  }
  
@@ -11,14 +11,19 @@ index 494c654..62ef4a5 100644
 +  vm->getVM().setCodeMap(buf);
 +}
 +
++extern "C" PLUS4EMU_EXPORT void Plus4VM_SetCodeMapRAM(Plus4VM *vm, uint32_t *buf)
++{
++  vm->getVM().setCodeMapRAM(buf);
++}
++
  extern "C" PLUS4EMU_EXPORT void Plus4VM_SetBreakOnInvalidOpcode(
      Plus4VM *vm, int isEnabled)
  {
 diff --git a/plus4lib/plus4emu.h b/plus4lib/plus4emu.h
-index a28ade2..b7f31b9 100644
+index a28ade2..27b270a 100644
 --- a/plus4lib/plus4emu.h
 +++ b/plus4lib/plus4emu.h
-@@ -629,6 +629,11 @@ PLUS4EMU_EXPORT void Plus4VM_SetSingleStepMode(Plus4VM *vm, int mode);
+@@ -629,6 +629,17 @@ PLUS4EMU_EXPORT void Plus4VM_SetSingleStepMode(Plus4VM *vm, int mode);
   */
  PLUS4EMU_EXPORT void Plus4VM_SetSingleStepModeNextAddress(
      Plus4VM *vm, int32_t addr);
@@ -27,46 +32,59 @@ index a28ade2..b7f31b9 100644
 + * that the caller owns and clears; NULL stops counting.
 + */
 +PLUS4EMU_EXPORT void Plus4VM_SetCodeMap(Plus4VM *vm, uint32_t *buf);
++/*!
++ * While the code map counts, also count in buf[address] every opcode fetched
++ * at $8000-$FFFF from RAM rather than ROM (65536 counters that the caller
++ * owns and clears); NULL stops counting.
++ */
++PLUS4EMU_EXPORT void Plus4VM_SetCodeMapRAM(Plus4VM *vm, uint32_t *buf);
  /*!
   * Set if invalid (jam) CPU opcodes should be interpreted as NOPs with a
   * breakpoint set (priority = 3).
 diff --git a/src/cpu.cpp b/src/cpu.cpp
-index a78115a..19cc567 100644
+index a78115a..cd9b353 100644
 --- a/src/cpu.cpp
 +++ b/src/cpu.cpp
-@@ -63,7 +63,8 @@ namespace Plus4 {
+@@ -63,7 +63,9 @@ namespace Plus4 {
        haveBreakPoints(false),
        breakPointPriorityThreshold(0),
        singleStepModeNextAddr(int32_t(-1)),
 -      newPCAddress(int32_t(-1))
 +      newPCAddress(int32_t(-1)),
-+      codeMap((uint32_t *) 0)
++      codeMap((uint32_t *) 0),
++      codeMapRAM((uint32_t *) 0)
    {
      try {
        memoryReadCallbacks = new M7501MemoryReadCallback[65536];
-@@ -108,6 +109,9 @@ namespace Plus4 {
+@@ -108,6 +110,14 @@ namespace Plus4 {
            uint8_t opNum = readMemory(reg_PC);
            if (uint8_t(haveBreakPoints) | singleStepMode)
              checkOpcodeReadBreakPoint(reg_PC, opNum);
 +          // counted after the breakpoint check, so a stop there has not counted it yet
-+          if (PLUS4EMU_UNLIKELY(codeMap != (uint32_t *) 0))
++          if (PLUS4EMU_UNLIKELY(codeMap != (uint32_t *) 0)) {
 +            codeMap[reg_PC]++;
++            // at $8000-$FFFF the ROMs can be paged in: count apart what came from the RAM
++            if (codeMapRAM != (uint32_t *) 0 && reg_PC >= 0x8000 &&
++                opcodeReadsRAM(reg_PC))
++              codeMapRAM[reg_PC]++;
++          }
            reg_PC = (reg_PC + 1) & 0xFFFF;
            currentOpcode = &(opcodeTable[size_t(opNum) << 4]);
          }
 diff --git a/src/cpu.hpp b/src/cpu.hpp
-index 0733900..2503802 100644
+index 0733900..8158706 100644
 --- a/src/cpu.hpp
 +++ b/src/cpu.hpp
-@@ -168,6 +168,7 @@ namespace Plus4 {
+@@ -168,6 +168,8 @@ namespace Plus4 {
      uint8_t     breakPointPriorityThreshold;
      int32_t     singleStepModeNextAddr;
      int32_t     newPCAddress;
 +    uint32_t    *codeMap;
++    uint32_t    *codeMapRAM;
      void checkOpcodeReadBreakPoint(uint16_t addr, uint8_t value);
      void checkReadBreakPoint(uint16_t addr, uint8_t value);
      void checkWriteBreakPoint(uint16_t addr, uint8_t value);
-@@ -288,6 +289,11 @@ namespace Plus4 {
+@@ -288,6 +290,23 @@ namespace Plus4 {
      // Note: setSingleStepMode() must be called first with a mode parameter
      // of 2 or 4.
      void setSingleStepModeNextAddress(int32_t addr);
@@ -75,14 +93,47 @@ index 0733900..2503802 100644
 +    {
 +      this->codeMap = buf;
 +    }
++    // while the code map counts, count in buf[PC] too each opcode fetched at
++    // $8000-$FFFF from RAM rather than ROM (65536 counters), or stop with NULL
++    inline void setCodeMapRAM(uint32_t *buf)
++    {
++      this->codeMapRAM = buf;
++    }
++    // true when an opcode fetch at 'addr' reads RAM; the machine's paging decides
++    virtual bool opcodeReadsRAM(uint16_t addr) const
++    {
++      (void) addr;
++      return true;
++    }
      inline void setBreakOnInvalidOpcode(bool isEnabled)
      {
        this->breakOnInvalidOpcode = isEnabled;
+diff --git a/src/memory.cpp b/src/memory.cpp
+index e25bb92..a4086cf 100644
+--- a/src/memory.cpp
++++ b/src/memory.cpp
+@@ -263,6 +263,16 @@ namespace Plus4 {
+     return memoryMapTable[cpuMemoryReadMap + ((unsigned int) n & 3U)];
+   }
+ 
++  bool TED7360::opcodeReadsRAM(uint16_t addr) const
++  {
++    // the entry of memoryMapTable[] that the read_memory_*() functions use
++    unsigned int  n = (addr < 0x1000 ? 4U : addr < 0x8000 ? (unsigned int) (addr >> 14)
++                       : addr < 0xC000 ? 2U : addr < 0xFC00 ? 3U
++                       : addr < 0xFD00 ? 5U : addr < 0xFF00 ? 6U : 7U);
++    // segments from 0x80 up are RAM, below are ROM (getSegmentType())
++    return (memoryMapTable[cpuMemoryReadMap + n] >= 0x80);
++  }
++
+   int TED7360::getSegmentType(uint8_t n) const
+   {
+     if (segmentTable[n] == (uint8_t *) 0)
 diff --git a/src/plus4vm.cpp b/src/plus4vm.cpp
-index 2a5f02c..177ce31 100644
+index 2a5f02c..f224794 100644
 --- a/src/plus4vm.cpp
 +++ b/src/plus4vm.cpp
-@@ -2078,6 +2078,11 @@ namespace Plus4 {
+@@ -2078,6 +2078,16 @@ namespace Plus4 {
        p->setSingleStepModeNextAddress(addr);
    }
  
@@ -91,18 +142,37 @@ index 2a5f02c..177ce31 100644
 +    ted->setCodeMap(buf);
 +  }
 +
++  void Plus4VM::setCodeMapRAM(uint32_t *buf)
++  {
++    ted->setCodeMapRAM(buf);
++  }
++
    void Plus4VM::setBreakOnInvalidOpcode(bool isEnabled)
    {
      ted->setBreakOnInvalidOpcode(isEnabled);
 diff --git a/src/plus4vm.hpp b/src/plus4vm.hpp
-index 45b6f9e..d7d9cc8 100644
+index 45b6f9e..7057a48 100644
 --- a/src/plus4vm.hpp
 +++ b/src/plus4vm.hpp
-@@ -526,6 +526,7 @@ namespace Plus4 {
+@@ -526,6 +526,8 @@ namespace Plus4 {
       * a breakpoint set (priority = 3).
       */
      virtual void setBreakOnInvalidOpcode(bool isEnabled);
 +    void setCodeMap(uint32_t *buf);
++    void setCodeMapRAM(uint32_t *buf);
      /*!
       * Set function to be called when a breakpoint is triggered.
       * 'type' can be one of the following values:
+diff --git a/src/ted.hpp b/src/ted.hpp
+index d770233..b723431 100644
+--- a/src/ted.hpp
++++ b/src/ted.hpp
+@@ -753,6 +753,8 @@ namespace Plus4 {
+     // Returns memory segment at page 'n' (0 to 3). Segments 0x00 to 0x07 are
+     // used for ROM, while segments 0xFC to 0xFF are RAM.
+     uint8_t getMemoryPage(int n) const;
++    // true when the CPU reads RAM at 'addr' with the ROMs paged as they are now
++    virtual bool opcodeReadsRAM(uint16_t addr) const;
+     // Returns the type of segment 'n' (0 to 255), which is 0 for no memory,
+     // 1 for ROM, and 2 for RAM.
+     int getSegmentType(uint8_t n) const;

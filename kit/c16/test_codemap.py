@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Test of kit/c16/codemap.py's reading of the server's record, without the server: the C16's
-repeats of its 16 KB folded onto $0000-$3FFF and the ROMs' half left out, each instruction sized
-from the RAM, and two instructions that overlap without ending together counted by their opcodes
-alone and named. Exits 1 on a failure.
+repeats of its 16 KB folded onto $0000-$3FFF, the ROMs' half left out but for the code that ran
+from the RAM beneath the ROMs, each instruction sized from the RAM, and two instructions that
+overlap without ending together counted by their opcodes alone and named. Exits 1 on a failure.
 
   python3 kit/c16/test_codemap.py
 """
@@ -26,6 +26,13 @@ kept, left = fold([0x1234, 0x5234, 0x3FFF, 0x7FFF, 0x9234, 0xD234], 0x4000)
 check(kept == {0x1234, 0x3FFF} and left == 2, f"a C16's record folds onto $0000-$3FFF and leaves out $8000 up: {sorted(kept)}, {left}")
 kept, left = fold([0x1234, 0x5234, 0x9234], 0x10000)
 check(kept == {0x1234, 0x5234} and left == 1, f"a Plus/4's record keeps $4000-$7FFF as it is: {sorted(kept)}, {left}")
+kept, left = fold([0x1234, 0x9FF1, 0xA070, 0xFF4F, 0xD234], 0x10000, {0x9FF1, 0xA070})
+check(kept == {0x1234, 0x9FF1, 0xA070} and left == 2,
+      f"a Plus/4 keeps what ran from the RAM under the ROMs and leaves out the ROMs' own: {sorted(kept)}, {left}")
+kept, left = fold([0x1234, 0x9234, 0xD234], 0x4000, {0x9234})
+check(kept == {0x1234} and left == 1, f"a C16 folds what ran from the RAM under the ROMs onto $0000-$3FFF: {sorted(kept)}, {left}")
+kept, left = fold([0x1234, 0x9FF1], 0x10000, set())
+check(kept == {0x1234} and left == 1, f"nothing from the RAM under the ROMs keeps nothing at $8000 up: {sorted(kept)}, {left}")
 
 check(runs([5, 1, 2, 3, 7]) == [[1, 3], [5, 5], [7, 7]], "runs of addresses")
 

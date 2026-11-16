@@ -125,7 +125,7 @@ WORKAROUNDS = [
     "snapshot files: the library's own, made at a TED cycle boundary, with a chunk of the kit's before the end: the frame count, the stop, the registers and the bytes of RAM there",
     "load and reset at a stop: the rest of the current Run call is run with every callback ignored, then the load or reset is done between calls",
     "run cycles and frames: Run calls up to 300 half-cycles short, then a callback on every instruction until the count is passed",
-    "code map: the library's own counters when it was built with codemap.patch (put back to the last stop's after an internal replay, load or reset), else a callback on every instruction; either way an instruction counts when it runs, so the one at a stop counts when the run goes on",
+    "code map: the library's own counters when it was built with codemap.patch (put back to the last stop's after an internal replay, load or reset), else a callback on every instruction; either way an instruction counts when it runs, so the one at a stop counts when the run goes on. An instruction at $8000-$FFFF is named under_roms when its opcode came from the RAM beneath the ROMs: the library counts those apart (Plus4VM_SetCodeMapRAM), and the callback asks the paging",
     "sound: write breakpoints on $FF0E-$FF12, each logged with the cycle",
     "sound with audio: plus4emu's own output kept from its audio callback, its 15 kHz high shelf off and its volume at 1.0, and dropped while the server runs the machine for itself (a replay, the rest of a Run call after a stop), so that it is whole only across one run",
     "screenshot: replay to the stop, run 2.2 frames forward with the display on, decode TED's output stream, then load the stop back; with a tape or disk in, the display stays on (slower) and the screenshot is the last whole frame before the stop (going back after it would mean replaying the load again)",
@@ -184,7 +184,7 @@ PROTOS = [
     ("Plus4VM_LoadProgram", [V, C.c_char_p], C.c_int),
     ("Plus4_ColorToRGB", [C.c_int, C.c_int, C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float)], None),
 ]
-L = CMAP = None
+L = CMAP = CMAP_RAM = None
 if SERVING:
     L = C.CDLL(args.lib)
     for _name, _at, _rt in PROTOS:
@@ -197,6 +197,31 @@ if SERVING:
         CMAP = (C.c_uint32 * 65536)()
     except AttributeError:
         CMAP = None
+    # and, built with the patch since #874, apart the opcodes it fetched at $8000-$FFFF from the RAM
+    # beneath the ROMs, which the counts above cannot tell from the ROMs' own
+    try:
+        L.Plus4VM_SetCodeMapRAM.argtypes, L.Plus4VM_SetCodeMapRAM.restype = [V, V], None
+        CMAP_RAM = (C.c_uint32 * 65536)() if CMAP is not None else None
+    except AttributeError:
+        CMAP_RAM = None
+
+
+def cmap_bytes():
+    """The library's counters as bytes: CMAP, then CMAP_RAM when the library has it."""
+    return bytes(CMAP) + (bytes(CMAP_RAM) if CMAP_RAM is not None else b"")
+
+
+def cmap_put(counts):
+    """Put back counters cmap_bytes() gave."""
+    C.memmove(CMAP, counts, C.sizeof(CMAP))
+    if CMAP_RAM is not None:
+        C.memmove(CMAP_RAM, counts[C.sizeof(CMAP):], C.sizeof(CMAP_RAM))
+
+
+def cmap_clear():
+    C.memset(CMAP, 0, C.sizeof(CMAP))
+    if CMAP_RAM is not None:
+        C.memset(CMAP_RAM, 0, C.sizeof(CMAP_RAM))
 
 
 # A library built without libsndfile (kit/c16/tools.py, its stamp says "sndfile": "stub") cannot
@@ -350,6 +375,7 @@ class Emu:
         self.nclean = 0
         self.log = []             # changes made since it: {"kind": "fetch"|"at", "stamp", "pc", "ops"}
         self.codemap = None
+        self.cmap_ram = set()     # with the callback: the instructions at $8000 up whose opcode came from RAM
         self.cmap_on = False      # the library's own counters (CMAP) are counting
         self.cmap_park = None     # their copy at the last stop for the client, put back after an internal replay
         self.sound = None
@@ -553,7 +579,7 @@ class Emu:
         if why:
             self._park(pc, st, why, cpid)     # the code map counts it when the run goes on (serve)
         elif self.codemap is not None:
-            self.codemap[pc] = self.codemap.get(pc, 0) + 1
+            self.count(pc)
 
     def _access(self, typ, addr, val):
         g = self.goal
@@ -618,15 +644,21 @@ class Emu:
             reply(item, {"was_running": True, "pc": pc, "cycles": st})
         self.serve()
 
+    def count(self, pc):
+        """The code map by callback: one more run of the instruction at pc, and where it came from."""
+        self.codemap[pc] = self.codemap.get(pc, 0) + 1
+        if pc >= 0x8000 and L.Plus4VM_GetMemoryPage(vm, pc >> 14) >= 0x80:    # a RAM segment
+            self.cmap_ram.add(pc)
+
     def cmap_mark(self, internal):
         """The counts at a stop: an internal goal (a replay to the same stop, a load, a reset) ran
         instructions the client never asked for, so the counts go back to the last stop's."""
         if not self.cmap_on:
             return
         if internal and self.cmap_park is not None:
-            C.memmove(CMAP, self.cmap_park, C.sizeof(CMAP))
+            cmap_put(self.cmap_park)
         else:
-            self.cmap_park = bytes(CMAP)
+            self.cmap_park = cmap_bytes()
 
     def finish(self, g, res):
         if g.get("item") is not None:
@@ -650,8 +682,7 @@ class Emu:
                 # replay or a load stops at again, or a PC set at the stop replaces, counts once or
                 # not at all. Its checkpoints counted it when the machine stopped on it (_fetch).
                 if self.codemap is not None and self.parked is not None and not self.parked.get("jam"):
-                    pc = self.parked["pc"]
-                    self.codemap[pc] = self.codemap.get(pc, 0) + 1
+                    self.count(self.parked["pc"])
                 self.parked = None
                 return
             if r == "out":
@@ -1498,37 +1529,46 @@ class Emu:
             raise EmuError('action: "start", "read", "zap" or "stop"')
         if CMAP is not None:
             if action == "start":
-                C.memset(CMAP, 0, C.sizeof(CMAP))
+                cmap_clear()
                 L.Plus4VM_SetCodeMap(vm, CMAP)
-                self.cmap_on, self.cmap_park = True, bytes(C.sizeof(CMAP)) if stopped else None
+                if CMAP_RAM is not None:
+                    L.Plus4VM_SetCodeMapRAM(vm, CMAP_RAM)
+                self.cmap_on, self.cmap_park = True, bytes(len(cmap_bytes())) if stopped else None
                 return {"recording": True, "counts": "the library's"}
             if action == "zap":
-                C.memset(CMAP, 0, C.sizeof(CMAP))
+                cmap_clear()
                 if self.cmap_on and stopped:
-                    self.cmap_park = bytes(C.sizeof(CMAP))
+                    self.cmap_park = bytes(len(cmap_bytes()))
                 return {"recording": self.cmap_on}
-            counts = self.cmap_park if stopped and self.cmap_park is not None else bytes(CMAP)
-            n = memoryview(counts).cast("I")
+            counts = self.cmap_park if stopped and self.cmap_park is not None else cmap_bytes()
+            n = memoryview(counts[:C.sizeof(CMAP)]).cast("I")
             ran = self.with_lengths([(k, n[k]) for k in range(65536) if n[k]])
+            out = {"instructions": ran}
+            if CMAP_RAM is not None:
+                r = memoryview(counts[C.sizeof(CMAP):]).cast("I")
+                out["under_roms"] = [k for k in range(0x8000, 0x10000) if r[k]]
             if action == "stop":
                 L.Plus4VM_SetCodeMap(vm, None)
+                if CMAP_RAM is not None:
+                    L.Plus4VM_SetCodeMapRAM(vm, None)
                 self.cmap_on, self.cmap_park = False, None
-            return {"recording": self.cmap_on, "instructions": ran}
+            return {"recording": self.cmap_on, **out}
         if action == "start":
-            self.codemap = {}
+            self.codemap, self.cmap_ram = {}, set()
             if stopped:
                 self.set_trace(True)
             return {"recording": True, "counts": "a callback on every instruction"}
         if action == "zap":
             if self.codemap is not None:
-                self.codemap = {}
+                self.codemap, self.cmap_ram = {}, set()
             return {"recording": self.codemap is not None}
         ran = self.with_lengths(sorted((self.codemap or {}).items()))
+        under = sorted(self.cmap_ram)
         if action == "stop":
-            self.codemap = None
+            self.codemap, self.cmap_ram = None, set()
             if stopped:
                 self.set_trace(False)
-        return {"recording": self.codemap is not None, "instructions": ran}
+        return {"recording": self.codemap is not None, "instructions": ran, "under_roms": under}
 
     def with_lengths(self, counts):
         """[address, length, count]: the length as the 6502 decodes the byte there now."""
@@ -1601,7 +1641,9 @@ def hello():
             "model_id": args.model, "ram_kb": MODEL["ram"], "python": sys.version.split()[0], "clock": CLOCK,
             "frame": FRAME, "spaces": {k: [f"${lo:04X}", f"${hi:04X}"] for k, (lo, hi) in SPACES.items()},
             "commands": list(COMMANDS), "workarounds": WORKAROUNDS, "keys": MATRIX,
-            "codemap": "the library's counters" if CMAP is not None else "a callback on every instruction",
+            "codemap": ("the library's counters" + ("" if CMAP_RAM is not None else
+                        ", which cannot tell the RAM under the ROMs from the ROMs (rebuild: tools.py get-plus4emu)")
+                        if CMAP is not None else "a callback on every instruction"),
             "roms": args.roms, "root": ROOT, "pid": os.getpid()}
 
 

@@ -75,7 +75,9 @@ load. On 19 October 2026 the newest release was 1.2.10.1, of 22 February
 names it 1.2.11. `get-plus4emu` fetches that commit alone and refuses
 anything else. The kit adds one patch, `kit/c16/codemap.patch`: the
 machine counts each instruction it runs, so `codemap` returns every
-address that ran, with its count, in one call. 300 frames of the check's
+address that ran, with its count, in one call, and counts apart the
+instructions at $8000-$FFFF whose opcode came from the RAM beneath the
+ROMs, which the address alone cannot tell from the ROMs' own (#874). 300 frames of the check's
 test program ran and were mapped in 0.32 seconds; with a callback for
 each instruction, 300 frames took 4.5 seconds when the emulators were
 compared. To move to another commit, change `PLUS4EMU_COMMIT` and
@@ -85,7 +87,7 @@ change the rows here together.
 
 | Build | Machine | Measured | Checks passed |
 |---|---|---|---|
-| plus4emu 1.2.11 (git 939e652), from source, with `kit/c16/codemap.patch`, in the kit's server, g++ 13.3.0, Python 3.13.16 | Linux x86_64 (Ubuntu 24.04, no display, 4 cores) | 19 October 2026 | 46 of 46 as a C16 in each of two runs (53 and 57 s), and as a Plus/4 (67 s); built without libsndfile, 46 of 46 as a C16 (56 s); `verify-footprint` clean |
+| plus4emu 1.2.11 (git 939e652), from source, with `kit/c16/codemap.patch` counting apart the code run from the RAM under the ROMs (#874), in the kit's server, g++ 13.3.0, Python 3.13.18; built without libsndfile | Linux x86_64 (Ubuntu 24.04, no display, 4 cores) | 15 November 2026 | 47 of 47 as a C16 (45 s) and as a Plus/4 (42 s); 47 of 47 as a Plus/4 on a library built without the patch, where the server's callback makes the code map (51 s); `verify-footprint` clean |
 
 | Phase | Passes | Fails | Workaround |
 |---|---|---|---|
@@ -218,8 +220,10 @@ Run on Linux x86_64 (Ubuntu 24.04 in a cloud container, no display, g++
 Plus/4, and again as a C16 on a library built without libsndfile;
 `frame.py test` found no pixel different; and `verify-footprint` was clean,
 with nothing written outside the repository either by the server or by
-`get-plus4emu`'s install. Nothing in the kit's server is particular to
-Linux.
+`get-plus4emu`'s install. On 15 November 2026, with the patch that also
+counts the code run from the RAM under the ROMs, it passed 47 of 47 as a
+C16 and as a Plus/4, and as a Plus/4 on a library built without the patch.
+Nothing in the kit's server is particular to Linux.
 
 ## Untried systems
 
