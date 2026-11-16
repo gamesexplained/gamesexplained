@@ -8,9 +8,9 @@ fixes each line it prints or keeps it for a reason it can say. The rules are in 
   announcer      a sentence that announces the next one ("Here's the odd part", "It turns out")
   imperative     an instruction to the reader that is not a control ("Notice", "Listen to", "Imagine")
   contrast       "it's not X, it's Y", "not just", "more than just", "not only ... but"
-  no-subject     "no X" as the one acting ("no gate leads to it", "no player is told")
+  no-x           "no X" or "nothing" standing in for a thing: as the one acting ("no gate leads to
+                 it", "nothing reads it"), behind "by" ("an exit found by no player") or "belongs to"
   hype           a hype word (elegant, clever, fascinating, remarkable, brilliant, ...)
-  negation       two negations in one sentence ("which cannot be searched, is opened without being seen")
 
 A heading is checked whole. Whether a heading is an inventory or a telegram (kit/style.md,
 "Section headings"), and whether a sentence is compressed (kit/style.md, "Sentences"), needs a
@@ -43,6 +43,13 @@ VOID = {"br", "hr", "img", "input", "meta", "link", "source", "wbr", "area", "ba
 HYPE = ("elegant", "elegantly", "clever", "cleverly", "fascinating", "remarkable", "remarkably", "brilliant",
         "brilliantly", "masterful", "masterfully", "beautiful", "beautifully", "ingenious", "ingeniously")
 
+# Verbs that make "no X" or "nothing" the one acting; the first line reads naturally after "nothing"
+# ("nothing happens") and is checked only after "no X".
+ACTS = (r"gets?|changes?|appears?|happens?|stops?|moves?|"
+        r"leads?|reach(?:es)?|reads?|tells?|uses?|plays?|knows?|sees?|draws?|calls?|selects?|points?|sets?|starts?"
+        r"|writes?|clears?|loads?|checks?|kills?|names?|mentions?|refers?|finds?|asks?|jumps?|shows?")
+ACTS_ON = ACTS.split("|", 6)[6]
+
 RULES = [
     ("dash", re.compile(r"—|[A-Za-z]\s+[–-]\s+[A-Za-z]")),
     ("announcer", re.compile(
@@ -60,16 +67,17 @@ RULES = [
         r"|\b(it|this|that)\s+isn(?:'|’)t\b[^.;]{1,60}?[,;:—]\s*\2(?:'s|’s|\s+is)\b"
         r"|(?<!has )(?<!have )(?<!had )\bnot\s+just\b|\bmore\s+than\s+just\b|\bnot\s+(?:only|merely)\b[^.]{1,80}\bbut\b",
         re.I)),
-    ("no-subject", re.compile(
+    ("no-x", re.compile(
         r"(?:^|[.;:,]\s+|\b(?:and|but|so|because|since|when|where|that|which)\s+)(?<!there is )(?<!there are )"
-        r"(?<!there was )(?<!there were )no\s+(?!longer\b|more\b|matter\b|doubt\b|way\b)[a-z][\w-]*(?:\s+(?!to\b)[a-z][\w-]*)?\s+"
-        r"(?:is|are|was|were|can|could|will|would|does|did|has|have|ever|leads?|reaches?|reads?|tells?|uses?|plays?"
-        r"|gets?|knows?|sees?|draws?|calls?|selects?|points?|changes?|appears?|happens?|stops?|moves?)\b",
+        r"(?<!there was )(?<!there were )(?:no\s+(?!longer\b|more\b|matter\b|doubt\b|way\b)[a-z][\w-]*(?:\s+(?!(?:to|in|on|at|for|of|from|with|by|during|after|before)\b)[a-z][\w-]*)?\s+"
+        r"(?:is|are|was|were|can|could|will|would|does|did|has|have|ever|" + ACTS + r")"
+        r"|(?:nothing|nobody|no\s+one)\s+(?:ever\s+|else\s+)?(?:" + ACTS_ON + r"))\b"
+        r"|\bby\s+(?:no\s+(?!means\b|chance\b|accident\b)[a-z][\w-]*|nothing|nobody|no\s+one|none)\b"
+        r"|\bbelong(?:s|ed|ing)?\s+to\s+(?:no\s+[a-z][\w-]*|nothing|nobody|no\s+one|none)\b",
         re.I)),
     ("hype", re.compile(r"\b(?:" + "|".join(HYPE) + r")\b", re.I)),
 ]
 
-NEGATION = re.compile(r"\b(?:not|no|never|none|nothing|nobody|nowhere|neither|without|cannot)\b|n['’]t\b", re.I)
 
 ABBREV = re.compile(r"\b(?:e\.g|i\.e|etc|vs|cf|Mr|Mrs|Ms|Dr|St|No|approx|fig|vol|ed)\.$", re.I)
 
@@ -179,8 +187,6 @@ def check_sentence(s):
         return []
     own = own_words(s)
     found = [name for name, rx in RULES if rx.search(own)]
-    if len(NEGATION.findall(own)) >= 2:
-        found.append("negation")
     return found
 
 

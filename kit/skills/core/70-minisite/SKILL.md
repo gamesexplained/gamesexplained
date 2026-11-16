@@ -460,10 +460,10 @@ python3 kit/scripts/copy_lint.py games/<platform>/<slug>
 
 It prints each sentence that breaks a rule a pattern can catch: a dash
 joining two clauses, a sentence that announces the next one, an
-instruction to the reader, "it's not X, it's Y", "no X" as the subject,
-a hype word, and two negations in one sentence. Fix each line it prints,
-or keep it for a reason you can state, such as a finding about two
-things the game never does. It skips the game's own words in a
+instruction to the reader, "it's not X, it's Y", "no X" or "nothing"
+in place of a thing ("nothing reads it", "found by no player"), and a
+hype word. Fix each line it prints, or keep it for a reason you can
+state. It skips the game's own words in a
 `<blockquote>` or `<q>`, in quotation marks or in capitals; mark any
 other quotation with `data-copy-lint="off"`. It cannot see the strings a
 widget writes from script, so the edit reads those. Run it again after

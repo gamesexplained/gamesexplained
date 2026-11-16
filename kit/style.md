@@ -83,11 +83,10 @@ kind of compression.
   apart") stops the reader to decode it. Say the literal thing ("a bug
   in the frame counter", "once each time round the main loop"), or
   explain the term once and keep it.
-- One negation to a sentence, and what happens before what does not.
-  Two negations make the reader work out what is true ("the animation
-  is a monster state that nothing ever sets, so those two frames are
-  never seen"). Say it once: "the code holds two frames for a monster
-  state that the game never sets".
+- Put a negation on the verb, not on a noun. "Nothing reads the flag"
+  and "an exit found by no player" make an absence a thing in the
+  sentence; "the game never reads the flag" and "an exit that players
+  never find" do not ("'No X' in place of a thing", below).
 - Keep the subject next to its verb. "The routine that the game calls
   every frame while the player is in the air sets the flag" holds the
   reader through a clause before the verb arrives; "every frame while
@@ -191,14 +190,15 @@ villain needs the base", "how the game picks a walking frame". Then:
 
 The test is a human reading the page without noticing how it was made.
 
-### "No X" as the subject
+### "No X" in place of a thing
 
-Do not make an absence the thing that acts. "No gate leads to it" and
-"no player is told" put "no X" where the subject goes, and the reader
-has to turn the sentence round to find what is true. If "no X" would be
-the actor, rewrite the sentence so that a real thing acts, or state the
-absence plainly. "There is no X" is fine: "There is no music in this
-game."
+Do not make an absence a thing in the sentence. "No gate leads to it",
+"nothing reads the flag" and "an exit found by no player" put "no X" or
+"nothing" where a thing goes: the one acting, the one behind "by", or
+the one something belongs to. The reader has to turn the sentence round
+to find what is true. Rewrite it so that a real thing acts and the verb
+carries the negation, or state the absence plainly. "There is no X" and
+"has no X" are fine: "There is no music in this game."
 
 Real examples:
 
@@ -207,6 +207,8 @@ Real examples:
 | Secret: no Malir gate leads to Ja-Karn | Secret: there is no Malir gate that leads to Ja-Karn |
 | Its map lists no gates, and no gate in the other eight leads to it | Its map does not list any gates, and none of the other eight systems have a gate leading to it |
 | What the code does that no player is told | What the code does that the game never tells the player |
+| An exit which is found by no player | An exit that players never find |
+| Tunes 1, 2 and 3 are in the table, and nothing starts them either | Tunes 1, 2 and 3 are in the table, and the game never starts them either |
 
 ### Section headings
 

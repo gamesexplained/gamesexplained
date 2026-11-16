@@ -39,8 +39,8 @@ For each section, answer from the page itself:
 
 Answer with a sentence or example from the page, not a score. Quote
 each sentence you had to read twice to follow, and say what stopped
-you: a phrase you had to decode, a term not yet explained, two
-negations, or a subject far from its verb.
+you: a phrase you had to decode, a term not yet explained, "no X" or
+"nothing" where a thing should be, or a subject far from its verb.
 
 ## Compare the notes with the pages
 

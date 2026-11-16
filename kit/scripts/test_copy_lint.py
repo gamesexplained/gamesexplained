@@ -57,22 +57,23 @@ class Rules(unittest.TestCase):
         self.quiet("It's not on the map, but this is the room.")
         self.quiet("The ship has not just landed.")
 
-    def test_no_subject(self):
-        self.fires("no-subject", "No gate leads to the tenth system.")
-        self.fires("no-subject", "The code checks it, but no player is told.")
+    def test_no_x(self):
+        self.fires("no-x", "No gate leads to the tenth system.")
+        self.fires("no-x", "The code checks it, but no player is told.")
+        self.fires("no-x", "It is an exit which is found by no player.")
+        self.fires("no-x", "Flags 0, 1 and 3 are read by nothing.")
+        self.fires("no-x", "The tunes are in the table, and nothing ever starts them.")
+        self.fires("no-x", "Pictures 81 to 99 belong to no room.")
         self.quiet("There is no gate to the tenth system.")
         self.quiet("The ship no longer moves.")
+        self.quiet("The disk shows no picture at all.")
+        self.quiet("The game has three tunes and no music during play.")
+        self.quiet("Nothing happens when fire is held.")
+        self.quiet("By no means is it slow.")
 
     def test_hype(self):
         self.fires("hype", "The renderer is elegant.")
         self.quiet("The renderer draws each row once.")
-
-    def test_negation(self):
-        self.fires("negation", "The drawer, which cannot be searched, is opened without ever being seen.")
-        self.fires("negation", "Nothing sets the state, so the frames are never drawn.")
-        self.fires("negation", "The game doesn't check it and never will.")
-        self.quiet("The game never sets that state.")
-        self.quiet("Every script that is neither running nor locked is thrown out.")
 
     def test_length_is_not_a_rule(self):
         self.quiet(" ".join(["word"] * 60) + ".")
@@ -109,7 +110,7 @@ class Skipped(unittest.TestCase):
 
     def test_headings_are_checked_whole(self):
         self.assertEqual(rules("<h2>Secret: the gauge lies. By one pixel — up</h2>"), ["dash"])
-        self.assertEqual(rules("<h2>Secret: no gate leads to the tenth system</h2>"), ["no-subject"])
+        self.assertEqual(rules("<h2>Secret: no gate leads to the tenth system</h2>"), ["no-x"])
 
     def test_layouts_are_not_pages(self):
         with tempfile.TemporaryDirectory() as tmp:
