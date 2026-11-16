@@ -11126,13 +11126,13 @@
   },
   {
    "address": 38131,
-   "name": "type_gun_x",
+   "name": "type_state",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 38176,
-   "name": "type_frame",
+   "name": "type_edge",
    "type": "Field",
    "kind": "user"
   },
@@ -11168,7 +11168,7 @@
   },
   {
    "address": 38446,
-   "name": "type_hits",
+   "name": "type_anim",
    "type": "Field",
    "kind": "user"
   },
@@ -11180,13 +11180,13 @@
   },
   {
    "address": 38536,
-   "name": "type_gun_y",
+   "name": "type_gun_x",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 38581,
-   "name": "type_width",
+   "name": "type_gun_y",
    "type": "Field",
    "kind": "user"
   },
@@ -11198,19 +11198,19 @@
   },
   {
    "address": 38671,
-   "name": "type_score",
+   "name": "type_hits",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 38716,
-   "name": "type_anim",
+   "name": "type_width",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 38761,
-   "name": "type_edge",
+   "name": "type_score",
    "type": "Field",
    "kind": "user"
   },
@@ -15480,7 +15480,7 @@
   {
    "address": 248,
    "type": "line",
-   "text": "A working byte: the row counter of draw_new_map_row, the tile number in draw_picture_tiles, and text work in title_page and print_text."
+   "text": "A working byte: draw_new_map_row only stores 0 in it (its row counter is $F9); in draw_picture_tiles it is the high byte of the tile number times 32; text work in title_page and print_text."
   },
   {
    "address": 249,
@@ -17510,7 +17510,7 @@
   {
    "address": 12367,
    "type": "line",
-   "text": "Draws the player's energy, the damage count $039E times 8, as a bar in the panel at $40C1 (rows 4 and 5); entered at $3055 with a length in A by other levels. Characters past the end are cleared to spaces."
+   "text": "Draws the player's energy, the damage count $039E times 8 (at most 47), as a bar in the panel from $40C2 (rows 4 and 5); entered at $3055 with a length in A by other levels. Characters past the end are cleared to spaces."
   },
   {
    "address": 12373,
@@ -18490,7 +18490,7 @@
   {
    "address": 33599,
    "type": "line",
-   "text": "Self-modified: the immediate value of the LDY at $833E holds the $3A-frame counter of the plane's last frames."
+   "text": "Self-modified: the immediate value of the LDY at $833E, $3A: the counter of the plane's last frames reloads with it and runs out after $3B frames."
   },
   {
    "address": 33623,
@@ -18825,7 +18825,7 @@
   {
    "address": 36208,
    "type": "line",
-   "text": "The title's white dot: sprite 0 moves right two pixels a frame along line $88 and starts again at the left after X $150. As it passes X $28, $78, $C8 and $118, sprite 1 is left there and fades through the colours at $9206."
+   "text": "The title's white dot: sprite 0 moves right two pixels a frame along line $88, on to X $1FE, and wraps to the left (the CMP #$50 after the carry into the high bit is passed only when the low byte is 0). As it passes X $28, $78, $C8 and $118, sprite 1 is left there and fades through the colours at $9206."
   },
   {
    "address": 36320,
@@ -19225,7 +19225,7 @@
   {
    "address": 37786,
    "type": "line",
-   "text": "The oldest of level 5's six X positions: Bond (sprite 3) is drawn at it plus $1C (at the plane's own X while it is 0), so he swings behind the plane. Nothing names the ten bytes after it (0, 0, 0, then 1 to 7)."
+   "text": "The oldest of level 5's X positions: Bond (sprite 3) is drawn at it plus $1C (at the plane's own X while it is 0), so he swings behind the plane. Each frame the history is shifted from Y = 5 down, so $939B, the byte after it, is written as well; nothing names the bytes after that."
   },
   {
    "address": 37797,
@@ -19445,12 +19445,12 @@
   {
    "address": 38131,
    "type": "line",
-   "text": "The 45 enemy types (types 0 to $2C), one byte each per table: gun X offset."
+   "text": "The 45 enemy types (types 0 to $2C), one byte each per table; spawn_enemy copies each table into a slot table. This one: the slot's starting state, into $945B (0 for most types; $0A, $0F, $90, 1 or 7 for others)."
   },
   {
    "address": 38176,
    "type": "line",
-   "text": "Enemy types: first sprite frame."
+   "text": "Enemy types: the edge limit, into $94EB ($FE, $D8 or $DE)."
   },
   {
    "address": 38221,
@@ -19480,7 +19480,7 @@
   {
    "address": 38446,
    "type": "line",
-   "text": "Enemy types: hit points."
+   "text": "Enemy types: the type's first animation in the level's animation table, into $9483 (3 for types 3 to 8, 0 for the rest)."
   },
   {
    "address": 38491,
@@ -19490,12 +19490,12 @@
   {
    "address": 38536,
    "type": "line",
-   "text": "Enemy types: gun Y offset."
+   "text": "Enemy types: the X offset its shots start from, into $94A3, which enemy_fire adds to the enemy's X / 2."
   },
   {
    "address": 38581,
    "type": "line",
-   "text": "Enemy types: hit box width."
+   "text": "Enemy types: the Y offset its shots start from, into $94AB, which enemy_fire adds to the enemy's Y."
   },
   {
    "address": 38626,
@@ -19505,17 +19505,17 @@
   {
    "address": 38671,
    "type": "line",
-   "text": "Enemy types: score class ($7F none)."
+   "text": "Enemy types: hit points, into $94BB; $7F for the six-sprite groups of types $0D to $16, which shots never use up."
   },
   {
    "address": 38716,
    "type": "line",
-   "text": "Enemy types: first animation."
+   "text": "Enemy types: the width of the hit box, into $9443."
   },
   {
    "address": 38761,
    "type": "line",
-   "text": "Enemy types: edge limit."
+   "text": "Enemy types: the score class, into $94C3 (an index into the score digit tables at $9796)."
   },
   {
    "address": 38806,
@@ -19695,7 +19695,7 @@
   {
    "address": 39251,
    "type": "line",
-   "text": "Level 3: the rope sprite's Y expansion bits, by the rope's length / 8 ($80 = expanded for the long ones)."
+   "text": "Level 3: the rope sprite's expansion bits, both X and Y, by the step $3C63 / 8; the $80 entries (expanded) are the first four, for the shortest."
   },
   {
    "address": 39259,
@@ -19745,7 +19745,7 @@
   {
    "address": 39331,
    "type": "line",
-   "text": "The eight shot slots (eight bytes a table; slots 0 to 3 the player's, 4 to 7 the enemies'): $FF free."
+   "text": "The eight shot slots (eight bytes a table; slots 0 to 3 the player's, 4 to 7 the enemies', except on level 4, where diver_fires puts enemy harpoons in slots 3 and 2): $FF free."
   },
   {
    "address": 39335,
@@ -20290,7 +20290,7 @@
   {
    "address": 49039,
    "type": "line",
-   "text": "Zero bytes to $BFFF that nothing reads."
+   "text": "Two more rows of level 5 road tiles ($BF8F-$BF96) after the opening picture, which nothing reads, then zero bytes to $BFFF that nothing reads."
   },
   {
    "address": 49152,
@@ -20615,7 +20615,7 @@
   {
    "address": 49430,
    "type": "line",
-   "text": "1 while a tune plays."
+   "text": "$FF while a tune plays (play_tune sets it), 0 when stop_sound has turned the music off."
   },
   {
    "address": 49431,
@@ -21505,7 +21505,7 @@
   {
    "address": 63514,
    "type": "line",
-   "text": "Before the jump: when Bond (sprite 3) hangs just above the cab of the tanker being followed (within 7 pixels across and $26-$2C down), state 5 is shown; fire then makes the jump: full volume, $F779 = $80, Bond's tanker takes that tanker's place ($FB0B, $FB2D, history $F328), two rams allowed ($F6F8 = 2), state 1, and that tanker leaves the list ($F352 = $80)."
+   "text": "Before the jump: when Bond (sprite 3) hangs just above the cab of the tanker being followed (within 7 pixels across and $26-$2B down), state 5 is shown; fire then makes the jump: full volume, $F779 = $80, Bond's tanker takes that tanker's place ($FB0B, $FB2D, history $F328), the gear $F6F8 set to 2, state 1, and that tanker leaves the list ($F352 = $80)."
   },
   {
    "address": 63515,
@@ -21640,7 +21640,7 @@
   {
    "address": 64422,
    "type": "line",
-   "text": "Self-modified: the immediate value of the CMP at $FBA5 holds the plane's highest Y ($82; 1 after the jump)."
+   "text": "Self-modified: the immediate value of the CMP at $FBA5 holds the plane's highest Y: level5_start sets $73, and the jump sets 1."
   },
   {
    "address": 64431,
