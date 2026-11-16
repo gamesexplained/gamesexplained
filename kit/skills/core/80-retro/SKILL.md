@@ -166,10 +166,7 @@ unnoticed.
    path, the site or the prose style goes in `kit-feedback.md` and the
    pull request instead.
 7. **Complete `game.json`**: when delivering a full minisite, first check
-   the reader review from `70-minisite` is recorded in `agent-history.md`
-   and its repairs are complete. A thin explanation or an ineffective
-   widget that the run can fix belongs in this delivery, not in a list
-   of ideas for Gold.
+   its reader review is settled (`75-review`).
    Then record the tier reached (only if every requirement is
    met; an unattended run stops at Silver, since Gold is human curation;
    a run whose coverage or verify step ran on a model that is not proven

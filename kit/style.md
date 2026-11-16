@@ -11,7 +11,8 @@ on what the reader will learn. It can be done by the same agent. The
 final pass has four steps, described in `kit/skills/core/70-minisite`:
 the draft, a pass that develops missing explanations, a rewrite that
 applies the rules below paragraph by paragraph, and a rewrite for a
-reader of fifteen. The reader review then checks the finished pages.
+reader of fifteen. The reader review (`kit/skills/core/75-review`)
+then checks the finished pages.
 
 ## What copy is for
 
@@ -37,7 +38,8 @@ A counter value or a table entry is the beginning of an explanation.
 Work out what it means during play: how often an enemy moves, how long
 a resource lasts, which choice earns more, or why a familiar tactic
 fails. Check that consequence against the code or a live observation
-before publishing it. State uncertainty where the evidence ends.
+before publishing it. What the evidence does not settle stays in
+`facts.md` as a lead, and the page states what was shown.
 
 Give a discovery room in proportion to what it teaches. Add the context,
 causal steps, and examples a newcomer needs; remove repetition and

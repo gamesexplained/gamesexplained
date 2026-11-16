@@ -8,10 +8,10 @@ description: Build the game's minisite. The "How it works" page (index.html) fro
 The minisite is the deliverable: a small site that explains the game, where
 the writing is the spine but anything that explains the game can live
 (widgets, level browsers, tune players, even a full JavaScript port of the
-game itself). Build what helps the reader understand it. Silver delivers
-a site that stands on its own, with at most a few human edits needed.
-Read [reader-review.md](reader-review.md) before planning the pages and
-apply it to the finished site before calling this step done.
+game itself). Build what helps the reader understand it. The pages
+start from what the analysis found ("Plan the explanation"), and the
+finished site goes on to a reader who wrote none of it
+(`kit/skills/core/75-review`).
 
 Every game is a small site with the same tabs in the same order: **How it
 works** (`index.html`, authored), **Play** (`play.html`, authored, only
@@ -67,52 +67,69 @@ on its own; add a control when it gives the reader a useful experiment.
 
 ## Plan the explanation
 
-Before implementing widgets, read `features.md`, `facts.md`, `cheats.md`,
-and the reference images together. Write a short outline in
-`work/minisite-plan.md`. For each proposed section, name the reader's
-question, the verified finding that answers it, its consequence during
-play, and the example or demonstration that will make it clear. Point
-to the supporting fact or routine. An implication not yet checked is
-a question to verify, not a finding to publish.
+Start with the leads, because a run's best findings can sit in its
+notes and never reach a page (`kit/lessons/2026-11-16-leads-left-in-notes.md`).
+Read `features.md`, `facts.md`, `cheats.md`, `orientation.md` and
+`media.json`, and list in `work/minisite-plan.md` every finding a player
+who finished the game would not know:
 
-Choose the strongest findings and place them as high as their needed
-context allows. Look especially for consequences still buried in the
-notes: an unusual counter, an exception to a shared rule, a combination
-of ordinary inputs, or something the game shows only at the end. Work
-out what each means to a player. Explain the ordinary behaviour well
-even when the game yields no secrets.
+- a bug, or a state the code accepts that its programmer never meant
+  anyone to reach;
+- cut content: shapes, rooms, tunes, text or code that nothing reaches,
+  including whatever the notes call retained, spare or unreferenced;
+- a place where the code differs from the instructions, the manual or
+  another version of the game;
+- one case handled differently from the rest: an enemy with its own
+  counter, a room drawn another way, a combination of keys the
+  instructions leave out.
 
-The outline is a working aid, not a quota of sections or a new approval
-step. Select detail for what it teaches; group related material and
-leave research process in the notes. Inspect a relevant finished page
-for a useful explanation or interaction pattern, and record why that
-pattern fits. Borrow the pattern rather than another game's structure.
-Write the final prose after the demonstrations work, using this outline.
+Give each lead its outcome: the Discoveries or How it works section that
+shows it, or a line on why it stays a lead (not yet verified, or not
+reached in normal play: "Discoveries", below). A note that reads like
+housekeeping, a "retained" table or a counter with a different value,
+is often the best thing in the game, so none is dropped without its
+line. The list, each lead with its outcome, goes in the pull request's
+description, and the leads that stay go in `TODO.md`.
+
+Then outline the pages in the same file. For each proposed section, name
+the reader's question, the verified finding that answers it, its
+consequence during play, and the example or demonstration that will
+make it clear, with the supporting fact or routine. An implication not
+yet checked is a question to verify, not a finding to publish. Place the
+strongest findings as high as their context allows, and explain the
+ordinary behaviour well even when the game yields no secrets.
+
+The outline is a working aid, not a quota of sections. Select detail for
+what it teaches, and leave research process in the notes. A finished
+page with a fitting explanation or interaction (the worked examples in
+[`75-review/reader.md`](../75-review/reader.md)) lends its pattern, not its
+structure. Write the final prose after the demonstrations work.
 
 ## Design the demonstrations
 
 - **Use actions the reader understands.** Let them move a character,
   place a target, throw an object, or step a decision when those actions
   explain the rule. Sliders suit quantities such as time or score. A
-  movement example should show positions and movement, so the reader
-  does not have to imagine a scene from two distance values.
+  rule about movement shows the figures moving on a piece of the map,
+  not their distances as numbers.
 - **Start with an informative case.** Show the relevant objects and an
   outcome on arrival or after one obvious action. Make the controls and
   the meaning of colours clear. Provide a contrasting case or boundary
   that shows why the rule matters, without requiring a lucky combination
   of settings. Keep mobile and keyboard use practical.
-- **Show cause and consequence together.** A pursuit demo can show the
-  step, whether it got closer, and the resulting turn. A formula can
-  show a worked result. A sound can sit beside the event or message it
+- **Show cause and consequence together.** A decision shows the
+  situation, the choice the code makes and why. A formula shows a worked
+  result. A sound can sit beside the event or message it
   accompanies. Label the inputs, result, and units in the reader's terms.
 - **Choose a useful view of a collection.** Show related moving figures
   together when comparison is the point. Use a picker for a large set
   that needs exploration. Explain what a pose, picture, or sound does
   in the game, and make animation visible without a search for settings.
 - **Keep the demonstration faithful.** Verify its rules as described
-  under "Building it". Label simplifications that affect what a reader
-  would conclude, such as omitted obstacles or a changed time scale.
-  A mechanic demo can be small; it need not become a full Play port.
+  under "Building it". When it leaves out something that changes what a
+  reader would conclude (the walls, the real speed), its caption says
+  what. A mechanic demo can be small; it need not become a full Play
+  port.
 
 ## Sections
 
@@ -423,12 +440,10 @@ its music or its maps can put that first instead.
 
 Write the copy **last**, as a separate pass, under `kit/style.md`, using
 the outline and the working demonstrations. First do a **depth pass**:
-read each important section for the player experience, the cause, and
-the concrete example. Add missing connections, useful consequences,
-and exceptions. Compare the draft with the verified notes for strong
-findings that have been reduced to a number or an unexplained sentence.
-Check any new claim before keeping it. This pass develops the explanation;
-it does not pad every section to the same length.
+hold each important section against "Depth and clarity" in
+`kit/style.md`, and make sure each lead the plan gave a section reads as
+a finding with its consequence, not a number or a passing sentence.
+Check any new claim before keeping it.
 
 Then do a **rewrite pass** as its own step, with the draft in front of
 you. An agent reads a rule list once and then reverts to its default voice; the
@@ -787,22 +802,20 @@ matches a reference screenshot from `reference/`. Exercise every widget
 from its initial state, including on a narrow screen, and check the
 result its label and explanation promise.
 
-Keep those outcomes in the game's `site-browser.js`, using
-`kit/scripts/play_browser.js`. A click or a changed button label alone
-does not establish that a demonstration works. Assert the relevant
+Keep those outcomes in a browser check beside the page (a file whose
+name ends in `-browser.js`, run through `kit/scripts/play_browser.js`).
+A click or a changed button label alone does not establish that a
+demonstration works. Assert the relevant
 visible result: a different rendered state, an object reaching the
 expected place, or the displayed calculation. For sound, check the page's
 actual selected input produces non-silent output as well as exercising
-playback in the browser. A flashing-screen control needs a screen with
-flashing cells. For a repeating animation, sample over enough time to
+playback in the browser. A switch needs a scene its effect shows on,
+or nothing changes for the check to see. For a repeating animation, sample over enough time to
 observe distinct states; two samples can land on the same phase.
 Pair the visible check with the rule's expected result, since changing
 pixels alone does not show that it is right.
 
-Finally apply [reader-review.md](reader-review.md) to every authored tab.
-Fix the weaknesses it finds and record the concrete changes and remaining
-limits in `agent-history.md`. This is the same agent's separate editorial
-pass; it requires neither another agent nor a human approval step.
+Then the finished site goes to `75-review`.
 
 ## Outputs
 
@@ -814,4 +827,5 @@ why the game has none; `graphics.html` with every shape the moving
 things are drawn with, or the line saying why it has none; `listing.json` built and passing
 `check_listing.py`; `game.json` with `copy` set; `build.py` producing the
 minisite without errors; browser checks asserting the widgets' promised
-results; a completed reader review recorded in `agent-history.md`.
+results; the leads list, each lead with its outcome, for `75-review`
+and the pull request.
