@@ -67,7 +67,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1981 · Nintendo</p>
   <h1>Octopus</h1>
-  <p class="sub">A 4-bit chip with 65 cells of memory runs a clock, an alarm and two games. The octopus that guards the treasure has no randomness of its own: its four tentacles move in a fixed turn, and the only chance in the game is the clock's seconds.</p>
+  <p class="sub">A 4-bit chip with 65 cells of memory runs the clock, the alarm and both games. The octopus has no random numbers to draw on. Its four tentacles take turns in a fixed order, and the only thing that varies is the clock's seconds.</p>
 </header>
 <main class="wrap">
 
@@ -78,24 +78,24 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate"><div class="pp-two"><div id="pic-game"></div><div id="pic-clock"></div></div>
     <p class="cap"><b>Left:</b> Game A, 30 seconds in. <b>Right:</b> the clock, where the game plays itself once a second. Both are drawn from the segments the chip lit on the kit's model of it, on MAME's drawing of the LCD.</p></div>
   <p>Right moves the diver one place toward the chest and left one place back; there are five places in the water. At the chest each press of right takes a piece of treasure, a point, and the diver carries it home in a bag. Climbing back into the boat with it is worth 3 more. A diver touched by a tentacle's tip is caught, and the next one in the boat takes his place; when the third is caught the game is over.</p>
-  <p>There is no picture in the usual sense. The screen is 70 fixed shapes printed on the LCD, each one on or off. The diver at each of his six places is a shape of his own, and so is every segment of every tentacle. Animation is lighting one shape and putting out another.</p>
+  <p>The screen is 70 fixed shapes printed on the LCD, and each one is either on or off. The diver has a separate shape for each of his six places, and every segment of every tentacle is a shape too. To move something, the game turns one shape off and the next one on.</p>
 </section>
 
 <section>
   <p class="fig">02 · A replay</p>
   <h2 class="t">One tentacle moves at a time</h2>
-  <p class="lede">Step through a minute of Game A, played on the kit's model of the chip by a player that looks a few steps ahead. Each frame is one change of the screen.</p>
+  <p class="lede">Step through a minute of Game A, played by a computer player that looks a few steps ahead. Each frame is one change on the screen.</p>
   <div class="plate">
     <div id="replay"></div>
     <div class="pp-bar"><button id="rp-prev">◀ step</button><button id="rp-play">play</button><button id="rp-next">step ▶</button><input id="rp-pos" type="range" min="0" value="0"><span id="rp-time" class="pp-mono"></span></div>
     <table class="pp-read"><tr><th>Next to move</th><td id="rp-turn"></td><th>The diver</th><td id="rp-place"></td><th>Wait</th><td id="rp-wait"></td><th>Score</th><td id="rp-score"></td></tr></table>
     <p class="cap">Recorded on the kit's Sharp SM5A (<code>kit/gnw/sm5a.js</code>, held to MAME 0.289 instruction for instruction). A frame is kept each time the drawing routine (<code>$0640</code>) finishes a picture that differs from the last.</p>
   </div>
-  <p>The game runs in steps. Each step moves exactly one tentacle by one segment, in a fixed order: the forked one on the left, then the third, then the second, then the short one on the right (<code>$0100</code>). So each tentacle moves once every four steps, and a diver who counts the steps knows when each tip can next arrive.</p>
+  <p>The game advances in steps, and each step moves one tentacle by one segment. The order never changes: the forked tentacle on the left, then the third, then the second, then the short one on the right (<code>$0100</code>). Each tentacle therefore moves once every four steps, and a player who counts steps can tell when a tip will next reach the diver.</p>
 </section>
 
 <section>
-  <p class="fig">03 · One screen, rebuilt from memory</p>
+  <p class="fig">03 · Memory and the screen</p>
   <h2 class="t">Every segment is one bit</h2>
   <p class="lede">Click a bit to light its segment, or a segment to find its bit. The picture is drawn from these cells alone.</p>
   <div class="plate">
@@ -103,7 +103,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">The cells are the chip's memory as it finished a picture just after the replay above ends. The page turns them into segments with a port of <code>$0640</code>, the game's drawing routine; <code>test_frame.js</code> holds the port to the chip's own picture on every screen of several minutes of play. <span id="frame-check"></span></p>
   </div>
   <p>The LCD has nine 4-bit latches for each of its two sets of segments. To draw, the game shifts a cell into the latches nine times, copies them, and shifts nine more for the second set (<code>$0640</code>). Twelve cells hold four segments each, and three hold the digits.</p>
-  <p>So the diver's place is not a number anywhere in memory. It is whichever of six bits is lit. Moving him is moving a bit: the chip cannot move one, so the game exchanges the carry flag with each bit along his path in turn, and the lit one travels one place (<code>$043B</code> to <code>$043E</code>, <code>$0300</code>). The tentacles grow and shrink the same way.</p>
+  <p>Because of this, the game never stores the diver's place as a number. It keeps six bits, one for each place, and one of them is set. The chip has no instruction that moves a bit, so the game swaps the carry flag with each bit along his path in turn, and the set bit ends up one place further on (<code>$043B</code> to <code>$043E</code>, <code>$0300</code>). The tentacles grow and shrink the same way.</p>
 </section>
 
 <section>
@@ -118,7 +118,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <tr><td>a tentacle shrinks back to its base</td><td>it always pulls in completely</td><td>one bit of the seconds can leave the base out, and it grows again from there</td></tr>
     </table>
     <p class="cap">Every segment of the four tentacles. The tips, in red, are the only segments that catch: one for each place in the water, two on the forked tentacle. Rules from <code>$0100</code> to <code>$01BB</code>.</p></div>
-  <p>There is no random number generator. The chip has a counter that steps sixteen times a second, which Popeye uses for its chances; the tentacles here never read it. The seconds are as good as random to a player, and they also mean a tentacle's behaviour depends on when you started, not on how you play.</p>
+  <p>The game has no random number generator. The chip does have a counter that ticks sixteen times a second, and Popeye uses it for its random choices, but Octopus never reads it. To a player the seconds look random enough. Where the diver is makes no difference to which way a tentacle goes.</p>
 </section>
 
 <section>
@@ -127,7 +127,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">A take of treasure is four steps: the arm reaches in, the diver stands, the arm lifts the treasure (the point), and he stands again.</p>
   <div class="plate"><div class="pp-two"><div id="pic-take"></div><div id="pic-caught"></div></div>
     <p class="cap"><b>Left:</b> every shape at the chest: the diver, his three poses and the bag. <b>Right:</b> a caught diver, held in the middle of the octopus.</p></div>
-  <p>While a take is under way the diver cannot move, and the wait before each step is two passes shorter, so the tentacles come faster just when he is stuck (<code>$005A</code>, <code>$00C0</code>). On the step the treasure is lifted, and on the three steps the boat counts its 3 points in one by one, the octopus skips its turn (<code>$0367</code>, <code>$0375</code>).</p>
+  <p>While a take is under way the diver cannot move, and the wait before each step is two passes shorter, so the tentacles come faster while he is stuck (<code>$005A</code>, <code>$00C0</code>). On the step the treasure is lifted, and on the three steps the boat counts its 3 points in one by one, the octopus skips its turn (<code>$0367</code>, <code>$0375</code>).</p>
   <p>Without treasure the diver cannot climb back into the boat: a press of left on the rope leaves him there (<code>$0340</code>). In the boat he goes back down by himself after 8 seconds, unless the forked tentacle is reaching up toward the rope (<code>$03EB</code>).</p>
   <p>A caught diver struggles for nine steps (<code>$00E9</code>, <code>$0700</code>). At 200 and 500 points, if a diver has been lost, the spare divers blink for about five seconds and both come back; the game waits meanwhile (<code>$0085</code>, <code>$06DC</code>). At 999 the score goes on to 000.</p>
 </section>
@@ -143,12 +143,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">The wait for every score from 0 to 999 in Game A, from a port of <code>$00C0</code>; <code>test_speed.js</code> runs the game's own routine on the kit's model for all 1,000 scores in both games and compares. A step's length, measured on the model with the diver in the boat, is about 1,114 + 200 × wait cycles of 61 microseconds.</p>
   </div>
   <p>Game A starts with a wait of 12 passes, a step every 0.21 seconds, and Game B with 10. From hundreds and tens adding up to 2, 20 points, the two games run at the same speed, except at 100 to 109 points. The fastest, a wait of 4, comes when the two digits add up to 15 or more, and a hundred later the game is slow again.</p>
-  <p>What makes Game B harder for longer is the tentacles: in Game B a shrinking tentacle can stop at its base and grow back at once (section 04).</p>
+  <p>After the first 20 points, Game B is harder only because of its tentacles. In Game B a shrinking tentacle can stop at its base and grow straight back out (section 04).</p>
 </section>
 
 <section>
   <p class="fig">07 · Sound</p>
-  <h2 class="t">Sound: one pin, toggled by the program</h2>
+  <h2 class="t">All the sound comes from switching one pin on and off</h2>
   <p class="lede">Press a button to hear the game's own sound routine, recorded at the buzzer's pin.</p>
   <div class="plate"><div class="pp-bar" id="sounds"></div>
     <p class="cap">Each sound is the list of moments the chip's R1 pin changed while its routine ran on the kit's model (<code>$02AE</code>, <code>$02A7</code>), played here as a square wave. <code>test_sound.js</code> runs them again and compares.</p></div>
@@ -158,7 +158,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">08 · Controls</p>
   <h2 class="t">Both buttons at once do nothing</h2>
-  <p>Time, Game A, Game B and Alarm are read through one row of the chip's inputs (<code>$0504</code>), and a change counts when two readings in a row agree. Holding a game's button shows its best score; the game starts when it is let go. Left and right have pins of their own, read on each pass and between the passes of the wait (<code>$0380</code>): a press is acted on at once, and the wait then goes on where it stopped. Holding a button does nothing more, and holding both counts as neither, though a review from 1982 thought the diver danced.</p>
+  <p>Time, Game A, Game B and Alarm are read through one row of the chip's inputs (<code>$0504</code>), and a change counts when two readings in a row agree. Holding a game's button shows its best score; the game starts when it is let go. Left and right have pins of their own, read on each pass and between the passes of the wait (<code>$0380</code>): a press is acted on at once, and the wait then goes on where it stopped. Holding a button does not repeat the move. Holding both counts as pressing neither; a review from 1982 said the diver dances when you do this, but he stays still.</p>
   <p>Two test pads on the board are wired to the chip's other rows. With MAME's "Invincibility" pad held, the catch is never checked, and a held left or right repeats four times a second (<code>$01C0</code>, <code>$0380</code>). On the row MAME marks "alarm test?", one pad rings the alarm and another returns the unit to setting the time (<code>$059E</code>).</p>
 </section>
 
@@ -174,16 +174,16 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section>
   <p class="fig">10 · The unit and its makers</p>
-  <h2 class="t">One programmer, one artist and a calculator chip</h2>
+  <h2 class="t">Who made Octopus</h2>
   <p class="lede">Nintendo released Octopus in Japan on 16 July 1981, as model OC-22, the second game of the Wide Screen series and less than a month after the first, Parachute.</p>
   <div class="plate"><div class="pp-two">
     <img class="photo" src="reference/photo-octopus-unit.jpg" width="1012" height="534" alt="An Octopus Game &amp; Watch, switched off: a gold front with red buttons, the boat, the sea and the sunken ship printed behind the screen">
     <img class="photo" src="reference/photo-fire-wide-screen.jpg" width="1012" height="569" alt="Fire, another Wide Screen Game &amp; Watch, in the same case, showing AM 12:00 above the game">
   </div>
     <p class="cap"><b>Left:</b> an Octopus, switched off, so only the coloured scene behind the screen shows. Photo by <a href="https://www.flickr.com/photos/h34dy/2803634811/">Christoph Bauer</a>, 2008, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>, from <a href="https://commons.wikimedia.org/wiki/File:Octopus_-_Game%26Watch_-_Nintendo.jpg">Wikimedia Commons</a>. <b>Right:</b> Fire, a Wide Screen game in the same case, with its segments lit; its clock shows AM 12:00, and the 1 is a single segment. Photo by <a href="https://commons.wikimedia.org/wiki/File:Nintendo-game-and-watch-wide-screen.jpg">Peer Schmidt</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Both are reduced in size.</p></div>
-  <p>Nintendo's <a href="https://www.nintendo.com/en-gb/Iwata-Asks/Iwata-Asks-Game-Watch/Iwata-Asks-Game-Watch/4-Absorbed-in-Development/4-Absorbed-in-Development-223140.html">"Iwata Asks" interview about Game &amp; Watch</a> names the people. Takehiro Izushi wrote Octopus's program while Masao Yamamoto wrote Parachute's, and the two games were made almost at the same time. Makoto Kano drew the pictures. He wondered whether people in other countries would understand the octopus's eyes as he had drawn them, and he drew the little octopus that appears when the alarm rings after Tako no Hatchan, an octopus from a 1931 manga by Suiho Tagawa that older people in Japan think of first.</p>
-  <p>Yamamoto said a game took about two months from the start to its ROM. Satoru Iwata recalled that a Game &amp; Watch cost 5,800 yen, a lot for a toy. In America, the buyer who reviewed Octopus on Usenet in February 1982 saw five models in the shop at $35 each.</p>
-  <p>In <a href="https://www.nintendo.com/en-gb/Iwata-Asks/Iwata-Asks-Game-Watch/Iwata-Asks-Game-Watch/2-Using-a-Calculator-Chip/2-Using-a-Calculator-Chip-223003.html">another part of the interview</a>, Izushi says the chip was the same kind as in calculators, and Kano explains how the clock saved segments: a digit takes seven, so showing the hour with AM or PM in front lets the first digit be smaller, and the segments saved go to the game. Octopus does just that. The tens of the hours is one segment, a 1 that is lit or not (<code>5.0.1</code>), beside AM (<code>5.0.0</code>) and PM (<code>5.3.0</code>), and the hours count from 1 to 12 (<code>$0240</code>). In a game the score has only the three full digits, so it runs from 999 back to 000.</p>
+  <p>Nintendo's <a href="https://www.nintendo.com/en-gb/Iwata-Asks/Iwata-Asks-Game-Watch/Iwata-Asks-Game-Watch/4-Absorbed-in-Development/4-Absorbed-in-Development-223140.html">"Iwata Asks" interview about Game &amp; Watch</a> says who made it. Takehiro Izushi programmed Octopus and Masao Yamamoto programmed Parachute, at almost the same time. Makoto Kano drew the graphics. He worried that people outside Japan might not read the octopus's eyes the way he meant them. The small octopus that appears when the alarm rings is based on Tako no Hatchan, the octopus in Suiho Tagawa's 1931 manga, which older people in Japan still think of whenever octopuses come up.</p>
+  <p>Yamamoto said a game took about two months from the start to its ROM. Satoru Iwata remembered the price as 5,800 yen, which he said was expensive for a toy at the time. In America, the buyer who reviewed Octopus on Usenet in February 1982 saw five models in the shop at $35 each.</p>
+  <p>In <a href="https://www.nintendo.com/en-gb/Iwata-Asks/Iwata-Asks-Game-Watch/Iwata-Asks-Game-Watch/2-Using-a-Calculator-Chip/2-Using-a-Calculator-Chip-223003.html">another part of the interview</a>, Izushi says the chip was the same kind used in calculators. Kano explains that a digit costs seven segments, and that showing AM or PM before the hour meant the first digit could use fewer, leaving more segments for the game. Octopus's clock is built that way. The first digit of the hour is a single segment that shows a 1 or nothing (<code>5.0.1</code>), AM and PM are one segment each (<code>5.0.0</code>, <code>5.3.0</code>), and the hours count from 1 to 12 (<code>$0240</code>). The score gets only the three full digits, so after 999 it shows 000.</p>
   <p>The game had other names abroad: Schnapp den Schatz ("grab the treasure") in German and La Piovra ("the octopus") in Italian, according to the <a href="https://www.mariowiki.com/Octopus_(Game_%26_Watch)">Super Mario Wiki</a>, and Mysteries of the Sea or Mysteries of the Deep in Britain, according to the <a href="https://www.homecomputermuseum.nl/en/collectie/nintendo/nintendo-game-watch-octopus/">Home Computer Museum</a> in Helmond. Collectors on the <a href="https://www.gameandwatch.ch/en/game-and-watch-forum/47-game-watch-board/5846-octopus-nintendo-misspelling-on-rear.html">gameandwatch.ch forum</a> report a few units whose back reads "Nintend".</p>
   <p>Nintendo brought the game back several times. Game &amp; Watch Gallery on the Game Boy and Game &amp; Watch Gallery 4 on the Game Boy Advance each have it twice, as the original and as a new version with Mario as the diver. Game &amp; Watch Collection 2, a Club Nintendo reward for the Nintendo DS in Japan in 2008, has Parachute, Octopus, and a game of the two together, one on each screen. In Super Smash Bros., Mr. Game &amp; Watch turns into the octopus for his Final Smash.</p>
 </section>
