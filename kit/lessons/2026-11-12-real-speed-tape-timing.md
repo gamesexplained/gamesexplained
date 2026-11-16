@@ -1,4 +1,4 @@
-## next · 2026-11-12 · Driller, Fat Worm Blows a Sparky, Laser Squad, Lords of Chaos and Valhalla (ZX Spectrum) · air with Claude
+## 0.0.349 · 2026-11-12 · Driller, Fat Worm Blows a Sparky, Laser Squad, Lords of Chaos and Valhalla (ZX Spectrum) · air with Claude
 
 - **An emulator's real-speed tape is a resampled copy of the tape, so time
   a load from the tape file, and take only the order of events from the
