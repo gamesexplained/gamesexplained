@@ -47,6 +47,7 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
 from vice import URL, connect, call, read_mem, poke, addr, clear_checkpoints, pause  # noqa: E402
 from ports import resolve_ports  # noqa: E402
+import snapshot  # noqa: E402
 
 MONITOR_PORT = resolve_ports()["vice"] + 1   # as in the c64 launcher, whose module name the kit/scripts one shares
 
@@ -179,10 +180,11 @@ def stopped(rpc):
 
 
 def saved_word(name, a):
-    """A 16-bit value as a snapshot file holds it: RAM is at offset 209 + address (snapshot-ram-offset)."""
+    """A 16-bit value as a snapshot file holds it, read where kit/c64/snapshot.py finds the RAM."""
     with open(os.path.join(SNAPDIR, name + ".vsf"), "rb") as f:
         d = f.read()
-    return d[209 + a] + 256 * d[209 + a + 1]
+    at = snapshot.ram_offset(d)
+    return d[at + a] + 256 * d[at + a + 1]
 
 
 def patience(n_passes):
@@ -330,8 +332,9 @@ def p1(rpc):
     path = os.path.join(SNAPDIR, "emutest_p1.vsf")
     check("snapshot-save", r.get("status") == "ok" and os.path.exists(path), "a snapshot lands in tools/vice-home", json.dumps(r)[:80])
     data = open(path, "rb").read() if os.path.exists(path) else b""
-    check("snapshot-ram-offset", data[209 + BASE: 209 + BASE + len(CODE)] == CODE,
-          "RAM is at offset 209 + address in the file", f"found at {data.find(CODE) - BASE}")
+    at = snapshot.ram_offset(data)
+    check("snapshot-ram-offset", data[at + BASE: at + BASE + len(CODE)] == CODE,
+          "RAM is where kit/c64/snapshot.py finds it, in the C64MEM module", f"found at {data.find(CODE) - BASE}, read at {at}")
     cp_del(rpc, n); run(rpc)
 
 

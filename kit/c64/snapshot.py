@@ -43,10 +43,32 @@ def read(path, bank=None):
     if not blob.startswith(MAGIC):
         sys.exit(f"{path}: not a VICE snapshot (expected {MAGIC!r} at the start). "
                  "A .vsf is the C64's format; another machine reads its own.")
-    if len(blob) < VSF_RAM_OFFSET + RAM_SIZE:
+    at = ram_offset(blob)
+    if len(blob) < at + RAM_SIZE:
         sys.exit(f"{path}: {len(blob)} bytes, too short for a VICE snapshot "
-                 f"(needs {VSF_RAM_OFFSET + RAM_SIZE})")
-    return blob[VSF_RAM_OFFSET:VSF_RAM_OFFSET + RAM_SIZE]
+                 f"(needs {at + RAM_SIZE})")
+    return blob[at:at + RAM_SIZE]
+
+
+def ram_offset(blob):
+    """Where the RAM image starts: inside the C64MEM module, found by walking the modules.
+
+    Up to v3.14 of vice-mcp that was always byte 209. v4.0.0 writes a C64MEMHACKS module of
+    23 bytes before C64MEM, and the RAM starts at 232; a fixed offset then reads every byte
+    from 23 addresses further on. A file with no module table (the self-tests' synthetic
+    snapshots) keeps the old fixed offset."""
+    if blob[19:21] != b"\x02\x00" and not blob[37:50] == b"VICE Version\x1a":
+        return VSF_RAM_OFFSET
+    pos = 58 if blob[37:50] == b"VICE Version\x1a" else 37
+    while pos + 22 <= len(blob):
+        name = blob[pos:pos + 16].split(b"\0")[0]
+        size = int.from_bytes(blob[pos + 18:pos + 22], "little")
+        if name == b"C64MEM":
+            return pos + 26
+        if size < 22:
+            break
+        pos += size
+    return VSF_RAM_OFFSET
 
 
 def main():
