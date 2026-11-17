@@ -1,4 +1,4 @@
-## next · 2026-11-17 · Ghostbusters II (C64) · air with Claude
+## 0.0.354 · 2026-11-17 · Ghostbusters II (C64) · air with Claude
 
 - **A crack's patch to the game's code can hide a bug that only the
   original has.** The Ghostbusters II run analysed two cracked releases.
