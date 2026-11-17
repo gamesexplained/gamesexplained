@@ -31,21 +31,21 @@ Sources:
 | Menu of nine options: compete in all, some or one event, practise one, number of joysticks, Summer Games 1 events (yes/no), world records, opening and closing ceremonies | live | part `menu` |
 | Up to eight players, each typing a name and choosing one of 18 countries by its flag (one is Epyx's own), each with its anthem | live | part `menu` (the flags scroll a page at a time) |
 | "IS THIS CORRECT?" after the names, A) YES B) NO | live | part `menu` |
-| Two joysticks: whichever player presses fire on a stick uses it (Zzap!64, as in Pitstop II) | open | |
-| World records saved to the disk; practice scores are never saved | open | |
-| Awards after each event: names, countries and scores in order; gold 5 points, silver 3, bronze 1; the gold medallist's anthem | open | |
-| Champion ceremony after all the events: the runners-up first, then the champion and their anthem | open | |
+| Two joysticks: whichever player presses fire on a stick uses it (Zzap!64, as in Pitstop II) | confirmed | Triple Jump `$B182`, Rowing `at_start` `$A304` (the bottom lane's player presses first) |
+| World records saved to the disk; practice scores are never saved | traced | menu `check_record` `$1886` saves through the loader for events 0 to 7 when the winner's score is at least the record; practice never reaches the results |
+| Awards after each event: names, countries and scores in order; gold 5 points, silver 3, bronze 1; the gold medallist's anthem | traced | menu `show_results` `$176C`: sorts, FAULT for a zero score, ties share a place, points from `$14AD`, the winner's flag waves |
+| Champion ceremony after all the events: the runners-up first, then the champion and their anthem | traced | menu `$1101`: lines from last place up, then the winner's flag and anthem |
 | Closing ceremony: a jet-pack man flies in as the sky darkens to *Ride of the Valkyries*, the floodlights come on, the flame dies, the Epyx blimp passes, fireworks to the *1812 Overture* | open | part `closing` |
 | Summer Games 1 events: with the first game's disk, its eight events join these for sixteen | open | the module table lists six modules on a third disk |
-| **Triple Jump**: fire starts the run; right for the hop and the step, left for the jump, up in the air for lift; a fault for overstepping or a late move; three jumps in competition; an instant replay on a monitor | open | part `triple-jump` |
-| **Rowing**: fire starts; left lifts the oars, right pulls them through; 250 metres; split screen, against a computer pacer or a second player | open | part `rowing` |
+| **Triple Jump**: fire starts the run; right for the hop and the step, left for the jump, up in the air for lift; a fault for overstepping or a late move; three jumps in competition; an instant replay on a monitor | traced | part `triple-jump`: a FAULT for overstepping, a late hop or step, or passing the line; three rounds, best kept; in practice ANOTHER JUMP? with Y and N; the monitor plays its animation and the crowd cheers for 15 m or more |
+| **Rowing**: fire starts; left lifts the oars, right pulls them through; 250 metres; split screen, against a computer pacer or a second player | traced | part `rowing`: each lane follows its own boat; the stick, read every fourth frame, steps a 16-phase stroke and only phases with the oars in the water add speed; the pacer's skill rises while it trails; 3 minutes is a FAULT. The 250 metres is not in the code's units |
 | **Javelin**: fire starts the run and pressing it again speeds the runner; hold left to set the angle, centre throws; a fault for crossing the line | open | part `javelin` |
 | **Equestrian**: fire starts; up faster, down slower, fire a medium jump, right a long jump, left to land; refusal 20 penalties, a fall 6, a second over 50 seconds 1; out over 100 seconds or 99 penalties | open | part `equestrian` |
 | **High Jump**: choose the bar (1.50 m up to 2.50 m); right starts and speeds the run, up and down move the run-up line; fire jumps, up clears the bar; three tries a height | open | part `high-jump` |
 | **Fencing**: stick alone defends, with fire moves or attacks; green light a hit for the player, red for the opponent, both at once counts for neither; five hits or the most after three minutes; a computer fencer at four skill levels or random | open | part `fencing` (the skill menu is live) |
 | **Cycling**: rotate the stick clockwise with the arrow that shows the pedals; 200 metres; split screen; *Flight of the Bumble-Bee* | open | part `cycling` |
 | **Kayaking**: left and right steer, up paddles forward, down backward; 15 gates, two of them taken backward; a missed gate adds time | open | part `kayaking` |
-| Practice: unlimited tries, no records kept | open | |
+| Practice: unlimited tries, no records kept | traced | Triple Jump asks ANOTHER JUMP?; Rowing races once against the pacer and returns to the menu |
 | "INSERT SUMMER GAMES II SIDE 2 THEN PRESS JOYSTICK BUTTON" before a side-2 event | live | part `resident` |
 
 ## Beyond the documentation
@@ -56,10 +56,16 @@ Found in the code, not in the manual.
   the disk side, where the packed file lands, where it unpacks to and
   where it ends, its entry address and its one-letter name. Six of them
   are on a third disk (side mask 4), the Summer Games modules.
+- The `Z` file on side 2, entries `$17D0` and `$17D3`, is Summer Games 1's
+  Freestyle Relay and 100m Freestyle: the swimming events, stored on
+  Summer Games II's own disk (part `swimming`).
+- The awards and the champion ceremony are in the menu, not in modules of
+  their own.
+- Rowing's F5 and F3 keys set and clear a flag that nothing reads.
+- Rowing's race clock counts a tenth every 5 frames: real time on a PAL
+  machine.
 
 ## Open questions
 
-- Which module is the awards ceremony, and which the champion ceremony:
-  the `Z` file has two entries, `$17D0` and `$17D3`.
-- Does this release save the world records? The 2-disk US Gold copy is
-  repacked; C64-Wiki says the original saves every record at once.
+- Does this release save the world records to the disk as it plays? The
+  code calls the loader's save; the save was not run in the emulator.
