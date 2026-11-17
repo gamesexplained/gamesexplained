@@ -71,7 +71,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="cheat" data-part="jellyland">
   <p class="fig">01 · The cheat</p>
   <h2 class="t">Secret: 25 keys on the title screen give infinite lives</h2>
-  <p class="lede">Typing a sequence of 25 digits from 1 to 5 on the title screen stops the game from taking lives away. Nothing on the screen asks for it.</p>
+  <p class="lede">Typing a sequence of 25 digits from 1 to 5 on the title screen stops the game from taking lives away. The screen never asks for it.</p>
   <div class="plate" id="mim-cheat" tabindex="0" aria-label="Type the cheat with the buttons or the keys 1 to 5">
     <div class="mim-keys" id="mim-cheatkeys"></div>
     <div class="mim-seq" id="mim-cheatseq"></div>
@@ -115,7 +115,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p>The star count on the panel does not start at zero. When the land turns happy, the engine loads the counter from <code>$9041</code>-<code>$9043</code> (<code data-part="engine">$3BC6</code>), every star Mayhem collects takes one off it (<code data-part="engine">$36ED</code>), and the finish line opens when it has come down to the number in <code>$904A</code>-<code>$904C</code> (<code data-part="engine">$374F</code>-<code data-part="engine">$3753</code>). The stars a player must collect are the difference between the two, and that difference is what the loading screen calls the star quota.</p>
   <p>The loader (<code data-part="engine">$CBAD</code>) prints the loading screen before it loads the land, so the quota lines cannot come from the land's own file: they are in the file of the land before it, at <code>$916F</code> and <code>$9185</code>, and a new game first copies Jellyland's lines into place from the engine (<code data-part="engine">$D76E</code>). The lines are text typed into each file, separate from the numbers the game counts with. Four of the five agree. Cherryland's says 338 for Rockland, which counts its stars from 378 down to 30, a quota of 348.</p>
-  <p>Rockland's file carries lines for a land that does not exist: its loading line says "GAME COMPLETE", shown while the ending loads, and its quota lines say 12 and 365, which no screen prints.</p>
+  <p>Rockland's file carries lines for a land that does not exist: its loading line says "GAME COMPLETE", shown while the ending loads, and its quota lines say 12 and 365, which never appear on screen.</p>
 </section>
 
 <section id="protection" data-part="engine">
@@ -137,7 +137,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate" id="mim-score2"></div>
   <p><code>$350B</code> gives the life in two places. At <code>$3530</code> it gives one before adding anything when the award's own digit is the millions, which only the 1,000,000 award is. At <code>$355A</code>, inside the loop that carries into the digits above, it gives one when the hundred-thousands digit rolls over from 9 to 0. Every award below 100,000 that passes a million goes through that loop, and so does the life.</p>
   <p>The 100,000 award is the exception, because the hundred-thousands is its own digit. When that digit overflows, <code>$3541</code>-<code>$3548</code> take ten off it in place, and the carry loop starts one digit up, at the millions. The test at <code>$355A</code> watches for the hundred-thousands rolling over, and the loop never visits it. The score reaches its next million and the lives stay as they were.</p>
-  <p>Only one award in the game is worth 100,000: the SUPER TIME BONUS of the stage-complete screen (<code>$BEAA</code>), paid when the clock reads 000 as that screen opens. No monster in the five lands carries event 14. No way to that screen with the clock at 000 was found. The clock stops the moment Mayhem crosses the finish line: it ticks only while the stage-complete flag <code>$1BC6</code> is clear (<code>$2016</code>), and the finish sets that flag earlier in the same pass (<code>$2B4C</code>). A clock that does reach 000 costs the life first (<code>$383F</code>). So the bonus, and the bug with it, looks out of a player's reach.</p>
+  <p>Only one award in the game is worth 100,000: the SUPER TIME BONUS of the stage-complete screen (<code>$BEAA</code>), paid when the clock reads 000 as that screen opens. None of the monsters in the five lands carries event 14. A way to that screen with the clock at 000 was not found. The clock stops the moment Mayhem crosses the finish line: it ticks only while the stage-complete flag <code>$1BC6</code> is clear (<code>$2016</code>), and the finish sets that flag earlier in the same pass (<code>$2B4C</code>). A clock that does reach 000 costs the life first (<code>$383F</code>). So the bonus, and the bug with it, looks out of a player's reach.</p>
 </section>
 
 <section id="more" data-part="engine">
@@ -148,7 +148,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <li><b>Some monsters cannot be jumped on.</b> A monster's kind below <code>$F7</code> is its strength, and a stomp takes off more the further Mayhem fell (<code>$342E</code>). Kinds <code>$FB</code> and <code>$F7</code> cannot be stomped at all (<code>$B59D</code>), <code>$FC</code> and <code>$FA</code> always hurt, and <code>$F8</code> hurts when walked into but dies to a stomp (<code>$B5B1</code>); a charge with the lightning power-up kills them (<code>$B5B9</code>).</li>
     <li><b>Monsters that come back pay nothing.</b> A defeated monster's record is marked (<code>$CB02</code>); if the same monster appears again it is removed without its item (<code>$C962</code>). The marks are cleared when a land starts (<code>$E595</code>).</li>
     <li><b>The ending goes back to the title by loading Jellyland.</b> Fire on the last screen of the ending takes the same road as game over: the engine reloads Jellyland from the disk, and Jellyland's file holds the title screen (<code>$CE66</code>, <code>$CBA5</code>, <code>$F45E</code>). There is no score screen.</li>
-    <li><b>A copy of the cheat in Pipeland.</b> Pipeland's file has Jellyland's title code at <code data-part="pipeland">$9EC4</code>-<code data-part="pipeland">$9F3D</code>, the cheat's key check included, left over from the buffer the files were built in. Nothing calls it there.</li>
+    <li><b>A copy of the cheat in Pipeland.</b> Pipeland's file has Jellyland's title code at <code data-part="pipeland">$9EC4</code>-<code data-part="pipeland">$9F3D</code>, the cheat's key check included, left over from the buffer the files were built in. The game never calls it there.</li>
     <li><b>Poking for lives.</b> The German C64-Wiki gives <code>$BE15</code> as a poke for unlimited lives and <code>$37FD</code> for extra time. In this release the first lands in the lightning's timer and the second on the counter that stops the clock (<code>$37FD</code> is <code>DEC $1BAA</code>); the lives routine is at <code>$BDC1</code>. The wiki's invincibility poke at <code>$B61D</code> does hit its mark, the grace flag above.</li>
   </ul>
 </section>
