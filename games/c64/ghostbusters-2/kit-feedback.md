@@ -10,6 +10,7 @@
 ## What was changed in the kit
 
 - `kit/skills/core/10-orient`, step 1, now says that a crack's patch to the game's own code is a lead for `70-minisite`, to be played on the original. Here the museum's only such patch hid a bug that only the original disk has. `games/c64/bubble-bobble` has the same shape: two trainer hooks written over the game's own instructions at `$7EBB` and `$7FA1`, where the original instructions were never seen (its `facts.md`, "What the cracker changed"). Lesson: `kit/lessons/2026-11-17-crack-patch-hid-a-bug.md`.
+- `kit/skills/core/70-minisite`, "The sound", now says to write about what is unusual in a game's sound and leave out what nearly every game does, such as one driver for all its music. Aaron asked for it after this game's Music heading said the episodes share one sound player. `games/c64/world-games` makes the same call-out ("the same music driver" in the title and each event).
 
 ## Candidates
 
