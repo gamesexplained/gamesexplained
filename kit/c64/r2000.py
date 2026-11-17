@@ -156,7 +156,12 @@ def cross_references(addresses, gdir=None):
     return out
 
 
-def game_dir(explicit=None):
+def game_dir(explicit=None, strict=True):
+    if strict and explicit and not any(os.path.exists(os.path.join(explicit, f)) for f in ("game.json", "part.json")):
+        # A --game that names no folder (a part's id given from the wrong directory) must not fall
+        # back to the current directory: that sends the call to whichever session answers there.
+        sys.exit(f"r2000.py: --game {explicit}: no game.json or part.json there (run from the folder "
+                 f"that holds it, or give its path)")
     for cand in (explicit, os.environ.get("GAME_DIR"), os.getcwd()):
         if cand and any(os.path.exists(os.path.join(cand, f)) for f in ("game.json", "part.json")):
             return cand      # a game's folder, or the folder of one part of it (kit/scripts/parts.py)
@@ -182,7 +187,7 @@ def log_call(gdir, name, arguments, log=None):
 
 
 def replay(path):
-    rpc = make_client(game_dir(os.path.dirname(os.path.dirname(os.path.abspath(path)))))
+    rpc = make_client(game_dir(os.path.dirname(os.path.dirname(os.path.abspath(path))), strict=False))
     entries = [json.loads(l) for l in open(path) if l.strip()]
     calls = []
     for e in entries:
