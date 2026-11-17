@@ -7,35 +7,28 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `kit/skills/core/12-media`: "Answer them `unused` only once the game is shown to ask for every file by name": I searched the unmatched sectors instead of answering them unused, and found the game's `$4000`-`$CFFF` in them, EORed with `$C9`.
+- `kit/skills/core/70-minisite`: "The game's own driver run on the kit's processor counts as a port": the Music page runs the game's driver for the three tunes and the 23 effects, and the Maps page runs the game's own `draw_map_row` the same way.
+- `kit/skills/core/60-verify`: "Silver needs the measure, not the mark": the sample of 80 found 16 wrong; they were fixed, and the audit is left to a later run as the skill says.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/c64/snapshot.py`, `kit/c64/check_emulator.py`: find the RAM from the snapshot's `C64MEM` module, because VICE v4.0.0 puts a 23-byte `C64MEMHACKS` module ahead of it and the RAM moved from byte 209 to 232. The two files are copied byte for byte from the Licence To Kill branch (`game/c64/licence-to-kill`), which met the same change, so the two pull requests merge in either order.
+- `kit/c64/INSTALL.md`: a row for the v4.0.0 Linux release, 57 of 57 with the fix above.
+- `kit/lessons/2026-11-17-ikari-warriors.md`: encoded sectors, and the game's own level routine as the map.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+The media scan answers a sector only when a run of sectors matches a run of the listing. Here every sector of the game was in the listing, but some in the loader's own interleave and some EORed with `$C9`, and the scan matched none of them; answered from the scan alone they would have been `unused`. The skill would say, in "Before Silver: the answers": when a run of sectors matches nothing and holds no filler, match it a sector at a time and try the 256 single-byte keys before answering. I cannot name another game folder whose disk is laid out this way.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+- **Teach media.py scan to match a disk's sectors one at a time and through a single-byte key.** On Elite's Ikari Warriors disk the scan matched none of the game's 17 tracks: the sectors are stored in the loader's own interleave, and tracks 8 to 14 are EORed with `$C9`. A sector-by-sector match against the snapshots, trying the 256 keys on each sector's first 40 bytes, found all of them in seconds (`games/c64/ikari-warriors/media.json`). The scan could report such a match as `near`, with the key, so the run answers it as a part instead of nearly calling it unused (`kit/scripts/media.py`, `kit/c64/media.py`).
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+`kit/c64/snapshot.py` reading v4.0.0 snapshots 23 bytes off: every read was wrong until `check-emulator`'s `snapshot-ram-offset` test pointed at it, and the fix in this branch would have saved the hour.
+
+## Operating system and tools
+
+Linux x86_64 in a Claude cloud container; VICE vice-mcp v4.0.0 release (`v4.0.0-linux-x86_64-gui.zip`), 57 of 57 after the snapshot fix. After switching the machine to NTSC and back, `VICIIModel` reads 0 and snapshots saved under model 1 refuse to load until it is set to 1 again.
