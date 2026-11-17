@@ -160,7 +160,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">05 · Prayer</p>
   <h2 class="t">Bug: PRAYER helps the enemy and hinders the caster's own side</h2>
   <p class="lede">The rule book says PRAYER makes every friendly combatant's to-hit rolls and saving throws one better and every enemy's one worse. The game does the opposite.</p>
-  <p>Casting PRAYER makes one timed effect that belongs to nobody, so the engine runs it for every combatant, and it stores the caster's side in bit 6 of the effect's fourth byte (<span data-part="spells"><code>spell_prayer</code>, <code>$AC36</code></span>). Its routine runs whenever someone rolls to hit and whenever someone rolls a saving throw (<code>kind_prayer</code>, <code>$A9B9</code>). It moves that bit to bit 0 and compares it with the roller's side. When the two differ, the routine adds one to the roll. When they are the same, it takes one away. A party cleric's PRAYER therefore makes the monsters hit and save one better for its rounds, and the party one worse.</p>
+  <p>Casting PRAYER makes one timed effect that has no owner, so the engine runs it for every combatant, and it stores the caster's side in bit 6 of the effect's fourth byte (<span data-part="spells"><code>spell_prayer</code>, <code>$AC36</code></span>). Its routine runs whenever someone rolls to hit and whenever someone rolls a saving throw (<code>kind_prayer</code>, <code>$A9B9</code>). It moves that bit to bit 0 and compares it with the roller's side. When the two differ, the routine adds one to the roll. When they are the same, it takes one away. A party cleric's PRAYER therefore makes the monsters hit and save one better for its rounds, and the party one worse.</p>
   <p>BLESS and CURSE, the spells either side of it, work the right way round: BLESS adds one to its holders' rolls and CURSE takes one away (<code>kind_bless</code>, <code>$A73F</code>; <code>kind_curse</code>, <code>$A74F</code>).</p>
 </section>
 
@@ -204,21 +204,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Bug: mummy rot never rots, and heals a hit point every ten days</h2>
   <p class="lede">A mummy's hit gives its target the rot: IS DISEASED, and two timed effects, kind 50 for 10 days and kind 57 for 30 days (<code>mummy_rot</code>, <code>$A9F4</code>). The routines those kinds run when their time is up do not harm the character.</p>
   <p>When an effect's time runs out in camp, the camp's spell file runs its kind's routine from a table (<span data-part="camp-spells"><code>camp_kinds</code>, <code>$9AD5</code></span>). Kind 50's routine starts it again for another ten days and heals one hit point (<span data-part="camp-spells"><code>rot_ten_days</code>, <code>$AD97</code></span>). Kind 57's starts it again for another thirty days and does nothing else (<span data-part="camp-spells"><code>$AD9F</code></span>). The rot ends only when CURE DISEASE ends both kinds.</p>
-  <p>Five bytes further on is a routine that would have made the rot a disease: it prints ROTS, takes 2 from the character's charisma, and kills a character whose charisma falls below 3 (<span data-part="camp-spells"><code>rot_charisma</code>, <code>$ADA4</code></span>). No entry in the table points at it. Changing the low byte of kind 50's entry from <code>97</code> to <code>A4</code> would reach it.</p>
+  <p>Five bytes further on is a routine that would have made the rot a disease: it prints ROTS, takes 2 from the character's charisma, and kills a character whose charisma falls below 3 (<span data-part="camp-spells"><code>rot_charisma</code>, <code>$ADA4</code></span>). The table has no entry that points at it. Changing the low byte of kind 50's entry from <code>97</code> to <code>A4</code> would reach it.</p>
 </section>
 
 <section id="gaze" data-part="effects-2">
   <p class="fig">11 · A cut power</p>
-  <h2 class="t">Secret: a vampire's charming gaze is in the code, but no monster has it</h2>
+  <h2 class="t">Secret: a vampire's charming gaze is in the code, but none of the monsters has it</h2>
   <p class="lede">SPELLE02 holds most of the vampire's powers: two levels drained with a hit, a turn into gas when it falls, and the mirror check. Beside them is kind 84, a gaze that charms.</p>
   <p>On its holder's turn kind 84 (<code>charm_gaze</code>, <code>$A77F</code>) prints GAZES... and puts CHARM PERSON's effect on the target, with a saving throw 2 harder than the spell's. In the AD&amp;D rules a vampire's gaze charms. Neither of the game's two vampire files carries kind 84, and nor does any other monster's file.</p>
 </section>
 
 <section id="breath" data-part="spells">
   <p class="fig">12 · Another cut power</p>
-  <h2 class="t">Secret: CURE DISEASE's combat record is a breath weapon that no monster has</h2>
+  <h2 class="t">Secret: CURE DISEASE's combat record is a breath weapon that none of the monsters has</h2>
   <p class="lede">CURE DISEASE can be cast only in camp, but like every spell it has a record for combat. The routine that record points at is a lightning bolt.</p>
-  <p>The routine (<code>cure_disease_record</code>, <code>$AD6D</code>) is LIGHTNING BOLT's code with the caster's full hit points as the damage and a line 10 squares long: a breath weapon that does as much damage as its breather's full hit points. Kind 88 is the power that uses it (<span data-part="effects"><code>kind_breath</code>, <code>$AC60</code></span>): on its holder's turn, half the time, the holder BREATHES... and casts spell 39. No monster file carries kind 88.</p>
+  <p>The routine (<code>cure_disease_record</code>, <code>$AD6D</code>) is LIGHTNING BOLT's code with the caster's full hit points as the damage and a line 10 squares long: a breath weapon that does as much damage as its breather's full hit points. Kind 88 is the power that uses it (<span data-part="effects"><code>kind_breath</code>, <code>$AC60</code></span>): on its holder's turn, half the time, the holder BREATHES... and casts spell 39. None of the monster files carries kind 88.</p>
   <p>READ MAGIC is camp-only too, and its combat record sets the caster's strength to 18/00 (<code>read_magic_record</code>, <code>$AD7A</code>). The game does use that one: readying the GAUNTLETS OF OGRE POWER casts it.</p>
 </section>
 
@@ -245,7 +245,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Every monster's special abilities, from its file</h2>
   <p class="lede">A monster's file holds up to ten effect kinds that it always has, in the same ten bytes where a party member's record keeps an elf's resistance to sleep. These are all the files that hold any, with what each kind's routine does.</p>
   <div class="sp-tbl-wrap"><table class="sp-tbl" id="sp-specials"><thead><tr><th>Monster</th><th>What its kinds do</th><th>Files</th></tr></thead><tbody><tr><td colspan="3"><p class="sp-miss">The table is drawn by the page's script.</p></td></tr></tbody></table></div>
-  <p class="cap">Many files also hold 255, a kind no event names, so it does nothing; the PHASE SPIDER's 139 is past the end of the table of routines, and no event names it either. The DISPLACER BEAST holds nothing but 255. Kind 63, whose routine makes its holder harder to pick out from the combatants an attacker can see (<code>kind_displace</code>, <code>$AA07</code>), is on no file.</p>
+  <p class="cap">Many files also hold 255, a kind that is not named by any event, so it does nothing; the PHASE SPIDER's 139 is past the end of the table of routines, and it is not named by any event either. The DISPLACER BEAST holds nothing but 255. Kind 63, whose routine makes its holder harder to pick out from the combatants an attacker can see (<code>kind_displace</code>, <code>$AA07</code>), is on no file.</p>
 </section>
 
 <section id="how" data-part="effects">
