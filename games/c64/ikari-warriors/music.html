@@ -74,8 +74,8 @@ sup.fn + sup.fn::before{content:","}
 <section id="driver">
   <p class="fig">02 · The driver</p>
   <h2 class="t">How a tune is stored</h2>
-  <p>Each tune is seven bytes in <a href="source.html#E681"><code>tune_table</code></a>: a tempo, and the address of a list of patterns for each of the three voices. A pattern is a stream of bytes that <a href="source.html#E219"><code>voice_step</code></a> reads when a voice's note runs out. A byte below <code>$80</code> is a note. <code>$E0</code>-<code>$FF</code> sets the length of the notes after it, <code>$D0</code>-<code>$DF</code> picks an instrument (a waveform and an envelope), <code>$C0</code>-<code>$CF</code> an arpeggio, and <code>$80</code>-<code>$8E</code> are commands: rests, vibrato, slides, bends, drums, pulse sweeps, transposing and the end of the pattern (<a href="source.html#E100"><code>music_commands</code></a>).</p>
-  <p>The tempo is the number of frames between steps: 4, 5 or 6. Between steps, <a href="source.html#E2DB"><code>voice_update</code></a> works on every voice every frame, adding the arpeggio, vibrato, slide and pulse sweep before it writes the chip. A frame-skip switch at <a href="source.html#E00E"><code>skip_frames</code></a>, the usual way of making music written for one television standard play at the same speed on the other, is never turned on: the game is for European PAL machines only.</p>
+  <p>Each tune is seven bytes in <a href="source.html#E681"><code>tune_table</code></a>: a tempo, and the address of a list of patterns for each of the three voices. A pattern is a stream of bytes that <a href="source.html#E219"><code>voice_step</code></a> reads when a voice's note runs out. A byte below <code>$80</code> is a note. <code>$E0</code>-<code>$FF</code> sets the length of the notes after it, <code>$D0</code>-<code>$DF</code> picks an instrument (a waveform and an envelope), <code>$C0</code>-<code>$CF</code> an arpeggio, and <code>$80</code>-<code>$8E</code> are commands: rests, vibrato, slides, bends, drums, pulse sweeps, transposing, and the end of the pattern (<a href="source.html#E100"><code>music_commands</code></a>).</p>
+  <p>The tempo is the number of frames between steps: 4, 5 or 6. Between steps, <a href="source.html#E2DB"><code>voice_update</code></a> works on every voice every frame, adding the arpeggio, vibrato, slide, and pulse sweep before it writes the chip. A frame-skip switch at <a href="source.html#E00E"><code>skip_frames</code></a>, the usual way of making music written for one television standard play at the same speed on the other, is never turned on: the game is for European PAL machines only.</p>
 </section>
 
 <section id="sound">
@@ -83,7 +83,7 @@ sup.fn + sup.fn::before{content:","}
   <h2 class="t">Sound: 23 effects</h2>
   <p>The sound effects are 20 bytes each in <a href="source.html#EB34"><code>effect_table</code></a>. <a href="source.html#2E2B"><code>play_effect</code></a> finds a voice for one, and <a href="source.html#E059"><code>start_effect_voice</code></a> copies its bytes in and takes the voice from the music until the effect ends. Each effect sweeps its frequency by a pattern of steps, jumps back to its start every so many frames, and switches between two waveforms (<a href="source.html#E3EE"><code>effect_update</code></a>). With music and effects both on, effects use only the first voice, so the tune keeps the other two. Press F5 in play to choose music, effects, both or neither.</p>
   <div class="plate"><div id="fxRoot"></div></div>
-  <p class="cap">Each effect is started by the game's own <a href="source.html#2E2B"><code>play_effect</code></a> with the music off, then run by <a href="source.html#E000"><code>music_tick</code></a>. The names come from where the code plays them; an effect with only a number is one this study did not trace to its caller.</p>
+  <p class="cap">Each effect is started by the game's own <a href="source.html#2E2B"><code>play_effect</code></a> with the music off, then run by <a href="source.html#E000"><code>music_tick</code></a>. The names come from where the code plays them; an effect with only a number has no caller in the code that names its use.</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
@@ -135,8 +135,8 @@ function createEffectDriver(M, C64Cpu) {
     voice(x) { return { gate: sid[x * 7 + 4] & 1 ? 'on' : 'off' }; },
   };
 }
-const IKARI_EFFECTS = Array.from({ length: 23 }, (_, n) => 'Effect ' + n + ({ 6: ': boarding a tank', 9: ': an explosion', 11: ': a soldier falls', 13: ': a gun pit fires',
-  14: ': a helicopter arrives', 17: ': a tank’s countdown', 19: ': a tank blows up', 20: ': the opening sequence', 21: ': a helicopter hit', 22: ': pause' }[n] || ''));
+const IKARI_EFFECTS = Array.from({ length: 23 }, (_, n) => 'Effect ' + n + ({ 0: ': a shot', 4: ': a token picked up', 5: ': an extra life', 7: ': a grenade thrown', 8: ': a grenade lands', 6: ': boarding a tank', 9: ': an explosion', 11: ': a soldier falls', 13: ': a gun pit fires',
+  14: ': a helicopter arrives', 17: ': a tank’s countdown, and a mine’s beep', 19: ': a tank blows up', 20: ': the opening sequence', 21: ': a helicopter hit', 22: ': pause, and the lock keys' }[n] || ''));
 // end of createEffectDriver
 
 (function () {

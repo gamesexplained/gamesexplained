@@ -28,6 +28,9 @@ pass over every page.
 - The loading picture is a screenshot: its bytes are on tracks 15 to 17
   and in no listing. Drawing it from them needs the bitmap, screen and
   colour bytes embedded in the Graphics page.
+- From the reader review: draw the eighth token and the 25 unused tile
+  shapes on Discoveries; animate the sprites and show the figures built
+  from several sprites assembled; say who the ending's eight figures are.
 - A Play tab (Platinum): every routine ported and run in lockstep.
 
 ## Article ideas

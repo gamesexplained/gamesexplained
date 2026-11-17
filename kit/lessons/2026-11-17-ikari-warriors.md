@@ -19,3 +19,13 @@
   with no port to keep in step. Setting the few variables the routine
   reads (here the window row) and calling the game's own reset first was
   all it needed.
+- **A range excluded as run-time state can hide a table the game
+  loads.** The music driver's state, `$E55C`-`$E603`, was left out of the
+  listing as cleared by the routine that starts a tune. Three bytes in
+  it, 0, 7 and 14, are the offsets of the three voices' registers, loaded
+  with the game and never written; without them the page's player, which
+  runs the driver on the listing's bytes, played every voice on voice
+  one, and its test passed because it compared the driver with itself.
+  The reader review heard it. Before excluding a range, look for
+  non-zero bytes in it at the hand-over and for code that reads them
+  before writing; a player's test should check that every voice sounds.

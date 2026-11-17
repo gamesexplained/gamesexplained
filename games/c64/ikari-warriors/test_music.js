@@ -29,6 +29,15 @@ function check(name, make, start, frames, ended) {
   }
   console.log(`${name}: ${frames} frames agree`);
 }
+// Every voice sounds: each tune writes a non-zero frequency to all three voices' registers. The
+// offsets come from voice_regs ($E5B9), loaded with the game; with them missing from the listing
+// all three voices would write voice 1's registers and the other two would stay silent.
+IKARI_TUNES.forEach((name, n) => {
+  const d = createDriver({ ram: ram.slice() }, kit), heard = [0, 0, 0];
+  d.init(n);
+  for (let f = 0; f < 1000; f++) { d.play(); const w = d.writes; for (let i = 0; i < w.length; i += 2) if (w[i] % 7 === 1 && w[i] < 21 && w[i + 1]) heard[Math.floor(w[i] / 7)] = 1; }
+  if (heard.join() !== '1,1,1') { console.log(`${name}: voices heard ${heard}`); bad++; } else console.log(`${name}: all three voices sound`);
+});
 IKARI_TUNES.forEach((name, n) => check(name, (M, K) => { const d = createDriver(M, K), i = d.init; d.init = () => i(n); return d; },
   cpu => cpu.call(0xE09A, { a: n }, { maxSteps: 1e6 }), 3000, m => m[0xE00A] === 0));
 IKARI_EFFECTS.forEach((name, n) => check(name, (M, K) => { const d = createEffectDriver(M, K), i = d.init; d.init = () => i(n); return d; },

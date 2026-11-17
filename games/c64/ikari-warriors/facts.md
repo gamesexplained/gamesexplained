@@ -142,6 +142,11 @@ reads the map objects and the ground pattern under the I/O chips lowers
   soldiers over (`check_trampling`). A hit by a grenade, or running out of
   fuel, starts a countdown of 100 frames before the tank blows up
   (`kill_player`, `update_fuel`): time to climb out.
+- A character's colour value in `char_colours` (`$7E80`) also gives its
+  behaviour: either of bits 7 and 6 makes it solid to walkers
+  (`map_cell_at`), bit 6 also stops bullets and grenades (`update_shots`,
+  `update_grenade_hits`), bit 7 keeps tokens off it (`drop_item`), and a
+  low nibble of `$E` is water.
 - Water slows a player on foot (`move_player`, `zpa_6A`), stops a tank,
   and hides a soldier (frame `$6F`, not hit by bullets).
 
@@ -176,6 +181,9 @@ reads the map objects and the ground pattern under the I/O chips lowers
 - Three tunes (`tune_table`, `$E681`): 0 on the title pages, 1 at game
   over, 2 in the intro and in play. 23 patterns (`patterns`), 23 sound
   effects of 20 bytes (`effect_table`, `$EB34`).
+- Each voice's chip registers come from `voice_regs` (`$E5B9`: 0, 7 and
+  14), loaded with the game and never written. *Live*, on the simulator:
+  each tune writes a frequency to all three voices (`test_music.js`).
 - The driver (`music_tick`) steps each voice's pattern every 4, 5 or 6
   frames (the tune's tempo) and updates pitch, vibrato, arpeggio, slides
   and pulse sweep every frame. An effect takes a voice from the music

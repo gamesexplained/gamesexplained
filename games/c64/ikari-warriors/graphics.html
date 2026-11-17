@@ -58,7 +58,7 @@ sup.fn + sup.fn::before{content:","}
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1988 · Elite Systems</p>
   <h1>Ikari Warriors: graphics</h1>
-  <p class="sub">Every sprite the game draws its soldiers, tanks, helicopters and panels with, the characters the road is built from, and the loading picture.</p>
+  <p class="sub">Every sprite the game draws its soldiers, tanks, helicopters, and panels with, the characters the road is built from, and the loading picture.</p>
 </header>
 <main class="wrap">
 
@@ -79,15 +79,15 @@ sup.fn + sup.fn::before{content:","}
 <section id="chars">
   <p class="fig">03 · Characters</p>
   <h2 class="t">The ground's characters</h2>
-  <p>The road is made of multicolour characters, each with its own colour in <a href="source.html#7E80"><code>char_colours</code></a>. The first 87 are always there: the earth, grass, water and panel edges at <a href="source.html#FC48"><code>game_charset</code></a>. The rest of the 256 are loaded in sets as the road reaches them (<a href="source.html#8386"><code>map_load_tiles</code></a>); the <a href="levels.html">Maps</a> page shows them in place. A character's colour also says what it does: either of its top two bits makes it solid, the second also stops bullets, and a low nibble of <code>$E</code> is water.</p>
-  <div class="plate"><canvas id="cCanvas" class="ik-px"></canvas><p class="cap">The game's own characters, each in its colour from <a href="source.html#7E80"><code>char_colours</code></a>, on the start of the road's colours: orange, brown and light green.</p></div>
+  <p>The road is made of multicolour characters, each with its own colour in <a href="source.html#7E80"><code>char_colours</code></a>. The first 87 are always there: the earth, grass, water, and panel edges at <a href="source.html#FC48"><code>game_charset</code></a>. The rest of the 256 are loaded in sets as the road reaches them (<a href="source.html#8386"><code>map_load_tiles</code></a>); the <a href="levels.html">Maps</a> page shows them in place. A character's colour value also says what it does: one of its two top bits makes it solid to anyone walking, one of those also stops bullets, and a value ending in <code>$E</code> is <a href="gameplay.html#water">water</a>. Each character below carries a letter for that: S for solid, B for solid and stopping bullets, W for water.</p>
+  <div class="plate"><canvas id="cCanvas" class="ik-px"></canvas><p class="cap">The game's own characters, each in its colour from <a href="source.html#7E80"><code>char_colours</code></a>, on the start of the road's colours: orange, brown, and light green.</p></div>
 </section>
 
 <section id="loading">
   <p class="fig">04 · Loading</p>
   <h2 class="t">The loading picture</h2>
-  <p>The loader shows a multicolour bitmap while the game loads. It reads the picture as its second and third blocks of sectors, tracks 15 to 17 of the disk, and shows it until the last blocks load over its memory. The running game keeps none of it, so the picture below is a screenshot from the emulator rather than a drawing from the listing.</p>
-  <figure class="overview-shot"><img src="reference/loading-screen.png" width="384" height="272" alt="The loading picture: two bare-chested commandos under the word IKARI, with the Elite logo"><figcaption>The loading picture, in the emulator. The rest of the game on the disk is stored with every byte combined with <code>$C9</code> by exclusive or, which the loader undoes.</figcaption></figure>
+  <p>The loader shows a multicolour bitmap while the game loads. The loader reads the picture as its second and third blocks of sectors, tracks 15 to 17 of the disk, and shows it until the last blocks load over its memory. The running game keeps none of it, and the picture below is the loading screen as it appears.</p>
+  <figure class="overview-shot"><img src="reference/loading-screen.png" width="384" height="272" alt="The loading picture: two bare-chested commandos under the word IKARI, with the Elite logo"><figcaption>The loading picture, in the emulator. Seven of the game's tracks, 8 to 14, hold its <code>$4000</code>-<code>$CFFF</code> with every byte combined with <code>$C9</code> by exclusive or, which the loader undoes; the other tracks are stored plainly.</figcaption></figure>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
@@ -102,7 +102,7 @@ sup.fn + sup.fn::before{content:","}
     // pointers' values in bank 1 ($4000 + 64 * frame); the intro's shapes are kept at $0800 and swapped
     // over frames $41-$50 for the opening sequence (swap_intro_sprites, $12E3).
     const G = [
-      [0x10, 0x17, 'The score panel, above the road', 1, 2, 0, 0x4000],
+      [0x10, 0x17, 'The score panel, above the road, on its shared colours 11 and 12', 15, 11, 12, 0x4000],
       [0x18, 0x1F, 'The status bar, below the road: colour 13 on 2 and 5, as irq_lower_panel sets them', 13, 2, 5, 0x4000],
       [0x41, 0x48, 'A player falling (death_frames)', 10, 11, 12, 0x4000],
       [0x49, 0x50, 'Soldiers standing, one frame a facing', 15, 11, 12, 0x4000],
@@ -147,6 +147,8 @@ sup.fn + sup.fn::before{content:","}
       const col = ram[0x7E80 + i] & 15, x = (i % per) * 9 * s, y = Math.floor(i / per) * 9 * s;
       if (col & 8) C64.drawGlyphMC(ctx, set, i, x, y, s, [P[8], P[9], P[13], P[col & 7]]);
       else C64.drawGlyph(ctx, set, i, x, y, s, P[col & 7], P[8]);
+      const v = ram[0x7E80 + i], tag = v & 0x40 ? 'B' : v & 0x80 ? 'S' : (v & 15) === 14 ? 'W' : '';
+      if (tag) { ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(x, y, 7 * s / 1.5, 9 * s / 1.5 * 0.8); ctx.fillStyle = '#000'; ctx.font = (6 * s) + 'px IBM Plex Mono, monospace'; ctx.fillText(tag, x + 1, y + 6 * s); }
     }
   });
 })();

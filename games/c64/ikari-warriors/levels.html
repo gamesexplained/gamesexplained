@@ -74,20 +74,20 @@ sup.fn + sup.fn::before{content:","}
     </div>
     <p id="mCap" class="cap">Drawn by the game's <a href="source.html#7F80"><code>draw_map_row</code></a> on the kit's 6502, from the bytes of the Source tab.</p>
   </div>
-  <p>The labels on the right mark what the script does at that row, each with a word as well as a colour: <b>TILES</b> where it loads a new set of characters (26 times), and <b>COPTER</b> where it sends a helicopter down the screen (21 times). The last two marks are the <b>END</b>: the figures of the ending at row 1,878, and the end of the game at row 1,890.</p>
+  <p>The labels on the right mark what the script does at that row, each with a word as well as a colour: <b>TILES</b> where it loads a new set of characters (26 times), and <b>COPTER</b> where it sends a helicopter down the screen (21 times). The last two marks are the <b>END</b>: the figures of the ending at row 1,878, and the end of the game at row 1,890. The flat grey ground there is the script's last fill, plain characters with no earth or grass under the final scene.</p>
 </section>
 
 <section id="script">
   <p class="fig">02 · The script</p>
   <h2 class="t">A road written as a script</h2>
-  <p>The road is not stored as a picture. It is a script at <a href="source.html#92E1"><code>map_script</code></a>, 1,302 bytes long, that <a href="source.html#7F80"><code>draw_map_row</code></a> runs one step each time the screen needs a new row (<a href="source.html#81D7"><code>map_script_step</code></a>). A step either waits a number of rows or does something:</p>
+  <p>The road is not stored as a picture. The game keeps a script at <a href="source.html#92E1"><code>map_script</code></a>, 1,302 bytes long, that <a href="source.html#7F80"><code>draw_map_row</code></a> runs one step each time the screen needs a new row (<a href="source.html#81D7"><code>map_script_step</code></a>). A step either waits a number of rows or does something:</p>
   <ul>
     <li>start one of 118 <b>map objects</b> at a column: a building, a wall, a river bank, a stretch of trees. Each object is a stream of rows of characters at <a href="source.html#83FF"><code>map_object_ptrs</code></a>, and an object can call another with a repeat count, which is how a long river is built from one short piece. Up to six objects are drawn at once.</li>
     <li>load a <b>tile set</b> into the character set (<a href="source.html#8386"><code>map_load_tiles</code></a>), so the road can change from jungle to river to village while the game keeps only 256 characters.</li>
-    <li>run a <b>special</b> (<a href="source.html#825B"><code>map_special</code></a>): new background colours, a helicopter, a gun pit, a stretch of scenery that a grenade can break, the soldiers' rate of fire, the ending.</li>
+    <li>run a <b>special</b> (<a href="source.html#825B"><code>map_special</code></a>): new background colours, a <a href="gameplay.html#enemies">helicopter</a>, a <a href="gameplay.html#enemies">gun</a>, a stretch of scenery that a grenade can break, the soldiers' rate of fire, and <a href="gameplay.html#ending">the ending</a>.</li>
   </ul>
   <p>Under the objects lies the ground, earth and grass copied from a 64-row pattern at <a href="source.html#D800"><code>ground_pattern</code></a>, kept in the memory under the input and output chips. Each new row is written into a window of 64 rows that wraps round (<a href="source.html#C87F"><code>map_row_ptrs</code></a>), and the 22 rows on screen are copied out of it as the view scrolls (<a href="source.html#32D4"><code>copy_play_area</code></a>).</p>
-  <p>The picture above is the game's own code at work, so it is the road as the game builds it. A Python copy of <a href="source.html#7F80"><code>draw_map_row</code></a>, written for this study, gave the same 1,891 rows as the game's code, and the 49 rows the game had drawn in a saved moment of play in the emulator matched both.<sup class="fn"><a href="about.html#src-6" title="Measurements">6</a></sup></p>
+  <p>The picture above is the game's own code at work, so it is the road as the game builds it. These are the same rows the game draws in play.<sup class="fn"><a href="about.html#src-6" title="Measurements">6</a></sup></p>
 </section>
 
 <section id="soldiers">
@@ -137,6 +137,7 @@ function ikariRoute(ram, Cpu) {
     const marks = R.marks.slice();
     const heli = ikariHelicopters(L.ram, C64Cpu); heli.forEach(r => marks.push([r, 'COPTER']));
     marks.push([1878, 'END: figures'], [1890, 'END: game over']);
+    marks.sort((a, b) => a[0] - b[0]);
     const P = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
     const S = 2, LW = 22, RW = 80, W = LW + 256 + RW, H = N * 8;
     const cv = $('mCanvas'); cv.width = W; cv.height = H;
@@ -166,9 +167,10 @@ function ikariRoute(ram, Cpu) {
     cv.style.maxWidth = (W * S) + 'px';
     const box = $('mBox'), sl = $('mRow');
     const where = r => { const m = marks.filter(x => x[0] <= r).pop(); return m ? 'past the last mark, ' + m[1] + ' at row ' + m[0] : 'the start, beside the wrecked plane'; };
-    const toRow = r => { const scale = cv.clientHeight / H; box.scrollTop = ((N - 1 - r) * 8 + 8) * scale - box.clientHeight + 40; $('mRowV').textContent = r; $('mWhere').textContent = where(r); };
+    let fromSlider = false;
+    const toRow = r => { const scale = cv.clientHeight / H; fromSlider = true; box.scrollTop = ((N - 1 - r) * 8 + 8) * scale - box.clientHeight + 40; $('mRowV').textContent = r; $('mWhere').textContent = where(r); };
     sl.oninput = () => toRow(+sl.value);
-    box.onscroll = () => { const scale = cv.clientHeight / H, r = Math.max(0, Math.min(N - 1, Math.round(N - 1 - ((box.scrollTop + box.clientHeight - 40) / scale - 8) / 8))); sl.value = r; $('mRowV').textContent = r; $('mWhere').textContent = where(r); };
+    box.onscroll = () => { if (fromSlider) { fromSlider = false; return; } const scale = cv.clientHeight / H, r = Math.max(0, Math.min(N - 1, Math.round(N - 1 - ((box.scrollTop + box.clientHeight - 40) / scale - 8) / 8))); sl.value = r; $('mRowV').textContent = r; $('mWhere').textContent = where(r); };
     requestAnimationFrame(() => toRow(0));
   });
 })();

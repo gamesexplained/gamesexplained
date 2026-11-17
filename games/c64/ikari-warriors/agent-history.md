@@ -41,3 +41,19 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   the 26 tile-set loads and 21 helicopters. The music player runs the
   game's driver for the three tunes and the 23 effects; `test_music.js`
   holds it against the same code on the simulator.
+- **Reader review** (claude-opus-5-5, an agent that wrote none of the
+  pages; report in `work/reports/reader-review.md`). Fixed: the music
+  played every voice on voice one, because the coverage exclusion of the
+  driver's state hid `voice_regs` (`$E5B9`), now listed, with a test that
+  every voice sounds; the banner (tier set); the credits link and the
+  encoded-tracks caption; the Maps slider, the marks' order and the grey
+  ending ground; the shell-range slip moved under a fitting heading,
+  with units and advice for a team; ten more effects named from their
+  callers; the panel sprites' colours; the turrets, enemy tanks, water,
+  the shoot-through grenade's fly-on kill, "every fourth soldier", the
+  debug sign, and the characters' solid, bullet-stopping and water
+  marks; test narration cut from the pages; the Oxford commas, the "It"
+  sentences and the missing links. Left, in `TODO.md`: soldiers, mines,
+  tanks and guns on the map; the eighth token and the unused tile
+  shapes drawn; animated and assembled sprites; who the ending's eight
+  figures are.
