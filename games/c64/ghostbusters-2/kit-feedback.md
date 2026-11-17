@@ -9,7 +9,7 @@
 
 ## What was changed in the kit
 
-None. The changes are confined to this analysis and its review images.
+- `kit/skills/core/10-orient`, step 1, now says that a crack's patch to the game's own code is a lead for `70-minisite`, to be played on the original. Here the museum's only such patch hid a bug that only the original disk has. `games/c64/bubble-bobble` has the same shape: two trainer hooks written over the game's own instructions at `$7EBB` and `$7FA1`, where the original instructions were never seen (its `facts.md`, "What the cracker changed"). Lesson: `kit/lessons/2026-11-17-crack-patch-hid-a-bug.md`.
 
 ## Candidates
 
@@ -48,9 +48,7 @@ What changed what the run did:
 - `75-review/reader.md`'s table of weak treatments ("A sound picker lists numbered effects") shaped the effect table: each effect named by what sets it off, with the request's address.
 - `kit/CHECKING.md` made the maintainer's sample quick to run and to record; `models.py check` confirmed the row.
 
-Where the kit fell short, and the change made:
-
-- `10-orient` told the run to compare the code in play with another release's and mark what differs as the crackers'. It did not say that a crack's patch to the game's own code is worth playing on the original. Here the only such patch hid a bug that only the original has. `10-orient`, step 1, now says so, and `kit/lessons/2026-11-17-crack-patch-hid-a-bug.md` records it.
+Where the kit fell short, and the change made: `10-orient` did not say that a crack's patch to the game's own code is worth playing on the original. The change is listed under "What was changed in the kit", above.
 
 For a maintainer (not changed):
 
