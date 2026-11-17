@@ -117,9 +117,16 @@ other than the loader's) or `$D01E` (sprite-sprite collision).
 
 ## The listing's error rate
 
+A sample of 70 comments (seed 2617: 10 of the 172 generated, 60 of the
+written), checked on a proven model by a checker that wrote none of
+them, found 7 wrong: 1 generated and 6 written, 10.0 % with an interval
+of 4.9 % to 19.2 %. All seven were corrected, with the other comments
+that said the same thing (fencing's 20 bitmap-cell comments among them).
+That is over the mark, so a full audit is recommended (`TODO.md`).
+
 ## Live tests
 
-On 17 November 2026, in VICE 4.0 (the kit's build), from each part's
+On 17 November 2026, in vice-mcp release v4.0.0 (VICE 3.10), from each part's
 entry snapshot:
 
 - Cycling's clock moved 10.0 seconds in 600 frames, with its handler at
@@ -129,3 +136,7 @@ entry snapshot:
   of a second let the speed fall to 1; at the far end the swimmer turned
   by itself and LAP 1 stayed on the panel.
 - Kayaking's TOD clock moved 16.9 seconds in 989 frames.
+
+Not checked: whether the Epyx NTSC disk's Rowing also counts a tenth
+every 5 frames, because its modules are outside the directory, where
+`disk.py` does not reach.

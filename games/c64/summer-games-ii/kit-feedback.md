@@ -1,41 +1,27 @@
-# Summer Games Ii — kit feedback
+# Summer Games II — kit feedback
 
-Written in the retrospective (`kit/skills/core/80-retro`). Which skill text
-changed what the run did, what the skills and kit got wrong or left out,
-what was changed, what needs a maintainer's decision, what cost the most
-time, operating system and tool versions.
+Written in the retrospective of a run on claude-opus-5-5 (17 November
+2026, cloud container, Linux x86_64, no display, vice-mcp release v4.0.0
+with VICE 3.10, regenerator2000).
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "a viewer that asks for every frame finds the shapes the listing missed": drawing every pointer of High Jump's sprite area showed 24 shapes at `$AB00-$B0FF` that no frame table reaches.
+- `60-verify`: "every other comment that says the same thing": the one Fencing comment the sample caught calling a bitmap cell "a row" led to 19 more with the same mistake.
+- `15-parts`: "with its snapshot taken while it is there": the swimming events build their pictures over the code they copied away, so their listing came from a snapshot taken during a race rather than at the entry.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/scripts/new_game.py`: the title made from the slug keeps a Roman numeral in capitals ("Summer Games II", not "Summer Games Ii"). `str.title()` lowercased it, and the wrong title sat in every template file's heading until each was rewritten by hand. Checked on the slugs of this game, Rambo, Fist II, Ghostbusters 2 and X-Out.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+None.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+- **Say in `kit/skills/core/15-parts` that a change to a part's `build` in `game.json` needs every listing rebuilt.** Adding the build to `game.json` made `check_listing.py` fail on all thirteen built parts with "no longer rebuilds from its own bytes"; `listing.py <part> --rebuild --write` on each fixed it. The message names the command, but a run that edits `game.json` late, as most do, meets thirteen failures at once and has to work out that one edit caused them all.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+A music driver for each of the eleven parts with sound had to be found and written by hand; a helper that took a part's tune-start and play-step labels and built the driver would have saved most of an hour.
