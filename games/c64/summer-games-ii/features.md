@@ -35,7 +35,7 @@ Sources:
 | World records saved to the disk; practice scores are never saved | traced | menu `check_record` `$1886` saves through the loader for events 0 to 7 when the winner's score is at least the record; practice never reaches the results |
 | Awards after each event: names, countries and scores in order; gold 5 points, silver 3, bronze 1; the gold medallist's anthem | traced | menu `show_results` `$176C`: sorts, FAULT for a zero score, ties share a place, points from `$14AD`, the winner's flag waves |
 | Champion ceremony after all the events: the runners-up first, then the champion and their anthem | traced | menu `$1101`: lines from last place up, then the winner's flag and anthem |
-| Closing ceremony: a jet-pack man flies in as the sky darkens to *Ride of the Valkyries*, the floodlights come on, the flame dies, the Epyx blimp passes, fireworks to the *1812 Overture* | open | part `closing` |
+| Closing ceremony: a jet-pack man flies in as the sky darkens to *Ride of the Valkyries*, the floodlights come on, the flame dies, the Epyx blimp passes, fireworks to the *1812 Overture* | traced | part `closing`: eight stages driven by one routine: the sky darkens through nine colours while the floodlights flicker on, the jet-pack flyer crosses and turns, the flame on the cauldron dies, the blimp passes, fireworks of eight kinds burst at random, then the blimp passes again and again with a scrolling banner; four tunes, each started when the last ends; a joystick press ends it |
 | Summer Games 1 events: with the first game's disk, its eight events join these for sixteen | open | the module table lists six modules on a third disk |
 | **Triple Jump**: fire starts the run; right for the hop and the step, left for the jump, up in the air for lift; a fault for overstepping or a late move; three jumps in competition; an instant replay on a monitor | traced | part `triple-jump`: a FAULT for overstepping, a late hop or step, or passing the line; three rounds, best kept; in practice ANOTHER JUMP? with Y and N; the monitor plays its animation and the crowd cheers for 15 m or more |
 | **Rowing**: fire starts; left lifts the oars, right pulls them through; 250 metres; split screen, against a computer pacer or a second player | traced | part `rowing`: each lane follows its own boat; the stick, read every fourth frame, steps a 16-phase stroke and only phases with the oars in the water add speed; the pacer's skill rises while it trails; 3 minutes is a FAULT. The 250 metres is not in the code's units |
@@ -84,6 +84,8 @@ Found in the code, not in the manual.
 - Kayaking would push the kayak with the water's flow, read every third frame from a map at $E000; this release leaves that map empty, so the river has no current, and a kayak left alone in the water stops.
 - Kayaking keeps two debugging aids nothing calls: one draws the kayak's position into the clock, the other colours the quarters of the hull that touch the bank.
 - The opening ceremony is Summer Games 1's: its code still holds SUMMER GAMES and COPYRIGHT (C) 1983 EPYX, text that nothing shows.
+- The blimp's banner in the closing ceremony advertises WATCH FOR WINTER GAMES COMING SOON TO YOUR LOCAL STORE, then Epyx's other games, from Summer Games and Impossible Mission to GI Joe and Barbie.
+- The closing ceremony checks the KERNAL's PAL flag so that sprites moving off the left of a PAL screen reappear without a jump: a PAL line has 504 sprite positions, not 512.
 
 ## Open questions
 
