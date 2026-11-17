@@ -35,7 +35,7 @@ A continuation on gpt-6.1-sol drew 60 comments uniformly from all 5,159 comments
 
 A separate generated-template supplement drew 20 comments from a population of 742, seed 141127, on gpt-6.1-sol. Sixteen passed and four retained historical map-tail read observations that were not independently reproduced; no wrong detail was demonstrated. Eleven matrix-copy CPU cases passed. This separate supplement has no combined population-weighted rate with the uniform sample. Neither review is a full audit; a full independent audit remains recommended.
 
-The analysis used model identifiers not recognised as proven by `kit/models.json`. The fresh checker's sample does not replace the maintainer's check required by `kit/CHECKING.md`; the published tier remains Bronze pending that review.
+The analysis used model identifiers not recognised as proven by `kit/models.json`, so the maintainer's check in `kit/CHECKING.md` followed, on claude-opus-5-5. It drew 60 comments uniformly from the 5,159 in all eleven parts, seed 52411. The checker found two wrong (3.3 %; Wilson 95 % interval 0.9–11.4 %), within the mark of two in 60. The museum comments at `$4394`, `$43BC` and `$43E4` called these addresses saved character rows; they are only the base addresses of the indexed stores in the loop at `$A397`, which runs X from `$DE` to `$FF` and copies part of the alternate screen into the screen at `$4400`. The sound driver's handler at `$E266` was described as unreached; stream command `$88` reaches it through entry 8 of the jump table at `$E226`. Both were corrected, the second in all five parts that repeated it. The sample's count is a lower bound, since a checker misses some errors, and a full audit is still recommended.
 
 ## Additional verification
 
