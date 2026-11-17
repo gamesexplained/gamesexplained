@@ -1217,7 +1217,7 @@
    "address": 649,
    "name": "a_0289",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 651,
@@ -2201,7 +2201,7 @@
    "address": 3129,
    "name": "f_0C39",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 3135,
@@ -2919,9 +2919,9 @@
   },
   {
    "address": 35041,
-   "name": "f_88E1",
+   "name": "bit_off_base",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 35042,
@@ -6980,7 +6980,7 @@
   {
    "address": 34,
    "type": "line",
-   "text": "Second pointer, the source beside $20's destination: the character-ROM copy, the sprite expansion, the text printer, the letter shape ($8D79), Jumpman's materialising and the high-score moves. Low byte."
+   "text": "Second pointer, used by many routines in turn: the source in the character-ROM copy, the sprite expansion, the letter shape ($8D79), Jumpman's materialising and the high-score moves (whose destination is $24); the colour-RAM destination in the text printer ($8CC2); a second destination in the game over's spiral ($A71C); and in the start-up ($810F) a two-digit counter for the high-score table's line numbers. Low byte."
   },
   {
    "address": 35,
@@ -6990,7 +6990,7 @@
   {
    "address": 36,
    "type": "line",
-   "text": "Third pointer: the bomb check's list address, the game over's spiral pointer and high-score line; the title keeps Y here while a sound starts. Low byte."
+   "text": "Third pointer: the bomb check's list address; Jumpman's materialising, where it holds his sprite block at $6F40 ($9AA5) and his rows are copied through it ($9ACD); the destination of the high-score moves and the high-score line in the game over; in the game over's spiral the step added to $20/$21 ($A730), not a pointer; the title keeps Y here while a sound starts. Low byte."
   },
   {
    "address": 37,
@@ -7060,7 +7060,7 @@
   {
    "address": 50,
    "type": "line",
-   "text": "Scratch byte: counts in the start-up and the sprite expansion; in the bomb check the defused bomb's offset in the bomb list (twice its number), which the levels' bomb routines read; the ending banner's third byte."
+   "text": "Scratch byte: counts in the start-up and the sprite expansion; the letter shape's count of 8 pixels ($8DB1); the high-score screen's count of 20 lines ($A85A); in the bomb check the defused bomb's offset in the bomb list (twice its number), which the levels' bomb routines read; the ending banner's third byte."
   },
   {
    "address": 51,
@@ -7225,12 +7225,12 @@
   {
    "address": 83,
    "type": "line",
-   "text": "Where on the text screen the line goes, low byte."
+   "text": "The column on the text screen where the line goes, 0-39: print_text ($8CA2) adds it to the row ($54) times 40."
   },
   {
    "address": 84,
    "type": "line",
-   "text": "The line's destination, high byte."
+   "text": "The row on the text screen where the line goes: print_text multiplies it by 40 (and leaves it multiplied by 8)."
   },
   {
    "address": 85,
@@ -7490,7 +7490,7 @@
   {
    "address": 649,
    "type": "line",
-   "text": "The KERNAL's keyboard buffer size, read by its own scan."
+   "text": "The KERNAL's keyboard buffer size. Nothing in the game reads it: the KERNAL's own read (at $EB37) is on its standard key decoding, which the game's hook at $028F ($823E) skips."
   },
   {
    "address": 651,
@@ -7560,27 +7560,27 @@
   {
    "address": 2177,
    "type": "line",
-   "text": "A level's second variable: level 3's ladder step; level 8's next letter's Y; level 10's place number; level 12's gust's voice."
+   "text": "A level's second variable: level 3's second ladder step; level 8's next letter's Y; level 9's used-bomb flag ($0880+n); level 10's place number; level 12's gust's voice. Also part of the start-up's work area for the note table ($0880-$0897)."
   },
   {
    "address": 2178,
    "type": "line",
-   "text": "Level 3's third ladder step; level 12's gust strength."
+   "text": "A level's third variable: level 3's third ladder step; level 9's used-bomb flag ($0880+n); level 12's gust strength. Also part of the start-up's work area for the note table."
   },
   {
    "address": 2179,
    "type": "line",
-   "text": "Level 3's fourth ladder step (the first going up)."
+   "text": "A level's fourth variable: level 3's fourth ladder step (the first going up); level 9's used-bomb flag ($0880+n). Also part of the start-up's work area for the note table."
   },
   {
    "address": 2180,
    "type": "line",
-   "text": "Level 3's fifth ladder step; level 8's colour task's count."
+   "text": "A level's fifth variable: level 3's fifth ladder step; level 4's flags for the stone in sprite 4 ($0880+n); level 8's colour task's count; level 9's used-bomb flag. Also part of the start-up's work area for the note table."
   },
   {
    "address": 2181,
    "type": "line",
-   "text": "Level 3's sixth ladder step."
+   "text": "A level's sixth variable: level 3's sixth ladder step; level 4's flags for the stone in sprite 5; level 7's state for the bullet in sprite 5; level 9's used-bomb flag. Also part of the start-up's work area for the note table."
   },
   {
    "address": 2184,
@@ -7880,7 +7880,7 @@
   {
    "address": 2487,
    "type": "line",
-   "text": "The enemies' speed, set with Jumpman's at each new life."
+   "text": "The enemies' speed: at each new life ($9AFC) it is set to the player's run speed, the same as Jumpman's, so a slower run speed slows the bullets and every level's moving things too."
   },
   {
    "address": 2488,
@@ -8235,7 +8235,7 @@
   {
    "address": 3129,
    "type": "line",
-   "text": "The byte before the rope positions: the rope check compares with $0C39+Y for Y 1 to 6."
+   "text": "Header byte $39 in use: the eighth ladder position, which the ladder check reads as $0C31+Y with Y = 8 ($A31F); also the byte before the rope positions, which the rope check reads as $0C39+Y for Y 1 to 6."
   },
   {
    "address": 3135,
@@ -8360,7 +8360,7 @@
   {
    "address": 32841,
    "type": "line",
-   "text": "Build the bitmap's row tables: for each of the 200 pixel lines, the address of its first byte in the bitmap at $4000, low bytes at $1000 and high bytes at $1100 (8 lines to a character row, 320 bytes to a row)."
+   "text": "Build the bitmap's row tables: for each of 256 lines (32 character rows of 8; the bitmap shows the first 200), the address of its first byte in the bitmap at $4000, low bytes at $1000 and high bytes at $1100 (320 bytes to a character row). The loop runs until X wraps to 0."
   },
   {
    "address": 32890,
@@ -8530,7 +8530,7 @@
   {
    "address": 34746,
    "type": "line",
-   "text": "Install the tasks asked for since the last frame: each pair at $0938-$093F whose high byte is not zero goes into task slots 4-7 ($0908-$090F) and is cleared."
+   "text": "Install the tasks asked for since the last frame: each pair at $0938-$093F whose high byte is not zero goes into task slots 4-7 ($0908-$090F), and its high byte is cleared; the low byte is left."
   },
   {
    "address": 34771,
@@ -8995,7 +8995,7 @@
   {
    "address": 38763,
    "type": "line",
-   "text": "The blip for each key pressed on the title, a sound script."
+   "text": "The blip after each player's run speed (a key 1-8) is taken on the title, a sound script. The number of players is taken with the sound at $9778."
   },
   {
    "address": 38776,
@@ -9120,7 +9120,7 @@
   {
    "address": 39708,
    "type": "line",
-   "text": "Move to the next level: the counter at $09AA goes up by one; past level 12 (and from then on) a random level 1-12 is drawn instead. The level's 64-byte header at $BC00 + 64 \u00d7 level goes to $0C40; the screen is blanked, the status line cleared, the action stopped, the colours set, the picture drawn from the header's script ($0C57), the bitmap shown, the border set (header $29), the start-of-level tune played, the level's name written in the status bar for a while, and play begins at $9BD5."
+   "text": "Move to the next level: the counter at $09AA goes up by one; past level 12 (and from then on) a random level 1-12 is drawn instead. The level's 64-byte header at $BC00 + 64 \u00d7 level goes to $0C40; the screen is blanked, the bitmap cleared ($8B2C), the status line cleared, the action stopped, the colours set, the picture drawn from the header's script ($0C57), the bitmap shown, the border set (header $29), the start-of-level tune played and the level's name written in the status bar for a while. It returns, and the turn's set-up enters the header's main routine ($9A53): $9BD5 on every level but 9."
   },
   {
    "address": 39893,
@@ -9355,7 +9355,7 @@
   {
    "address": 41981,
    "type": "line",
-   "text": "One step of a jump: the step's Y change and whether to move across come from $A492; from the eighth step on, $A444 looks for somewhere to land. Below line $DE he dies. After 22 steps the jump ends wherever he is, and the fall rule takes over."
+   "text": "One step of a jump: the step's Y change and whether to move across come from $A492; from the eighth step on, $A444 looks for somewhere to land. At line $DE or below he dies. After 22 steps the jump ends wherever he is, and the fall rule takes over."
   },
   {
    "address": 42042,
@@ -9425,7 +9425,7 @@
   {
    "address": 42656,
    "type": "line",
-   "text": "The routine list's address is read from header $1F as its low byte and, because the high byte at header $20 is stored into $26 instead of $25, from header $1A as its high byte: right only when the two high bytes are equal."
+   "text": "The routine list's address is read from header $1F as its low byte, and, because the high byte at header $20 is stored into $26 instead of $25, its high byte is whatever $25 holds: header $1E (the change list's high byte, from $A687) when the action also has a change script, else header $1A (from $A64E). Right only when that byte equals header $20."
   },
   {
    "address": 42742,
@@ -9810,12 +9810,12 @@
   {
    "address": 45656,
    "type": "line",
-   "text": "Level 7 (ZIG-ZAG): change script for action 1: 6 girder eraser pieces at X 36, Y 28."
+   "text": "Level 7 (ZIG-ZAG): change script for actions 1 and 2: 6 girder eraser pieces at X 36, Y 28."
   },
   {
    "address": 45666,
    "type": "line",
-   "text": "Level 7 (ZIG-ZAG): change script for action 3: 6 girder eraser pieces at X 100, Y 18."
+   "text": "Level 7 (ZIG-ZAG): change script for actions 3 and 4: 6 girder eraser pieces at X 100, Y 18."
   },
   {
    "address": 45676,
@@ -10065,32 +10065,32 @@
   {
    "address": 47286,
    "type": "line",
-   "text": "Level 11 (HATCHLINGS): change script for action 1: 3 girder eraser pieces at X 72, Y 48."
+   "text": "Level 11 (HATCHLINGS): change script for actions 1 and 12: 3 girder eraser pieces at X 72, Y 48."
   },
   {
    "address": 47296,
    "type": "line",
-   "text": "Level 11 (HATCHLINGS): change script for action 2: 3 girder eraser pieces at X 70, Y 20."
+   "text": "Level 11 (HATCHLINGS): change script for actions 2 and 4: 3 girder eraser pieces at X 70, Y 20."
   },
   {
    "address": 47306,
    "type": "line",
-   "text": "Level 11 (HATCHLINGS): change script for action 3: 3 girder eraser pieces at X 106, Y 20."
+   "text": "Level 11 (HATCHLINGS): change script for actions 3 and 5: 3 girder eraser pieces at X 106, Y 20."
   },
   {
    "address": 47316,
    "type": "line",
-   "text": "Level 11 (HATCHLINGS): change script for action 6: 3 girder eraser pieces at X 10, Y 112."
+   "text": "Level 11 (HATCHLINGS): change script for actions 6 and 14: 3 girder eraser pieces at X 10, Y 112."
   },
   {
    "address": 47326,
    "type": "line",
-   "text": "Level 11 (HATCHLINGS): change script for action 7: 4 girder eraser pieces at X 62, Y 100."
+   "text": "Level 11 (HATCHLINGS): change script for actions 7 and 13: 4 girder eraser pieces at X 62, Y 100."
   },
   {
    "address": 47336,
    "type": "line",
-   "text": "Level 11 (HATCHLINGS): change script for action 8: 4 girder eraser pieces at X 124, Y 112."
+   "text": "Level 11 (HATCHLINGS): change script for actions 8 and 10: 4 girder eraser pieces at X 124, Y 112."
   },
   {
    "address": 47346,

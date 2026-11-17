@@ -1,0 +1,144 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/jj-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Ten tunes and nineteen sound effects, all played by one small routine that gives each voice to whichever sound asks for it most loudly.</p>
+</header>
+<main class="wrap">
+<section id="music">
+  <p class="fig">01 · Music</p>
+  <h2 class="t">Music: ten tunes, two voices each</h2>
+  <p class="lede">A tune plays when a level starts, when it is finished, when Jumpman dies, and at the end of the game. The title has the only tune that uses all three voices.</p>
+  <div class="plate"><div id="sidRoot"></div>
+    <p class="cap">The player runs the game's own sound code on a copy of the C64's processor in the page, over the game's bytes from the Source tab: <a href="source.html#90FE"><code>tune_play</code></a> or <a href="source.html#89E5"><code>sound_play</code></a> to start a sound, then <a href="source.html#88F2"><code>sound_task</code></a> once a frame, as the raster interrupt's task list calls it.</p></div>
+  <div class="table-scroll" role="region" aria-label="The tunes" tabindex="0"><table class="t" id="jjTunes"><thead><tr><th>Tune</th><th>When it plays</th><th>Started at</th><th class="n">Seconds</th></tr></thead><tbody></tbody></table></div>
+  <p>Every tune is a pair of sounds from <a href="source.html#9124"><code>tune_table</code></a>, six bytes an entry: for each of two voices, the address of a script and a priority. <a href="source.html#90FE"><code>tune_play</code></a> hands both to <a href="source.html#89E5"><code>sound_play</code></a>. The title starts two entries one after the other, so its tune has three voices, and the third entry's second sound is a script that ends at once. When a level is finished, <a href="source.html#9C3D"><code>level_done</code></a> picks one of the four end-of-level tunes at random.</p>
+  <p>A script is a list of notes, each an index into a table of frequencies and a length in frames. Four commands change how the voice sounds: <code>$FC</code> sets the waveform and when the note is released, <code>$FD</code> the pulse width, <code>$FE</code> the envelope, and <code>$FF</code> ends the sound. The frequencies are not stored in the game: the start-up code at <a href="source.html#808A"><code>$808A</code></a> builds the table at <code>$1200</code>, eight octaves: the twelve notes of the lowest at <a href="source.html#81FA"><code>$81FA</code></a>, and seven more made by doubling each octave's frequencies.</p>
+</section>
+
+<section id="voices">
+  <p class="fig">02 · Sound</p>
+  <h2 class="t">Sound: three voices, shared by priority</h2>
+  <p class="lede">The game has no voice set aside for music or effects. Each sound asks for a voice with a priority, and gets the first idle voice, or else the voice playing the lowest priority below its own.</p>
+  <div class="plate"><div id="fxRoot"></div>
+    <p class="cap">The same player, starting each effect as the game's own call does: its script and the priority that call passes to <a href="source.html#89E5"><code>sound_play</code></a>.</p></div>
+  <div class="table-scroll" role="region" aria-label="The sound effects" tabindex="0"><table class="t" id="jjFx"><thead><tr><th>Effect</th><th>Script</th><th>Started at</th><th class="n">Priority</th><th class="n">Frames</th></tr></thead><tbody></tbody></table></div>
+  <p><a href="source.html#89E5"><code>sound_play</code></a> keeps three records of seven bytes at <code>$0940</code>, one for each voice: the priority, the time left on the note, when to release it, the waveform, and the script's address. A priority of 0 marks a voice as idle. When no voice is idle, a new sound takes the first voice whose priority is lower than its own; when there is none, the sound is not played. <a href="source.html#88F2"><code>sound_task</code></a> leaves the three priorities ORed together in <code>$5F</code>, so the rest of the game can wait for silence: the title screen does before its tune starts, and the end of the game does before it moves on.</p>
+  <p>Most effects pass a small priority, from 2 for a step to 8 for a bomb defused or Jumpman being hit. Five pass the high byte of their own script's address instead, between <code>$97</code> and <code>$BB</code>: <a href="source.html#9C95"><code>level_done</code></a>, for one, loads <code>$9E</code> into the accumulator to store the script's high byte, and calls <a href="source.html#89E5"><code>sound_play</code></a> with it still there. Those five outrank every tune, whose voices play at priority 16.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="reference/jj-page.js"></script>
+<script>
+function createDriver(M, C64Cpu) {
+  // Jumpman Junior's own sound code, run on the kit's 6502 over the game's memory (M.ram, the
+  // listing). init: the start-up code at $808A builds the note table at $1200 (the listing holds
+  // it as zeros), stopping at $80BB; the three voice records at $0940 and the flags $5F, $0955
+  // and $3B are cleared, and volume 15 is set as $81B3 sets it. M.list says how sound n starts:
+  // a tune by tune_play ($90FE) with A = each of its offsets in tune_table ($9124), two voices an
+  // entry, the title's two entries as $96E2 and $96E7 start them; an effect by sound_play
+  // ($89E5) with its script in $3A/$3B and A = the priority the game's call passes. play:
+  // sound_task ($88F2), as the raster interrupt's task list calls it once a frame. The sound runs
+  // while $5F, the priorities of the busy voices ORed together, is not 0.
+  // Each write keeps the cycle of the call it came on (times), so the chip runs between them.
+  const T = M.list;
+  const mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
+  let writes = [], times = [], on = false, fresh = false, t0 = 0;
+  const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: {
+    read: () => 0,
+    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); times.push(cpu.cycles - t0); } },
+  } });
+  return {
+    init(n) {
+      mem.set(M.ram); sid.fill(0); writes = []; times = [];
+      cpu.call(0x808A, {}, { maxSteps: 1e6, hooks: { 0x80BB: c => c.rts() } });
+      mem.fill(0, 0x0940, 0x0956); mem[0x5F] = 0; mem[0x3B] = 0;
+      sid[24] = 15; writes.push(24, 15); times.push(0); t0 = cpu.cycles;
+      const t = T[n];
+      if (t.tune) for (const o of t.tune) cpu.call(0x90FE, { a: o }, { maxSteps: 1e5 });
+      else { mem[0x3A] = t.at & 255; mem[0x3B] = t.at >> 8; cpu.call(0x89E5, { a: t.pri }, { maxSteps: 1e5 }); }
+      on = true; fresh = true;
+    },
+    stop() { on = false; writes = []; times = []; for (const r of [4, 11, 18]) { sid[r] &= 0xFE; writes.push(r, sid[r]); times.push(0); } },
+    play() {
+      if (!fresh) { writes = []; times = []; } fresh = false; if (!on) return;
+      t0 = cpu.cycles - (times.length ? times[times.length - 1] : 0);
+      cpu.call(0x88F2, { a: 0 }, { maxSteps: 1e5 });
+      if (!mem[0x5F]) on = false;
+    },
+    sid, get writes() { return writes; }, get times() { return times; }, playing: () => on,
+    voice(x) { const p = mem[0x0940 + x * 7]; return { gate: sid[x * 7 + 4] & 1 ? 'on' : 'off', priority: p ? String(p) : 'idle' }; },
+    mem,
+  };
+}
+// end of createDriver
+/* JJ_SOUNDS */
+// Every sound on the page: name, how it starts (tune: offsets in tune_table; at and pri: a
+// script and the priority its call passes), the routine that starts it, and its length in
+// frames from the start to the frame $5F reads 0 (test_music.js holds the lengths).
+const JJ_TUNES = [
+  { name: 'End of a level, tune 1', tune: [0], from: 0x9C46, when: 'a level finished, one of four at random', frames: 322 },
+  { name: 'End of a level, tune 2', tune: [6], from: 0x9C46, when: 'a level finished', frames: 262 },
+  { name: 'End of a level, tune 3', tune: [12], from: 0x9C46, when: 'a level finished', frames: 370 },
+  { name: 'End of a level, tune 4', tune: [18], from: 0x9C46, when: 'a level finished', frames: 310 },
+  { name: 'Death', tune: [24], from: 0xA5AA, when: 'Jumpman has died and dropped off the bottom of the screen', frames: 258 },
+  { name: 'Level start', tune: [30], from: 0x9B8B, when: 'a level’s name is shown', frames: 242 },
+  { name: 'Game over', tune: [36], from: 0xA779, when: 'a player’s last Jumpman is gone', frames: 258 },
+  { name: 'The ending', tune: [42], from: 0xBF6C, when: 'WELL DONE, after level 12', frames: 514 },
+  { name: 'After the high scores', tune: [48], from: 0xA911, when: 'the high-score table is done', frames: 258 },
+  { name: 'Title', tune: [54, 60], from: 0x96E4, when: 'the title screen, three voices', frames: 1154 },
+];
+const JJ_FX = [
+  { name: 'Jump', at: 0xA47C, pri: 7, from: 0xA3F7, frames: 30 },
+  { name: 'Step', at: 0xA473, pri: 2, from: 0xA2DF, frames: 3 },
+  { name: 'Climb', at: 0xA46A, pri: 2, from: 0xA35F, frames: 3 },
+  { name: 'Bomb defused', at: 0xA6F6, pri: 8, from: 0xA66D, frames: 26 },
+  { name: 'Jumpman hit', at: 0xA5CF, pri: 8, from: 0xA4EE, frames: 22 },
+  { name: 'Bullet turns on Jumpman', at: 0xA231, pri: 3, from: 0xA1D0, frames: 26 },
+  { name: 'Bonus for Jumpmen left', at: 0x9ED3, pri: 0x9E, from: 0x9C9D, frames: 11 },
+  { name: 'Time bonus counted', at: 0x886E, pri: 6, from: 0x883E, frames: 6 },
+  { name: 'New Jumpman', at: 0xA0DB, pri: 0xA0, from: 0xA022, frames: 26 },
+  { name: 'Title: a choice taken', at: 0x9778, pri: 0x97, from: 0x9624, frames: 34 },
+  { name: 'Title: a run speed typed', at: 0x976B, pri: 0x97, from: 0x965F, frames: 8 },
+  { name: 'Level 2: a fire moves', at: 0xABA1, pri: 6, from: 0xAB51, frames: 34 },
+  { name: 'Level 4: a hellstone falls', at: 0xAE5C, pri: 3, from: 0xAE1D, frames: 12 },
+  { name: 'Level 10: transporter', at: 0xB7BE, pri: 4, from: 0xB751, frames: 66 },
+  { name: 'Level 11: hatchling flaps', at: 0xBA1C, pri: 5, from: 0xBA0C, frames: 8 },
+  { name: 'Level 12: gust 1, the longest', at: 0xBBBD, pri: 0xBB, from: 0xBB52, frames: 130 },
+  { name: 'Level 12: gust 2', at: 0xBBC6, pri: 0xBB, from: 0xBB52, frames: 98 },
+  { name: 'Level 12: gust 3', at: 0xBBCF, pri: 0xBB, from: 0xBB52, frames: 66 },
+  { name: 'Level 12: gust 4, the shortest', at: 0xBBD8, pri: 0xBB, from: 0xBB52, frames: 50 },
+];
+// end of JJ_SOUNDS
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined' || typeof C64Sid === 'undefined') {
+    for (const id of ['sidRoot', 'fxRoot']) $(id).textContent = 'This widget needs the site\'s shared scripts: open the page from the built site.';
+    return;
+  }
+  const rows = [{ k: 'Gate', f: v => v.gate }, { k: 'Priority', f: v => v.priority }];
+  const cell = (tr, x) => { const td = tr.insertCell(); if (typeof x === 'string') td.textContent = x; else td.append(x); return td; };
+  JJ.load().then(L => {
+    const ram = L.ram;
+    C64Sid.mount($('sidRoot'), { driver: createDriver, data: { ram, list: JJ_TUNES }, tunes: JJ_TUNES.map(t => t.name), rows });
+    C64Sid.mount($('fxRoot'), { driver: createDriver, data: { ram, list: JJ_FX }, tunes: JJ_FX.map(t => t.name), rows });
+    for (const t of JJ_TUNES) {
+      const tr = $('jjTunes').tBodies[0].insertRow();
+      cell(tr, t.name); cell(tr, t.when); cell(tr, JJ.src(t.from)); cell(tr, (t.frames / 50.12).toFixed(1)).className = 'n';
+    }
+    for (const t of JJ_FX) {
+      const tr = $('jjFx').tBodies[0].insertRow();
+      cell(tr, t.name); cell(tr, JJ.src(t.at)); cell(tr, JJ.src(t.from)); cell(tr, String(t.pri)).className = 'n'; cell(tr, String(t.frames)).className = 'n';
+    }
+  });
+})();
+</script>
