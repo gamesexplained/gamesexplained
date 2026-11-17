@@ -19,42 +19,54 @@ Sources:
 
 | Feature | Status | Where |
 |---|---|---|
-| Boots from side 1 to a credits screen that cycles while the event menu loads | live | `reference/title-loading.png`, `reference/title-credits.png` |
-| Menu of five events and the Galactic Championship, picked with the joystick and fire | live | `reference/menu.png`; menu part |
-| Each event loads on its own; side 2 events ask for the disk to be turned over | live | `reference/side-prompt.png`; resident `$0916` |
-| Each event opens with its name in big letters, then (manual and reviews) a humorous text introduction | open | `reference/*-title.png` |
-| 100m Slither: DOWN bunches the worm, UP stretches it; rhythm sets the speed | open | slither part |
-| 100m Slither: DOWN then RIGHT gives a "super-slither" | open | slither part |
-| 100m Slither: FIRE squirts slime; a dry slime gland overheats the worm, which bursts into flames if not slowed | open | slither part; TEMP and SLIME meters in `reference/slither-ready.png` |
-| 100m Slither: disqualified after 70 seconds | open | slither part |
-| 100m Slither: two lanes, each scrolling on its own | live | `reference/slither-race.png` |
-| Space Hockey: goals are black holes left and right that suck in players; the puck is a creature that tries to stay out | open | hockey part |
-| Space Hockey: FIRE brakes, stopping the rebound after a hit | open | hockey part |
-| Space Hockey: 3 points for the puck in the opponent's hole, 1 point when the opponent falls into either hole | open | hockey part |
-| Space Hockey: four rounds of 60 seconds; a scanner shows puck and players | open | hockey part; `reference/hockey-play.png` |
-| Space Hockey: a demo mode plays before the match | live | `reference/hockey-demo.png` |
-| Psychic Judo: hold FIRE to charge a bolt from the reserve, release to launch, steer it round the shields | open | judo part |
-| Psychic Judo: shields over six body zones; FIRE with a direction covers pairs | open | judo part |
-| Psychic Judo: catching a bolt adds to the reserve, a hit costs energy | open | judo part |
-| Psychic Judo: rounds of 60 seconds, best of five; a timed-out round is replayed | open | judo part |
-| Head Throwing: alternate LEFT and RIGHT to run up | open | head part |
-| Head Throwing: hold FIRE while the angle turns, release to throw | open | head part |
-| Head Throwing: alternate UP and DOWN to waggle the ears for lift | open | head part |
-| Head Throwing: FIRE before landing sticks the nose in; too early it topples, too late it does not tip | open | head part |
-| Head Throwing: three throws each, longest wins; foul over the line or if the nose does not stick | open | head part |
+| Boots from side 1 to a credits screen, then the commentator and the menu | live | `reference/title-loading.png`, `reference/title-credits.png`; resident `$8000` loads RECO at boot |
+| Menu of five events and the Galactic Championship, picked with the joystick and fire | live | `reference/menu.png`; menu `$0FF4` |
+| Each event loads on its own; side 2 events ask for the disk to be turned over | live | `reference/side-prompt.png`; menu; resident `$0800` |
+| Each event opens with its name in big letters, then (manual and reviews) a humorous text introduction | confirmed | the name: resident `$C540`, `reference/*-title.png`; the text is the menu's commentator, typed before each event loads (menu messages) |
+| 100m Slither: DOWN bunches the worm, UP stretches it; rhythm sets the speed | confirmed | slither `$3388` (DOWN adds 2 to the speed, at most 8), `$34DE`, `$350F` (a late press takes speed off) |
+| 100m Slither: DOWN then RIGHT gives a "super-slither" | confirmed | slither `$3247`: RIGHT with 12 or more slime, speed `$10`, costs 12 slime |
+| 100m Slither: FIRE squirts slime; a dry slime gland overheats the worm, which bursts into flames if not slowed | confirmed | slither `$32FF` (FIRE spends 2 slime, cools by 4), `$1547` meters, `$346C` burnt |
+| 100m Slither: disqualified after 70 seconds | traced | slither message 3 "TIME LIMIT EXCEEDED RACE TERMINATED" (`$27AD`), result `$82` (`$291F`); the 70 seconds were not timed |
+| 100m Slither: two lanes, each scrolling on its own | live | `reference/slither-race.png`; slither `$15DA`, `$16DC` |
+| Space Hockey: goals are black holes left and right that suck in players; the puck is a creature that tries to stay out | confirmed | hockey `$1A51`, `$1B15` (pull grid); the puck is pushed away except while dazed |
+| Space Hockey: FIRE brakes, stopping the rebound after a hit | confirmed | hockey `$1DF5`: five frames of brake |
+| Space Hockey: 3 points for the puck in the opponent's hole, 1 point when the opponent falls into either hole | confirmed | hockey `$0D91` |
+| Space Hockey: four rounds of 60 seconds; a scanner shows puck and players | confirmed | hockey `$0BA0`, `$0CA8`, `$188A`; level scores give an overtime round (`$0CC1`) |
+| Space Hockey: a demo mode plays before the match | live | `reference/hockey-demo.png`; hockey `$0C93` |
+| Psychic Judo: hold FIRE to charge a bolt from the reserve, release to launch, steer it round the shields | confirmed | judo `$1F0D`, `$3567` (1 from the reserve every 5 frames) |
+| Psychic Judo: shields over six body zones; FIRE with a direction covers pairs | confirmed | judo `$2A34`, `$2C30` (16 x 16 body map) |
+| Psychic Judo: catching a bolt adds to the reserve, a hit costs energy | confirmed | judo `$2B37` |
+| Psychic Judo: rounds of 60 seconds, best of five; a timed-out round is replayed | confirmed | judo `$1D2A`, `$1DB8`, `$1DE5` |
+| Head Throwing: alternate LEFT and RIGHT to run up | confirmed | head `$1AC4` |
+| Head Throwing: hold FIRE while the angle turns, release to throw | confirmed | head: the angle drops a step every 10 frames, and throws by itself straight up at 0 |
+| Head Throwing: alternate UP and DOWN to waggle the ears for lift | confirmed | head: DOWN flaps (lift for 10 frames), UP is needed between strokes |
+| Head Throwing: FIRE before landing sticks the nose in; too early it topples, too late it does not tip | confirmed | head: FIRE starts the head turning; a landing angle of `$0C`-`$0F` sticks |
+| Head Throwing: three throws each, longest wins; foul over the line or if the nose does not stick | confirmed | head `$1EBC` end_contest (with a bug: see Beyond) |
 | Metamorph Marathon: one player, obstacle course against the clock | live | `reference/marathon-play.png` |
-| Metamorph Marathon: from the blob, RIGHT Runner, LEFT Burrower, DOWN Jumper, UP Flyer; FIRE back to the blob | open | marathon part |
-| Metamorph Marathon: four red energy bars, power pills refill; the run ends when energy runs out | open | marathon part |
-| Events 1 to 4 two players; the computer takes the second player when the same fire answers both prompts | live (hockey: "PLAYER ONE IS COMPUTER") | `reference/hockey-play.png` |
-| Player 2 on the keyboard: `@` up, `:` down, `K` left, `H` right, up-arrow fire, RUN/STOP quits | open | |
-| QUIT gives a choice between replaying the event and the menu | open | |
-| Galactic Championship: every event in turn, scored overall | open | resident `$D000` |
-| Records kept on disk (file RECO on side 1) | open | resident `$BC64` |
+| Metamorph Marathon: from the blob, RIGHT Runner, LEFT Burrower, DOWN Jumper, UP Flyer; FIRE back to the blob | confirmed | marathon `$1F1A` form, `$1F1C` shape sets |
+| Metamorph Marathon: four red energy bars, power pills refill; the run ends when energy runs out | confirmed | marathon `$1F1F` (16 bits, four bars of `$100`), `$1F31`, `$1F1E` |
+| Events 1 to 4 two players; the computer takes the second player when the same fire answers both prompts | live (hockey: "PLAYER ONE IS COMPUTER") | `reference/hockey-play.png`; hockey `$24BE`, judo `$3D40`; slither's pace-maker `$3632` |
+| Player 2 on the keyboard: `@` up, `:` down, `K` left, `H` right, up-arrow fire, RUN/STOP quits | differs | the code reads `H` as left and `K` as right (slither `$35DE`, hockey `$2468`, judo `$3F0C`, head `$2BB3`); any player may take the keyboard |
+| QUIT gives a choice between replaying the event and the menu | differs | RUN/STOP leaves for the menu at once (slither `$30A8`, hockey `$2DE7`, judo `$6D36`, head `$34DB`); Hockey, Head Throwing and the Marathon carry a message "STOP TO QUIT ANY KEY TO CONTINUE" that nothing shows |
+| Galactic Championship: every event in turn, scored overall | confirmed | menu sets `$B800`; resident `$D32D`, the points at marathon `$AD0C`, the champion `$D619` |
+| Records kept on disk (file RECO on side 1) | confirmed | resident `$BC64`, `$D005`, `$D77D`; the menu saves RECO when `$08FE` is set |
 
 ## Beyond the documentation
 
 Found in the code, not in the manual.
 
+| Feature | Status | Where |
+|---|---|---|
+| Space Hockey pauses on the Commodore key | confirmed | hockey `$1176` |
+| A Galactic Champion's name and points are kept on disk, with a name entry for a new champion | confirmed | resident `$BC8C`, `$D619` |
+| A closing title after the championship | traced | resident `$B8A7`, title 5 at `$C857` |
+| Title screens: a starfield of 80 stars and rainbow letters | live | resident `$CD29`, `$C965` |
+| Head Throwing: equal metres with player one ahead on centimetres is called a draw | confirmed | head `$1EBC` |
+| Metamorph Marathon: player two's best time is dropped when its two bytes are equal | confirmed | marathon `$7451` |
+| Psychic Judo's records keep only seconds and hundredths: the minutes byte is never copied | confirmed | resident `$D77D` |
+| The resident's volume clear reads the write-only `$D418` and ANDs with a zero-page byte | confirmed | resident `$B86C` |
+| Leftovers of earlier builds in every event file | confirmed | slither, hockey, head (`$35D5`), menu (`$2564`): an earlier Psychic Judo |
+
 ## Open questions
 
-- Which control port each player uses: fire on port 1 and on port 2 both started things in the menu.
+- Does the closing title after a championship (title 5) read THE END? Its shapes match the other titles' E, H and D, but it was not seen live.
