@@ -232,7 +232,16 @@ stopping CIA 1's.
 
 A sample of 60 comments from the whole listing (seed 2617, population
 3,095), checked on claude-opus-5-5 by a checker that wrote none of them:
-result pending at the time of writing.
+9 wrong in a detail, none wrong in its main claim (15 %, 95 % interval 8 %
+to 26 %), so the listing is over the mark and needs a full audit. All 9
+were corrected, with the comments that repeated them: the sound drivers'
+instrument comments in four events said "every N ticks" where the pitch
+steps every N + 1, and now give the rate. The kinds of error: a value
+read as filler that is a table entry (head `$2A1E`), a flag said to clear
+when nothing clears it (marathon `$1F2F`), a routine called "the same" as
+another that differs (marathon `$246F`), a branch's condition misread
+(marathon `$2798`, slither `$12F8`), swapped return values (menu `$2422`)
+and a shape said to be unused that a title uses (resident `$C000`).
 
 ## Live tests
 
