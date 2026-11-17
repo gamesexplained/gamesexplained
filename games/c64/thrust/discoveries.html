@@ -52,7 +52,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1986 · Firebird</p>
   <h1>Thrust</h1>
-  <p class="sub">What the program holds that a player never sees: the BBC Micro version's key page, calls to a music player that is not there, code that can never run, and three sprites nobody draws.</p>
+  <p class="sub">What the program holds that a player never sees: the BBC Micro version's key page, calls to a music player that is not there, code that can never run, and three sprites the game never draws.</p>
 </header>
 <main class="wrap">
 <section id="bbc">
@@ -62,7 +62,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate"><canvas id="th-bbc" class="th-cv" width="640" height="500" style="width:100%;max-width:640px" aria-label="The key page drawn as the BBC Micro's teletext mode would show it"></canvas>
   <p class="cap" id="th-bbc-cap">The text at <code>$B9DD</code>, drawn by this page the way the BBC Micro's MODE 7 would show it: each control code takes a cell and changes the colour, the background or the height of what follows.</p></div>
   <p>The text opens with the bytes 22 and 7, which the BBC Micro reads as "change to MODE 7", its teletext screen. After them come teletext control codes: <code>$84</code> blue, <code>$9D</code> new background, <code>$83</code> yellow, <code>$8D</code> double height. The keys it lists are the BBC's: CAPS LOCK and CTRL to turn, COPY and DELETE to freeze, ESCAPE to quit. The C64 version uses A and S, the function keys and RUN/STOP.</p>
-  <p>The crackers added their own line near the end, "Cracked By The Syndicate For TCI !", in letters with the top bit set, which teletext shows as plain capitals. A routine to print the page is there too: <code>show_bbc_keys_page</code> (<code>$B74B</code>) sends the text to the C64's own print routine (<code>CHROUT</code>), waits for Space and starts the game. No instruction calls it, and no table holds its address. On a C64 the teletext codes would print as other characters, so the page could never have looked like this one.</p>
+  <p>The crackers added their own line near the end, "Cracked By The Syndicate For TCI !", in letters with the top bit set, which teletext shows as plain capitals. A routine to print the page is there too: <code>show_bbc_keys_page</code> (<code>$B74B</code>) sends the text to the C64's own print routine (<code>CHROUT</code>), waits for Space and starts the game. The game never calls it, and its address is not in any table. On a C64 the teletext codes would print as other characters, so the page could never have looked like this one.</p>
 </section>
 <section id="music">
   <p class="fig">02 · The missing music</p>
@@ -73,7 +73,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td><code>JSR $A951</code> with 7 and 1 in A and Y</td><td><code>restart_ship</code>, <code>$A699</code></td><td>an RTS (<code>music_hook</code>)</td></tr>
     <tr><td><code>JSR $A951</code> with 0 and 0</td><td><code>restart_ship</code>, <code>clear_play_area</code>, <code>life_state</code></td><td>the same RTS</td></tr>
   </tbody></table>
-  <p class="cap">No instruction in the snapshot, at the hand-over or in play, writes to the sound chip at <code>$D400</code>-<code>$D41C</code>: a search for every store instruction with those addresses finds none. The only writes to the chip are the sound effects', through its mirror at <code>$D500</code>.</p></div>
+  <p class="cap">The snapshot holds no instruction, at the hand-over or in play, that writes to the sound chip at <code>$D400</code>-<code>$D41C</code>: a search for every store instruction with those addresses finds none. The only writes to the chip are the sound effects', through its mirror at <code>$D500</code>.</p></div>
   <p>A call every frame and a call with a tune number at the start and end of each life is how a music player is usually driven. Here the per-frame call goes to <code>$3000</code>. The relocator copied the program from <code>$3000</code> up to <code>$8280</code> and left the old copy behind. Its first byte, <code>$60</code>, happens to be an RTS, so the call returns at once. The sound effects use the chip's mirror at <code>$D500</code> rather than <code>$D400</code>. Whether Firebird's release played music through these calls is not something this copy can show.</p>
 </section>
 <section id="start">
@@ -96,16 +96,16 @@ $A002  tay</pre><p class="cap">The end of <code>free_shot_slot</code>. Whichever
 </section>
 <section id="leftovers">
   <p class="fig">05 · Leftovers</p>
-  <h2 class="t">Routines nothing calls</h2>
+  <h2 class="t">Routines the game never calls</h2>
   <p class="lede">Two small routines look like tools the programmer used while writing the game.</p>
-  <p><code>print_hex</code> (<code>$A004</code>) prints a byte as two hexadecimal digits with the game's own font. It keeps every register it uses, as a routine meant for debugging would. <code>test_shot</code> (<code>$AA8C</code>) puts a shot at a fixed place, with a fixed speed and a life of 40. A references search finds no call or jump to either, and no table holds their addresses.</p>
+  <p><code>print_hex</code> (<code>$A004</code>) prints a byte as two hexadecimal digits with the game's own font. It keeps every register it uses, as a routine meant for debugging would. <code>test_shot</code> (<code>$AA8C</code>) puts a shot at a fixed place, with a fixed speed and a life of 40. A references search finds no call or jump to either, and their addresses are not in any table.</p>
 </section>
 <section id="sprites">
   <p class="fig">06 · Unused sprites</p>
   <h2 class="t">Three sprites the game never shows</h2>
   <p class="lede">The sprite data copied to <code>$4000</code> holds 52 shapes. The game shows 49 of them.</p>
   <div class="plate"><div class="th-grid" id="th-unused"></div>
-  <p class="cap">Pointers $31-$33, at <code>$4C40</code>-<code>$4CFF</code>, drawn from the listing's bytes. No sprite pointer the game writes reaches them: its pointers are 0-$30 and the rod's $4C-$4F.</p></div>
+  <p class="cap">Pointers $31-$33, at <code>$4C40</code>-<code>$4CFF</code>, drawn from the listing's bytes. The sprite pointers the game writes never reach them: its pointers are 0-$30 and the rod's $4C-$4F.</p></div>
   <p>The game sets a sprite's pointer in a few places: the ship's direction or the shield (0-$20), the pod ($21), each object's shapes ($22-$2E), the tractor beam ($2F, $30) and the two buffers the rod is drawn into ($4C-$4F). The three shapes of horizontal lines after them are never used.</p>
 </section>
 </main>
