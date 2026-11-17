@@ -9,7 +9,7 @@
   "title_image": "reference/title.png",
   "build": "Domark UK release (PAL), disk DAYLIGHTS 200787, G64",
   "tier": "none",
-  "coverage_percent": null,
+  "coverage_percent": 100.0,
   "copy": "agent-draft",
   "steward": "",
   "credits": [],
@@ -21,6 +21,9 @@
   "step_models": {
     "10-orient": [
       "claude-opus-5-5"
+    ],
+    "50-coverage": [
+      "claude-opus-5-5"
     ]
   },
   "accuracy": [],
@@ -31,9 +34,52 @@
     "charset": ""
   },
   "coverage": {
-    "exclude": [],
-    "extra": [],
-    "include": []
+    "exclude": [
+      [
+        "$4000",
+        "$47FF",
+        "the two screens the game draws on in turn, $4000 and $4400, with their sprite pointers: rebuilt every frame of scrolling. Before init_machine runs, $4000-$41FF holds the start of packed screen 3, which it copies to $0200"
+      ],
+      [
+        "$7A00",
+        "$9CBF",
+        "the level buffer, rebuilt at every level by unpack_screen from a packed screen: the level's own characters (from $7A00 or later, by screen_dest), the map's 23 rows of 160 columns at $8000 and their colours at $8E60. Before init_machine runs, $8D00-$9CFF holds the packed data it copies to $D000"
+      ],
+      [
+        "$9CC0",
+        "$9CFF",
+        "a stale copy of $DFC0-$DFFF: init_machine copies $8D00-$9CFF to $D000, and unpack_screen's output stops at $9CBF, so nothing reads these bytes"
+      ]
+    ],
+    "include": [
+      [
+        "$D000",
+        "$DFFF",
+        "RAM under the I/O chips: init_machine copies packed screens there and unpack_screen reads them with $01 = $34"
+      ]
+    ],
+    "extra": [
+      [
+        "$0200",
+        "$10FF",
+        "packed screens 3 (The Mansion, from $0200) and 4 (The Fairground, from $0C19), read by huff_decode through a pointer"
+      ],
+      [
+        "$ACD1",
+        "$FF45",
+        "packed screens 0-2 and 5-9, read by huff_decode through a pointer"
+      ],
+      [
+        "$9D00",
+        "$9FFF",
+        "the Huffman tree huff_decode walks: flags at $9D00, left children at $9E00, right children at $9F00"
+      ],
+      [
+        "$4800",
+        "$6FFF",
+        "sprite shapes, pointers $20-$BF, chosen through pointer tables so nothing references most of them by address"
+      ]
+    ]
   },
   "io": [],
   "regions": [],
