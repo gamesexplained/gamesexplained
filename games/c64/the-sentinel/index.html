@@ -87,7 +87,7 @@ table.d th{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transf
 <section id="landscapes">
   <p class="fig">01 · The landscape generator</p>
   <h2 class="t">All 10,000 landscapes, and their secret codes</h2>
-  <p class="lede">No landscape is stored. The game grows each one from its four-digit number, and the same arithmetic gives the eight-digit code that unlocks it. This is that arithmetic, ported from the game's code: pick a number.</p>
+  <p class="lede">The game stores no landscape. The game grows each one from its four-digit number, and the same arithmetic gives the eight-digit code that unlocks it. This is that arithmetic, ported from the game's code: pick a number.</p>
   <div class="plate">
     <div class="ctl">
       <div class="grp"><label for="ln">Landscape</label>
@@ -185,7 +185,7 @@ player and the trees, and runs the check.</li>
 (<code>$14E5</code>-<code>$14F2</code>); the byte before it, <code>$356C</code>, is a decoy. A
 wrong code simply returns, to <code>$886F</code>, which jumps to <code>$1074</code>.</li>
 <li>The third number of every landscape is copied into the operand of an <code>LDA #</code> at
-<code>$0F3C</code> that nothing jumps to (<code>$2C5C</code>). Playing sets <code>$0C75</code> to
+<code>$0F3C</code> that the game never jumps to (<code>$2C5C</code>). Playing sets <code>$0C75</code> to
 that number plus 1 (<code>$18A2</code>). When the game shows the next landscape's code, each of
 its 3D digits compares the two (<code>$322F</code>), and while <code>$0C75</code> is lower it
 draws one extra number (<code>$31A2</code>), so a code shown without the landscape having been
@@ -319,7 +319,7 @@ $00</code> is C64 <code>$16B9 LDX $90</code>.</p>
 numbers, and the table beside it is the BBC's byte for byte. The BBC's COPY and DELETE, pause and
 continue, became the two cursor keys. The key test (<code>$8CF9</code>) numbers a key by the bit
 read on <code>$DC01</code> times 8 plus the line driven on <code>$DC00</code>, the transpose of the
-C64's own numbering; it is the only code that reads the keyboard, and nothing reads a joystick.</p>
+C64's own numbering; it is the only code that reads the keyboard, and the game never reads a joystick.</p>
 <div class="tablewrap"><table class="d">
 <tr><th>Keys</th><th>Action</th></tr>
 <tr><td>S, D / L, <code>,</code></td><td>pan left, right / up, down; with the sights on, move the sights</td></tr>
@@ -349,7 +349,7 @@ C64's own numbering; it is the only code that reads the keyboard, and nothing re
     <p class="cap">A model of <code>$130C</code> and <code>$1317</code>. Each frame adds <code>$CD</code> to <code>$1335</code> and calls the timer routine on a carry; the routine counts the timers down on one call in three; the Sentinel's turn timer is set to 200 at <code>$1813</code>, and it turns by 20/256 of a circle, 28.1°, when the timer runs out. 1,000 frames give 801 calls, and the Sentinel's heading goes 112, 92, 72, 52 in steps of about 752 frames, 15.0 seconds.</p>
   </div>
   
-<p>Nothing turns until the player does something. Bit 7 of <code>$0CE5</code> holds the timers and
+<p>Everything that turns waits until the player does something. Bit 7 of <code>$0CE5</code> holds the timers and
 the scanner still, and <code>$12E1</code> clears it on any action key, a U-turn or a hyperspace
 included, even when the action then fails. Panning does not count. In the emulator the Sentinel
 held its heading for 20 seconds while the player did nothing, and the timer routine was not called
@@ -387,7 +387,7 @@ if the object cannot be placed (<code>$1BBA</code>, <code>$1BD5</code>); in the 
 and R took the energy from 10 to 9, 10, 8 and 5. A hyperspace costs 3 units, and without them the
 game ends (<code>$2156</code>). The BBC version's table gives a sentry 3 as well.</p>
 <p>The byte is kept to six bits (<code>AND #$3F</code> at <code>$2148</code>), so 64 units would
-read as none. It cannot happen: by the placement rules no landscape holds more than 62 units in
+read as none. It cannot happen: by the placement rules a landscape never holds more than 62 units in
 all, counting the player's 10 and the robot they start in. The most is landscape 0340, with the
 Sentinel, seven sentries and 24 trees.</p>
 
@@ -404,7 +404,7 @@ the game writes itself when it starts, so the backup plays when it is restarted 
 entry, <code>$3F00</code>.</p>
 <p>The other, <code>$B000</code>-<code>$B5FF</code>, is code. The game calls <code>$B006</code>
 once for each step of a pan (<code>$367C</code>), after moving the screen's circular origin
-(<code>$96A6</code>). Nothing else in memory rewrites the screen matrix for a moved origin, or
+(<code>$96A6</code>). None of the other code in memory rewrites the screen matrix for a moved origin, or
 recomputes the lines of the five bands, which <code>$9595</code> does only when the whole view is
 redrawn, so that must be at least part of what the missing code does. With an <code>RTS</code>
 there, as a test, the game plays on and a pan leaves the picture as it was until the next full
@@ -419,7 +419,7 @@ loader starts reading, is damaged. The About tab has the details.</p>
 <ul class="unsure">
 <li>What <code>$B000</code>-<code>$B5FF</code> does beyond scrolling the view, and whether it
 uses the unread table of row starts at <code>$3A60</code> or the 1.5 KB after it, at
-<code>$B600</code>-<code>$BBFF</code>, that nothing else touches.</li>
+<code>$B600</code>-<code>$BBFF</code>, that the rest of the game never touches.</li>
 <li>Why a unit drained in 2.6 seconds when the timers read give 2.2.</li>
 <li>How BBC BASIC's own code came to fill the gaps of the C64 program.</li>
 </ul>

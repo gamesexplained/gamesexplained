@@ -95,7 +95,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
     <p class="cap">From a new game, a jump to the Stores (17,500 for the first visit), then the action on the potion 70 times, 150 frames apart, reading the score (<code>$2442</code>), strength (<code>$2455</code>) and variable 25 (<code>$2451</code>) after each. Strength stops at 24, the cap of script opcode <code>$13</code>; the score and the count stop at the 64th drink.</p>
   </div>
   <div class="cm-two">
-    <div><p>The potion is the Stores' object 4, and its action script is the whole of the mechanism. A test on variable 25 guards everything else, and the script adds 1 to the variable each time, so the 65th drink finds the count at 64 and does nothing. No other script token reads or writes variable 25, and a new game clears it (<code>$4E27-$4E2D</code>). The other two potions hide themselves instead.</p>
+    <div><p>The potion is the Stores' object 4, and its action script is the whole of the mechanism. A test on variable 25 guards everything else, and the script adds 1 to the variable each time, so the 65th drink finds the count at 64 and does nothing. None of the other script tokens reads or writes variable 25, and a new game clears it (<code>$4E27-$4E2D</code>). The other two potions hide themselves instead.</p>
     <p>A shot breaks it, as it does the others: SMASH!!, and objects 4 and 5 are destroyed.</p></div>
     <div class="plate"><div id="cm-pscript"></div><p class="cap">The Stores' object 4, read from the listing. <a href="levels.html#area=25">The Stores on the map</a>.</p></div>
   </div>
@@ -110,7 +110,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
     <p class="cap">The game's own driver, as on <a href="index.html#cm-music">How it works</a>. The first button plays tune 16 from its start to its end, 49 frames. The second plays it as the game does: <code>SID_PLAYER_INITIALIZE</code> (<code>$CF1B</code>) with 16, then <code>SID_PLAYER_TICK</code> (<code>$C885</code>), every frame.</p>
   </div>
   <p>The raster interrupt does one of two things before it ticks the driver (<code>$738E-$73B0</code>). With music on, it restarts the theme whenever the driver has stopped. With effects on, it checks <code>ACTIVE_SENSOR_COUNT</code> (<code>$109A</code>), the sensors in the area that are not hidden, and while there are any and the game is running it calls the driver's start with tune 16. The start takes no notice of a tune that is already playing, so every frame begins tune 16 again.</p>
-  <p>In the Magister, with its one sensor, each frame the start wrote <code>$00</code>, <code>$FF</code> and <code>$FE</code> to the three voices' control registers, and the tick then wrote the tune's first frame, frequency <code>$45A0</code> on voices 1 and 3 and <code>$8B40</code> on voice 2. With music on, the theme played on and no alarm sounded.</p>
+  <p>In the Magister, with its one sensor, each frame the start wrote <code>$00</code>, <code>$FF</code> and <code>$FE</code> to the three voices' control registers, and the tick then wrote the tune's first frame, frequency <code>$45A0</code> on voices 1 and 3 and <code>$8B40</code> on voice 2. With music on, the theme played on and the alarm never sounded.</p>
 </section>
 
 <section id="cm-tour">
@@ -138,12 +138,12 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
 
 <section id="cm-unused">
   <p class="fig">06 · Left over</p>
-  <h2 class="t">Secret: two sound effects and a message nothing uses</h2>
-  <p class="lede">The driver has two effects that no code and no script asks for, and the messages hold one line that nothing prints.</p>
+  <h2 class="t">Secret: two sound effects and a message the game never uses</h2>
+  <p class="lede">The driver has two effects that none of the code or scripts asks for, and the messages hold one line that the game never prints.</p>
   <div class="cm-two">
     <div class="plate"><div id="cm-usid"></div><p class="cap">Tunes 7 and 10, effects 6 and 9, on the game's own driver.</p></div>
     <div class="plate"><p>Message 9, at <code>$1490</code>:</p><p><span class="cm-msg" id="cm-m9">CHOMP CHOMP AHH</span></p>
-    <p class="cap">No script token prints message 9, and no instruction names it. Shared object 214's script, which 13 objects hand over to for 4 points of strength, prints nothing.</p></div>
+    <p class="cap">None of the script tokens prints message 9, and none of the instructions names it. Shared object 214's script, which 13 objects hand over to for 4 points of strength, prints nothing.</p></div>
   </div>
   <p>Every request for a sound passes its number straight to the driver: the code's own calls, the deferred request that a fall, a collision or a move to another area leaves for the next picture, and the scripts' two sound opcodes (<a href="index.html#cm-music">the table on How it works</a>). None of them asks for effect 6 or effect 9. The search covered every call to the driver's start, every write to the deferred request, and the castle's 809 script tokens.</p>
 </section>
