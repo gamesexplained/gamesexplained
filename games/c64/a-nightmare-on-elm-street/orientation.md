@@ -8,9 +8,10 @@ Five G64 disk images: side 1, side 2, and three more copies of side 2
 ("alt1" to "alt3"). The alternative sides differ from side 2 only in the
 saved-game files a player wrote: `SAVE.DAT` and the level files `Dn.CUR`
 (alt1 has no `SAVE.DAT`; alt2 has `D1.CUR` to `D4.CUR`). Side 2's own
-`SAVE.DAT` is a level 2 save as Nancy. The credits picture says the program
-was adapted, published and distributed by Monarch Software, a division of
-Sharedata Inc., copyright 1989, with Westwood Associates' logo above.
+`SAVE.DAT` is a level 2 save as Nancy. The credits picture reads "MONARCH
+SOFTWARE AND Westwood ASSOCIATES", and says the program was adapted,
+published and distributed by Monarch Software, a division of Sharedata Inc.,
+copyright 1989 Sharedata, Inc.
 Nothing on either side looks like a crack: no intro, no trainer, and the
 original fast loader (`WWDOS.O`) is in place. `media.json` lists every file.
 

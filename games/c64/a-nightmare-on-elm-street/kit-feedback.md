@@ -7,35 +7,26 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `60-verify`: "A negative result is a claim about your search": before writing that the MAGIC SHIELD does nothing, the level scripts and maps were searched for the item's code, which found one lying on level 8 and no script that tests for it.
+- `70-minisite`: "The site links a bare `<code>$1234</code>` to `source.html`": the pages of this three-part game put `data-part=""` on their main element, after the build counted bare addresses landing on no record.
+- `12-media`: "is listed in a part": files whose bytes fall in a gap of the listing (SMALL, D0, DEATH, D2, SC2.DAT) were re-answered as data instead of part.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/c64/r2000.py`: `--game` naming a folder with no `game.json` or `part.json` now stops with a message, instead of falling back to the current directory. Why: in this run `r2000.py --game street` and `--game resident`, given from the game folder rather than `parts/`, twice sent comments to whichever session answered on the default port, with no error.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+- A codemap recorded during the boot counts as code the loader stages that a later file overwrites. Here the street part's codemap held MAIN.OBJ's boot code at `$1400`-`$1506`, which INIT's title tune is loaded over, so the street's snapshot has no code there. It was caught because the walk from those addresses disassembled tune data. A skill line in `50-coverage` would say: when a codemap was recorded from power-on, check each ran stretch against the snapshot's bytes before seeding from it, since a later load may have replaced it.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+`r2000.py --game` refusing a folder that is not a game's, as it now does, would have saved re-applying two batches of comments that had gone to the wrong part's session.
+
+## Tools and versions
+
+- Linux x86_64 cloud container; VICE release v4.0.0 (`v4.0.0-linux-x86_64-gui.zip`); regenerator2000 0.9.20; Node with the preinstalled Playwright for screenshots and page checks.

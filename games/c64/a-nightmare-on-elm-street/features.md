@@ -46,6 +46,11 @@ Sources:
 - The vending machine has texts for a theft and a lucky win that nothing prints (house `vend_texts` $5506).
 - The street has a text "YOU'VE BEEN GRABBED. CONTINUING." that nothing prints (street $2EBF).
 - A second wrong answer to the manual question hangs the game for good (house $5B65).
+- The MAGIC SHIELD (item $35) has no use: it is no weapon in `cell_flags` ($7A40), has no handler at `item_handlers` ($2F87), and no instruction or level script tests for it; one lies on level 8 at cell 62, 43.
+- Level 4's map spells HELP ME in floor cells that no corridor reaches; level 10 is laid out as a clock face with an hourglass below.
+- Will and Nancy share one block of special-power shapes in PLYR (street `char_shape_sources` $1F80).
+- The ending's `SONG` is the title tune again, built to play from $B000 (house `game_won` $4604).
+- The monster kinds the level hints name: kind 1 roaches (weak to the PICK), 2 slime (DAGGER), 3 skeletons (BASEBALL BAT), 4 wheelchairs (AXE); kind 0, which flies through walls, is not named in any text found.
 
 ## Open questions
 
