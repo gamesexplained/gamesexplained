@@ -3,7 +3,7 @@
  "platform": "c64",
  "game": "a-nightmare-on-elm-street",
  "part": "house",
- "build": "",
+ "build": "Two G64 disk sides (with three more copies of side 2 that hold other saved games): side 1 boots FREDDY, a 1-block file that loads MAIN.OBJ, which loads the resident loader, the sound effects, the fast loader and the street part INIT at $1390; side 2 holds the house part MAIN at $1390 and the ten levels' maps, objects, and art",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -16260,7 +16260,7 @@
   {
    "address": 10205,
    "type": "line",
-   "text": "before the player walks in direction X, looks two steps ahead ($3E26): a cell of type $19, or on a level of type 9 ($776A) type $0F, runs its trigger ($5BD2) once until $79FC is cleared; carry set stops the walk"
+   "text": "before the player walks in direction X, looks two steps ahead ($3E26): a cell whose flag byte at $7A40 is $19 (the ladders $1C and $1D), or on a level of any type but 9 ($776A) $0F (cells $0B and $0C), runs its trigger ($5BD2) once until $79FC is cleared; carry set stops the walk"
   },
   {
    "address": 10281,
@@ -16275,7 +16275,7 @@
   {
    "address": 10290,
    "type": "line",
-   "text": "A = 1 when cell type A has a set high nibble in $7A40 (a cell things can stand in), or is type $0F on a level of type 9 ($776A), else 0; X is kept"
+   "text": "A = 1 when cell type A has a set high nibble in its flags at $7A40 (a cell things can stand in), or, on a level of type 9 ($776A), when its flag byte is $0F (cells $0B and $0C), else 0; X is kept"
   },
   {
    "address": 10304,
@@ -17095,12 +17095,12 @@
   {
    "address": 14159,
    "type": "line",
-   "text": "a random one of the cells $08, $09, $23 and $24"
+   "text": "a random one of the cells $08, $09, $25 and $26 (the CMP leaves carry set for the second pair, so the ADC adds $23)"
   },
   {
    "address": 14174,
    "type": "line",
-   "text": "a random one of the cells $02, $03, $21 and $22"
+   "text": "a random one of the cells $02, $03, $22 and $23 (the CMP leaves carry set for the second pair, so the ADC adds $20)"
   },
   {
    "address": 14189,
@@ -17245,7 +17245,7 @@
   {
    "address": 14637,
    "type": "line",
-   "text": "reads a key or the joystick ($625D, which turns the stick and the cursor keys into keys) and returns the action: keys 1 to 7 put slot 0 to 6 in hand (8 to 14), shifted 2 to 7 drop slot 1 to 6 (16 to 21), and the table at $396A gives the rest; an action other than a direction that repeats the last pass's ($79D2) becomes 25, nothing, so a held key acts once"
+   "text": "reads a key or the joystick ($625D, which turns the stick and the cursor keys into keys) and returns the action: keys 1 to 7 put slot 0 to 6 in hand (8 to 14) and shifted 2 to 7 drop slot 1 to 6 (16 to 21), both returned at once; any other key is looked up in the table at $396A, and an action from it of 8 or more that repeats the last ($79D2) becomes 25, nothing, so a held key of that table acts once; an unknown key also gives 25"
   },
   {
    "address": 14698,
@@ -17385,7 +17385,7 @@
   {
    "address": 16211,
    "type": "line",
-   "text": "shapes one cell, column Y of the row at ($6C): when its type is below $29 and its property word ($7AA8) has a bit other than bit 2, the cells above, above-left and to the left are tested for $1F and the three answers, as bits, pick the replacement from $3FB0, which is written into the cell"
+   "text": "shapes one cell, column Y of the row at ($6C): when its type is below $29 and its property word ($7AA8) has a bit other than bit 2, the cells above, above-left and to the left are tested for $1F and the three answers, as bits, pick the replacement from $3FB0 (none set leaves the cell); a replacement of 2 is written as a random wall piece from $375E and one of 8 from $374F, any other as it is"
   },
   {
    "address": 16301,
@@ -18115,7 +18115,7 @@
   {
    "address": 20214,
    "type": "line",
-   "text": "the shot, written into this LDY, in shot_hits_monster ($4ED3)"
+   "text": "the shot, written into this LDA's operand, in shot_hits_monster ($4ED3)"
   },
   {
    "address": 20266,
@@ -18255,7 +18255,7 @@
   {
    "address": 20895,
    "type": "line",
-   "text": "touch handler 5, a chest: prints \"THE CHEST OPENS, REVEALING \" and draws a random number below 100; when it is above five times the level, the chest holds COFFEE, HYPNOCIL, BULLETS, BATTERIES or COINS ($52C7), put in its cell and named. Otherwise one of six (two when no monster slot is free) things happens: \"IT'S EMPTY.\", \"A MAGNET.\" left in the cell, \"A SKELETON.\" (monster kind 2), \"A SLIME.\" (kind 3) or \"FREDDY!\" (kind 5) placed at the chest, or \"SHRAPNEL!!\", a burst (shot 6) at the chest"
+   "text": "touch handler 5, a chest: prints \"THE CHEST OPENS, REVEALING \" and draws a random number below 100; when it is above five times the level, the chest holds COFFEE, HYPNOCIL, BULLETS, BATTERIES or COINS ($52C7), put in its cell and named. Otherwise one of six (two when no monster slot is free) things happens: \"IT'S EMPTY.\", \"A MAGNET.\" left in the cell, \"A SLIME.\" (monster kind 2), \"A SKELETON.\" (kind 3) or \"FREDDY!\" (kind 5) placed at the chest, or \"SHRAPNEL!!\", a burst (shot 6) at the chest"
   },
   {
    "address": 20976,
@@ -20445,7 +20445,7 @@
   {
    "address": 29226,
    "type": "line",
-   "text": "the list played after an unknown command: volume 15, waveform $10, a loop of two of note $7F, back to its start"
+   "text": "the list played after an unknown command: volume 7 ($C7 halves its argument), waveform $10, note $10 for $7F, and a loop whose $CE jumps back to the $CD that sets its count again, so the note repeats for ever"
   },
   {
    "address": 29237,
@@ -20775,7 +20775,7 @@
   {
    "address": 29658,
    "type": "line",
-   "text": "each slot's kind, 0 to 5 (2 a skeleton, 3 a slime, 5 Freddy), 6 for an empty slot"
+   "text": "each slot's kind, 0 to 5 (2 a slime, 3 a skeleton, 5 Freddy), 6 for an empty slot"
   },
   {
    "address": 29666,
