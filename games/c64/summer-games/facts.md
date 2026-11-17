@@ -49,7 +49,7 @@ COPYRIGHT 1984 EPYX INC." (*live*, `reference/title.png`).
 - The engine's player: three voices, voices 1 and 2 pulse, voice 3 sawtooth; a tune is four-byte lines (three note numbers, a length index), `$FF` ends it; the gates lift for the last four steps of each note (`music_step` `$1E70`, `freq_lo` `$1D92`, `note_lengths` `$1DEA`).
 - 20 tunes: 18 anthems by country number, tune 6 the final standings, tune 7 the world records (`tune_offsets` `$1E58`, `tune_table` `$1771`).
 - A tune with a lower place in the table is not interrupted by a higher one (`start_tune` `$1E3F`).
-- Steps per frame: one at the medal ceremony (`flash_band` `$13A3`), two over the final standings (`music_pause` `$0E4C`) and the world records (`world_records_show` `$0E67`).
+- Steps per frame: two wherever the engine plays music: at the medal ceremony, at raster lines `$4D` and `$8D` (`flash_band` `$13A3`), over the final standings (`music_pause` `$0E4C`), on the world records screen (`world_records_show` `$0E67`), and on the registration screen, from the interrupt handlers for lines `$FB` and `$78` (`$334A`, `$3397`). The ceremony's own player is stepped twice a frame too (front `$7625`, `$77E6`).
 - The ceremony has its own copy of the player with a fanfare (front `cer_music_step` `$7A8D`, `tune_fanfare` `$7B1A`) and a second tune it never starts, the same notes as the engine's world-records tune (front `tune_unused` `$7C6F`, resident `tune_records` `$3928`).
 
 ## Events
@@ -66,7 +66,7 @@ COPYRIGHT 1984 EPYX INC." (*live*, `reference/title.png`).
 
 - Dives: forward, backward, reverse, inward; flags bit 0 spins backward, bit 1 faces the board (`dive_flags` `$BA40`). A dive facing the other way from the last mirrors every shape (`mirror_shapes` `$AF7C`).
 - Position by stick: right tuck, left half-pike, down pike, up layout (`read_position` `$ABA6`); spin rates per dive and position (`spin_rate` `$B902`).
-- Difficulty in tenths: the dive's start (`start_diff` `$BA44`: 0, 1, 3, 2), +0.1 for each of the first three frames in each new position, +0.3 or +0.4 per half-turn (`half_turn_bonus` `$ABF7`).
+- Difficulty in tenths: the dive's start (`start_diff` `$BA44`: 0, 1, 3, 2), +0.1 for each of the first three frames in each new position, +0.4 per half-turn (`half_turn_bonus` `$ABF7`).
 - Entry: only layout poses score, 100 at frames 5 and 11, 80 one off, 32 two off, 0 flat; bent poses 0 (`entry_base` `$B82A`, `judge_entry` `$B261`).
 - Judges: the score is split into five middle judges, a high and a low judge are made from them, and the seven are shuffled (`split_judges` `$B293`, `high_low` `$B2D9`, `shuffle_scores` `$B2FC`); total = five middle judges x difficulty (`mult_difficulty` `$B381`). *Live*: cards 7.5 8.0 9.0 7.0 8.0 8.5 8.0, sum 40.0, difficulty 1.1, total 44.00 (`reference/diving-score.png`).
 - Four dives per player, totals summed (`add_total` `$B221`).

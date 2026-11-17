@@ -7,35 +7,31 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "Start with the leads, because a run's best findings can sit in its notes and never reach a page": the leads list went to the reader with each outcome, and the reader found two more (the made-up high and low judges, the race clocks), which became Discoveries sections.
+- `60-verify`: "Read every comment it marks wrong or doubtful against the code yourself, and add to its verdict whether the finding held": all ten held, and reading them found the same mistake in four more gymnastics comments.
+- `70-minisite`: "where they are several parts' and should link nowhere": the addresses of file L's screen, which no listing holds, now link nowhere instead of to the engine's listing.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/lessons/2026-11-17-summer-games.md`.
+- `kit/c64/snapshot.py`: finds the RAM by walking the snapshot's modules to `C64MEM`, because VICE's v4.0.0 build puts a `C64MEMHACKS` module first and moves the RAM from offset 209 to 232; every listing read from such a snapshot was 23 bytes off. Its self-test covers both layouts. The same change is on the Galactic Games branch.
+- `kit/c64/check_emulator.py`: reads snapshots through `snapshot.py`, so `snapshot-ram-offset` tests what the kit reads rather than a fixed offset.
+- `kit/c64/r2000.py`: `--game` naming a folder with no `game.json` or `part.json` now stops, because it fell back to the current directory and sent annotations to whichever part's disassembler answered there.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+None.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+The swimming part, which unpacks over the engine and copies its code under the KERNAL, took longest to list: its listing had to come from a snapshot taken during a race, after the copy. A note in the C64 `steps` skill on parts that relocate themselves would have saved the first wrong snapshot.
+
+## Operating system and tools
+
+Linux x86_64 in a Claude cloud container. VICE release v4.0.0 (the kit's vice-mcp build; `check-emulator` failed `checkpoints-survive-load` and `snapshot-ram-offset` before the `snapshot.py` change), regenerator2000 0.9.20 built with `cargo install --locked`, Python 3, Node with the container's Playwright and Chromium.
+
+Three G64 images were supplied: two PAL images that agree on every file and an NTSC image without `SGLOAD`. The first PAL image was analysed.

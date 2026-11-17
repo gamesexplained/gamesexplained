@@ -28,7 +28,7 @@ Addresses name the part that holds them (`parts/<id>/`).
 | Eighteen countries, Epyx among them, each with its own anthem played when picked and at a gold medal | confirmed | resident `country_codes` `$3577`, `tune_offsets` `$1E58`, `frame_flash` `$375D`, `victory` `$1384` |
 | Medals score 5, 3 and 1 points; standings shown between events | confirmed | resident `count_points` `$10D8`, `standings` `$1051` |
 | World records kept on the disk and updated when beaten | confirmed | resident `world_records` `$0B00`, `check_record` `$1403`, `save_records` `$1563`; `reference/world-records.png` |
-| Pole vault: grip forward high, left or right medium, back low; fire to run, back to plant, forward to kick up, fire to let go | confirmed | pole-vault `pv_state3` `$C157` (also keys H, M and L), `pv_vault` `$B7F7` (down plants), `pv_swing` `$B95E` (up swings, fire lets go) |
+| Pole vault: grip forward high, left or right medium, back low; fire to run, back to plant, forward to kick up, fire to let go | differs | pole-vault `pv_state3` `$C157`: the grip starts at medium and up and down step it one place (keys H, M and L choose directly), so from high, down gives medium; `pv_vault` `$B7F7` (down plants), `pv_swing` `$B95E` (up swings, fire lets go) |
 | Pole vault: three tries a height; a player may pass a height | confirmed | pole-vault `pv_tries` `$C9A2`, `pv_state1` `$C0E9` ("TRY THIS JUMP?" below 5.00 m) |
 | Pole vault heights | confirmed | pole-vault `height_m` `$C91C`, `height_dm` `$C92D`: 4.0, 4.5, 4.8, then 5.0 to 6.2 m by tenths |
 | Platform diving: four dives, forward, backward, reverse and inward; fire takes off | confirmed | diving `dive_flags` `$BA40`, `start_dive` `$A929`; `reference/diving-menu.png` |
@@ -61,7 +61,7 @@ Found in the code, not in the manual.
 - In diving only the layout scores at entry: any bent position enters the water for zero (diving `entry_base` `$B82A`).
 - The relay and dash module keeps a debug display of four bytes in hex that the main loop no longer calls (running `rn_debug_hex` `$6756`).
 - The swimming module leaves in a timing probe (swimming `probe_line` `$BFFF`).
-- The engine's table of modules names an eleventh file, L, that nothing asks for (resident `module_letters` `$0AF3`; `media.json`).
+- The engine's table of modules names a twelfth module, file L, that nothing asks for; file M, a copy of its screen in other colours, is not named at all (resident `module_letters` `$0AF3`; `media.json`).
 
 ## Open questions
 

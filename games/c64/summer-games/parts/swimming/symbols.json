@@ -3,7 +3,7 @@
  "platform": "c64",
  "game": "summer-games",
  "part": "swimming",
- "build": "",
+ "build": "The PAL G64 of Epyx's disk (directory \"SUMMER GAMES\"): the boot file SUMMER GAMES and SGLOAD, the engine B unpacked to $0C00-$3EFF, the opening ceremony A, six event files D, E, F, H, I and K each unpacked over $4000 upward (swimming over $1000-$BEFF), the world records WR and DEFAULT, and the unused files L and M; a second PAL image and an NTSC image were supplied too",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -82,6 +82,26 @@
   },
   {
    "start": 2305,
+   "end": 6095,
+   "type": "Byte"
+  },
+  {
+   "start": 6096,
+   "end": 6138,
+   "type": "Code"
+  },
+  {
+   "start": 6139,
+   "end": 6139,
+   "type": "Byte"
+  },
+  {
+   "start": 6140,
+   "end": 6190,
+   "type": "Code"
+  },
+  {
+   "start": 6191,
    "end": 49151,
    "type": "Byte"
   },
@@ -303,8 +323,8 @@
   },
   {
    "address": 16,
-   "name": "zpa_10",
-   "type": "ZeroPageAbsoluteAddress",
+   "name": "zpp_10",
+   "type": "ZeroPagePointer",
    "kind": "auto"
   },
   {
@@ -1226,6 +1246,12 @@
    "kind": "user"
   },
   {
+   "address": 2143,
+   "name": "a_085F",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
    "address": 2304,
    "name": "j_0900",
    "type": "Jump",
@@ -1334,10 +1360,46 @@
    "kind": "user"
   },
   {
+   "address": 6102,
+   "name": "j_17D6",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 6115,
+   "name": "j_17E3",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
    "address": 6125,
    "name": "sw_relocate",
    "type": "UserDefined",
    "kind": "user"
+  },
+  {
+   "address": 6136,
+   "name": "a_17F8",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 6137,
+   "name": "a_17F9",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 6138,
+   "name": "a_17FA",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 6154,
+   "name": "b_180A",
+   "type": "Branch",
+   "kind": "auto"
   },
   {
    "address": 6656,
@@ -2105,6 +2167,18 @@
    "address": 24832,
    "name": "f_6100",
    "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 24858,
+   "name": "a_611A",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 24859,
+   "name": "a_611B",
+   "type": "AbsoluteAddress",
    "kind": "auto"
   },
   {
@@ -6009,6 +6083,36 @@
    "address": 6125,
    "type": "line",
    "text": "Sets $085F, switches the KERNAL and BASIC out ($01 = $35), copies the event's code from $6000-$7E9A to $E000-$FE9A, under where the KERNAL was, patches its own entry to jump there, and jumps to sw_init"
+  },
+  {
+   "address": 6136,
+   "type": "line",
+   "text": "The instruction sw_relocate rewrites: JMP sw_init ($E000) once the copy is made, so a later entry goes straight to the copied code. On the first run it was LDA #$00 and STA $10, the copy's destination low byte, and $17FB still holds that STA's operand"
+  },
+  {
+   "address": 6137,
+   "type": "line",
+   "text": "The JMP's low byte, $00, written by the patch at $1822"
+  },
+  {
+   "address": 6138,
+   "type": "line",
+   "text": "The JMP's high byte, $E0, written by the patch at $1827"
+  },
+  {
+   "address": 6139,
+   "type": "line",
+   "text": "The operand $10 left from the first run's STA $10, after the JMP written over it"
+  },
+  {
+   "address": 6140,
+   "type": "line",
+   "text": "The copy: $12/$13 from $7E00 and $10/$11 from $FE00, 155 bytes of each page from the top, page by page down to $E000"
+  },
+  {
+   "address": 6173,
+   "type": "line",
+   "text": "Writes JMP $E000 over $17F8, then jumps to sw_init"
   },
   {
    "address": 6191,
