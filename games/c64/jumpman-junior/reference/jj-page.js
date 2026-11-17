@@ -134,6 +134,14 @@ const JJ = (function () {
         for (const b of bombs(ram, n)) { if (done.has(b.i)) continue; const d = (b.x + 3 - X) ** 2 + (b.y + 3 - Y) ** 2; if (d < bd) { bd = d; best = b; } }
         if (best && bd < 120) defuse(best);
       });
+      // Level 8's letters, one for each bomb in the bomb list's order ($B4AE, screen codes).
+      const letter = i => { const c = ram[0xB4AE + i]; return c >= 1 && c <= 26 ? String.fromCharCode(64 + c) : '␣'; };
+      // What a change script does, in words: its runs by shape.
+      function says(p) {
+        const runs = []; drawScript(ram, p, new Uint8Array(8192), runs);
+        return runs.map(r => { const k = SHAPES[r.shape] || 'shape ' + hex(r.shape), m = /^(\w+) eraser$/.exec(k);
+          return (m ? 'rubs out ' + r.n + ' ' + m[1] : 'adds ' + r.n + ' ' + k) + (r.n === 1 ? ' piece' : ' pieces'); }).join(', ');
+      }
       function labels() {
         const g = over.getContext('2d'), s = 4;
         g.clearRect(0, 0, 640, 368);
@@ -142,7 +150,7 @@ const JJ = (function () {
           if (done.has(b.i)) continue;
           const x = (b.x + 3) * s, y = (b.y - 6) * 2;
           g.fillStyle = 'rgba(255,255,255,.92)'; g.fillRect(x - 11, y - 9, 22, 18);
-          g.fillStyle = '#000'; g.fillText(String(b.i + 1), x, y);
+          g.fillStyle = '#000'; g.fillText(n === 7 ? letter(b.i) : String(b.i + 1), x, y);
         }
         // Ropes carry an arrow, so they read without their colour: up for green, down for blue.
         const runs = []; drawScript(ram, drawOf(ram, n), new Uint8Array(8192), runs);
@@ -155,6 +163,7 @@ const JJ = (function () {
         }
       }
       function defuse(b) {
+        if (done.size >= header(ram, n).bombs) return;
         if (b.change) drawScript(ram, b.change, bmp);
         // bomb_check wipes the bomb with the girder eraser through the script it builds at $09CA.
         const wipe = new Uint8Array(ram); wipe.set([0xFE, 0x69, 0x8F, b.x, b.y, 1, 0xFF], 0x09CA);
@@ -163,10 +172,10 @@ const JJ = (function () {
         paint(cv.getContext('2d'), bmp);
         labels();
         const li = el('li');
-        li.append('Bomb ' + (b.i + 1) + (b.change ? ': draws the change script at ' : ': no change to the level'));
+        li.append('Bomb ' + (b.i + 1) + (n === 7 ? ' (' + letter(b.i) + ')' : '') + (b.change ? ': ' + says(b.change) + ', from ' : ': no change to the level'));
         if (b.change) li.append(src(b.change));
         log.append(li);
-        if (done.size === bombs(ram, n).length) log.append(el('li', { text: 'Every bomb is defused, and the level ends.' }));
+        if (done.size === header(ram, n).bombs) log.append(el('li', { text: done.size + ' bombs defused, the count in the header, and the level ends.' + (n === 8 ? ' In play, the other eight were wiped before the level began.' : '') }));
       }
       function show(i) {
         n = i; bmp = new Uint8Array(8192); done = new Set(); log.textContent = '';
@@ -175,10 +184,10 @@ const JJ = (function () {
         paint(cv.getContext('2d'), bmp);
         labels();
         const H = header(ram, i), B = bombs(ram, i);
-        cv.setAttribute('aria-label', 'Level ' + (i + 1) + ', ' + levelName(ram, i) + ', drawn from its script, with ' + B.length + ' numbered bombs');
+        cv.setAttribute('aria-label', 'Level ' + (i + 1) + ', ' + levelName(ram, i) + ', drawn from its script, with ' + B.length + (i === 7 ? ' bombs labelled with their letters' : ' numbered bombs'));
         info.textContent = '';
         info.append(el('b', { text: (i + 1) + ' ' + levelName(ram, i) }), ' · ' + B.length + ' bombs in the list' +
-          (i === 8 ? ', eight wiped at random' : '') + ' · ' + H.bullets + (H.bullets === 1 ? ' bullet' : ' bullets') + ' at a time · bonus ' + H.bonus +
+          (i === 8 ? ', eight wiped at random in play; drawn lit here, black in the game' : '') + ' · ' + H.bullets + (H.bullets === 1 ? ' bullet' : ' bullets') + ' at a time · bonus ' + H.bonus +
           ' · ' + B.filter(b => b.change).length + ' bombs change the level · draw script ', src(drawOf(ram, i)), ' · header ', src(H.at));
       }
       show(0);
@@ -189,7 +198,7 @@ const JJ = (function () {
   function mountShapes(root) {
     load().then(L => {
       const ram = L.ram;
-      for (const a of Object.keys(SHAPES).map(Number)) {
+      for (const a of Object.keys(SHAPES).map(Number).filter(a => !/eraser/.test(SHAPES[a]))) {
         const bmp = new Uint8Array(8192), probe = new Uint8Array(ram);
         probe.set([0xFE, a & 255, a >> 8, 4, 2, 1, 0xFF], 0x0200);
         drawScript(probe, 0x0200, bmp);
@@ -213,7 +222,7 @@ const JJ = (function () {
   // sprite's own colour, which each set-up chooses: drawn here in red, Jumpman's (2, $9A8F).
   const SPRITES = { 0x90: 'blank: every sprite at the start of a level', 0x91: 'Jumpman hit', 0x92: 'sliding down a rope', 0x93: 'sliding down a rope',
     0x94: 'climbing, and the straight-up jump', 0x95: 'climbing', 0x96: 'climbing', 0x97: 'climbing', 0x98: 'jumping right, and the runner under a level’s name',
-    0x99: 'jumping left', 0x9C: 'walking right', 0x9D: 'walking right', 0x9E: 'walking left', 0x9F: 'walking left',
+    0x99: 'jumping left', 0x9A: 'dead, flickering', 0x9B: 'dead, flickering', 0x9C: 'walking right', 0x9D: 'walking right', 0x9E: 'walking left', 0x9F: 'walking left',
     0xA0: 'tumbling', 0xA1: 'tumbling, and the title’s Jumpman', 0xA2: 'tumbling', 0xA3: 'tumbling', 0xA4: 'bullet, hellstone, and the ending’s Jumpman',
     0xA5: 'fire', 0xA6: 'fire', 0xA7: 'fire', 0xA8: 'fire', 0xA9: 'wall', 0xAA: 'transporter, and a fire before it is placed',
     0xAB: 'transporter', 0xAC: 'transporter', 0xAD: 'transporter', 0xAE: 'egg', 0xAF: 'egg', 0xB0: 'egg', 0xB1: 'egg hatching',
@@ -224,7 +233,7 @@ const JJ = (function () {
       const ram = L.ram, cols = [null, C64.PAL[1], C64.PAL[2], C64.PAL[4]];
       for (let k = 0; k < 45; k++) {
         const ptr = 0x90 + k, a = 0x82B8 + 20 * k;
-        const cv = el('canvas', { width: 16, height: 10, class: 'jj-sprite', role: 'img', 'aria-label': 'Sprite shape ' + hex(ptr, 2) + ': ' + (SPRITES[ptr] || 'not named here') });
+        const cv = el('canvas', { width: 16, height: 10, class: 'jj-sprite', role: 'img', 'aria-label': 'Sprite shape ' + hex(ptr, 2) + ': ' + (SPRITES[ptr] || 'no use found') });
         const g = cv.getContext('2d');
         g.fillStyle = '#000'; g.fillRect(0, 0, 16, 10);
         for (let y = 0; y < 10; y++) for (let x = 0; x < 8; x++) {
@@ -232,7 +241,7 @@ const JJ = (function () {
           if (v) { g.fillStyle = cols[v]; g.fillRect(2 * x, y, 2, 1); }
         }
         const cap = el('figcaption');
-        cap.append(el('code', { text: hex(ptr, 2) }), ' ' + (SPRITES[ptr] || 'not set by any routine named here'));
+        cap.append(el('code', { text: hex(ptr, 2) }), ' ' + (SPRITES[ptr] || 'no use found'));
         root.append(el('figure', {}, [cv, cap]));
       }
     });
