@@ -45,8 +45,9 @@ Two images were supplied, both G64 files (the header reads `GCR-1541`):
    `$80C8`, the loader's `JMP $1100`, then one step: PC `$1100`, `$01` =
    `$37`). `work/play-gibraltar.vsf` is play on level 1 (`$01` = `$35`).
 
-The listing is built from `work/entry.vsf`: it holds `TLD4` at `$8D00`
-and the loader's tables that play overwrites with work areas.
+The listing is built from `work/play-gibraltar.vsf`: by then
+`init_machine` has copied `$4000-$41FF` to `$0200` and `$8D00-$9CFF` to
+`$D000`, where the code reads the packed screens.
 
 To reach any level: load `entry.vsf`, set a stopping checkpoint on
 `$110C` (the call of the level intro), press `F7`, and at the stop write

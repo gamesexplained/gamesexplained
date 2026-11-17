@@ -7,35 +7,25 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "Start with the leads, because a run's best findings can sit in its notes": I listed sixteen leads from `facts.md` and `features.md` and gave each a section before writing, which put the level 8 pause, the sound driver's slips and the source scraps on Discoveries.
+- `60-verify`: "Correct every comment the sample found wrong, and every other comment that says the same thing": the Bond sprite error was in 13 comments and `facts.md`, not only the two the sample drew.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/lessons/2026-11-17-the-living-daylights.md`: three reading lessons from the sample and the Graphics tab.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+The sample's commonest error, sprite roles taken from the sprites' numbers, went unnoticed until a checker drew the positions; a skill line in `50-coverage` ("draw a multi-sprite figure at the positions its code sets before naming its parts") would have caught it. No other game's notes show the same mistake yet, so it waits here.
+
+A reference screenshot named `level-intro.png` was a frame of play, and the first `level-4.png` was the weapon menu; both were caught only when the pages were laid out. A check that every reference picture is shown and captioned by a page would catch it earlier.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+Settling the listing after switching the snapshot from the hand-over to play, because the packed screens move when the game starts; `10-orient` saying "take the listing's snapshot after the game's own start-up has copied its data into place" would have saved the rebuild.
+
+Host: Linux x86_64 (Claude cloud container), VICE 4.0, regenerator2000 0.9.20, node 22.
