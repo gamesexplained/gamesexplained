@@ -163,16 +163,16 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
   <h2 class="t">Secret: SAVE and LOAD were switched off, but the tape code is still there</h2>
   <p>The instructions explain how to save a game to tape and load it again, and say that the game asks, when it starts, whether to restore a saved game. In this copy SAVE and LOAD print nothing at all, and the question is never asked.</p>
   <figure class="nes-pics nes-one"><img src="reference/save-load.png" alt="SAVE and LOAD typed in the first room, each followed by nothing" width="384" height="272"><figcaption>SAVE and LOAD in the first room.</figcaption></figure>
-  <p>The SAVE and LOAD actions each jump to a single <code>RTS</code> (<code>$1189</code> to <code>$0491</code>, <code>$118C</code> to <code>$045F</code>). The routines they once called are still in the engine, whole: <code>DISK_SAVE_GAME</code> (<code>$0494</code>) and <code>DISK_LOAD_GAME</code> (<code>$0461</code>), with a prompt for the file's name ("Please enter the filename", <code>$04C8</code>), and they name device 1, the cassette (<code>$050C</code>). <code>INIT_GAME</code> (<code>$14D6</code>) is a jump over <code>ASK_RESTORE_GAME</code>, the routine that asks the question. Two of the engine's 68 sentences read like parts of the same feature, and nothing prints them:</p>
+  <p>The SAVE and LOAD actions each jump to a single <code>RTS</code> (<code>$1189</code> to <code>$0491</code>, <code>$118C</code> to <code>$045F</code>). The routines they once called are still in the engine, whole: <code>DISK_SAVE_GAME</code> (<code>$0494</code>) and <code>DISK_LOAD_GAME</code> (<code>$0461</code>), with a prompt for the file's name ("Please enter the filename", <code>$04C8</code>), and they name device 1, the cassette (<code>$050C</code>). <code>INIT_GAME</code> (<code>$14D6</code>) is a jump over <code>ASK_RESTORE_GAME</code>, the routine that asks the question. Two of the engine's 68 sentences read like parts of the same feature, and the game never prints them:</p>
   <div class="plate"><canvas class="nes-cv" id="nes-scv" width="640" height="96"></canvas><p class="cap">Sentences <code>$33</code> and <code>$11</code>, printed by the page's port of <code>PRINT_SENTENCE</code> (<code>$099B</code>).</p></div>
   <p>Whether Ocean shipped the game this way or the crackers switched saving off is not known: the original cassette was not examined.</p>
 </section>
 
 <section id="nes-unseen">
-  <p class="fig">06 · Pictures nobody sees</p>
+  <p class="fig">06 · Pictures the game never shows</p>
   <h2 class="t">Secret: a crucifix and a picture the game never shows</h2>
-  <p>Icon slot 27 holds a gold cross (<code>$B640</code>), and the vocabulary has the word CRUCIFIX (noun <code>$5A</code>, object 40). The object starts the game gone, and no script ever puts it anywhere. Even if one did, its icon could not be drawn: <code>RESOLVE_NOUN</code> (<code>$15E3</code>) finds an object's icon by looking its number up in a map of 36 (<code>$22A4</code>), the map has no entry for object 40, and slot 27's entry holds the number of Auryn, which an earlier slot already matches.</p>
-  <p>Picture 49, Atreyu buried to the waist in rubble, is one of Part 3's. No room has it as its picture (<code>OBJ_ROOM_TABLE</code>, <code>$0D4F</code>), and no script of the engine or the three parts shows it.</p>
+  <p>Icon slot 27 holds a gold cross (<code>$B640</code>), and the vocabulary has the word CRUCIFIX (noun <code>$5A</code>, object 40). The object starts the game gone, and the scripts never put it anywhere. Even if one did, its icon could not be drawn: <code>RESOLVE_NOUN</code> (<code>$15E3</code>) finds an object's icon by looking its number up in a map of 36 (<code>$22A4</code>), the map has no entry for object 40, and slot 27's entry holds the number of Auryn, which an earlier slot already matches.</p>
+  <p>Picture 49, Atreyu buried to the waist in rubble, is one of Part 3's. None of the rooms has it as its picture (<code>OBJ_ROOM_TABLE</code>, <code>$0D4F</code>), and none of the scripts of the engine or the three parts shows it.</p>
   <div class="plate">
     <div class="nes-unseen"><canvas id="nes-ucv" width="128" height="128"></canvas><canvas class="nes-cv" id="nes-pcv" width="640" height="160"></canvas></div>
     <p class="cap">Icon 27 and picture 49 over the backdrop, drawn from the game's bytes by the page's port of <code>BLIT_ROOM_GRAPHIC</code> (<code>$05BF</code>).</p>
@@ -181,8 +181,8 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
 
 <section id="nes-trees">
   <p class="fig">07 · The vocabulary</p>
-  <h2 class="t">Quirk: the two trees have names nobody can type</h2>
-  <p>Objects 2 and 50 are both trees, which no room ever lists (both description pointers lead to <code>$2338</code>, whose <code>$40</code> marks an object left out of the list), one in Morla's swamp (room <code>$11</code>) and one at the foot of the enormous tree near the Southern Oracle (room <code>$23</code>). Each has a noun of its own, <code>$34</code> and <code>$64</code>, and the vocabulary spells both TRE (<code>$1B96</code>, <code>$1C52</code>). It also has a third TRE, earlier in the list, for the noun <code>$CB</code> (<code>$1B82</code>), and the lookup stops at the first match (<code>VOCAB_LOOKUP</code>, <code>$12C4</code>). Typing TREE always gives <code>$CB</code>: CLIMB TREE works, because the climbing scripts do not ask which noun was typed, and GET TREE answers "You can't do that."</p>
+  <h2 class="t">Quirk: the two trees have names that cannot be typed</h2>
+  <p>Objects 2 and 50 are both trees, which the rooms never list (both description pointers lead to <code>$2338</code>, whose <code>$40</code> marks an object left out of the list), one in Morla's swamp (room <code>$11</code>) and one at the foot of the enormous tree near the Southern Oracle (room <code>$23</code>). Each has a noun of its own, <code>$34</code> and <code>$64</code>, and the vocabulary spells both TRE (<code>$1B96</code>, <code>$1C52</code>). It also has a third TRE, earlier in the list, for the noun <code>$CB</code> (<code>$1B82</code>), and the lookup stops at the first match (<code>VOCAB_LOOKUP</code>, <code>$12C4</code>). Typing TREE always gives <code>$CB</code>: CLIMB TREE works, because the climbing scripts do not ask which noun was typed, and GET TREE answers "You can't do that."</p>
   <p>Two more entries can never be used:</p>
   <ul>
     <li>The word "..." is verb <code>$11</code>, and none of the 70 pairs names it.</li>
@@ -200,11 +200,11 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
 <section id="nes-leftovers">
   <p class="fig">09 · Leftovers</p>
   <h2 class="t">Secret: code to return to BASIC, hidden in two icon slots</h2>
-  <p>Icon slots 4 and 5 (<code>$A7E0-$A91F</code>) hold code instead of pictures: the raster interrupt that splits the screen, the opening's interrupt, and two routines nothing calls. <code>RESTORE_SYSTEM_TO_BASIC</code> (<code>$A893</code>) clears the zero page and pages 2 and 3, copies the KERNAL's vectors back and calls BASIC's own start-up routines, and <code>INSTALL_GAME_IRQ</code> (<code>$A8CC</code>) sets up the game's interrupt. No object's icon number leads to slots 4 and 5, so the code is never drawn as a picture.</p>
+  <p>Icon slots 4 and 5 (<code>$A7E0-$A91F</code>) hold code instead of pictures: the raster interrupt that splits the screen, the opening's interrupt, and two routines the game never calls. <code>RESTORE_SYSTEM_TO_BASIC</code> (<code>$A893</code>) clears the zero page and pages 2 and 3, copies the KERNAL's vectors back and calls BASIC's own start-up routines, and <code>INSTALL_GAME_IRQ</code> (<code>$A8CC</code>) sets up the game's interrupt. None of the objects' icon numbers leads to slots 4 and 5, so the code is never drawn as a picture.</p>
   <ul>
-    <li><code>$9FEF-$9FFF</code>, just past the tune's driver, end with the text "/MONITOR". Nothing reads it.</li>
+    <li><code>$9FEF-$9FFF</code>, just past the tune's driver, end with the text "/MONITOR". The game never reads it.</li>
     <li>The crackers' disk loader at <code>$C000</code> is followed by the remains of a tape loader (<code>$C022-$C175</code>). It names CIA 2's timer B and CIA 1's FLAG interrupt, which a tape loader uses to time the tape's pulses, and it never runs.</li>
-    <li><code>$9600-$967F</code> and <code>$EFA0-$EFFF</code> hold bytes nothing reads.</li>
+    <li><code>$9600-$967F</code> and <code>$EFA0-$EFFF</code> hold bytes the game never reads.</li>
   </ul>
 </section>
 

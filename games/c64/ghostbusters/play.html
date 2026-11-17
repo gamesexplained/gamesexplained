@@ -123,7 +123,7 @@ section table{margin:6px 0 18px}
   <p class="fig">01 · Start anywhere</p>
   <h2 class="t">A level select made of the game's own start</h2>
   <p class="lede">Ghostbusters has no levels, only a clock: the city's PK energy, which climbs until the Keymaster and the Gatekeeper meet. The start buttons take you to the points along it that are worth playing.</p>
-  <p>No saved snapshot is involved. The page starts the game from its first instruction and plays its start for you without drawing it: F1 on the title, VENKMAN,PETER at the interview, no account, the station wagon on the car page. In the shop it puts the equipment in the car as the shop would have left it, then presses E. That takes the game about 2,200 frames, around 45 seconds of C64 time, which the page runs in a fraction of a second.</p>
+  <p>The page uses no saved snapshot. The page starts the game from its first instruction and plays its start for you without drawing it: F1 on the title, VENKMAN,PETER at the interview, no account, the station wagon on the car page. In the shop it puts the equipment in the car as the shop would have left it, then presses E. That takes the game about 2,200 frames, around 45 seconds of C64 time, which the page runs in a fraction of a second.</p>
   <table>
     <tr><th>Start</th><th>What the page changes</th><th>What happens next</th></tr>
     <tr><td>The city, equipped</td><td>the kit byte <code>$6D</code> = <code>$6F</code> (every item), 9 traps owned and empty (<code>$6A</code>, <code>$6B</code>), 20 dollops of bait (<code>$69</code>)</td><td>the normal game, with $4,000 left after the car</td></tr>
@@ -137,7 +137,7 @@ section table{margin:6px 0 18px}
   <p class="lede">Each cheat can be switched on and off at any moment. Off, the game is the original again.</p>
   <table>
     <tr><th>Cheat</th><th>How</th></tr>
-    <tr><td>Free spending</td><td>The known POKE 38454,96 writes an RTS over the first byte of <code>money_subtract</code> (<code>$9636</code>), so nothing the game charges is taken: the car, the equipment, the Marshmallow Man's damage. The port does not run the game's bytes, so the page makes its own <code>money_subtract</code> return at once, which is what the POKE does.</td></tr>
+    <tr><td>Free spending</td><td>The known POKE 38454,96 writes an RTS over the first byte of <code>money_subtract</code> (<code>$9636</code>), so the game never takes what it charges: the car, the equipment, the Marshmallow Man's damage. The port does not run the game's bytes, so the page makes its own <code>money_subtract</code> return at once, which is what the POKE does.</td></tr>
     <tr><td>Full backpacks</td><td>The proton packs' power, <code>$3E</code>, is put back to 99 every frame. A bust uses one percent every 16 frames with the streams on, and crossing the streams empties it.</td></tr>
     <tr><td>Traps stay empty</td><td>The count of empty traps, <code>$6B</code>, is set to the count owned, <code>$6A</code>, every frame, so there is no need to go back to GHQ.</td></tr>
     <tr><td>PK rises only by escapes</td><td>The meter's timed climb (<code>frame_pk_rise</code>, <code>$73F3</code>) does nothing. A Slimer left alone still escapes and adds 300, and a Roamer reaching Zuul still adds 100.</td></tr>
@@ -146,7 +146,7 @@ section table{margin:6px 0 18px}
 <section id="port">
   <p class="fig">03 · The port</p>
   <h2 class="t">Every routine of the game, written again in JavaScript</h2>
-  <p class="lede">Nothing on this page emulates a 6502. The game's routines are written out in JavaScript, one function each, named by the listing's labels, and run on the game's own 64 KB of memory.</p>
+  <p class="lede">This page does not emulate a 6502. The game's routines are written out in JavaScript, one function each, named by the listing's labels, and run on the game's own 64 KB of memory.</p>
   <p>The page loads that memory from the listing, the same bytes the Source code tab shows. From then on the port reads and writes the game's variables where the game keeps them, with the game's own decimal arithmetic, its self-modified operands and its bugs: the two bytes each drive leaves on the stack, and the empty branch at <code>$7200</code>.</p>
   <h3>Where the original depends on its interrupts</h3>
   <p><b>The title's tune during speech.</b> While a phrase plays on the title, the game steps the tune, the lyrics and the ball from a loop that compares the raster line with the last one it read. It reads the line's two parts one after the other, and the speech interrupt can fall between them, so the game sometimes steps twice in a frame: 98 steps in 88.7 frames for one phrase. The port steps once a frame, so on this page the sing-along can end a fraction of a second later.</p>
