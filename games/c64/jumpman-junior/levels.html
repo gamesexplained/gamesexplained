@@ -1,0 +1,74 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/jj-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Twelve levels, each a short list of girders, ladders, and ropes stamped onto the screen, and a list of bombs, some of which change the level when Jumpman defuses them.</p>
+</header>
+<main class="wrap">
+<section id="map">
+  <p class="fig">01 · The levels</p>
+  <h2 class="t">Every level, drawn by the game's own scripts</h2>
+  <p class="lede">Pick a level, then click its bombs to defuse them in any order. A bomb that changes the level redraws part of it, as it does in play.</p>
+  <div class="plate"><div id="mapRoot"></div>
+    <p class="cap">The picture is a port of <a href="source.html#8A36"><code>draw_script</code></a> and <a href="source.html#8A91"><code>draw_shape</code></a>, held to the game's own code by a test, run on each level's script from the Source tab. Orange is the bombs, green the girders and up ropes, blue the ladders and down ropes. The numbers are the bombs' places in the level's bomb list, and the arrows mark the ropes: <span aria-hidden="true">▲</span> up, <span aria-hidden="true">▼</span> down. The status bar's two rows are left off.</p></div>
+  <p>A level is drawn from a <a href="#scripts">script</a> and nothing else: there is no map of the level in memory. Jumpman finds the floor by reading the colours in the bitmap under him, so whatever a script draws in green is something he can stand on, and whatever it rubs out is gone (<a href="gameplay.html#floor">how he reads the floor</a>).</p>
+</section>
+
+<section id="scripts">
+  <p class="fig">02 · Draw scripts</p>
+  <h2 class="t">A level is a few dozen runs of eight shapes</h2>
+  <p class="lede">Each level's script names a shape, a step, and then runs: a place and how many copies to stamp, each the step further on.</p>
+  <p><a href="source.html#8A36"><code>draw_script</code></a> reads three bytes at a time. <code>$FE</code> and an address pick the shape, <code>$FD</code> and two numbers set the step between copies, <code>$FF</code> ends the script, and any other three bytes are a run: X, Y, and a count. X counts the screen's double-width pixels, 0 to 159. A girder run with a step of 4 across lays a floor; with 4 across and 2 down, or 2 up, it lays a slope. Ladders and ropes are runs of pieces 8 lines apart. <a href="source.html#8A91"><code>draw_shape</code></a> stamps each copy as rows of pixels, every row a count, two offsets, and one colour for each pixel.</p>
+  <p>There are eight shapes (<a href="graphics.html#shapes">Graphics</a>): the girder, the ladder, the bomb, the up rope and the down rope, and an eraser for each of the girder, the ladder and the rope. The erasers draw the same outlines in black. A bomb is wiped with the girder eraser, through a script of one run that <a href="source.html#A600"><code>bomb_check</code></a> writes at <code>$09CA</code> with the bomb's position.</p>
+  <p>Every level's colours are the same: <a href="source.html#8BD4"><code>level_colours</code></a> fills the screen with orange and green and the colour memory with blue before the script runs. Only the border, from header byte <code>$29</code>, changes from level to level.</p>
+</section>
+
+<section id="bombs">
+  <p class="fig">03 · Bombs</p>
+  <h2 class="t">Bombs are found by the square they sit in</h2>
+  <p class="lede">The game does not test Jumpman against each bomb. It works out which square of 32 by 32 pixels he is in and looks that square up in the level's list.</p>
+  <p>On every pass of the game, <a href="source.html#A600"><code>bomb_check</code></a> looks for orange inside Jumpman's body. When there is some, it turns his position into a cell code, X and Y each in steps of 32 pixels, and searches the level's bomb list (header byte <code>$1B</code>) for it: two bytes a bomb, the cell code and an action. The bomb's place in that list is also its place in the list of positions (header <code>$19</code>), which says where to wipe it. That is why no two bombs on a level share a square.</p>
+  <p>The action's high nibble picks a change script from the level's list at header <code>$1D</code>, and the change is drawn before the bomb is wiped. Five levels use them. On <a href="#l1">level 1</a> four bombs rub out girders; on <a href="#l5">level 5</a> thirteen of the fourteen bombs change something, laying girders, taking away ladders, and building a ladder of nine pieces; on <a href="#l7">level 7</a> bombs rub out girders and ladders and hang up ropes; <a href="#l11">level 11</a> rubs out floors and ladders, and <a href="#l12">level 12</a> floors. Several bombs on levels 7 and 11 share a script, so defusing the second does nothing new.</p>
+  <p>The action's low nibble would call a routine from a list at header <code>$1F</code>, but no level sets it, and every level's list is 0. Had one been used, it would have found the wrong address (<a href="discoveries.html#routine-list">a bug that never fires</a>). The levels with code of their own run it from header <code>$21</code> instead, after every bomb.</p>
+  <p>Each bomb is worth the header's points, 100 on every level. The level ends when the count of bombs left, header <code>$0A</code>, reaches 0. On <a href="#l9">level 9</a> the list holds sixteen bombs and the count says eight, because the level wipes eight of them at random before play.</p>
+</section>
+
+<section id="levels">
+  <p class="fig">04 · The twelve</p>
+  <h2 class="t">What each level adds</h2>
+  <p class="lede">Each header names four tasks, run every frame, and routines for the level's start, its play, each bomb, and its end. Most levels use the shared ones; these are the ones that do not.</p>
+  <div class="table-scroll" role="region" aria-label="The twelve levels" tabindex="0"><table class="t">
+    <tr><th class="n">Level</th><th>Name</th><th>What is different</th><th>Code</th></tr>
+    <tr id="l1"><td class="n">1</td><td>NOTHING TO IT</td><td>Four of the twelve bombs rub out girders as they go. One bullet at a time.</td><td><a href="source.html#AA2E"><code>$AA2E</code></a></td></tr>
+    <tr id="l2"><td class="n">2</td><td>FIRE! FIRE!</td><td>Two fires, which kill on touch, jump to new places after every bomb, from a table of places for each bomb.</td><td><a href="source.html#AB25"><code>l02_on_bomb</code></a></td></tr>
+    <tr id="l3"><td class="n">3</td><td>SREDDAL</td><td>“Ladders” backwards. Six moving sprites, three going down and three up, are ladders while Jumpman touches one. They turn round at the top and bottom and after every bomb, and never kill.</td><td><a href="source.html#AC85"><code>l03_ladder_task</code></a></td></tr>
+    <tr id="l4"><td class="n">4</td><td>HELLSTONES</td><td>Four glowing stones drop from straight above Jumpman and bounce toward him when they land.</td><td><a href="source.html#AD72"><code>l04_stone_task</code></a></td></tr>
+    <tr id="l5"><td class="n">5</td><td>FIGURITS REVENGE</td><td>Thirteen of the fourteen bombs change the level. Two bullets.</td><td><a href="source.html#AF1F"><code>$AF1F</code></a></td></tr>
+    <tr id="l6"><td class="n">6</td><td>WALLS</td><td>Each bomb adds a moving wall, up to six, that pushes Jumpman and never kills, and turns the rope in the middle from down to up and back.</td><td><a href="source.html#B0BD"><code>l06_on_bomb</code></a></td></tr>
+    <tr id="l7"><td class="n">7</td><td>ZIG-ZAG</td><td>Three bullets, which weave from side to side once they turn on Jumpman. Bombs take away ladders and hang new up ropes.</td><td><a href="source.html#B2AA"><code>l07_zigzag_task</code></a></td></tr>
+    <tr id="l8"><td class="n">8</td><td>SPELLBOUND</td><td>Each bomb carries a letter, stacked up the middle of the screen as it is defused. At the end, every letter in its place in EPYX JUMPMAN scores 250.</td><td><a href="source.html#B404"><code>l08_on_bomb</code></a>, <a href="source.html#B462"><code>l08_end</code></a></td></tr>
+    <tr id="l9"><td class="n">9</td><td>BLACKOUT</td><td>The level is drawn in black and lit around Jumpman as he moves, a block four cells wide and three high; lit cells stay lit. Eight of the sixteen bombs are wiped at random first.</td><td><a href="source.html#B5B1"><code>l09_main</code></a>, <a href="source.html#B5F7"><code>l09_light_task</code></a></td></tr>
+    <tr id="l10"><td class="n">10</td><td>HERETHEREEVERYWHERE</td><td>A transporter jumps between eight places every 128 frames, and each bomb sends Jumpman to wherever it is. At run speed 8 the bullets cannot kill him.</td><td><a href="source.html#B73B"><code>l10_on_bomb</code></a>, <a href="source.html#B7A0"><code>l10_touch</code></a></td></tr>
+    <tr id="l11"><td class="n">11</td><td>HATCHLINGS</td><td>Each bomb lays an egg where it was. The egg hatches into a bird that chases Jumpman and kills on touch; the egg itself is harmless.</td><td><a href="source.html#B9BC"><code>l11_on_bomb</code></a>, <a href="source.html#B93C"><code>l11_bird_task</code></a></td></tr>
+    <tr id="l12"><td class="n">12</td><td>HURRICANE</td><td>A wind pushes Jumpman 2 pixels right on every move, and off the right edge he comes back on the left. Gusts blow debris across the screen.</td><td><a href="source.html#BB04"><code>l12_wind_task</code></a>, <a href="source.html#BB2B"><code>l12_gust_task</code></a></td></tr>
+  </table></div>
+  <p>Every level but 3 and 6 also runs <a href="source.html#9D47"><code>touch_check</code></a>, which kills Jumpman when his sprite touches any other; levels 10 and 11 have their own versions that leave out the transporter and the egg. The bullets come from <a href="gameplay.html#bullets">one shared task</a>, as many at a time as header byte <code>$0B</code> allows: none on levels 3, 4, 6, 9, 11, and 12.</p>
+</section>
+
+<section id="order">
+  <p class="fig">05 · The order</p>
+  <h2 class="t">After level 12, any level at all</h2>
+  <p class="lede">The levels come in order once. After the twelfth, <a href="source.html#9B1C"><code>next_level</code></a> sets a flag and picks every level after that at random.</p>
+  <p>Finishing level 12 plays the ending, WELL DONE, once. From then on each new level is a random number from 1 to 12, so a level can come up twice running and another not at all (<a href="source.html#9B1C"><code>next_level</code></a>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="reference/jj-page.js"></script>
+<script>JJ.mountMap(document.getElementById('mapRoot'));</script>

@@ -44,7 +44,9 @@ trainer appears.
    `work/loader-stub.vsf`), then on the cartridge's own cold start once
    the loader has put the real bytes back. The second stop is
    `work/entry.vsf`. Its `$8000`-`$C02F` is byte for byte the same as in
-   `play-level1.vsf`: the game never writes its own image.
+   `play-level1.vsf`. The game writes into its own image in one place:
+   level 10's bomb routine stores 0 at `$8004` (`facts.md`, Build), which
+   play on level 1 never reaches.
 
 ## Steady state
 

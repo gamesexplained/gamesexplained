@@ -91,6 +91,13 @@ from reading the code in the snapshot named in `orientation.md`.
 
 ## Mechanics
 
+- `next_turn` (`$9974`) adds `$B2` and `$B3`, the tape buffer pointer,
+  and on `$3F` turns the interrupts off; the KERNAL's own start-up sets
+  them to `$033C` (`$FD5F`), after the check for a cartridge
+  (`$FCE7`). The disk's loader leaves both at 0. Traced, not tested.
+- The score for the next Jumpman (`$0A2B-$0A2D`) is never wrapped when
+  the score is (`$9FCD`), so none comes after the score wraps.
+
 - Lives: 4 at the start (`player_init`, `$996C`); the status bar shows
   lives + 1 (`$A069`), counting the Jumpman in play, so it reads
   JUMPMEN = 05. A new Jumpman every 7,500 points (`score_check`, `$9FCD`).
@@ -169,5 +176,8 @@ from reading the code in the snapshot named in `orientation.md`.
   input (`reference/level-NN-*.png`).
 - Level 10's write to `$8004` and the two resets (Build, above), 17
   November 2026.
+- `$D208` is the VIC-II's `$D008` seen again: a byte poked into `$D208`
+  in VICE read back from `$D008` (level 11's start routine, `$B931`),
+  17 November 2026.
 - The run speed and the status bar's RUN SPEED, JUMPMEN = 05 at the
   start: seen on the status bar.

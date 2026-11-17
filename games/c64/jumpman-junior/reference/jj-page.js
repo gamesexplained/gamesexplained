@@ -203,7 +203,7 @@ const JJ = (function () {
         crop.getContext('2d').drawImage(big, 0, 0);
         crop.className = 'jj-shape'; crop.setAttribute('role', 'img'); crop.setAttribute('aria-label', SHAPES[a]);
         const cap = el('figcaption'); cap.append(SHAPES[a] + ' ', src(a));
-        root.append(el('figure', { class: 'gal-cell' }, [crop, cap]));
+        root.append(el('figure', {}, [crop, cap]));
       }
     });
   }
@@ -233,7 +233,7 @@ const JJ = (function () {
         }
         const cap = el('figcaption');
         cap.append(el('code', { text: hex(ptr, 2) }), ' ' + (SPRITES[ptr] || 'not set by any routine named here'));
-        root.append(el('figure', { class: 'gal-cell' }, [cv, cap]));
+        root.append(el('figure', {}, [cv, cap]));
       }
     });
   }

@@ -1,0 +1,64 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/jj-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">A cartridge game running from disk, and the places where that shows: a level that writes over its own start-up signature, and a check that stops the game if it was started the ordinary way.</p>
+</header>
+<main class="wrap">
+<section id="cbm80">
+  <p class="fig">01 · Bug</p>
+  <h2 class="t">Bug: level 10 rubs out the cartridge's signature</h2>
+  <p class="lede">Every bomb on level 10 ends with a write of 0 to <code>$8004</code>, the first letter of the cartridge's CBM80 signature. On the cartridge that write hits ROM and does nothing. On this disk the game runs from RAM, and the signature is gone.</p>
+  <p>Jumpman Junior was a 16 KB cartridge. The disk release studied here loads the cartridge's image into RAM at <code>$8000</code> and starts it there, with a patched copy of the KERNAL (<a href="about.html#copy">the copy studied</a>). A C64 that is reset looks at <code>$8004</code> for the letters CBM80; when it finds them, it starts the cartridge instead of BASIC.</p>
+  <p>Level 10's bomb routine, <a href="source.html#B73B"><code>l10_on_bomb</code></a>, moves Jumpman to the transporter and starts its sound. The routine's last instruction, at <a href="source.html#B754"><code>$B754</code></a>, stores the accumulator into <code>$8004</code>, and the accumulator then holds 0. Nothing in the game reads <code>$8004</code>, and on a cartridge a store to ROM is lost, so the mistake never showed. Tested in the VICE emulator: after a bomb on level 10, <code>$8004</code> to <code>$8008</code> read <code>00 C2 CD 38 30</code>, and a reset went to BASIC's READY. With the signature still intact, a reset ran the cartridge's start-up with BASIC's ROM switched in over the game's code, and the game stopped on a black screen. Either way, a reset never restarts the disk game.</p>
+</section>
+
+<section id="b2b3">
+  <p class="fig">02 · Secret</p>
+  <h2 class="t">Secret: a check on the tape buffer pointer</h2>
+  <p class="lede">Between every two turns, the game adds up two bytes of the KERNAL's, <code>$B2</code> and <code>$B3</code>. When they make <code>$3F</code>, it turns the interrupts off, and the game, which does everything from the interrupt, stops.</p>
+  <p><code>$B2</code> and <code>$B3</code> hold the address of the tape buffer, and the KERNAL's own start-up sets them to <code>$033C</code> (in this game's copy of the KERNAL, at <a href="source.html#FD5F"><code>$FD5F</code></a>), whose two bytes add to <code>$3F</code>. A C64 with a cartridge jumps to it before that part of the start-up runs (<a href="source.html#FCE7"><code>$FCE7</code></a>), so a cartridge started at power-on does not normally find <code>$033C</code> there. A copy of the cartridge loaded into RAM after the machine has started normally would. That is what <a href="source.html#9974"><code>next_turn</code></a> tests for: with the sum at <code>$3F</code> it writes it to <code>$D016</code> and sets the interrupt flag. Nothing says what the check was for, and the disk release's loader leaves both bytes at 0, so it never fires here. This was read in the code, not tested.</p>
+</section>
+
+<section id="speed-8">
+  <p class="fig">03 · Secret</p>
+  <h2 class="t">Secret: level 10 at run speed 8</h2>
+  <p class="lede">On level 10, HERETHEREEVERYWHERE, a player at run speed 8 cannot be killed by a bullet.</p>
+  <p>Level 10 has its own touch check, <a href="source.html#B7A0"><code>l10_touch</code></a>, in place of the shared one, so that touching the transporter is safe. It kills Jumpman only when he touches a bullet, and only when the run speed is below 8. At speed 8, the slowest a player can choose, the bullets pass through him. Falls still kill.</p>
+</section>
+
+<section id="million">
+  <p class="fig">04 · Bug</p>
+  <h2 class="t">Bug: no more Jumpmen after a million</h2>
+  <p class="lede">A score that reaches 1,000,000 goes back round to 0, but the score for the next extra Jumpman does not, so a player who goes round the clock never earns another.</p>
+  <p><a href="source.html#9FCD"><code>score_check</code></a> takes 1,000,000 off the score when it gets there, comparing each of the score's three bytes with those of 1,000,000 (<code>$0F</code>, <code>$42</code>, <code>$40</code>) one by one rather than the three as one number. Then it compares the score with the score for the next Jumpman, which goes up by 7,500 each time one is given, and is never wrapped. After a score of 997,500 the next Jumpman is due at 1,005,000, and the score is set back before it can get there. The byte-by-byte test also lets a score of 1,000,000 or more stay unwrapped when its low byte is under <code>$40</code>, as 1,000,200 (<code>$0F4308</code>) is, until the next points arrive.</p>
+</section>
+
+<section id="routine-list">
+  <p class="fig">05 · Bug</p>
+  <h2 class="t">Bug: a routine list nobody uses, read wrong</h2>
+  <p class="lede">A bomb's action byte has room for a routine of its own to run when it is defused. No level uses it, which is as well: the code that reads it gets the address wrong.</p>
+  <p>The action's high nibble draws a <a href="levels.html#bombs">change to the level</a>. Its low nibble is meant to pick a routine from a list whose address is in header bytes <code>$1F</code> and <code>$20</code>. <a href="source.html#A6A0"><code>bomb_check</code></a> stores the low byte into <code>$24</code> and the high byte into <code>$26</code>, one byte too far, and then reads through <code>$24</code> and <code>$25</code>. So the high byte it uses is whatever <code>$25</code> already held: the high byte of the change list, or of the bomb positions. Every level's header has 0 at <code>$1F</code> and no bomb's low nibble is set, so the wrong address is never read. The levels that do something on each bomb use another header entry, <code>$21</code>, which works.</p>
+</section>
+
+<section id="d208">
+  <p class="fig">06 · Bug</p>
+  <h2 class="t">Bug: level 11 writes to the graphics chip instead of the sound chip</h2>
+  <p class="lede">Level 11's start routine stores 4 at <code>$D208</code>. Nothing is there but the VIC-II, repeated every 64 bytes, so the store lands in sprite 4's X position.</p>
+  <p><a href="source.html#B931"><code>l11_start</code></a> makes the hatchling yellow, then writes 4 to <code>$D208</code>. The sound chip starts at <code>$D400</code>, and <code>$D200</code> to <code>$D23F</code> is the graphics chip's registers seen again, so the byte goes to <code>$D008</code>, sprite 4's X: in the VICE emulator, a byte poked into <code>$D208</code> read back from <code>$D008</code>. Sprite 4 is not used on level 11, and nothing comes of it. Which register was meant is not known.</p>
+</section>
+
+<section id="priority">
+  <p class="fig">07 · Sound</p>
+  <h2 class="t">Sound: five effects that outrank the music by accident</h2>
+  <p class="lede">The sound code gives a voice to whichever sound has the highest priority. Five effects pass the high byte of their script's address as their priority, because the accumulator still holds it.</p>
+  <p>The priority goes to <a href="source.html#89E5"><code>sound_play</code></a> in the accumulator. Most calls load a small number first; the bonus jingle, a new Jumpman, the title's two blips, and the hurricane's gusts do not, and call it straight after storing the script's high byte. Their priorities are <code>$97</code> to <code>$BB</code>, above every tune's 16 and every other effect's 8 or less (<a href="music.html#voices">the sound table</a>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
