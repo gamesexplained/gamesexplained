@@ -137,20 +137,28 @@ The clocks count hundredths in decimal, 2 a frame: 50 frames to the second
   bytes (`$1B15`); the puck is pushed away from them, except while dazed
   after a hit, and each daze grows 4 frames up to 150 (`$219F`). FIRE brakes
   for five frames (`$1DF5`). The computer thinks every 13 frames (`$1EC1`).
+- **Choosing players.** In Slither, Hockey and Judo one device answering
+  both prompts makes the computer player one and the human player two
+  (slither `$0B68`, hockey `$24BE`, judo `$3D40`); the keyboard with
+  joystick two is refused with a message in all three. Head Throwing's
+  computer takes player two after 256 frames with no fire (head `$1CBB`).
 - **Psychic Judo.** Rounds of 60.00 seconds; the reserve runs out or the
   clock does (judo `$1DE5`, `$1DB8`). A charging bolt takes 1 from the
   reserve every 5 frames (`$3567`). A bolt reaching the far end is judged on
   a 16 x 16 body map with six zones (`$2B37`, `$2C30`). The computer
-  player is a state machine of six states (`$6900`).
+  player is a state machine of six states (`$6900`). Every 25 frames a raised
+  shield costs 1 for each zone it covers (`$3567`).
 - **Head Throwing.** Alternating LEFT and RIGHT adds 4 + ((255 - speed) / 32)
   to the run-up speed, with friction of 1 a frame (head `$1AC4`). The angle
   starts level when the thrower plants and drops one step every 10 frames
   while FIRE is held, throwing by itself straight up at 0. DOWN flaps the
   ears (gravity `$64` against `$100` for 10 frames). A landing angle of
   `$0C`-`$0F` sticks; anything else tips over and the throw is void.
-  `end_contest` (`$1EBC`) calls a draw when the metres are equal and player
-  one is ahead on centimetres.
-- **Metamorph Marathon.** One player against the clock. The energy is 16
+  `end_contest` (`$1EBC`) calls a draw whenever the metres of the difference
+  come out at zero without a borrow: equal metres with player one ahead on
+  centimetres, or player one a metre ahead but behind on centimetres
+  (13.10 against 12.80).
+- **Metamorph Marathon.** Against the clock, two players taking turns (`$1FDC`). The energy is 16
   bits, `$03FF` full, shown as four bars of `$100` (marathon `$1F1F`); it
   drains every 20 frames while a run is under way (`$1F23`), and power pills
   refill it (`$1F31`). The Metamorph's state picks the blob, a change, the

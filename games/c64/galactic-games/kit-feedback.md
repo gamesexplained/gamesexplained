@@ -7,35 +7,24 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "`build.py --addresses` lists them page by page: a chip register can stay, but an address of the wrong part": I ran it on the finished pages and it found 19 addresses in code spans on four pages that would have opened the wrong listing; each now links to its own part or is plain text.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+None.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+- **A countdown reloaded and stepped on DEC/BPL runs every N + 1 ticks.** All five events' sound drivers keep a rate byte per instrument, copy it into a counter, and take the step when `DEC` drives the counter below zero (`BPL` falls through), so a rate of 26 steps every 27 ticks. Every instrument comment gave the rate byte itself as the period, and it read right; the sample checker caught it at head `$314E` and slither `$2D59` by following the reload. A skill line in `50-coverage` would say: when a comment gives a period from a counter, read where the counter is reloaded and which branch takes the step, and state the period from those (N + 1 for reload-then-`DEC`/`BPL`). No other game folder shows the same mistake on record, so it waits here.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+Drawing every moving thing from the listings for the Graphics tab took longest, because each event keeps its frames in its own format; no kit change would have shortened that, so the one sentence is that the per-section screenshot script in the scratch folder (each `main section` shot on its own, since a full-page shot leaves off-screen canvases blank) would have saved a round of blank screenshots if the kit carried one.
+
+## Operating system and tools
+
+Linux x86_64 in a Claude cloud container. VICE release v4.0.0 (the kit's vice-mcp build, `check-emulator` 52 passed, 2 failed), regenerator2000 0.9.20, Python 3, Node with the container's Playwright and Chromium.

@@ -19,7 +19,7 @@ Sources:
 
 | Feature | Status | Where |
 |---|---|---|
-| Boots from side 1 to a credits screen, then the commentator and the menu | live | `reference/title-loading.png`, `reference/title-credits.png`; resident `$8000` loads RECO at boot |
+| Boots from side 1 to a credits screen, then the commentator and the menu | live | `reference/title-loading.png`, `reference/title-credits.png`; RECO (`$BC64`, 50 bytes) is read at boot |
 | Menu of five events and the Galactic Championship, picked with the joystick and fire | live | `reference/menu.png`; menu `$0FF4` |
 | Each event loads on its own; side 2 events ask for the disk to be turned over | live | `reference/side-prompt.png`; menu; resident `$0800` |
 | Each event opens with its name in big letters, then (manual and reviews) a humorous text introduction | confirmed | the name: resident `$C540`, `reference/*-title.png`; the text is the menu's commentator, typed before each event loads (menu messages) |
@@ -42,12 +42,12 @@ Sources:
 | Head Throwing: alternate UP and DOWN to waggle the ears for lift | confirmed | head: DOWN flaps (lift for 10 frames), UP is needed between strokes |
 | Head Throwing: FIRE before landing sticks the nose in; too early it topples, too late it does not tip | confirmed | head: FIRE starts the head turning; a landing angle of `$0C`-`$0F` sticks |
 | Head Throwing: three throws each, longest wins; foul over the line or if the nose does not stick | confirmed | head `$1EBC` end_contest (with a bug: see Beyond) |
-| Metamorph Marathon: one player, obstacle course against the clock | live | `reference/marathon-play.png` |
+| Metamorph Marathon: obstacle course against the clock; two players take turns (`marathon_main` `$1FDC`, message 6 `$2F9F`) | live | `reference/marathon-play.png` |
 | Metamorph Marathon: from the blob, RIGHT Runner, LEFT Burrower, DOWN Jumper, UP Flyer; FIRE back to the blob | confirmed | marathon `$1F1A` form, `$1F1C` shape sets |
 | Metamorph Marathon: four red energy bars, power pills refill; the run ends when energy runs out | confirmed | marathon `$1F1F` (16 bits, four bars of `$100`), `$1F31`, `$1F1E` |
-| Events 1 to 4 two players; the computer takes the second player when the same fire answers both prompts | live (hockey: "PLAYER ONE IS COMPUTER") | `reference/hockey-play.png`; hockey `$24BE`, judo `$3D40`; slither's pace-maker `$3632` |
+| Events 1 to 4 two players; the computer takes the second player when the same fire answers both prompts | differs: in Slither, Hockey and Judo the computer plays player one ("PLAYER ONE IS COMPUTER"; slither `$0B68`); in Head Throwing it takes player two after 256 frames with no fire (head `$1CBB`); the keyboard with joystick two is refused in Slither, Hockey and Judo | `reference/hockey-play.png`; hockey `$24BE`, judo `$3D40`; slither's pace-maker `$3632` |
 | Player 2 on the keyboard: `@` up, `:` down, `K` left, `H` right, up-arrow fire, RUN/STOP quits | differs | the code reads `H` as left and `K` as right (slither `$35DE`, hockey `$2468`, judo `$3F0C`, head `$2BB3`); any player may take the keyboard |
-| QUIT gives a choice between replaying the event and the menu | differs | RUN/STOP leaves for the menu at once (slither `$30A8`, hockey `$2DE7`, judo `$6D36`, head `$34DB`); Hockey, Head Throwing and the Marathon carry a message "STOP TO QUIT ANY KEY TO CONTINUE" that nothing shows |
+| QUIT gives a choice between replaying the event and the menu | differs | RUN/STOP leaves for the menu at once (slither `$30A8`, hockey `$2DE7`, judo `$6D36`, head `$34DB`); all five events carry a message "STOP TO QUIT ANY KEY TO CONTINUE" that nothing shows (slither `$2840`, hockey `$2DC1`, judo `$3CE3`, head `$2B8E`, marathon `$3045`) |
 | Galactic Championship: every event in turn, scored overall | confirmed | menu sets `$B800`; resident `$D32D`, the points at marathon `$AD0C`, the champion `$D619` |
 | Records kept on disk (file RECO on side 1) | confirmed | resident `$BC64`, `$D005`, `$D77D`; the menu saves RECO when `$08FE` is set |
 
@@ -59,14 +59,14 @@ Found in the code, not in the manual.
 |---|---|---|
 | Space Hockey pauses on the Commodore key | confirmed | hockey `$1176` |
 | A Galactic Champion's name and points are kept on disk, with a name entry for a new champion | confirmed | resident `$BC8C`, `$D619` |
-| A closing title after the championship | traced | resident `$B8A7`, title 5 at `$C857` |
+| A closing title after the championship, reading THE END | traced | resident `$B8A7`; title 5 at `$C857` places shapes T, H, E over E, N, D, the same shapes the other titles spell with; not reached live |
 | Title screens: a starfield of 80 stars and rainbow letters | live | resident `$CD29`, `$C965` |
-| Head Throwing: equal metres with player one ahead on centimetres is called a draw | confirmed | head `$1EBC` |
-| Metamorph Marathon: player two's best time is dropped when its two bytes are equal | confirmed | marathon `$7451` |
-| Psychic Judo's records keep only seconds and hundredths: the minutes byte is never copied | confirmed | resident `$D77D` |
+| Head Throwing: player one ahead by less than a metre is called a draw whenever the metres of the difference are zero (equal metres and ahead on centimetres, or a metre ahead and behind on centimetres) | confirmed | head `$1EBC` |
+| Metamorph Marathon: player two's best time is dropped when its two bytes are equal (the test is CMP #$FF with BNE where player one's is CMP #$99 with BEQ) | confirmed | marathon `$7451`, `$746F` |
+| Psychic Judo's records keep only seconds and hundredths: the minutes byte is never copied, which cannot show because the record on the disk is under a minute | confirmed | resident `$D77D`, `$BC70` |
 | The resident's volume clear reads the write-only `$D418` and ANDs with a zero-page byte | confirmed | resident `$B86C` |
 | Leftovers of earlier builds in every event file | confirmed | slither, hockey, head (`$35D5`), menu (`$2564`): an earlier Psychic Judo |
 
 ## Open questions
 
-- Does the closing title after a championship (title 5) read THE END? Its shapes match the other titles' E, H and D, but it was not seen live.
+None: the closing title's letters were read from its entry (title 5 at `$C857`).
