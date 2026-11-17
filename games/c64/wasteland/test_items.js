@@ -156,7 +156,7 @@ const shopAt = (map, name) => D.shops.find(s => s.map === map && s.name === name
   same('the other pairs share no kind', [overlap(shopAt(21, 'Market'), shopAt(21, 'Blackmarket')), overlap(shopAt(8, 'Trading car'), shopAt(9, 'AG. store'))], [false, false]);
   // Power armor: seven suits in bags, one on a recruit
   same('Power armor in bags', [I[35].loot.reduce((a, l) => a + l[2], 0), I[35].npc], [7, [[19, 'VAX']]]);
-  says('Seven suits lie in bags late in the game, one recruit carries an eighth, and no shop sells one.');
+  says('Seven suits lie in bags late in the game, one recruit carries an eighth, and the shops never sell one.');
   same('the Bloodstaffs\' bags', [I[62].loot.reduce((a, l) => a + l[1], 0), I[63].loot.reduce((a, l) => a + l[1], 0)].sort(), [4, 7]);
   same('the same squares take either Bloodstaff', I[62].use, I[63].use);
   says('Seven bags hold one and four hold the other');
