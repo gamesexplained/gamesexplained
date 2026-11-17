@@ -104,11 +104,7 @@ a Z-machine story, in `games/apple2/zork-i/parts/story/`.
      the game's first pages for a while, and calls the rest of the game.
      The part beneath keeps its own ranges then: its snapshot holds its
      own bytes there, the other part's holds others, and each counts
-     what its own load wrote. The part at the bottom, which lies over
-     nothing, does the same with `"ranges"` of its own: list there the
-     addresses where a load over it swaps its bytes out for a while
-     (sprites that make room for a shop's code), or those bytes are
-     counted in no part and the listing leaves them out.
+     what its own load wrote.
    - **A shared load.** A load that several parts share and that stays
      while they change (a tile set that comes in with the first level to
      use it and stays for the next) is a part of its own, though the

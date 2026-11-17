@@ -25,8 +25,9 @@ zero page and the chips, and resumes with an `RTI` built on the stack
 page (`$01EF`). It resumes at `$0A03` with `$01` = `$37`. The stack it
 returns with holds the interrupt frame (`P` = `$26`, return `$0A03`),
 then `$098C` (the return of the `JSR $0A00` at `$098A`), then `$E146`,
-BASIC's `SYS`: the game's own BASIC line (`SYS 2064`, `$0810`) is still
-at `$0801`. The bytes at `$0A00` are `JMP $0A00`, a loop on itself: the
+BASIC's `SYS`: the start-up at `$0810` (2064) was entered with
+`SYS 2064`, though the bytes where that BASIC line sat, `$0801-$080F`,
+are zeros in the frozen memory. The bytes at `$0A00` are `JMP $0A00`, a loop on itself: the
 person mastering the disk ran the game's start-up into that loop, froze
 it, and set the resume to the instruction after it, `$0A03`, the game's
 own first instruction (`CLD`, `JSR $2885`, then the start-up proper). So

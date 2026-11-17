@@ -7,35 +7,25 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `kit/skills/core/15-parts`: "The part beneath keeps its own ranges then": made the 2 KB swapped in at `$4000` a part over `main`, which showed that the bottom part had no way to keep its own sprites there.
+- `kit/skills/core/60-verify`: "Read every comment it marks wrong or doubtful against the code yourself": each finding of the sample was settled against the bytes before it was counted.
+- `kit/skills/core/12-media`: "every file, stray sector, cartridge bank and tape block": the 256-byte `S2` file turned out to be the last page of the packed game, read by the freezer's restart routine.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/scripts/parts.py`: `elsewhere()` lets the part at the bottom keep the addresses it lists in its own `"ranges"`, so a load swapped over it for a while (here the shop's code over sprite shapes) no longer takes those bytes from it; `kit/scripts/test_parts.py` tests it.
+- `kit/scripts/check_listing.py`: the error for `"ranges"` without `"over"` now applies only when no part lies over the one that has them.
+- `kit/c64/snapshot.py`, `kit/c64/check_emulator.py`: RAM in a `.vsf` is found by walking the modules to C64MEM, because vice-mcp v4.0.0 puts a C64MEMHACKS module first and the fixed offset 209 read the wrong bytes.
+- `kit/c64/r2000.py`: a `--game` that names no folder with a `game.json` or `part.json` stops with an error instead of falling back to the current directory, where it reached the wrong part's session.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+The bottom part's `"ranges"`. A game whose main part lends some addresses to an overlay for a while (sprite shapes under the shop's code) lost those bytes from every part: the overlay's snapshot held its code, the main part's range was given away, and the listing left the sprites out without a warning until `symbols_export.py` reported main's comments at `$4000` as lost. The skill `15-parts` would say, beside "The part beneath keeps its own ranges then", that the bottom part lists such addresses in `"ranges"` of its own. The next game that meets it makes the edit.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+A splitter rule in `tool-regen2000` saying that a label placed inside a lo/hi address table can merge it with the next table would have saved an hour of removing 35 junk labels.

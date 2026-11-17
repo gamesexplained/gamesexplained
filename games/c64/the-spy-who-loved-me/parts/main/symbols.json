@@ -3,7 +3,7 @@
  "platform": "c64",
  "game": "the-spy-who-loved-me",
  "part": "main",
- "build": "",
+ "build": "Domark's PAL disk, 007_the_spy_who_loved_me[domark_1990](pal)(!).g64: the game file S1 is a machine saved with Trilogic's Expert freezer cartridge and packed by its restart routine; the listings come from memory resumed at the game's first instruction, $0A03",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -8621,7 +8621,7 @@
   {
    "address": 2560,
    "type": "line",
-   "text": "The game's own BASIC line (SYS 2064) runs the start-up at $0810, which calls here. When the disk was mastered these three bytes were set to JMP $0A00, a loop on itself: the start-up ran into it, the machine was frozen with Trilogic's Expert cartridge, and the restart routine resumes at $0A03. Nothing jumps here again."
+   "text": "The development stub at $0810, entered from BASIC with SYS 2064, calls here ($098A). When the disk was mastered these three bytes were set to JMP $0A00, a loop on itself: the start-up ran into it, the machine was frozen with Trilogic's Expert cartridge, and the restart routine resumes at $0A03. Nothing jumps here again."
   },
   {
    "address": 2563,
@@ -8736,7 +8736,7 @@
   {
    "address": 4539,
    "type": "line",
-   "text": "Raster interrupt at line $D9, the top of the panel: turns the screen into extended background mode with the display on until line $DA, then normal ($D011 = $10), arms the next interrupt at line $F7 ($11F4) and runs the music player ($E9E1) once a frame."
+   "text": "Raster interrupt at line $D9, the top of the panel: keeps extended background mode, with multicolour this blanks the lines, until line $DA, then normal text ($D011 = $10), arms the next interrupt at line $F7 ($11F4) and runs the music player ($E9E1) once a frame."
   },
   {
    "address": 4596,
@@ -8806,7 +8806,7 @@
   {
    "address": 5304,
    "type": "line",
-   "text": "Object handler: releases the object with link id $1E ($27B7); then, one pass in four, when its x is 0 to 9 pixels more than the car's, turns into a road follower ($13A3) with collision kind 10, and sets its linked child (+11/+12) moving: width 8, x speed 0, y speed -9, handler $30AC."
+   "text": "Object handler: releases the object with link id $1E ($27B7); then, one pass in four, when its x is 1 to 10 pixels more than the car's (0 to 9 on the pass that found the id, since the SBC at $14C9 takes $27B7's carry), turns into a road follower ($13A3) with collision kind 10, and sets its linked child (+11/+12) moving: width 8, x speed 0, y speed -9, handler $30AC."
   },
   {
    "address": 5385,
@@ -8876,7 +8876,7 @@
   {
    "address": 6029,
    "type": "line",
-   "text": "Object handler: takes the boss's speeds ($6F, $70); frame $32 drops 12 pixels and becomes $A7 while it moves down."
+   "text": "Object handler: takes the boss's speeds ($6F, $70); frame $32 is raised 12 pixels and becomes $A7 while its y speed ($70) is not negative."
   },
   {
    "address": 6062,
@@ -8926,7 +8926,7 @@
   {
    "address": 6762,
    "type": "line",
-   "text": "Section 3: the map at $96BE, the second charset ($293D), open water ($68 = 2), spawn list $8CD3, fixed tile colour 15 ($4E), multicolours 9 and 5 and sprite multicolour 11, every sprite multicolour, $58 set, and the lasers, $5D and $5E given back from $62-$64."
+   "text": "Section 3: the map at $96BE, the second charset ($293D), open water ($68 = 2), spawn list $8CD3, fixed tile colour 15 ($4E), multicolours 9 and 5 and sprite multicolour 11, every sprite behind the scenery ($D01B), $58 set, and the lasers, $5D and $5E given back from $62-$64."
   },
   {
    "address": 6842,
@@ -8976,22 +8976,22 @@
   {
    "address": 7780,
    "type": "line",
-   "text": "Spawn routine 0: a road vehicle, frame $45, colour 6, 20 by 18, collision kind $81, the default handler."
+   "text": "Spawn routine 0: a road obstacle, frame $45, colour 6, 20 by 18, collision kind $81 (slows the car, $2EBF), the default handler."
   },
   {
    "address": 7803,
    "type": "line",
-   "text": "Spawn routine 1: a road vehicle, frame $44, colour 11, 20 by 18, collision kind $82."
+   "text": "Spawn routine 1: a road obstacle, frame $44, colour 11, 20 by 18, collision kind $82 (spins the car, $2EFA)."
   },
   {
    "address": 7826,
    "type": "line",
-   "text": "Spawn routine 2: a road vehicle, frame $48, colour 8, 20 by 16, collision kind $83."
+   "text": "Spawn routine 2: a road obstacle, frame $48, colour 8, 20 by 16, collision kind $83 (5 off the armour, $2EE0)."
   },
   {
    "address": 7849,
    "type": "line",
-   "text": "Spawn routine 3: a road vehicle, frame $46, colour 5, 20 by 18, collision kind $84."
+   "text": "Spawn routine 3: a road obstacle, frame $46, colour 5, 20 by 18, collision kind $84 (10 off the armour, $2F2C)."
   },
   {
    "address": 7872,
@@ -9006,7 +9006,7 @@
   {
    "address": 7966,
    "type": "line",
-   "text": "Spawn routine 7: a two-part enemy, collision kind 8, colour 15, 24 by 40, damage 10, score $25, handler $1617 (fires at the car). Parameter below 4: comes down from the top (y $EA, y speed -4, frame $BD) with a second part (frame $43) linked to it by $33 on handler $30AC. Otherwise moves down at speed 2 with frame $BF and a part with frame $BE."
+   "text": "Spawn routine 7: a two-part enemy, collision kind 8, colour 15, 24 by 40, hit points 10, score $25, handler $1617 (fires at the car). Parameter below 4: comes down from the top (y $EA, y speed -4, frame $BD) with a second part (frame $43) linked to it by $33 on handler $30AC. Otherwise moves down at speed 2 with frame $BF and a part with frame $BE."
   },
   {
    "address": 8082,
@@ -9016,22 +9016,22 @@
   {
    "address": 8103,
    "type": "line",
-   "text": "Spawn routine 9: an enemy car, frame 7, colour 11, 14 by 19, y speed -8, collision kind 10, damage 10, score $10, handler $13A3 (follows the right road edge)."
+   "text": "Spawn routine 9: an enemy car, frame 7, colour 11, 14 by 19, y speed -8, collision kind 10, hit points 10, score $10, handler $13A3 (follows the right road edge)."
   },
   {
    "address": 8146,
    "type": "line",
-   "text": "Spawn routine 10: an enemy car, frame 5, colour 6, 14 by 19, y speed -7, collision kind 11, damage 10, score $10, handler $139D (keeps level and fires). Releases a waiting object ($27AD)."
+   "text": "Spawn routine 10: an enemy car, frame 5, colour 6, 14 by 19, y speed -7, collision kind 11, hit points 10, score $10, handler $139D (keeps level and fires). Releases a waiting object ($27AD)."
   },
   {
    "address": 8192,
    "type": "line",
-   "text": "Spawn routine 11: frame 6, colour 2, 12 by 10, y speed -7, collision kind 12, damage 6, link id $28, handler $14B8. If an object with link id $28 is already there it changes its handler to $1518. Adds a part (frame $7A, kind $0D, handler $17BA) linked to it."
+   "text": "Spawn routine 11: frame 6, colour 2, 12 by 10, y speed -7, collision kind 12, hit points 6, link id $28, handler $14B8. If an object with link id $28 is already there it changes its handler to $1518. Adds a part (frame $7A, kind $0D, handler $17BA) linked to it."
   },
   {
    "address": 8285,
    "type": "line",
-   "text": "Spawn routine 13, only when hardware sprite 1 is free ($A6): a large object on fixed sprites, collision kind 14, from the top (y $EA) at y speed -7, 16 by 72, frame 8, damage 20, link id $D8, handler $1422 (the Q-truck), with two linked parts on sprite 1 and the next free sprite (frame 9, colour 11, handler $17AE), expanded across."
+   "text": "Spawn routine 13, only when hardware sprite 1 is free ($A6): a large object on fixed sprites, collision kind 14, from the top (y $EA) at y speed -7, 16 by 72, frame 8, hit points 20, link id $D8, handler $1422 (the Q-truck), with two linked parts on sprite 1 and the next free sprite (frame 9, colour 11, handler $17AE), expanded across."
   },
   {
    "address": 8431,
@@ -9041,12 +9041,12 @@
   {
    "address": 8619,
    "type": "line",
-   "text": "Spawn routine 15: frame $0D, colour 2, 16 by 20, y speed -7, collision kind 16, damage 10, score $10, handler $139D. Releases a waiting object ($27AD)."
+   "text": "Spawn routine 15: frame $0D, colour 2, 16 by 20, y speed -7, collision kind 16, hit points 10, score $10, handler $139D. Releases a waiting object ($27AD)."
   },
   {
    "address": 8665,
    "type": "line",
-   "text": "Spawn routine 16: frame $98, colour 2, 14 by 20, y speed -7, collision kind 17, damage 10, score $10, handler $139D, animation script $9104. Releases a waiting object."
+   "text": "Spawn routine 16: frame $98, colour 2, 14 by 20, y speed -7, collision kind 17, hit points 10, score $10, handler $139D, animation script $9104. Releases a waiting object."
   },
   {
    "address": 8719,
@@ -9056,7 +9056,7 @@
   {
    "address": 8750,
    "type": "line",
-   "text": "Spawn routine 20: frame $0A, colour 11, y speed 1, 14 by 19, collision kind $15, damage 10, score $10, handler $1300 (follows the left road edge)."
+   "text": "Spawn routine 20: frame $0A, colour 11, y speed 1, 14 by 19, collision kind $15, hit points 10, score $10, handler $1300 (follows the left road edge)."
   },
   {
    "address": 8793,
@@ -9066,7 +9066,7 @@
   {
    "address": 8800,
    "type": "line",
-   "text": "Spawn routine 22: frame $16, colour 2, 16 by 20, y speed -6, collision kind $17, damage 15, score $10, link id $E2, handler $1339 (drops other vehicles), with $8C set to 10. Releases the object with id $E2 ($27B7) first."
+   "text": "Spawn routine 22: frame $16, colour 2, 16 by 20, y speed -6, collision kind $17, hit points 15, score $10, link id $E2, handler $1339 (drops other vehicles), with $8C set to 10. Releases the object with id $E2 ($27B7) first."
   },
   {
    "address": 8854,
@@ -9081,12 +9081,12 @@
   {
    "address": 8986,
    "type": "line",
-   "text": "Spawn routine 18: a pickup at a random x from $40 to $BF (or at $10 or $E0 moving down for parameters 5 and 6), collision kind $13, 16 by 20, damage 1. The low bits of the parameter (below 5, else random) choose it: frame $69 upwards, 14 by 14, or with $58 set frame $37 upwards with colour from $86EA."
+   "text": "Spawn routine 18: a pickup at a random x from $40 to $BF (or at $10 or $E0 moving down for parameters 5 and 6), collision kind $13, 16 by 20, hit points 1. The low bits of the parameter (below 5, else random) choose it: frame $69 upwards, 14 by 14, or with $58 set frame $37 upwards with colour from $86EA."
   },
   {
    "address": 9100,
    "type": "line",
-   "text": "Spawn routine 24: a two-part enemy from the top (y $EA, y speed -4), collision kind $19, colour 12, 24 by 42, frame $41, damage 10, score $25, handler $1617, with a part (frame $42) linked on $30AC."
+   "text": "Spawn routine 24: a two-part enemy from the top (y $EA, y speed -4), collision kind $19, colour 12, 24 by 42, frame $41, hit points 10, score $25, handler $1617, with a part (frame $42) linked on $30AC."
   },
   {
    "address": 9176,
@@ -9096,12 +9096,12 @@
   {
    "address": 9222,
    "type": "line",
-   "text": "Adds the enemy for $23D8: y 1, colour 7, 24 by 42, frame $34, damage 50, score $25, handler $1617, with a linked part (frame $33) on $30AC."
+   "text": "Adds the enemy for $23D8: y 1, colour 7, 24 by 42, frame $34, hit points 50, score $25, handler $1617, with a linked part (frame $33) on $30AC."
   },
   {
    "address": 9292,
    "type": "line",
-   "text": "Spawn routine 26: collision kind $1B, handler $17BA, y speed -2, delay 8. Parameter 0 uses script $941E and handler $1586. Position from $86D3/$86DA by the parameter (parameter 6 also sets $7C), frame $B6 plus the parameter, colour 12, 20 by 20, damage 50, score $10, $77 = 4. Parameters above 0 are put straight into the slot before the first object of kind $1B ($24AA)."
+   "text": "Spawn routine 26: collision kind $1B, handler $17BA, y speed -2, delay 8. Parameter 0 uses script $941E and handler $1586. Position from $86D3/$86DA by the parameter (parameter 6 also sets $7C), frame $B6 plus the parameter, colour 12, 20 by 20, hit points 50, score $10, $77 = 4. Parameters above 0 are put straight into the slot before the first object of kind $1B ($24AA)."
   },
   {
    "address": 9463,
@@ -9111,7 +9111,7 @@
   {
    "address": 9510,
    "type": "line",
-   "text": "Spawn routine 29: four objects, collision kind $1D, colour 11, damage 50, score $25: two 24 by 21 at x $60 and $A4 (script $9108, handler $1706), two at x $58 and $AC, y 8 (script $910E, handler $171B, which fire lasers down). Sprites lose their expand bits and $77 = 4."
+   "text": "Spawn routine 29: four objects, collision kind $1D, colour 11, hit points 50, score $25: two 24 by 21 at x $60 and $A4 (script $9108, handler $1706), two at x $58 and $AC, y 8 (script $910E, handler $171B, which fire lasers down). Sprites lose their expand bits and $77 = 4."
   },
   {
    "address": 9613,
@@ -9211,7 +9211,7 @@
   {
    "address": 10557,
    "type": "line",
-   "text": "Copies the second charset at $F610-$FE0F to $7000 and sets $4D to 8 (the alternative tile set). Not seen running."
+   "text": "Copies the second charset at $F610-$FE0F to $7000 and sets $4D to 8 (the alternative tile set). Called when section 3, the sea bed, starts ($1A6A)."
   },
   {
    "address": 10594,
@@ -9531,7 +9531,7 @@
   {
    "address": 15054,
    "type": "line",
-   "text": "Sound 1 and one less $59: adds an object below the car (frame $0E, script $90D7) moving left and down with the car's y speed."
+   "text": "Sound 1 and one less $59: adds an object below the car (frame $0E, script $90D7) moving left, with the car's y speed."
   },
   {
    "address": 15140,
@@ -9796,7 +9796,7 @@
   {
    "address": 32768,
    "type": "line",
-   "text": "The panel's character set: 64 characters at $8000-$81FF, the part of the panel's own screen ($8000) that is never shown, since only rows 21-24 of that screen are displayed. The panel runs in extended background colour mode, which uses only characters 0-63: digits at 8-17 ($86F0), the bar pieces at $20 and $34-$3A ($8649), letters and the 007 picture."
+   "text": "The panel's character set: 64 characters at $8000-$81FF, the part of the panel's own screen ($8000) that is never shown, since only rows 21-24 of that screen are displayed. The charset shares $8000 with its own screen and the tables from $8200, which is why it holds only 64 characters: digits at 8-17 ($86F0), the bar pieces at $20 and $34-$3A ($8649), letters and the 007 picture. The panel rows are ordinary text: extended background mode is on only from line $CF to $DA, together with multicolour, which blanks those lines ($128C, $11BB)."
   },
   {
    "address": 33280,
@@ -9806,7 +9806,7 @@
   {
    "address": 33792,
    "type": "line",
-   "text": "Runs every object once a pass: the 32 slots of 26 bytes from $96E2, the player's car first. A slot whose y (+2) is 0 is free. For each, keeps y as the previous y (+17) and calls the object's handler (+13/+14) with ($0E) pointing at the slot and $8A holding its y, returning to $842C. Then moves it: y by its y speed (+6) and the scroll speed $82, x by its x speed (+5), held to 1-255. An object that leaves the top or bottom is freed with its hardware sprite ($84A2). Then steps its animation ($84C3)."
+   "text": "Runs every object once a pass: the 32 slots of 26 bytes from $96E2, the player's car first. A slot whose y (+2) is 0 is free. For each, keeps y as the previous y (+17) and calls the object's handler (+13/+14) with ($0E) pointing at the slot and $8A holding its y, returning to $842C. Then moves it: y by its y speed (+6) and the scroll speed $82, x by its x speed (+5) : moving left, x is turned back (x speed 1) before it would fall below 9; moving right past 255, x is held at $FF with x speed $FF. An object that leaves the top or bottom is freed with its hardware sprite ($84A2). Then steps its animation ($84C3)."
   },
   {
    "address": 33925,
@@ -9871,12 +9871,12 @@
   {
    "address": 34304,
    "type": "line",
-   "text": "$8600 keeps X in the busy wait ($1130); $8601/$8602 hold the end-of-frame routine's address, $119F by default ($11B1)."
+   "text": "$8600 keeps X in the busy wait ($1130); $8601/$8602 hold the end-of-frame routine's address, $119F by default ($1185; $11B1, which could change it, is never called)."
   },
   {
    "address": 34305,
    "type": "line",
-   "text": "The low byte of the routine the interrupt jumps to at the end of each frame (JMP ($8601) at $12EF), set by $11B1."
+   "text": "The low byte of the routine the interrupt jumps to at the end of each frame (JMP ($8601) at $12EF), set to $119F by the interrupt installer ($1185); $11B1 could set another, but nothing calls it."
   },
   {
    "address": 34306,
@@ -10041,7 +10041,7 @@
   {
    "address": 34905,
    "type": "line",
-   "text": "The value for $D011 at the panel for each fine-scroll value: extended background mode with the matching vertical scroll."
+   "text": "The value for $D011 at the panel for each fine-scroll value: extended background mode with the matching vertical scroll, which with multicolour on blanks the lines from $CF to the panel."
   },
   {
    "address": 34913,
@@ -10071,7 +10071,7 @@
   {
    "address": 36051,
    "type": "line",
-   "text": "Section 3's spawn list: repeated event 4 keeps the sea bed's sixteen rows looping while the enemies of routines 25, 29 and 30 come."
+   "text": "Section 3's spawn list: the divers of routine 17 (29 entries) and pickups of routine 18 (7), routines 25, 29 and 30 (two each), event 5 twice, and event 4 seven times, which sends the map back to its first row at $96BE."
   },
   {
    "address": 36207,
@@ -10361,7 +10361,7 @@
   {
    "address": 60461,
    "type": "line",
-   "text": "A pattern byte. Below $80 a note ($ED2D). $A0: a rest of the next byte's length, with the gate released. $A1 and $A2: turn the voice's filter routing on or off ($E987, bits $F14A). $90-$9F: picks the arpeggio table ($E9B0, 8 bytes each). $BF: ends a slide. $C0 and up: a slide, with its direction in bit 5 and delay, size (two bytes) and length from the next bytes. $80-$8F: an instrument ($ECC4)."
+   "text": "A pattern byte. Below $80 a note ($ED2D). $A0: a rest of the next byte's length, with the gate released. $A1 and $A2: turn the voice's filter routing on or off ($E987, bits $F14A). $90-$9F: picks the arpeggio table ($E9B0, 8 bytes each). $BF: ends a slide. $C0 and up: a slide, with its direction in bit 5 and its delay in the low five bits ($EC85), then its size (two bytes) and length from the next three bytes. $80-$8F: an instrument ($ECC4)."
   },
   {
    "address": 60612,
@@ -10501,7 +10501,7 @@
   {
    "address": 62075,
    "type": "line",
-   "text": "The patterns: notes (below $80, each followed by its length), instruments ($80-$8F), arpeggios ($90-$9F), rests ($A0), filter switches ($A1, $A2), slides ($C0 up) and $FF to end. Addresses at $F407 (low) and $F423 (high)."
+   "text": "The patterns: notes (below $80, each followed by its length), instruments ($80-$8F), arpeggios ($90-$9F), rests ($A0) and $FF to end. The player also reads filter switches ($A1, $A2) and slides ($BF, $C0 up), which no pattern here uses. Addresses at $F407 (low) and $F423 (high)."
   },
   {
    "address": 62471,
@@ -10546,7 +10546,7 @@
   {
    "address": 62623,
    "type": "line",
-   "text": "The voices' order lists: pattern numbers, $E8 and a volume, commands with bit 7 set, and $FF to end the tune."
+   "text": "The voices' order lists, 48 for the 16 tunes: pattern numbers, transpose ($80 and a value), repeat ($A2-$AC) and $FF to end. The player also reads detune and instrument-map commands, which no list here uses."
   },
   {
    "address": 62850,
@@ -10601,7 +10601,7 @@
   {
    "address": 62914,
    "type": "line",
-   "text": "The arpeggio tables, 8 bytes each, read by $EDEC."
+   "text": "The arpeggio tables, 8 bytes each, read at $EDCC (the note start) and $EDEC; number 0 means none, so the first table in use is at $F5CA. $F5C2-$F5C9 are bytes 1 to 8 of instrument 7 ($F5C1)."
   },
   {
    "address": 62992,
