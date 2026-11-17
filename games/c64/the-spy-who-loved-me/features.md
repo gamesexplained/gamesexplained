@@ -30,7 +30,7 @@ Sources:
 | Underwater: bolts, torpedoes, laser (manual) | confirmed | stores `$62-$64` moved to `$5C-$5E` by `section_3` `$1A6A` |
 | Scene 5: wet bike on the open sea (manual, Zzap!64) | live | section 4, `reference/open-sea.png` |
 | Game wraps round after the last stage (Zzap!64) | confirmed | `section_end` `$26E4` back to section 0 |
-| Innocent people cost points (Commodore Format: 50) | differs | `hit_person` `$2F85` takes 500 |
+| Innocent people cost points (Commodore Format: 50) | differs | `hit_person` `$2F85` takes 500 and shows a -50 sign |
 | Smoke screen as a rear defence (manual) | confirmed | `make_smoke` `$391D`, `$5A` |
 | Scenes 3, 4 and 6 (supertanker, puzzle, Jaws) | open | marked 16-bit only in the manual; no trace in the C64 code or data |
 | James Bond theme (HVSC tune 1) | confirmed | tune 0 at `tune_table` `$F43F`; `test_music.js` |

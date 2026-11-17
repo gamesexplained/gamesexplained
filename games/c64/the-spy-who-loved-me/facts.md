@@ -93,7 +93,8 @@ parts: `main`, the game, and `overlay`, the 2 KB of code swapped in at
 - Score: every scrolled row adds the speed's points from `$8603`, so
   faster driving scores more (`$0D0D`). Destroying an object adds its
   value (`$2C9F`); the signs that float up show a tenth of it.
-  Running over a person (collision kind 5) takes 500 off (`$2F85`).
+  Running over a person (collision kind 5) takes 500 off, stopping at
+  zero, and floats a -50 sign (frame `$A4`, `$2FF8`) (`$2F85`).
 - Armour (`$96F0`, the DAM bar) starts full at `$FF`. Collisions take 5
   or 10 off (`$2EE0`, `$2F2C`, `$33AC`); smoke costs one per puff
   (`$391D`). At 0 the car crashes.
@@ -114,6 +115,11 @@ parts: `main`, the game, and `overlay`, the 2 KB of code swapped in at
 - Enemies come from spawn lists keyed to the scroll distance (`$0C17`,
   `$88A4`): 32 spawn routines by the low five bits of each entry
   (`$8EB3`).
+- Every start of a stage, a restart after a death included, clears the
+  intercept missiles `$5B`, the sea-bed weapons in use `$5C-$5E`, the
+  extra shots `$5F-$61` and the sub capability `$65` (`reset_car`,
+  `$1ADF`); pursuit missiles `$59` and smoke `$5A` are kept. A death
+  also empties the sea-bed stores `$62-$64` (`$3979`).
 - Losing a life shows "bad show james" and restarts the section; the
   last shows "game over" and the high-score table (`$3979`, `$4187`).
 
