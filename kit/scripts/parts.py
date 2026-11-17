@@ -44,6 +44,9 @@ address space of its own. A part that lies over another keeps its own
 ranges even where a load over it writes some of them again: a program
 that replaces the first pages of the game for a while holds other bytes
 than the game does there, so each counts its own, in its own snapshot.
+The part at the bottom, which names none, may list "ranges" for the same
+reason: addresses where its snapshot holds its own bytes (sprites, say)
+that a load over it swaps out for a while; it keeps them.
 
 A bank that the machine switches into a window of the CPU's addresses,
 such as one bank of a cartridge's ROM or of a 128K machine's RAM, is a part
@@ -252,8 +255,11 @@ def elsewhere(P, p):
                 a = end + 1
     # a bank above shows other bytes than RAM at its addresses: the RAM there stays this part's
     lent = sorted((lo, hi, q["title"]) for q in above(P, p) if q.get("bank") is None for lo, hi in ranges(q))
-    if own:
-        lent = [(a, b, who) for lo, hi, who in lent for a, b in _gaps(lo, hi, own)]
+    # the part at the bottom may list "ranges" too: addresses its own snapshot holds bytes of its own
+    # at, which a load over it swaps out for a while (sprites while a shop's code is in), so it keeps them
+    kept = own or ([] if lower else ranges(p))
+    if kept:
+        lent = [(a, b, who) for lo, hi, who in lent for a, b in _gaps(lo, hi, kept)]
     merged = []
     for lo, hi, who in lent:    # several parts at the same addresses (one level after another) are one range
         if merged and lo <= merged[-1][1] + 1:

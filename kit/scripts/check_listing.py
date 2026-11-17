@@ -232,9 +232,10 @@ def check_parts(gdir):
         elif p["over"] and started(p) and not ranges(p):   # a part not analysed need not know them
             errs.append(f'part {p["id"]} lies over {p["over"]} but its part.json has no "ranges": '
                         "say which addresses its load owns")
-        elif not p["over"] and ranges(p):
-            errs.append(f'part {p["id"]} has "ranges" but lies over no part: name the part beneath it as "over", '
-                        "or drop the ranges")
+        elif not p["over"] and ranges(p) and not any(q["over"] == p["id"] for q in P):
+            # the part at the bottom lists ranges only to keep its own bytes where a load over it swaps them out
+            errs.append(f'part {p["id"]} has "ranges" but lies over no part and no part lies over it: name the part '
+                        'beneath it as "over", or drop the ranges')
         if p.get("bank") is not None and not p["over"]:
             errs.append(f'part {p["id"]} is bank {p["bank"]} but no part sees it: name the part whose code reads it '
                         'as its "seen_by"')
