@@ -10,7 +10,7 @@
 @media(max-width:650px){.dd-pair{grid-template-columns:1fr}}
 </style>
 <!-- tabs -->
-<header class="hero"><p class="eyebrow">{{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">Two C64 disks show different names on the title screen and share the same six level files. One puts a game-over screen between a lost run and the title.</p></header>
+<header class="hero"><p class="eyebrow">{{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">Two C64 disks show different names on the title screen. Inside both is the same street-fighting engine and the same six level files.</p></header>
 <main class="wrap">
 
 <section id="editions"><h2>Two title screens</h2>
@@ -24,12 +24,89 @@
 <div class="plate dd-pair"><figure><img src="reference/to-mission.png" width="384" height="272" alt="A player at the garage in the first scene"><figcaption>The opening scene, captured on the TO disk in VICE.</figcaption></figure></div>
 <p>The lone fighter moves with a joystick in port 2. The input routine at <code>$3450</code> reads that port. On both disks, holding right moves the fighter along the street, while down moves him toward the bottom of the screen.</p>
 <p>The game draws the street in small characters. The routine at <code>$6049</code> copies 40 characters at a time from the map, then jumps ahead to the next row. The <a href="levels.html">level browser</a> compares this background with the game in motion.</p>
+<p>The two loaders take different paths at the end of a lost run. See the <a href="discoveries.html#game-over">Game Over comparison</a>.</p>
 </section>
-<section id="restart" data-part="loader-to"><h2>TO shows Game Over</h2>
-<p>Both editions reload the title when the game-over path runs. On TO, the loader first writes the words GAME OVER to the screen and holds them there. The added display begins at <code>$8100</code>. On AD, the same game-over transition goes back to the title without this screen.</p>
-<div class="plate dd-pair"><figure><img src="reference/to-game-over.png" width="384" height="272" alt="White Game Over lettering in the middle of a black screen"><figcaption>TO, captured during a test of the game's game-over transition.</figcaption></figure></div>
+<section id="sound" data-part="resident"><h2>Title music and SID cues</h2>
+<div id="dd-sound" class="plate"><p>Loading the music driver.</p></div>
+<p>The title and ending share a tune. Clearing a scene queues a short tune before the next load. The game calls its sound driver about 50 times a second on PAL. The player runs that driver on the listing's bytes and sends its writes to a model of the C64 sound chip.</p>
+<p>The <a href="source-resident.html#0C20">selection table</a> gives the driver three pointers, one per voice. Select a cue to see the voices change as it plays. Some of the shortest cues have pitches laptop speakers may barely reproduce.</p>
 </section>
 <section id="status"><h2>What the analysis covers</h2>
 <p>Both programs were run through all six level loads and the ending. The two disks contain matching copies of the level resources, the colour transfer routine, and the ending. The Source tab records the parts that were captured. Combat, the complete sound selection rules, and the remaining data formats are open.</p>
 </section>
 </main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="../../lib/sid.js"></script>
+<script>
+// dd-sid-driver
+function createDoubleDragonDriver(program, C64Cpu) {
+  const sid = new Uint8Array(25);
+  const writes = [];
+  const times = [];
+  let cpu;
+  let startCycle;
+  let firstFrame;
+  const io = {
+    read(address) {
+      throw new Error('Unexpected sound I/O read at $' + address.toString(16));
+    },
+    write(address, value) {
+      const register = address - 0xD400;
+      if (register < 0 || register >= sid.length) {
+        throw new Error('Unexpected sound I/O write at $' + address.toString(16));
+      }
+      sid[register] = value;
+      writes.push(register, value);
+      times.push(cpu.cycles - startCycle);
+    }
+  };
+  function clearWrites() {
+    writes.length = 0;
+    times.length = 0;
+    startCycle = cpu.cycles;
+  }
+  return {
+    sid, writes, times,
+    init(selection) {
+      const memory = new Uint8Array(65536);
+      memory.set(program, 0x0344);
+      cpu = new C64Cpu.CPU(memory, {port: 0x35, io});
+      sid.fill(0);
+      clearWrites();
+      cpu.call(0x040E, {x: selection});
+      firstFrame = true;
+    },
+    play() {
+      if (!firstFrame) clearWrites();
+      firstFrame = false;
+      if (cpu && cpu.m[0x048E] === 0) cpu.call(0x048D);
+    },
+    stop() {
+      if (!cpu) return;
+      clearWrites();
+      cpu.call(0x0485);
+      firstFrame = false;
+    },
+    playing() {
+      return !!cpu && cpu.m[0x048E] === 0;
+    }
+  };
+}
+// end dd-sid-driver
+(async function () {
+  const root = document.getElementById('dd-sound');
+  try {
+    const {ram} = await C64.load('parts/resident/listing.json');
+    C64Sid.mount(root, {
+      driver: createDoubleDragonDriver,
+      data: ram.slice(0x0344, 0x1518),
+      tunes: ['Title and ending', 'Scene clear', ...Array.from({length: 10}, (_, i) => 'Cue ' + (i + 2))],
+      filter: '6581',
+      bounce: false
+    });
+  } catch (error) {
+    root.textContent = 'The sound driver could not be loaded.';
+  }
+})();
+</script>

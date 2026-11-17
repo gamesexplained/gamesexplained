@@ -23,7 +23,7 @@ These byte comparisons used the kit's G64 and VSF readers. Startup files were ex
 | `CM` | `$1AFA–$2BFF` | Identical disk files; both first-mission snapshots contained the complete payload at its header address. It replaces much of `IN`. |
 | `L0`–`L5` | Header starts `$8600` or `$8E00` | All six files match byte for byte across disks. At the gameplay entry stop each payload matches the disk apart from 16 bytes in the two sprite-pointer areas at `$C3F8–$C3FF` and `$C7F8–$C7FF`. |
 | `ED` | `$A000–$B700` | Identical disk copies; the ending-entry snapshots contain all 5,889 payload bytes unchanged. Execution enters at `$B500`. |
-| TO track 35, sector 9 | No directory owner | Allocated on TO. Both disks contain the same 256 bytes at this address: one $4B followed by 255 copies of $01. Its use is unresolved. |
+| TO track 35, sector 9 | No directory owner | Allocated on TO. Both disks contain the same 256 bytes at this address: one $4B followed by 255 copies of $01. The original allocation marks it used. Replacing only this payload in a test copy left boot and all seven native level or ending loads intact. |
 
 ## Reaching the overlays
 

@@ -5,26 +5,31 @@
 <style>
 .dd-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
 .dd-pair figure{margin:0}.dd-pair canvas,.dd-pair img{display:block;width:100%;height:auto;image-rendering:pixelated}
-.dd-controls{display:flex;flex-wrap:wrap;gap:.7rem;align-items:center}
+.dd-controls{display:flex;flex-wrap:wrap;gap:.7rem;align-items:center}.dd-controls[hidden]{display:none}
 .dd-controls select{max-width:100%}.dd-controls label{display:flex;gap:.5rem;align-items:center}
 @media(max-width:650px){.dd-pair{grid-template-columns:1fr}}
 </style>
 <!-- tabs -->
-<header class="hero"><p class="eyebrow">{{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">Choose a scene to see the opening background and compare it with the original game running from either disk.</p></header>
+<header class="hero"><p class="eyebrow">{{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">Pan across the scenery stored on the disks. The VICE capture shows where the fighter enters each scene.</p></header>
 <main class="wrap">
 
-<section id="scenes" data-part="resident"><h2>Where each scene starts</h2>
+<section id="scenes" data-part="resident"><h2>Explore the stored scenery</h2>
 <div class="plate">
 <div class="dd-controls"><label for="dd-stage">Scene</label><select id="dd-stage"><option value="0">L0 · Garage</option><option value="1">L1 · Fence</option><option value="2">L2 · Brick wall</option><option value="3">L3 · Cliff path</option><option value="4">L4 · Entrance</option><option value="5">L5 · Interior</option><option value="6">ED · Ending</option></select>
 <label for="dd-version">Disk for capture</label><select id="dd-version"><option value="to">TO · Mastertronic title</option><option value="ad">AD · Arcadia Software title</option></select>
 <label><input type="checkbox" id="dd-grid"> Character grid</label></div>
+<div id="dd-position" class="dd-controls">
+<label>Column <input id="dd-column" type="range" min="0" max="200" value="0"> <output id="dd-column-value" for="dd-column">0</output></label>
+<label>Row <input id="dd-row" type="range" min="0" max="27" value="0"> <output id="dd-row-value" for="dd-row">0</output></label>
+<button id="dd-reset" type="button">Reset to opening</button>
+</div>
 <div class="dd-pair">
-<figure id="dd-rebuilt"><h3 id="dd-map-title">L0 · Garage background</h3><canvas id="dd-map" width="320" height="192" role="img" aria-labelledby="dd-map-title"></canvas><figcaption>Reconstructed opening background. The fighter and score panel are separate.</figcaption></figure>
+<figure id="dd-rebuilt"><h3 id="dd-map-title">L0 · Garage background</h3><canvas id="dd-map" width="320" height="192" role="img" aria-labelledby="dd-map-title"></canvas><figcaption>Stored background drawn with the character set loaded at the start of the scene.</figcaption></figure>
 <figure><h3 id="dd-shot-title">L0 · Garage in VICE</h3><img id="dd-shot" src="reference/to-scene-0.png" width="384" height="272" alt="Original TO game capture of the garage scene"><figcaption>Captured after the game loaded the selected scene and ran for several frames. Later scenes were reached with an assisted level change.</figcaption></figure>
 </div>
 <p id="dd-note" aria-live="polite"></p>
 </div>
-<p>The renderer at <code>$6049</code> reads 40 character codes from each row, then advances by 240 bytes. A second table at <code>$8E00</code> supplies the colour for each code. The <code>$5FD3</code> table sets the starting position. L1 and L3 start farther down in their stored backgrounds.</p>
+<p>The renderer at <code>$6049</code> reads 40 character codes from each row, then advances by 240 bytes. A second table at <a id="dd-colour-link" href="source-l0.html#8E00">$8E00</a> supplies the colour for each code. The <code>$5FD3</code> table sets the starting position. L1 and L3 start farther down in their stored backgrounds. The controls also show stored rows outside the gameplay camera.</p>
 </section>
 </main>
 
@@ -49,12 +54,18 @@ function mapCell(ram, base, col, row) {
   $('shot').alt = 'Original ' + v.toUpperCase() + ' game capture of ' + title;
   $('rebuilt').hidden = i === 6;
   $('grid').disabled = i === 6;
+  $('colour-link').href = i === 6 ? 'source-l0.html#8E00' : 'source-l' + i + '.html#8E00';
+  $('position').hidden = i === 6;
   if (i === 6) { $('note').textContent = 'The ending uses its own renderer.'; return; }
   $('map-title').textContent = title + ' background';
   try {
    const {ram,has} = await C64.load('parts/l' + i + '/listing.json');
    if (token !== generation) return;
-   const [base,c1,c2] = SCENES[i], font = ram.subarray(0xc800,0xd000), ctx = $('map').getContext('2d');
+   const [,c1,c2] = SCENES[i], font = ram.subarray(0xc800,0xd000), ctx = $('map').getContext('2d');
+   const col = Number($('column').value), row = Number($('row').value);
+   const base = 0x9000 + row * 240 + col;
+   $('column-value').value = col;
+   $('row-value').value = row;
    for (let row=0;row<24;row++) for (let col=0;col<40;col++) {
     const {code,colour} = mapCell(ram,base,col,row);
     if (!has[base + row*240 + col] || !has[0xc800 + code*8] || !has[0x8e00+code]) throw Error('This stage lacks the listing bytes for the preview.');
@@ -75,6 +86,15 @@ function mapCell(ram, base, col, row) {
  const query=new URLSearchParams(location.search);
  if (/^[0-6]$/.test(query.get('scene') || '')) stage.value=query.get('scene');
  if (query.get('disk')==='ad') disk.value='ad';
- [stage,disk,$('grid')].forEach(el=>el.addEventListener('change',show));show();
+ function resetPosition() {
+  $('column').value = 0;
+  $('row').value = SCENES[Number(stage.value)] ? (SCENES[Number(stage.value)][0] - 0x9000) / 240 : 0;
+  show();
+ }
+ stage.addEventListener('change', resetPosition);
+ $('reset').addEventListener('click', resetPosition);
+ for (const el of [disk, $('grid')]) el.addEventListener('change', show);
+ for (const el of [$('column'), $('row')]) el.addEventListener('input', show);
+ resetPosition();
 }());
 </script>

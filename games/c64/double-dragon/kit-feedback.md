@@ -13,6 +13,8 @@ None.
 
 Loading one overlay from the opening snapshot can leave bytes from the opening level where a natural route would retain bytes from an intermediate overlay. The ordered capture caught this at `$8600–$8DFF`, which stays loaded after L1. Compare the payload ranges along both routes before using a direct jump as a reference for other levels.
 
+A checkpoint from one build can give a false negative on another. The TO Game Over drawing address never ran in AD, whose loader uses a different address to draw a pixel-identical screen. Compare the visible result and look for the corresponding writer in each build before calling a feature absent.
+
 ## Maintainer asks
 
 None.

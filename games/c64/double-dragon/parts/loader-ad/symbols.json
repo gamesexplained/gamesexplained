@@ -85,7 +85,7 @@
   {
    "start": 5476,
    "end": 5484,
-   "type": "Undefined"
+   "type": "Screencode Text"
   },
   {
    "start": 5485,
@@ -141,9 +141,9 @@
  "symbols": [
   {
    "address": 5408,
-   "name": "j_1520",
+   "name": "ad_choose_load_display",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 5415,
@@ -153,33 +153,33 @@
   },
   {
    "address": 5421,
-   "name": "b_152D",
+   "name": "ad_set_up_game_over_display",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 5440,
-   "name": "b_1540",
+   "name": "ad_draw_game_over",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 5456,
-   "name": "b_1550",
+   "name": "ad_hold_game_over",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 5476,
-   "name": "f_1564",
+   "name": "ad_game_over_text",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 5485,
-   "name": "j_156D",
+   "name": "ad_hide_game_over",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6496,
@@ -231,15 +231,15 @@
   },
   {
    "address": 6687,
-   "name": "a_1A1F",
+   "name": "ad_kernal_load_low_operand",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6689,
-   "name": "a_1A21",
+   "name": "ad_kernal_load_high_operand",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6705,
@@ -249,9 +249,9 @@
   },
   {
    "address": 6706,
-   "name": "f_1A32",
+   "name": "ad_file_load_word_highs",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6725,
@@ -261,24 +261,54 @@
   },
   {
    "address": 6726,
-   "name": "f_1A46",
+   "name": "ad_file_second_letters",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6745,
-   "name": "a_1A59",
+   "name": "ad_active_file_first_letter",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6746,
-   "name": "a_1A5A",
+   "name": "ad_active_file_second_letter",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   }
  ],
  "comments": [
+  {
+   "address": 5408,
+   "type": "line",
+   "text": "Checks disk selector 6 before exchanging the staging space. Other selectors take the exchange path directly."
+  },
+  {
+   "address": 5421,
+   "type": "line",
+   "text": "Selects VIC bank $8000 and the screen matrix at $8800. Turns the display on before it prints nine characters."
+  },
+  {
+   "address": 5440,
+   "type": "line",
+   "text": "Copies GAME OVER from $1564 to the screen at $89EF and writes white to each cell's colour RAM. An original AD run stopped here and drew the same pixels as TO's separate routine at $811D."
+  },
+  {
+   "address": 5456,
+   "type": "line",
+   "text": "Delays with two eight-bit counters after drawing the message. Once the outer counter reaches $FF, branches to the load path via $156D."
+  },
+  {
+   "address": 5476,
+   "type": "line",
+   "text": "Nine screen codes spelling GAME OVER, copied by $1540 into the display."
+  },
+  {
+   "address": 5485,
+   "type": "line",
+   "text": "Turns off the display, then rejoins the normal file transition at $1527."
+  },
   {
    "address": 6496,
    "type": "line",
@@ -297,7 +327,17 @@
   {
    "address": 6636,
    "type": "line",
-   "text": "Doubles the selector from $19B7, loads the destination operand pair from $1A31 and filename from $1A45, configures logical file and drive 8, then calls KERNAL LOAD and jumps to the exchange routine. This path returned to the title without taking TO's game-over screen routine in the live comparison."
+   "text": "Doubles the selector from $19B7, loads the destination operand pair from $1A31 and filename from $1A45, configures logical file and drive 8, then calls KERNAL LOAD and jumps to the exchange routine."
+  },
+  {
+   "address": 6687,
+   "type": "line",
+   "text": "Operand of the LDX at $1A1E. The loader writes the selected file destination's low byte here before calling KERNAL LOAD."
+  },
+  {
+   "address": 6689,
+   "type": "line",
+   "text": "Operand of the LDY at $1A20. The loader writes the selected file destination's high byte here before calling KERNAL LOAD."
   },
   {
    "address": 6705,
@@ -305,9 +345,29 @@
    "text": "Ten little-endian starting addresses copied into the LDX and LDY immediate operands of KERNAL LOAD."
   },
   {
+   "address": 6706,
+   "type": "line",
+   "text": "The loader reads the high byte of the same words whose low bytes start at $1A31, using the selector times two as the index."
+  },
+  {
    "address": 6725,
    "type": "line",
    "text": "Ten two-byte names. The two bytes at $1A59 hold the active name passed to SETNAM."
+  },
+  {
+   "address": 6726,
+   "type": "line",
+   "text": "Second characters in the inline file names. The loader reads them every two bytes."
+  },
+  {
+   "address": 6745,
+   "type": "line",
+   "text": "First of the two filename bytes passed to KERNAL SETNAM, filled when a selector is handled."
+  },
+  {
+   "address": 6746,
+   "type": "line",
+   "text": "Second filename byte in the same buffer. The loader copies it from the second-character table at $1A46."
   }
  ]
 }
