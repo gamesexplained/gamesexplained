@@ -38,3 +38,20 @@ The uncertainty pass benefited from `60-verify`’s instruction to check every r
 ## Silver review continuation
 
 The 60-verify rule “For each wrong comment” prompted a search across every part for the same gate/control wording, finding 21 occurrences. The rule about comments written from templates prompted a separate 20-comment generated supplement. The installed emulator was reused headlessly with dummy audio as requested. No kit change was needed.
+
+## Silver pass, 17 November 2026
+
+What changed what the run did:
+
+- `70-minisite`, "Plan the explanation", made the run list every lead before touching a page. The list put the six sound effects that the game never asks for, the airshaft's own outcome lines and the crack's changes to them on the pages; before it, they sat in the listing only.
+- `70-minisite`, "Discoveries", says a `Bug:` is shown happening from the start of its level with input. The doorway trap had first been seen from a captured floor state; the rule sent the run back to the start of the museum, and the trap reproduced from the rope with joystick and Space alone (`museum-trap-route.json`).
+- `75-review/reader.md`'s table of weak treatments ("A sound picker lists numbered effects") shaped the effect table: each effect named by what sets it off, with the request's address.
+- `kit/CHECKING.md` made the maintainer's sample quick to run and to record; `models.py check` confirmed the row.
+
+Where the kit fell short, and the change made:
+
+- `10-orient` told the run to compare the code in play with another release's and mark what differs as the crackers'. It did not say that a crack's patch to the game's own code is worth playing on the original. Here the only such patch hid a bug that only the original has. `10-orient`, step 1, now says so, and `kit/lessons/2026-11-17-crack-patch-hid-a-bug.md` records it.
+
+For a maintainer (not changed):
+
+- None.
