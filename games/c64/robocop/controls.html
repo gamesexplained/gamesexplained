@@ -1,0 +1,114 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoboCop: controls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.ft-grid{display:grid;gap:6px}
+.ft-grid button{padding:0;position:relative;line-height:0}
+.ft-grid canvas{width:100%;image-rendering:pixelated;display:block}
+.ft-tag{position:absolute;left:3px;top:3px;font:500 11px/1.3 var(--fm);background:rgba(255,255,255,.88);color:var(--ink);border-radius:3px;padding:1px 4px}
+.ft-mark{position:absolute;right:3px;bottom:3px;font:500 10px/1.3 var(--fm);background:var(--chip);color:var(--chip-ink);border-radius:3px;padding:1px 4px}
+.ft-big canvas{width:100%;max-width:768px;image-rendering:pixelated;display:block;margin:0 auto}
+.ft-table{border-collapse:collapse;font-size:14px;width:100%}
+.ft-table td,.ft-table th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.ft-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.ft-four{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 20px}
+.ft-four .plate,.ft-two .plate{margin:0;padding:12px}
+.ft-shot,.ft-px{width:100%;height:auto;image-rendering:pixelated;display:block}
+.ft-wide{max-width:960px;margin:0 auto}
+.plate{margin:0 0 22px}
+.ft-scroll{overflow-x:auto}
+.ft-lab{display:block;font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:6px 0}
+.ft-range{width:100%;max-width:520px;display:block}
+.ft-controls{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:12px 0 0}
+.ft-read{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin:12px 0 0}
+.ft-bar-out{height:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:10px 0 0;max-width:520px}
+.ft-bar-out div{height:100%;background:repeating-linear-gradient(45deg,var(--amber) 0 6px,#e08a3c 6px 12px)}
+.ft-meter{position:relative;width:110px;height:18px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.ft-meter span{position:absolute;left:0;top:0;bottom:0;background:var(--cyan);opacity:.35}
+.ft-meter b{position:relative;font:500 12px/18px var(--fm);padding-left:6px}
+.ft-objs{white-space:nowrap}
+.ft-obj{display:inline-flex;flex-direction:column;align-items:center;margin:0 3px 0 0;padding:2px;background:#222;border-radius:4px;vertical-align:top}
+.ft-obj i{font:500 10px/1.2 var(--fm);color:#fff;font-style:normal}
+.ft-swapped{outline:2px dashed var(--amber);outline-offset:-2px}
+.ft-swapped i{text-decoration:line-through;text-decoration-color:var(--amber)}
+.ft-table canvas{background:#222;border-radius:4px;image-rendering:pixelated}
+.ft-dead{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.ft-dead button{font-size:12px;padding:4px 8px}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.ft-two,.ft-four,.ft-controls{grid-template-columns:1fr}}
+sup.fn{font-size:.7em;line-height:0}
+sup.fn a{text-decoration:none}
+sup.fn + sup.fn::before{content:","}
+.overview-shot{margin:22px 0}
+.overview-shot img{width:100%;max-width:768px;height:auto;aspect-ratio:384/272;image-rendering:pixelated;display:block}
+.overview-shot figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px;max-width:768px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1988 · Data East</p>
+  <h1>RoboCop: controls</h1>
+  <p class="sub">A joystick in port 2, the space bar, and RUN/STOP. Nothing else on the keyboard does anything, apart from two words typed on the title screens.</p>
+</header>
+<main class="wrap" data-part="">
+
+<section id="joystick">
+  <p class="fig">01 · The joystick</p>
+  <h2 class="t">Walking, aiming, and jumping</h2>
+  <p class="lede">Once a frame the game reads joystick port 2 and uses its five switches (up, down, left, right, and fire) as a number from 0 to 31. That number picks a routine from a move table, one address for each value (<span data-part="level-1"><code>$8B3C</code></span> in level one). The stage decides which table is used: the walking stages have one, the crosshair stages another, and stage six, where RoboCop punches, a third.</p>
+  <div class="plate ft-scroll"><table class="ft-table">
+    <thead><tr><th>Joystick</th><th>On the walking stages</th></tr></thead>
+    <tbody>
+      <tr><td>Left or right</td><td>Walk that way, aiming straight ahead; on the stairs, keep climbing</td></tr>
+      <tr><td>Up</td><td>Aim up</td></tr>
+      <tr><td>Up and left, up and right</td><td>Climb stairs going up that way, or else walk aiming up on the diagonal</td></tr>
+      <tr><td>Down</td><td>Duck</td></tr>
+      <tr><td>Down and left, down and right</td><td>Go down stairs that way, or else duck facing that way</td></tr>
+      <tr><td>Fire</td><td>Stop and fire the way he aims; against a door, punch it</td></tr>
+      <tr><td>Fire and up</td><td>Jump</td></tr>
+      <tr><td>Fire and down</td><td>Duck and fire, or fire along the stairs</td></tr>
+    </tbody></table>
+    <p class="cap">From the move table of level one at <span data-part="level-1"><code>$8B3C</code></span>; levels two and three have tables of their own that do the same. Each shot needs a new press of fire.</p></div>
+  <p>On stage six RoboCop cannot fire at ED-209 or Dick Jones; fire and down throws a punch instead. On a <a href="gameplay.html#hostage">hostage stage</a> the joystick moves a crosshair and fire shoots at it. On the <a href="gameplay.html#photofit">photofit</a> the joystick steps through the choices for a feature, and fire accepts it when it matches the suspect's (<span data-part="level-2"><code>$8DDD</code></span>).</p>
+</section>
+
+<section id="keys">
+  <p class="fig">02 · The keyboard</p>
+  <h2 class="t">Space and RUN/STOP</h2>
+  <p>During play the space bar pauses the game and a second press goes on. RUN/STOP gives up the level and goes back to its title screen. The game reads the keyboard by its own routine (<span data-part="level-1"><code>$E834</code></span>), which checks one key at a time; a key whose column stays low with no row selected is taken to be the joystick in port 1, and ignored.</p>
+  <p id="title">On level one's title screen the space bar switches the SOUNDTRACK SETTING between AURAL AMBIENCE and ATMOSPHERICS (<span data-part="level-1"><code>$84EA</code></span>). The first plays music during play; the second plays <a href="music.html#effects">sound effects</a> instead. The game has one or the other in play, never both, though the title and start-of-stage tunes play with either setting.</p>
+  <p>Fire starts the game. The title screen also listens for the letters of a word, <a href="discoveries.html#words">SUEDEHEAD</a> on level one's title and DISAPPOINTED on level two's, which skip to the next level.</p>
+</section>
+</main>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

@@ -99,8 +99,9 @@ named in `orientation.md`. Addresses are given with their part
 
 - One music driver by Jonathan Dunn. Each level carries its own copy at
   its own addresses, but the five tunes and fourteen sound effects are the
-  same: run on the kit's 6502 for 3,000 frames each, every tune and
-  effect writes the same values to the sound chip in all three levels.
+  same: run on the kit's 6502 (`test_music.js`, 6,000 frames of each tune
+  and 400 of each effect), every one writes the same values to the sound
+  chip in all three levels.
 - Space on the title switches SOUNDTRACK SETTING between AURAL AMBIENCE
   (music) and ATMOSPHERICS (sound effects); in play the game has one or
   the other (level-1 `title_toggle_sound` `$84EA`, `sound_option` `$A706`,
