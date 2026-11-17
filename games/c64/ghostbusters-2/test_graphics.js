@@ -1,159 +1,93 @@
 'use strict';
+// The Graphics tab draws every figure from two embedded blocks: each episode's sprite memory
+// and the tables that choose shapes from it. Both must be the listing's bytes, and the code
+// facts the cards rest on must hold in the listing.
 const assert = require('assert');
 const {CPU} = require('../../../kit/cpu/cpu6502.js');
 const {game} = require('../../../kit/scripts/port_check.js');
 const g = game(__dirname);
 const html = g.read('graphics.html');
-const match = html.match(/<script id="fireball-data" type="application\/json">([^<]+)<\/script>/);
-assert(match, 'the graphics page must include the sprite bytes');
-const shapes = JSON.parse(match[1]);
+const block = id => {
+  const m = html.match(new RegExp(`<script id="${id}" type="application/json">([^<]+)</script>`));
+  assert(m, `the graphics page must include ${id}`);
+  return JSON.parse(m[1]);
+};
+const hex = h => Array.from(h.match(/../g), x => parseInt(x, 16));
 const listing = g.listing('parts/broadway/listing.json');
-assert.equal(shapes.length, 3);
-for (let n = 0; n < shapes.length; n++) {
-  const address = 0x40c0 + n * 64;
-  assert.deepStrictEqual(shapes[n], Array.from(listing.ram.slice(address, address + 63)),
-    `sprite shape at $${address.toString(16)} must match the listing`);
-}
-console.log('OK - three Broadway sprite shapes match the listing');
-const charsetMatch = html.match(/<script id="charset-data" type="application\/json">([^<]+)<\/script>/);
-assert(charsetMatch, 'the graphics page must include the character sets');
-const sets = JSON.parse(charsetMatch[1]);
-assert.equal(sets.length, 2);
-for (let n = 0; n < sets.length; n++) {
-  const address = n ? 0x7800 : 0x7000;
-  assert.equal(sets[n].length, 2048);
-  assert.deepStrictEqual(sets[n], Array.from(listing.ram.slice(address, address + 2048)),
-    `character set at $${address.toString(16)} must match the listing`);
-}
-console.log('OK - both Broadway character sets match the listing');
-const airshaftMatch = html.match(/<script id="airshaft-charset-data" type="application\/json">([^<]+)<\/script>/);
-assert(airshaftMatch, 'the graphics page must include the airshaft character set');
-const airshaft = JSON.parse(airshaftMatch[1]);
 const airshaftListing = g.listing('parts/airshaft/listing.json');
-assert.equal(airshaft.length, 2048);
-assert.deepStrictEqual(airshaft, Array.from(airshaftListing.ram.slice(0x7000, 0x7800)),
-  'airshaft character set must match the listing');
-console.log('OK - airshaft character set matches the listing');
-const museumMatch = html.match(/<script id="museum-charset-data" type="application\/json">([^<]+)<\/script>/);
-assert(museumMatch, 'the graphics page must include the museum character set');
-const museum = JSON.parse(museumMatch[1]);
 const museumListing = g.listing('parts/museum/listing.json');
-assert.equal(museum.length, 2048);
-assert.deepStrictEqual(museum, Array.from(museumListing.ram.slice(0x7000, 0x7800)),
-  'museum character set must match the listing');
-console.log('OK - museum character set matches the listing');
-const slotsMatch = html.match(/<script id="airshaft-sprite-slots-data" type="application\/json">([^<]+)<\/script>/);
-assert(slotsMatch, 'airshaft sprite inspector has its data');
-const slots = JSON.parse(slotsMatch[1]);
-const expectedSlots = [
-  0x01, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0d, 0x0e,
-  ...Array.from({length: 0x7a}, (_, n) => n + 0x20),
-  ...Array.from({length: 4}, (_, n) => n + 0x9a),
-  ...Array.from({length: 10}, (_, n) => n + 0x9e),
-  ...Array.from({length: 12}, (_, n) => n + 0xa8),
-  0xb4,
-  ...Array.from({length: 6}, (_, n) => n + 0xb5),
-  ...Array.from({length: 5}, (_, n) => n + 0xbb),
-];
-assert.deepStrictEqual(slots.map(slot => slot.pointer), expectedSlots);
-for (const slot of slots) {
-  const start = 0x4000 + 64 * slot.pointer;
-  for (let i = 0; i < 63; i++) assert(airshaftListing.has[start + i]);
-  assert.deepStrictEqual(slot.bytes, Array.from(airshaftListing.ram.slice(start, start + 63)));
+const byPart = {airshaft: airshaftListing, broadway: listing, museum: museumListing};
+const bytes = (l, a, n) => Array.from(l.ram.slice(a, a + n));
+
+const banks = block('sprite-bank-data');
+for (const [name, l, start, length] of [['airshaft', airshaftListing, 0x4000, 0x3000], ['broadway', listing, 0x4000, 0x3000],
+  ['museum', museumListing, 0x4000, 0x3000], ['broadway-street', listing, 0xf000, 0x800], ['museum-panel', museumListing, 0x0d40, 0x280]]) {
+  assert.deepStrictEqual(hex(banks[name]), bytes(l, start, length), `${name} sprite memory must match the listing`);
 }
+assert.deepStrictEqual(Object.keys(banks).sort(), ['airshaft', 'broadway', 'broadway-street', 'museum', 'museum-panel']);
+console.log('OK - the sprite memory of all three episodes, the road frames and the museum panel match the listings');
+
+const tables = block('sprite-table-data');
+let count = 0;
+for (const part in tables) for (const address in tables[part]) {
+  const t = hex(tables[part][address]);
+  assert.deepStrictEqual(t, bytes(byPart[part], parseInt(address, 16), t.length), `${part} table at $${address}`);
+  count++;
+}
+console.log(`OK - ${count} shape tables match the listings`);
+
+// The airshaft panel: the raster handler at $90E7 sets five sprites on one line.
+const op = a => airshaftListing.ram[a];
+assert.equal(op(0x90fb), 0x17, 'sprites 0, 1, 2 and 4 are multicolour on the panel; 3 is single-colour');
+assert.deepStrictEqual([op(0x9105), op(0x910a)], [0x06, 0x0e], 'the panel multicolours');
+assert.deepStrictEqual([0x910f, 0x9114, 0x9119, 0x911e, 0x9123].map(op), [0x68, 0xf2, 0x80, 0xac, 0xda], 'the panel sprites’ places');
+assert.deepStrictEqual([0x9139, 0x913e, 0x9143, 0x9148, 0x914d].map(op), [0x07, 0x01, 0x03, 0x0c, 0x0a], 'the panel sprites’ colours');
+assert.deepStrictEqual([0x9152, 0x9157, 0x915c, 0x9161].map(op), [0x07, 0xb4, 0x09, 0x06], 'courage, cable, scoop and counts pointers');
+assert.deepStrictEqual(bytes(airshaftListing, 0x9165, 3), [0xa9, 0x01, 0x8d], 'the weapon number is the operand of the instruction that sets the picture');
+for (const a of [0x94c1, 0xa9e6, 0xab73]) assert.deepStrictEqual(bytes(airshaftListing, a, 3), [0xad, 0x66, 0x91], `$${a.toString(16)} reads the weapon number`);
+console.log('OK - the airshaft panel’s sprites, colours and places match the raster handler');
+
+// Pointer $A8 opens the hit sequence at $C6FF, and every reader steps its count before reading.
+const readers = [];
+for (let a = 0x0800; a < 0xfffd; a++) {
+  const r = airshaftListing.ram;
+  if (r[a + 1] === 0xff && r[a + 2] === 0xc6 && [0xad, 0xb9, 0xbd, 0xbe, 0xbc].includes(r[a]) && airshaftListing.has[a]) readers.push(a);
+}
+assert.deepStrictEqual(readers, [0xc6af, 0xc762, 0xc840, 0xc952, 0xca6d], 'the five readers of the hit sequence');
+for (const [inc, counter] of [[0xc697, 0xc621], [0xc74a, 0xc61f], [0xc81f, 0xc7b5], [0xc93c, 0xc90b], [0xca4a, 0xc908]]) {
+  assert.deepStrictEqual(bytes(airshaftListing, inc, 3), [0xee, counter & 0xff, counter >> 8], `$${inc.toString(16)} steps the count first`);
+}
+assert.equal(airshaftListing.ram[0xc6ff], 0xa8);
+console.log('OK - each of the five readers of the hit sequence steps past its first shape, $A8');
+
+// Broadway's knocked-down frames at $A283 begin with $96, and the same holds for its three readers.
+const downReaders = [];
+for (let a = 0x0800; a < 0xfffd; a++) {
+  const r = listing.ram;
+  if (r[a + 1] === 0x83 && r[a + 2] === 0xa2 && [0xad, 0xb9, 0xbd, 0xbe, 0xbc].includes(r[a]) && listing.has[a]) downReaders.push(a);
+}
+assert.deepStrictEqual(downReaders, [0xa27c, 0xa2e5, 0xa338], 'the three readers of the knocked-down frames');
+for (const [inc, counter, reset] of [[0xa257, 0x9c83, 0xa272], [0xa2c0, 0x9c84, 0xa2db], [0xa313, 0x9c85, 0xa32e]]) {
+  assert.deepStrictEqual(bytes(listing, inc, 3), [0xee, counter & 0xff, counter >> 8], `$${inc.toString(16)} steps the count first`);
+  assert.deepStrictEqual(bytes(listing, reset - 2, 5), [0xa9, 0x00, 0x8d, counter & 0xff, counter >> 8], `$${reset.toString(16)} resets the count to zero`);
+}
+assert.deepStrictEqual(bytes(listing, 0xa283, 22), [0x96, 0x97, 0x98, 0x99, 0x9a, 0x9b, 0x9c, 0x9d, ...Array(14).fill(0x08)]);
+console.log('OK - each of the three readers of the knocked-down frames steps past its first shape, $96');
+
 assert.equal(airshaftListing.ram[0xc730], 0xa7, 'sprite 6 alternate initializer selects slot $A7');
-assert.deepStrictEqual(Array.from(airshaftListing.ram.slice(0xcb63, 0xcb6b)), [0xb1, 0xb2, 0xb3, 0xb2, 0xae, 0xaf, 0xb0, 0xaf], 'sprite 4 frame sequences select the six added slots');
+assert.deepStrictEqual(bytes(airshaftListing, 0xcb63, 8), [0xb1, 0xb2, 0xb3, 0xb2, 0xae, 0xaf, 0xb0, 0xaf], 'the creature’s two sequences');
 const effectRam = airshaftListing.ram.slice();
 effectRam[0x94bd] = 0; effectRam[0xa767] = 1; effectRam[0xa76a] = 0;
 new CPU(effectRam, {port: 0x35}).call(0xa8a5);
-assert.deepStrictEqual([0xa976, 0xa991, 0xa9a7, 0xa9b9].map(address => effectRam[address]), [0x96, 0x97, 0x98, 0x99], 'sprite 5 effect patches all four pointers');
-console.log('OK - 169 airshaft sprite slots match the listing');
+assert.deepStrictEqual([0xa976, 0xa991, 0xa9a7, 0xa9b9].map(address => effectRam[address]), [0x96, 0x97, 0x98, 0x99], 'the shield routine patches all four arc pointers');
+console.log('OK - the dropping ghost, the creature and the shield arcs use the shapes the page draws');
 
-const poseMatch = html.match(/<script id="airshaft-pose-data" type="application\/json">([^<]+)<\/script>/);
-assert(poseMatch, 'airshaft pose viewer has its pointer records');
-const poses = JSON.parse(poseMatch[1]);
-assert.equal(poses.length, 30);
-for (let i = 0; i < poses.length; i++) {
-  assert.deepStrictEqual(poses[i], Array.from(airshaftListing.ram.slice(0x919f + 8 * i, 0x91a5 + 8 * i)));
-  for (const pointer of poses[i]) assert(pointer === 0x0f || expectedSlots.includes(pointer));
-}
-console.log('OK - 30 character arrangements match their pointer records');
-
-const motionMatch = html.match(/<script id="museum-motion-data" type="application\/json">([^<]+)<\/script>/);
-assert(motionMatch, 'museum movement inspector has its data');
-const motionShapes = JSON.parse(motionMatch[1]);
-assert.deepStrictEqual(motionShapes.map(shape => shape.pointer), Array.from({length: 8}, (_, n) => n + 0x7c));
-for (const shape of motionShapes) {
-  const start = 0x4000 + 64 * shape.pointer;
-  assert.deepStrictEqual(shape.bytes, Array.from(museumListing.ram.slice(start, start + 63)));
-}
-console.log('OK - eight museum movement shapes match the listing');
-
-const broadwayMotionMatch = html.match(/<script id="broadway-motion-data" type="application\/json">([^<]+)<\/script>/);
-assert(broadwayMotionMatch, 'Broadway movement inspector has its data');
-const broadwayMotionFrames = JSON.parse(broadwayMotionMatch[1]);
-assert.deepStrictEqual(broadwayMotionFrames.map(frame => frame.address), Array.from({length: 32}, (_, n) => 0xf000 + n * 64));
-for (const frame of broadwayMotionFrames) {
-  assert.deepStrictEqual(frame.bytes, Array.from(listing.ram.slice(frame.address, frame.address + 63)));
-}
-console.log('OK - 32 Broadway movement frames match the listing');
-
-const museumPairMatch = html.match(/<script id="museum-pair-data" type="application\/json">([^<]+)<\/script>/);
-assert(museumPairMatch, 'museum sprite-pair viewer has its data');
-const museumPairs = JSON.parse(museumPairMatch[1]);
-assert.equal(museumPairs.length, 8);
-for (let i = 0; i < museumPairs.length; i++) {
-  assert.deepStrictEqual(museumPairs[i].map(shape => shape.pointer), [museumListing.ram[0x9618 + i], museumListing.ram[0x9620 + i]]);
-  for (const shape of museumPairs[i]) {
-    const start = 0x4000 + 64 * shape.pointer;
-    assert.deepStrictEqual(shape.bytes, Array.from(museumListing.ram.slice(start, start + 63)));
-  }
-}
-console.log('OK - eight museum sprite pairs match the tables and listing');
-
-
-const broadwayAnimationMatch = html.match(/<script id="broadway-animation-data" type="application\/json">([^<]+)<\/script>/);
-assert(broadwayAnimationMatch, "Broadway animation shapes are embedded");
-const broadwayAnimation = JSON.parse(broadwayAnimationMatch[1]);
-assert.deepStrictEqual(broadwayAnimation.map(shape => shape.pointer), [0x08, 0x0c, ...Array.from({length: 28}, (_, i) => 0x28 + i), ...Array.from({length: 7}, (_, i) => 0x44 + i), ...Array.from({length: 11}, (_, i) => 0x4c + i), ...Array.from({length: 70}, (_, i) => 0x58 + i), ...Array.from({length: 32}, (_, i) => 0x9e + i)]);
-for (const shape of broadwayAnimation) {
-  const address = 0x4000 + 64 * shape.pointer;
-  assert.deepStrictEqual(shape.bytes, Array.from(listing.ram.slice(address, address + 63)));
-}
-for (let group = 0; group < 6; group++) {
-  const bytes = listing.ram.slice(0xc597 + 72 * group, 0xc597 + 72 * (group + 1));
-  const pointers = new Set(); let terminators = 0;
-  for (let i = 0; i < bytes.length; i += 2) {
-    if (bytes[i] === 0xff) { assert.equal(bytes[i + 1], 0xff); terminators++; }
-    else { assert.equal(bytes[i + 1], 0); pointers.add(bytes[i]); }
-  }
-  assert.equal(terminators, 4);
-  assert.deepStrictEqual([...pointers].sort((a, b) => a - b), Array.from({length: 8}, (_, i) => 0x60 + group * 8 + i));
-}
-console.log("OK - 150 Broadway animation slots and six sequence groups match the listing");
-
-const museumWalkMatch = html.match(/<script id="museum-walk-data" type="application\/json">([^<]+)<\/script>/);
-assert(museumWalkMatch, "museum walking frames are embedded");
-const museumWalk = JSON.parse(museumWalkMatch[1]);
-assert.deepStrictEqual(museumWalk.map(shape => shape.pointer), Array.from({length: 64}, (_, i) => 0x20 + i));
-for (const shape of museumWalk) {
-  const address = 0x4000 + shape.pointer * 64;
-  assert.deepStrictEqual(shape.bytes, Array.from(museumListing.ram.slice(address, address + 63)));
-}
-for (const [operand, base] of [[0xb46e, 0x48], [0xb4bf, 0x28], [0xb509, 0x20], [0xb564, 0x58], [0xb5b5, 0x38], [0xb5ff, 0x40], [0xb650, 0x50], [0xb69e, 0x30]]) {
-  assert.equal(museumListing.ram[operand], base);
-}
-console.log("OK - 64 museum walking frames match the listing and direction operands");
-
-const museumExtraMatch = html.match(/<script id="museum-extra-data" type="application\/json">([^<]+)<\/script>/);
-assert(museumExtraMatch, "additional museum sprite shapes are embedded");
-const museumExtra = JSON.parse(museumExtraMatch[1]);
-assert.deepStrictEqual(museumExtra.map(shape => shape.pointer), [...Array.from({length: 20}, (_, i) => 0x68 + i), ...Array.from({length: 19}, (_, i) => 0x84 + i), ...Array.from({length: 16}, (_, i) => 0x98 + i)]);
-for (const shape of museumExtra) {
-  const address = 0x4000 + shape.pointer * 64;
-  assert.deepStrictEqual(shape.bytes, Array.from(museumListing.ram.slice(address, address + 63)));
-}
-console.log("OK - 55 additional museum sprite shapes match the listing");
+const sets = block('charset-data');
+assert.equal(sets.length, 2);
+sets.forEach((set, n) => assert.deepStrictEqual(set, bytes(listing, n ? 0x7800 : 0x7000, 2048), `Broadway character set ${n + 1}`));
+assert.deepStrictEqual(block('airshaft-charset-data'), bytes(airshaftListing, 0x7000, 2048), 'airshaft character set');
+assert.deepStrictEqual(block('museum-charset-data'), bytes(museumListing, 0x7000, 2048), 'museum character set');
+console.log('OK - the character sets match the listings');
 
 const museumStatusMatch = html.match(/<script id="museum-status-data" type="application\/json">([^<]+)<\/script>/);
 assert(museumStatusMatch, "museum status shapes are embedded");

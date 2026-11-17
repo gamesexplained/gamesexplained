@@ -256,8 +256,18 @@ A reader that wrote none of the pages (claude-opus-5-5, brief `kit/skills/core/7
 
 Left, with the reason:
 
-- The Graphics tab rework (by episode, named shapes, animation) changes every section of the tab; it is in `TODO.md`.
+- The Graphics tab rework (by episode, named shapes, animation) changes every section of the tab; it was done next, at the contributor's request (below).
 - A demonstration of the two beam flags, a Broadway picture and a fatal-landing frame for the rope: the sections already have a demonstration or picture each, and the flags rule is now stated plainly. Not done in this pass.
 - The panel's item pictures are not named on the page: which picture is which was not checked against the frame. In `TODO.md`.
 - What the fireball does to the three walkers on Broadway is in `TODO.md`: the code sets a flag and moves the fireball back, and what the player sees was not observed.
 - The trap demonstration's asymmetry (walking right into a partner leaves only the step back; walking left leaves three ways) is shown by the demonstration's status line and not told in the prose.
+
+## Graphics tab rebuilt by episode, 17 November 2026
+
+The reader review found the Graphics tab hard to follow: shapes in pickers under hex labels, nothing moving. At the contributor's request it was rebuilt. Each episode now has a grid of figures drawn from the episode's own sprite memory and tables, moving at the game's rate, with a line on each figure's part in play, then a group of shapes without a known use, then a chooser of every shape in each episode's sprite memory that names the figure each shape belongs to. The screen-building sections (the Broadway and museum frames, the character sets, the airshaft walls) stay after them.
+
+- The colours and rates came from the code and from three VICE recordings (airshaft, Broadway, museum), recorded frame by frame or every third frame. They settled the walkers' order, the beam pointers, the museum flash and the attack rate, which a first draft had wrong.
+- The old page marked Broadway `$38–$43` and `$96–$9D` as stored shapes no sequence chooses. `$38–$43` are the statue's fifth and sixth body frames, and `$97–$9D` are the knocked-down frames at `$A283`. `$96`, the first byte of that table, is never read, because all three readers step their count first. The airshaft's hit sequence at `$C6FF` has the same pattern, so `$A8` is never drawn through it. Both are in the group of shapes without a known use, with tests.
+- The airshaft's panel handler at `$90E7` gave the panel's five sprites, their colours and places, and showed that the weapon number is stored as the operand of the instruction that picks the weapon's picture. The cable close-up had been drawn in a guessed colour; the handler sets white.
+- `test_graphics.js` was rewritten for the two new data blocks and the code facts the cards rest on, and `site-browser.js` now drives the tab: the cards, Pause and Step, the Ghostbuster's buttons and the shape chooser.
+- A rope card was not made: the rope's five sprites change between multicolour and single-colour and double width as the raster bands change, and that was not settled. The rope's shapes are in the chooser.
