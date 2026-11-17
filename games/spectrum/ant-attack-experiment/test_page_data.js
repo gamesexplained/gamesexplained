@@ -1,0 +1,14 @@
+
+'use strict';
+// The screen hash is taken from ZEsarUX's captured play BMP, normalized to Spectrum colour
+// numbers; intensity levels differ between the emulator and site's palette. Recorded beeper
+// levels originate in ZEsarUX's audio capture, not a tape. This test checks each actual page
+// input through SpectrumAY for non-silent output and checks the recording's dimensions.
+const assert=require('assert'),crypto=require('crypto');const {game}=require('../../../kit/scripts/port_check.js');const g=game(__dirname);g.lib('spectrum','ay');
+const {screenBytes,recordedMusic}=g.run('index.html','aa-page-data','screenBytes','recordedMusic');const {beeperLog}=g.run('index.html','aa-recordings','beeperLog');
+const m=new Uint8Array(65536);m.set(screenBytes,0x4000);const px=Spectrum.screenPixels(m,{border:0}).data,cols=[];for(let i=0;i<px.length;i+=4)cols.push(+(px[i+2]>32)+2*+(px[i]>32)+4*+(px[i+1]>32));assert.equal(crypto.createHash('sha256').update(Buffer.from(cols)).digest('hex'),'0ba4532cc70c5024c00be22735a02b82d5f75ae741d77e50244f7b1b3df5b85c');
+for(const t of recordedMusic){assert(t.rate===15600);assert.equal(t.runs.filter((_,i)=>!(i&1)).reduce((a,b)=>a+b,0),t.samples);assert(t.runs.every((v,i)=>i&1?v===0||v===1:v>0));const out=SpectrumAY.render(beeperLog(t),15600);let peak=0,energy=0;for(const v of out){peak=Math.max(peak,Math.abs(v));energy+=v*v;}assert(peak>.1&&energy>1,t.name+' must be audible');}
+const {rescueSites}=g.run('levels.html','aa-sites','rescueSites'),L=g.listing();let count=0;for(const site of rescueSites){const r=L.listing.records.find(r=>r.a===site.address);assert(r&&r.d.includes('DATA '));const values=r.d.split('DATA ')[1].split(',').map(Number);assert.deepEqual(site.variants.flat(),values);count+=site.variants.length;}assert.equal(count,37);
+const {shapeGroups}=g.run('graphics.html','aa-shape-groups','shapeGroups');const ids=new Set();for(const group of shapeGroups)for(const frame of group.frames)for(let d=0;d<4;d++)ids.add(frame+d);assert.equal(ids.size,60);for(const id of ids)for(let i=0;i<64;i++)assert(L.has[0x8000+id*64+i],'shape byte is listed');
+const route=g.json('desert-route.json');let x=185,y=4,face=2;for(const step of route.groups){if(step.keys==='fffffffffffffffd00')face=(face-1)&255;else if(step.keys==='efffffffffffffff00'){if((face&3)===0)y=(y+1)&255;else if((face&3)===1)x=(x+1)&255;else if((face&3)===2)y=(y-1)&255;else x=(x-1)&255;}else assert.fail('unknown recorded key');assert.deepEqual(step.xyz,[x,y,0]);}assert.deepEqual([x,y],[0,64]);
+console.log('PASS: emulator frame, three audible recorded sequences, all 37 sites, all 60 shapes, and 133 route milestones');

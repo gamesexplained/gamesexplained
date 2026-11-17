@@ -1,0 +1,10 @@
+'use strict';
+const fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/spectrum/z80.js');
+function compileEffects(L){const base=new Uint8Array(65536);for(const r of L.records)if(r.b)base.set(r.b,r.a);const starts=L.records.filter(r=>r.l&&r.l.startsWith('event_')&&r.a<0x93b9).map(r=>[r.a,r.l]);const tracks=[];
+for(let n=0;n<starts.length;n++){const m=base.slice();m.fill(1,0xb428,0xb42c);m[0xb42c]=0;let edges=[],t=0,level=0;
+function sound(addr,a,b){m[0x7f00]=0;m[0x7f01]=0x5b;const c=new CPU(m,{io:{out:(port,v,cpu)=>{if(!(port&1)){const next=(v>>4)&1;if(next!==level){edges.push([t+cpu.tstates,next]);level=next;}}}}});c.a=a;c.b=b;c.sp=0x7f00;c.pc=addr;let k=0;while(c.pc!==0x5b00&&k++<1000000)c.step();if(c.pc!==0x5b00)throw Error('sound did not return');t+=c.tstates;}
+for(let p=starts[n][0]+2;p<0x93ba;){const v=m[p++];if(v===255)break;if(v>=128){const repeat=((v&112)>>4)+1;for(let j=0;j<repeat;j++)sound((v&15)===15?0x8b4a:0x8b80,v&15,0);}else if(v===125||v===126)p++;}
+const rate=15600,total=Math.ceil(t/3500000*rate)+1560,runs=[];let e=0,last=0,count=0;for(let i=0;i<total;i++){while(e<edges.length&&edges[e][0]<=i/rate*3500000)last=edges[e++][1];if(runs.length&&runs[runs.length-1]!==last){runs[runs.length-2]=count;count=0;}if(!count)runs.push(0,last);count++;}if(runs.length)runs[runs.length-2]=count;tracks.push({name:starts[n][1].slice(6).replaceAll('_',' '),rate,runs,samples:total,number:n+1,edges:edges.length});}
+return tracks;}
+
+const assert=require('assert'),{game}=require('../../../kit/scripts/port_check.js'),g=game(__dirname);g.lib('ay');const {eventSounds}=g.run('index.html','aa-effects-data','eventSounds'),{beeperLog}=g.run('index.html','aa-recordings','beeperLog');const compiled=compileEffects(g.json('listing.json'));assert.deepEqual(eventSounds,compiled);for(const t of eventSounds){const a=SpectrumAY.render(beeperLog(t),15600);let energy=0;for(const v of a)energy+=v*v;if(t.edges)assert(energy>.01,t.name);else assert.equal(energy,0,t.name);}console.log('PASS: all 17 event streams regenerated from the original Z80 driver; 15 audible, 2 counter-only');
