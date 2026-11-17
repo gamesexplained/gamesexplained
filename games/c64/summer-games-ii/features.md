@@ -25,8 +25,8 @@ Sources:
 
 | Feature | Status | Where |
 |---|---|---|
-| Title screen: the EPYX logo, SUMMER GAMES II and the six programmers' names, © EPYX INC. 1985 | live | part `title` |
-| "Bummer Games II" title: F3, DEL and cursor down pressed before the title appears | open | part `title` |
+| Title screen: the EPYX logo, SUMMER GAMES II and the six programmers' names, © EPYX INC. 1985 | live | part `title`: a multicolour bitmap shown for 1280 frames, about 25 seconds, or until a joystick moves or fires |
+| "Bummer Games II" title: F3, DEL and cursor down pressed before the title appears | traced | part `title`: the entry reads the keyboard's first column, and with exactly those three keys held copies a second picture over the first; the two bitmaps differ only in 71 bytes, the first letter of SUMMER |
 | Opening ceremony: the torch bearer runs up the steps and lights the flame, white doves fly up and out (Zzap!64: "to the sound of the Olympic theme") | live | part `opening` |
 | Menu of nine options: compete in all, some or one event, practise one, number of joysticks, Summer Games 1 events (yes/no), world records, opening and closing ceremonies | live | part `menu` |
 | Up to eight players, each typing a name and choosing one of 18 countries by its flag (one is Epyx's own), each with its anthem | live | part `menu` (the flags scroll a page at a time) |
