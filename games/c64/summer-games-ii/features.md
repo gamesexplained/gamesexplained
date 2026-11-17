@@ -41,7 +41,7 @@ Sources:
 | **Rowing**: fire starts; left lifts the oars, right pulls them through; 250 metres; split screen, against a computer pacer or a second player | traced | part `rowing`: each lane follows its own boat; the stick, read every fourth frame, steps a 16-phase stroke and only phases with the oars in the water add speed; the pacer's skill rises while it trails; 3 minutes is a FAULT. The 250 metres is not in the code's units |
 | **Javelin**: fire starts the run and pressing it again speeds the runner; hold left to set the angle, centre throws; a fault for crossing the line | traced | part `javelin`: each new press of fire adds speed, to 31; left starts the throw, and while left is held the angle rises in steps of 9 degrees to 90 (right lowers it); the javelin is let go at a fixed frame of the throw; the line is 16.50 m into the run; the crowd cheers from 48 m |
 | **Equestrian**: fire starts; up faster, down slower, fire a medium jump, right a long jump, left to land; refusal 20 penalties, a fall 6, a second over 50 seconds 1; out over 100 seconds or 99 penalties | traced | part `equestrian`: fire then a count from FIVE to GO, up starts and quickens the pace (0 to 4), down slows it; at a fence the course's code and the stick pushed right decide the jump, and left at the landing avoids a fall; refusal 20 faults, fall 6, a fault a second over 50; disqualified at 99 on the clock or 100 faults; after a refusal pulling down backs the horse away |
-| **High Jump**: choose the bar (1.50 m up to 2.50 m); right starts and speeds the run, up and down move the run-up line; fire jumps, up clears the bar; three tries a height | open | part `high-jump` |
+| **High Jump**: choose the bar (1.50 m up to 2.50 m); right starts and speeds the run, up and down move the run-up line; fire jumps, up clears the bar; three tries a height | traced | part `high-jump`: each tap right adds a quarter pixel a frame to the run, left halves it; fire in a 36-pixel take-off zone jumps, and the clearance is the place in the zone (best at its middle) plus a bonus for speed; up held in the first five steps of the flight, or let go in steps 8 to 10, knocks the bar; a fault for running past the zone; in competition the bar goes 1.50, 1.75, 1.90, 2.00 m and then up 5 cm at a time, left passes a height, and three failures in a row eliminate; in practice the bar is set from 1.20 to 2.50 m and PRACTICE AGAIN? follows |
 | **Fencing**: stick alone defends, with fire moves or attacks; green light a hit for the player, red for the opponent, both at once counts for neither; five hits or the most after three minutes; a computer fencer at four skill levels or random | open | part `fencing` (the skill menu is live) |
 | **Cycling**: rotate the stick clockwise with the arrow that shows the pedals; 200 metres; split screen; *Flight of the Bumble-Bee* | open | part `cycling` |
 | **Kayaking**: left and right steer, up paddles forward, down backward; 15 gates, two of them taken backward; a missed gate adds time | open | part `kayaking` |
@@ -67,6 +67,11 @@ Found in the code, not in the manual.
 - The gallop's tune takes its note length from the pace, so the hoofbeats quicken as the horse speeds up.
 - Rowing's race clock counts a tenth every 5 frames: real time on a PAL
   machine.
+- High Jump's players also jump from the last to the first, attempt by attempt.
+- A High Jump fault, a run past the take-off zone, sends the jumper back to the start of the same attempt: it does not count as a failure.
+- From 2.45 m on High Jump stops offering a pass: the stick goes straight to the run.
+- A High Jump failure is carried over a passed height, so a jumper who failed once and passed starts the next height on their second attempt.
+- High Jump's crowd roars louder the higher the bar: the cheer's volume is half the bar's height above 1.00 m in 5 cm steps.
 
 ## Open questions
 
