@@ -47,8 +47,8 @@ reads.
    event's `entry.vsf` is taken at a stopping checkpoint on that module's
    entry (table below), and `play.vsf` twelve seconds later.
 
-The joystick for one player is in port 1; with "Number of joysticks: 2"
-the second player uses port 2. Keys held through the matrix can block
+The joystick for one player is in port 2 (`$DC00`); with "Number of
+joysticks: 2" the second player uses port 1 (`$DC01`). Keys held through the matrix can block
 the next input: `release_all()` before each one.
 
 ## The parts
