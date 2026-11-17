@@ -19,3 +19,9 @@ Tier: Silver, copy `agent-draft`. Coverage is 100 % in all three parts.
 - Find a contemporary review of the Commodore 64 version.
 - A Play tab: the street walk with Freddy chasing is small enough to port
   first.
+- Draw level 10's death pictures (`DEAT1`) on the Graphics tab, and the
+  items and floors as the game draws them.
+- Name the 20 sound effects the Music tab leaves as numbers.
+- The monster-damage multiplier at house `$79B9`, picked through `$741A`,
+  which is always 0: every multiplier is 1, which looks like an unused
+  difficulty setting. Say so on Discoveries once checked.

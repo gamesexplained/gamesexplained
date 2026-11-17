@@ -56,3 +56,17 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 - The build counted bare `<code>$xxxx</code>` addresses linking to
   `source.html` with no record; every page now has `data-part=""` on its
   main element and links its addresses by part.
+- The reader review (one agent on claude-opus-5-5, findings in
+  `work/reports/reader-review.md`) found: the effects player failed with a
+  stack overflow (the page wrapped createDriver, and the AudioWorklet runs
+  the driver's source by its own name, so the wrapper called itself; fixed
+  with `data.offset`, and `test_music.js` checks it); the nine house places
+  were not drawn (Maps now draws the house at all nine, marked H1 to H9, and
+  no longer marks ladders in Springwood); the maps could not be seen whole
+  (a Whole level / Full size button); the skeleton's weakness changes
+  nothing (Gameplay corrected, new Discoveries section); unlabelled
+  monster rows and unclear table columns (fixed); Freddy fleeing when
+  beaten outside the final fight (added to Gameplay); the drain and clock
+  rates (given in passes); guesses in Discoveries (removed). Left for later,
+  in TODO.md: drawing level 10's DEAT1 death pictures, naming the 20
+  unnamed sound effects, and pictures of items and floors.

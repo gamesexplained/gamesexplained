@@ -79,10 +79,10 @@ sup.fn + sup.fn::before{content:","}
   <p class="lede">The monsters are single sprites, each kind with its own first shape, frame count, and colour. Freddy, like the player, is an outline in front of a multicolour fill.</p>
   <div class="plate">
     <canvas id="gxMon" aria-label="Each monster kind walking in each of its facings"></canvas>
-    <p class="cap">Each row is a kind, walking in each of the facings it has: down, up, right, and left. The shapes are in the file <code>MON</code>, kept from <a href="source-resident.html#E800"><code>$E800</code></a> for the whole game. A monster's shape is the kind's first shape (<a href="source-house.html#746D"><code>kind_shape</code></a>), plus its facing, plus the frame times the kind's step (<a href="source-house.html#1D4E"><code>monster_frame</code></a>); for Freddy the sum is doubled, since each of his frames is two sprites. The game names only three of them, in a chest's messages: the slime, the skeleton, and Freddy. The other names below describe the pictures.</p>
+    <p class="cap">Each row is a kind, walking in each of the facings it has: down, up, right, and left. The shapes are in the file <code>MON</code>, kept from <a href="source-resident.html#E800"><code>$E800</code></a> for the whole game. A monster's shape is the kind's first shape (<a href="source-house.html#746D"><code>kind_shape</code></a>), plus its facing, plus the frame times the kind's step (<a href="source-house.html#1D4E"><code>monster_frame</code></a>); for Freddy the sum is doubled, since each of his frames is two sprites. The game names the slime, the skeleton, and Freddy in a chest's messages, and the roaches and wheelchairs in its level hints ("THE PICK WORKS BEST ON ROACHES", "THE AXE WORKS BEST ON WHEELCHAIRS"); the winged kind is named nowhere.</p>
   </div>
-  <table class="ft-table" id="gxKinds"><thead><tr><th>Kind</th><th>Looks like</th><th>Hit points</th><th>Damage</th><th>Chance to hit</th><th>Speed</th><th>Weak to</th><th>Shoots</th></tr></thead><tbody></tbody></table>
-  <p>The figures come from the kind tables from <a href="source-house.html#7422"><code>kind_hit_chance</code></a> to <a href="source-house.html#7489"><code>kind_shot</code></a>. The chance to hit is out of 256, rolled each time a monster reaches the player (<a href="source-house.html#44B1"><code>monster_attack</code></a>). Speed is what <a href="source-house.html#2590"><code>move_monsters</code></a> adds back to a monster's fraction byte each time 23 borrows from it, so a higher number is a slower monster. A weapon a kind is weak to does a fixed amount of its own to it (<a href="source-house.html#4523"><code>damage_monster</code></a>). Freddy's hit points are ten times the level plus one wherever he appears, and 1,000 in the final fight.</p>
+  <table class="ft-table" id="gxKinds"><thead><tr><th>Kind</th><th>Looks like</th><th>Hit points</th><th>Damage</th><th>Chance to hit, of 256</th><th>Speed (higher is slower)</th><th>Weak to (damage)</th><th>Shoots (damage)</th></tr></thead><tbody></tbody></table>
+  <p>The figures come from the kind tables from <a href="source-house.html#7422"><code>kind_hit_chance</code></a> to <a href="source-house.html#7489"><code>kind_shot</code></a>. The chance to hit is out of 256, rolled each time a monster reaches the player (<a href="source-house.html#44B1"><code>monster_attack</code></a>). Speed is what <a href="source-house.html#2590"><code>move_monsters</code></a> adds back to a monster's fraction byte each time 23 borrows from it, so a higher number is a slower monster. A weapon a kind is weak to does a fixed amount of its own to it (<a href="source-house.html#4523"><code>damage_monster</code></a>). For the skeleton that changes nothing: the BASEBALL BAT does 19 to every monster, and 19 to a skeleton (<a href="discoveries.html#bat">Discoveries</a>). A monster that shoots fires the shot kind in <a href="source-house.html#7489"><code>kind_shot</code></a>, whose damage is in <a href="source-house.html#45F6"><code>shot_damage</code></a>. Freddy's hit points are ten times the level plus one wherever he appears, and 1,000 in the final fight.</p>
   <p>Only kind 0 walks through walls: <a href="source-house.html#17C7"><code>place_monster</code></a> gives it flag bit 1. Kinds 0 and 2 always face the same way, because <a href="source-house.html#266D"><code>monster_step</code></a> sets their facing to 0, and that is why they have no rows for the other facings. In the final fight, Freddy is drawn at double size from his same shapes, cut to the play area by <a href="source-house.html#22BE"><code>freddy_big_shape</code></a>.</p>
 </section>
 
@@ -134,7 +134,7 @@ const GX_PLYR = "AAAAAPwAAf7AAf8gA/+gHf4QITIQQIRgRHmAlgMAjx+AhuPgTAHwYhHgJmjAGdD
     for (let k = 0; k < 6; k++) {
       const tr = tb.insertRow(), w = h[0x744C + k], sh = h[0x7489 + k];
       [String(k), LOOKS[k], k === 5 ? 'level × 10 + 1' : String(h[0x7458 + k]), String(h[0x7430 + k]), String(h[0x7422 + k]),
-       String(h[0x743E + k]), w === 0xFF ? 'nothing' : WEAP[w] + ' (' + h[0x7452 + k] + ')', sh === 0xFF ? 'no' : 'shot ' + sh]
+       String(h[0x743E + k]), w === 0xFF ? 'nothing' : WEAP[w] + ' (' + h[0x7452 + k] + ')', sh === 0xFF ? 'no' : 'yes (' + h[0x45F6 + sh] + ')']
         .forEach(t => { tr.insertCell().textContent = t; });
     }
     // Monsters: kind k, facing d, frame f -> first + f * step + d, doubled for Freddy (monster_frame).
@@ -154,6 +154,8 @@ const GX_PLYR = "AAAAAPwAAf7AAf8gA/+gHf4QITIQQIRgRHmAlgMAjx+AhuPgTAHwYhHgJmjAGdD
           else if (col & 0x80) C64.drawSpriteMC(xm, mon(s), x, y, S, P[col & 15], P[6], P[2]);
           else C64.drawSprite(xm, mon(s), x, y, S, P[col & 15]);
         }
+        xm.fillStyle = '#fff'; xm.font = `700 ${7 * S}px IBM Plex Mono, monospace`; xm.textBaseline = 'middle';
+        xm.fillText(k + ' ' + LOOKS[k].replace(/^(a|the) /, '').replace(/ that flies through walls/, ''), 6.3 * FW, k * FH + FH / 2);
       }
     }
     // Death: shapes from $9080; sprites 4 (outline, colour 0) over 5 (fill, multicolour 2), 6 (0) over 7 (1, or 2 for the floor).

@@ -90,7 +90,8 @@ function createDriver(M, C64Cpu) {
   // A Nightmare on Elm Street's own sound routine, run on the kit's 6502 (C64Cpu, which sid.js
   // passes in) over the game's memory (M.ram, the street and resident listings): start_effect
   // ($48DB) with X/Y the high and low bytes of the effect, then effect_tick ($4993) once a period
-  // of the Kernal's timer interrupt. The sound switch $4F9A is set on. An effect has ended when
+  // of the Kernal's timer interrupt; M.offset, when given, is added to the tune number (1 makes
+  // tune n effect n). The sound switch $4F9A is set on. An effect has ended when
   // all three voices' places ($1B, $1D and $1F, the high bytes) are 0.
   const mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
   let writes = [], times = [], on = false, fresh = false, t0 = 0;
@@ -102,7 +103,7 @@ function createDriver(M, C64Cpu) {
   const live = () => (mem[0x1B] | mem[0x1D] | mem[0x1F]) !== 0;
   return {
     init(n) { mem.set(M.ram); sid.fill(0); writes = []; times = []; mem[0x4F9A] = 1;
-              const a = addr(n); t0 = cpu.cycles; cpu.call(0x48DB, { x: a >> 8, y: a & 255 }, { maxSteps: 1e6 }); on = live(); fresh = true; },
+              const a = addr(n + (M.offset | 0)); t0 = cpu.cycles; cpu.call(0x48DB, { x: a >> 8, y: a & 255 }, { maxSteps: 1e6 }); on = live(); fresh = true; },
     stop() { on = false; writes = []; times = []; for (const r of [4, 11, 18]) { sid[r] &= 0xFE; writes.push(r, sid[r]); times.push(0); } },
     play() { if (!fresh) { writes = []; times = []; } fresh = false; if (!on) return;
              t0 = cpu.cycles; cpu.call(0x4993, {}, { maxSteps: 1e6 }); if (!live()) on = false; },
@@ -133,8 +134,7 @@ const NM_USES = { 1: 'a GRENADE thrown', 2: 'soul gained', 3: 'HOLY WATER thrown
       lens.push(d.playing() ? 'loops' : (f / 60).toFixed(2) + ' s');
       names.push('Effect ' + n + (NM_USES[n] ? ': ' + NM_USES[n] : ''));
     }
-    const fx = (M, C) => { const dr = createDriver(M, C), init = dr.init; dr.init = n => init(n + 1); return dr; };
-    C64Sid.mount($('sfxRoot'), { driver: fx, data: { ram }, tunes: names, period: NM_PERIOD, rows: [{ k: 'Gate', f: v => v.gate }] });
+    C64Sid.mount($('sfxRoot'), { driver: createDriver, data: { ram, offset: 1 }, tunes: names, period: NM_PERIOD, rows: [{ k: 'Gate', f: v => v.gate }] });
     const tb = $('sfxTable').tBodies[0];
     for (let n = 0; n < 36; n++) { const tr = tb.insertRow(); [String(n), NM_USES[n] || 'from a table, or not found', lens[n]].forEach(t => { tr.insertCell().textContent = t; }); }
   });

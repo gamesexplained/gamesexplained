@@ -26,6 +26,12 @@ for (let e = 0; e < 36; e++) {
   const r = run(e + 1, 2000);
   check(r.playing === LOOPS.has(e), `effect ${e} ${r.playing ? 'loops' : 'ends after ' + r.frames}`);
 }
+{ // the effects player mounts createDriver itself with data.offset 1 (a wrapper round it breaks in
+  // the AudioWorklet, which runs the driver's own source by its name): tune n is effect n
+  const d = createDriver({ ram, offset: 1 }, kit), e = createDriver({ ram }, kit);
+  d.init(13); e.init(14); for (let f = 0; f < 20; f++) { d.play(); e.play(); }
+  check(d.writes.join() === e.writes.join() && d.playing() === e.playing(), 'data.offset 1 does not make tune 13 effect 13');
+}
 for (const [a, b] of [[4, 30], [6, 31]]) {
   const x = run(a + 1, 2000).writes.join(';'), y = run(b + 1, 2000).writes.join(';');
   check(x === y, `effects ${a} and ${b} differ`);
