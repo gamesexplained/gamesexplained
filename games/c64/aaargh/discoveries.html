@@ -46,7 +46,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1989 · Melbourne House</p>
   <h1>Aaargh!</h1>
-  <p class="sub">A list of Manchester bands and clubs hidden on the title screen, a message nobody was meant to read, and a game that never ends.</p>
+  <p class="sub">A list of Manchester bands and clubs hidden on the title screen, a message that was never meant to be read, and a game that never ends.</p>
 </header>
 <main class="wrap">
 
@@ -64,8 +64,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="message">
   <p class="fig">02 · A message</p>
-  <h2 class="t">Secret: a message in the program that nothing reads</h2>
-  <p class="lede">Next to the title's text is a sentence that no instruction in the game reads.</p>
+  <h2 class="t">Secret: a message in the program that the game never reads</h2>
+  <p class="lede">Next to the title's text is a sentence that the game never reads.</p>
   <p class="ag-quote">I'M AT PAINS TO SEE...SEE THROUGH THOSE WINDOWPAINS...SEE RENTBOYS AND GOTO 16384.</p>
   <p>The 82 bytes at <code>$B37D</code> are plain ASCII. Windowpains and Rentboys are in the hidden list too. A BASIC programmer would read GOTO 16384 as a jump to address 16384, <code>$4000</code>, but there is nothing there to find: that address is inside the characters of the city in the cave.</p>
 </section>
@@ -73,10 +73,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="forever">
   <p class="fig">03 · The volcano</p>
   <h2 class="t">Secret: the volcano is every fourth city, eggs or not, and the game never ends</h2>
-  <p class="lede">The manual says five eggs take a monster to the volcano and its golden egg, the end of the game. On the C64 nothing counts the eggs.</p>
+  <p class="lede">The manual says five eggs take a monster to the volcano and its golden egg, the end of the game. On the C64 the game does not count the eggs.</p>
   <div class="plate"><img class="ag-shot" src="reference/play-volcano.png" alt="The volcano" width="384" height="272">
   <p class="cap">The volcano, the fourth city of a round, reached by ending three cities without taking an egg.</p></div>
-  <p>The only count the main loop keeps is the city's place in the round, at <code>$803E</code>: it goes 1, 2, 3, 4 and back to 1, and the picker at <code>$8444</code> always makes the fourth city the volcano (<a href="index.html#cities">The cities</a>). The volcano's golden egg is drawn on its screen from the start (<code>$87A1</code>), and taking it leads to the cave like any other egg. Then the next round starts with a jungle village or a temple. There is no ending screen in the program, and nothing ends a game but both monsters dying.</p>
+  <p>The only count the main loop keeps is the city's place in the round, at <code>$803E</code>: it goes 1, 2, 3, 4 and back to 1, and the picker at <code>$8444</code> always makes the fourth city the volcano (<a href="index.html#cities">The cities</a>). The volcano's golden egg is drawn on its screen from the start (<code>$87A1</code>), and taking it leads to the cave like any other egg. Then the next round starts with a jungle village or a temple. There is no ending screen in the program, and a game ends only when both monsters die.</p>
 </section>
 
 <section id="two">
@@ -108,16 +108,16 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="stray">
   <p class="fig">07 · A stray write</p>
   <h2 class="t">Bug: every pass writes a number into a city's characters</h2>
-  <p class="lede">A variable that nothing reads sits in the middle of the city in the cave's characters.</p>
-  <p>The work of each pass (<code>$8065</code>) stores 0, 1 and 2 in turn at <code>$3E7F</code>, and no instruction reads it. That byte is row 2 of character <code>$3E</code> of the city in the cave's own character set. The set is copied to the screen's characters only when the city is built, so the harm is small: when the city in the cave comes, that row of its character <code>$3E</code> holds whatever number the last pass left.</p>
+  <p class="lede">A variable that the game never reads sits in the middle of the city in the cave's characters.</p>
+  <p>The work of each pass (<code>$8065</code>) stores 0, 1 and 2 in turn at <code>$3E7F</code>, and the game never reads it. That byte is row 2 of character <code>$3E</code> of the city in the cave's own character set. The set is copied to the screen's characters only when the city is built, so the harm is small: when the city in the cave comes, that row of its character <code>$3E</code> holds whatever number the last pass left.</p>
 </section>
 
 <section id="leftovers">
   <p class="fig">08 · Leftovers</p>
   <h2 class="t">The program carries pieces of its earlier versions</h2>
   <p class="lede">The program carries pieces of earlier versions of itself.</p>
-  <p>A building burning down calls <code>$9594</code> (at <code>$9541</code>). That address holds only an <code>rts</code>, the instruction that returns, and the routine right after it, at <code>$9595</code>, draws a row of roof characters over the building, as the fall does elsewhere. Nothing else reaches it. Pointing the call one byte short is a quick way to switch a routine off.</p>
-  <p>Further up, <code>$B7B4</code>-<code>$BD5E</code> holds an older build of the character animation, its tables, the city tables, and the interrupt helpers, assembled about <code>$350</code> bytes higher than the ones the game runs. Nothing calls it or reads it. <code>$2581</code>-<code>$2E77</code> holds an older set of the monsters' leg frames, on a grid of its own that no table reaches. Two short fragments of code (at <code>$AD6B</code>, a punch in the cave, and at <code>$89D2</code>) are reached by nothing too.</p>
+  <p>A building burning down calls <code>$9594</code> (at <code>$9541</code>). That address holds only an <code>rts</code>, the instruction that returns, and the routine right after it, at <code>$9595</code>, draws a row of roof characters over the building, as the fall does elsewhere. The game never reaches it any other way. Pointing the call one byte short is a quick way to switch a routine off.</p>
+  <p>Further up, <code>$B7B4</code>-<code>$BD5E</code> holds an older build of the character animation, its tables, the city tables, and the interrupt helpers, assembled about <code>$350</code> bytes higher than the ones the game runs. The game never calls it or reads it. <code>$2581</code>-<code>$2E77</code> holds an older set of the monsters' leg frames, on a grid of its own that is not reached by any table. Two short fragments of code (at <code>$AD6B</code>, a punch in the cave, and at <code>$89D2</code>) are never reached either.</p>
 </section>
 
 <section id="tape">

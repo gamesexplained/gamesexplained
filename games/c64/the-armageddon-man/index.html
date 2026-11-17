@@ -131,25 +131,25 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="music">
   <p class="fig">03 · The music</p>
   <h2 class="t">Music: one tune for the whole year</h2>
-  <p class="lede">The tune starts on the options panel and plays without a break for as long as the game runs. Three more tunes and seventeen sound effects sit beside it, and nothing ever starts them.</p>
+  <p class="lede">The tune starts on the options panel and plays without a break for as long as the game runs. Three more tunes and seventeen sound effects sit beside it, and the game never starts them.</p>
   <div class="plate">
     <div id="am-music"></div>
     <p class="cap">The page runs the game's own sound code, <code>$4000</code>-<code>$4DEB</code> from the listing, on the site's model of the C64's processor, the 6502, and through its model of the sound chip, the SID: <code>mus_start_tune</code> (<code>$4000</code>) once with the tune's number, as <code>options_panel</code> (<code>$7D0B</code>) does for tune 0, then <code>sound_irq</code> (<code>$413A</code>) once a frame, as the game's raster interrupt does: a routine the video chip sets off when it reaches a chosen line of the screen. Tunes 1, 2 and 3 are never played in the game.</p>
   </div>
   <p>The driver plays three voices from patterns of notes and commands: arpeggio tables, vibrato, slides, a glide from note to note and drums made of a burst of noise on every other frame. Each tune has a speed, the number of calls between steps of its patterns (<code>tune_table</code>, <code>$46E3</code>). The raster interrupt calls the driver once a frame, but <code>sound_irq</code> skips one call in ten, so the music gets 45 calls a second rather than 50.</p>
-  <p>Tune 0, at speed 6, is the music the manual credits to Millers. Tunes 1 and 2, at speed 8, and tune 3, at speed 5, are jingles a few seconds long. Nothing in the game starts them, and the sound effects are just as silent (<a href="#sound">below</a>).</p>
+  <p>Tune 0, at speed 6, is the music the manual credits to Millers. Tunes 1 and 2, at speed 8, and tune 3, at speed 5, are jingles a few seconds long. The game never starts them, and the sound effects are just as silent (<a href="#sound">below</a>).</p>
 </section>
 
 <section id="sound">
   <p class="fig">04 · The sound effects</p>
   <h2 class="t">Sound: seventeen effects the game never plays</h2>
-  <p class="lede">A player for two-voice sound effects and an alarm sits in the sound code, ready to call, and no instruction in the game calls it.</p>
+  <p class="lede">A player for two-voice sound effects and an alarm sits in the sound code, ready to call, and the game never calls it.</p>
   <div class="plate">
     <div id="am-sfx"></div>
     <p class="cap">The game's own sound code from the listing on the site's 6502: <code>sfx_start</code> (<code>$4A8E</code>) with the effect's number, or <code>alarm_start</code> (<code>$4A48</code>) with a period, then <code>sound_irq</code> once a frame. The game never calls either, so these are the calls their code expects, made by the page; the alarm's period is the page's choice.</p>
   </div>
   <p>Each effect is a record of twenty bytes, from <code>sfx_0</code> (<code>$4B39</code>) on, found through <code>sfx_table</code> (<code>$4B17</code>): a frequency, an envelope (how the volume rises and dies away), a waveform and a pulse width for voices 1 and 3, a step that sweeps each frequency up or down, how many steps the effect lasts, and how often and how many times it goes back to its starting pitches. While an effect plays, the music gives up voices 1 and 3 and keeps voice 2. The alarm takes voice 2 instead: a steady tone with the period 7, noise with the period 0, and a tone broken by bursts of noise with any period between.</p>
-  <p>No instruction calls <code>sfx_start</code> or <code>alarm_start</code>, and no table holds their addresses. The effects, the alarm and their records fill <code>$4A48</code> to <code>$4DB0</code>, 873 bytes, and what the game would have played them for is not known.</p>
+  <p>The game never calls <code>sfx_start</code> or <code>alarm_start</code>, and their addresses are not in any table. The effects, the alarm and their records fill <code>$4A48</code> to <code>$4DB0</code>, 873 bytes, and what the game would have played them for is not known.</p>
 </section>
 
 <section id="clock">

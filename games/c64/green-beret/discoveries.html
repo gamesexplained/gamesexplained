@@ -62,7 +62,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">01 · The stack</p>
   <h2 class="t">Bug: die in the fights or win the Bridge 23 times and the game crashes</h2>
-  <p class="lede">A death in an end-of-stage fight leaves two bytes on the stack, and so does winning the Bridge. Nothing ever takes them off, not even a new game.</p>
+  <p class="lede">A death in an end-of-stage fight leaves two bytes on the stack, and so does winning the Bridge. The game never takes them off, not even when a new game starts.</p>
   <div class="plate">
     <div class="gb-bar"><span>Deaths in the fights and Bridges won</span><input type="range" class="gb-range" id="gb-leak" min="0" max="40" value="0" aria-label="Deaths in the end-of-stage fights and Bridges won"><span id="gb-leak-n">0</span></div>
     <canvas id="gb-page1" class="gb-cv"></canvas>
@@ -71,7 +71,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p>The routine that kills the hero, <code>player_killed</code>, throws away its caller's return address and jumps to <code>lose_life</code>, which restarts the stage. It expects to have been called from a routine the main loop called, so that the address it throws away is the main loop's own call. In play that is right. During an end-of-stage fight the contact tests are one call further down, and two bytes of return address stay on the stack. After a death in the Missile Base's fight, the stack pointer at the top of the main loop goes from <code>$FC</code> to <code>$FA</code> and stays there.</p>
   <p>Winning the Bridge does the same without a death. Its fight, <code>bridge_fight</code>, calls <code>helis_launch</code> every frame, and when the last helicopter is down <code>helis_launch</code> jumps straight to <code>stage_complete</code> instead of returning, so that call's return address stays behind. The other three fights end the stage from the main loop's own level and leave nothing. The stack pointer at the top of the main loop is two bytes lower after the Bridge is won than before. A player who never dies in a fight still loses two bytes each time round the four stages, so 23 times round leave the stack as 23 deaths in the fights do.</p>
-  <p>Nothing in the game ever sets the stack pointer, so the bytes pile up for as long as the machine is on, through game over and every new game. The stack grows down through page 1, where the game also keeps its virtual sprites' tables, at <code>$0180</code>-<code>$01D3</code>. With 12 of these pairs of bytes left behind, the stack can reach the tables, and then the game's writes to the tables can land on return addresses. With 22 pairs left behind, the game played on for a minute; at 23 it crashed within half a minute, and at every count tried from 24 to 90 it crashed within 13 seconds.</p>
+  <p>The game never sets the stack pointer, so the bytes pile up for as long as the machine is on, through game over and every new game. The stack grows down through page 1, where the game also keeps its virtual sprites' tables, at <code>$0180</code>-<code>$01D3</code>. With 12 of these pairs of bytes left behind, the stack can reach the tables, and then the game's writes to the tables can land on return addresses. With 22 pairs left behind, the game played on for a minute; at 23 it crashed within half a minute, and at every count tried from 24 to 90 it crashed within 13 seconds.</p>
 </section>
 
 <section>
@@ -84,7 +84,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="gb-out" id="gb-hang-out"></div>
     <p class="cap">The hero jumping as <code>player_jump</code> moves him along <code>jump_arc</code>. While 1 is held the frame does not move on, as <code>irq_player</code> skips him. Held during a jump, his Y stays at 194 for 50 frames, and the jump goes on when the key is let go.</p>
   </div>
-  <p>The hero is moved from the raster interrupt, by <code>irq_player</code>, which reads the 1 key on CIA 1 before it moves him. While the key is down it skips his movement, his animation and his stab, so he freezes, on the ground, on a ladder or in the air. The enemies and their shots go on. Nothing else in the game reads that key, and the game has no pause.</p>
+  <p>The hero is moved from the raster interrupt, by <code>irq_player</code>, which reads the 1 key on CIA 1 before it moves him. While the key is down it skips his movement, his animation and his stab, so he freezes, on the ground, on a ladder or in the air. The enemies and their shots go on. The game reads that key nowhere else, and it has no pause.</p>
   <p>A frozen hero can still die: the main loop's tests of what touches him (<code>enemy_contact</code>, <code>shot_contact</code>) go on.</p>
 </section>
 
