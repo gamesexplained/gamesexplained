@@ -27,7 +27,7 @@ Sources:
 |---|---|---|
 | Title screen: the EPYX logo, SUMMER GAMES II and the six programmers' names, © EPYX INC. 1985 | live | part `title`: a multicolour bitmap shown for 1280 frames, about 25 seconds, or until a joystick moves or fires |
 | "Bummer Games II" title: F3, DEL and cursor down pressed before the title appears | traced | part `title`: the entry reads the keyboard's first column, and with exactly those three keys held copies a second picture over the first; the two bitmaps differ only in 71 bytes, the first letter of SUMMER |
-| Opening ceremony: the torch bearer runs up the steps and lights the flame, white doves fly up and out (Zzap!64: "to the sound of the Olympic theme") | live | part `opening` |
+| Opening ceremony: the torch bearer runs up the steps and lights the flame, white doves fly up and out (Zzap!64: "to the sound of the Olympic theme") | traced | part `opening`: the bearer runs left across the stadium and up the steps, five lighting poses at the cauldron, then eight doves climb and drift away; a raster split at line $6E gives the doves the upper screen's sprites and the bearer the lower's; a three-voice tune of its own; a joystick press ends it, but only after a release |
 | Menu of nine options: compete in all, some or one event, practise one, number of joysticks, Summer Games 1 events (yes/no), world records, opening and closing ceremonies | live | part `menu` |
 | Up to eight players, each typing a name and choosing one of 18 countries by its flag (one is Epyx's own), each with its anthem | live | part `menu` (the flags scroll a page at a time) |
 | "IS THIS CORRECT?" after the names, A) YES B) NO | live | part `menu` |
@@ -83,6 +83,7 @@ Found in the code, not in the manual.
 - Kayaking's code expects three gates, 6, 10 and 13, to be passed facing back down the course.
 - Kayaking would push the kayak with the water's flow, read every third frame from a map at $E000; this release leaves that map empty, so the river has no current, and a kayak left alone in the water stops.
 - Kayaking keeps two debugging aids nothing calls: one draws the kayak's position into the clock, the other colours the quarters of the hull that touch the bank.
+- The opening ceremony is Summer Games 1's: its code still holds SUMMER GAMES and COPYRIGHT (C) 1983 EPYX, text that nothing shows.
 
 ## Open questions
 
