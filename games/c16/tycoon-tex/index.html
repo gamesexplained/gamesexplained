@@ -106,7 +106,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <p class="tt-state" id="tt-rstate"></p>
     <div class="tt-scroll"><table class="tt-table" id="tt-speeds"></table></div>
-    <p class="cap">The game's five raster interrupts (<code>irq_frame</code>, <code>irq_skyline</code>, <code>irq_field</code>, <code>irq_pipe</code> and <code>irq_scroller</code>), run once a frame in their order over the listing, after <code>start</code> and <code>start_game</code> (<code>$29D3</code>) have built the level. The main loop is left out, so the pressure, the running points, the bouncy bomb and the crash explosive stand still, and no enemy is sent. Tex keeps his lives.</p>
+    <p class="cap">The game's five raster interrupts (<code>irq_frame</code>, <code>irq_skyline</code>, <code>irq_field</code>, <code>irq_pipe</code> and <code>irq_scroller</code>), run once a frame in their order over the listing, after <code>start</code> and <code>start_game</code> (<code>$29D3</code>) have built the level. The main loop is left out, so the pressure, the running points, the bouncy bomb and the crash explosive stand still, and the game sends no enemies. Tex keeps his lives.</p>
   </div>
   <p>Tex stands on columns 1 to 27 and moves one column every third frame. Eight of those columns set a speed when he reaches them: 1, 4, 7, 10, 13, 16, 19 and 22 (<code>set_speed</code>, <code>speed_columns</code>). Between them the speed stays where it was, so Tex walking back from column 22 keeps the top speed until he reaches 19. The speed picks a value from three tables: how many pixels the pipe moves each frame (<code>pipe_speeds</code>), how many the skyline moves (<code>skyline_speeds</code>), and how many frames pass between pictures of his running legs (<code>leg_delays</code>).</p>
   <p>The pipe goes up to 7 pixels a frame and the skyline only to 3, so the skyline seems further away. At speed 1 the skyline's single pixel comes every other frame, which <code>scroll_skyline</code> counts in <code>half_rate</code>. Each band has a fine scroll of its own in TED's register <code>$FF07</code>, set by its own interrupt, and when the fine scroll passes a whole character the band's rows move one cell left and a new column comes in at the right (<code>shift_skyline</code>, <code>shift_pipe</code>). The 38-column window hides the column being filled.</p>
@@ -177,7 +177,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="pressure">
   <p class="fig">06 · Oil pressure</p>
   <h2 class="t">The pressure only ever falls</h2>
-  <p class="lede">The inlay says the faster Tex runs, the quicker the pressure builds. Nothing in the code raises it during a level: it falls an eighth of a cell at a steady pace, faster on the harder settings, and when it runs out the game ends.</p>
+  <p class="lede">The inlay says the faster Tex runs, the quicker the pressure builds. The code never raises it during a level: it falls an eighth of a cell at a steady pace, faster on the harder settings, and when it runs out the game ends.</p>
   <div class="plate">
     <div class="tt-bar">
       <label>Pressure left <input type="range" id="tt-press" min="0" max="207" value="207" style="width:220px"></label>
@@ -238,7 +238,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <tr><td>End the game</td><td colspan="2">ESC</td></tr></table>
     <p class="cap"><code>read_controls</code> (<code>$182D</code>), <code>read_keys</code> with <code>key_columns</code> and <code>key_rows</code>, and <code>check_play_keys</code>.</p>
   </div>
-  <p><code>read_controls</code> reads port 2, and port 1 only when port 2 shows nothing, so a joystick in either port works. Fire is bit 7 of port 2's byte and bit 6 of port 1's, and the routine rewrites one of its own instructions before each read to suit (<code>controls_fire_shift</code>): an <code>LSR</code> for port 2, a <code>NOP</code> for port 1. The inlay names <code>/</code> for down, which the menu and the high-score table read; in play nothing tests down. The pause and the quit keys are in no manual.</p>
+  <p><code>read_controls</code> reads port 2, and port 1 only when port 2 shows nothing, so a joystick in either port works. Fire is bit 7 of port 2's byte and bit 6 of port 1's, and the routine rewrites one of its own instructions before each read to suit (<code>controls_fire_shift</code>): an <code>LSR</code> for port 2, a <code>NOP</code> for port 1. The inlay names <code>/</code> for down, which the menu and the high-score table read; in play the game never tests down. The pause and the quit keys are in no manual.</p>
 </section>
 
 <section id="score">
