@@ -1,0 +1,74 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="stylesheet" href="../../lib/site.css">
+<style>
+.fighter-demo canvas{display:block;width:auto;max-width:100%;height:216px;image-rendering:pixelated;margin:1rem auto;background:#9b9b9b}
+.fighter-demo fieldset{display:flex;flex-wrap:wrap;gap:.75rem 1rem}
+</style>
+<!-- tabs -->
+<header class="hero"><p class="eyebrow">{{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">A fighter’s shirt and legs share the same hardware sprites. The game swaps their shapes as the screen is drawn.</p></header>
+<main class="wrap">
+<section id="fighter-layers" data-part="resident">
+<h2>Four shapes make one fighter</h2>
+<div class="plate fighter-demo">
+<fieldset>
+<legend>Visible pieces</legend>
+<label><input id="upper-piece" type="checkbox" checked> Upper body</label>
+<label><input id="lower-piece" type="checkbox" checked> Lower body</label>
+<label><input id="colour-layer" type="checkbox" checked> Colour</label>
+<label><input id="outline-layer" type="checkbox" checked> Outline</label>
+</fieldset>
+<canvas width="36" height="54" id="fighter-pose" role="img" aria-label="Opening pose with separate colour and outline layers">Opening pose with separate colour and outline layers.</canvas>
+<p class="muted" id="fighter-status" aria-live="polite">Loading the shape records from the listing.</p>
+</div>
+<p>Each half uses two hardware sprites in the same place. The black outline can draw a single pixel. The colour layer draws in pairs of pixels but has three colours to work with. Turn either layer off to see what it contributes.</p>
+<p>The game draws the upper pair first. The routine at <a href="source-resident.html#3003">$3003</a> schedules the switch to the lower pair while the display is drawing the fighter. The <a href="https://uta.pokefinder.org/Ultimate_Tape_Archive/Double_Dragon_%281988_Melbourne_House%29_%5B10075%5D/Extras/Instructions.pdf">original instructions</a> mention a gap at the waist. This opening pose shows the stored layers at their nominal spacing. The exact pixels visible at the switch depend on when the game changes the pointers.</p>
+<p>The outline and colour shapes for this pose are at <a href="source-resident.html#EE40">$EE40</a> and <a href="source-resident.html#EE00">$EE00</a> for the top, and <a href="source-resident.html#E8C0">$E8C0</a> and <a href="source-resident.html#E880">$E880</a> for the bottom.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script>
+(async function () {
+  const canvas = document.getElementById('fighter-pose');
+  const context = canvas.getContext('2d');
+  const status = document.getElementById('fighter-status');
+  const upper = document.getElementById('upper-piece');
+  const lower = document.getElementById('lower-piece');
+  const colour = document.getElementById('colour-layer');
+  const outline = document.getElementById('outline-layer');
+  try {
+    const {ram, has} = await C64.load('parts/resident/listing.json');
+    const halves = [
+      {toggle: upper, y: 6, colourAddress: 0xee00, outlineAddress: 0xee40},
+      {toggle: lower, y: 27, colourAddress: 0xe880, outlineAddress: 0xe8c0}
+    ];
+    for (const half of halves) {
+      for (const address of [half.colourAddress, half.outlineAddress]) {
+        for (let i = 0; i < 63; i++) {
+          if (!has[address + i]) throw new Error('Missing sprite bytes');
+        }
+      }
+    }
+    function draw() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      for (const half of halves) {
+        if (!half.toggle.checked) continue;
+        if (colour.checked) {
+          C64.drawSpriteMC(context, ram.subarray(half.colourAddress, half.colourAddress + 63),
+            6, half.y, 1, C64.PAL[14], C64.PAL[2], C64.PAL[6]);
+        }
+        if (outline.checked) {
+          C64.drawSprite(context, ram.subarray(half.outlineAddress, half.outlineAddress + 63),
+            6, half.y, 1, C64.PAL[0]);
+        }
+      }
+      status.textContent = 'Opening street pose. Both disks use these four shape records.';
+    }
+    for (const toggle of [upper, lower, colour, outline]) toggle.addEventListener('change', draw);
+    draw();
+  } catch (error) {
+    status.textContent = 'The four shape records could not be loaded.';
+  }
+})();
+</script>

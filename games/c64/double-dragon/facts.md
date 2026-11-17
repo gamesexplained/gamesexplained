@@ -1,0 +1,39 @@
+# Double Dragon (C64): traced and observed facts
+
+AD and TO refer to the disk identifiers in `media.json`. Live comparisons used the same installed VICE build and its PAL C64SC model. The ordered load sequence used the game's own loader, with the requested index and transition flag set by the test. The test does not establish a normal winning route.
+
+| Finding | Evidence |
+|---|---|
+| Two packed programs install identical gameplay code | The startup at `$0810` copies the compressed input towards the top of RAM and copies its decoding loop to `$0100`. Its output begins at `$0300`. The repeat marker is `$9B` for AD and `$D3` for TO. Running the original startup routines from the packed files took 707,224 AD instructions and 707,492 TO instructions to reach `$1A60`. The resident, variant loader and title payloads matched their cold VICE title entry saves. AD and TO match each other throughout `$2C00–$80FF` and `$E000–$FBFF`. |
+| The two titles credit different publishers | Both screenshots read 1988 and credit Binary Design and Technos Japan. AD shows Arcadia Software and TO shows Mastertronic. The two original `IN` payloads differ at 26 bytes in the credit span `$296F–$2989`. |
+| The game-over transition differs | A controlled edit of `$5B61` took both builds through `$63C5`. TO hit `$811D` and drew `GAME OVER` before reaching `$1A60`. AD reached `$1A60` without executing the TO display entry. TO tests the selector at `$8100`; AD follows its own path beginning at `$1960`. |
+| Shared level files and ending | `L0`–`L5`, `CM` and `ED` are byte-identical between the original disk files. At the seven ordered load entry stops, the AD and TO loaded payload windows differ at 16, 16, 16, 16, 0, 0 and 0 bytes respectively. The differing bytes are in the two gameplay screens' sprite-pointer slots. |
+| Level changes use the same gameplay branches | `$5FED` checks `$5B60` and jumps to `$638D`; `$63B7` selects the level from `$2C05`. Selector 6 in that branch requests ED via disk index 9 and runs `$B500`. The game-over branch instead directly asks the loader for its index 6, which is IN. Both routes were exercised in both builds. |
+| Some resources carry forward | After loading L1 through L5 in order, the 2,048 bytes `$8600–$8DFF` match the L1 arrival snapshot in both versions. L2 through L5 start at `$8E00`. The tile-set replacement routine at `$60C5` copies those eight pages into the active charset at `$C800` and replaces the lookup at `$8E00` with values from `$8F00`. `$62FD` requests the change in L0 at camera column 77 or in L1 at column 53. Its visual effect at those points has not been captured. |
+| Camera rendering copies a small window from a larger layout | `$6049` draws 24 rows of 40 characters and looks up each colour through `$8E00`. Adjacent map rows are 240 bytes apart. The first window addresses are `$9000`, `$A2C0`, `$9000`, `$9D20`, `$9000`, and `$9000`. The other two origins are precisely 20 and 14 map rows beyond `$9000`. In two sets of six captures the CPU simulator agreed with the window formula on 69,120 character and colour pairs. In ten of twelve live views all 960 characters match both buffers using the contemporary camera pointer; the L3 capture occurs during scrolling and the same single-pointer comparison does not hold for it. |
+| The colour path has two loops in one file | CM starts at `$1AFA`. Its first 720 load/store pairs transfer `$8200` onwards to `$D800` onwards. The final indexed loop at `$2BDA` copies another five rows of forty. A scan of all 720 pairs independently checked both addresses and their order. |
+| Port 2 moves the lone fighter | `$3450` reads CIA 1 port A, `$DC00`. Held for 105 frames from each mission-entry save, right moves the horizontal position at `$2EEC` from 112 to 154 (TO) or 156 (AD) versus neutral. Down moves `$2ED4` from 160 to 182 in both. Port 1 right produced the same checked actor fields as the neutral run. Held fire changed the animation state and reduced the number of entries to the normal input poll; individual attacks remain open. The raw frame phases are not identical between editions. |
+| Facing selects the attack table | Moving left through `$350A` sets `$2EFA` to 0. Moving right through `$35A4` sets it to 1. From the L0 entry saves, VICE recorded the first write to `$2F02` for all nine port-2 fire inputs at each facing, with no held weapon. Both disks give the same state matrix below. The matrix establishes action selection, while contact and damage remain open. |
+| The game overlays sprites above and below the waist | `$2F11` orders four actors by Y then stages four shape pointers and two colours for each. `$32F6` places the upper pairs at the actors' coordinates. `$3003` schedules the change at Y plus 19, capped at 213, and puts the lower start two lines later. `$2D23` enables multicolour on the odd-numbered sprites only. On both disks the captured play registers have `$D01C=$AA`. |
+| The ending walks a figure into place | ED's setup copies 1,000 screen characters from `$B000` and selects the `$A800` font. The ending IRQ at `$B653` updates music and advances the moving figure one pixel every other interrupt. When X reaches `$93`, `$B6A1` installs the final sprite pointers and sets the flag that allows a return to the title with either joystick's fire. Both VICE runs reached the final sprite pointers after 320 frames from the first ending capture. TO returned to title from port 1 fire, and AD from port 2 fire. |
+| The countdown follows game calls | The routine at `$62C3` decrements the displayed count every 50 calls. From mission entry, both disks went from 70 to 68 over 800 PAL frames; TO entered the routine 100 times and AD 101 times. |
+| Key 2 starts two independent controls | On both titles, key 2 set the selector at `$2F0A` to 1. In 105-frame runs from the same two-player fixture, both players stayed at X=112 with neutral inputs. Port 1 right moved the second to X=250. Port 2 right moved the first to X=250. Each input poll was reached 105 times. |
+| Sound writes agree in the sampled driver runs | With the native `$040E` initializer and `$048D` update routine from both L0 arrival snapshots, all twelve selectors emitted the same 29,760 ordered writes to the SID over 1,000 updates each. This is a bounded driver comparison, not a claim of matched audio timing at every location in the game. |
+
+### Port 2 fire, first selected action
+
+Both disks matched these values. Idle actor state was restored before each combination. The facing byte was set explicitly before running the game's input poll.
+
+| Joystick with fire | Facing left | Facing right |
+|---|---:|---:|
+| Neutral | $02 | $0D |
+| Up | $05 | $0C |
+| Up-right | $12 | $12 |
+| Right | $03 | $0B |
+| Down-right | $0B | $10 |
+| Down | $06 | $0E |
+| Down-left | $00 | $01 |
+| Left | $01 | $0F |
+| Up-left | $11 | $11 |
+
+Still to trace: collisions, full attack and enemy behavior, normal completion controls, sound cue callers and time base, the complete sprite and HUD data ownership, loaded resource spans outside the sampled map windows, and TO track 35 sector 9. Do not infer absence from the captured scenes.
