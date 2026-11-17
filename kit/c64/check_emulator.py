@@ -47,6 +47,7 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
 from vice import URL, connect, call, read_mem, poke, addr, clear_checkpoints, pause  # noqa: E402
 from ports import resolve_ports  # noqa: E402
+import snapshot  # noqa: E402
 
 MONITOR_PORT = resolve_ports()["vice"] + 1   # as in the c64 launcher, whose module name the kit/scripts one shares
 
@@ -179,10 +180,9 @@ def stopped(rpc):
 
 
 def saved_word(name, a):
-    """A 16-bit value as a snapshot file holds it: RAM is at offset 209 + address (snapshot-ram-offset)."""
-    with open(os.path.join(SNAPDIR, name + ".vsf"), "rb") as f:
-        d = f.read()
-    return d[209 + a] + 256 * d[209 + a + 1]
+    """A 16-bit value as a snapshot file holds it, its RAM found as kit/c64/snapshot.py finds it."""
+    d = snapshot.read(os.path.join(SNAPDIR, name + ".vsf"))
+    return d[a] + 256 * d[a + 1]
 
 
 def patience(n_passes):
@@ -330,8 +330,10 @@ def p1(rpc):
     path = os.path.join(SNAPDIR, "emutest_p1.vsf")
     check("snapshot-save", r.get("status") == "ok" and os.path.exists(path), "a snapshot lands in tools/vice-home", json.dumps(r)[:80])
     data = open(path, "rb").read() if os.path.exists(path) else b""
-    check("snapshot-ram-offset", data[209 + BASE: 209 + BASE + len(CODE)] == CODE,
-          "RAM is at offset 209 + address in the file", f"found at {data.find(CODE) - BASE}")
+    at = snapshot.ram_offset(data) if data.startswith(snapshot.MAGIC) else None
+    check("snapshot-ram-offset", at is not None and data[at + BASE: at + BASE + len(CODE)] == CODE,
+          "kit/c64/snapshot.py finds the RAM in the file, in the C64MEM module",
+          f"C64MEM's RAM at {at}, the program found at {data.find(CODE) - BASE}")
     cp_del(rpc, n); run(rpc)
 
 
@@ -525,7 +527,7 @@ def p2(rpc):
     # the line because those few, and the passes between the two readings, go by the host's calls.
     try:
         np_ = (word(rpc, PASSES) - saved_word("emutest_nocp", PASSES)) & 0xFFFF
-    except (OSError, IndexError):
+    except (OSError, IndexError, SystemExit):
         np_ = 0
     check("checkpoints-survive-load", np_ > 0 and 2 * h >= np_,
           "a checkpoint keeps counting after loading a snapshot saved without any", f"{h} hits in {np_} passes")
