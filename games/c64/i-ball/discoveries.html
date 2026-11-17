@@ -118,17 +118,17 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>These are in the listing. Each was followed through the code; none shows itself on the screen in a way a player would notice.</p>
   <ul>
     <li><b>A laser hit frees the wrong shot.</b> In <code>alien_shot</code>, for a laser or ripple character the X register holds the character's place in the probe (0 to 3), not a shot's slot, so <code>clear_shot</code> frees one of shot slots 0 to 3.</li>
-    <li><b>The interrupts of CIA 1 are switched off with a byte from zero page.</b> <code>init_game_irq</code> and <code>init_title_irq</code> load <code>$7F</code>, the byte at address <code>$7F</code>, where <code>#$7F</code> was surely meant. Nothing in the game writes that byte, so it holds whatever the loader left there.</li>
+    <li><b>The interrupts of CIA 1 are switched off with a byte from zero page.</b> <code>init_game_irq</code> and <code>init_title_irq</code> load <code>$7F</code>, the byte at address <code>$7F</code>, where <code>#$7F</code> was surely meant. The game never writes that byte, so it holds whatever the loader left there.</li>
     <li><b><code>death_explode</code>'s loop runs once.</b> It ends with <code>DEX</code> and <code>BEQ</code>, so only sprite 7 gets its colour and pointer there; <code>death_flash</code> sets all the pointers afterwards, which hides the slip.</li>
-    <li><b>Three flags nothing uses.</b> <code>disc_rollback</code> clears Fuel Injection's flag, but the extra never sets it: it only raises the vertical speed limit. Turbo Boost and Extended Play set flags that nothing reads.</li>
+    <li><b>Three flags the game never uses.</b> <code>disc_rollback</code> clears Fuel Injection's flag, but the extra never sets it: it only raises the vertical speed limit. Turbo Boost and Extended Play set flags that the game never reads.</li>
   </ul>
 </section>
 
 <section>
   <p class="fig">08 · Leftovers</p>
   <h2 class="t">Secret: earlier versions of the game are still in memory</h2>
-  <p>The image holds code the game never runs. There are older versions of the two panel routines at <code>$41E5</code>-<code>$426A</code> and an older dot scroller at <code>$4CEE</code>; six fragments of code that nothing reaches; a stale copy of <code>$4246</code>-<code>$42FF</code> at <code>$C246</code>; and the remains of a loader at <code>$8CD0</code>-<code>$8DFF</code>, with the text "SEARCHING LOADING BLOCK? REWIND TO" elsewhere in memory and "LOADING 12" near the top.</p>
-  <p>Beside the speech player sits a small test program, <code>sample_test</code> at <code>$C209</code>. It flashes the border and background while a sample plays and says a sample when one of its keys is pressed: what a programmer would use to try the speech out on its own. Nothing in the game calls it. The Source code tab has all of these, each marked.</p>
+  <p>The image holds code the game never runs. There are older versions of the two panel routines at <code>$41E5</code>-<code>$426A</code> and an older dot scroller at <code>$4CEE</code>; six fragments of code that the game never reaches; a stale copy of <code>$4246</code>-<code>$42FF</code> at <code>$C246</code>; and the remains of a loader at <code>$8CD0</code>-<code>$8DFF</code>, with the text "SEARCHING LOADING BLOCK? REWIND TO" elsewhere in memory and "LOADING 12" near the top.</p>
+  <p>Beside the speech player sits a small test program, <code>sample_test</code> at <code>$C209</code>. It flashes the border and background while a sample plays and says a sample when one of its keys is pressed: what a programmer would use to try the speech out on its own. The game never calls it. The Source code tab has all of these, each marked.</p>
 </section>
 
 </main>

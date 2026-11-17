@@ -71,8 +71,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <canvas class="pd-pic" id="pd-lines" width="624" height="330" aria-label="Eleven straight lines, one for each rival's distance against the race clock, none of them crossing"></canvas>
     <p class="cap">Each rival's distance from the start line, in laps, against the race clock, from <code>rival_start_coarse</code>, <code>rival_start_fine</code> and <code>rival_top_speeds</code>, moved as <code>move_rivals</code> moves them. The darker the line, the faster the kart. The race runs until the third rival crosses the line, which ends the game for a player who has not finished.</p>
   </div>
-  <p>A rival is four numbers: a lap count, a position along the lap, a speed and a lane. Once a race frame <code>move_rivals</code> (<code>$1950</code>) adds the speed to the position, and every other race frame, until the speed reaches the top speed of the rival's place on the starting grid, it adds one to the speed. That is all a rival does. Nothing about the track goes in: a rival keeps the same speed through every bend, over every hill and across every jump, on all 25 stages, and it never changes lane. The karts only seem to follow the bends and ride the hills because <code>place_rivals</code> draws each one where its lane falls on the road at its distance.</p>
-  <p>Nor can a rival crash. Karts drive straight through one another, and the game has a spin, a fall and a slowdown for the player's kart only. And no rival ever overtakes another. The faster karts start in front, and all eleven speed up at the same rate until each reaches its top speed, so none is ever slower than the one behind it, and the lines above never cross. The order the rivals finish in is settled before the lights change; the player's kart is the only one that changes places. <a href="index.html#rivals">How it works</a> has the race to drive.</p>
+  <p>A rival is four numbers: a lap count, a position along the lap, a speed and a lane. Once a race frame <code>move_rivals</code> (<code>$1950</code>) adds the speed to the position, and every other race frame, until the speed reaches the top speed of the rival's place on the starting grid, it adds one to the speed. That is all a rival does. The track plays no part in it: a rival keeps the same speed through every bend, over every hill and across every jump, on all 25 stages, and it never changes lane. The karts only seem to follow the bends and ride the hills because <code>place_rivals</code> draws each one where its lane falls on the road at its distance.</p>
+  <p>Nor can a rival crash. Karts drive straight through one another, and the game has a spin, a fall and a slowdown for the player's kart only. And a rival never overtakes another. The faster karts start in front, and all eleven speed up at the same rate until each reaches its top speed, so none is ever slower than the one behind it, and the lines above never cross. The order the rivals finish in is settled before the lights change; the player's kart is the only one that changes places. <a href="index.html#rivals">How it works</a> has the race to drive.</p>
 </section>
 
 <section id="middle">
@@ -90,7 +90,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="note">
   <p class="fig">03 · Text</p>
   <h2 class="t">Secret: a note in front of the first instruction</h2>
-  <p class="lede">The game's code starts at <code>$0834</code>. The 52 bytes before it are text that nothing reads.</p>
+  <p class="lede">The game's code starts at <code>$0834</code>. The 52 bytes before it are text that the game never reads.</p>
   <div class="plate"><pre class="pd-pre" id="pd-sig"></pre>
   <p class="cap">The bytes at <code>$0800</code>-<code>$0833</code> (<code>signature_text</code>), as text: a return is a new line, and <code>$05</code>, the code for white text, is left out.</p></div>
   <p>The loader's last instruction jumps to <code>$0834</code>, just past the text. The copyright line on the select screen names Activision, Sega and Chris Butler. What "pbj gma89" stands for is not known.</p>
@@ -137,7 +137,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">06 · Sound effects</p>
   <h2 class="t">Secret: an engine sound the game never plays</h2>
   <p class="lede">The sound driver holds four effects. The game starts only two of them, and the fourth is an engine's hum that keeps itself going.</p>
-  <p>A search of the code for every write to <code>sound_effect</code> (<code>$B805</code>) finds the value 2, when the place changes or a rival comes alongside, and 3, for a spin, and otherwise only the driver itself. Effect 4 is a steady tone with a pulse that sweeps up and down, and its last command jumps back to repeat it. Starting it sets <code>$B808</code>, and while that is set, the end of any other effect starts effect 4 again (<code>sound_end_effect</code>). The only routine that clears it, <code>sound_engine_off</code> (<code>$C01C</code>), is called by nothing. It sounds like an engine.</p>
+  <p>A search of the code for every write to <code>sound_effect</code> (<code>$B805</code>) finds the value 2, when the place changes or a rival comes alongside, and 3, for a spin, and otherwise only the driver itself. Effect 4 is a steady tone with a pulse that sweeps up and down, and its last command jumps back to repeat it. Starting it sets <code>$B808</code>, and while that is set, the end of any other effect starts effect 4 again (<code>sound_end_effect</code>). The only routine that clears it, <code>sound_engine_off</code> (<code>$C01C</code>), is never called. It sounds like an engine.</p>
   <p>Effect 1 has no writer either. It is the only pattern that uses command 36, which reads the keyboard's port at <code>$DC01</code> and then ignores what it read (<code>cmd_effect_release</code>). Both can be heard on the <a href="index.html#effects">How it works</a> tab.</p>
 </section>
 
@@ -150,10 +150,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="stripes">
   <p class="fig">08 · Unused pictures</p>
-  <h2 class="t">Two sprites of stripes that nothing shows</h2>
+  <h2 class="t">Two sprites of stripes that the game never shows</h2>
   <p class="lede">Sprites <code>$A1</code> and <code>$A2</code> sit in the part of a view screen that is never shown, and no table or routine points a sprite at them.</p>
   <div class="plate"><canvas class="pd-cv" id="pd-stripes" width="96" height="42" style="max-width:384px"></canvas>
-  <p class="cap">Sprites <code>$A1</code> and <code>$A2</code> from <code>$E840</code> and <code>$E880</code>, drawn in multicolour, as the race draws every sprite, with the race's two shared sprite colours, black and light grey, and white for their own colour, which nothing gives them.</p></div>
+  <p class="cap">Sprites <code>$A1</code> and <code>$A2</code> from <code>$E840</code> and <code>$E880</code>, drawn in multicolour, as the race draws every sprite, with the race's two shared sprite colours, black and light grey, and white for their own colour, which the game never gives them.</p></div>
   <p>The video chip finds a sprite's picture at 64 times its pointer in the video bank at <code>$C000</code>. Pointers <code>$A0</code> to <code>$A2</code> land in rows 0 to 4 of the view screen at <code>$E800</code>, which is never shown, since the panel takes those rows from another screen; so the game keeps three sprites there. <code>$A0</code> is the last driver's head looking back. The other two hold only bands of stripes.</p>
 </section>
 
