@@ -2,7 +2,11 @@
 """Read a VICE snapshot into a flat 64 KB image.
 
 The C64's snapshot is a `.vsf`: a text header block, then the modules,
-then the RAM image at a fixed offset. `read` returns 0x10000 bytes of RAM
+each a 22-byte header (name, version, size with the header) and its body.
+The RAM image is the C64MEM module's body after its four port bytes. Its
+offset in the file was 209 on VICE 3.x and is 232 on v4.0.0, whose CPU
+module is longer, so it is found by walking the modules; a file with no
+modules to walk (the kit's own test fixtures) is read at 209. `read` returns 0x10000 bytes of RAM
 (the RAM under the I/O area and the ROMs is all here; what the CPU saw
 depends on `$01` at the time, which `kit/c64/cpu.py` and listing.py's
 "io" rows model).
@@ -46,7 +50,26 @@ def read(path, bank=None):
     if len(blob) < VSF_RAM_OFFSET + RAM_SIZE:
         sys.exit(f"{path}: {len(blob)} bytes, too short for a VICE snapshot "
                  f"(needs {VSF_RAM_OFFSET + RAM_SIZE})")
-    return blob[VSF_RAM_OFFSET:VSF_RAM_OFFSET + RAM_SIZE]
+    off = ram_offset(blob)
+    return blob[off:off + RAM_SIZE]
+
+
+def ram_offset(blob):
+    """Where the 64 KB RAM image starts in a .vsf: the C64MEM module's body after its four
+    port bytes, found by walking the modules; VSF_RAM_OFFSET when the modules cannot be walked."""
+    p = blob.find(b"VICE Version\x1a")
+    p = p + 21 if p >= 0 else 37
+    while 0 < p and p + 22 <= len(blob):
+        name = blob[p:p + 16].rstrip(b"\0")
+        size = int.from_bytes(blob[p + 18:p + 22], "little")
+        if size < 22:
+            break
+        if name == b"C64MEM":
+            if p + 26 + RAM_SIZE <= len(blob):
+                return p + 26
+            break
+        p += size
+    return VSF_RAM_OFFSET
 
 
 def main():
