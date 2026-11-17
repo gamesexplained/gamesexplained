@@ -2,7 +2,7 @@
  "schema": 1,
  "platform": "c64",
  "game": "ikari-warriors",
- "build": "",
+ "build": "G64 disk image: a 101-byte boot program and a 1,265-byte fast loader as files, and the game in raw sectors, its $4000-$CFFF EORed with $C9; one load, entered at $0F80",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -8748,6 +8748,12 @@
    "kind": "user"
   },
   {
+   "address": 37444,
+   "name": "unused_tile_colours",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 37469,
    "name": "tile_colours_925D",
    "type": "UserDefined",
@@ -8888,6 +8894,12 @@
   {
    "address": 42023,
    "name": "tiles_A427",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42119,
+   "name": "unused_tile_shapes",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -11719,7 +11731,7 @@
   },
   {
    "address": 53248,
-   "name": "map_objects_io",
+   "name": "map_obj_0",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -13178,7 +13190,7 @@
   {
    "address": 4286,
    "type": "line",
-   "text": "The opening sequence played once after loading: points the IRQ at intro_irq ($1253, music only), copies 47 sprite registers from intro_sprite_regs, swaps in the intro's sprite shapes with swap_intro_sprites, clears the screen to black on dark grey colour, sets the eight sprite pointers from intro_sprite_ptrs, starts tune 2, then moves the sprites in stages (each stage waits a frame with wait_frame): scrolls them left until their X high bits clear and sprite 0 is left of 136, then scrolls the background (scroll_x_step, scroll_y_step, draw_intro_rows) for 12 rows, moves the sprites down until sprite 0 reaches line 212, plays effect 9, slides them along intro_slide_table for 114 frames (effect 20 at step 64), then wipes the screen with a raster split that grows by two lines a frame. Ends by swapping the bitmap back and calling restore_charset."
+   "text": "The opening sequence played once after loading: points the IRQ at intro_irq ($1253, music only), copies 47 sprite registers from intro_sprite_regs (among them a blue background, 6), swaps in the intro's sprite shapes with swap_intro_sprites, fills the screen with character 0 and colour RAM with 8, sets the eight sprite pointers from intro_sprite_ptrs, starts tune 2, then moves the sprites in stages (each stage waits a frame with wait_frame): scrolls them left until their X high bits clear and sprite 0 is left of 136, then scrolls the background (scroll_x_step, scroll_y_step, draw_intro_rows) for 12 rows, moves the sprites down until sprite 0 reaches line 212, plays effect 9, slides them along intro_slide_table for 114 frames (effect 20 at step 64), then wipes the screen with a raster split that grows by two lines a frame. Ends by swapping the sprite shapes back (swap_intro_sprites) and calling restore_charset."
   },
   {
    "address": 4691,
@@ -13458,7 +13470,7 @@
   {
    "address": 7908,
    "type": "line",
-   "text": "Attract screen: blanks the map, plays scroll script b, restores the game's character set, copies the title font (copy_title_font), prints the high-score table at $21EE one screen up (print_text), then plays scroll scripts c and e with multicolours 9 and 13. Returns at once with the carry clear when a player pressed fire."
+   "text": "Attract screen: blanks the map, plays scroll script b, restores the game's character set, copies the title font (copy_title_font), prints the credits at $21EE one screen up (print_text), then plays scroll scripts c and e with multicolours 9 and 13. Returns with the carry clear when a player pressed fire, once the scroll script running at the time has ended."
   },
   {
    "address": 7969,
@@ -13468,7 +13480,7 @@
   {
    "address": 7978,
    "type": "line",
-   "text": "Writes the credits block at $2108 (ten rows of 23 characters: the \"1ST 100000 IKARI\" style rows of the default high-score table) into the map one screen up, five cells in, every other row, skipping spaces ($20) and blanks ($E0), each in colour 13; then copies the title font and moves the view back down."
+   "text": "Writes the high-score table at $2108 (ten rows of 23 characters, \"1ST 100000 IKARI\" and the rest) into the map one screen up, five cells in, every other row, skipping spaces ($20) and blanks ($E0), each in colour 13; then copies the title font and moves the view back down. Despite its name it draws the scores; the credits are the text at $21EE."
   },
   {
    "address": 8069,
@@ -13573,7 +13585,7 @@
   {
    "address": 9250,
    "type": "line",
-   "text": "Throws a grenade (A = 0) or fires a tank shell (A = $80) for player X into one of that player's two slots at $7B4C (X or X+2); returns with the carry set if both are busy or the player has none left. A grenade costs one of the BCD count zpa_6F+x, a shell one of zpa_E0+x. The slot takes the player's facing zpa_31+x, the blast power-up zpa_E6+x and the shoot-through power-up zpa_E4+x, a range from grenade_range (or, with the long-range power-up zpa_E2+x, from grenade_range_long, indexed by the slot number in Y rather than the facing: a slip that gives player 1's grenades $40 and player 2's $2E or $32 whatever their direction), and a start position offset from the player by grenade_start_x and grenade_start_y. Plays sound 7 for a grenade, 2 for a shell."
+   "text": "Throws a grenade (A = 0) or fires a tank shell (A = $80) for player X into one of that player's two slots at $7B4C (X or X+2); returns with the carry set if both are busy or the player has none left. A grenade costs one of the BCD count zpa_6F+x, a shell one of zpa_E0+x. The slot takes the player's facing zpa_31+x, the blast power-up zpa_E6+x ($02AC) and the shoot-through power-up zpa_E4+x ($02B9), a range from grenade_range by facing, and a start position offset from the player by grenade_start_x and grenade_start_y. A shell fired with the long-range power-up (zpa_E2+x) takes its range from grenade_range_long instead, but indexed by the slot number in Y rather than the facing: a slip that gives player 1's shells $40 and player 2's $2E or $32 whatever their direction. Plays sound 7 for a grenade, 2 for a shell."
   },
   {
    "address": 9427,
@@ -13588,12 +13600,12 @@
   {
    "address": 9459,
    "type": "line",
-   "text": "How far a grenade flies for each of the eight facings: $30 straight up or down, $35 sideways, $26-$29 on the diagonals."
+   "text": "How long a grenade or shell flies for each of the eight facings (0 up, then clockwise): $30 up, right and left, $35 down, $26 on the upward diagonals and $29 on the downward ones."
   },
   {
    "address": 9467,
    "type": "line",
-   "text": "The longer grenade ranges for the long-range power-up, meant per facing like grenade_range ($40 straight, $46 sideways, $2E-$32 diagonal), but read by slot number (see throw_grenade)."
+   "text": "The longer ranges of a tank's shells with the long-range power-up, meant per facing like grenade_range ($40 up, right and left, $46 down, $2E and $32 on the diagonals), but read by slot number (see throw_grenade), so a shell gets $40 from slot 0 or 2 (player 1) and $2E or $32 from slot 1 or 3 (player 2). A grenade thrown on foot never uses them."
   },
   {
    "address": 9475,
@@ -13738,7 +13750,7 @@
   {
    "address": 11106,
    "type": "line",
-   "text": "Three frames ($DF, $E0, $E1) of a hit tank."
+   "text": "Three frames ($DF, $E0, $E1) of a smoking tank, shown while its countdown runs: after a grenade hit, or after its fuel ran out."
   },
   {
    "address": 11109,
@@ -13803,7 +13815,7 @@
   {
    "address": 11751,
    "type": "line",
-   "text": "The soldiers' walking frames, $51-$6E, each listed twice so that it shows for two steps."
+   "text": "The soldiers' walking frames, $51-$6E, in steps for each facing: most frames are listed twice so that each shows for two steps, and the lists for facings 3 and 5 run forward and back again, so some frames on the way back appear once."
   },
   {
    "address": 11819,
@@ -13893,7 +13905,7 @@
   {
    "address": 12674,
    "type": "line",
-   "text": "Raster interrupt used for the sprite bands in the play area: runs the multiplexer step at $3638 with the ROMs banked out."
+   "text": "Raster interrupt used for the sprite bands in the play area: ORs $01 with 5 so that the I/O block is visible even if the main code had lowered it to read RAM under I/O, then runs the multiplexer step at $3638."
   },
   {
    "address": 12699,
@@ -14023,7 +14035,7 @@
   {
    "address": 14606,
    "type": "line",
-   "text": "Q pauses the game: sets zpa_2A (which freezes the players, the soldiers and the panel), plays sound 22, waits for Q to be let go, then waits for fire on either joystick (carries on, A = $FF) or for @ (returns with Z set, which ends the game). Returns at once with A = $FF if Q is not held."
+   "text": "Q pauses the game: sets zpa_2A (which stops the soldiers, the grenades, the explosions and the players' moves in the interrupt), plays sound 22, waits for Q to be let go, then waits for fire on either joystick (carries on, A = $FF) or for @ (returns with Z set, which ends the game). The rest of the main loop stops because the loop is held inside this routine. Returns at once with A = $FF if Q is not held."
   },
   {
    "address": 14650,
@@ -14033,12 +14045,12 @@
   {
    "address": 14735,
    "type": "line",
-   "text": "Draws 48 rows of the route below the view (draw_rows)."
+   "text": "Draws 48 rows of the route (draw_rows): window rows from 32 below the top row up to 15 above it, the whole view and the rows on either side."
   },
   {
    "address": 14739,
    "type": "line",
-   "text": "Draws 34 rows of the route below the view (draw_rows)."
+   "text": "Draws 34 rows of the route through draw_rows, from 48 rows ahead of the top row backwards."
   },
   {
    "address": 14741,
@@ -14078,7 +14090,7 @@
   {
    "address": 15268,
    "type": "line",
-   "text": "0, the amount subtracted from the fuel before it is measured against fuel_bar_steps."
+   "text": "The base of a table read with X from 1 to 11, so that entry X is fuel_bar_steps' entry X-1: the fuel level at which cell X of the bar starts, subtracted from the fuel to tell how full (0-3) that cell is. The 0 here is never read."
   },
   {
    "address": 15269,
@@ -14248,7 +14260,7 @@
   {
    "address": 24256,
    "type": "line",
-   "text": "Sprite frames $7B-$81: the big explosion, a cloud that swells and breaks up."
+   "text": "Sprite frames $7B-$81: the swelling and fading cloud of a sprite explosion (start_explosion, kind 0, through explosion_frames), not the character-drawn big explosion of update_big_blasts."
   },
   {
    "address": 24704,
@@ -14268,7 +14280,7 @@
   {
    "address": 25792,
    "type": "line",
-   "text": "Sprite frames $93-$9F: the legs and boots of the large figures in the title picture."
+   "text": "Sprite frames $93-$9F: the ending's figures, two sprites wide and four high, from the head ($93, $94) down to the boots ($99, $9A), with $9B-$9F their other steps. Only ending_figures_frames names them (ending_setup, ending_animate)."
   },
   {
    "address": 26624,
@@ -14333,7 +14345,7 @@
   {
    "address": 33371,
    "type": "line",
-   "text": "The map script's special commands, by the low five bits: $10 sets the background colours $D021-$D023 from the next three bytes (skipped in attract mode, zpa_AB); $0F starts the ending (ending_setup); $0E sets zpa_AD, which sends the main loop to the last stretch at $C77C; $11 sends a helicopter down the screen (unless one is already flying, zpa_B4, or in attract mode): sound 14, two sprites side by side at the X the next byte gives times 2, line $30, frames $75 and $76 in colours 5 and 15, the second its turning rotor; $12 sets the soldiers' fire_chance from the next byte; $13 adds a stretch of breakable scenery to the blast list ($7DC3, six slots: column, width, height, and the two bytes the rubble uses); $14 adds a gun position to the gun list ($7DCF, four slots: its column, then its kind, recorded at the current row); $1C-$1F set the ground's fill mode zpa_D3 from the low two bits. Other values do nothing."
+   "text": "The map script's special commands, by the low five bits: $10 sets the background colours $D021-$D023 from the next three bytes (skipped in attract mode, zpa_AB); $0F starts the ending (ending_setup); $0E sets zpa_AD, which sends the main loop to route_finished; $11 sends a helicopter down the screen (unless one is already flying, zpa_B4, or in attract mode): sound 14, two sprites side by side at the X the next byte gives times 2, line $30, frames $75 and $76 in colours 5 and 15, the second its turning rotor; $12 sets the soldiers' fire_chance from the next byte; $13 adds a stretch of breakable scenery to the blast list ($7DC3, six slots: column, width, height, and the two bytes the rubble uses); $14 adds a gun position to the gun list ($7DCF, four slots: its column, then its kind, recorded at the current row); $1C-$1F set the ground's fill mode zpa_D3 from the low two bits. Other values do nothing."
   },
   {
    "address": 33670,
@@ -14831,6 +14843,11 @@
    "text": "A count of 12, then the colour of each character of tiles_A427."
   },
   {
+   "address": 37444,
+   "type": "line",
+   "text": "25 bytes between the colour lists that no line of the map script points at, and no pointer anywhere in memory names: the form of a colour list (a count of 8, then colours 8 and 25), followed by more bytes of colour 8."
+  },
+  {
    "address": 37469,
    "type": "line",
    "text": "A count of 32, then the colour of each character of tiles_A54F."
@@ -14868,7 +14885,7 @@
   {
    "address": 37601,
    "type": "line",
-   "text": "The route, as the map script draw_map_row runs one row at a time: tile sets to load, background colours, objects to start at given columns, waits between them, guns and breakable scenery, helicopter, the soldiers' fire rate, and at the end the ending ($97F0). 1,630 rows of waits in all from the crash site to the end."
+   "text": "The route, as the map script draw_map_row runs one row at a time: tile sets to load, background colours, objects to start at given columns, waits between them, guns and breakable scenery, helicopters, and the soldiers' fire rate. Route row 1,878 starts the ending's figures ($97F0, ending_setup), and twelve rows on, at route row 1,890, the command at $97F2 sets zpa_AD, which ends the game with route_finished; long waits follow, so the script never reads further. Route rows are counted from the first the script draws in a game, row 0."
   },
   {
    "address": 38625,
@@ -14949,6 +14966,11 @@
    "address": 42023,
    "type": "line",
    "text": "The shapes of 12 characters, 8 bytes each, which the map script loads as characters $63-$6E in tile slot 17 at route row 1563. Their colours are at tile_colours_9237."
+  },
+  {
+   "address": 42119,
+   "type": "line",
+   "text": "200 bytes of character shapes, 25 characters, between the tile sets, that no line of the map script loads and no pointer anywhere in memory names."
   },
   {
    "address": 42319,
@@ -15113,7 +15135,7 @@
   {
    "address": 47351,
    "type": "line",
-   "text": "Every 3 frames, checks the grenades and shells in flight (slots 0-7 of $7B4C). A player's grenade (slots 0-3), without the shoot-through power-up (zpf_E4), that passes over a wall (a cell whose colour has bit 6 set) lands there at once. Any grenade still high in its flight that meets a soldier, or a player other than the one who threw it, lands on them at once; a shell ($02B9+x nonzero) instead kills the soldier outright (100 points to the thrower) or the player."
+   "text": "Every 3 frames, checks the grenades and shells in flight (slots 0-7 of $7B4C) once they are past the first part of their flight ($0276+x at $10 or more). A player's grenade or shell (slots 0-3) that passes over a wall (a cell whose colour has bit 6 set) lands there at once, unless zpf_E4 is set; that test reads player 1's shoot-through power-up for both players, without the player index. Then any of the eight that meets a soldier, or a player other than the one who threw it, lands on them at once; one thrown with the shoot-through power-up ($02B9+x) instead kills the soldier outright (100 points to the thrower) or the player, and flies on."
   },
   {
    "address": 47653,
@@ -15188,7 +15210,7 @@
   {
    "address": 48728,
    "type": "line",
-   "text": "What one explosion at zpa_BF, zpa_C0 destroys, within zpa_F6 pixels across and zpa_F7 down: every soldier (kill_soldier; 100 points each to a player who threw the grenade); every player on foot except the thrower (kill_player_x); a flying helicopter (sound 21, 1,000 points); and enemy tanks (tank_destroyed). It then looks at the map cell under it: inside a stretch of breakable scenery in the blast list, it wrecks the stretch (a big explosion queued through queue_big_blast, the stretch's points, $7DB7+x, to the thrower, and any gun positions in it removed); otherwise it marks the cell (blast_at_cell) in a colour that depends on what blew up."
+   "text": "What one explosion at zpa_BF, zpa_C0 destroys, within zpa_F6 pixels across and zpa_F7 down: every soldier (kill_soldier; 100 points each to a player who threw the grenade); every player on foot except the thrower (kill_player_x); a flying helicopter (sound 21, 1,000 points); and enemy tanks (tank_destroyed). It then looks at the map cell under it: inside a stretch of breakable scenery in the blast list, it wrecks the stretch (a big explosion queued through queue_big_blast, the stretch's points, $7DB7+x, to the thrower, and any gun positions in it removed). Otherwise, only when the grenade carried the blast power-up ($02AC+y, or the shell kind of an enemy's), it queues a big explosion there (blast_at_cell), the eight arms of fire of update_big_blasts, in a colour that depends on the kind of shot."
   },
   {
    "address": 49199,
@@ -15213,7 +15235,7 @@
   {
    "address": 49554,
    "type": "line",
-   "text": "Puts the item of the soldier Y on the map where it fell, in the first free item slot (8-23 of the marker list): not within two cells of another marker, not inside breakable scenery, and only on four cells that can be walked on (colour bit 7 clear). Draws it (draw_marker, characters $CC-$CF) in its kind's colour from item_colours."
+   "text": "Puts the item of the soldier Y on the map where it fell, in the highest-numbered free item slot (searching 23 down to 8 of the marker list): not within two cells of another marker, not inside breakable scenery, and only on four cells that can be walked on (colour bit 7 clear). Draws it (draw_marker, characters $CC-$CF) in its kind's colour from item_colours."
   },
   {
    "address": 49797,
@@ -15278,7 +15300,7 @@
   {
    "address": 50956,
    "type": "line",
-   "text": "Walks player X into the tank they are boarding ($020E+y): sideways to its X, then down or up to its row; once there, takes the tank over: its fuel, shells and countdown pass to the player (zpa_53, zpf_E0, zpf_CA), zpa_36 is set, sound 6 plays and the tank shudders (zpa_5B = $80)."
+   "text": "Walks player X into the tank they are boarding ($020E+y): each call steps the X position and the row one towards the tank's, so the player moves diagonally; once both match, takes the tank over: its fuel, shells and countdown pass to the player (zpa_53, zpf_E0, zpf_CA), zpa_36 is set, sound 6 plays and the tank shudders (zpa_5B = $80)."
   },
   {
    "address": 51068,
@@ -15338,7 +15360,7 @@
   {
    "address": 51767,
    "type": "line",
-   "text": "Ends play: marks both players dead, stops the soldiers firing, and keeps the game's routines running until every bullet, grenade and big explosion has finished; then updates the panel."
+   "text": "Ends play: marks both players dead, zeroes the first byte of fire_chance (which stops the soldiers' grenades and shells, though soldiers of kinds 1-3 can still fire bullets), and keeps the game's routines running until every bullet, grenade and big explosion has finished; then updates the panel."
   },
   {
    "address": 51846,
@@ -15438,7 +15460,7 @@
   {
    "address": 53248,
    "type": "line",
-   "text": "The streams of map objects 0-35, kept in the RAM under the I/O chips and read by draw_map_row with the I/O banked out."
+   "text": "Map object 0: 6 columns wide and 5 rows high, its offsets counted from tile slot 1. The route places it 17 times, first at row 67, column 13."
   },
   {
    "address": 53284,
@@ -15733,7 +15755,7 @@
   {
    "address": 57698,
    "type": "line",
-   "text": "Command $83: sets the voice's slide flag and the 16-bit step and interval it slides the pitch by (three bytes)."
+   "text": "Command $83: sets the voice's slide flag, the 16-bit step, and a delay in frames before the slide starts (three bytes); after the delay voice_update adds the step every frame."
   },
   {
    "address": 57727,
@@ -15808,7 +15830,7 @@
   {
    "address": 58075,
    "type": "line",
-   "text": "Works out voice X's frequency each frame: the note plus the arpeggio's offset (arp_table, stepping each frame and looping where an entry has bit 7 set) plus the transposition, through freq_table; adds vibrato (a triangle of the given depth and speed), the slide, and the pulse sweep; then writes frequency, pulse width and control to the chip, unless an effect holds the voice. Every other frame flag bit 2 changes; in drum mode the frames with it set play noise with the frequency's high byte raised by $30."
+   "text": "Works out voice X's frequency each frame: the note plus the arpeggio's offset (arp_table, stepping each frame and looping where an entry has bit 7 set) plus the transposition, through freq_table; adds vibrato (a triangle of the given depth and speed), the slide, and the pulse sweep; then writes frequency, pulse width and control to the chip, unless an effect holds the voice. Flag bit 2 flips every frame; in drum mode the frames with it set play noise ($81). It then adds $31 to its copy of the frequency's high byte, after the frequency was written, so that raise never reaches the chip."
   },
   {
    "address": 58349,
@@ -15838,7 +15860,7 @@
   {
    "address": 58613,
    "type": "line",
-   "text": "freq_table from its 33rd note."
+   "text": "One byte into freq_table's 33rd note, which starts at $E4F4: the high byte of that note's frequency."
   },
   {
    "address": 58884,

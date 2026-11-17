@@ -1,0 +1,193 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ikari Warriors — the road</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.plate{margin:0 0 22px}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.ik-two{grid-template-columns:1fr}}
+.ik-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.ik-table{border-collapse:collapse;font-size:14px;width:100%}
+.ik-table td,.ik-table th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.ik-px{image-rendering:pixelated;display:block;max-width:100%;height:auto}
+.ik-sheet{display:flex;flex-wrap:wrap;gap:6px}
+.ik-sheet figure{margin:0;background:#222;border-radius:4px;padding:3px;text-align:center}
+.ik-sheet figcaption{font:500 10px/1.3 var(--fm);color:#fff}
+.ik-sheet canvas{image-rendering:pixelated;display:block}
+.ik-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.ik-note{font-size:14px;color:var(--ink-mute)}
+sup.fn{font-size:.7em;line-height:0}
+sup.fn a{text-decoration:none}
+sup.fn + sup.fn::before{content:","}
+.overview-shot{margin:22px 0}
+.overview-shot img{width:100%;max-width:768px;height:auto;aspect-ratio:384/272;image-rendering:pixelated;display:block}
+.overview-shot figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px;max-width:768px}
+
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1988 · Elite Systems</p>
+  <h1>Ikari Warriors: the whole road</h1>
+  <p class="sub">The game has one level: a road 1,891 rows long, built a row at a time by a script. This page runs the game's own drawing code over that script and shows every row.</p>
+</header>
+<main class="wrap">
+
+<section id="map">
+  <p class="fig">01 · The map</p>
+  <h2 class="t">From the wrecked plane to Colonel Cook</h2>
+  <p>The road starts at the bottom and runs up. Drag the slider or scroll inside the picture to walk it. The numbers on the left are route rows, eight pixels each, counted from the first row a game draws.</p>
+  <div class="plate">
+    <label class="ik-note" for="mRow">Route row <b id="mRowV">0</b>: <span id="mWhere"></span></label>
+    <input id="mRow" type="range" min="0" max="1890" value="0" style="width:100%;display:block">
+    <div id="mBox" style="height:560px;overflow-y:auto;overflow-x:hidden;background:#222;border-radius:6px;margin-top:10px;position:relative">
+      <canvas id="mCanvas" class="ik-px" style="width:100%;max-width:604px;margin:0 auto"></canvas>
+    </div>
+    <p id="mCap" class="cap">Drawn by the game's <a href="source.html#7F80"><code>draw_map_row</code></a> on the kit's 6502, from the bytes of the Source tab.</p>
+  </div>
+  <p>The labels on the right mark what the script does at that row, each with a word as well as a colour: <b>TILES</b> where it loads a new set of characters (26 times), and <b>COPTER</b> where it sends a helicopter down the screen (21 times). The last two marks are the <b>END</b>: the figures of the ending at row 1,878, and the end of the game at row 1,890.</p>
+</section>
+
+<section id="script">
+  <p class="fig">02 · The script</p>
+  <h2 class="t">A road written as a script</h2>
+  <p>The road is not stored as a picture. It is a script at <a href="source.html#92E1"><code>map_script</code></a>, 1,302 bytes long, that <a href="source.html#7F80"><code>draw_map_row</code></a> runs one step each time the screen needs a new row (<a href="source.html#81D7"><code>map_script_step</code></a>). A step either waits a number of rows or does something:</p>
+  <ul>
+    <li>start one of 118 <b>map objects</b> at a column: a building, a wall, a river bank, a stretch of trees. Each object is a stream of rows of characters at <a href="source.html#83FF"><code>map_object_ptrs</code></a>, and an object can call another with a repeat count, which is how a long river is built from one short piece. Up to six objects are drawn at once.</li>
+    <li>load a <b>tile set</b> into the character set (<a href="source.html#8386"><code>map_load_tiles</code></a>), so the road can change from jungle to river to village while the game keeps only 256 characters.</li>
+    <li>run a <b>special</b> (<a href="source.html#825B"><code>map_special</code></a>): new background colours, a helicopter, a gun pit, a stretch of scenery that a grenade can break, the soldiers' rate of fire, the ending.</li>
+  </ul>
+  <p>Under the objects lies the ground, earth and grass copied from a 64-row pattern at <a href="source.html#D800"><code>ground_pattern</code></a>, kept in the memory under the input and output chips. Each new row is written into a window of 64 rows that wraps round (<a href="source.html#C87F"><code>map_row_ptrs</code></a>), and the 22 rows on screen are copied out of it as the view scrolls (<a href="source.html#32D4"><code>copy_play_area</code></a>).</p>
+  <p>The picture above is the game's own code at work, so it is the road as the game builds it. A Python copy of <a href="source.html#7F80"><code>draw_map_row</code></a>, written for this study, gave the same 1,891 rows as the game's code, and the 49 rows the game had drawn in a saved moment of play in the emulator matched both.<sup class="fn"><a href="about.html#src-6" title="Measurements">6</a></sup></p>
+</section>
+
+<section id="soldiers">
+  <p class="fig">03 · Soldiers</p>
+  <h2 class="t">Where the soldiers wait</h2>
+  <p>The soldiers and mines are not in the map script. They come from a separate list at <a href="source.html#ACA7"><code>route_list</code></a>, 369 entries of a scroll position and either a group of soldiers from <a href="source.html#B26F"><code>enemy_groups</code></a> or the column of a mine. The twelve empty tanks come from <a href="source.html#2A28"><code>tank_list</code></a>. The map above shows the scenery only; the <a href="gameplay.html#route">Gameplay</a> page explains how the list is read.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* ikari-route */
+// The whole road, built by the game's own draw_map_row ($7F80) on the kit's 6502 (C64Cpu) over the
+// listing's memory (ram, 64 KB), as a game builds it: restore_charset ($25F0) puts the game's own
+// characters back, reset_game_vars ($1666) clears the map script's state (zpa_D7 = 0 starts it at
+// map_script, $92E1), then one call a route row. draw_map_row writes route row r into window row
+// (zpa_4C - 16) AND 63, so zpa_4C is set to (48 - r) AND 63, the window row a game from the start
+// uses. For each row it keeps the 32 characters ($0400) and colours ($0C00), the character set
+// ($4800) when a tile set has changed it, and the background colours written to $D021-$D023.
+// Hooks note the specials: map_load_tiles ($8386) and the helicopter command (map_special, $11).
+function ikariRoute(ram, Cpu) {
+  const m = ram.slice(), bg = [0, 0, 0], rows = [], marks = [];
+  const cpu = new Cpu.CPU(m, { port: 0x35, io: { read: () => 0, write: (a, v) => { if (a >= 0xD021 && a <= 0xD023) bg[a - 0xD021] = v & 15; } } });
+  cpu.call(0x25F0, {}, { maxSteps: 1e6 });
+  cpu.call(0x1666, {}, { maxSteps: 1e6 });
+  let r = 0, tiles = false;
+  const hooks = { 0x8386: () => { tiles = true; } };
+  let set = m.slice(0x4800, 0x5000);
+  for (r = 0; r < 1891; r++) {
+    tiles = false;
+    m[0x4C] = (48 - r) & 63;
+    cpu.call(0x7F80, {}, { maxSteps: 1e6, hooks });
+    if (tiles) { set = m.slice(0x4800, 0x5000); marks.push([r, 'TILES']); }
+    const w = (32 - r) & 63;
+    rows.push({ ch: m.slice(0x400 + w * 32, 0x420 + w * 32), co: m.slice(0xC00 + w * 32, 0xC20 + w * 32), set, bg: bg.slice() });
+  }
+  return { rows, marks };
+}
+// end of ikari-route
+
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { $('mCap').textContent = 'This map needs the site\'s shared scripts: open the page from the built site.'; return; }
+  C64.load('listing.json').then(L => {
+    const R = ikariRoute(L.ram, C64Cpu), rows = R.rows, N = rows.length;
+    // helicopters: map_special's command $71 (special $11) in the script, found by the row the script pointer passes it on
+    const marks = R.marks.slice();
+    const heli = ikariHelicopters(L.ram, C64Cpu); heli.forEach(r => marks.push([r, 'COPTER']));
+    marks.push([1878, 'END: figures'], [1890, 'END: game over']);
+    const P = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+    const S = 2, LW = 22, RW = 80, W = LW + 256 + RW, H = N * 8;
+    const cv = $('mCanvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d'), img = ctx.createImageData(256, H);
+    for (let r = 0; r < N; r++) {
+      const { ch, co, set, bg } = rows[r], y0 = (N - 1 - r) * 8;
+      for (let c = 0; c < 32; c++) {
+        const k = ch[c], col = co[c] & 15, mc = col & 8;
+        for (let y = 0; y < 8; y++) {
+          const b = set[k * 8 + y];
+          for (let x = 0; x < 8; x++) {
+            let ci;
+            if (mc) { const v = (b >> (6 - (x & 6))) & 3; ci = v === 0 ? bg[0] : v === 1 ? bg[1] : v === 2 ? bg[2] : col & 7; }
+            else ci = (b & (0x80 >> x)) ? col & 7 : bg[0];
+            const i = ((y0 + y) * 256 + c * 8 + x) * 4, rgb = P[ci];
+            img.data[i] = rgb[0]; img.data[i + 1] = rgb[1]; img.data[i + 2] = rgb[2]; img.data[i + 3] = 255;
+          }
+        }
+      }
+    }
+    ctx.fillStyle = '#222'; ctx.fillRect(0, 0, W, H);
+    ctx.putImageData(img, LW, 0);
+    ctx.font = '9px IBM Plex Mono, monospace'; ctx.fillStyle = '#ddd';
+    for (let r = 0; r < N; r += 50) { const y = (N - 1 - r) * 8 + 8; ctx.fillRect(LW - 4, y - 1, 4, 1); ctx.fillText(String(r), 0, y - 2); }
+    const colOf = { TILES: '#e6b800', COPTER: '#4fc3f7' };
+    marks.forEach(([r, t]) => { const y = (N - 1 - r) * 8 + 4; ctx.fillStyle = colOf[t] || '#ff8a80'; ctx.fillRect(LW + 256, y, 6, 2); ctx.fillText(t, LW + 260, y + 3); });
+    cv.style.maxWidth = (W * S) + 'px';
+    const box = $('mBox'), sl = $('mRow');
+    const where = r => { const m = marks.filter(x => x[0] <= r).pop(); return m ? 'past the last mark, ' + m[1] + ' at row ' + m[0] : 'the start, beside the wrecked plane'; };
+    const toRow = r => { const scale = cv.clientHeight / H; box.scrollTop = ((N - 1 - r) * 8 + 8) * scale - box.clientHeight + 40; $('mRowV').textContent = r; $('mWhere').textContent = where(r); };
+    sl.oninput = () => toRow(+sl.value);
+    box.onscroll = () => { const scale = cv.clientHeight / H, r = Math.max(0, Math.min(N - 1, Math.round(N - 1 - ((box.scrollTop + box.clientHeight - 40) / scale - 8) / 8))); sl.value = r; $('mRowV').textContent = r; $('mWhere').textContent = where(r); };
+    requestAnimationFrame(() => toRow(0));
+  });
+})();
+
+/* ikari-helicopters */
+// The rows where the map script sends a helicopter: map_special ($825B) with command $71, special
+// $11. The script is run as in ikariRoute, and a hook on map_special reads the command byte at the
+// script pointer, zpa_D6/zpa_D7 plus Y, as the routine's first instruction reads it.
+function ikariHelicopters(ram, Cpu) {
+  const m = ram.slice(), out = [];
+  const cpu = new Cpu.CPU(m, { port: 0x35, io: { read: () => 0, write: () => {} } });
+  cpu.call(0x25F0, {}, { maxSteps: 1e6 });
+  cpu.call(0x1666, {}, { maxSteps: 1e6 });
+  let r = 0;
+  const hooks = { 0x825B: c => { if ((m[((m[0xD6] | (m[0xD7] << 8)) + c.y) & 0xFFFF] & 0x1F) === 0x11) out.push(r); } };
+  for (r = 0; r < 1891; r++) { m[0x4C] = (48 - r) & 63; cpu.call(0x7F80, {}, { maxSteps: 1e6, hooks }); }
+  return out;
+}
+// end of ikari-helicopters
+</script>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
