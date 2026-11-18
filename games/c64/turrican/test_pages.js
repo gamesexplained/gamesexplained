@@ -101,6 +101,21 @@ for (const [list, set] of [[I.tunes, false], [I.sfx, true], [S.tunes, false]]) {
 }
 console.log('Sound:', calls, 'calls of the game\'s players,', matched, 'SID writes matched, for', I.tunes.length + I.sfx.length + S.tunes.length, 'buttons');
 
+// Discoveries: the ending's tune is the How it works page's, and its voices read the engine's code
+// when the caption says: voice 1 from frame 14 to 200 and 298 to 482, voice 3 from 395 to 576.
+{
+  const q = I.tunes.find(t => t.part === 'ending');
+  assert.deepStrictEqual(S.tunes[2].chunks, q.chunks, 'the ending\'s tune on both pages');
+  const m = image('ending').slice(), cpu = new C64Cpu.CPU(m, { port: 0x35, io: { read() { return 0; }, write() {} } });
+  for (const c of q.init) cpu.call(c.pc, { a: c.a || 0, x: c.x || 0, y: c.y || 0 }, { maxSteps: 200000 });
+  const reading = [new Set(), new Set(), new Set()];
+  for (let f = 0; f < 1500; f++) cpu.call(q.play, {}, { maxSteps: 200000, hooks: { 0xA8EE() { if ((m[0xF4] | m[0xF5] << 8) === 0x1808) reading[cpu.x].add(f); } } });
+  const runs = r => { const out = []; for (const f of [...r].sort((a, b) => a - b)) { const l = out[out.length - 1]; if (l && f === l[1] + 1) l[1] = f; else out.push([f, f]); } return out.filter(([a, b]) => b - a > 50); };
+  assert.deepStrictEqual(runs(reading[0]), [[14, 199], [298, 481]]);
+  assert.deepStrictEqual(runs(reading[1]), []);
+  assert.deepStrictEqual(runs(reading[2]), [[395, 576]]);
+  console.log('Ending tune: voice 1 reads the code at frames 14-199 and 298-481, voice 3 at 395-576');
+}
 // Discoveries: the second tune differs by one letter of the credit line, ROMUZAK to SOMUZAK, and
 // does what the caption says: first differs at frame 769, then starts about a quarter of the notes.
 {
