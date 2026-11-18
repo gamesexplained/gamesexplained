@@ -12,7 +12,7 @@ Start through `python3 kit/scripts/tools.py --platform spectrum zesarux --emulat
 
 ## Rebuilding the image
 
-1. Copy the uploaded TZX into `work/ant-attack.tzx`. Its path must have no spaces: ZRCP `smartload` rejected the original spaced name as an unknown format.
+1. Copy the uploaded TZX into `work/ant-attack.tzx`. The recording scripts use this space-free alias. The client on this branch also supports the original spaced filename by quoting it for ZRCP.
 2. Hard-reset the emulator and smartload that file. Disable old breakpoint slots individually: `bp_clear` disables the global table but does not erase its conditions.
 3. Stop at PC `9700` after loading, using repeated bounded `run(limit=10000000)` until the checkpoint actually fires. Do not assume the first run limit got through both tape blocks. Save `work/entry.sna` at this exact hand-over. It is the canonical image behind listing.json.
 4. Disable that checkpoint. Advance 350 display frames to see the publisher/logo sequence, then another 1500 to reach the G/B prompt. Save `work/selection.sna` and `reference/selection.png`.

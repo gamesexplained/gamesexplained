@@ -9,7 +9,7 @@
 
 ## Kit changes
 
-- `kit/spectrum/zesarux.py`: `smartload` quotes an absolute image path containing whitespace before sending it to ZRCP. The original upload's spaced filename produced "Unknown file format" when unquoted. A quoted raw call loaded that same local file; the existing nineteen client checks pass. No image or machine snapshot is committed.
+- `kit/spectrum/zesarux.py`: `smartload` quotes an absolute image path containing whitespace before sending it to ZRCP. The original upload's spaced filename produced "Unknown file format" when unquoted. A quoted raw call loaded that same local file through the title sequence; the existing nineteen client checks pass. No image or machine snapshot is committed.
 
 ## What cost the most time
 

@@ -19,7 +19,7 @@ Read 16 November 2026:
 | V moves forward, M and Symbol Shift turn | confirmed | Matching snapshot comparisons at 82C0; coordinate/facing changes recorded in facts.md. |
 | C jumps; C+V climbs blocks | confirmed | C raised height zero to one in matching comparison; terrain-climb paths at 8800/88D0. |
 | O or 0, P, Enter and Space choose four viewpoints | differs | 8400 and matched tests: digit 0 works; O leaves view unchanged. |
-| S/D/F/G throw grenades at increasing distances | confirmed | 8D00 matched tests give fuse2/4/8/16 and ammo20→19. |
+| S/D/F/G throw grenades at increasing distances | confirmed | 8D00 matched tests give fuse2/4/8/16 and ammo20→19. Ordinary simultaneous S+D+F+G input also gives fuse30 and ammo19. |
 | 1 returns to city gate as a last resort | confirmed | 800C returns from the engine; BASIC70 resets the attempt while preserving run score. |
 | City of blocks with scroll and occlusion | confirmed | 84A0 traced through its samplers, sort, masks and screen copy; all ten first-choice areas run with input. |
 | Ants pursue and bite; jumping on ants can paralyse them | confirmed | Five records B4B0-B4F0; 8A00 pursuit, 8BD1 paralysis. Ant scheduler and all byte combinations tested. |
