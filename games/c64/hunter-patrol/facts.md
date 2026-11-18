@@ -34,7 +34,7 @@ A Remember crack: `HUNTER PATROL+`, a packed program loaded at `$0801`, and the 
 
 - The raster interrupt `$13AB` runs three times a frame; `$20` counts the band (0 sky, 1 ground, 2 status panel). The ground band's registers are copied from `$D008`, so sprites 0-3 keep their sky positions.
 - The main loop at `$1466` has no wait; `$1E` counts its passes. *Live*, 13 November 2026: 67 to 88 passes in 50 frames, about 75 a second.
-- The stick is acted on every 8th pass (`$193C`), the hills scroll every 8th (`$1720`), a ground stripe starts every 32nd (`$2900`).
+- The stick is acted on every 8th pass (`$193C`), the hill scroll routine is called every 8th (`$1720` calls `$1500`), which moves the hills on every call at scroll speed 2 or −2 and on every other call at 1 or −1, a ground stripe starts every 32nd (`$2900`).
 - Title music: CIA 1 timer A latch `$4800`, a call every 18,433 cycles, 53.45 a second on PAL (`$ADD0`). One time through the tune is 10,801 calls. The unused player would use latch `$3000`, 12,289 cycles, and its tune is 2,241 calls long.
 
 ## Controls
@@ -56,7 +56,7 @@ The stick is read at `$DC01` (port one) by `$0D14`. Every 8th pass `$193C` moves
 | `$3D`, `$3E` | sprite collision latches of the sky and ground bands |
 
 - A ground object starts when the noise voice's random byte `$33` has its low seven bits clear (`$1670`); an aircraft when `$33` is zero (`$1A10`).
-- A hit on a ground object scores 100, on an aircraft 50, and both count off `$42` (`$22D0`). In a strafing run each hit on a target part counts one in `$45` and scores 100 (`$2CD0`).
+- A hit on a ground object scores 100, on an aircraft 50, and both count off `$42` (`$22D0`). In a strafing run each hit on a target part counts one in `$45` and scores 100, and each hit on an aircraft counts one in `$45` too and scores 50 (`$2CD0`).
 - The plane crashes on touching the flak, a near aircraft (`$0F00`), or, while low, a ground object with its shadow. In a strafing run the flak test masks the ground latch with `$81` (sprites 0 and 7, `$2D86`) instead of `$05`, and sprite 7 is off, so the flak cannot crash the plane there.
 - `$2C00` writes black to sprite 5's colour (`$80BC`) whichever target part is hit; `$2BCF` reads `$8000` + level and loads 1 over it, so every target is white.
 - Result messages by `$45`: 64 or more, 48, 16, fewer (`$2E41`). The texts misspell "STRAFFING" (`$8B20`) and "TARTARGET" (`$8C00`).
@@ -66,14 +66,14 @@ The stick is read at `$DC01` (port one) by `$0D14`. Every 8th pass `$193C` moves
 - Ground objects: picture `$5D-$66` from the template plus 10 per kind; a hit one shows `$C0` + 2 x (picture − `$5D`) and the next, alternating every 4 passes (`$17A3`).
 - Aircraft: `$49` (near) to `$52`, plus 10 heading left; a hit sets the picture to `$4D` and shows `$A2`/`$A3` (`$1C00`, `$22D0`).
 - Plane `$42` + scroll speed; shadow `$87` + 5 x ((`$A0` − y) / 16) + scroll speed (`$22B0`); crash `$9E` + high nibble of `$3F` (`$2400`).
-- Shot `$A8-$B1`; flak `$45`, bursts `$46-$48`, 32 passes a step (`$2700`).
+- Shot `$A8-$B0` (it is freed at depth `$40` before its templates with `$B1` are reached, `$2100`); flak `$45`, bursts `$46-$48`, 32 passes a step (`$2700`).
 - Target part n: `$E0` + 3 x (picture − `$5D`) + n, from the level's set copied to `$7800` (`$2B00`, `$2C00`).
 - `$B2-$BF` and `$D2-$DF` are filled blocks no routine shows in normal play.
 - Loading picture: multicolour bitmap at `$E000`, screen `$DC00`, background black, in memory while the unpacker waits (*live*, 13 November 2026); drawn on the Graphics tab from those 10,000 bytes.
 
 ## Sound
 
-Voice 3 runs as noise for random numbers (`$1900`, `$1920`). The engine note on voice 1 follows the plane's height (`$25A0`); the shot plays on voice 2 (`$2600`). The music driver is started before each title screen (`$14F0` calls `$A000`) and stops when `$1370` turns off the timer's interrupt at the start of play; its stop entry `$A003` is never called. The flak sets `$09` and nothing reads it. The Music tab runs both players on the kit's 6502; `test_music.js` matched every sound chip write against the code run through its interrupts, 12,000 calls a tune.
+Voice 3 runs as noise for random numbers (`$1900`, `$1920`). The engine note on voice 1 follows the plane's height (`$25A0`); the shot plays on voice 2 (`$2600`). The music driver is started before each title screen (`$14F0` calls `$A000`) and stops when `$1370` turns off the timer's interrupt at the start of play; its stop entry `$A003` is never called. The flak sets `$09` and nothing in the game reads it; only the unused player reads it, as voice 2's waveform. The Music tab runs both players on the kit's 6502; `test_music.js` matched every sound chip write against the code run through its interrupts, 12,000 calls a tune.
 
 ## The listing's error rate
 

@@ -7054,7 +7054,7 @@
   {
    "address": 30,
    "type": "line",
-   "text": "Counts passes of the main loop ($1466); the movement rates mask it to decide what moves on each pass."
+   "text": "Counts passes of the main loop ($1466) and of the strafing runs' loop ($2A61); the movement rates mask it to decide what moves on each pass. The name entry also spins it as its delay loop ($1306)."
   },
   {
    "address": 31,
@@ -7134,7 +7134,7 @@
   {
    "address": 46,
    "type": "line",
-   "text": "Pointer to the record being worked on, set by $1630, $19D0, $1E00, $2130, $2640; $2F its high byte."
+   "text": "Pointer to the record being worked on, set by $1630, $19D0, $1E00, $2130, $2640; $2B4D also points it at $7800 to copy the level's target shapes there, and $2E5A at a result message; $2F its high byte."
   },
   {
    "address": 47,
@@ -7154,7 +7154,7 @@
   {
    "address": 50,
    "type": "line",
-   "text": "Ground objects that moved this pass ($1720); when 0 the sort is skipped."
+   "text": "Counts the ground objects' moves this pass ($1720): one for a move with the scroll and one for a step nearer, so one object can add 2; when 0 the sort is skipped."
   },
   {
    "address": 51,
@@ -7164,7 +7164,7 @@
   {
    "address": 52,
    "type": "line",
-   "text": "CIA1 timer A high byte this pass, a second random number."
+   "text": "CIA1 timer A high byte this pass. Its only reader, $1A29, masks it with AND #$00, so it never changes anything."
   },
   {
    "address": 53,
@@ -7189,7 +7189,7 @@
   {
    "address": 57,
    "type": "line",
-   "text": "Enemy aircraft that moved this pass ($1AD9)."
+   "text": "Counts the enemy aircraft's moves this pass ($1AD9): one for a move with the scroll, one for a move sideways, one for a move up or down, and one for each exploding aircraft, so one aircraft can add several; when 0 the sort ($1BFD) is skipped."
   },
   {
    "address": 58,
@@ -7199,7 +7199,7 @@
   {
    "address": 59,
    "type": "line",
-   "text": "Shots that moved this pass ($1F00)."
+   "text": "Counts the shot's moves this pass ($1F00): one for a move with the scroll and one for a step up or down; $1F00 looks at record 0 only. When 0, $1F8D is skipped."
   },
   {
    "address": 60,
@@ -7354,7 +7354,7 @@
   {
    "address": 3904,
    "type": "line",
-   "text": "Returns in $2B the hits-needed count of the current level ($42 at the start of a kind) shifted left by one for each level below 3: the width, in bar pixels, a whole kind of defence takes in the distance bar ($29E0)."
+   "text": "Returns in $2B the hits still needed, $42, shifted left once for each level below 3 and once at level 3 (treated as 2): those hits as a width in bar pixels. At the start of a kind it is 40 at every level, the width a whole kind of defence takes in the distance bar ($29E0)."
   },
   {
    "address": 3936,
@@ -7374,7 +7374,7 @@
   {
    "address": 4096,
    "type": "line",
-   "text": "Start of a small three-voice tune player that nothing in the game calls (no reference to $1000 anywhere in memory, and it never ran in play): points the IRQ vector at $102E, sets CIA1 timer A to $3000 cycles, starts the tune ($1050) and returns."
+   "text": "Start of a small three-voice tune player that nothing in the game calls (no reference to $1000 anywhere in memory, and it never ran in play): points the IRQ vector at $102E, loads CIA1 timer A's latch with $3000 (an interrupt every 12,289 cycles), turns off the video chip's interrupts, starts the tune ($1050) and returns."
   },
   {
    "address": 4142,
@@ -7384,12 +7384,12 @@
   {
    "address": 4176,
    "type": "line",
-   "text": "Starts the unused player's tune: copies the 25 sound-chip register values at $8010 to $D400, points $02/$03 at the note data $8200, keeps each voice's waveform (with the gate bit) in $08-$0A, and sets the first note's frequency from $8200/$8201."
+   "text": "Starts the unused player's tune: copies the 25 sound-chip register values at $8010 to $D400, points $02/$03 at the note data $8200 with the offset $04 at 2, keeps each voice's waveform (with the gate bit) in $08-$0A, sets each voice's note length to 1, keeps $8200/$8201 in $0E/$0F as the first note pair (its second byte gives the first note's length) and sets the first note's frequency to the fixed $0C01."
   },
   {
    "address": 4256,
    "type": "line",
-   "text": "One tick of the unused player: for each of the three voices, counts down its note length ($05-$07); when one ends it releases the gate, reads the next two bytes of note data at ($02) ($FF ends the tune and sets $12), looks up the frequency in $1145 by the low four bits of the first and doubles it, an octave up, for each step in bits 0-2 of the second, and takes the length from $115F by the second byte's lowest set bit above bit 2."
+   "text": "One tick of the unused player: for each of the three voices, counts down its note length ($05-$07). When a length reaches $10 it releases the gate, so notes of $10 and $08 ticks are never released. When it reaches 0 it writes the frequency decoded from the pair read before, takes the length from $115F by the lowest set bit above bit 2 of that pair's second byte, and sets the gate; then it reads the next two bytes of note data at ($02) ($FF ends the tune and sets $12) and decodes them: the frequency from $1145 by the low four bits of the first byte, doubled, an octave up, once for each step above 1 in bits 0-2 of the second."
   },
   {
    "address": 4421,
@@ -7419,17 +7419,17 @@
   {
    "address": 4560,
    "type": "line",
-   "text": "Sets fixed colours on the title screen's colour RAM: blue rows in the middle, a white row and a grey line at the bottom, black over the alphabet row, and the top row from its characters through $8100."
+   "text": "Sets fixed colours on the title screen's colour RAM: purple on rows 7-15 (the highscore rows) and row 21 (the alphabet row), black on rows 17-18 (the name prompt and PRESS FIRE TO START, which $12D0 and $11A0 colour when they are used), light grey in one cell, $DBBF (row 23, column 39), because its loop of 40 stores is not indexed, and the top row from its characters through $8100."
   },
   {
    "address": 4624,
    "type": "line",
-   "text": "Compares the score digits $13-$17 with the five score rows of the table on the title screen ($4122 + n*$50); at the first row it beats, moves the rows below down ($1256) and returns the row number in Y (0 when the score made no row, or is zero)."
+   "text": "Compares the score digits $13-$17 with the five score rows of the table on the title screen ($4122 + n*$50), from the top; at the first row it beats or equals, moves that row and the rows below down ($1256) and returns in Y the row's number counted from the bottom, 5 for the top row to 1 for the bottom (0 when the score made no row, or is zero)."
   },
   {
    "address": 4694,
    "type": "line",
-   "text": "Moves the highscore rows below row Y down one place (23 characters each, from the bottom up), writes the score digits and twelve spaces for the name into row Y, and colours that row's line on screen white."
+   "text": "Moves highscore row Y (numbered 5 at the top to 1 at the bottom) and the rows below it down one place, dropping the bottom row (23 characters each, from the bottom up), writes the score digits and 16 spaces into row Y (the four characters after the digits and the twelve of the name), and colours that row's line on screen white."
   },
   {
    "address": 4816,
@@ -7439,7 +7439,7 @@
   {
    "address": 4976,
    "type": "line",
-   "text": "Points the IRQ vector $0314 at $13AB, turns off the CIA interrupts, enables the video chip's raster and sprite-sprite collision interrupts, sets the first raster line to $D2, waits for line $FB and clears the collision latches. The music interrupt is replaced by this one."
+   "text": "Points the IRQ vector $0314 at $13AB, turns off the CIA interrupts, enables the video chip's raster and sprite-sprite collision interrupts, sets the first raster line to $D2, waits for line $FB and reads the video chip's collision registers $D01E and $D01F to clear them. The music interrupt is replaced by this one."
   },
   {
    "address": 5035,
@@ -7449,7 +7449,7 @@
   {
    "address": 5200,
    "type": "line",
-   "text": "Entry from the cracker's menu and from the highscore saver: starts the noise voice ($1900), sets up the video chip ($1170), and falls into the game loop."
+   "text": "Entry from the cracker's menu, from the highscore saver ($0CED) and from the RESTORE restart ($2F36): starts the noise voice ($1900), sets up the video chip ($1170), and falls into the game loop."
   },
   {
    "address": 5206,
@@ -7459,7 +7459,7 @@
   {
    "address": 5222,
    "type": "line",
-   "text": "One pass of play; the loop has no wait of its own. Steers ($193C), spawns and moves the ground objects ($1670), counts the pass in $1E, sets the scroll register ($14C0), sorts the ground objects into sprites ($17A0), reads the inputs ($1920), moves the plane ($1990), moves the enemy aircraft ($1A10, $1BFD), the shots ($1E80, $1F8D), the ground stripes ($2900), resolves hits ($2F00), runs the crash ($2400), the engine sound ($25A0) and the flak ($2700). It ends when $40 is negative."
+   "text": "One pass of play; the loop has no wait of its own. Steers ($193C), spawns and moves the ground objects ($1670), counts the pass in $1E, sets the scroll register ($14C0), resolves hits and sorts the ground objects into sprites ($17A0) when any moved ($32), reads the inputs ($1920), moves the plane ($1990), moves the enemy aircraft ($1A10) and, when any moved ($39), resolves hits and sorts them into sprites ($1BFD), moves the shots ($1E80) and places them ($1F8D) when one moved ($3B), moves the ground stripes ($2900), resolves hits ($2F00), runs the crash ($2400), the engine sound ($25A0) and the flak ($2700). It ends when $40 is negative."
   },
   {
    "address": 5312,
@@ -7479,7 +7479,7 @@
   {
    "address": 5376,
    "type": "line",
-   "text": "Called every 8th pass by $1670. At scroll speed $22 of $02 or $FE it scrolls every time, at $01 or $FF every other time ($21 counts the calls). Right ($22 positive) steps the fine scroll $23 down, and after 8 steps waits for raster line $60 and moves the hill rows one character left ($15C0); left steps it up and moves them right ($1600)."
+   "text": "Called every 8th pass by $1720. At scroll speed $22 of $02 or $FE it scrolls every time, at $01 or $FF every other time ($21 counts the calls). Right ($22 positive) steps the fine scroll $23 down, and after 8 steps waits for raster line $60 and moves the hill rows one character left ($15C0); left steps it up and moves them right ($1600)."
   },
   {
    "address": 5456,
@@ -7559,7 +7559,7 @@
   {
    "address": 6544,
    "type": "line",
-   "text": "Unless crashing: sets the plane's picture in both bands to $42 plus the scroll speed (banked left, level or right), and every other pass moves its y ($8061, $8091) by the climb rate: up the screen to $51 at the highest, down to $A0 at the lowest. Then sets the shadow ($22B0)."
+   "text": "Unless crashing: sets the plane's picture in both bands to $42 plus the scroll speed (banked left, level or right), and every other pass moves its y ($8061, $8091) by the climb rate: up the screen to $51 at the highest, down to $A0 at the lowest. Then sets the shadow ($22B0), except when a move down finds the plane already at $A0, where it returns without it."
   },
   {
    "address": 6608,
@@ -7574,12 +7574,12 @@
   {
    "address": 6672,
    "type": "line",
-   "text": "When the random number $33 is zero, starts an enemy aircraft in a free record: depth $36, y $3A, from the left edge or from x $14F on the right by the sign of the pass counter $1E, heading the other way. Then advances each record whose depth matches its next template ($8570) and takes the template's fields; a hit one steps its template back. Ends with $1AD9 and $1BD0."
+   "text": "When the random number $33 is zero, starts an enemy aircraft in a free record: depth $36, y $3A, at x $14F on the right with byte 10 = $4A when the pass counter $1E is positive, or at x 0 on the left with byte 10 = $54 when it is negative, heading the other way. Then, for each record, takes its next template ($8570) less 2 when byte 10 bit 6 is set, which every new aircraft has, so the aircraft walk the templates downward as their depth falls; when the depth matches that template's it adds its x step and takes its fields. Ends with $1AD9 and $1BD0."
   },
   {
    "address": 6873,
    "type": "line",
-   "text": "For each enemy aircraft: moves it with the scroll ($2220); unless it is exploding, moves it left or right by its movement bits (byte 10 bits 4 and 3) and, when due, down or up (bits 2 and 1, $1B9F and $1B8D); when the random number $33 has its low five bits zero, about one pass in 32, it swaps its up and down bits; every 16 passes its depth falls by one, so it moves away. $39 counts the aircraft that moved."
+   "text": "For each enemy aircraft: moves it with the scroll ($2220); unless it is exploding, moves it left or right by its movement bits (byte 10 bits 4 and 3) and, when due, down or up (bits 2 and 1, $1B9F and $1B8D). When the random number $33 has its low five bits zero, about one pass in 32, it changes the up and down bits by bit 6 of $36: either it sets bit 2 and flips bit 1, so the aircraft heads down, or it sets bit 1 and flips bit 2, which turns a descending aircraft up and any other down. Every 16 passes its depth falls by one, so it moves away; an exploding aircraft's depth falls by one every pass. $39 counts the moves made, one for each step of each aircraft."
   },
   {
    "address": 7053,
@@ -7629,7 +7629,7 @@
   {
    "address": 7936,
    "type": "line",
-   "text": "For each shot: moves it with the scroll ($2220), deepens it when its rate is due, and moves it down or up the screen by byte 10 ($1F5B, $1F65). $3B counts the shots that moved."
+   "text": "For each shot: moves it with the scroll ($2220); when its rate is due, deepens it and moves it down or up the screen by byte 10 ($1F5B, $1F65). $3B counts the moves made, sideways and up or down."
   },
   {
    "address": 8027,
@@ -7649,7 +7649,7 @@
   {
    "address": 8080,
    "type": "line",
-   "text": "Writes shot record 0 into sprite 1 of both bands (x, y, x high bit, enable, expand bits, picture), then copies sprites 1-3's x high, enable, Y expand and X expand bits from the sky band's image into the ground band's."
+   "text": "Writes shot record 0 into sprite 1 of both bands (x, y and picture) and into the sky band's x high bit and enable; the BNE at $2035 always branches, so the expand-bit code after it never runs. Then copies sprites 1-3's x high, enable, Y expand and X expand bits from the sky band's image into the ground band's."
   },
   {
    "address": 8448,
@@ -7669,12 +7669,12 @@
   {
    "address": 8736,
    "type": "line",
-   "text": "Moves the record at $2E/$2F sideways by its own rate (byte 7: bit 7 set gives a step of the low bits, otherwise a step of 1 on passes where the bits mask the counter $1E to zero), right when the scroll speed $22 is negative, left when it is positive, and only every other call at speeds $01 and $FF. $2A is 1 when it moved."
+   "text": "Moves the record at $2E/$2F sideways by its own rate (byte 7: bit 7 set gives a step of the low bits, otherwise a step of 1 on passes where the bits mask the counter $1E to zero), right when the scroll speed $22 is negative, left when it is positive; at speeds $01 and $FF only while $21, the count of ground scroll calls ($1500), is even. $2A is 1 when it moved."
   },
   {
    "address": 8796,
    "type": "line",
-   "text": "Takes $29 from the record's x, flipping its x high bit on a borrow; across the left edge it skips the 8 hidden pixels between x $FF and $F8."
+   "text": "Takes $29 from the record's x, flipping its x high bit on a borrow; when the borrow takes x from $100 or more to below $100 it takes 8 more, skipping x $F8-$FF. Crossing the left edge, from x 0 to $1xx, has no skip."
   },
   {
    "address": 8827,
@@ -7684,7 +7684,7 @@
   {
    "address": 8880,
    "type": "line",
-   "text": "Sets the shadow's picture (sprite 3 of the ground band) from the plane's height: one of five pictures from $87 by ($A0 - y) / 16, plus the scroll speed for its bank."
+   "text": "Sets the shadow's picture (sprite 3 of the ground band) from the plane's height: one of five sizes by ($A0 - y) / 16, five pictures apart from $87 (picture $87 + 5 x size), plus the scroll speed for its bank."
   },
   {
    "address": 8912,
@@ -7734,7 +7734,7 @@
   {
    "address": 9600,
    "type": "line",
-   "text": "Silences the sound chip, loads all its registers from the 25-byte image at $8850 and starts voice 1 as a pulse wave with ring modulation."
+   "text": "Silences the sound chip, loads all its registers from the 25-byte image at $8850 and starts voice 1 as a triangle wave with ring modulation ($15)."
   },
   {
    "address": 9632,
@@ -7764,7 +7764,7 @@
   {
    "address": 9856,
    "type": "line",
-   "text": "When the flak record is free, starts a burst rising from y $50 at a random x from voice 3 ($21-$120), drifting right when it starts on the left half and left otherwise, with a burst time in byte 11 of $10-$4F plus timer bits. Sets $09, which nothing reads."
+   "text": "When the flak record is free, starts a burst rising from y $50 at a random x from voice 3 ($21-$120), drifting right when it starts on the left half and left otherwise, with a burst time in byte 11 of $10-$4F plus timer bits. Sets $09, which only the unused tune player's indexed reads ($10C1, $10EC) can reach."
   },
   {
    "address": 9984,
@@ -7774,7 +7774,7 @@
   {
    "address": 10112,
    "type": "line",
-   "text": "Moves the flak with the scroll and by its movement bits like an aircraft, and while it rises moves it up or down the screen ($280A, $27F8) and deepens it."
+   "text": "Moves the flak with the scroll and by its movement bits like an aircraft; when its rate is due it moves it up or down the screen ($280A, $27F8), during a burst as well, and deepens it while it rises (depth not negative)."
   },
   {
    "address": 10232,
@@ -7799,7 +7799,7 @@
   {
    "address": 10496,
    "type": "line",
-   "text": "Every 32 passes starts a ground stripe in a free record (at byte 1, template 1, rate $1F). Then, for each stripe whose rate is due, draws it one or more character-set bytes further down the ground characters at $4907 (bit pattern $55, $AA or $FF by record number), freeing it past byte $68; a stripe whose position matches its template's takes the template's rate. The stripes run down the ground like furrows passing under the plane."
+   "text": "Every 32 passes starts a ground stripe in a free record (at byte 1, template 1, rate $1F). Then, for each stripe whose rate is due, draws it one or more character-set bytes further down the ground characters at $4907 (bit pattern $55 for an even record, $AA for an odd one), freeing it past byte $68; a stripe whose position matches its template's takes the template's rate. The stripes run down the ground like furrows passing under the plane."
   },
   {
    "address": 10720,
@@ -7994,7 +7994,7 @@
   {
    "address": 18176,
    "type": "line",
-   "text": "Play screen from row 19, column 8: the last ground row, then the status panel from row 21: SCORE, the distance bar's characters $2E-$41, TARGET, HI, DISTANCE TO TARGET and LIVES, with the digits the code writes."
+   "text": "Play screen from row 19, column 8: the last ground row, then the status panel from row 21: SCORE, the distance bar's characters $2E-$41, TARGET, HIT, HI and LIVES. The digits and the message line at $479C (\"DISTANCE TO TARGET\" and the others) are written by the code."
   },
   {
    "address": 18287,
@@ -8004,7 +8004,7 @@
   {
    "address": 18294,
    "type": "line",
-   "text": "Status panel: the rest of row 22 and row 23 up to the message line, \"HIT\" and \"HI\" and the start of \"DISTANCE TO TARGET\"."
+   "text": "Status panel: the rest of row 22 and row 23 up to the message line at $479C, with \"HIT\" ($4794) and \"HI\" ($479A)."
   },
   {
    "address": 18367,
@@ -8099,7 +8099,7 @@
   {
    "address": 26624,
    "type": "line",
-   "text": "Sprite shapes $A0-$AF: the explosion, a blue burst that grows into a ring and breaks up ($A0-$A7, the end of the crash and a hit aircraft), then the shot, a pair of tracer dots, shrinking as it flies away ($A8-$AF)."
+   "text": "Sprite shapes $A0-$AF: the explosion, a burst drawn mostly in the multicolours ($D025 and $D026: yellow and red in the sky band) that grows into a ring and breaks up ($A0-$A7, the end of the crash and a hit aircraft), then the shot, a pair of tracer dots, shrinking as it flies away ($A8-$AF)."
   },
   {
    "address": 27648,
@@ -8114,7 +8114,7 @@
   {
    "address": 29696,
    "type": "line",
-   "text": "Sprite shapes $D0-$DF: the explosion's nearest size ($D0-$D1), then solid fillers $D2-$DF, which nothing shows."
+   "text": "Sprite shapes $D0-$DF: the explosion's nearest size ($D0-$D1), then solid fillers $D2-$DF. $D2-$D3 are what $189D shows for an object hit at picture $66; no picture the game sets reaches $D4-$DF."
   },
   {
    "address": 32768,
@@ -8179,7 +8179,7 @@
   {
    "address": 32872,
    "type": "line",
-   "text": "Sprite 4 x in the sky band, the first of the enemy aircraft's four sprites, indexed by twice the sprite number."
+   "text": "Sprite 4 x in the sky band, the first of the enemy aircraft's four sprites, indexed by twice the slot number (sprite number minus 4)."
   },
   {
    "address": 32873,
@@ -8339,7 +8339,7 @@
   {
    "address": 33024,
    "type": "line",
-   "text": "Colour of each character, 256 bytes indexed by screen code, used whenever a screen is coloured ($0F90, $2150, $2F80): white for the digits and letters, and the multicolour codes of the ground from $21, of the distance bar's four sections from $2E (5 characters each) and of the hills from $A0."
+   "text": "Colour of each character, 256 bytes indexed by screen code, used whenever a screen is coloured ($0F90, $11D0, $2150) and for each hill character scrolled in ($2F80, $2FB0): white for the digits and letters, and the multicolour codes of the ground from $21, of the distance bar's four sections from $2E (5 characters each) and of the hills from $A0."
   },
   {
    "address": 33280,
@@ -8364,7 +8364,7 @@
   {
    "address": 34048,
    "type": "line",
-   "text": "Sort list of the ground objects by y: pairs of record number and y, rebuilt each pass ($17A3)."
+   "text": "Sort list of the ground objects by y: pairs of record number and y, rebuilt by $17A3 except during a strafing run."
   },
   {
    "address": 34049,
@@ -8479,7 +8479,7 @@
   {
    "address": 34464,
    "type": "line",
-   "text": "The shots' templates, 16 bytes each: the shot shrinks through pictures $A8-$B1 as it flies away from depth 1 to $58; the record at $8730 is filled with $FF."
+   "text": "The shots' templates, 16 bytes each: the shot shrinks through pictures $A8-$B0 as it flies away from depth 1 until $2100 frees it at depth $40. Template 9 ($8730) has $FF in bytes 0-7, a depth never met, so it and the templates after it are not reached."
   },
   {
    "address": 34720,
@@ -8499,7 +8499,7 @@
   {
    "address": 34976,
    "type": "line",
-   "text": "The flak's templates: the dot picture $45 rises from depth 1 to $58, with the rates changing on the way; the last record holds picture $47."
+   "text": "The flak's templates: the dot picture $45 rises from depth 1, with the rates changing on the way. Template 8 (depth $3B) links to template 9, whose depth $2F is never met again, so templates 9-13 (the depth $58 one with picture $47 among them) are not reached; the burst pictures come from $2700."
   },
   {
    "address": 35328,
@@ -8514,12 +8514,12 @@
   {
    "address": 35616,
    "type": "line",
-   "text": "\"  STRAFFING RUN AIRCRAFT NO.  \", shown by $2B00 with the plane's number after it; the game spells it with two Fs."
+   "text": "\"  STRAFFING RUN AIRCRAFT NO.    \", shown by $2B00 with the plane's number after it; the game spells it with two Fs."
   },
   {
    "address": 35648,
    "type": "line",
-   "text": "\"     PRESS FIRE TO CONTINUE      \", the prompt of $2B00 and $2E30."
+   "text": "\"     PRESS FIRE TO CONTINUE     \", the prompt of $2B00 and $2E30."
   },
   {
    "address": 35680,
@@ -8564,12 +8564,12 @@
   {
    "address": 35840,
    "type": "line",
-   "text": "\"TARTARGET UNDAMAGED-TRY AGAIN\", for fewer than 16 hits: the game shows \"TARTARGET\", a slip in the text. The zero bytes after it up to $8CFF are not read."
+   "text": "\"TARTARGET UNDAMAGED-TRY AGAIN\", for fewer than 16 hits: the game shows \"TARTARGET\", a slip in the text. The bytes after it up to $8CFF, zero except $01 at $8CA0, are not read."
   },
   {
    "address": 36096,
    "type": "line",
-   "text": "The hill panorama's top row, 40 screen codes read by column ($2F80, $2FB0) and copied to screen row 5 at the start ($24F0). The rest of the page repeats the next two rows as laid out on screen and is not read."
+   "text": "The hill panorama's top row, 40 screen codes read by column ($2F80, $2FB0) and copied to screen row 5 at the start ($24F0). $8D28-$8D77 repeats the next two rows as laid out on screen and the rest of the page is filler ($05); none of it is read."
   },
   {
    "address": 36352,
@@ -8609,7 +8609,7 @@
   {
    "address": 40966,
    "type": "line",
-   "text": "One tick of the music, for the three voices, the third first (register offsets 14, 7 and 0 from $A3ED). Counts the tick in $A426 and the speed counter $A418 (reloaded from $A419, so a step every second tick). On a new step, when a voice's note length $A3F7 runs out, reads the next byte of its pattern: the track at ($A527/$A52A) names the pattern ($FF restarts the track), the pattern pointers at $A52D/$A555 locate it. A note byte gives the length (bits 0-4), tie (bit 6) and whether an instrument or portamento byte follows (bit 7), then the note number, whose frequency comes from the table at $A32D; the instrument's eight bytes at $A427 + 8n set waveform, pulse width and envelope. Between steps it releases the gate at the note's end and runs the instrument's effects: vibrato scaled from the gap to the next semitone, pulse-width sweep, portamento, drum and pitch-drop effects, and an octave arpeggio on alternate ticks."
+   "text": "One tick of the music, for the three voices, the third first (register offsets 14, 7 and 0 from $A3ED). Counts the tick in $A426 and the speed counter $A418 (reloaded from $A419, which holds 2, so a step every third tick). On a new step, when a voice's note length $A3F7 runs out, reads the next byte of its pattern: the track at ($A527/$A52A) names the pattern ($FF restarts the track), the pattern pointers at $A52D/$A555 locate it. A note byte gives the length (bits 0-4), tie (bit 6) and whether an instrument or portamento byte follows (bit 7), then the note number, whose frequency comes from the table at $A32D; the instrument's eight bytes at $A427 + 8n set waveform, pulse width and envelope. Between steps it releases the gate at the note's end and runs the instrument's effects: vibrato scaled from the gap to the next semitone, pulse-width sweep, portamento, drum and pitch-drop effects, and an octave arpeggio on alternate ticks."
   },
   {
    "address": 41773,
