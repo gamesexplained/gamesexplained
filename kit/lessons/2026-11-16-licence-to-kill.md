@@ -1,4 +1,4 @@
-## next · 2026-11-16 · Licence To Kill (C64) · unorig with Claude
+## 0.0.356 · 2026-11-16 · Licence To Kill (C64) · unorig with Claude
 
 - **A table copied by a loop is named by where it goes.** The spawn
   routine of Licence To Kill copies fourteen enemy type tables into
