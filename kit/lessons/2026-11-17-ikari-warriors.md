@@ -1,4 +1,4 @@
-## next · 2026-11-17 · Ikari Warriors (C64) · unorig with Claude
+## 0.0.358 · 2026-11-17 · Ikari Warriors (C64) · unorig with Claude
 
 - **Sectors that match nothing may be encoded, not unused.** The media
   scan matched none of the 147 sectors on tracks 8 to 14 of Elite's
