@@ -1,0 +1,296 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Summer Games II — graphics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.ft-grid{display:grid;gap:6px}
+.ft-grid button{padding:0;position:relative;line-height:0}
+.ft-grid canvas{width:100%;image-rendering:pixelated;display:block}
+.ft-tag{position:absolute;left:3px;top:3px;font:500 11px/1.3 var(--fm);background:rgba(255,255,255,.88);color:var(--ink);border-radius:3px;padding:1px 4px}
+.ft-mark{position:absolute;right:3px;bottom:3px;font:500 10px/1.3 var(--fm);background:var(--chip);color:var(--chip-ink);border-radius:3px;padding:1px 4px}
+.ft-big canvas{width:100%;max-width:768px;image-rendering:pixelated;display:block;margin:0 auto}
+.ft-table{border-collapse:collapse;font-size:14px;width:100%}
+.ft-table td,.ft-table th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.ft-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.ft-four{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 20px}
+.ft-four .plate,.ft-two .plate{margin:0;padding:12px}
+.ft-shot,.ft-px{width:100%;height:auto;image-rendering:pixelated;display:block}
+.ft-wide{max-width:960px;margin:0 auto}
+.plate{margin:0 0 22px}
+.ft-scroll{overflow-x:auto}
+.ft-lab{display:block;font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:6px 0}
+.ft-range{width:100%;max-width:520px;display:block}
+.ft-controls{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:12px 0 0}
+.ft-read{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin:12px 0 0}
+.ft-bar-out{height:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:10px 0 0;max-width:520px}
+.ft-bar-out div{height:100%;background:repeating-linear-gradient(45deg,var(--amber) 0 6px,#e08a3c 6px 12px)}
+.ft-meter{position:relative;width:110px;height:18px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.ft-meter span{position:absolute;left:0;top:0;bottom:0;background:var(--cyan);opacity:.35}
+.ft-meter b{position:relative;font:500 12px/18px var(--fm);padding-left:6px}
+.ft-objs{white-space:nowrap}
+.ft-obj{display:inline-flex;flex-direction:column;align-items:center;margin:0 3px 0 0;padding:2px;background:#222;border-radius:4px;vertical-align:top}
+.ft-obj i{font:500 10px/1.2 var(--fm);color:#fff;font-style:normal}
+.ft-swapped{outline:2px dashed var(--amber);outline-offset:-2px}
+.ft-swapped i{text-decoration:line-through;text-decoration-color:var(--amber)}
+.ft-table canvas{background:#222;border-radius:4px;image-rendering:pixelated}
+.ft-dead{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.ft-dead button{font-size:12px;padding:4px 8px}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.ft-two,.ft-four,.ft-controls{grid-template-columns:1fr}}
+sup.fn{font-size:.7em;line-height:0}
+sup.fn a{text-decoration:none}
+sup.fn + sup.fn::before{content:","}
+.overview-shot{margin:22px 0}
+.overview-shot img{width:100%;max-width:768px;height:auto;aspect-ratio:384/272;image-rendering:pixelated;display:block}
+.overview-shot figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px;max-width:768px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1985 · Epyx</p>
+  <h1>Summer Games II: graphics</h1>
+  <p class="sub">Every athlete is a stack of hardware sprites. Three events store their athletes packed, frame by frame, and unpack each into the sprites as it is shown; the others keep every sprite ready in memory. Every shape below is drawn from the listings' bytes.</p>
+</header>
+<main class="wrap">
+
+<section id="athletes">
+  <p class="fig">01 · Packed athletes</p>
+  <h2 class="t">The jumpers and the horse</h2>
+  <p class="lede">Triple Jump, High Jump, and Show jumping keep their athletes packed. Each frame is five sprites, or eight for the horse and rider, and each sprite is stored as a count of the empty bytes at its end followed by the rest of its bytes; after the sprites come each sprite's position in the frame. High Jump and Show jumping unpack each frame into a second set of sprites, not on the screen, and then swap the two sets, so the picture never tears.</p>
+  <div class="plate">
+    <div class="ft-controls" style="grid-template-columns:repeat(3,auto);justify-content:start">
+      <button type="button" data-set="tj" aria-pressed="true">Triple Jump</button>
+      <button type="button" data-set="hj" aria-pressed="false">High Jump</button>
+      <button type="button" data-set="eq" aria-pressed="false">Show jumping</button>
+    </div>
+    <div class="ft-big" style="margin-top:12px;background:#4a4a4a;border-radius:6px"><canvas id="athCanvas" width="400" height="300" aria-label="The athlete's frame, drawn from its sprites"></canvas></div>
+    <label class="ft-lab" for="athFrame">Frame <b id="athFrameV"></b></label>
+    <input class="ft-range" type="range" id="athFrame" min="0" max="98" value="0">
+    <p><button type="button" id="athPlay" aria-pressed="false">▶ Play every frame</button></p>
+    <p class="cap" id="athCap"></p>
+  </div>
+  <p>The three events share the unpacking code almost byte for byte: Triple Jump's <a href="source-triple-jump.html#AB39"><code>draw_athlete</code></a>, High Jump's <a href="source-high-jump.html#67CD"><code>unpack_frame</code></a>, and Show jumping's <a href="source-equestrian.html#244E"><code>unpack_horse</code></a>. Packing saves the empty bottoms of the sprites: Triple Jump's 100 frames of five sprites would take 32,000 bytes unpacked and take 18,425, from $40C8 to $88C0. Triple Jump's frame table has a hundredth entry that points into the middle of other frames' bytes; it is left out here.</p>
+</section>
+
+<section id="sheets">
+  <p class="fig">02 · Ready-made sprites</p>
+  <h2 class="t">Every other moving thing</h2>
+  <p class="lede">The other events and the ceremonies store their sprites as they are shown, 64 bytes each, and move the pointers. Each sheet draws every non-empty sprite of a set in the colours the game gives the sprite that shows it, grouped as the game groups them: eight sprites to a rowing or cycling frame, four to a fencing pose.</p>
+  <div class="ft-controls" style="grid-template-columns:repeat(4,auto);justify-content:start" id="sheetButtons"></div>
+  <div class="plate" style="margin-top:12px">
+    <div class="ft-scroll" style="background:#4a4a4a;border-radius:6px;padding:8px"><canvas id="sheetCanvas" width="800" height="200" aria-label="The sprites of the chosen set"></canvas></div>
+    <p class="cap" id="sheetCap"></p>
+  </div>
+</section>
+
+<section id="screens">
+  <p class="fig">03 · How the screens are built</p>
+  <h2 class="t">Bitmaps, character screens, and splits</h2>
+  <p>Each part sets its own video bank and its own raster interrupts. The ceremonies and the title are multicolour bitmaps. The events draw their scenery in character sets and scroll it: Rowing and Cycling split the screen into two lanes, each scrolled for its own competitor, and Cycling needs eleven interrupts a frame and two screens drawn in turn to do it. The swimming events scroll a double-buffered bitmap and share their eight sprites between the two swimmers above and below line <code>$BD</code>. Where two competitors share the screen, the other one is drawn again with the same sprites lower down, in another colour, at the distance between them.</p>
+</section>
+
+<section id="title">
+  <p class="fig">04 · The title picture</p>
+  <h2 class="t">The picture shown while the menu loads</h2>
+  <div class="plate"><canvas id="titleCanvas" width="320" height="200" class="ft-px" style="max-width:640px" aria-label="The title picture"></canvas>
+    <p class="cap">The title picture, a multicolour bitmap at <a href="source-title.html#4000"><code>$4000</code></a> with its colours at <code>$6000</code> and <code>$6400</code>, shown for about 25 seconds while the menu loads, or until a joystick moves. Its other version is on the <a href="discoveries.html#bummer">Discoveries</a> tab.</p></div>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script>
+/* sg2-sprites */
+// The packed frames of Triple Jump (draw_athlete, $AB3D), High Jump (unpack_frame, $67CD) and Show
+// jumping (unpack_horse, $244E), ported: from the frame's address, for each sprite a count X of
+// empty bytes at its end, then its bytes 0 to 62-X in order, and the next sprite (X ^ $3F) + 1
+// bytes on; then two bytes a sprite, the X and Y of each sprite in the frame. A count of 0, which
+// only High Jump and Show jumping meet, skips the empty bytes and copies all 63.
+function unpackFrame(m, ptr, n) {
+  const sprites = [];
+  for (let s = 0; s < n; s++) {
+    const x = m[ptr], b = new Uint8Array(64);
+    for (let y = x ? 63 - x : 63; y >= 1; y--) b[y - 1] = m[(ptr + y) & 0xFFFF];
+    sprites.push(b);
+    ptr = (ptr + ((x ^ 0x3F) + 1)) & 0xFFFF;
+  }
+  return { sprites, off: Array.from({ length: 2 * n }, (_, i) => m[(ptr + i) & 0xFFFF]) };
+}
+// end of sg2-sprites
+
+// The packed sets: the frame tables' low and high bytes (the high byte less add), the number of frames
+// and of sprites, each sprite's colour and its multicolour and double-width bits, from each event's setup.
+const PACKED = {
+  tj: { part: 'triple-jump', lo: 0x4000, hi: 0x4064, add: 0, n: 99, spr: 5, cols: [9, 0, 1, 9, 11], mc: 0, mc0: 1, mc1: 0, xe: 0x10,
+        cap: 'Triple Jump: 99 frames of five hi-res sprites, the fifth doubled in width. Colours from tj_main ($AF0F).' },
+  hj: { part: 'high-jump', lo: 0x4000, hi: 0x4064, add: 0x10, n: 50, spr: 5, colsAt: 0x65C9, mc: 0, mc0: 1, mc1: 0, xe: 0x10,
+        cap: 'High Jump: 50 frames of five hi-res sprites, the fifth doubled in width. Colours from sprite_colours ($65C9).' },
+  eq: { part: 'equestrian', lo: 0x4600, hi: 0x463C, add: 0x36, n: 60, spr: 8, colsAt: 0x1D05, mc: 0x0A, mc0: 1, mc1: 9, xe: 0, yAdd: 24,
+        cap: 'Show jumping: 60 frames of eight sprites, the second and fourth in multicolour. Colours from sprite_colours ($1D05).' },
+};
+// The sheets: ranges of 64-byte sprites, how many the game groups to a frame, and for each place in
+// the group its colour, multicolour and width; style63, for the closing ceremony, takes them from
+// each sprite's last byte as sprite_style ($1A86) does.
+const SHEETS = [
+  { id: 'rowing', name: 'Rowing', part: 'rowing', ranges: [[0x7000, 0x8000, 'phases 0 to 7'], [0x4C00, 0x5C00, 'phases 8 to 15']], group: 8,
+    slots: [7, 10, 1, 9, 1, 2, 2, 0], mcBits: 0x60, mc0: 1, mc1: 0,
+    cap: 'Rowing: eight sprites for each of the stroke\'s sixteen phases, the rower and oars in five, the hull in two, multicolour, and one spare.' },
+  { id: 'cycling', name: 'Cycling', part: 'cycling', ranges: [[0x4E00, 0x5E00, 'frames 0 to 7'], [0x4C00, 0x4E00, 'frame 8'], [0x7000, 0x8000, 'frames 9 to 15']], group: 8,
+    slots: [6, 6, 6, 6, 6, 6, 1, 1], mcBits: 0x3F, mc0: 10, mc1: 0,
+    cap: 'Cycling: eight sprites for each of sixteen pedalling frames, six blue in multicolour and two white in hi-res (sprite_setup, $A2A6).' },
+  { id: 'javelin', name: 'Javelin', part: 'javelin', ranges: [[0x6800, 0x7980, 'head and body']], group: 2, slots: [9, 0], mcBits: 0, mc0: 1, mc1: 6,
+    more: { ranges: [[0x9000, 0xAA40, 'legs and arm']], group: 3, slots: [1, 9, 11] },
+    cap: 'Javelin: the thrower\'s head and body, two sprites a frame, then his legs and throwing arm, three sprites to each of 44 frames, which show_frame copies into place.' },
+  { id: 'fencing', name: 'Fencing', part: 'fencing', ranges: [[0x8000, 0xB000, 'poses']], group: 4, slots: [1, 1, 1, 1], mcBits: 0, mc0: 0, mc1: 0, xe: 0xFF,
+    cap: 'Fencing: the poses, four sprites a page, doubled in width; the left fencer\'s on odd pages, the right\'s on even. Drawn here all in white; the game gives the pieces white, black, and the blades\' green or brown.' },
+  { id: 'kayak', name: 'Kayaking', part: 'kayaking', ranges: [[0x5000, 0x5800, 'hull']], group: 2, slots: [9, 9], mcBits: 0, mc0: 4, mc1: 0,
+    more: { ranges: [[0x5800, 0x5A00, 'paddle']], group: 1, slots: [0] },
+    cap: 'Kayaking: the hull, two sprites for each of 16 headings, and the paddle in eight positions.' },
+  { id: 'swim', name: 'Swimming', part: 'swimming', ranges: [[0x4200, 0x4C00, 'swimmers'], [0x4C00, 0x5000, 'the clock']], group: 1, slots: [10], mcBits: 0, mc0: 0, mc1: 0,
+    cap: 'Swimming: the swimmers\' shapes $08 to $2F, in their skin colour, and the clock\'s colon, point and digits.' },
+  { id: 'opening', name: 'Opening', part: 'opening', ranges: [[0x6800, 0x7000, 'bearer and doves'], [0x7000, 0x7400, 'flame'], [0x7400, 0x7600, 'more']], group: 1, slots: [1], mcBits: 0, mc0: 8, mc1: 7,
+    flame: [0x7000, 0x7400],
+    cap: 'The opening ceremony: the torch bearer, the doves, and the flame, multicolour in orange and yellow. The bearer\'s pieces are drawn here in white; the ceremony colours each by the sprite that shows it.' },
+  { id: 'closing', name: 'Closing', part: 'closing', ranges: [[0x6C00, 0x7C00, 'fireworks'], [0x8000, 0x9400, 'flame'], [0x9400, 0xA200, 'frames'], [0xA200, 0xC800, 'the flyer'], [0xC800, 0xD000, 'the blimp']], group: 1, style63: true,
+    mcBy: [[0x6C00, 8, 7], [0x8000, 8, 7], [0x9400, 2, 1], [0xC800, 15, 12]],
+    cap: 'The closing ceremony: each frame\'s last byte gives its multicolour, its width and its colour (sprite_style, $1A86).' },
+  { id: 'hjspare', name: 'Unused', part: 'high-jump', zoom: 2, ranges: [[0xAB00, 0xB100, 'High Jump, shapes nothing reads']], group: 1, slots: [1], mcBits: 0, mc0: 0, mc1: 0,
+    cap: 'High Jump keeps 24 sprite-sized blocks at $AB00-$B0FF that no code reads or copies: pieces of a figure, and dashed lines like the edge of the mat. What they were drawn for is not known. Drawn in white, at twice the size of the other sets.' },
+  { id: 'menu', name: 'Menu', part: 'menu', ranges: [[0x30C0, 0x3280, 'pointer and frame']], group: 1, slots: [1], mcBits: 0, mc0: 0, mc1: 0,
+    cap: 'The menu: the pointer that marks a choice and the six sprites of the frame that flashes around it.' },
+];
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined') { $('athCap').textContent = 'These pictures need the site\'s shared scripts: open the page from the built site.'; return; }
+  const S = 2, loads = {};
+  const load = p => loads[p] || (loads[p] = C64.load('parts/' + p + '/listing.json'));
+  function sprite(ctx, data, x, y, col, mc, mc0, mc1, xe, z) {
+    z = z || S;
+    if (mc) C64.drawSpriteMC(ctx, data, x, y, z, C64.PAL[col], C64.PAL[mc0], C64.PAL[mc1], xe ? 2 : 1, 1);
+    else C64.drawSprite(ctx, data, x, y, z, C64.PAL[col], xe ? 2 : 1, 1);
+  }
+
+  // Packed athletes
+  let set = 'tj', frames = null, box = null, timer = null;
+  function prepare(id) {
+    const P = PACKED[id];
+    return load(P.part).then(({ ram }) => {
+      const cols = P.colsAt ? Array.from(ram.subarray(P.colsAt, P.colsAt + P.spr)) : P.cols;
+      const F = [];
+      for (let f = 0; f < P.n; f++) F.push(unpackFrame(ram, ram[P.lo + f] | (((ram[P.hi + f] + P.add) & 0xFF) << 8), P.spr));
+      let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+      for (const fr of F) for (let s = 0; s < P.spr; s++) {
+        const x = fr.off[2 * s], y = fr.off[2 * s + 1], w = (P.xe >> s & 1) ? 48 : 24;
+        x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x + w); y1 = Math.max(y1, y + 21);
+      }
+      return { P, F, cols, box: { x0, y0, w: x1 - x0, h: y1 - y0 } };
+    });
+  }
+  let cur = null;
+  function drawAth(f) {
+    const { P, F, cols, box } = cur, cv = $('athCanvas'), ctx = cv.getContext('2d');
+    cv.width = (box.w + 8) * S; cv.height = (box.h + 8) * S;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const fr = F[f];
+    for (let s = P.spr - 1; s >= 0; s--)       // sprite 0 in front, as the chip draws them
+      sprite(ctx, fr.sprites[s], (fr.off[2 * s] - box.x0 + 4) * S, (fr.off[2 * s + 1] - box.y0 + 4) * S, cols[s], P.mc >> s & 1, P.mc0, P.mc1, P.xe >> s & 1);
+    $('athFrameV').textContent = f + ' of ' + (P.n - 1);
+  }
+  function choose(id) {
+    set = id;
+    for (const b of document.querySelectorAll('[data-set]')) b.setAttribute('aria-pressed', String(b.dataset.set === id));
+    prepare(id).then(c => { cur = c; $('athFrame').max = c.P.n - 1; $('athFrame').value = 0; $('athCap').textContent = c.P.cap; drawAth(0); });
+  }
+  for (const b of document.querySelectorAll('[data-set]')) b.addEventListener('click', () => choose(b.dataset.set));
+  $('athFrame').addEventListener('input', () => cur && drawAth(+$('athFrame').value));
+  $('athPlay').addEventListener('click', () => {
+    if (timer) { clearInterval(timer); timer = null; $('athPlay').setAttribute('aria-pressed', 'false'); $('athPlay').textContent = '▶ Play every frame'; return; }
+    $('athPlay').setAttribute('aria-pressed', 'true'); $('athPlay').textContent = '⏸ Stop';
+    timer = setInterval(() => { if (!cur) return; const r = $('athFrame'); r.value = (+r.value + 1) % cur.P.n; drawAth(+r.value); }, 120);
+  });
+  choose('tj');
+
+  // Sheets
+  function drawSheet(sh) {
+    for (const b of document.querySelectorAll('[data-sheet]')) b.setAttribute('aria-pressed', String(b.dataset.sheet === sh.id));
+    load(sh.part).then(({ ram }) => {
+      const parts = [{ ranges: sh.ranges, group: sh.group, slots: sh.slots }].concat(sh.more ? [sh.more] : []);
+      const rows = [];
+      for (const pt of parts) for (const [a, b, label] of pt.ranges) {
+        let row = { label: label + ' ($' + a.toString(16).toUpperCase() + ')', items: [] };
+        for (let g = a; g < b; g += 64 * pt.group) {
+          const grp = [];
+          for (let k = 0; k < pt.group && g + 64 * k < b; k++) {
+            const at = g + 64 * k, d = ram.subarray(at, at + 64);
+            if (!d.some(v => v)) { grp.push(null); continue; }
+            let col, mc, mc0 = sh.mc0, mc1 = sh.mc1, xe = sh.xe >> k & 1;
+            if (sh.style63) { const st = d[63]; col = st & 15; mc = st >> 7; xe = st >> 6 & 1;
+              for (const [from, m0, m1] of sh.mcBy) if (at >= from) { mc0 = m0; mc1 = m1; } }
+            else { col = pt.slots[k]; mc = sh.mcBits >> k & 1; if (sh.flame && at >= sh.flame[0] && at < sh.flame[1]) mc = 1; }
+            grp.push({ d, col, mc, mc0, mc1, xe });
+          }
+          if (grp.some(Boolean)) row.items.push(grp);
+        }
+        rows.push(row);
+      }
+      // wrap the sheet to the plate's width, so nothing hides off to the right
+      const Z = S * (sh.zoom || 1), cv = $('sheetCanvas'), ctx = cv.getContext('2d'),
+        W = Math.max(150, Math.floor(((cv.parentElement.clientWidth || 1100) - 16) / Z)), cellW = it => it.reduce((w, s) => w + (s && s.xe ? 50 : 26), 0) + 10;
+      let y = 0, h = 0; const plan = [];
+      for (const r of rows) { let x = 0; y += 18; plan.push({ t: r.label, x: 0, y }); let lineH = 23;
+        for (const it of r.items) { const w = cellW(it); if (x + w > W) { x = 0; y += lineH; } plan.push({ it, x, y }); x += w; }
+        y += lineH + 6; }
+      h = y; cv.width = W * Z; cv.height = h * Z; cv.style.width = (W * Z) + 'px';
+      ctx.font = (11 * S) + 'px "IBM Plex Mono", monospace'; ctx.fillStyle = '#ffffff';
+      for (const p of plan) {
+        if (p.t) { ctx.fillStyle = '#ffffff'; ctx.fillText(p.t, 2 * Z, (p.y - 5) * Z); continue; }
+        let x = p.x;
+        for (const s of p.it) { if (s) sprite(ctx, s.d, x * Z, p.y * Z, s.col, s.mc, s.mc0, s.mc1, s.xe, Z); x += s && s.xe ? 50 : 26; }
+      }
+      $('sheetCap').textContent = sh.cap;
+    });
+  }
+  const bar = $('sheetButtons');
+  SHEETS.forEach((sh, i) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.sheet = sh.id; b.textContent = sh.name;
+    b.setAttribute('aria-pressed', String(i === 0)); b.addEventListener('click', () => drawSheet(sh)); bar.appendChild(b); });
+  drawSheet(SHEETS[0]);
+
+  // The title picture
+  load('title').then(({ ram }) => {
+    const cv = $('titleCanvas'), ctx = cv.getContext('2d'), img = ctx.createImageData(320, 200), P = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+    for (let c = 0; c < 1000; c++) { const s = ram[0x6000 + c], cols = [0, s >> 4, s & 15, ram[0x6400 + c] & 15], cx = c % 40, cy = c / 40 | 0;
+      for (let r = 0; r < 8; r++) { const b = ram[0x4000 + c * 8 + r];
+        for (let p = 0; p < 8; p++) { const rgb = P[cols[(b >> (6 - 2 * (p >> 1))) & 3]], i = ((cy * 8 + r) * 320 + cx * 8 + p) * 4;
+          img.data[i] = rgb[0]; img.data[i + 1] = rgb[1]; img.data[i + 2] = rgb[2]; img.data[i + 3] = 255; } } }
+    ctx.putImageData(img, 0, 0);
+  });
+})();
+</script>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
