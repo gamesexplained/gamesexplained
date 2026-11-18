@@ -14,6 +14,7 @@
 <main class="wrap">
 
 <section id="scenes" data-part="resident"><h2>Explore the stored scenery</h2>
+<p>Choose Fence to start at row 20, then move the row slider to 0 to see the scenery above the opening camera. Reset to compare with the original position. The gameplay capture stays fixed while you explore.</p>
 <div class="plate">
 <div class="dd-controls"><label for="dd-stage">Scene</label><select id="dd-stage"><option value="0">L0 · Garage</option><option value="1">L1 · Fence</option><option value="2">L2 · Brick wall</option><option value="3">L3 · Cliff path</option><option value="4">L4 · Entrance</option><option value="5">L5 · Interior</option><option value="6">ED · Ending</option></select>
 <label for="dd-version">Disk for capture</label><select id="dd-version"><option value="to">TO · Mastertronic title</option><option value="ad">AD · Arcadia Software title</option></select>
@@ -29,7 +30,12 @@
 </div>
 <p id="dd-note" aria-live="polite"></p>
 </div>
-<p>The renderer at <code>$6049</code> reads 40 character codes from each row, then advances by 240 bytes. A second table at <a id="dd-colour-link" href="source-l0.html#8E00">$8E00</a> supplies the colour for each code. The <code>$5FD3</code> table sets the starting position. L1 and L3 start farther down in their stored backgrounds. The controls also show stored rows outside the gameplay camera.</p>
+<p>The renderer at <a href="source-resident.html#6049">$6049</a> reads 40 character codes from each row, then advances by 240 bytes. A second table at <a id="dd-colour-link" href="source-l0.html#8E00">$8E00</a> supplies the colour for each code. The <a href="source-resident.html#5FD3">$5FD3</a> table sets the starting position. L1 and L3 start farther down in their stored backgrounds. The controls also show stored rows outside the gameplay camera.</p>
+</section>
+<section id="scenery-swap" data-part="resident">
+<h2>The street can change its scenery as you scroll</h2>
+<p>The <a href="source-resident.html#62FD">camera check</a> asks for different tile drawings when L0 reaches column 77 or L1 reaches column 53. The <a href="source-resident.html#60C5">transfer</a> replaces the drawings and their colour table. Later loads keep the alternate drawings that L1 brought into memory. The reconstruction above shows the character set in use at each scene’s opening.</p>
+<p>The <a href="https://uta.pokefinder.org/Ultimate_Tape_Archive/Double_Dragon_%281988_Melbourne_House%29_%5B10075%5D/Extras/Instructions.pdf">manual</a> counts five stages. The loader has six numbered scene files, L0 to L5, followed by the separate ending.</p>
 </section>
 </main>
 
@@ -78,7 +84,7 @@ function mapCell(ram, base, col, row) {
     for(let y=8;y<192;y+=8){ctx.moveTo(0,y+.5);ctx.lineTo(320,y+.5);}
     ctx.stroke();
    }
-   $('note').textContent = 'First map byte: $'+base.toString(16).toUpperCase()+'. Both disks use the same map.';
+   $('note').textContent = '40 × 24 tiles from the 240-tile-wide map, starting at $' + base.toString(16).toUpperCase() + '. Both disks use the same scenery.';
   } catch (error) {
    if(token===generation){$('map').getContext('2d').clearRect(0,0,320,192);$('note').textContent=error.message;}
   }

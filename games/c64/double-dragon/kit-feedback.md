@@ -21,4 +21,4 @@ None.
 
 ## What cost the most time
 
-A before-and-after report of the pages changed by each native disk load would have made persistent data easier to distinguish from its new payload.
+A before-and-after report of pages changed by a native disk load would have made persistent data easier to distinguish from the new payload. The overnight cleanup also removed the temporary checkout. VICE retained the exact snapshots in the installed tools folder, but the pending analysis had to be restored. A checkout under the ignored tools folder keeps the work alongside its captures.

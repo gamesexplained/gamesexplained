@@ -1,6 +1,7 @@
-# Double Dragon: work toward Silver
+# Double Dragon follow-ups
 
-- Finish classification and annotation for the resident engine, both loader paths, title, all six overlays, and ending. Use the measured coverage and the uncounted ranges from the listing builder; do not round up the tier.
-- Trace the attack and enemy state machines, the graphics data and sprite assembly, the timer/lives and mission exits, and all sound selection conditions. Test live where cheap.
-- Inspect the parts in the emulator after their own natural transitions where feasible. Assisted, ordered loads are documented; they are not a winning route.
-- Finish the verified pages, including the complete animation sequences and cue names; run the listing sample, browser checks, and independent reader review before opening the Silver PR.
+- Audit every listing comment. The independent sample led to three corrections out of 80 comments reviewed.
+- Record an uninterrupted winning route in both builds. The checked ordered loads used the original loader after setting the requested transition.
+- Reproduce the upper-edge jump freeze reported in *Compute!* and test its relation, if any, to the L3 fire checks for character codes $50–$53 at $426C and $4A85.
+- Test the co-op camera bounds with both fighters near a scrolling edge.
+- Follow the remaining SID callers and the exact item and damage rules through play. Compare the manual's five-stage count with the six scene files.

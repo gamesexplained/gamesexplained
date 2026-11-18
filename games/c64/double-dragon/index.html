@@ -22,17 +22,18 @@
 </section>
 <section id="opening" data-part="resident"><h2>Outside the garage</h2>
 <div class="plate dd-pair"><figure><img src="reference/to-mission.png" width="384" height="272" alt="A player at the garage in the first scene"><figcaption>The opening scene, captured on the TO disk in VICE.</figcaption></figure></div>
-<p>The lone fighter moves with a joystick in port 2. The input routine at <code>$3450</code> reads that port. On both disks, holding right moves the fighter along the street, while down moves him toward the bottom of the screen.</p>
-<p>The game draws the street in small characters. The routine at <code>$6049</code> copies 40 characters at a time from the map, then jumps ahead to the next row. The <a href="levels.html">level browser</a> compares this background with the game in motion.</p>
-<p>The two loaders take different paths at the end of a lost run. See the <a href="discoveries.html#game-over">Game Over comparison</a>.</p>
+<p>The lone fighter moves with a joystick in port 2. The input routine at <a href="source-resident.html#3450">$3450</a> reads that port. On both disks, holding right moves the fighter along the street, while down moves him toward the bottom of the screen.</p>
+<p>The game draws the street in 8 × 8 tiles. The routine at <a href="source-resident.html#6049">$6049</a> copies 40 characters at a time from the map, then jumps ahead to the next row. The <a href="levels.html">level browser</a> compares the background with a fixed gameplay capture.</p>
+<p>Press 2 at the title for two players. The first fighter stays on port 2 and the second uses port 1. Hold fire and push the joystick to pick a move. Even fire on its own can select a different move when you turn around. Outside the garage, an unarmed fighter facing left uses <a href="source-resident.html#44A1">one strike routine</a> while the same input facing right uses <a href="source-resident.html#4784">a different strike routine</a>. Compare the poses on the <a href="graphics.html#player-poses">Graphics tab</a>.</p>
 </section>
 <section id="sound" data-part="resident"><h2>Title music and SID cues</h2>
 <div id="dd-sound" class="plate"><p>Loading the music driver.</p></div>
-<p>The title and ending share a tune. Clearing a scene queues a short tune before the next load. The game calls its sound driver about 50 times a second on PAL. The player runs that driver on the listing's bytes and sends its writes to a model of the C64 sound chip.</p>
-<p>The <a href="source-resident.html#0C20">selection table</a> gives the driver three pointers, one per voice. Select a cue to see the voices change as it plays. Some of the shortest cues have pitches laptop speakers may barely reproduce.</p>
+<p>The <a href="source-title-to.html#1AE0">title</a> and the <a href="source-ending.html#B502">ending</a> share a tune. Clearing a scene queues a short tune before the next load. On the PAL C64, the sound driver runs about 50 times a second. This player follows the game’s original music routine and models the C64’s three voices.</p>
+<p>The <a href="source-resident.html#0C20">sound table</a> points to a sequence for each voice. Try Hit, which plays when the game registers certain strikes against a fighter. The engine also chooses <a href="source-resident.html#42CF">two different effects for weapon attacks</a> according to what the fighter carries.</p>
 </section>
-<section id="status"><h2>What the analysis covers</h2>
-<p>Both programs were run through all six level loads and the ending. The two disks contain matching copies of the level resources, the colour transfer routine, and the ending. The Source tab records the parts that were captured. Combat, the complete sound selection rules, and the remaining data formats are open.</p>
+<section id="stage-clear" data-part="resident"><h2>Clearing the way to the next scene</h2>
+<p>At the end of a scene, the <a href="source-resident.html#58E5">clear check</a> waits for both enemy slots and the pending spawns to clear. It starts the victory cue and a short wait. The <a href="source-resident.html#5930">next-level request</a> then advances the disk resource number. After it clears L5, the last of six scene files, the game reads the ending from disk.</p>
+<p>In the <a href="levels.html?scene=6#scenes">ending</a>, the walking figure stops. Fire on either joystick then takes you back to the title.</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
@@ -101,7 +102,11 @@ function createDoubleDragonDriver(program, C64Cpu) {
     C64Sid.mount(root, {
       driver: createDoubleDragonDriver,
       data: ram.slice(0x0344, 0x1518),
-      tunes: ['Title and ending', 'Scene clear', ...Array.from({length: 10}, (_, i) => 'Cue ' + (i + 2))],
+      tunes: [
+        'Title and ending', 'Scene clear', 'Cue 2', 'Hit', 'Cue 4',
+        'Weapon attack A', 'Weapon attack B', 'Alternate enemy hit',
+        'Cue 8', 'Cue 9', 'Cue 10', 'Close contact'
+      ],
       filter: '6581',
       bounce: false
     });
