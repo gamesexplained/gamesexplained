@@ -512,7 +512,7 @@
   },
   {
    "address": 32575,
-   "name": "next_state_pointer",
+   "name": "stage_pass_routine_pointer",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -524,19 +524,19 @@
   },
   {
    "address": 32579,
-   "name": "stage_multicolour_1",
+   "name": "stage_char_multicolour_1",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 32580,
-   "name": "stage_multicolour_2",
+   "name": "stage_char_multicolour_2",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 32581,
-   "name": "stage_player_grid_x",
+   "name": "stage_background_colour",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -632,73 +632,73 @@
   },
   {
    "address": 32600,
-   "name": "sid_voice_1_stream_pointer_low",
+   "name": "sid_voice_1_list_pointer_low",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 32601,
-   "name": "sid_voice_1_stream_pointer_high",
+   "name": "sid_voice_1_list_pointer_high",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 32602,
-   "name": "sid_voice_2_stream_pointer_low",
+   "name": "sid_voice_2_list_pointer_low",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 32603,
-   "name": "sid_voice_2_stream_pointer_high",
+   "name": "sid_voice_2_list_pointer_high",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 32604,
-   "name": "sid_voice_3_stream_pointer_low",
+   "name": "sid_voice_3_list_pointer_low",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 32605,
-   "name": "sid_voice_3_stream_pointer_high",
+   "name": "sid_voice_3_list_pointer_high",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 32606,
-   "name": "enabled_random_entry_0",
+   "name": "random_reward_0_sprite_frame",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 32607,
-   "name": "enabled_random_entry_1",
+   "name": "random_reward_1_sprite_frame",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 32608,
-   "name": "enabled_random_entry_2",
+   "name": "random_reward_2_sprite_frame",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 32609,
-   "name": "enabled_random_entry_3",
+   "name": "random_reward_3_sprite_frame",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 32610,
-   "name": "enabled_random_entry_4",
+   "name": "random_reward_4_sprite_frame",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 32611,
-   "name": "enabled_random_entry_5",
+   "name": "random_reward_5_sprite_frame",
    "type": "Field",
    "kind": "user"
   },
@@ -3752,7 +3752,7 @@
   },
   {
    "address": 46380,
-   "name": "title_colour_lookup_captured_prefix",
+   "name": "title_colour_lookup",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3764,7 +3764,7 @@
   },
   {
    "address": 47556,
-   "name": "title_character_source_second_half",
+   "name": "title_character_source_tail",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -4151,12 +4151,12 @@
   {
    "address": 32479,
    "type": "line",
-   "text": "Captured low/high handler tables. Type zero is skipped by the dispatcher, which has no local upper-bound check. Entries $2d–$2f target $b4ef, also the first captured entity record. If its bytes remain unchanged when entered, they begin ORA ($b5,X) followed by undocumented opcode $02; the resulting execution and any runtime replacement are unresolved."
+   "text": "Handler addresses for positive entity types: 48 low bytes at $7EDF followed by 48 high bytes at $7F0F, which the dispatcher at $2027 and $202D indexes by type. Type zero is skipped by the dispatcher, which has no local upper-bound check. In load 1, types 1, 2 and 3 have handlers at $B170, $B233 and $B371, type $16 shares $B170, types $27–$29 and $2B use the resident routines at $3D51, $3DB9, $3DFF and $72E6, and the other entries point at single RTS bytes in $B4D2–$B4EE. Entries $2D–$2F hold $B4EF, which is the first entity record and not code: its bytes begin 01 B5 02. Load 1's five entity records hold types 1 and 2 only."
   },
   {
    "address": 32575,
    "type": "line",
-   "text": "Two-byte transition/state pointer carried in the stage header."
+   "text": "Address of the load's routine for each pass of the main loop: $0450 jumps through this word with JMP ($7F3F) after the status check at $0448. Load 1 holds $0200, the jump back to the top of the main loop; the later loads hold routines of their own."
   },
   {
    "address": 32577,
@@ -4166,17 +4166,17 @@
   {
    "address": 32579,
    "type": "line",
-   "text": "First stage sprite multicolour value."
+   "text": "First shared colour of the stage's multicolour characters: $6C67 and $33C1 copy it to $529C, the shadow that the split interrupt writes to $D022 at $136A."
   },
   {
    "address": 32580,
    "type": "line",
-   "text": "Second stage sprite multicolour value."
+   "text": "Second shared colour of the stage's multicolour characters: $6C6D and $33C7 copy it to $529D, the shadow that the split interrupt writes to $D023 at $1370."
   },
   {
    "address": 32581,
    "type": "line",
-   "text": "Initial player grid X field."
+   "text": "Background colour of the stage: $6C62 copies it to $6F, which the split interrupt writes to $D021 at $133D. $06, blue, in load 1."
   },
   {
    "address": 32582,
@@ -4286,32 +4286,32 @@
   {
    "address": 32606,
    "type": "line",
-   "text": "The selector tests eight bytes starting here; the last two are also used as item sprite-frame fields at $7f64/$7f65. The code does not treat those roles as exclusive."
+   "text": "Sprite frame of random reward 0, $AD in load 1, and its enable: the selector at $49E3 tests eight bytes starting here and skips a zero. When it picks entry 0, $5F88 loads this byte into Y with A=$05 and $5FB5 makes a type-$FA entity with that frame. The last two of the eight bytes are the item sprite-frame fields at $7F64/$7F65, which the same scan reads for entries 6 and 7."
   },
   {
    "address": 32607,
    "type": "line",
-   "text": "Enable byte for random-entry index 1. $49E3 scans the eight-byte table at $7F5E and accepts a nonzero value."
+   "text": "Sprite frame of random reward 1 and its enable. $49E3 scans the eight-byte table at $7F5E and accepts a nonzero value; when it picks entry 1, $5F90 loads this byte into Y with A=$10 and $5FB5 makes a type-$FA entity with that frame. $00 in load 1, so the entry is never picked."
   },
   {
    "address": 32608,
    "type": "line",
-   "text": "Enable byte for random-entry index 2. $49E3 scans the eight-byte table at $7F5E and accepts a nonzero value."
+   "text": "Sprite frame of random reward 2 and its enable. $49E3 scans the eight-byte table at $7F5E and accepts a nonzero value; when it picks entry 2, $5FA0 loads this byte into Y with A=$20 and $5FB5 makes a type-$FA entity with that frame. $00 in load 1, so the entry is never picked."
   },
   {
    "address": 32609,
    "type": "line",
-   "text": "Enable byte for random-entry index 3. $49E3 scans the eight-byte table at $7F5E and accepts a nonzero value."
+   "text": "Sprite frame of random reward 3 and its enable. $49E3 scans the eight-byte table at $7F5E and accepts a nonzero value; when it picks entry 3, $5FA8 loads this byte into Y with A=$50 and $5FB5 makes a type-$FA entity with that frame. $00 in load 1, so the entry is never picked."
   },
   {
    "address": 32610,
    "type": "line",
-   "text": "Enable byte for random-entry index 4. $49E3 scans the eight-byte table at $7F5E and accepts a nonzero value."
+   "text": "Sprite frame of random reward 4 and its enable. $49E3 scans the eight-byte table at $7F5E and accepts a nonzero value; when it picks entry 4, $5F98 loads this byte into Y with A=$10 and $5FB5 makes a type-$FA entity with that frame. $00 in load 1, so the entry is never picked."
   },
   {
    "address": 32611,
    "type": "line",
-   "text": "Enable byte for random-entry index 5. $49E3 scans the eight-byte table at $7F5E and accepts a nonzero value."
+   "text": "Sprite frame of random reward 5 and its enable. $49E3 scans the eight-byte table at $7F5E and accepts a nonzero value; when it picks entry 5, $5FB0 loads this byte into Y with A=$00 and $5FB5 makes a type-$FA entity with that frame. $00 in load 1, so the entry is never picked."
   },
   {
    "address": 32612,
@@ -4351,52 +4351,52 @@
   {
    "address": 32619,
    "type": "line",
-   "text": "Additional item sprite-frame byte at offset 7 in the stage’s item-frame fields."
+   "text": "Sprite frame of the type-$F9 entity, $E9 in load 1: $5FEA copies it to the base and current frame bytes at $19E5,X and $19C3,X. It follows the seven item sprite-frame fields at $7F64, but the item selector at $4A12 does not read it."
   },
   {
    "address": 32620,
    "type": "line",
-   "text": "Additional item sprite-frame byte at offset 8 in the stage’s item-frame fields."
+   "text": "Sprite frame of the type-$F8 entity, $00 in load 1: $6021 copies it to the base and current frame bytes at $19E5,X and $19C3,X. It follows the item sprite-frame fields at $7F64, but the item selector at $4A12 does not read it."
   },
   {
    "address": 32621,
    "type": "line",
-   "text": "Replacement metatile character 1 for world mode zero. The record-map update selects one four-byte group from these fields."
+   "text": "Replacement map cell 1 of 4 for world mode zero: a metatile number. When a location record's field at $4753,X is negative, the record-map update at $46EC takes this four-byte group and $471B writes it into the map as a block of two by two cells; this byte goes to the cell at the record's row and column."
   },
   {
    "address": 32622,
    "type": "line",
-   "text": "Replacement metatile character 2 for world mode zero. The record-map update selects one four-byte group from these fields."
+   "text": "Replacement map cell 2 of 4 for world mode zero: a metatile number. When a location record's field at $4753,X is negative, the record-map update at $46EC takes this four-byte group and $471B writes it into the map as a block of two by two cells; this byte goes to the cell to its right."
   },
   {
    "address": 32623,
    "type": "line",
-   "text": "Replacement metatile character 3 for world mode zero. The record-map update selects one four-byte group from these fields."
+   "text": "Replacement map cell 3 of 4 for world mode zero: a metatile number. When a location record's field at $4753,X is negative, the record-map update at $46EC takes this four-byte group and $471B writes it into the map as a block of two by two cells; this byte goes to the cell below the first, at offset $7F4A."
   },
   {
    "address": 32624,
    "type": "line",
-   "text": "Replacement metatile character 4 for world mode zero. The record-map update selects one four-byte group from these fields."
+   "text": "Replacement map cell 4 of 4 for world mode zero: a metatile number. When a location record's field at $4753,X is negative, the record-map update at $46EC takes this four-byte group and $471B writes it into the map as a block of two by two cells; this byte goes to the cell below and to the right."
   },
   {
    "address": 32625,
    "type": "line",
-   "text": "Replacement metatile character 1 for world mode nonzero. The record-map update selects one four-byte group from these fields."
+   "text": "Replacement map cell 1 of 4 for world mode nonzero: a metatile number. When a location record's field at $4753,X is negative, the record-map update at $46EC takes this four-byte group and $471B writes it into the map as a block of two by two cells; this byte goes to the cell at the record's row and column."
   },
   {
    "address": 32626,
    "type": "line",
-   "text": "Replacement metatile character 2 for world mode nonzero. The record-map update selects one four-byte group from these fields."
+   "text": "Replacement map cell 2 of 4 for world mode nonzero: a metatile number. When a location record's field at $4753,X is negative, the record-map update at $46EC takes this four-byte group and $471B writes it into the map as a block of two by two cells; this byte goes to the cell to its right."
   },
   {
    "address": 32627,
    "type": "line",
-   "text": "Replacement metatile character 3 for world mode nonzero. The record-map update selects one four-byte group from these fields."
+   "text": "Replacement map cell 3 of 4 for world mode nonzero: a metatile number. When a location record's field at $4753,X is negative, the record-map update at $46EC takes this four-byte group and $471B writes it into the map as a block of two by two cells; this byte goes to the cell below the first, at offset $7F4A."
   },
   {
    "address": 32628,
    "type": "line",
-   "text": "Replacement metatile character 4 for world mode nonzero. The record-map update selects one four-byte group from these fields."
+   "text": "Replacement map cell 4 of 4 for world mode nonzero: a metatile number. When a location record's field at $4753,X is negative, the record-map update at $46EC takes this four-byte group and $471B writes it into the map as a block of two by two cells; this byte goes to the cell below and to the right."
   },
   {
    "address": 32629,
@@ -4466,12 +4466,12 @@
   {
    "address": 32705,
    "type": "line",
-   "text": "Seven first sprite-multicolour values. $716A copies the selected entry to shadow $529C."
+   "text": "Seven values, one for each visual selector, of the first shared colour of multicolour characters. $716A copies the selected entry to $529C, the shadow that the split interrupt writes to $D022 at $136A."
   },
   {
    "address": 32712,
    "type": "line",
-   "text": "Seven second sprite-multicolour values. $7170 copies the selected entry to shadow $529D."
+   "text": "Seven values, one for each visual selector, of the second shared colour of multicolour characters. $7170 copies the selected entry to $529D, the shadow that the split interrupt writes to $D023 at $1370."
   },
   {
    "address": 32719,
@@ -4511,7 +4511,7 @@
   {
    "address": 34255,
    "type": "line",
-   "text": "Captured row-pointer sequences contain 81 entries at a stride of 96 bytes. Destinations overlap other resident code and data; consumers do not establish a universal bound on the row index."
+   "text": "Row-pointer table for the map: 81 low bytes at $85CF followed by 81 high bytes at $8620, giving $8671 plus 96 for each row. Load 1's map has 15 rows, $8671–$8C10, so entries 15 to 80 point beyond it, into the character source at $8C11 and the code and records that follow. The readers at $6D30/$6D36 and $471E/$4726 index by row with no bound of their own."
   },
   {
    "address": 34417,
@@ -4591,12 +4591,12 @@
   {
    "address": 35857,
    "type": "line",
-   "text": "Non-overlapping prefix of the captured stage character-copy source. The full 2 KB source, including bytes shared with records and code, is represented in CAPTURE_CHARSET_ALIAS."
+   "text": "Start of the stage's character source, which the pointer at $7F41 selects: $34DD passes it to $717C, which copies eight pages, $8C11–$9410, to RAM at $D000–$D7FF, the character set the playfield is drawn with. The bytes from here to $9240 are the shapes of characters $00–$C5, eight bytes each. The last 464 bytes of the copy, $9241–$9410, are load 1's code and records, which arrive as characters $C6–$FF."
   },
   {
    "address": 36881,
    "type": "line",
-   "text": "Continuation of the first-load character-copy source at $8C11. The captured pointer at $7F41 selects that source, and the resident routine $717C copies eight pages into RAM at $D000–$D7FF. This byte-typed continuation ends at $9240; the rest of the full source overlaps code and other records, represented separately in CAPTURE_CHARSET_ALIAS. Individual character uses remain to be traced."
+   "text": "Continuation of the first-load character source at $8C11: the shapes of characters $80–$C5, eight bytes each. The pointer at $7F41 selects that source, and the resident routine $717C copies eight pages into RAM at $D000–$D7FF. The character shapes end at $9240; the rest of the 2,048 bytes copied, $9241–$9410, are code and records of the load."
   },
   {
    "address": 37441,
@@ -4606,7 +4606,7 @@
   {
    "address": 37452,
    "type": "line",
-   "text": "Captured motion stream decoded by $6A3A: $FF, $FF, $00, $01, $01, $02, $02, then $03 thirteen times; $02, $02, $01, $01, $00, $FF, $FF, $FE, $FE, then $FD thirteen times and $FE twice. The final $80 resets the decoder to the beginning. Other callers and ordinary-play reachability remain open."
+   "text": "Motion stream decoded by $6A3A: $FF, $FF, $00, $01, $01, $02, $02, then $03 thirteen times; $02, $02, $01, $01, $00, $FF, $FF, $FE, $FE, then $FD thirteen times and $FE twice. The final $80 resets the decoder to the beginning. The routine at $9241 is the only code that points the decoder at it, and no instruction in load 1 or in the resident part names $9241."
   },
   {
    "address": 37475,
@@ -4696,7 +4696,7 @@
   {
    "address": 37720,
    "type": "line",
-   "text": "Three message fields: Death has the key / to the next town's / gate.<heart>. The fields are zero-terminated and followed by control byte $FF. Control $FF makes the message routine wait for Fire."
+   "text": "Three message fields: Death has the key / to the next town's / gate.<prompt marker>. The fields are zero-terminated and followed by control byte $FF. Control $FF makes the message routine wait for Fire."
   },
   {
    "address": 37765,
@@ -4706,7 +4706,7 @@
   {
    "address": 37772,
    "type": "line",
-   "text": "Three message fields: Jump, the last / tree on the / right hand-side.<heart>. The fields are zero-terminated and followed by control byte $FF. Control $FF makes the message routine wait for Fire."
+   "text": "Three message fields: Jump, the last / tree on the / right hand-side.<prompt marker>. The fields are zero-terminated and followed by control byte $FF. Control $FF makes the message routine wait for Fire."
   },
   {
    "address": 37818,
@@ -4716,12 +4716,12 @@
   {
    "address": 37827,
    "type": "line",
-   "text": "Immediate player-flags byte used by the surrounding initializer at $93BA. It sets sound state $FE, writes this byte to the selected player’s flags, sets their action tier to 1, increments the entity-slot limit and calls the sprite-link checker. The captured byte is $10; changing this operand changes the flags written."
+   "text": "Immediate player-flags byte of the LDA at $93C2 in the initializer at $93BA, which sets sound state $FE, writes this byte to the selected player’s flags, sets their action tier to 1, increments the entity-slot limit and calls the sprite-link checker. The byte in the load is $10. The resident patch routine at $2A90 replaces it with the byte at $2A34 OR $10 ($2A9B) when its stage selector is 1."
   },
   {
    "address": 37859,
    "type": "line",
-   "text": "With processor port $01 set to $30, copy 63 bytes each from $95EC and $962B into RAM at $DC00 and $DC40. Copy 63 bytes from $966A to $E080 and $E100, and 63 from $96A9 to $E0C0 and $E140. The subsequent patches overwrite portions of the last two copies."
+   "text": "With processor port $01 set to $30, copy 63 bytes each from $95EC and $962B into RAM at $DC00 and $DC40. Copy 63 bytes from $966A to $E080 and $E100, and 63 from $96A9 to $E0C0 and $E140. The patches at $9421 overwrite part of the copies at $E100 and $E140."
   },
   {
    "address": 37893,
@@ -4741,32 +4741,32 @@
   {
    "address": 38035,
    "type": "line",
-   "text": "Three message fields: Hey brave man, / Listen carefully.<heart> / (empty). The fields are zero-terminated and followed by control byte $FF. Control $FF makes the message routine wait for Fire."
+   "text": "Three message fields: Hey brave man, / Listen carefully.<prompt marker> / (empty). The fields are zero-terminated and followed by control byte $FF. Control $FF makes the message routine wait for Fire."
   },
   {
    "address": 38071,
    "type": "line",
-   "text": "Three message fields: The countrys fate / despends on you. / Your mission is to<heart>. The fields are zero-terminated and followed by control byte $FF. Control $FF makes the message routine wait for Fire."
+   "text": "Three message fields: The countrys fate / despends on you. / Your mission is to<prompt marker>. The fields are zero-terminated and followed by control byte $FF. Control $FF makes the message routine wait for Fire."
   },
   {
    "address": 38128,
    "type": "line",
-   "text": "Three message fields: destroy the vicious / dragon and restore / peace.<heart>. The fields are zero-terminated and followed by control byte $FF. Control $FF makes the message routine wait for Fire."
+   "text": "Three message fields: destroy the vicious / dragon and restore / peace.<prompt marker>. The fields are zero-terminated and followed by control byte $FF. Control $FF makes the message routine wait for Fire."
   },
   {
    "address": 38176,
    "type": "line",
-   "text": "Three message fields: Take the sword and / medicine. / Good Luck!<heart>. The fields are zero-terminated and followed by control byte $FF. Control $FF makes the message routine wait for Fire."
+   "text": "Three message fields: Take the sword and / medicine. / Good Luck!<prompt marker>. The fields are zero-terminated and followed by control byte $FF. Control $FF makes the message routine wait for Fire."
   },
   {
    "address": 38218,
    "type": "line",
-   "text": "Graphics source blocks copied by resident setup code into sprite slots while I/O is banked out. Their use is conditional on the setup path."
+   "text": "First 54-byte setup graphics source, $954A–$957F. The setup loop at $9405 copies it to RAM at $D980, $DA00 and $DA80 while processor port $01 is $30: the first 54 bytes of sprite slots $66, $68 and $6A, whose last nine bytes come from the tails at $95B6, $95C8 and $95DA."
   },
   {
    "address": 38272,
    "type": "line",
-   "text": "Second 54-byte setup graphics source. The initializer copies it to RAM at $D9C0, $DA40 and $DAC0 while processor port $01 is $30. The separate nine-byte tails begin at $95BF, $95D1 and $95E3. Other uses and display reachability remain open."
+   "text": "Second 54-byte setup graphics source, $9580–$95B5. The setup loop at $9411 copies it to RAM at $D9C0, $DA40 and $DAC0 while processor port $01 is $30: the first 54 bytes of sprite slots $67, $69 and $6B. The separate nine-byte tails for those slots begin at $95BF, $95D1 and $95E3. No other instruction in load 1 or the resident part names it."
   },
   {
    "address": 38326,
@@ -4811,27 +4811,27 @@
   {
    "address": 38506,
    "type": "line",
-   "text": "Third 63-byte setup sprite source. The initializer copies it to $E080 and $E100; a later 15-byte patch replaces $E112–$E120 within the second copy. Other uses and display reachability remain open."
+   "text": "Third 63-byte setup sprite source. The initializer at $93EF copies it to $E080 and $E100, sprite slots $82 and $84; the 15-byte patch from $96E8 then replaces $E112–$E120 within the second copy. No other instruction in load 1 or the resident part names it."
   },
   {
    "address": 38569,
    "type": "line",
-   "text": "Fourth 63-byte setup sprite source. The initializer copies it to $E0C0 and $E140; a later 15-byte patch replaces $E152–$E160 within the second copy. Other uses and display reachability remain open."
+   "text": "Fourth 63-byte setup sprite source. The initializer at $93F8 copies it to $E0C0 and $E140, sprite slots $83 and $85; the 15-byte patch from $96F7 then replaces $E152–$E160 within the second copy. No other instruction in load 1 or the resident part names it."
   },
   {
    "address": 38632,
    "type": "line",
-   "text": "Fifteen-byte patch copied to $E112–$E120 by first-load setup, replacing part of the second copy of the sprite source at $966A. The setup-copy test checks each byte."
+   "text": "Fifteen-byte patch copied to $E112–$E120 by the setup loop at $9421, replacing rows 6–10 of the second copy, in sprite slot $84, of the sprite source at $966A."
   },
   {
    "address": 38647,
    "type": "line",
-   "text": "Fifteen-byte patch copied to $E152–$E160 by first-load setup, replacing part of the second copy of the sprite source at $96A9. The setup-copy test checks each byte."
+   "text": "Fifteen-byte patch copied to $E152–$E160 by the setup loop at $9427, replacing rows 6–10 of the second copy, in sprite slot $85, of the sprite source at $96A9."
   },
   {
    "address": 38662,
    "type": "line",
-   "text": "Character-source prefix accessed by the decoded screen in the capture; the resident copy reads 2 KB and may overlap other code and data. Other states can access additional characters.\n[offcut 999a] Potential patch destination referenced by $2b0d; the captured path through $2b07 branches around that write. Its standalone content role is unresolved."
+   "text": "Load 1: character $00 of visual selector 1's character set, eight zero bytes. The set is 110 characters, $00–$6D, at $9706–$9A75, ending where the selector's tile definitions start at $9A76. $7151 takes its address from $7FAC/$7FB3 and $717C copies eight pages from it, $9706–$9F05, to RAM at $D000–$D7FF, so the copy carries on through the selector's tile definitions, colour table and compressed screen and the data after them. Screen 1 draws character $00."
   },
   {
    "address": 38670,
@@ -4921,7 +4921,7 @@
   {
    "address": 39323,
    "type": "line",
-   "text": "Rows 5–7 of character $52 in the visual-selector-1 copy source based at $9706. Each byte is $55, giving alternating one-bit pixels; the complete source was copied and compared in VICE. The other rows begin at $9996."
+   "text": "Rows 5–7 of character $52 in visual selector 1's character set, which starts at $9706; $717C copies them to $D295–$D297. Each byte is $55. The other rows begin at $9996. The resident instruction at $2B12 would store $29 at $999B, but no instruction in the resident part or in any load names its entry at $2B0B, and the selector-31 check at $2B03 branches around it."
   },
   {
    "address": 39326,
@@ -4931,7 +4931,7 @@
   {
    "address": 39542,
    "type": "line",
-   "text": "Extent accessed by the corresponding captured screen data; other runtime inputs or conditional code patches can change these bytes or access beyond this range."
+   "text": "Load 1: tile definitions for visual selector 1, 47 four-byte entries at $9A76–$9B31. Each entry holds the character codes of a two-by-two tile: top left, top right, bottom left, bottom right. $7130 takes the address from $7F82/$7F89 into $5A/$5B, and $7064 multiplies the tile number by four and reads the entry through the patched LDA at $7089. These eight bytes are tiles $00 and $01: $2E, $3A, $3A, $2E and $3B, $50, $45, $3B. The eight-page character copy for visual selector 1, which starts at $9706, also takes them to $D370–$D377 as character $6E."
   },
   {
    "address": 39550,
@@ -4946,7 +4946,7 @@
   {
    "address": 39730,
    "type": "line",
-   "text": "Extent accessed by the corresponding captured screen data; other runtime inputs or conditional code patches can change these bytes or access beyond this range. Load 1: bytes $9B32–$9B35 are rows 4–7 of character $85 from visual selector 1, source base $9706. Their row values are $08, $09, $0D, $0D. A forced VICE call to $717C copied the complete 2048-byte source to $D000–$D7FF and matched these bytes at $D42C–$D42F. This identifies a copy use, not which cells display the character or whether the same bytes have another use."
+   "text": "Load 1: colour lookup table for visual selector 1, 110 bytes at $9B32–$9B9F, one for each character code $00–$6D. $7130 takes the address from $7F9E/$7FA5 into $6C/$6D, and $70D0 looks up each character of the drawn screen in it and writes the entry to colour RAM from $D8C8. These four bytes are the entries for characters $00–$03: $08, $09, $0D, $0D. The eight-page character copy for visual selector 1, which starts at $9706, also takes them to $D42C–$D42F as rows 4–7 of character $85."
   },
   {
    "address": 39734,
@@ -4956,7 +4956,7 @@
   {
    "address": 39840,
    "type": "line",
-   "text": "Captured 200-metatile input stream; the decoder ends on a token boundary for this selected source. Other runtime pointers and modifications can select different input."
+   "text": "Load 1: compressed screen for visual selector 1, 121 bytes at $9BA0–$9C18. $7130 takes the address from $7F90/$7F97 into $52/$53, and $7011 expands it to 200 tiles, ten rows of 20: a byte other than $FF is one tile, and $FF is followed by a tile number and a repeat count. The token that ends at $9C18 supplies the 200th tile. These six bytes are $FF, $00, $18 (tile $00 24 times), then tiles $2C, $2D and $00. The eight-page character copy for visual selector 1, which starts at $9706, also takes them to $D49A–$D49F as rows 2–7 of character $93."
   },
   {
    "address": 39846,
@@ -4971,7 +4971,7 @@
   {
    "address": 39961,
    "type": "line",
-   "text": "Character-source prefix accessed by the decoded screen in the capture; the resident copy reads 2 KB and may overlap other code and data. Other states can access additional characters."
+   "text": "Load 1: character $00 of visual selector 2's character set, eight zero bytes. The set is 36 characters, $00–$23, at $9C19–$9D38, ending where the selector's tile definitions start at $9D39. $7151 takes its address from $7FAC/$7FB3 and $717C copies eight pages from it, $9C19–$A418, to RAM at $D000–$D7FF, so the copy carries on through the data that follows the set. No tile of screen 2 uses character $00. The eight-page character copy for visual selector 1, which starts at $9706, also takes these bytes to $D513–$D51A."
   },
   {
    "address": 39969,
@@ -4991,7 +4991,7 @@
   {
    "address": 40249,
    "type": "line",
-   "text": "Extent accessed by the corresponding captured screen data; other runtime inputs or conditional code patches can change these bytes or access beyond this range. Load 1: bytes $9D39–$9D3C are rows 3–6 of character $C6 from visual selector 1, source base $9706. Their row values are $00, $00, $00, $00. A forced VICE call to $717C copied the complete 2048-byte source to $D000–$D7FF and matched these bytes at $D633–$D636. This identifies a copy use, not which cells display the character or whether the same bytes have another use."
+   "text": "Load 1: tile definitions for visual selector 2, 20 four-byte entries at $9D39–$9D88. Each entry holds the character codes of a two-by-two tile: top left, top right, bottom left, bottom right. $7130 takes the address from $7F82/$7F89 into $5A/$5B, and $7064 multiplies the tile number by four and reads the entry through the patched LDA at $7089. These four bytes are tile $00, four $00 codes, which screen 2 does not use. The eight-page character copies for visual selectors 1 and 2 also take them, to $D633–$D636 and $D120–$D123."
   },
   {
    "address": 40253,
@@ -5006,7 +5006,7 @@
   {
    "address": 40329,
    "type": "line",
-   "text": "Extent accessed by the corresponding captured screen data; other runtime inputs or conditional code patches can change these bytes or access beyond this range. Load 1: bytes $9D89–$9D8D are rows 3–7 of character $D0 from visual selector 1, source base $9706. Their row values are $08, $08, $08, $08, $08. A forced VICE call to $717C copied the complete 2048-byte source to $D000–$D7FF and matched these bytes at $D683–$D687. This identifies a copy use, not which cells display the character or whether the same bytes have another use."
+   "text": "Load 1: colour lookup table for visual selector 2, 36 bytes at $9D89–$9DAC, one for each character code $00–$23. $7130 takes the address from $7F9E/$7FA5 into $6C/$6D, and $70D0 looks up each character of the drawn screen in it and writes the entry to colour RAM from $D8C8. These five bytes are the entries for characters $00–$04, each $08. The eight-page character copies for visual selectors 1 and 2 also take them, to $D683–$D687 and $D170–$D174."
   },
   {
    "address": 40334,
@@ -5016,7 +5016,7 @@
   {
    "address": 40365,
    "type": "line",
-   "text": "Captured 200-metatile input stream; the decoder ends on a token boundary for this selected source. Other runtime pointers and modifications can select different input. Load 1, visual selector 2: bytes $9DAD–$9DAD are read as compressed screen input from the stream based at $9DAD. The $702E/$7041/$7047 token reads consume this segment in the controlled $7130 reconstruction; $FF introduces a value/count run. This describes the observed input bytes, not the extent of any unread tail or ordinary-play reachability."
+   "text": "Load 1: first byte of the compressed screen for visual selector 2, 127 bytes at $9DAD–$9E2B. $7130 takes the address from $7F90/$7F97 into $52/$53, and $7011 expands it to 200 tiles, ten rows of 20: a byte other than $FF is one tile, and $FF is followed by a tile number and a repeat count. The token that ends at $9E2B supplies the 200th tile. This byte is tile $13. The eight-page character copies for visual selectors 1 and 2 also take it, to $D6A7 and $D194."
   },
   {
    "address": 40366,
@@ -5026,7 +5026,7 @@
   {
    "address": 40492,
    "type": "line",
-   "text": "Character-source prefix accessed by the decoded screen in the capture; the resident copy reads 2 KB and may overlap other code and data. Other states can access additional characters. Load 1: bytes $9E2C–$9E2D are rows 6–7 of character $E4 from visual selector 1, source base $9706. Their row values are $00, $00. A forced VICE call to $717C copied the complete 2048-byte source to $D000–$D7FF and matched these bytes at $D726–$D727. This identifies a copy use, not which cells display the character or whether the same bytes have another use."
+   "text": "Load 1: character $00 of visual selector 3's character set, eight zero bytes. The set is 50 characters, $00–$31, at $9E2C–$9FBB, ending where the selector's tile definitions start at $9FBC. $7151 takes its address from $7FAC/$7FB3 and $717C copies eight pages from it, $9E2C–$A62B, to RAM at $D000–$D7FF, so the copy carries on through the data and code that follow the set. No tile of screen 3 uses character $00. The eight-page character copies for visual selectors 1 and 2 also take these bytes, to $D726–$D72D and $D213–$D21A."
   },
   {
    "address": 40500,
@@ -5046,7 +5046,7 @@
   {
    "address": 40892,
    "type": "line",
-   "text": "Extent accessed by the corresponding captured screen data; other runtime inputs or conditional code patches can change these bytes or access beyond this range. Load 1, visual selector 3: bytes $9FBC–$9FC0 are read from the four-character metatile table based at $9FBC. The $7064 drawing path multiplies each selected tile index by four and reads its character codes through the patched LDA at $7089. These reads were observed in the controlled $7130 reconstruction."
+   "text": "Load 1: tile definitions for visual selector 3, 24 four-byte entries at $9FBC–$A01B. Each entry holds the character codes of a two-by-two tile: top left, top right, bottom left, bottom right. $7130 takes the address from $7F82/$7F89 into $5A/$5B, and $7064 multiplies the tile number by four and reads the entry through the patched LDA at $7089. These five bytes are tile $00, four $01 codes, and the first code, $02, of tile $01. The eight-page character copies for visual selectors 2 and 3 also take them, to $D3A3–$D3A7 and $D190–$D194."
   },
   {
    "address": 40897,
@@ -5061,7 +5061,7 @@
   {
    "address": 40988,
    "type": "line",
-   "text": "Extent accessed by the corresponding captured screen data; other runtime inputs or conditional code patches can change these bytes or access beyond this range. Load 1: bytes $A01C–$A020 are rows 3–7 of character $80 from visual selector 2, source base $9C19. Their row values are $08, $0A, $0A, $0D, $0D. A forced VICE call to $717C copied the complete 2048-byte source to $D000–$D7FF and matched these bytes at $D403–$D407. This identifies a copy use, not which cells display the character or whether the same bytes have another use."
+   "text": "Load 1: colour lookup table for visual selector 3, 50 bytes at $A01C–$A04D, one for each character code $00–$31. $7130 takes the address from $7F9E/$7FA5 into $6C/$6D, and $70D0 looks up each character of the drawn screen in it and writes the entry to colour RAM from $D8C8. These five bytes are the entries for characters $00–$04: $08, $0A, $0A, $0D, $0D. The eight-page character copies for visual selectors 2 and 3 also take them, to $D403–$D407 and $D1F0–$D1F4."
   },
   {
    "address": 40993,
@@ -5071,7 +5071,7 @@
   {
    "address": 41038,
    "type": "line",
-   "text": "Captured 200-metatile input stream; the decoder ends on a token boundary for this selected source. Other runtime pointers and modifications can select different input. Load 1, visual selector 3: bytes $A04E–$A050 are read as compressed screen input from the stream based at $A04E. The $702E/$7041/$7047 token reads consume this segment in the controlled $7130 reconstruction; $FF introduces a value/count run. This describes the observed input bytes, not the extent of any unread tail or ordinary-play reachability."
+   "text": "Load 1: compressed screen for visual selector 3, 169 bytes at $A04E–$A0F6. $7130 takes the address from $7F90/$7F97 into $52/$53, and $7011 expands it to 200 tiles, ten rows of 20: a byte other than $FF is one tile, and $FF is followed by a tile number and a repeat count. The token that ends at $A0F6 supplies the 200th tile. These three bytes are tiles $01, $00 and $15. The eight-page character copies for visual selectors 2 and 3 also take them, to $D435–$D437 and $D222–$D224."
   },
   {
    "address": 41041,
@@ -5081,12 +5081,12 @@
   {
    "address": 41207,
    "type": "line",
-   "text": "Read by the eight-page stage-three character copy from $9e2c–$a62b at $717c–$719d. This byte follows the captured screen stream's final decoded token."
+   "text": "One byte, $99, between the last byte of visual selector 3's compressed screen at $A0F6 and visual selector 4's character set at $A0F8. The screen decoder at $7011 stops after its 200th tile and does not read it, and no instruction in load 1 or the resident part names it. The eight-page character copies for visual selectors 2 and 3, which start at $9C19 and $9E2C, take it to $D4DE and $D2CB."
   },
   {
    "address": 41208,
    "type": "line",
-   "text": "Character-source prefix accessed by the decoded screen in the capture; the resident copy reads 2 KB and may overlap other code and data. Other states can access additional characters. Load 1: bytes $A0F8–$A0F8 are rows 7–7 of character $9B from visual selector 2, source base $9C19. Their row values are $00. A forced VICE call to $717C copied the complete 2048-byte source to $D000–$D7FF and matched these bytes at $D4DF–$D4DF. This identifies a copy use, not which cells display the character or whether the same bytes have another use."
+   "text": "Load 1: character $00 of visual selector 4's character set, eight zero bytes. The set is 72 characters, $00–$47, at $A0F8–$A337, ending where the selector's tile definitions start at $A338. $7151 takes its address from $7FAC/$7FB3 and $717C copies eight pages from it, $A0F8–$A8F7, to RAM at $D000–$D7FF, so the copy carries on through the data and code that follow the set. Screen 4 draws character $00. The eight-page character copies for visual selectors 2 and 3 also take these bytes, to $D4DF–$D4E6 and $D2CC–$D2D3."
   },
   {
    "address": 41216,
@@ -5116,7 +5116,7 @@
   {
    "address": 41784,
    "type": "line",
-   "text": "Extent accessed by the corresponding captured screen data; other runtime inputs or conditional code patches can change these bytes or access beyond this range. Load 1, visual selector 4: bytes $A338–$A338 are read from the four-character metatile table based at $A338. The $7064 drawing path multiplies each selected tile index by four and reads its character codes through the patched LDA at $7089. These reads were observed in the controlled $7130 reconstruction."
+   "text": "Load 1: first byte of the tile definitions for visual selector 4, 50 four-byte entries at $A338–$A3FF. Each entry holds the character codes of a two-by-two tile: top left, top right, bottom left, bottom right. $7130 takes the address from $7F82/$7F89 into $5A/$5B, and $7064 multiplies the tile number by four and reads the entry through the patched LDA at $7089. This byte is the top-left code, $00, of tile $00. The eight-page character copies for visual selectors 2, 3 and 4 also take it, to $D71F, $D50C and $D240."
   },
   {
    "address": 41785,
@@ -5126,7 +5126,7 @@
   {
    "address": 41984,
    "type": "line",
-   "text": "Extent accessed by the corresponding captured screen data; other runtime inputs or conditional code patches can change these bytes or access beyond this range. Load 1: bytes $A400–$A400 are rows 7–7 of character $FC from visual selector 2, source base $9C19. Their row values are $08. A forced VICE call to $717C copied the complete 2048-byte source to $D000–$D7FF and matched these bytes at $D7E7–$D7E7. This identifies a copy use, not which cells display the character or whether the same bytes have another use."
+   "text": "Load 1: first byte of the colour lookup table for visual selector 4, 72 bytes at $A400–$A447, one for each character code $00–$47. $7130 takes the address from $7F9E/$7FA5 into $6C/$6D, and $70D0 looks up each character of the drawn screen in it and writes the entry to colour RAM from $D8C8. This byte is the entry for character $00, $08. The eight-page character copies for visual selectors 2, 3 and 4 also take it, to $D7E7, $D5D4 and $D308."
   },
   {
    "address": 41985,
@@ -5141,7 +5141,7 @@
   {
    "address": 42056,
    "type": "line",
-   "text": "Captured 200-metatile input stream; the decoder ends on a token boundary for this selected source. Other runtime pointers and modifications can select different input. Load 1, visual selector 4: bytes $A448–$A44B are read as compressed screen input from the stream based at $A448. The $702E/$7041/$7047 token reads consume this segment in the controlled $7130 reconstruction; $FF introduces a value/count run. This describes the observed input bytes, not the extent of any unread tail or ordinary-play reachability."
+   "text": "Load 1: compressed screen for visual selector 4, 83 bytes at $A448–$A49A, ending where the code at $A49B starts. $7130 takes the address from $7F90/$7F97 into $52/$53, and $7011 expands it to 200 tiles, ten rows of 20: a byte other than $FF is one tile, and $FF is followed by a tile number and a repeat count. The token that ends at $A49A supplies the 200th tile. These four bytes are $FF, $00, $1B (tile $00 27 times), then tile $21. The eight-page character copies for visual selectors 3 and 4 also take them, to $D61C–$D61F and $D350–$D353."
   },
   {
    "address": 42060,
@@ -5156,7 +5156,7 @@
   {
    "address": 42145,
    "type": "line",
-   "text": "Set both layout selectors to $46 plus one, set sound-control state to 2, and render the two amount fields from the selected record. Rendering is called with Y=$9B and $AF respectively."
+   "text": "Store $46 plus one in the high address byte at $A800 of the digit store at $A7FE and in the layout selector at $A84A, where a nonzero value sends the confirm path at $A712 to the option dispatcher. Set sound-control state to 2, and render the two amount fields from the selected record: field 11 with Y=$9B and field 12 with Y=$AF."
   },
   {
    "address": 42177,
@@ -5196,12 +5196,12 @@
   {
    "address": 42303,
    "type": "line",
-   "text": "Patch the high byte of the call target from the selected state."
+   "text": "When stage-record field 8 ($4771,X), loaded at $A53C, is zero, branch to the default message at $A557. Otherwise $A541 stores it into the high operand byte at $A551 of the JSR at $A54F."
   },
   {
    "address": 42308,
    "type": "line",
-   "text": "Patch the low byte of the call target from the selected state."
+   "text": "Copy stage-record field 7 ($476B,X) into the low operand byte at $A550 of the JSR at $A54F, then clear field 8."
   },
   {
    "address": 42319,
@@ -5226,12 +5226,12 @@
   {
    "address": 42368,
    "type": "line",
-   "text": "Patch the high byte of the call target from the selected state. $A57D loads A from $477D,X; when it is nonzero, $A582 writes it to $A592."
+   "text": "When stage-record field 10 ($477D,X), loaded at $A57D, is zero, branch to the default message at $A598. Otherwise $A582 stores it into the high operand byte at $A592 of the JSR at $A590."
   },
   {
    "address": 42373,
    "type": "line",
-   "text": "Patch the low byte of the call target from the selected state. At $A585, load A from $4777,X and write it to $A591."
+   "text": "Copy stage-record field 9 ($4777,X) into the low operand byte at $A591 of the JSR at $A590, then clear field 10."
   },
   {
    "address": 42384,
@@ -5266,12 +5266,12 @@
   {
    "address": 42495,
    "type": "line",
-   "text": "The address is patched from the selected item state and player index; captured $ff00 is not the fixed data source."
+   "text": "The address operand is patched by $A5F5 and $A5FC with $4DD5 plus stage-record field 8 plus the selected player index, so field 8 values 0, 2 and 4 read the selected player's byte of the arrays at $4DD5, $4DD7 and $4DD9. The $FF00 in the load is a placeholder."
   },
   {
    "address": 42496,
    "type": "line",
-   "text": "Low address operand of the LDA at $A5FF, paired with high byte $A601. The setup patches this address from the selected item state and player index before reading it."
+   "text": "Low address operand of the LDA at $A5FF, paired with high byte $A601. $A5F5 patches it with the low byte of $4DD5 plus stage-record field 8 plus the selected player index before the read."
   },
   {
    "address": 42497,
@@ -5286,12 +5286,12 @@
   {
    "address": 42518,
    "type": "line",
-   "text": "Patch the low byte of the call target from the selected state. At $A616, load A from $ABA3,Y and write it to $A625."
+   "text": "Copy byte 2 of the second item's eight-byte record ($ABA3,Y) into the low operand byte at $A625 of the JSR at $A624."
   },
   {
    "address": 42524,
    "type": "line",
-   "text": "Patch the high byte of the call target from the selected state. At $A61C, load A from $ABA4,Y and write it to $A626."
+   "text": "Copy byte 3 of the second item's eight-byte record ($ABA4,Y) into the high operand byte at $A626 of the JSR at $A624."
   },
   {
    "address": 42532,
@@ -5311,12 +5311,12 @@
   {
    "address": 42542,
    "type": "line",
-   "text": "Patch the low byte of the call target from the selected state. At $A62E, load A from $ABA3,Y and write it to $A63D."
+   "text": "Copy byte 2 of the first item's eight-byte record ($ABA3,Y) into the low operand byte at $A63D of the JSR at $A63C."
   },
   {
    "address": 42548,
    "type": "line",
-   "text": "Patch the high byte of the call target from the selected state. At $A634, load A from $ABA4,Y and write it to $A63E."
+   "text": "Copy byte 3 of the first item's eight-byte record ($ABA4,Y) into the high operand byte at $A63E of the JSR at $A63C."
   },
   {
    "address": 42556,
@@ -5331,7 +5331,7 @@
   {
    "address": 42558,
    "type": "line",
-   "text": "High byte of the JSR operand at $A63C, patched from the selected item record. After the callback returns, the following code sets up the choice colours and prices. The callback itself is not exercised by the layout test."
+   "text": "High byte of the JSR operand at $A63C, which $A637 patches from byte 3 of the first item's eight-byte record ($ABA4,Y). The call passes A=$D0. After the callback returns, the following code sets up the choice colours and prices."
   },
   {
    "address": 42559,
@@ -5341,7 +5341,7 @@
   {
    "address": 42590,
    "type": "line",
-   "text": "Write $46 plus one to the layout selector, then call price extraction and drawing for the two item IDs at $A850/$A851. Pass Y=$73 and $87 to the respective drawing calls; then select prompt $A857 in X/Y."
+   "text": "Write $46 plus one to the high address byte at $A800 of the digit store at $A7FE, then call price extraction and drawing for the two item IDs at $A850/$A851. Pass Y=$73 and $87 to the respective drawing calls; then select prompt $A857 in X/Y."
   },
   {
    "address": 42622,
@@ -5391,12 +5391,12 @@
   {
    "address": 42868,
    "type": "line",
-   "text": "Patch the low byte of the call target from the selected state. At $A774, load A from $ABA5,Y and write it to $A785."
+   "text": "Copy byte 4 of the chosen item's eight-byte record ($ABA5,Y) into the low operand byte at $A785 of the JSR at $A784."
   },
   {
    "address": 42874,
    "type": "line",
-   "text": "Patch the high byte of the call target from the selected state. At $A77A, load A from $ABA6,Y and write it to $A786."
+   "text": "Copy byte 5 of the chosen item's eight-byte record ($ABA6,Y) into the high operand byte at $A786 of the JSR at $A784."
   },
   {
    "address": 42884,
@@ -5411,7 +5411,7 @@
   {
    "address": 42886,
    "type": "line",
-   "text": "High byte of the selected item-effect callback patched at $A77D. After the callback returns, select message $A879 in X/Y. The common entry at $A78B calls the message display routine, then repeatedly waits a frame and updates the HUD until $4D6B is zero; it then returns. Callback effects and whether the countdown reaches zero are not established by this loop alone."
+   "text": "High byte of the selected item-effect callback patched at $A77D. After the callback returns, select message $A879 in X/Y. The common entry at $A78B calls the message display routine, then repeatedly waits a frame and calls the HUD update until $4D6B is zero; it then returns. The HUD update's status-panel path at $3719, which runs on alternate calls, decrements $4D6B at $3725."
   },
   {
    "address": 42906,
@@ -5461,12 +5461,12 @@
   {
    "address": 43078,
    "type": "line",
-   "text": "Third stored price-display character code, filled by the nibble formatter at $A504."
+   "text": "Second of the four price-display digit codes at $A845–$A848. The price formatter at $A807 stores the low nibble of the item record's high price byte plus one here ($A81B) and then replaces it with zero when it and the first code are both 1, a leading zero. The payment formatter at $A504 clears it ($A512). $A7EC reads it for drawing."
   },
   {
    "address": 43079,
    "type": "line",
-   "text": "Fourth stored price-display character code, filled from the low nibble at $A504."
+   "text": "Third of the four price-display digit codes at $A845–$A848. The payment formatter at $A504 stores the high nibble of its amount plus one here, or zero when that nibble is zero ($A51D). The price formatter at $A807 stores the high nibble of the item record's low price byte plus one ($A829), replaced with zero when it and the two codes before it are all 1. $A7EC reads it for drawing."
   },
   {
    "address": 43080,
@@ -5476,7 +5476,7 @@
   {
    "address": 43081,
    "type": "line",
-   "text": "Read by the eight-page stage-four character copy from $a0f8–$a8f7. It is not a fifth price digit: the price writer at $a807–$a83c and reader at $a7ec–$a7fb both bound the price buffer to four bytes."
+   "text": "One byte, $5B, between the four price-digit codes at $A845–$A848 and the layout selector at $A84A. The price formatters at $A504 and $A807 and the digit drawer at $A7EC all stop at four bytes, and no instruction in load 1 or the resident part names it. The eight-page character copy for visual selector 4, which starts at $A0F8, takes it to $D751."
   },
   {
    "address": 43082,
@@ -5506,12 +5506,12 @@
   {
    "address": 43089,
    "type": "line",
-   "text": "Second offered item ID, computed as the first ID plus one with byte wrapping."
+   "text": "Second offered item ID. When stage-record field 7 is nonzero, $A5E5 stores field 8 here after the $13/$14 resolver at $A79A; otherwise $A60C stores the first ID plus one, with byte wrapping."
   },
   {
    "address": 43090,
    "type": "line",
-   "text": "Item-selection offset lookup indexed by mutable stage-record state without a local upper bound; its full logical extent is unresolved. These bytes also belong to the eight-page stage-four character-copy source $a0f8–$a8f7."
+   "text": "Five bytes, $00, $00, $0D, $00, $06, at $A852–$A856, ending where the message at $A857 starts. When stage-record field 7 is zero, $A603 adds the byte indexed by field 8 to the selected player's state byte read at $A5FF to form the first item ID; nothing bounds the index. The eight-page character copy for visual selector 4, which starts at $A0F8, also takes these bytes to $D75A–$D75E."
   },
   {
    "address": 43095,
@@ -5856,12 +5856,12 @@
   {
    "address": 44185,
    "type": "line",
-   "text": "Patch the low byte of the call target from the selected state. At $AC99, load A from $477D,X and write it to $ACA6."
+   "text": "Copy stage-record field 10 ($477D,X) into the low operand byte at $ACA6 of the JSR at $ACA5."
   },
   {
    "address": 44191,
    "type": "line",
-   "text": "Patch the high byte of the call target from the selected state. At $AC9F, load A from $4783,X and write it to $ACA7."
+   "text": "Copy stage-record field 11 ($4783,X) into the high operand byte at $ACA7 of the JSR at $ACA5."
   },
   {
    "address": 44197,
@@ -5881,12 +5881,12 @@
   {
    "address": 44203,
    "type": "line",
-   "text": "Four entry points pass an item type in A and a quantity in X to the resident push-or-merge routine at $536F. The pairs are type 0/quantity 5 at $ACAB, type 1/quantity 8 at $ACB2, type 3/quantity 3 at $ACB9, and type 2/quantity 5 at $ACC0. The destination routine’s effects and ordinary-play reachability are separate."
+   "text": "Four entry points pass an item type in A and a quantity in X to the resident push-or-merge routine at $536F. The pairs are type 0/quantity 5 at $ACAB, type 1/quantity 8 at $ACB2, type 3/quantity 3 at $ACB9, and type 2/quantity 5 at $ACC0. Item records 20, 21, 23 and 22, at $AC41–$AC60, name them in that order as their effect routines."
   },
   {
    "address": 44231,
    "type": "line",
-   "text": "Sprite source pair 1: 128 bytes copied by $AFC7 to $D980–$D9FF, VIC bank-3 slots $66/$67. Each slot has 63 bitmap bytes and one additional byte. In the captured title-to-play route, $2086 mirrors the first pair into slots $74/$75 at the player position; other uses of this pair require their own observation."
+   "text": "Sprite source pair 1: 128 bytes copied by $AFC7 to $D980–$D9FF, VIC bank-3 slots $66/$67. Each slot has 63 bitmap bytes and one additional byte. The first of the seven calls to $2086, at $AFFB, mirrors this pair into slots $74/$75."
   },
   {
    "address": 44359,
@@ -5916,7 +5916,7 @@
   {
    "address": 44999,
    "type": "line",
-   "text": "Copy six 128-byte blocks from $ACC7–$AFC6 to VIC bank-3 sprite slots at $D980, $DA00, $DA80, $DC00, $E080 and $E100 with I/O banked out. Set X=$66 and Y=$74, then call $2086 seven times; each call mirrors a sprite pair and advances X and Y by two. Restore $01 to $35 and restore the incoming X from a patched immediate. The seventh source pair and later uses need separate tracing."
+   "text": "Copy six 128-byte blocks from $ACC7–$AFC6 to VIC bank-3 sprite slots at $D980, $DA00, $DA80, $DC00, $E080 and $E100 with I/O banked out. Set X=$66 and Y=$74, then call $2086 seven times; each call mirrors a sprite pair and advances X and Y by two, so source slots $66–$73 are mirrored into $74–$81. The fourth, fifth and seventh calls mirror slots $6C–$6F and $72/$73, which this routine does not copy. Restore $01 to $35 and restore the incoming X from a patched immediate. Trigger record 1 at $9263 names this routine as its callback."
   },
   {
    "address": 45077,
@@ -6281,7 +6281,7 @@
   {
    "address": 46319,
    "type": "line",
-   "text": "First-load entity record 1 (within the initial five-record limit): initial bytes $01, $B5, $02, $2C, $00, $E9, $07, $00, $00, $01. The resident copy at $369E places these ten bytes in the entity arrays. Other runtime state can change the copy. This address also appears in positive-entity dispatch entries; its executable role remains unresolved."
+   "text": "First-load entity record 1 (within the initial five-record limit): initial bytes $01, $B5, $02, $2C, $00, $E9, $07, $00, $00, $01. The resident copy at $369E places these ten bytes in the entity arrays. Other runtime state can change the copy. The handler table at $7EDF also holds this address, for entity types $2D–$2F; the bytes are this record, not code."
   },
   {
    "address": 46329,
@@ -6316,22 +6316,22 @@
   {
    "address": 46380,
    "type": "line",
-   "text": "The captured title screen uses lookup indices through $97, reaching this prefix's end. Other screen values can index beyond it; this is not a proven universal table bound."
+   "text": "Colour lookup table for the title screen: 152 bytes at $B52C–$B5C3, one for each character code $00–$97, the characters of the title set at $B5C4–$BA83. The title setup at $0289 looks up each of the first 480 screen cells, rows 0–11, in it ($028C, $02A1) and writes the entry to colour RAM at $D800–$D9DF; the other cells get colour 1. The highest code in those 480 cells of the template at $BA84 is $97."
   },
   {
    "address": 46532,
    "type": "line",
-   "text": "Two-kilobyte source copied into RAM under I/O by $717c during title setup. The screen template at $ba84–$be83 overlaps this source; its complete static view is in TITLE_SCREEN_ALIAS."
+   "text": "First 1,024 bytes of the title character set, characters $00–$7F. The title setup at $0256 passes $B5C4 to $717C, which copies eight pages, $B5C4–$BDC3, to RAM at $D000–$D7FF. The set itself is 152 characters, $00–$97, at $B5C4–$BA83; from $BA84 the copy runs over the title screen template, which starts there."
   },
   {
    "address": 47556,
    "type": "line",
-   "text": "The final 1,024 bytes of the eight-page title character source beginning at $B5C4. The title initializer passes that source to $717C, which copies it to RAM beneath I/O at $D000–$D7FF. The screen template beginning at $BA84 overlaps this second half; individual glyph meanings and uses remain to be checked."
+   "text": "$B9C4–$BA83 are characters $80–$97 of the title character set, which starts at $B5C4. $BA84–$BDC3 are the first 832 cells of the title screen template, rows 0–19 and the first 32 cells of row 20, which the title setup at $026C copies from $BA84 to the screen matrix at $C000. The eight-page copy by $717C from $B5C4 takes all 1,024 bytes to $D400–$D7FF, so the template cells also land there as characters $98–$FF; no cell of the template uses a code above $97."
   },
   {
    "address": 48580,
    "type": "line",
-   "text": "The non-overlapping tail of the title screen template. Its full logical view is TITLE_SCREEN_ALIAS:ba84–be83."
+   "text": "Last 168 cells of the title screen template, $BDC4–$BE6B: the last eight cells of row 20 and rows 21–24. The template is 1,000 cells from $BA84, which the title setup at $026C copies to the screen matrix at $C000; its four-page loop also copies the 24 bytes after the template, $BE6C–$BE83, to $C3E8–$C3FF. These cells lie past the end of the eight-page character copy from $B5C4, which stops at $BDC3."
   },
   {
    "address": 60224,
