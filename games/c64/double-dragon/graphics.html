@@ -1,0 +1,353 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="stylesheet" href="../../lib/site.css">
+<style>
+.fighter-demo canvas{display:block;width:auto;max-width:100%;height:216px;image-rendering:pixelated;margin:1rem auto;background:#9b9b9b}
+#shape-piece{height:120px}
+.fighter-demo fieldset{display:flex;flex-wrap:wrap;gap:.75rem 1rem}
+</style>
+<!-- tabs -->
+<header class="hero"><p class="eyebrow">{{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">A fighter’s shirt and legs share the same hardware sprites. The game swaps their shapes as the screen is drawn.</p></header>
+<main class="wrap">
+<section id="enemy-poses" data-part="resident">
+<h2>Watch the enemy poses change</h2>
+<div class="plate fighter-demo">
+<fieldset>
+<legend>Animation</legend>
+<label>Enemy type <select id="enemy-type"></select></label>
+<label>Action <select id="enemy-action"></select></label>
+<label>Direction <select id="enemy-direction"></select></label>
+<label>Active enemy <select id="enemy-slot"><option value="0">First</option><option value="1">Second</option></select></label>
+<label>Stage graphics <select id="enemy-bank">
+<option value="l0">Garage</option><option value="l2">Forest</option><option value="l5">Interior</option>
+</select></label>
+</fieldset>
+<canvas width="36" height="54" id="enemy-animation" role="img" aria-label="Enemy sprite animation">Enemy sprite animation.</canvas>
+<button type="button" id="enemy-play">Play</button>
+<button type="button" id="enemy-step">Next pose</button>
+<p id="enemy-pose-status" class="muted"></p>
+<p><a id="enemy-script-source" href="source-resident.html#6B1C">Pose script in the listing</a></p>
+</div>
+<p>An enemy’s type, action and direction <a href="source-resident.html#64AD">choose a sequence of poses</a>. A pose picks four shapes for the two halves of the body. Change the stage from Garage to Forest in the starting example. The upper pieces change and the legs keep the same shape.</p>
+<p>The preview holds a pose for the same number of PAL video frames as the <a href="source-resident.html#64C9">game’s interval table</a>. Action 2 holds for 16 frames in the first enemy slot and 15 in the second. During play the <a href="source-resident.html#668D">enemy update</a> can change the action or override the interval.</p>
+</section>
+<section id="player-poses" data-part="resident">
+<h2>Step through the player’s moves</h2>
+<div class="plate fighter-demo">
+<fieldset>
+<legend>Fighter animation</legend>
+<label>Player <select id="pose-player"><option value="0">First</option><option value="1">Second</option></select></label>
+<label>Move <select id="player-action"></select></label>
+</fieldset>
+<canvas width="36" height="54" id="player-animation" role="img" aria-label="Player sprite animation">Player sprite animation.</canvas>
+<button type="button" id="player-pose-play">Play</button>
+<button type="button" id="player-pose-step">Next pose</button>
+<p id="player-pose-status" class="muted"></p>
+<p><a id="player-handler-source" href="source-resident.html#4459">Move code in the listing</a></p>
+</div>
+<p>The <a href="source-resident.html#442B">first fighter’s move table</a> and the <a href="source-resident.html#4C44">second fighter’s table</a> choose the code for each action. The moves select a new set of sprite pieces as the action advances. Both disks produced the same poses and durations for each move outside the garage. Compare Jump left and Jump right to see the mirrored poses. The preview keeps the fighter centred so you can compare the shapes.</p>
+</section>
+<section id="fighter-layers" data-part="resident">
+<h2>Four shapes make one fighter</h2>
+<div class="plate fighter-demo">
+<fieldset>
+<legend>Visible pieces</legend>
+<label><input id="upper-piece" type="checkbox" checked> Upper body</label>
+<label><input id="lower-piece" type="checkbox" checked> Lower body</label>
+<label><input id="colour-layer" type="checkbox" checked> Colour</label>
+<label><input id="outline-layer" type="checkbox" checked> Outline</label>
+</fieldset>
+<canvas width="36" height="54" id="fighter-pose" role="img" aria-label="Opening pose with separate colour and outline layers">Opening pose with separate colour and outline layers.</canvas>
+<p class="muted" id="fighter-status" aria-live="polite">Loading the shape records from the listing.</p>
+</div>
+<p>Each half uses two hardware sprites in the same place. The black outline can draw a single pixel. The colour layer draws in pairs of pixels but has three colours to work with. Turn either layer off to see what it contributes.</p>
+<p>The game draws the upper pair first. The routine at <a href="source-resident.html#3003">$3003</a> reuses the two sprite slots below the waist. It changes their shapes after scanning the top 19 lines of the actor, then positions the lower pair two lines later. The <a href="https://uta.pokefinder.org/Ultimate_Tape_Archive/Double_Dragon_%281988_Melbourne_House%29_%5B10075%5D/Extras/Instructions.pdf">original instructions</a> mention a gap at the waist. The preview places the two halves 21 pixels apart. In play the point where the hardware switches determines what shows at the waist.</p>
+<p>The outline and colour shapes for this pose are at <a href="source-resident.html#EE40">$EE40</a> and <a href="source-resident.html#EE00">$EE00</a> for the top, and <a href="source-resident.html#E8C0">$E8C0</a> and <a href="source-resident.html#E880">$E880</a> for the bottom.</p>
+</section>
+<section id="stored-shapes" data-part="resident">
+<h2>Shape pieces stored on disk</h2>
+<div class="plate fighter-demo">
+<label for="shape-bank">Shape bank</label>
+<select id="shape-bank">
+<option value="resident">Shared fighters</option>
+<option value="l0">L0 · Garage</option>
+<option value="l2">L2 · Forest</option>
+<option value="l5">L5 · Interior</option>
+</select>
+<label for="shape-pair">Sprite pair</label>
+<select id="shape-pair"></select>
+<canvas width="36" height="30" id="shape-piece" role="img" aria-label="One stored pair of VIC sprite shapes">One stored pair of VIC sprite shapes.</canvas>
+<p><a id="shape-source" href="source-resident.html#DB00">Shape bytes in the listing</a></p>
+<p id="shape-status" class="muted" aria-live="polite"></p>
+</div>
+<p>Most shape pieces stay in memory. Three of the level files replace the slots starting at <a href="source-l0.html#D000">$D000</a>. The C64 can talk to its chips at those addresses while the video chip reads picture data from the same locations in RAM.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script id="player-sequences" type="application/json">
+[[[[14,203,202,201,200],[1,189,188,169,168]],[[14,211,210,209,208],[1,189,188,169,168]],[[14,221,220,217,216],[1,189,188,169,168]],[[14,225,224,217,216],[1,189,188,169,168]],[[8,235,234,217,216],[8,233,232,217,216],[8,231,230,229,228],[1,189,188,169,168]],[[36,247,246,245,244],[1,189,188,169,168]],[[14,129,145,217,216],[1,189,188,169,168]],[[8,199,198,217,216],[8,159,158,155,154],[8,157,156,153,152],[1,189,188,169,168]],[[19,247,246,217,216],[1,189,188,169,168]],[[8,243,242,219,218],[8,241,240,219,218],[8,239,238,237,236],[1,185,184,161,160]],[[8,197,196,219,218],[8,183,182,179,178],[8,181,180,177,176],[1,185,184,161,160]],[[14,215,214,213,212],[1,185,184,161,160]],[[36,251,250,249,248],[1,185,184,161,160]],[[14,223,222,219,218],[1,185,184,161,160]],[[14,131,144,219,218],[1,185,184,161,160]],[[14,227,226,219,218],[1,185,184,161,160]],[[14,207,206,205,204],[1,185,184,161,160]],[[36,247,246,245,244],[1,189,188,169,168]],[[36,251,250,249,248],[1,185,184,161,160]],[[1,189,188,169,168]],[[1,185,184,161,160]],[[19,251,250,219,218],[1,185,184,161,160]],[[8,149,148,147,146],[91,252,252,151,150],[1,185,184,161,160]]],[[[14,203,202,201,200],[1,189,188,169,168]],[[14,211,210,209,208],[1,189,188,169,168]],[[14,221,220,217,216],[1,189,188,169,168]],[[14,225,224,217,216],[1,189,188,169,168]],[[8,235,234,217,216],[8,233,232,217,216],[8,231,230,229,228],[1,189,188,169,168]],[[36,247,246,245,244],[1,189,188,169,168]],[[14,129,145,217,216],[1,189,188,169,168]],[[8,199,198,217,216],[8,159,158,155,154],[8,157,156,153,152],[1,189,188,169,168]],[[19,247,246,217,216],[1,189,188,169,168]],[[8,243,242,219,218],[8,241,240,219,218],[8,239,238,237,236],[1,185,184,161,160]],[[8,197,196,219,218],[8,183,182,179,178],[8,181,180,177,176],[1,185,184,161,160]],[[14,215,214,213,212],[1,185,184,161,160]],[[36,251,250,249,248],[1,185,184,161,160]],[[14,223,222,219,218],[1,185,184,161,160]],[[14,131,144,219,218],[1,185,184,161,160]],[[14,227,226,219,218],[1,185,184,161,160]],[[14,207,206,205,204],[1,185,184,161,160]],[[36,247,246,245,244],[1,189,188,169,168]],[[36,251,250,249,248],[1,185,184,161,160]],[[1,189,188,169,168]],[[1,185,184,161,160]],[[19,251,250,219,218],[1,185,184,161,160]],[[8,149,148,147,146],[91,252,252,151,150],[1,185,184,161,160]]]]
+</script>
+<script>
+(async function () {
+  const canvas = document.getElementById('player-animation');
+  const ctx = canvas.getContext('2d');
+  const player = document.getElementById('pose-player');
+  const action = document.getElementById('player-action');
+  const play = document.getElementById('player-pose-play');
+  const step = document.getElementById('player-pose-step');
+  const status = document.getElementById('player-pose-status');
+  const link = document.getElementById('player-handler-source');
+  const sequences = JSON.parse(document.getElementById('player-sequences').textContent);
+  let playing = false, timer, pose = 0;
+  play.disabled = step.disabled = true;
+  try {
+    const {ram} = await C64.load('parts/resident/listing.json');
+    for (let i = 0; i < 23; i++) {
+      const label = ({5:'Jump up, facing left',12:'Jump up, facing right',17:'Jump left',18:'Jump right'})[i];
+      action.add(new Option(label || 'State ' + i, i));
+    }
+    action.value = '17';
+    const selected = () => sequences[+player.value][+action.value];
+    function draw() {
+      const entries = selected();
+      const [duration, ...pointers] = entries[pose];
+      const colourBase = 0x2ef0 + +player.value * 2;
+      const shape = pointer => {
+        const start = 0xc000 + pointer * 64;
+        return ram.subarray(start, start + 63);
+      };
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < 2; i++) {
+        const y = 6 + 21 * i;
+        C64.drawSpriteMC(ctx, shape(pointers[i * 2 + 1]), 6, y, 1,
+          C64.PAL[ram[colourBase + i] & 15], C64.PAL[2], C64.PAL[6]);
+        C64.drawSprite(ctx, shape(pointers[i * 2]), 6, y, 1, C64.PAL[0]);
+      }
+      status.textContent = 'Pose ' + (pose + 1) + ' of ' + entries.length +
+        ' · held for ' + duration + (duration === 1 ? ' frame' : ' frames');
+    }
+    function advance() {
+      pose = (pose + 1) % selected().length;
+      draw();
+      schedule();
+    }
+    function schedule() {
+      clearTimeout(timer);
+      if (playing) timer = setTimeout(advance, 20 * selected()[pose][0]);
+    }
+    function select() {
+      const at = (+player.value ? 0x4c44 : 0x442b) + +action.value * 2;
+      const addr = (ram[at] + 256 * ram[at + 1]).toString(16).toUpperCase();
+      link.href = 'source-resident.html#' + addr;
+      link.textContent = 'Move handler at $' + addr;
+      pose = 0;
+      draw();
+      schedule();
+    }
+    play.addEventListener('click', () => {
+      playing = !playing;
+      play.textContent = playing ? 'Pause' : 'Play';
+      schedule();
+    });
+    step.addEventListener('click', advance);
+    player.addEventListener('change', select);
+    action.addEventListener('change', select);
+    select();
+    play.disabled = step.disabled = false;
+  } catch (error) {
+    status.textContent = 'The player poses could not be loaded.';
+  }
+})();
+</script>
+<script id="ddEnemy">
+function enemySequence(ram, type, action, direction, slot) {
+  const starts = [0x6ca0, 0x6cd8, 0x6d10, 0x6d48];
+  const group = 0x64ad + type * 2;
+  const head = ram[group] + 256 * ram[group + 1];
+  const address = head + ram[starts[direction] + type * 8 + action];
+  const poses = [];
+  for (let at = address; at < 0x6ca0 && ram[at]; at += 4) {
+    poses.push(Array.from(ram.subarray(at, at + 4)));
+  }
+  const interval = ram[0x64c9 + slot * 8 + action];
+  const colours = Array.from(ram.subarray(0x64bb + type * 2, 0x64bd + type * 2));
+  return {address, poses, interval, colours};
+}
+</script>
+<script>
+(async function () {
+  const type = document.getElementById('enemy-type');
+  const action = document.getElementById('enemy-action');
+  const direction = document.getElementById('enemy-direction');
+  const slot = document.getElementById('enemy-slot');
+  const bank = document.getElementById('enemy-bank');
+  const play = document.getElementById('enemy-play');
+  const step = document.getElementById('enemy-step');
+  const status = document.getElementById('enemy-pose-status');
+  const link = document.getElementById('enemy-script-source');
+  const canvas = document.getElementById('enemy-animation');
+  const ctx = canvas.getContext('2d');
+  let playing = false, timer, pose = 0, sequence;
+  play.disabled = step.disabled = true;
+  for (let i = 0; i < 7; i++) type.add(new Option('Type ' + i, i));
+  type.value = '2';
+  for (let i = 0; i < 8; i++) action.add(new Option('Action ' + i, i));
+  for (const [i, label] of ['Right and down', 'Right and up', 'Left and down', 'Left and up'].entries()) {
+    direction.add(new Option(label, i));
+  }
+  try {
+    const names = ['resident', ...Array.from(bank.options, option => option.value)];
+    const banks = Object.fromEntries(await Promise.all(names.map(async name =>
+      [name, await C64.load('parts/' + name + '/listing.json')])));
+    const shared = banks.resident;
+    function shape(pointer) {
+      const start = 0xc000 + pointer * 64;
+      const memory = pointer >= 0x40 && pointer < 0x6a ? banks[bank.value] : shared;
+      if (!memory.has[start] || !memory.has[start + 62]) return;
+      return memory.ram.subarray(start, start + 63);
+    }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const pointers = sequence.poses[pose];
+      let complete = true;
+      for (let half = 0; half < 2; half++) {
+        const outline = shape(pointers[half * 2]);
+        const colour = shape(pointers[half * 2 + 1]);
+        const y = 6 + 21 * half;
+        if (colour) C64.drawSpriteMC(ctx, colour, 6, y, 1,
+          C64.PAL[sequence.colours[half]], C64.PAL[2], C64.PAL[6]);
+        if (outline) C64.drawSprite(ctx, outline, 6, y, 1, C64.PAL[0]);
+        complete &&= Boolean(outline && colour);
+      }
+      status.textContent = 'Pose ' + (pose + 1) + ' of ' + sequence.poses.length +
+        ' · ' + sequence.interval + ' frames per pose' +
+        (complete ? '' : ' · Some pieces are missing from this bank');
+    }
+    function advance() {
+      pose = (pose + 1) % sequence.poses.length;
+      draw();
+    }
+    function schedule() {
+      clearInterval(timer);
+      if (playing) timer = setInterval(advance, 20 * sequence.interval);
+    }
+    function selectSequence() {
+      sequence = enemySequence(shared.ram, +type.value, +action.value, +direction.value, +slot.value);
+      const at = sequence.address.toString(16).toUpperCase();
+      link.href = 'source-resident.html#' + at;
+      link.textContent = 'Pose script at $' + at;
+      pose = 0;
+      draw();
+      schedule();
+    }
+    play.addEventListener('click', () => {
+      playing = !playing;
+      play.textContent = playing ? 'Pause' : 'Play';
+      schedule();
+    });
+    step.addEventListener('click', advance);
+    for (const input of [type, action, direction, slot, bank]) input.addEventListener('change', selectSequence);
+    selectSequence();
+    play.disabled = step.disabled = false;
+  } catch (error) {
+    status.textContent = 'The animation data could not be loaded.';
+  }
+})();
+</script>
+
+<script>
+(async function () {
+  const canvas = document.getElementById('fighter-pose');
+  const context = canvas.getContext('2d');
+  const status = document.getElementById('fighter-status');
+  const upper = document.getElementById('upper-piece');
+  const lower = document.getElementById('lower-piece');
+  const colour = document.getElementById('colour-layer');
+  const outline = document.getElementById('outline-layer');
+  try {
+    const {ram, has} = await C64.load('parts/resident/listing.json');
+    const halves = [
+      {toggle: upper, y: 6, colourAddress: 0xee00, outlineAddress: 0xee40},
+      {toggle: lower, y: 27, colourAddress: 0xe880, outlineAddress: 0xe8c0}
+    ];
+    for (const half of halves) {
+      for (const address of [half.colourAddress, half.outlineAddress]) {
+        for (let i = 0; i < 63; i++) {
+          if (!has[address + i]) throw new Error('Missing sprite bytes');
+        }
+      }
+    }
+    function draw() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      for (const half of halves) {
+        if (!half.toggle.checked) continue;
+        if (colour.checked) {
+          C64.drawSpriteMC(context, ram.subarray(half.colourAddress, half.colourAddress + 63),
+            6, half.y, 1, C64.PAL[14], C64.PAL[2], C64.PAL[6]);
+        }
+        if (outline.checked) {
+          C64.drawSprite(context, ram.subarray(half.outlineAddress, half.outlineAddress + 63),
+            6, half.y, 1, C64.PAL[0]);
+        }
+      }
+      status.textContent = 'Opening street pose. Both disks use these four shape records.';
+    }
+    for (const toggle of [upper, lower, colour, outline]) toggle.addEventListener('change', draw);
+    draw();
+  } catch (error) {
+    status.textContent = 'The four shape records could not be loaded.';
+  }
+})();
+(function () {
+  const banks = {
+    resident: [...Array.from({length: 18}, (_, i) => 0x6c + 2 * i),
+      ...Array.from({length: 53}, (_, i) => 0x92 + 2 * i)],
+    l0: Array.from({length: 21}, (_, i) => 0x40 + 2 * i),
+    l2: Array.from({length: 21}, (_, i) => 0x40 + 2 * i),
+    l5: Array.from({length: 21}, (_, i) => 0x40 + 2 * i)
+  };
+  const canvas = document.getElementById('shape-piece');
+  const context = canvas.getContext('2d');
+  const bank = document.getElementById('shape-bank');
+  const pair = document.getElementById('shape-pair');
+  const link = document.getElementById('shape-source');
+  const status = document.getElementById('shape-status');
+  const hex = (number) => number.toString(16).toUpperCase();
+  let generation = 0;
+  async function drawPiece() {
+    const chosenBank = bank.value;
+    const pointer = Number(pair.value);
+    const address = 0xc000 + pointer * 64;
+    const token = ++generation;
+    try {
+      const {ram, has} = await C64.load('parts/' + chosenBank + '/listing.json');
+      if (token !== generation) return;
+      if (!has[address] || !has[address + 126]) throw new Error('Missing sprite data');
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      C64.drawSpriteMC(context, ram.subarray(address, address + 63), 6, 4, 1,
+        C64.PAL[14], C64.PAL[2], C64.PAL[6]);
+      C64.drawSprite(context, ram.subarray(address + 64, address + 127), 6, 4, 1, C64.PAL[0]);
+      link.href = 'source-' + chosenBank + '.html#' + hex(address);
+      link.textContent = 'Shape bytes at $' + hex(address);
+      status.textContent = chosenBank === 'l0' && pointer >= 0x62
+        ? 'The original file leaves this pair blank.'
+        : 'The preview uses the opening fighter palette. The game selects the colour per actor.';
+    } catch (error) {
+      if (token !== generation) return;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      status.textContent = 'The shape bytes could not be loaded.';
+    }
+  }
+  function resetBank() {
+    const previous = Number(pair.value);
+    pair.replaceChildren(...banks[bank.value].map(pointer =>
+      new Option('$' + hex(pointer + 1) + ' and $' + hex(pointer), pointer)));
+    if (banks[bank.value].includes(previous)) pair.value = String(previous);
+    drawPiece();
+  }
+  bank.addEventListener('change', resetBank);
+  pair.addEventListener('change', drawPiece);
+  resetBank();
+})();
+</script>
