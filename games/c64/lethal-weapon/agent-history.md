@@ -79,3 +79,10 @@ drawn (seed 20261101) and its brief written to `work/handoff/sample/`, and
 frequency table at `$E568`, outside every span. Typing `$E568`-`$E663`
 as bytes put them back; the retype also turned `$E628`-`$E663` to data
 for a moment, and that code was traced again.
+
+## 18 November 2026: maintainer's check, audit, new layout
+
+- Sample of 70 comments (seed 3318) by two checkers on claude-opus-5-5: 17 wrong, all in a detail. Over the mark, so checkers on claude-opus-5-5 audited every comment (856 hand-written ones in eleven ranges, 20 of the 128 scroll-slice comments, and the 79 ending-picture comments as one template) and every claim in facts.md and features.md. 185 comments were corrected (309 copies across the parts) and the template sentence was rewritten; the listings were rebuilt from their own bytes with `listing.py --rebuild --write`, since no snapshot was on the machine.
+- Second sample of 70 (seed 8841): 3 wrong, all corrected; one doubt ($3834-$383B, "unused") was not shown wrong and stands.
+- The pages moved to the contributor's story-first layout: Overview (story, makers, C64 reception, what's hidden), Gameplay, Controls, Maps, Graphics, Music, Discoveries. The Graphics tab draws every sprite frame in memory on stage 1A from the listing's bytes and plays the player's scripts and stage 1A's enemy animation chains.
+- Reader review (75-review) on claude-opus-5-5, findings in work/reports/review/findings.md. Fixed: source and site notes in the prose (Overview, Maps, Music, Graphics, two Discoveries endings), tune 1 now said to be heard only on the Music tab. Left, in TODO.md: links from every named stage, file and enemy to its section; drawings of the cut content and the pickups; a player for the 18 sound effects; the Maps captions' doors back to L1AX; the weapon levels; the "Riggs fires faster" half of the features row on Discoveries. The banner's "not complete" goes when the tier is Silver.
