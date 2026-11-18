@@ -175,11 +175,15 @@ In a game of several parts search every part's listing: a routine carried
 from one part to another carries its wrong comments with it.
 
 Comments a program wrote, a decoder describing every record of a format
-from templates, are a few claims each made hundreds of times. Give them
-a stratum of their own (`sample.py draw --stratum`, by a pattern their
-text matches), draw about 20 from it, and beside the plain rate give the
-rate weighted by each stratum's size, as `sample.py count` does: three drawn from a
-stratum of thousands would stand for all of it. When they are bad,
+from templates, are a few claims each made hundreds of times.
+`sample.py draw` finds each large template by the first words its
+comments share once numbers are set aside, and draws five of them side
+by side as a stratum of their own, so that the checker reads them
+together and sees what one gets wrong in the rest. Give a decoder's
+comments a stratum of your own as well (`sample.py draw --stratum`, by a
+pattern their text matches), and draw about 20 from it. Beside the plain
+rate give the rate weighted by each stratum's size, as `sample.py count`
+does: three drawn from a stratum of thousands would stand for all of it. When they are bad,
 correct them by template in this run, as one claim made many times, and
 not one by one: test every sentence a template writes
 against the code on every path (a reader cited for a field it reads only

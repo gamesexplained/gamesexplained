@@ -177,10 +177,10 @@ $CC87  jump         $0CC5E</pre>
 <section id="fatal">
   <p class="fig">04 · Errors</p>
   <h2 class="t">Bug: a fatal error drops into the Monitor without its message</h2>
-  <p class="lede">The interpreter holds the text <code>ZORK INTERNAL ERROR!</code>, but nothing prints it. Every fatal error is a <code>BRK</code>, which stops the 6502 and leaves the player in the Apple II's Monitor.</p>
+  <p class="lede">The interpreter holds the text <code>ZORK INTERNAL ERROR!</code>, but the interpreter never prints it. Every fatal error is a <code>BRK</code>, which stops the 6502 and leaves the player in the Apple II's Monitor.</p>
   <div class="plate">
     <div id="zk-err"></div>
-    <p class="cap">From the listing: the text at <code>$21D3</code>, which nothing refers to, and the one fatal error at <code>$21E7</code>, with the places that call it.</p>
+    <p class="cap">From the listing: the text at <code>$21D3</code>, which the program never refers to, and the one fatal error at <code>$21E7</code>, with the places that call it.</p>
   </div>
   <p>The interpreter calls <code>$21E7</code> for a story whose header says it needs something this interpreter lacks (bit 0 of header byte 1), an opcode it does not know, a <code>je</code> with one operand, a property too long for <code>get_prop</code> or <code>put_prop</code>, and a Z-machine stack that runs over or under. Zork I's own story reaches one of them: a container carried into the Timber Room overflows the stack (<a href="#timber">the section above</a>). Eight places call the error, and each reaches the same single <code>BRK</code>, while the message that would explain it fills the twenty bytes just before it.</p>
 </section>

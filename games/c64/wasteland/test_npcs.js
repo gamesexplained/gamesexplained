@@ -98,7 +98,7 @@ function hooks(bytes, extra) {
     if (mk !== null) {
       if (hidden.has(mk)) fail('hidden skill', mk, 'held twice');
       hidden.set(mk, name);
-      if ((text(cells[4]) === 'nothing in the 42 maps') !== (asking(mk).length === 0)) fail('cast: what asks for', name, asking(mk).length);
+      if ((text(cells[4]) === 'none of the 42 maps') !== (asking(mk).length === 0)) fail('cast: what asks for', name, asking(mk).length);
     } else if (text(cells[4]) !== '') fail('cast: no hidden skill, but', name, text(cells[4]));
     cases++;
   }

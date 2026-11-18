@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('assert'),fs=require('fs'),path=require('path'),vm=require('vm');
 const {CPU}=require('../../../kit/cpu/cpu6502.js');
-const html=fs.readFileSync(path.join(__dirname,'discoveries.html'),'utf8');
+const html=fs.readFileSync(path.join(__dirname,'index.html'),'utf8');
 const match=html.match(/\/\* GAUNTLET_BEGIN \*\/([\s\S]*?)\/\* GAUNTLET_END \*\//);assert(match);
 const context={};vm.runInNewContext(match[1],context);
 const base=new Uint8Array(65536);
@@ -14,4 +14,15 @@ for(let tier=1;tier<=5;tier++){
   assert.equal(context.gauntletDamage(tier,contact),100-m[0x1a6f],`tier ${tier}, contact ${contact}`);
  }
 }
-console.log('OK - Discoveries Gauntlet widget matches 55 game-code contacts');
+// The Helmet: buy it through $76F3, then hits through $5D7A with the hit cooldown cleared each time.
+let hits=0;
+for(let damage=1;damage<=5;damage++){
+ const m=base.slice();m[0x4dbd]=0;m[0x4de2]=0;m[0x77e2]=0x60;new CPU(m).call(0x76f3,{},{maxSteps:1000});
+ assert.equal(m[0x4dde],5);assert.equal(m[0x4de2]&0x80,0x80);
+ for(let hit=1;hit<=8;hit++){
+  m[0x4de1]=0;m[0x4dcd]=80;m[0x4dcf]=80;new CPU(m).call(0x5d7a,{a:damage,x:0,y:0},{maxSteps:1000});
+  assert.equal(context.helmetDamage(damage,hit),80-m[0x4dcd],`damage ${damage}, hit ${hit}`);
+  assert.equal(m[0x4de1],40,'every hit starts 40 passes of safety');hits++;
+ }
+}
+console.log(`OK - Gauntlet bars match 55 game-code contacts, Helmet bars ${hits} game-code hits`);

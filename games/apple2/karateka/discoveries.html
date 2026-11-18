@@ -81,7 +81,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" id="sb-play">▶ Play on</button>
     </div>
     <canvas id="sb-cv" class="kd-screen" width="560" height="384"></canvas>
-    <p class="cap" id="sb-cap">Each picture is drawn by the stage's own code, run from the game's listing. For side B the list of screen lines is turned over first and nothing else is changed.</p>
+    <p class="cap" id="sb-cap">Each picture is drawn by the stage's own code, run from the game's listing. For side B the list of screen lines is turned over first and the game changes nothing else.</p>
   </div>
   <p>The Apple II's picture is 192 lines, and the lines sit in memory in an awkward order. So the game keeps a list of where each line lives, and its drawing routines look every line up there (<a href="source-engine.html#0800"><code>row_lo</code></a> and <a href="source-engine.html#08C0"><code>row_hi</code></a>, the two halves of each address). On side A the list starts with the top line. On side B the same 192 entries run from the bottom line up. A routine that asks for line 0 is handed the bottom of the screen, so the hero, the guards, the arrows of health, and the words all land upside down.</p>
   <p>Nothing else in the program changed. Read off the disk and set beside side A, side B's engine and five stages differ in those 384 bytes and no others, in all that the copy examined would give: three of its sectors could not be read. The upside-down side itself is no secret, and Jordan Mechner's published journals mention it.</p>
@@ -197,7 +197,7 @@ title  $A0BA   CMP #$AA   ; reached only below $55, so always below $AA: middle<
 
 <section id="step-back" data-part="engine">
   <p class="fig">09 · Code that never runs</p>
-  <h2 class="t">Secret: the guards have a working step backwards that nothing ever runs</h2>
+  <h2 class="t">Secret: the guards have a working step backwards that the game never runs</h2>
   <p class="lede">The guards' brain holds a step back, complete and correct. There is no jump or branch to it, so a guard in the stance never retreats.</p>
   <p>Seven bytes at <code>$6C4B</code>, <code>LDA #$FF</code>, <code>STA $29</code>, <code>JMP $6540</code>, would set the stick backwards (<code>$29</code> = <code>$FF</code>) and carry out the command, as the step forward does with <code>$29</code> = 1. They sit between a <code>JMP</code> (<code>$6C48</code>) and the step forward (<code>$6C52</code>), and there is no jump or branch to them in any of the six parts. The demonstration's own hero does step back: its brain is a separate routine in the title (<a href="source-title.html#A000"><code data-part="">$A000</code></a>).</p>
 </section>

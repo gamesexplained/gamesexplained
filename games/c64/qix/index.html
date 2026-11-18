@@ -102,7 +102,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">The tunes played by the game's own music player: its bytes from <code>$E000</code>, run once a frame inside the page and heard through the site's model of the SID. The player reads three zero-page bytes before it writes them, so the first frame of a tune depends on what the game left there; the page starts from the title's values.</p></div>
   <p>The player is a copy: the game loads it at <code>$4000</code> and copies the 8,000 bytes to <code>$E000</code> before the title and before each level's end tune (<code>$884C</code>). Play reuses <code>$E000</code> as one of its three planes, so the music has to be put back each time.</p>
   <p>The interrupt calls the player 60 times a second on an American NTSC machine and 50 times on a European PAL one. To keep the tempo the same, the start-up checks which machine it is on and patches two bytes of the player before the copy (<code>$8030</code>). On NTSC they make the player count six frames and skip one; on PAL the count never skips. Each voice reads a stream of notes and 21 commands (repeats, calls, jumps, transposition, waveform, filter, vibrato and sweeps), dispatched through a table per voice (<code>$ED2B</code>).</p>
-  <p>The Internet Archive's recording of this music credits Tim Follin. Nothing in the program names a composer.</p>
+  <p>The Internet Archive's recording of this music credits Tim Follin. The program never names a composer.</p>
 </section>
 
 <section>
@@ -163,7 +163,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>The new line itself still crosses a claimed edge</td><td>Puts the Qix back on the oldest line of its trail and clears the timer (section 09).</td><td><code>$9774</code></td></tr>
     <tr><td>After every step</td><td>Chooses the pull for the next bounce on each axis: towards the marker, from where the first end now is.</td><td><code>$954F</code></td></tr>
   </table></div>
-  <p class="cap">A bounce also draws a new turn time, but stores it at <code>$0273</code>, which nothing reads. A bounce leaves the turn timer running as it was.</p>
+  <p class="cap">A bounce also draws a new turn time, but stores it at <code>$0273</code>, which the game never reads. A bounce leaves the turn timer running as it was.</p>
   <p class="cap"><b>Bug:</b> Qix 2 has its own copy of the edge test, and one line of the copy reads Qix 1's height (<code>$982F</code>). When the game tests Qix 2's second end moving across on its own, it tests a line to that end's new position across but at Qix 1's height. So Qix 2 can bounce off an edge its move would not have crossed, or miss one it would. A replay of a two-Qix recording with the line read correctly drifts from the game after 288 steps; with the slip kept, all 400 steps match.</p>
   <p>The turn timer is what changes most between levels. The game draws a random byte and keeps it when it falls between <code>$20</code> and <code>$3E</code>, about one draw in eight; any other value is cut to 0-3. The level's mask (<code>$6F</code>) then caps the result. On level 1 the mask is 3, so the Qix turns every one to four steps and shivers about the middle of the field. From level 2 the one draw in eight lets the Qix run straight across the field.</p>
   <div class="qx-scroll"><table class="qx-tab">
@@ -193,7 +193,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">08 · The trail</p>
   <h2 class="t">Secret: the Qix's whole trail can kill you, up to eight steps late</h2>
   <p>The Qix on screen is eight lines, the newest and the seven before it, kept in tables of ten slots, of which the game uses eight (<code>$021E</code>). The game draws a new line and erases the oldest with one pixel routine (<code>$AD64</code>). That routine checks every pixel against the line you are drawing, whether it is drawing or erasing. So the newest line kills when it is drawn across your line, and the oldest kills when it is erased from under it.</p>
-  <p>A line you draw across the middle of the trail is safe for a moment. The old Qix line it crossed is still on screen, and nothing checks it again until it becomes the oldest. Then the step that erases that line takes your life, up to seven steps, half a second, after you crossed it. With a pixel of a line being drawn placed under trail lines of different ages, five kills in six come from the erase.</p>
+  <p>A line you draw across the middle of the trail is safe for a moment. The old Qix line it crossed is still on screen, and the game does not check it again until it becomes the oldest. Then the step that erases that line takes your life, up to seven steps, half a second, after you crossed it. With a pixel of a line being drawn placed under trail lines of different ages, five kills in six come from the erase.</p>
   <p>The erase clears every pixel of the old line, including the pixels where newer lines cross it, so the trail on screen has small gaps. Drawing a line over a Qix pixel flips the pixel's colour bits instead of setting them, so crossings change colour.</p>
 </section>
 
@@ -213,7 +213,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">11 · Loading</p>
   <h2 class="t">Secret: the game reloads itself after every game</h2>
-  <p>Play uses almost all of memory: the three copies of the field, the music's space at <code>$E000</code> and the title's code. So when a game ends, the C64 loads the whole program again from disk (<code>$1B97</code>). The attract demonstration, which plays a game by itself after the title tune, loads the title picture back (<code>$C2E0</code>), and every level end loads a 134-byte file called TAITO that nothing then runs (<code>$1A8D</code>). Each load comes with three tries and a "DRIVE ERROR / CHECK THE DISK" screen.</p>
+  <p>Play uses almost all of memory: the three copies of the field, the music's space at <code>$E000</code> and the title's code. So when a game ends, the C64 loads the whole program again from disk (<code>$1B97</code>). The attract demonstration, which plays a game by itself after the title tune, loads the title picture back (<code>$C2E0</code>), and every level end loads a 134-byte file called TAITO that the game never runs (<code>$1A8D</code>). Each load comes with three tries and a "DRIVE ERROR / CHECK THE DISK" screen.</p>
   <div class="qx-pair">
     <figure><img src="reference/attract-demo.png" alt="The attract demonstration naming the enemies"><p class="cap">The attract demonstration, driving the real game engine with scripted input and naming each enemy as it appears.</p></figure>
     <figure><img src="reference/game-over.png" alt="Game over"><p class="cap">Game over: next comes a load of the whole game.</p></figure>
@@ -314,7 +314,7 @@ class QixMover {
     if (!(old & 0x80)) { let [a, c] = QixMover.sbc(r, this.K, 1); [a] = QixMover.sbc(a, 1, c); return a; }
     let [a, c] = QixMover.adc(r, this.K, 0); [a] = QixMover.adc(a, 1, c); return a;
   }
-  newTurnTime() {                                                    // new_turn_time ($98DB): $0273, which nothing reads
+  newTurnTime() {                                                    // new_turn_time ($98DB): $0273, which the game never reads
     let r = this.random(); if (r >= 0x3F || r < 0x20) r &= 3; this.t73 = r; this.qixColour();
   }
   qixColour() { this.b1 = this.random() & 3; }                      // qix_colour ($98EB)

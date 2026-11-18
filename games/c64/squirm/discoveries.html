@@ -190,13 +190,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="arrow">
   <p class="fig">09 · The arrow</p>
   <h2 class="t">An arrow is animated 8.6 times a second and never drawn</h2>
-  <p class="lede">The game's interrupt routine cycles three characters, the three frames of an arrow, but no screen in the game ever shows them.</p>
+  <p class="lede">The game's interrupt routine cycles three characters, the three frames of an arrow, but the game never shows them on any screen.</p>
   <div class="plate">
     <div class="sq-bar"><button type="button" class="sq-btn" id="sq-a-run" aria-pressed="false">Run the interrupt</button></div>
     <canvas id="sq-a-cv" width="704" height="120" style="display:block;width:100%;max-width:704px;height:auto;image-rendering:pixelated" aria-label="The characters the interrupt animates"></canvas>
     <p class="cap">Drawn from the character set at <code>$2800</code> as the game's own <code>irq_handler</code> (<code>$3CB3</code>) leaves it, run on the model of the 6502 sixty times a second: the arrow (<code>$40</code>-<code>$42</code>), the egg (<code>$46</code>), the two treasures (<code>$47</code>-<code>$4A</code>), and the eight frames of the spinning figure (<code>$4E</code>-<code>$55</code>).</p>
   </div>
-  <p>On every seventh interrupt the handler moves the shapes of characters <code>$40</code>, <code>$41</code>, and <code>$42</code> round one place (<code>$3CC4</code>). Nothing in the title, the mazes, the status lines, or the high-score screen holds those characters, and no code writes them to the screen. The arrow costs 24 bytes of shapes, and about 270 of the processor's cycles on every seventh interrupt for as long as the game runs.</p>
+  <p>On every seventh interrupt the handler moves the shapes of characters <code>$40</code>, <code>$41</code>, and <code>$42</code> round one place (<code>$3CC4</code>). The title, the mazes, the status lines and the high-score screen never hold those characters, and the code never writes them to the screen. The arrow costs 24 bytes of shapes, and about 270 of the processor's cycles on every seventh interrupt for as long as the game runs.</p>
 </section>
 
 <section id="quirks">
@@ -207,7 +207,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="sq-wrapx"><table class="sq-tbl">
       <thead><tr><th>Where</th><th>What the code does</th></tr></thead>
       <tbody>
-        <tr><td><code>$3649</code></td><td>The last loop of <code>colour_maze</code> starts with its counter still at <code>$FF</code>, where the loop before left it. So before the 75 cells it means to colour, it writes one colour to <code>$DC4C</code>, past the end of colour RAM. That address belongs to CIA 1, an input and output chip: it is a second copy of the chip's serial data register, which nothing in the game uses.</td></tr>
+        <tr><td><code>$3649</code></td><td>The last loop of <code>colour_maze</code> starts with its counter still at <code>$FF</code>, where the loop before left it. So before the 75 cells it means to colour, it writes one colour to <code>$DC4C</code>, past the end of colour RAM. That address belongs to CIA 1, an input and output chip: it is a second copy of the chip's serial data register, which the game never uses.</td></tr>
         <tr><td><code>$2441</code></td><td>The start-up shows the title with a call of <code>$2441</code> (<code>$3B74</code>). That address is not the start of an instruction. It holds the last byte of a branch, <code>$F5</code>, and after it comes the <code>$60</code> of a return. Read from <code>$2441</code>, <code>$F5 $60</code> is <code>SBC $60,X</code>, a subtraction. It changes only the accumulator and the flags, the processor's working number and its notes on the last result. The next instruction is the real start of <code>show_title_screen</code> (<code>$2443</code>).</td></tr>
       </tbody>
     </table></div>

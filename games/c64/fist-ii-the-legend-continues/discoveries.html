@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Beam Software</p>
   <h1>Fist II: The Legend Continues</h1>
-  <p class="sub">Two programs sharing one processor, sound effects hidden in the spare half of a font, a second joystick nothing switches on, and an opponent who writes into the hero's slot.</p>
+  <p class="sub">Two programs sharing one processor, sound effects hidden in the spare half of a font, a second joystick the game never switches on, and an opponent who writes into the hero's slot.</p>
 </header>
 <main class="wrap">
 <section id="tasks">
@@ -26,7 +26,7 @@
 <section id="second-player">
   <p class="fig">Secret</p>
   <h2 class="t">Secret: a second joystick for the other fighter</h2>
-  <p>The routine that reads the joystick (<code>$3393</code>) can read either port. For fighter 1, the opponent, it reads port 1 instead of letting the computer decide, when one byte (<code>$0455</code>) is zero. Nothing in the Adventure sets it to zero, so the computer always plays the opponent. It may be what is left of a two-player mode, or the way the Training program lets a second player in; the Training load was not analysed.</p>
+  <p>The routine that reads the joystick (<code>$3393</code>) can read either port. For fighter 1, the opponent, it reads port 1 instead of letting the computer decide, when one byte (<code>$0455</code>) is zero. The Adventure never sets it to zero, so the computer always plays the opponent. It may be what is left of a two-player mode, or the way the Training program lets a second player in; the Training load was not analysed.</p>
 </section>
 <section id="combo-bug">
   <p class="fig">Bug</p>
@@ -54,19 +54,19 @@
   <p class="fig">Quirk</p>
   <h2 class="t">Three more places where the manual and the code part</h2>
   <p>The manual warns that "you will be unable to smash through strong barriers ... with insufficient Chi".<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> The test that decides whether a blow breaks a barrier (<code>$0A2E</code>) asks only for the right move at the right frame and the scroll for that kind of barrier, stone heaps (<code>$0A59</code>) or trees (<code>$0A44</code>). It never reads the hero's energy.</p>
-  <p>It also says that a poisoned hero "will not regain Chi" until a meditation cures him.<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> The routine that gives energy back, a point every 128 frames (<code>$2D14</code>), tests no poison flag; it pauses only while a room's barriers are being read again. The one place energy drains steadily is area 5, and there the drain stops when the eighth scroll is delivered (<code>$2CE4</code>), not after a meditation. No poison state was found anywhere in the code, which is a statement about this search.</p>
+  <p>It also says that a poisoned hero "will not regain Chi" until a meditation cures him.<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> The routine that gives energy back, a point every 128 frames (<code>$2D14</code>), tests no poison flag; it pauses only while a room's barriers are being read again. The one place energy drains steadily is area 5, and there the drain stops when the eighth scroll is delivered (<code>$2CE4</code>), not after a meditation. The search found no poison state anywhere in the code, which is a statement about the search.</p>
   <p>And F5, the manual says, ends the game and returns to the demo.<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> The Mindscape disk has no demo: F5 starts a new game at once (<code>$2444</code>).</p>
 </section>
 <section id="leftovers">
   <p class="fig">Leftovers</p>
-  <h2 class="t">Graphics and code nothing uses</h2>
+  <h2 class="t">Graphics and code the game never uses</h2>
   <table class="t">
     <tr><th>What</th><th>Why it seems unused</th></tr>
-    <tr><td>29 uncompressed head sprites, side-on (<code>$B746</code>)</td><td>no instruction or pointer table reaching them was found</td></tr>
-    <tr><td>A full character set of 193 glyphs (<code>$E000</code>)</td><td>the start-up points the video chip at it for a moment; nothing else reads it</td></tr>
+    <tr><td>29 uncompressed head sprites, side-on (<code>$B746</code>)</td><td>the search found no instruction or pointer table reaching them</td></tr>
+    <tr><td>A full character set of 193 glyphs (<code>$E000</code>)</td><td>the start-up points the video chip at it for a moment, and the game reads it nowhere else</td></tr>
     <tr><td>Four of the ten sound samples, numbers 5, 6, 7, and 9 (<code>$BEC6</code>); <a href="music.html#effects">hear them on the Music tab</a></td><td>every call to the sample player (<code>$3DB8</code>) asks for 1, 2, 3, 4, 8, or 10</td></tr>
-    <tr><td>An older start-up routine (<code>$C280</code>)</td><td>nothing calls it, and it calls an address where no routine is</td></tr>
-    <tr><td>27 blank sprite images (<code>$AF10</code>)</td><td>no entry in the frame tables points at them</td></tr>
+    <tr><td>An older start-up routine (<code>$C280</code>)</td><td>the game never calls it, and it calls an address where there is no routine</td></tr>
+    <tr><td>27 blank sprite images (<code>$AF10</code>)</td><td>none of the entries in the frame tables points at them</td></tr>
     <tr><td>The Adventure loader (<code>$C000</code>)</td><td>its work is done before the game starts</td></tr>
   </table>
   <p>"No reader found" is a statement about the search: code reached through a pointer computed at run time can still use these bytes.</p>

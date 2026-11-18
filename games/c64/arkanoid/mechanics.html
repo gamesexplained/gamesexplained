@@ -112,11 +112,11 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
   <h2 class="t">Bug: a ball moving left cannot hit an enemy from the side</h2>
   <p>The ball-against-enemy test has a horizontal check for each direction. The one for a ball moving left subtracts 24 where it should add (<code>$9E9B</code>-<code>$9EAB</code>), so it never matches; only the vertical test catches such a ball. This was read in the code and not tried in play.</p>
   <h2 class="t">The Break exit pays nothing</h2>
-  <p>In the arcade game, leaving through the Break exit is worth 10,000 points. Here the exit ends the round (<code>$A41F</code> to <code>round_cleared</code>, <code>$95CF</code>) and nothing on that path adds to the score.</p>
+  <p>In the arcade game, leaving through the Break exit is worth 10,000 points. Here the exit ends the round (<code>$A41F</code> to <code>round_cleared</code>, <code>$95CF</code>) and that path never adds to the score.</p>
   <h2 class="t">An extra life every 20,000 points, all at once</h2>
   <p>The threshold starts at 20,000 and rises by 20,000 with each life awarded (<code>check_extra_life</code>, <code>$FAA5</code>). A score set to 199,900 pays out ten lives in a row, taking the lives from 3 to 13 and the threshold to 220,000. The published cheat <code>POKE 39801,189</code> turns the store at <code>$9B79</code> that takes a life away into a load, so a lost ball costs nothing.</p>
   <h2 class="t">Two programs in one file</h2>
-  <p>The 63 KB file carries an older build of much of the game beside the one that runs: an earlier assembly of <code>$A971</code>-<code>$B5FF</code> from <code>$096B</code>, of the interrupt and input code at <code>$BA6B</code>-<code>$BFFF</code> (with a 30-sprite multiplexer and a joystick reader for port 2 only), and of the sound driver at <code>$3B8B</code>, assembled <code>$1000</code> higher. Nothing reads or runs any of it. The enemies' second gate is unused in the same way: its path needs <code>$0246</code>, which nothing writes, so every enemy comes in through the gate at X <code>$47</code>.</p>
+  <p>The 63 KB file carries an older build of much of the game beside the one that runs: an earlier assembly of <code>$A971</code>-<code>$B5FF</code> from <code>$096B</code>, of the interrupt and input code at <code>$BA6B</code>-<code>$BFFF</code> (with a 30-sprite multiplexer and a joystick reader for port 2 only), and of the sound driver at <code>$3B8B</code>, assembled <code>$1000</code> higher. The game never reads or runs any of it. The enemies' second gate is unused in the same way: its path needs <code>$0246</code>, which the game never writes, so every enemy comes in through the gate at X <code>$47</code>.</p>
 </section>
 
 </main>

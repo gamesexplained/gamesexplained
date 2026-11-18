@@ -13,8 +13,7 @@ time, operating system and tool versions.
 
 ## What was changed in the kit
 
-- `kit/c64/snapshot.py`: finds the RAM in a snapshot from the start of its C64MEM module, so snapshots written by VICE 4.0, whose memory module sits at another offset than earlier releases', read correctly; the fixed offset 209 read the wrong bytes.
-- `kit/c64/check_emulator.py`: its `snapshot-ram-offset` check and `saved_word` read the RAM where `snapshot.py` finds it, so the check passes on VICE 4.0 for the right reason.
+- `kit/c64/snapshot.py` and `kit/c64/check_emulator.py`: this run found that snapshots written by VICE 4.0 put the C64MEM module at another offset, so the fixed offset 209 read the wrong bytes. It fixed both by walking the modules, and upstream main fixed them the same way meanwhile, so the branch takes main's version.
 - `kit/lessons/2026-11-16-licence-to-kill.md`: two lessons, on parallel tables copied in a loop and on a threshold kept in a patched operand.
 
 ## Candidates
