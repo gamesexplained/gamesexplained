@@ -9,7 +9,6 @@ Tier: **gold**. Coverage is 100 % (36,848 bytes). After the 28 % of the annotati
 
 ## For Platinum
 
-- A Play tab: the ground, the aircraft and the flak are table-driven and small enough to port (`kit/skills/core/70-minisite/play.md`), with a level select and cheat toggles.
 
 ## From the reader review
 
@@ -27,3 +26,4 @@ Tier: **gold**. Coverage is 100 % (36,848 bytes). After the 28 % of the annotati
 ## Ideas
 
 - A route that wins a target run with 64 hits.
+- The listing has no bytes for the play screen's sky rows (`$4400-$453F`), which the game fills before the snapshot's entry point; the Play tab fills them with spaces and puts "DISTANCE TO TARGET" in row 23 to match the reference shot. Reading those bytes from a fresh snapshot would let the listing and the page carry them.

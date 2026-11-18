@@ -1,0 +1,204 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/hunter-page.css">
+<style>
+.hp-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.hp-bar button,.hp-bar select{font-size:13px;padding:6px 11px}
+.hp-out{font-family:var(--fm);font-size:13.5px;color:var(--ink-soft)}
+.hp-note{font-family:var(--fm);font-size:13px;margin:8px 0 0}
+#hp-screen{display:block;width:100%;max-width:768px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px;touch-action:none}
+table.hp-tab{border-collapse:collapse;width:100%;font-size:14px;margin:14px 0 0}
+table.hp-tab th,table.hp-tab td{border-bottom:1px solid var(--line-soft);padding:6px 10px;text-align:left;vertical-align:top}
+table.hp-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+#hp-keys .hp-keys-tap{display:none}
+#hp-keys.pc-keys-touch .hp-keys-tap{display:table-row}
+#hp-keys.pc-keys-touch .hp-keys-pad{display:none}
+.hp-cheats button[aria-pressed="true"]::before{content:"✓ "}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The whole game, ported to JavaScript routine by routine and run on its own bytes at the C64's pace, from the title tune to the fourth level's strafing runs and round again.</p>
+</header>
+<main class="wrap">
+
+<section id="play">
+  <p class="fig">01 · Play</p>
+  <h2 class="t">Fly the patrol with the keyboard</h2>
+  <p class="lede">The arrow keys are the joystick in port 1 and Z or Enter is its fire button. Fire on the title screen starts a game, and fire again starts each strafing run and each new level. Left and right turn the landscape under the plane, up climbs and down dives. After the last life the score goes into the highscore table, where the stick picks each letter of the name and fire takes it.</p>
+  <div class="plate">
+    <div class="hp-bar">
+      <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <label>Start at <select id="hp-level" aria-label="The level the next game starts at">
+        <option value="">level 1 (the game)</option><option value="1">level 2</option><option value="2">level 3</option><option value="3">level 4</option>
+      </select></label>
+      <span class="hp-cheats" id="hp-cheats">
+        <button type="button" data-cheat="lives" aria-pressed="false" title="A crash costs no life">♾️ Infinite lives</button>
+        <button type="button" data-cheat="immune" aria-pressed="false" title="The ground, the ground's defences and the aircraft never crash the plane">🛡️ Immunity</button>
+        <button type="button" data-cheat="skip" aria-pressed="false" title="The cracker's trainer: holding S passes the level">⏭️ Level skip (hold S)</button>
+      </span>
+      <span class="hp-out" id="hp-out" aria-live="polite"></span>
+    </div>
+    <div><canvas id="hp-screen" width="768" height="544" aria-label="The game"></canvas></div>
+    <table class="hp-tab" id="hp-keys">
+      <tr><th>Keys</th><th>On the C64</th><th>Does</th></tr>
+      <tr class="hp-keys-tap"><td colspan="3">Tap a key in this table to press it in the game.</td></tr>
+      <tr class="hp-keys-pad"><td><kbd>←</kbd> <kbd>→</kbd></td><td>the joystick in port 1, left and right</td><td>turn: the landscape slides the other way; in the name entry, the letter before or after</td></tr>
+      <tr class="hp-keys-pad"><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>up and down</td><td>climb and dive, between the ground and the top of the sky</td></tr>
+      <tr class="hp-keys-pad"><td><kbd>Z</kbd> or <kbd>Enter</kbd></td><td>fire</td><td>a shot; on the title screen and between runs and levels, go on; in the name entry, take the letter</td></tr>
+      <tr><td><kbd data-key="KeyS">S</kbd></td><td>a key the cracker's trainer reads at <code>$DC01</code></td><td>with Level skip on, the level passed</td></tr>
+    </table>
+    <p class="cap"><b>The game as the port runs it</b>, from <code>$1450</code>, where the game starts. <b>Start at</b> takes effect at the next game, as the game's own start sets the level (<a href="source.html#24f0"><code>$24F0</code></a>); the cheats take effect at once and are off when the page opens, and with every one off the page is the game.</p>
+  </div>
+</section>
+
+<section id="port">
+  <p class="fig">02 · The port</p>
+  <h2 class="t">Every routine of the game, written again in JavaScript</h2>
+  <p>This page does not emulate a 6502 to play the game. The game is written out in JavaScript in <code>reference/hp-port.js</code>, one function for each routine of the <a href="source.html">listing</a>, and runs on the game's own 64 KB, loaded from the bytes the Source code tab shows. Every variable stays where the game keeps it: the lives at <code>$40</code>, the level at <code>$44</code>, the kind of defence at <code>$41</code>, the ground objects' records from <code>$80C0</code>. The one part that runs as 6502 code is the title tune, which is the game's own music player, run as the <a href="music.html">Music</a> tab runs it.</p>
+  <p>Some of what the game reads cannot be worked out from memory. Its random numbers come from CIA 1's timer, from the raster line and from voice 3 of the SID, set to noise; its hits come from the video chip's sprite collisions, which it gathers in the interrupt that draws each band of the screen. On the page the timer counts down on the page's own clock, the noise is the SID's 23-bit shift register stepped as the voice runs, and the collisions are the site's model of the video chip, which works them out pixel by pixel as the clock moves. The page and the game draw different random numbers, so the same input plays out differently on each.</p>
+  <p>The page keeps the C64's pace by keeping its clock. Each stretch of the game's work costs the cycles it costs on the C64, measured against the game's own code; the delay loops count their cycles as the port reaches them, and the waits for the raster run the clock to the line. The interrupts come on their lines, and the music's on the timer, every 18,433 cycles.</p>
+  <p><code>test_play.js</code> runs the port beside the game's own code on the site's model of the C64, from the same start and with the same input, and compares their memory, colour RAM and chip registers at every checkpoint: through every kind of defence, the strafing runs and all four levels, the game over, the name entry, the cracker's highscore saver and the game from the start again.</p>
+</section>
+
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
+<script src="../../lib/collide.js"></script>
+<script src="../../lib/play-controls.js"></script>
+<script src="reference/hp-port.js"></script>
+<script src="reference/hp-play.js"></script>
+<script>
+/* hp-play-page */
+'use strict';
+const $ = (id) => document.getElementById(id);
+const CLOCK = 985248;
+// the PC's keys: the arrows are the joystick, Z and Enter its fire; S the trainer's key
+const STICK = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8, KeyZ: 16, Enter: 16, NumpadEnter: 16 };
+const KEYS = { KeyS: 0x20 };
+const SAVE = 'hunter-patrol-scores';
+
+function start(D) {
+  const keep = {};
+  const play = HunterPlay.create({ M: D.ram.slice(), keep, CPU: C64Cpu.CPU,
+    saveScores: (t) => { try { localStorage.setItem(SAVE, JSON.stringify(Array.from(t))); } catch (e) { /* no storage */ } } });
+  // the table the cracker's saver wrote last time, where the game keeps it on the title screen
+  try {
+    const t = JSON.parse(localStorage.getItem(SAVE) || 'null');
+    if (Array.isArray(t) && t.length === 0x55) {
+      for (let x = 4; x >= 0; x--) for (const [d, s] of [[0x4122, 0], [0x4172, 5], [0x41C2, 10], [0x4212, 15], [0x4262, 20]]) play.M[d + x] = t[s + x];
+      for (let x = 0x0B; x >= 0; x--) for (const [d, s] of [[0x412B, 0x19], [0x417B, 0x25], [0x41CB, 0x31], [0x421B, 0x3D], [0x426B, 0x49]]) play.M[d + x] = t[s + x];
+    }
+  } catch (e) { /* no storage */ }
+  let target = 0;
+
+  // ---- the keys and the joystick, while the game is on the screen
+  const cv = $('hp-screen'), HOLD = 6;
+  let padBits = 0;
+  const held = PlayControls.hold({ clock: () => play.frames, least: () => HOLD, change: () => input() });
+  const inView = () => { const r = cv.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
+  addEventListener('keydown', (e) => {
+    if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+    if (e.metaKey || e.ctrlKey || e.altKey || !inView()) return;
+    if (KEYS[e.code] === undefined && !STICK[e.code]) return;
+    held.down(e.code, e.code); e.preventDefault();
+  });
+  addEventListener('keyup', (e) => { if (held.has(e.code)) { held.up(e.code); e.preventDefault(); } });
+  addEventListener('blur', () => held.clear());
+  PlayControls.keys($('hp-keys'), { down: (k) => held.tap(k, k), up: (k) => held.up(k) });
+  function input() {
+    let joy = padBits, keys = 0;
+    for (const c of held.values()) { if (STICK[c]) joy |= STICK[c]; else if (KEYS[c] !== undefined) keys |= KEYS[c]; }
+    play.joy = 0x1F & ~joy;
+    play.keys = keys;
+  }
+
+  // ---- the level and the cheats
+  const P = play.P;
+  $('hp-level').addEventListener('change', (e) => {
+    const v = e.target.value;
+    if (v === '') delete P.cheats.level; else P.cheats.level = +v;
+    e.target.blur();
+  });
+  for (const b of document.querySelectorAll('[data-cheat]')) b.addEventListener('click', () => {
+    const on = b.getAttribute('aria-pressed') !== 'true';
+    b.setAttribute('aria-pressed', String(on));
+    P.cheats[b.dataset.cheat] = on;
+    b.blur();
+  });
+
+  // ---- the screen: the port's memory through the site's model of the video chip
+  const crt = CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });
+  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: cv.parentNode.previousElementSibling, keys: $('hp-keys'),
+    pad: true, onPad(bits) { padBits = bits; input(); } });
+  function draw() {
+    const f = play.shown;
+    if (!f) return;
+    C64.drawFrame(cv, { lines: 312, cycles: 63, vic: f.vic, cia2: f.cia2, writes: f.writes, mem: f.mem, colourMem: f.colour, keep }, 2);
+  }
+
+  // ---- the sound: the SID writes of each twelfth of a frame, one call of the model's driver each
+  let host = null, soundOn = false;
+  const registers = () => { const all = []; for (let r = 0; r < 25; r++) all.push(r, play.sid[r]); return all; };
+  async function sound(on) {
+    soundOn = on;
+    if (on && !host) {
+      try {
+        host = await C64Sid.host({ live: true, gain: 0.5, period: HunterPlay.FRAME / HunterPlay.SLICES });
+        host.push([registers()]);
+      } catch (e) { soundOn = false; $('hp-out').textContent = 'No sound: ' + e.message; }
+    }
+    if (host) { if (soundOn) host.ctx.resume(); else host.ctx.suspend(); }
+    return soundOn;
+  }
+  Sound.attach(document.querySelector('[data-sound]'), sound);
+
+  // ---- what the game shows: the level, the kind of defence and the lives
+  const KINDS = ['the first kind', 'the second kind', 'the third kind', 'the fourth kind'];
+  function say() {
+    const M = play.M;
+    if (M[0x0314] === 0x03 && M[0x0315] === 0xAE) return 'the title screen';
+    if (M[0x40] & 0x80) return 'the highscore table';
+    const k = M[0x41];
+    return `level ${(M[0x44] & 3) + 1} · ${k & 0x80 ? 'strafing runs, hits ' + M[0x45] : KINDS[k & 3] + ' of defence'} · lives ${M[0x40]}`;
+  }
+
+  // ---- the clock: a target one frame on for each frame shown, and the port run up to it
+  let last = 0;
+  for (const b of document.querySelectorAll('#play button')) b.addEventListener('click', () => b.blur());
+  document.addEventListener('visibilitychange', () => { last = 0; });
+  function frame(t) {
+    try {
+      const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+      input();
+      target += dt * CLOCK;
+      play.run(target);
+      held.release();
+      const slices = [];
+      for (const f of play.sound.splice(0)) for (const s of f) slices.push(s);
+      if (soundOn && host && slices.length) host.push(slices);
+      draw();
+      $('hp-out').textContent = say();
+    } catch (e) { console.error(e); $('hp-out').textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; return; }
+    last = t;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+if (!window.C64 || !window.HunterPort || !window.HunterPlay || !window.C64Collide || !window.C64Cpu) {
+  const p = document.createElement('p'); p.className = 'hp-note';
+  p.textContent = 'The game runs from the listing\'s bytes through the site\'s shared scripts; it works in the built site.';
+  $('hp-screen').replaceWith(p);
+} else C64.load('listing.json').then(start).catch((e) => { console.error(e); $('hp-out').textContent = 'The game could not start: ' + e.message; });
+// end of hp-play-page
+</script>
