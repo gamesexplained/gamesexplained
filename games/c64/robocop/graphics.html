@@ -78,12 +78,196 @@ sup.fn + sup.fn::before{content:","}
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1988 · Data East</p>
   <h1>RoboCop: graphics</h1>
-  <p class="sub">Two screens in two memory banks, switched part way down every frame; streets built from tiles; and every figure made of three sprites.</p>
+  <p class="sub">Every figure of the three levels, drawn and moving; then two screens in two memory banks, switched part way down every frame; streets built from tiles; and every figure made of three sprites.</p>
 </header>
 <main class="wrap" data-part="">
 
+<section id="cast">
+  <p class="fig">01 · The cast</p>
+  <h2 class="t">Every figure, moving as the game moves it</h2>
+  <p class="lede">Each figure below is drawn from the sprite shapes in its level's listing, put together the way the game puts them together, and stepped through the game's own animation tables at the game's own rate. Pick a level to see its cast.</p>
+  <div class="cast-tabs" role="tablist" aria-label="Level">
+    <button type="button" role="tab" data-lv="level-1" aria-selected="true">Level one · stages 1-3</button>
+    <button type="button" role="tab" data-lv="level-2" aria-selected="false">Level two · stages 4-7</button>
+    <button type="button" role="tab" data-lv="level-3" aria-selected="false">Level three · stages 8-9</button>
+  </div>
+  <div class="plate">
+    <div class="cast-grid" id="cast-grid"></div>
+    <p class="cap"><b>The cast.</b> Each tile names the routine that picks its shapes. The grey is see-through. Enemies take the next of eight colours each time one appears (<span data-part="level-1"><code>$A42F</code></span>); here each is drawn in one of them. Pause stops every tile on its current frame.</p>
+    <p><button type="button" id="cast-pause">Pause</button></p>
+  </div>
+  <p>Every figure is three sprites (<a href="#figures">Three sprites to a figure</a>, below): an outline in black at the top, another 21 lines lower, and a multicolour body stretched to double height behind both. So most tiles show three shape numbers. RoboCop's body is the exception. Its upper rows are his arm, copied in for the way he aims, and its lower rows are his gun hand, copied in for each step of his walk and each way he faces. The game keeps two of these bodies, <code>$FE</code> and <code>$FF</code>, and builds the next one in whichever is not on screen, so the swap never shows half a picture (<span data-part="level-1"><code>$A069</code></span>). The left-facing arms and hands are not stored at all: each level makes them when it starts by mirroring the right-facing ones, row by row and pixel pair by pixel pair (<span data-part="level-1"><code>$A912</code></span>). The tiles here build both the same way.</p>
+  <h3 class="cast-h3">Shapes no tile above shows</h3>
+  <p>The level's other shapes, each drawn on its own: the outline in black and the body in the figure colours. Some belong to poses that only last a frame or two in play; the listing names the rest where it knows them.</p>
+  <div class="cast-rest" id="cast-rest"></div>
+</section>
+<style>
+.cast-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.cast-tabs button{font:500 13px var(--fm);padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);cursor:pointer}
+.cast-tabs button[aria-selected="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.cast-tabs button[aria-selected="true"]::before{content:"▶ "}
+.cast-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.cast-tile{background:var(--surface-2);border-radius:6px;padding:6px;margin:0}
+.cast-tile canvas{width:100%;image-rendering:pixelated;display:block;background:#7b7b7b;border-radius:4px}
+.cast-tile figcaption{font-size:13px;line-height:1.35;margin-top:6px;color:var(--ink-soft)}
+.cast-tile figcaption b{color:var(--ink);display:block}
+.cast-tile figcaption code{font-size:11px}
+.cast-h3{font-size:19px;margin:28px 0 8px}
+.cast-rest{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+.cast-rest figure{margin:0;text-align:center}
+.cast-rest canvas{width:100%;image-rendering:pixelated;background:#7b7b7b;border-radius:3px;display:block}
+.cast-rest figcaption{font:500 10px/1.25 var(--fm);color:var(--ink-mute);margin-top:2px}
+</style>
+<script src="../../lib/c64.js"></script>
+<script>
+/* robocop-cast */
+// Per level: where the tables the figures are drawn from sit. Every address is one the listing
+// names: the arm and gun-hand shapes RoboCop's body is built from ($A069 in level one), the
+// mirror the level builds at start, the walking, ducking and stairs tables, the enemies' frame
+// tables, and the shared sprite colours of a walking stage.
+const LV={
+ 'level-1':{mc:[8,6],robo:1,mirror:[0xA708,0xA971,174],arm:[0xA0E0,0xA0E9],gun:[0xA0F2,0xA10E],gunN:28,
+  legs:[0x9FD5,0x9FDB],bodyLR:[[0x40,0x5F],[0x61,0xA9]],stairs:[[0xA044,0xA04C],[0xA034,0xA03C]],duck:0x9EE1,
+  walk:[0xA6D0,0xA6D8,0xA6E0],aim:{t:[0xA66E],n:3,src:'$A624'},win:[0xA671,0xA674],fall:[0xA592,0xA595,0xA598],
+  death:0x846C,pick:[0x845C,0x8464,8],punch:[[0x56,0x46,0x57],[0x74,0x67,0x75]],cols:0xA42F,
+  addr:{arm:'$A069',walk:'$9F5A',stand:'$9EF4',duck:'$9EAA',up:'$9EE5',punch:'$9EF4',stairs:'$9FE1',die:'$9E22',ewalk:'$A677',estand:'$A6C0',win:'$A646',fall:'$A575',edie:'$83E8',pick:'$845C'}},
+ 'level-2':{mc:[8,15],robo:1,mirror:[0xAA3F,0xACA8,174],arm:[0xA47F,0xA488],gun:[0xA491,0xA4AD],gunN:28,
+  legs:[0xA341,0xA347],bodyLR:[[0x40,0x5F],[0x61,0xA9]],stairs:[[0xA3B0,0xA3B8],[0xA3A0,0xA3A8]],duck:0xA212,
+  walk:[0xAA07,0xAA0F,0xAA17],aim:{t:[0xA99C,0xA9A2,0xA9A8],n:6,src:'$A969'},fall:[0xA89A,0xA89D,0xA8A0],
+  death:0x875B,pick:[0x874B,0x8753,8],punchT:[0xA3F6,0xA3FC,0xA402],diag:[0xA2C7,0xA2C9,0xA2CB],cols:0xA69A,
+  lift:[0xEA,0xEB,0xEE],door:[0x8546,0x854A,0x854E],ed:[0x8653,0x8656,0x8659,0x865C,0x865F,0x8662],edCol:3,
+  addr:{arm:'$A408',walk:'$A29E',stand:'$A230',duck:'$A1CD',up:'$A214',punch:'$A3D5',stairs:'$A34D',die:'$A145',ewalk:'$AA1F',estand:'$A969',fall:'$A87D',edie:'$86D7',pick:'$874B',diag:'$A2B5',lift:'$A1CD',door:'$84BB',ed:'$85EA'}},
+ 'level-3':{mc:[8,11],robo:1,mirror:[0xA26C,0xA3CD,86],arm:[0x9D6D,0x9D76],cobra:[0x9D7F,0x9D88],gun:[0x9D91,0x9D9D],gunN:12,
+  legs:[0x9C98,0x9C9E],bodyLR:[[0x40,0x5F],[0x61,0xA9]],cobraBody:[[0xE5,0xE8],[0xE6,0xE7]],
+  walk:[0xA1CB,0xA1D3,0xA1DB],walkB:[0xA234,0xA23C],carrier:[0xA244,0xA248],aim:{t:[0xA160,0xA166,0xA16C],n:6,src:'$A12D'},
+  fall:[0xA055,0xA058,0xA05B],death:0x8319,pick:[0x8307,0x8310,9],diag:[0x9C34,0x9C36,0x9C38],cols:0x9F22,
+  lift:[0xEA,0xEB,0xEE],ed:[0xA11B,0xA11E,0xA121,0xA124,0xA127,0xA12A],edCol:1,jones:[0xABC0,0xABC4,0xABD0,0xABC8,0xABCC,0xABD4],
+  addr:{arm:'$9CF9',walk:'$9C1B',stand:'$9BE1',duck:'$9BB5',up:'$9BCD',stairs:'',die:'$9B1B',ewalk:'$A24C',estand:'$A12D',fall:'$A038',edie:'$8293',pick:'$8307',diag:'$9C22',lift:'$9BA3',ed:'$A0B4',walkB:'$A1E3',carrier:'$A205',cobra:'$9CDA',jones:'$AB9F',cross:'$A842',lift2:'$80CA'}}};
+const L1X={gunman:[0x8392,0x8396,0x83A2,0x839A,0x839E,0x83A6],moto:[[0xE4,0xE5,0xE7],[0xE2,0xE3,0xE6]]};
+const W=64,H=52,S=3,FPS=60;
+const PAL=C64.PAL;
+const swapPairs=b=>((b&3)<<6)|((b&12)<<2)|((b&48)>>2)|((b&192)>>6);
+let paused=false,cur='level-1',data={},tiles=[],tick=0;
+// Mirrors the right-facing arm and hand rows into the left-facing ones, as each level does when it starts.
+function mirror(m,[src,dst,rows]){for(let r=0;r<rows;r++)for(let i=0;i<3;i++)m[dst+r*3+i]=swapPairs(m[src+r*3+2-i]);}
+const shape=(m,f)=>m.subarray(0x4000+f*64,0x4000+f*64+63);
+// RoboCop's body: the arm for his aim (30 bytes) and the gun hand for his pose (33 bytes).
+function body(m,cfg,aim,pose,cobra){const t=cobra?cfg.cobra:cfg.arm,a=m[t[0]+aim]|m[t[1]+aim]<<8,g=m[cfg.gun[0]+pose]|m[cfg.gun[1]+pose]<<8,b=new Uint8Array(63);
+ b.set(m.subarray(a,a+30),0);b.set(m.subarray(g,g+33),30);return b;}
+// One figure: outline a at the top, outline b 21 lines lower when tall, body c (shape number or
+// 63 bytes) in multicolour behind both, stretched when tall. Any of the three may be null.
+function fig(ctx,m,mc,col,x,y,a,b,c,tall=true){
+ const C=PAL[col],M1=PAL[mc[0]],M2=PAL[mc[1]];
+ if(c!=null)C64.drawSpriteMC(ctx,typeof c==='number'?shape(m,c):c,x*S,y*S,S,C,M1,M2,1,tall?2:1);
+ if(b!=null&&tall)C64.drawSprite(ctx,shape(m,b),x*S,(y+21)*S,S,PAL[0]);
+ if(a!=null)C64.drawSprite(ctx,shape(m,a),x*S,y*S,S,PAL[0]);}
+function tile(name,addr,note,draw,used){tiles.push({name,addr,note,draw,used:used||[]});}
+function build(lv){
+ const m=data[lv].ram,cfg=LV[lv],mc=cfg.mc,r=(t,i)=>m[t+i];tiles=[];const enemyCol=i=>m[cfg.cols+i];
+ const A=cfg.addr,used=new Set();const U=(...f)=>f.forEach(v=>typeof v==='number'&&used.add(v));
+ // RoboCop walking: a step of the six-frame cycle every eight ticks, the legs from the table,
+ // the body built from the arm (aim 2 right, 6 left) and the hand for the step and facing.
+ [[0,'right',2],[1,'left',6]].forEach(([f,w,aim])=>{
+  for(let i=0;i<6;i++)U(r(cfg.legs[f],i));U(cfg.bodyLR[f][0]);
+  tile('RoboCop walking '+w,A.walk,'six steps, eight ticks each',(ctx,t)=>{const s=Math.floor(t/8)%6;
+   fig(ctx,m,mc,cfg.robo,20,4,cfg.bodyLR[f][0],r(cfg.legs[f],s),body(m,cfg,aim,s*2+f));});});
+ // standing, and aiming on the diagonal (an odd aim takes the second body shape)
+ tile('RoboCop standing and aiming',A.stand,'right: aims 2 and 1; left: 6 and 7',ctx=>{
+  fig(ctx,m,mc,cfg.robo,2,4,cfg.bodyLR[0][0],r(cfg.legs[0],0),body(m,cfg,2,0));
+  fig(ctx,m,mc,cfg.robo,40,4,cfg.bodyLR[0][1],r(cfg.legs[0],0),body(m,cfg,1,0));},[]);U(cfg.bodyLR[0][1],cfg.bodyLR[1][1]);
+ tile('RoboCop aiming straight up',A.up,'shapes $4E, $4F, $50',ctx=>fig(ctx,m,mc,cfg.robo,20,4,0x4E,0x4F,0x50));U(0x4E,0x4F,0x50);
+ if(cfg.duck){const d=[0,1,2,3].map(i=>r(cfg.duck,i));tile('RoboCop ducking',A.duck,'three shapes in a row from the first',ctx=>{
+   fig(ctx,m,mc,cfg.robo,2,4,d[0],d[0]+1,d[0]+2);fig(ctx,m,mc,cfg.robo,40,4,d[1],d[1]+1,d[1]+2);});d.forEach(v=>U(v,v+1,v+2));}
+ else{tile('RoboCop ducking',A.duck,'three shapes from $4B right, $F6 left',ctx=>{fig(ctx,m,mc,cfg.robo,2,4,0x4B,0x4C,0x4D);fig(ctx,m,mc,cfg.robo,40,4,0xF6,0xF7,0xF8);});U(0x4B,0x4C,0x4D,0xF6,0xF7,0xF8);}
+ if(cfg.diag){tile('RoboCop ducking on the diagonal',A.diag,'right, then left',ctx=>{
+   fig(ctx,m,mc,cfg.robo,2,4,r(cfg.diag[0],0),r(cfg.diag[1],0),r(cfg.diag[2],0));fig(ctx,m,mc,cfg.robo,40,4,r(cfg.diag[0],1),r(cfg.diag[1],1),r(cfg.diag[2],1));});
+  [0,1].forEach(i=>U(r(cfg.diag[0],i),r(cfg.diag[1],i),r(cfg.diag[2],i)));}
+ if(cfg.punch){tile('RoboCop punching a door',A.punch,'while the punch counter runs',ctx=>{fig(ctx,m,mc,cfg.robo,2,4,...cfg.punch[0]);fig(ctx,m,mc,cfg.robo,40,4,...cfg.punch[1]);});U(...cfg.punch[0],...cfg.punch[1]);}
+ if(cfg.punchT){// three frames of four ticks each over the punch's twelve; ducking starts three entries on
+  [[0,'standing'],[3,'ducking']].forEach(([o,w])=>{for(let i=0;i<3;i++)U(r(cfg.punchT[0],o+i),r(cfg.punchT[1],o+i),r(cfg.punchT[2],o+i));
+   tile('RoboCop punching, '+w,A.punch,'three frames, four ticks each',(ctx,t)=>{const i=o+2-Math.floor((t%12)/4);fig(ctx,m,mc,cfg.robo,20,4,r(cfg.punchT[0],i),r(cfg.punchT[1],i),r(cfg.punchT[2],i));});});}
+ if(cfg.stairs){[[0,'right'],[1,'left']].forEach(([f,w])=>{for(let i=0;i<8;i++)U(r(cfg.stairs[f][0],i),r(cfg.stairs[f][1],i));
+  tile('RoboCop on the stairs, facing '+w,A.stairs,'eight steps; hands from the stairs half of the table',(ctx,t)=>{const s=Math.floor(t/6)%8;
+   fig(ctx,m,mc,cfg.robo,20,4,r(cfg.stairs[f][0],s),r(cfg.stairs[f][1],s),body(m,cfg,f?6:2,12+s*2+f));});});}
+ if(cfg.cobra){[[0,'right',2],[1,'left',6]].forEach(([f,w,aim])=>{U(...cfg.cobraBody[f]);
+  tile('RoboCop with the Cobra cannon, '+w,A.cobra,'the cannon arm copied in for the aim',(ctx,t)=>{const s=Math.floor(t/8)%6;
+   fig(ctx,m,mc,cfg.robo,20,4,cfg.cobraBody[f][0],r(cfg.legs[f],s),body(m,cfg,aim,s*2+f,true));});});}
+ if(cfg.lift){tile('RoboCop riding a lift',A.lift,'shapes $EA, $EB, $EE',ctx=>fig(ctx,m,mc,cfg.robo,20,4,...cfg.lift));U(...cfg.lift);}
+ if(cfg.door){// $3E flips every 15 ticks; coming in reads entries 0 and 1, going out 2 and 3
+  tile('RoboCop walking through a door',A.door,'in: entries 0-1; out: 2-3',(ctx,t)=>{const s=Math.floor(t/15)%2;
+   fig(ctx,m,mc,cfg.robo,2,4,r(cfg.door[0],s),r(cfg.door[1],s),r(cfg.door[2],s));fig(ctx,m,mc,cfg.robo,40,4,r(cfg.door[0],s+2),r(cfg.door[1],s+2),r(cfg.door[2],s+2));});
+  for(let i=0;i<4;i++)U(r(cfg.door[0],i),r(cfg.door[1],i),r(cfg.door[2],i));}
+ // his death: the three shapes copied and rubbed out through eight masks, a pass every five frames, nine passes
+ const masks=[0xFE,0x7F,0xEF,0xFB,0xFD,0xBF,0xF7,0xDF];
+ tile('RoboCop dying',A.die,'nine passes, five frames apart',(ctx,t)=>{const p=Math.min(Math.floor((t%100)/5),9);
+  const d=Uint8Array.from(m.subarray(0x56C0,0x56C0+192));let x0=8;
+  for(let k=0;k<p;k++){let x=x0-1;for(let y=0;y<192;y++){d[y]&=masks[x];x--;if(x<0)x=7;}x0=x;}
+  const mm=m.slice();mm.set(d,0x7F40);
+  fig(ctx,mm,mc,cfg.robo,20,4,0xFD,0xFE,0xFF);});U(0x5B,0x5C,0x5D);
+ // enemies walking: four frames, six ticks each, a step every other tick
+ [[0,'left'],[4,'right']].forEach(([o,w])=>{for(let i=0;i<4;i++)U(r(cfg.walk[0],o+i),r(cfg.walk[1],o+i),r(cfg.walk[2],o+i));
+  tile('An enemy walking '+w,A.ewalk,'four frames, six ticks each',(ctx,t)=>{const i=o+Math.floor(t/6)%4;
+   fig(ctx,m,mc,enemyCol(o?2:0),20,4,r(cfg.walk[0],i),r(cfg.walk[1],i),r(cfg.walk[2],i));});});
+ if(cfg.walkB){[[0,'left'],[4,'right']].forEach(([o,w])=>{for(let i=0;i<4;i++)U(r(cfg.walkB[0],o+i),r(cfg.walkB[1],o+i));
+  tile('A walker of behaviours 12 and 13, '+w,A.walkB,'other first and third shapes',(ctx,t)=>{const i=o+Math.floor(t/6)%4;
+   fig(ctx,m,mc,enemyCol(o?4:3),20,4,r(cfg.walkB[0],i),r(cfg.walk[1],i),r(cfg.walkB[1],i));});});
+  for(let i=0;i<4;i++)U(r(cfg.carrier[0],i),r(cfg.carrier[1],i));
+  tile("The Cobra cannon's carrier",A.carrier,'walks left with the cannon',(ctx,t)=>{const i=Math.floor(t/6)%4;
+   fig(ctx,m,mc,enemyCol(1),20,4,r(cfg.carrier[0],i),r(cfg.walk[1],i),r(cfg.carrier[1],i));});}
+ // aiming enemies: one pose for each aim, three shapes from the tables (level one: three in a row)
+ {const n=cfg.aim.n,poses=[];for(let i=0;i<n;i++){const t=cfg.aim.t;const p=t.length===1?[r(t[0],i),r(t[0],i)+1,r(t[0],i)+2]:[r(t[0],i),r(t[1],i),r(t[2],i)];poses.push(p);U(...p);}
+  tile('An enemy standing and aiming',cfg.aim.src,n+' aims, one at a time',(ctx,t)=>{const i=Math.floor(t/40)%n;fig(ctx,m,mc,enemyCol(3),20,4,...poses[i]);});
+  // standing still, facing left and right: walking frames 2 and 6
+  tile('An enemy standing still',A.estand,'walking frames 2 and 6',ctx=>{fig(ctx,m,mc,enemyCol(5),2,4,r(cfg.walk[0],2),r(cfg.walk[1],2),r(cfg.walk[2],2));fig(ctx,m,mc,enemyCol(5),40,4,r(cfg.walk[0],6),r(cfg.walk[1],6),r(cfg.walk[2],6));});}
+ if(cfg.win){const p=[0,1,2].map(i=>[r(cfg.win[0],i),r(cfg.win[1],i),r(cfg.win[0],i)+2]);p.forEach(q=>U(...q));
+  tile('An enemy at a window',A.win,'three aims',(ctx,t)=>{const i=Math.floor(t/40)%3;fig(ctx,m,mc,enemyCol(4),20,4,...p[i]);});}
+ {const p=[0,1,2].map(i=>[r(cfg.fall[0],i),r(cfg.fall[1],i),r(cfg.fall[2],i)]);p.forEach(q=>U(...q));
+  tile(lv==='level-1'?'An enemy shot at a window, falling':'An enemy knocked down',A.fall,'three stages of the fall',(ctx,t)=>{const i=Math.min(Math.floor((t%120)/30),2);fig(ctx,m,mc,enemyCol(6),20,4,...p[i]);});}
+ {const d=[0,1,2,3].map(i=>r(cfg.death,i));d.forEach(v=>U(v,v+1,v+2));
+  tile('An enemy dying',A.edie,'yellow, a frame every six ticks',(ctx,t)=>{const i=Math.floor(t/6)%5;if(i<4)fig(ctx,m,mc,7,20,4,d[i],d[i]+1,d[i]+2);});}
+ {const n=cfg.pick[2],ps=[];for(let i=0;i<n;i++){const f=r(cfg.pick[0],i);ps.push([f,r(cfg.pick[1],i)]);U(f,f+1);}
+  tile('The pickups',A.pick,'one shape and its body, not stretched',ctx=>{ps.slice(0,Math.min(n,6)).forEach(([f,c],i)=>fig(ctx,m,mc,c,(i%3)*21,(i/3|0)*24+2,f,null,f+1,false));});
+  if(n>6)tile('More pickups',A.pick,'types 7 to '+n,ctx=>{ps.slice(6).forEach(([f,c],i)=>fig(ctx,m,mc,c,i*21,14,f,null,f+1,false));});}
+ if(cfg.ed){const T=cfg.ed;for(let i=0;i<3;i++)T.forEach(t=>U(r(t,i)));
+  tile('ED-209',A.ed,'two figures side by side, three frames, twelve ticks each',(ctx,t)=>{const i=Math.floor(t/12)%3;
+   fig(ctx,m,mc,cfg.edCol,8,4,r(T[0],i),r(T[1],i),r(T[2],i));fig(ctx,m,mc,cfg.edCol,32,4,r(T[3],i),r(T[4],i),r(T[5],i));});}
+ if(cfg.jones){const T=cfg.jones;[0,1,2,3].forEach(i=>T.forEach(t=>U(r(t,i))));
+  tile('Dick Jones and the hostage',A.jones,'poses 1 and 3 in turn as they move',(ctx,t)=>{const i=[1,3][Math.floor(t/6)%2];
+   fig(ctx,m,mc,14,8,4,r(T[0],i),r(T[1],i),r(T[2],i));fig(ctx,m,mc,7,32,4,r(T[3],i),r(T[4],i),r(T[5],i));});
+  tile('Dick Jones and the hostage standing',A.jones,'pose 0',ctx=>{fig(ctx,m,mc,14,8,4,r(T[0],0),r(T[1],0),r(T[2],0));fig(ctx,m,mc,7,32,4,r(T[3],0),r(T[4],0),r(T[5],0));});
+  tile('The crosshair',A.cross,'shapes $F5 and $C0, not stretched',ctx=>fig(ctx,m,mc,5,20,14,0xF5,null,0xC0,false));U(0xF5,0xC0);
+  tile('The lift',A.lift2,'shapes $F9 and $FA',ctx=>fig(ctx,m,mc,1,20,14,0xF9,null,0xFA,false));U(0xF9,0xFA);}
+ if(lv==='level-1'){const T=L1X.gunman;[0,1,2,3].forEach(i=>T.forEach(t=>U(r(t,i))));
+  tile('The gunman and the hostage','$832A','sets 1 and 2 in turn, six ticks each',(ctx,t)=>{const i=1+Math.floor(t/6)%2;
+   fig(ctx,m,mc,14,8,4,r(T[0],i),r(T[1],i),r(T[2],i));fig(ctx,m,mc,7,32,4,r(T[3],i),r(T[4],i),r(T[5],i));});
+  [[0,'standing'],[3,'when the hostage dies']].forEach(([i,w])=>tile('The gunman and the hostage, '+w,'$8371','frame set '+i,ctx=>{
+   fig(ctx,m,mc,14,8,4,r(T[0],i),r(T[1],i),r(T[2],i));fig(ctx,m,mc,7,32,4,r(T[3],i),r(T[4],i),r(T[5],i));}));
+  tile('The crosshair','$951D','shape $E1, not stretched',ctx=>fig(ctx,m,mc,5,20,14,null,null,0xE1,false));U(0xE1);
+  tile('The motorbike','$A1EF','two figures, the front twelve places right of the rear',ctx=>{fig(ctx,m,mc,1,8,4,...L1X.moto[0]);fig(ctx,m,mc,1,32,4,...L1X.moto[1]);});U(...L1X.moto[0],...L1X.moto[1]);}
+ // the rest of the 192 shapes
+ const rest=document.getElementById('cast-rest');rest.textContent='';
+ for(let f=0x40;f<0x100;f++){if(used.has(f))continue;const fg=document.createElement('figure'),cv=document.createElement('canvas'),ctx=C64.canvas(cv,24*S,42*S);
+  C64.drawSpriteMC(ctx,shape(m,f),0,21*S,S,PAL[1],PAL[mc[0]],PAL[mc[1]]);C64.drawSprite(ctx,shape(m,f),0,0,S,PAL[0]);
+  const c=document.createElement('figcaption');c.textContent='$'+f.toString(16).toUpperCase();fg.append(cv,c);rest.append(fg);}
+ const grid=document.getElementById('cast-grid');grid.textContent='';
+ for(const t of tiles){const fg=document.createElement('figure');fg.className='cast-tile';t.cv=document.createElement('canvas');t.ctx=C64.canvas(t.cv,W*S,H*S);
+  const c=document.createElement('figcaption');c.innerHTML='<b></b>';c.firstChild.textContent=t.name;c.append(t.note+' ');
+  if(t.addr){const a=document.createElement('a');a.href='source-'+lv+'.html#'+t.addr.slice(1);a.innerHTML='<code>'+t.addr+'</code>';c.append(a);}
+  fg.append(t.cv,c);grid.append(fg);}
+ frame();}
+function frame(){for(const t of tiles){t.ctx.clearRect(0,0,W*S,H*S);t.draw(t.ctx,tick);}}
+Promise.all(Object.keys(LV).map(lv=>C64.load('parts/'+lv+'/listing.json').then(L=>{const ram=L.ram.slice();mirror(ram,LV[lv].mirror);data[lv]={ram};}))).then(()=>{
+ build(cur);
+ document.querySelectorAll('.cast-tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.cast-tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));cur=b.dataset.lv;build(cur);});
+ document.getElementById('cast-pause').onclick=e=>{paused=!paused;e.target.textContent=paused?'Play':'Pause';};
+ let last=0;(function run(ts){if(!paused&&ts-last>=1000/FPS){last=ts;tick++;frame();}requestAnimationFrame(run);})(0);
+});
+// end of robocop-cast
+</script>
+
+
 <section id="screen">
-  <p class="fig">01 · The screen</p>
+  <p class="fig">02 · The screen</p>
   <h2 class="t">A panel and a play area, from two banks of memory</h2>
   <p class="lede">The VIC-II chip, which draws the screen, can see 16 KB of memory at a time. RoboCop changes which 16 KB part way down every frame, so the status panel and the play area each have their own characters and their own screen.</p>
   <div class="plate">
@@ -108,20 +292,20 @@ sup.fn + sup.fn::before{content:","}
 </section>
 
 <section id="scroll">
-  <p class="fig">02 · Scrolling</p>
+  <p class="fig">03 · Scrolling</p>
   <h2 class="t">Two screens, built in pieces and swapped</h2>
   <p>The play area has two screens, at <code>$4000</code> and <code>$4400</code>. While one is shown, the game copies the other a column (or a row) along, a part on each frame, while the VIC-II's fine scroll moves the shown one a pixel at a time. When the fine scroll has moved eight pixels, the screens swap: one bit of the value written to <code>$D018</code> is flipped (<span data-part="level-3"><code>$9247</code></span> in level three), and the fine scroll starts again.</p>
   <p>Colour RAM cannot be swapped, because the VIC-II has only one. So on the same frame as the swap, the game moves the colours of rows 7 to 22 one column across, and draws the new column. The stages whose maps are taller than the screen scroll up and down as well, with the same method for rows.</p>
 </section>
 
 <section id="tiles">
-  <p class="fig">03 · Tiles</p>
+  <p class="fig">04 · Tiles</p>
   <h2 class="t">Streets built from tiles of four by four characters</h2>
   <p>Each stage's map is a list of tile numbers, a column at a time. A tile is 16 characters, four across and four down, so each map byte stands for a 32 by 32 pixel square. The tile sets and maps sit at <code>$1000</code> to about <code>$24FF</code> in each load, with a colour for each of the 256 characters at <code>$0F00</code>; the colour's bit 3 makes that character multicolour. Stage seven is the exception: its tiles are not in level two's files at all, but come with level one and wait at <code>$C400</code> until they are needed (<a href="discoveries.html#disk-b">Discoveries</a>). The <a href="levels.html">Maps</a> page draws every stage from these tables.</p>
 </section>
 
 <section id="figures">
-  <p class="fig">04 · Figures</p>
+  <p class="fig">05 · Figures</p>
   <h2 class="t">Three sprites to a figure</h2>
   <div class="plate">
     <svg viewBox="0 0 420 200" width="100%" style="max-width:640px;display:block;margin:0 auto" role="img" aria-label="Diagram of a figure made of three sprites: sprite 2 double height behind, sprite 0 at the top and sprite 1 below it in front">
