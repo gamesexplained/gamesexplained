@@ -84,3 +84,72 @@ for (let frame = 0; frame <= 500; frame++) {
 const broadwayDigest = require('crypto').createHash('sha256').update(JSON.stringify(broadwayWrites)).digest('hex');
 assert.equal(broadwayDigest, vice.broadway.writes_sha256_500, 'Broadway SID writes must match the captured prompt');
 console.log('OK - Broadway: 500 driver updates match the captured scene, first 30 match VICE');
+
+// The sound effects. Every request in the three episodes loads the effect's number as an
+// immediate and calls one of the starters ($E6AD, $E70C, $E76B for voices 1-3) or an episode's
+// wrapper round them (number in X for the airshaft and Broadway, in A for the museum). The page's
+// list must give the effects asked for, with the voice of each one's first request (the airshaft's
+// first, then Broadway's, then the museum's), and its table only addresses that make that request.
+{
+  const {SOUND_EFFECTS} = g.run('index.html', 'sound-effects-list', 'SOUND_EFFECTS');
+  const WRAP = {
+    airshaft: {0x8CFF: 1, 0x8D04: 2, 0x8D09: 3, reg: 0xA2},
+    broadway: {0x83FB: 1, 0x8400: 2, 0x8405: 3, reg: 0xA2},
+    museum: {0x86E1: 1, 0x86F2: 2, 0x8703: 3, 0xE6AD: 1, 0xE70C: 2, 0xE76B: 3, reg: 0xA9},
+  };
+  const requests = [];
+  for (const part of ['airshaft', 'broadway', 'museum']) {
+    const L = require('./parts/' + part + '/listing.json');
+    const recs = L.records;
+    recs.forEach((r, i) => {
+      const b = r.b || [];
+      const to = b.length === 3 && (b[0] === 0x20 || b[0] === 0x4C) ? b[1] | b[2] << 8 : -1;
+      if (to < 0 || !(to in WRAP[part])) return;
+      if (part !== 'museum' && to >= 0xE000) return;
+      if (part === 'museum' && r.a >= 0x86E1 && r.a <= 0x8713) return;   // the wrappers' own calls, with the number patched in
+      // the immediate load of the number: the nearest LDX # (or LDA #) in the three instructions before
+      let n = null;
+      for (let j = i - 1; j >= i - 3 && n === null; j--) {
+        const q = recs[j].b || [];
+        if (q.length === 2 && q[0] === WRAP[part].reg) n = q[1];
+      }
+      if (part === 'airshaft' && r.a === 0xAE13) return;   // $AE04: TXA follows, and no caller is known
+      assert(n !== null, part + ' $' + r.a.toString(16) + ' asks for an effect without an immediate number');
+      requests.push({part, at: r.a, n, voice: WRAP[part][to]});
+    });
+  }
+  const used = [...new Set(requests.map(q => q.n))].sort((a, b) => a - b);
+  assert.deepStrictEqual(used, SOUND_EFFECTS.filter(e => e.name !== 'never played').map(e => e.n));
+  for (const e of SOUND_EFFECTS) {
+    const first = requests.filter(q => q.n === e.n)[0];
+    assert.equal(e.voice, first ? first.voice : 1, 'voice of effect ' + e.n);
+  }
+  const rows = [...html.match(/<table class="sfx">([\s\S]*?)<\/table>/)[1].matchAll(/<tr><td[^>]*>([^<]+)<\/td><td>([^<]+)<\/td><td>(.*?)<\/td><\/tr>/g)];
+  const listed = new Set();
+  for (const [, nums, what, where] of rows) {
+    const ns = nums.split(',').map(Number);
+    ns.forEach(n => listed.add(n));
+    if (what === 'never') assert.deepStrictEqual(ns, SOUND_EFFECTS.filter(e => e.name === 'never played').map(e => e.n));
+    for (const m of where.matchAll(/\$([0-9A-F]{4})/g)) {
+      const at = parseInt(m[1], 16);
+      assert(requests.some(q => q.at === at && ns.includes(q.n)), 'the table gives $' + m[1] + ' for effect ' + nums);
+    }
+  }
+  assert.equal(listed.size, 26, 'the table names all 26 effects');
+  // Each effect through the page's driver: its 12-byte record ($E7CA points to it) copied to the
+  // voice's state, the effect ending, and the music held off its voice while it plays.
+  let frames = 0;
+  for (const e of SOUND_EFFECTS) {
+    const d = createGhostSound({mem, effects: SOUND_EFFECTS}, {CPU});
+    d.init(e.n);
+    const rec = listing.ram[0xE7CA + 2 * e.n] | listing.ram[0xE7CB + 2 * e.n] << 8;
+    const state = [0xEAED, 0xEAFC, 0xEB0B][e.voice - 1];
+    assert.deepStrictEqual(Array.from(d.mem.slice(state, state + 12)), Array.from(listing.ram.slice(rec, rec + 12)), 'record of effect ' + e.n);
+    assert.equal(d.mem[0xE12F + e.voice - 1], 1, 'effect ' + e.n + ' is active');
+    let n = 0;
+    while (d.playing() && n < 3000) { d.play(); n++; }
+    assert(!d.playing(), 'effect ' + e.n + ' ends');
+    frames += n;
+  }
+  console.log('OK - ' + requests.length + ' requests ask for ' + used.length + ' effects; the six others are never asked for; all 26 play to their end (' + frames + ' frames)');
+}

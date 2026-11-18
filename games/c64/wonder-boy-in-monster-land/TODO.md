@@ -1,18 +1,32 @@
 # Super Wonder Boy in Monster Land — TODO
 
-All 490,491 counted bytes have descriptions. The requested Silver still needs the maintainer check described in `kit/CHECKING.md` because the imported listing was produced by an unproven model. Eight byte roles and the ordinary-play limits below remain explicit, rather than inferred from forced tests.
+All 490,491 counted bytes have descriptions. Silver needs one more step: a full audit of the listing.
 
-## Submission and review
+## Before Silver
 
-- A maintainer must perform the listing check in `kit/CHECKING.md` before recording Silver. The imported analysis includes an unproven model, so the published tier remains Bronze with the pending-check banner.
-- A full audit is recommended. The independent sample found one wrong detail in 60 comments; that detail was corrected. Later annotation is recorded separately.
+- Audit every comment in every part, and every claim in `facts.md`, on proven models, then draw a new sample with a new seed (`kit/CHECKING.md`). The maintainer's sample of 17 November 2026 (seed 51117) found 17 of 80 comments wrong, over the mark of one in 30. Fifteen were character comments on bytes that are other data. That kind of comment was corrected wherever the load's own structures identify the bytes (5,060 comments), and on 18 November 2026 the listing was folded to one note per structure (14,310 notes; `facts.md`, "Listing error rate"). The audit should start with:
+  - the 779 notes on runs of a copy's characters, and in them the 187 that name a selector's own shapes: whether each run holds only characters, or bytes some other routine reads;
+  - the 75 notes that call bytes only "instruction bytes of the routine at" an address: each is a short piece of code with no description of its own, and needs one;
+  - the tables described one entry to a note, which could each be one note: 825 one-byte `RTS` entries of the entity vector tables, 816 subroutine targets, 408 prices and 408 message pointers of the shops' item tables.
+- Load 20's trigger callback at `$9396` (`LDA #$00`, `STA $BF1F`, `RTS`) lies inside the bytes the listing describes only as character rows; the audit should describe it as code.
+
+## Leads that stay open
+
+- The load-9 spot at column 43, row 6 (`$92F7`) makes the hero immune to enemy contact; Discoveries tells it from the code. Find whether play can reach it: the hero's highest jump near it ends at row 7.
+- The hazard spots whose callback is `$72AB` (38, 31 of them in loads 19, 26 and 27) throw the hero back and start a temporary entity of type `$2B`; find what that entity does and whether it costs life.
+- The key check at `$7960` takes the key and clears `$5284`; find what clearing `$5284` opens.
+- In the two-player game the area setup at `$6C73` adds 8 to the first player's meter, while the first hourglass tick takes 8 from the selected player's. If it plays out that way, the second player starts each area a heart down and the first a heart up; see it in play with `$4DBC` set before taking it to Discoveries.
+- The rectangle test at `$75E3` passes a box that ends where the other begins and fails one that begins at the other's computed right edge (`parts/resident/facts.md`). Find whether an enemy touches the hero a pixel sooner from one side in play.
+- A wrong answer to the Sphinx runs `$BE38`; find what it costs.
+- The six-step horizontal-input gate in loads 25–27 lets the hero's sideways speed change only on some passes; find what the player feels.
+- The type-`$28` shape differs between loads 2–5 and 6–31; find what the object is.
+- A shop closed with “Closed.” after 13.16 seconds in a controlled test; find whether the timeout applies in play.
+- Pages: the Graphics tab could name each creature on the sprite sheet from the load's messages, put the hero's walk, raised sword and attack frames in one moving row, and show the 17 room screens as a grid placed where the game uses them; How it works could draw the seven hourglass pictures from `$5127`–`$51B2`.
 
 ## Open investigations
 
 The following questions stay explicit where the evidence does not settle them. A bounded forced test does not establish an ordinary-play route.
 
-- Find which entity type’s contact handler is `$7646`, the code that runs the hourglass backwards, and watch the hourglass in play: its seven pictures, the heart it costs, and the doubled count in a pool (`facts.md`, “The hourglass”).
-- Check whether two-player play can start. The resident code clears the two-player flag at `$4DBC` (`$0378`) and no traced instruction sets it; the title code and the release’s trainer have not been ruled out. If it can start, the area setup at `$6C73` adds 8 to the first player’s meter while the first hourglass tick takes 8 from the selected player’s.
 - Establish the natural routes to the forced loads, classify bytes after the two decoded streams in the extracted disk files and their transfer and determine ownership of repeated data across loads. The two decoded streams reproduce each recorded write range and its entry snapshot, including four post-load patches; `stream-boundaries.json` records the bounded result.
 - Restore or attribute the four older resident annotations at $BE84, $FAC0, $FD30 and $FD50 only after checking the corresponding state. The prior map is saved under resident `work/`.
 - Preserve the resident automatic labels when rebuilding its disassembler project: the reseeded project exports without losing tracked bytes only after those labels are carried into it. Establish whether the effect slot searches can run with fewer than four free slots and what follows if they do.

@@ -180,11 +180,9 @@ def stopped(rpc):
 
 
 def saved_word(name, a):
-    """A 16-bit value as a snapshot file holds it, read where snapshot.py finds the RAM (snapshot-ram-offset)."""
-    with open(os.path.join(SNAPDIR, name + ".vsf"), "rb") as f:
-        d = f.read()
-    o = snapshot.ram_offset(d)
-    return d[o + a] + 256 * d[o + a + 1]
+    """A 16-bit value as a snapshot file holds it, read where snapshot.py reads RAM (snapshot-ram-offset)."""
+    d = snapshot.read(os.path.join(SNAPDIR, name + ".vsf"))
+    return d[a] + 256 * d[a + 1]
 
 
 def patience(n_passes):
@@ -332,9 +330,9 @@ def p1(rpc):
     path = os.path.join(SNAPDIR, "emutest_p1.vsf")
     check("snapshot-save", r.get("status") == "ok" and os.path.exists(path), "a snapshot lands in tools/vice-home", json.dumps(r)[:80])
     data = open(path, "rb").read() if os.path.exists(path) else b""
-    o = snapshot.ram_offset(data)
-    check("snapshot-ram-offset", data[o + BASE: o + BASE + len(CODE)] == CODE,
-          "RAM is where snapshot.py finds it, the C64MEM module's body", f"read at {o}, found at {data.find(CODE) - BASE}")
+    at = snapshot.ram_offset(data) if data else 0
+    check("snapshot-ram-offset", data[at + BASE: at + BASE + len(CODE)] == CODE,
+          "kit/c64/snapshot.py finds RAM in the file (the C64MEM module)", f"found at {data.find(CODE) - BASE}, read at {at}")
     cp_del(rpc, n); run(rpc)
 
 

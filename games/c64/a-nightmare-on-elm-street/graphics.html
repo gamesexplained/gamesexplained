@@ -1,0 +1,185 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Nightmare on Elm Street: graphics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.plate{margin:0 0 22px}
+.ft-table{border-collapse:collapse;font-size:14px;width:100%}
+.ft-table td,.ft-table th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.ft-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.ft-two .plate{margin:0;padding:12px}
+.ft-px{width:100%;height:auto;image-rendering:pixelated;display:block}
+.ft-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.ft-scroll{overflow:auto;max-height:80vh;border-radius:6px;background:#222}
+.ft-scroll canvas{image-rendering:pixelated;display:block}
+.ft-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;margin:10px 0 0;color:var(--ink-soft)}
+.ft-key span{display:inline-flex;align-items:center;gap:6px}
+.ft-key b{display:inline-block;min-width:22px;text-align:center;font:700 12px/18px var(--fm);border-radius:4px;color:#fff;padding:0 4px}
+sup.fn{font-size:.7em;line-height:0}
+sup.fn a{text-decoration:none}
+sup.fn + sup.fn::before{content:","}
+.overview-shot{margin:22px 0}
+.overview-shot img{width:100%;max-width:768px;height:auto;aspect-ratio:384/272;image-rendering:pixelated;display:block}
+.overview-shot figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px;max-width:768px}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.ft-two{grid-template-columns:1fr}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1989 · Monarch Software</p>
+  <h1>Graphics</h1>
+  <p class="sub">Every shape the five Dream Warriors, the monsters, and Freddy are drawn with, and the three ways the game shows a death.</p>
+</header>
+<main class="wrap" data-part="">
+
+<section id="characters">
+  <p class="fig">01 · The five characters</p>
+  <h2 class="t">One body for all five, and a pose of their own</h2>
+  <p class="lede">Each character is two sprites at the same place: a black outline in front and a multicolour fill behind it, in white with blue and red. They walk in eight directions with seven frames each, and only the last frame differs from one character to the next.</p>
+  <div class="plate">
+    <div class="ft-tabs" id="gxChar" role="group" aria-label="Character"></div>
+    <div style="overflow-x:auto"><canvas id="gxPlayer" aria-label="The chosen character's 56 frames"></canvas></div>
+    <p class="cap">Rows are the eight facings, from up round clockwise to up and to the left. Columns 0 to 3 are the walking steps, 4 firing a gun, 5 a blow with a weapon in hand, and 6 the special power. The shapes are the file <code>PLYR</code>, which <a href="source-street.html#1F44"><code>leave_street</code></a> loads before the house and spreads through the video chip's bank: shapes 0 to 47 to <code>$C000</code>, shapes 96 to 143 under the I/O chips, and the character's own 16 to shapes 144 to 159.</p>
+  </div>
+  <p><a href="source-house.html#1C8D"><code>player_sprite</code></a> picks the frame from the walking step at <code>$734A</code>: steps 0 to 5 cycle through frames 0, 1, 2, 3, 2, 1, step 6 is the gun (<a href="source-house.html#4AAB"><code>fire_gun</code></a>), step 7 a blow (<a href="source-house.html#4B7B"><code>strike</code></a>), and step 8 the special power (<a href="source-house.html#4C0B"><code>special_power</code></a>). Frames 0 to 5 are the same shapes for everyone. Frame 6, the special power, comes from each character's own block of <code>PLYR</code>, which the table at <a href="source-street.html#1F80"><code>$1F80</code></a> names: Kincaid's, Kristen's, Taryn's, and one block that Will and Nancy share, so Will's lightning and Nancy's freezing of time are drawn with the same pose.</p>
+</section>
+
+<section id="monsters">
+  <p class="fig">02 · The monsters</p>
+  <h2 class="t">Five monsters and Freddy</h2>
+  <p class="lede">The monsters are single sprites, each kind with its own first shape, frame count, and colour. Freddy, like the player, is an outline in front of a multicolour fill.</p>
+  <div class="plate">
+    <canvas id="gxMon" aria-label="Each monster kind walking in each of its facings"></canvas>
+    <p class="cap">Each row is a kind, walking in each of the facings it has: down, up, right, and left. The shapes are in the file <code>MON</code>, kept from <a href="source-resident.html#E800"><code>$E800</code></a> for the whole game. A monster's shape is the kind's first shape (<a href="source-house.html#746D"><code>kind_shape</code></a>), plus its facing, plus the frame times the kind's step (<a href="source-house.html#1D4E"><code>monster_frame</code></a>); for Freddy the sum is doubled, since each of his frames is two sprites. The game names the slime, the skeleton, and Freddy in a chest's messages, and the roaches and wheelchairs in its level hints ("THE PICK WORKS BEST ON ROACHES", "THE AXE WORKS BEST ON WHEELCHAIRS"); the winged kind is named nowhere.</p>
+  </div>
+  <table class="ft-table" id="gxKinds"><thead><tr><th>Kind</th><th>Looks like</th><th>Hit points</th><th>Damage</th><th>Chance to hit, of 256</th><th>Speed (higher is slower)</th><th>Weak to (damage)</th><th>Shoots (damage)</th></tr></thead><tbody></tbody></table>
+  <p>The figures come from the kind tables from <a href="source-house.html#7422"><code>kind_hit_chance</code></a> to <a href="source-house.html#7489"><code>kind_shot</code></a>. The chance to hit is out of 256, rolled each time a monster reaches the player (<a href="source-house.html#44B1"><code>monster_attack</code></a>). Speed is what <a href="source-house.html#2590"><code>move_monsters</code></a> adds back to a monster's fraction byte each time 23 borrows from it, so a higher number is a slower monster. A weapon a kind is weak to does a fixed amount of its own to it (<a href="source-house.html#4523"><code>damage_monster</code></a>). For the skeleton that changes nothing: the BASEBALL BAT does 19 to every monster, and 19 to a skeleton (<a href="discoveries.html#bat">Discoveries</a>). A monster that shoots fires the shot kind in <a href="source-house.html#7489"><code>kind_shot</code></a>, whose damage is in <a href="source-house.html#45F6"><code>shot_damage</code></a>. Freddy's hit points are ten times the level plus one wherever he appears, and 1,000 in the final fight.</p>
+  <p>Only kind 0 walks through walls: <a href="source-house.html#17C7"><code>place_monster</code></a> gives it flag bit 1. Kinds 0 and 2 always face the same way, because <a href="source-house.html#266D"><code>monster_step</code></a> sets their facing to 0, and that is why they have no rows for the other facings. In the final fight, Freddy is drawn at double size from his same shapes, cut to the play area by <a href="source-house.html#22BE"><code>freddy_big_shape</code></a>.</p>
+</section>
+
+<section id="death">
+  <p class="fig">03 · Death</p>
+  <h2 class="t">Three ways to die</h2>
+  <div class="plate">
+    <canvas id="gxDeath" aria-label="The three death animations"></canvas>
+    <p class="cap">The three animations are drawn from the 30 shapes of the file <code>DEATH</code>. <a href="source-house.html#583C"><code>enter_setup</code></a> loads it to <code>$9080</code>, and <a href="source-house.html#47D3"><code>death_animation</code></a> plays it when the soul runs out: killed by Freddy (3 frames), by a monster (4 frames), or by a floor (5 frames). Each frame is held for seven waits.</p>
+  </div>
+  <p>Which animation plays comes from <code>$7A3F</code>, set by what did the damage: 0 when Freddy hits (<a href="source-house.html#44B1"><code>monster_attack</code></a>), 1 for any other monster, and 2 for a floor (<a href="source-house.html#38F3"><code>hurt_floor</code></a>). Freddy's animation is two sprite pairs side by side: the player's figure splits down the middle and the halves fall apart. A monster's is a figure that stays where it is while its head, a pair of its own, flies up and away along the places at <a href="source-house.html#48CF"><code>death_x</code></a> and <a href="source-house.html#48D3"><code>death_y</code></a>. The floor's puts the same pair on both sprite pairs. On level 10, <a href="source-house.html#5814"><code>enter_level</code></a> loads <code>DEAT1</code> over the second half of the file, from <code>$9380</code>, and a death by Freddy there plays the floor's animation instead of his own.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+const GX_DEATH = "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";
+const GX_PLYR = "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";
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined') { $('gxPlayer').replaceWith('This widget needs the site\'s shared scripts: open the page from the built site.'); return; }
+  const P = C64.PAL, S = 3;
+  const b = atob(GX_PLYR), plyr = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) plyr[i] = b.charCodeAt(i);
+  // PLYR as the game spreads it: shapes 0-47 from its first 3 KB ($C000), 96-143 from the next 3 KB
+  // (under the I/O at $D800), and 144-159 from the character's own KB (the table at $1F80, less $8000).
+  const OWN = [0x2000, 0x1C00, 0x1800, 0x1800, 0x1400], NAMES = ['Kincaid', 'Kristen', 'Will', 'Nancy', 'Taryn'];
+  const pshape = (c, n) => { const o = n < 48 ? n * 64 : n < 96 ? -1 : n < 144 ? 0xC00 + (n - 96) * 64 : OWN[c] + (n - 144) * 64; return plyr.subarray(o, o + 63); };
+  const FACE = [1, 5, 2, 6, 0, 7, 3, 4];                       // facing_frames ($1D46)
+  const shapeOf = (frame, facing) => { let a = (frame * 8 + FACE[facing]) * 2; if (a >= 0x30) a += 0x30; return a; };
+  const cp = $('gxPlayer'), W = 7 * 30 * S, H = 8 * 24 * S; cp.width = W; cp.height = H; cp.style.width = '100%'; cp.style.maxWidth = W + 'px'; cp.style.imageRendering = 'pixelated';
+  const xp = cp.getContext('2d');
+  function drawChar(c) {
+    xp.fillStyle = P[12]; xp.fillRect(0, 0, W, H);
+    for (let f = 0; f < 7; f++) for (let d = 0; d < 8; d++) {
+      const s = shapeOf(f, d), x = f * 30 * S + 3 * S, y = d * 24 * S + 1 * S;
+      C64.drawSpriteMC(xp, pshape(c, s + 1), x, y, S, P[1], P[6], P[2]);
+      C64.drawSprite(xp, pshape(c, s), x, y, S, P[0]);
+    }
+    [...$('gxChar').children].forEach((bt, j) => bt.setAttribute('aria-pressed', String(j === c)));
+  }
+  NAMES.forEach((n, i) => { const bt = document.createElement('button'); bt.textContent = n; bt.onclick = () => drawChar(i); $('gxChar').appendChild(bt); });
+  drawChar(0);
+
+  Promise.all([C64.load('parts/resident/listing.json'), C64.load('parts/house/listing.json')]).then(([R, Hs]) => {
+    const mon = n => R.ram.subarray(0xE800 + (n - 0xA0) * 64, 0xE800 + (n - 0xA0) * 64 + 63);
+    const h = Hs.ram, LOOKS = ['a winged thing that flies through walls', 'the roach', 'the slime', 'the skeleton', 'the wheelchair', 'Freddy'];
+    const WEAP = ['the DAGGER', 'the BASEBALL BAT', 'the AXE', 'the PICK'];
+    const tb = $('gxKinds').tBodies[0];
+    for (let k = 0; k < 6; k++) {
+      const tr = tb.insertRow(), w = h[0x744C + k], sh = h[0x7489 + k];
+      [String(k), LOOKS[k], k === 5 ? 'level × 10 + 1' : String(h[0x7458 + k]), String(h[0x7430 + k]), String(h[0x7422 + k]),
+       String(h[0x743E + k]), w === 0xFF ? 'nothing' : WEAP[w] + ' (' + h[0x7452 + k] + ')', sh === 0xFF ? 'no' : 'yes (' + h[0x45F6 + sh] + ')']
+        .forEach(t => { tr.insertCell().textContent = t; });
+    }
+    // Monsters: kind k, facing d, frame f -> first + f * step + d, doubled for Freddy (monster_frame).
+    const cm = $('gxMon'), FW = 28 * S, FH = 24 * S, cols = 4 * 6;
+    cm.width = cols * FW / 2; cm.height = 6 * FH; cm.style.width = '100%'; cm.style.imageRendering = 'pixelated';
+    const xm = cm.getContext('2d');
+    let tick = 0;
+    function drawMon() {
+      xm.fillStyle = P[11]; xm.fillRect(0, 0, cm.width, cm.height);
+      for (let k = 0; k < 6; k++) {
+        const first = h[0x746D + k], step = h[0x745F + k], n = h[0x7466 + k], f = tick % n, col = h[0x7474 + k];
+        const faces = (k === 0 || k === 2) ? 1 : 4;
+        for (let d = 0; d < faces; d++) {
+          let s = f * step + d; if (k === 5) s *= 2; s += first;
+          const x = d * FW * 3 / 2 + 2 * S, y = k * FH + 1 * S;
+          if (k === 5) { C64.drawSpriteMC(xm, mon(s + 1), x, y, S, P[h[0x7479] & 15], P[6], P[2]); C64.drawSprite(xm, mon(s), x, y, S, P[0]); }
+          else if (col & 0x80) C64.drawSpriteMC(xm, mon(s), x, y, S, P[col & 15], P[6], P[2]);
+          else C64.drawSprite(xm, mon(s), x, y, S, P[col & 15]);
+        }
+        xm.fillStyle = '#fff'; xm.font = `700 ${7 * S}px IBM Plex Mono, monospace`; xm.textBaseline = 'middle';
+        xm.fillText(k + ' ' + LOOKS[k].replace(/^(a|the) /, '').replace(/ that flies through walls/, ''), 6.3 * FW, k * FH + FH / 2);
+      }
+    }
+    // Death: shapes from $9080; sprites 4 (outline, colour 0) over 5 (fill, multicolour 2), 6 (0) over 7 (1, or 2 for the floor).
+    const db = atob(GX_DEATH), death = new Uint8Array(db.length); for (let i = 0; i < db.length; i++) death[i] = db.charCodeAt(i);
+    const dshape = n => death.subarray(n * 64, n * 64 + 63);   // the file DEATH, as loaded at $9080
+    const cd = $('gxDeath'), DW = 60 * S; cd.width = 3 * DW; cd.height = 76 * S; cd.style.width = '100%'; cd.style.maxWidth = cd.width + 'px'; cd.style.imageRendering = 'pixelated';
+    const xd = cd.getContext('2d'), DX = [120, 124, 128, 130], DY = [113, 108, 100, 92];
+    const pair = (a, x, y, fill) => { C64.drawSpriteMC(xd, dshape(a + 1), x, y, S, P[fill], P[6], P[2]); C64.drawSprite(xd, dshape(a), x, y, S, P[0]); };
+    function drawDeath() {
+      xd.fillStyle = P[11]; xd.fillRect(0, 0, cd.width, cd.height);
+      // Freddy: frame Y, shapes 4Y (at x $6C) and 4Y+2 (at $85), both at y $7D
+      let y = tick % 3; const ox = 4 * S, oy = 44 * S;
+      pair(4 * y + 2, ox + (0x85 - 0x6C) * S, oy, 1); pair(4 * y, ox, oy, 2);
+      // a monster: 2Y+14 at the table's place, 12 at $78,$7D
+      y = tick % 4; const mx = DW + 4 * S, base = 0x78;
+      pair(2 * y + 14, mx + (DX[y] - base) * S, oy + (DY[y] - 0x7D) * S, 1); pair(12, mx, oy, 2);
+      // the floor: frames 0,1,2,3,2 -> 22 + 2 * min
+      y = tick % 5; const fy = y < 4 ? y : 2, fx = 2 * DW + 4 * S;
+      pair(22 + 2 * fy, fx, oy, 2); pair(22 + 2 * fy, fx, oy, 2);
+      xd.font = `${5 * S}px IBM Plex Mono, monospace`; xd.fillStyle = '#fff';
+      ['by Freddy', 'by a monster', 'by a floor'].forEach((t, i) => xd.fillText(t, i * DW + 4 * S, 73 * S));
+    }
+    const go = () => { drawMon(); drawDeath(); tick++; };
+    go(); setInterval(go, 280);
+  });
+})();
+</script>

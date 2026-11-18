@@ -155,6 +155,20 @@ format, how to check the result against it, and how to read it back
   commonest case is wrong for every other. Make the template choose its
   sentence from the record's own bytes (`60-verify` says how such
   comments are sampled).
+- **A copy says nothing about what it copies.** A routine that copies,
+  clears or checksums a block reads every byte in it, so a description
+  written from it ("character $A0 of the copied set") fits every byte
+  and says what none of them is. Before describing bytes by the copy,
+  find the routine that reads them for what they are (a decoder through
+  its pointer table, a music player, a message printer), and describe a
+  block nothing else reads once, at its start
+  (`games/c64/wonder-boy-in-monster-land`, the screen loader at `$7130`).
+- **A comment says what the bytes are.** How the run checked a fact ("a
+  controlled load copied them; no instruction entered them in a
+  200-frame capture") goes in `agent-history.md`, and an open question
+  goes once, on the structure it belongs to: repeated on every record,
+  either one reads as an explanation and tells the reader nothing.
+  `check_listing.py` warns when either fills a listing.
 - **A pace in a comment is a measurement.** "Once a frame" or "every
   20 frames" is what `60-verify`'s "Time it" counts with checkpoints;
   until it has been counted, say what the loop waits on (a raster line,

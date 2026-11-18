@@ -11,7 +11,7 @@ for(const capture of observations.loads){
   if(sprite.first_frame!==undefined){assert(sprite.first_frame>=0&&sprite.first_frame<=200&&sprite.first_frame%10===0);assert.equal(sprite.executions,0);}
   const a=0xc000+64*sprite.pointer;assert.equal(a,sprite.address);assert(seen.slice(a,a+63).every(Boolean));
   assert.equal(crypto.createHash('sha256').update(mem.slice(a,a+63)).digest('hex'),sprite.hash,`load ${n} slot ${sprite.pointer.toString(16)} bytes`);
-  const block=symbols.blocks.find(b=>b.start===a);assert(block&&block.type==='Byte'&&block.end===a+62,`load ${n} bitmap extent`);
+  const block=symbols.blocks.find(b=>b.start===a);assert(block&&block.type==='Byte'&&block.end===a+63,`load ${n} bitmap extent`);
   const comment=symbols.comments.find(c=>c.address===a&&c.type==='line');assert(comment,`load ${n} bitmap description`);
   if(n!==2){assert(comment.text.includes(`pointer $${sprite.pointer.toString(16).toUpperCase()}`));for(const d of sprite.display)assert(comment.text.includes(`slot ${d.index} (Y=$${d.y.toString(16).toUpperCase().padStart(2,'0')})`));}
   for(const d of sprite.display){

@@ -90,7 +90,7 @@ The position check at `$A9D5` compares the enemy attack against a Ghostbuster in
 
 `$FEA7` calculates the second Ghostbuster’s weapon origin and facing direction from `$FC27` and `$FC07/$FC0F/$FC17`, parallel to `$FE30` for the first. `$C04C` removes one row from the selected character’s weapon-energy gauge.
 
-The adjacent stored sprite slots `$0DC0/$0E00` spell DAZED when drawn together. They match between the entry and play snapshots. The panel’s status handler at `$CB13` selects OK or DEAD and contains no branch selecting DAZED; the Graphics tab therefore labels that pair as stored data.
+The adjacent stored sprite slots `$0DC0/$0E00` spell DAZED when drawn together. They match between the entry and play snapshots. The panel’s status handler at `$CB13` selects OK or DEAD and contains no branch selecting DAZED; the Graphics tab therefore marks that pair as never shown.
 
 At `$A6CE`, the museum code compares a state byte and a pair of position bytes against stored targets. An exact match sets `$A313`; other cases choose one of two helper paths. One entry into the helper at `$B95F` resets Y to zero, while entry at `$B961` uses Y=4. The target is one of the two Ghostbusters. `$AABE` chooses a surviving player from `$8026/$8027`, saves that player’s position and room, and clears the alignment flags.
 
@@ -154,3 +154,21 @@ The second-player proton toggle at `$A080` tests `$9486`, the first player’s p
 The 64 zero bytes at `$0FC0–$0FFF` form the blank equipment-slot sprite. In a normal panel interaction, moving the cursor left for 88 frames and picking up the first item changed `$CA8F` from `$3C` to `$3F`. A VICE breakpoint then stopped at `$CCC1` with A=`$3F`, `$DD00=$C7` (VIC bank 0) and `$D018=$1B` (pointer table `$07F8`). The store therefore selects `$3F × 64 = $0FC0` for the slot image. A CPU read watch on this image is silent because the VIC fetches it.
 
 The scoped VICE trace logs the twelve CPU instructions preceding each watched access, including registers and cycle counts. Its executed read and write of `$02F0` both fired as positive controls. Raw traces and snapshots remain private in `work/`. A scripted floor/panel run did not enter `$B72D–$B747`; its watched neighbouring up-input wrapper did execute, so that observation is bounded to these tested movements rather than a claim of universal unreachability.
+
+## The partner checks
+
+Each of the eight movement routines keeps a check that refuses a step into the partner. In this load each begins with the crack's `JMP` over it; on the original disk the first instruction is `LDA $804A` (first Ghostbuster, at `$B7FB`, `$B911`, `$BA0A`, `$BB5F`) or `LDA $804B` (second, at `$BC92`, `$BD79`, `$BE43`, `$BF69`) (`../../facts.md`, "The original disk"). The check compares the two rooms, then the partner's halved X (`$B72D`) and Y against the walker's: `LDA partner; SEC; SBC #lo; CMP walker; BCS step` and `LDA partner; CLC; ADC #hi; CMP walker; BCC step`. Both pairs passing returns without a step. The constants are, as partner minus walker: up X −7 to +8 half-pixels and Y −6 to +1; down X −7 to +8 and Y −2 to +5; left X −8 to +7 and Y −4 to +3; right X −7 to +8 and Y −4 to +3. Both Ghostbusters are refused every direction when the partner is within 7 half-pixels across and 1 line up or down. Walking cannot reach that zone, since an approach stops at the edge of the box in front.
+
+The first Ghostbuster's right step at `$BBA4` changes room when `$8041` is zero and X is at least 314: it sets `$8041` and `$804A` to 1 and X to `$40` (64), keeps Y and makes no partner check (`$BBB5`). On the original disk that puts an arriving Ghostbuster on a partner who is still standing there, and both are trapped; the route is in `../../museum-trap-route.json`. In VICE, with the checks skipped, 10 frames of held up reached the up check 20 times and moved 20 lines (`$B83A` decrements Y by one), and 10 frames of right reached the right check 10 times and moved 20 pixels (`$BBD5` adds two).
+
+## Proton-beam sound
+
+Each beam update begins by testing its motion-origin flag (`$FE19` for the first beam at `$8726`, `$FE1D` for the second at `$8DCD`). A set flag requests effect 7 (`$872D`, `$8DD4`), clears the flag and hides the beam's motion sprite (`$FE96`, `$FF0D`). A clear flag charges weapon energy and, only when that voice's effect flag (`$E12F`, `$E130`) is clear, requests effect 17 (`$8758`, `$8DFF`) before choosing a new origin, which sets the flag again. In VICE on 17 November 2026, with the second beam switched on in play by a fire press, `$8DD4` ran on 62 of 63 frames and `$8DFF` once, at switch-on: effect 7 is restarted every frame while a beam is on, which keeps the voice busy, so effect 17 sounds only when the beam starts.
+
+## Shapes `$A0–$A7`
+
+The museum's sprite memory holds eight shapes at pointers `$A0–$A7` (`$6800–$69FF`), between the attack's shapes and the Ghostbusters' carrying-Oscar upper halves. No immediate load of `$A0–$A7` in the museum listing reaches a sprite pointer: the seven found set a character code (`$99E3`), an address byte (`$B05E`), position and state values (`$8049`, `$803B`, `$FC09`) or a loop count (`$0C5E`). The pointer tables the sprite paths read (`$9618/$9620`, `$C674/$C679`, `$A31A/$A330` and `$8029–$8030`) contain none of them. Pointers computed from a base and a frame number have not been ruled out.
+
+## The panel's gauges and the equipment panel
+
+`$8C–$93` are the gauges for each Ghostbuster's weapon energy and strength, in pairs, and `$94–$96` are three further gauges the panel's raster handler selects. The equipment panel uses VIC bank 0: its captured frame draws pointers `$3E`, `$3C`, `$3D`, `$3D`, `$3C`, `$3B`, `$39` and `$3A`, whose shapes are at `$0E00–$0FBF`. `$3B` is the one picture there whose meaning is not recorded.
