@@ -132,6 +132,43 @@ which the title takes the low six bits (`title_fame_page`, $7384).
   multiplexed down the screen for the objects (`irq_multiplex`, $5A9A).
 - Bosses are built from five columns of sprites repeated down the
   screen by the level's own raster interrupts.
+- A sprite's mode is set per object: bit 0 of `$0259,x` set draws it
+  in one colour, clear in multicolour (the multiplexer, `$5AC2`). The
+  engine's objects are multicolour; the single-colour ones are level
+  1-2's orb and bolt, 2-1's splash, and the bars of 3-2 and 5-1. The
+  shared colours are light grey and dark grey (`$576B`; level 1-2
+  changes them at `$85C2`).
+- The hero walking: sprites 0 and 1 multicolour in the colour at `$0870`
+  (red), sprite 2 single colour, stretched to double height, in the
+  colour at `$0871` (white). As the wheel: sprites 0 and 1 single colour
+  at the same place, white and light blue (`$0DEC`), one shape further
+  every frame. With the shield (`$BFFD`) the routine draws the hero on
+  every other frame and three shield sprites on the frames between,
+  their shapes from `$5BA2` read backwards, each held for three calls,
+  white while the timer at `$BFFE` is `$30` or more, then picked at
+  random from light blue, white, blue and white (`$5B9E`).
+- The hero's last 24 shapes, `$80`-`$97`, lie in the RAM under the
+  KERNAL ROM at `$E000`-`$E5FF`: the wheel's last frames, the explosion,
+  the bonus symbols, the container, the enemies' bullet and the shield.
+  The title's file writes its logo there while the title shows, and
+  `FT` puts the shapes back for play.
+- Only the first level of each world (1-1, 2-1, 3-1, 4-1, 5-1) loads
+  characters (`$C000`), their colours (`$AE10`) and blocks (`$B000`).
+  The other levels load a map and objects and keep the first level's
+  scenery: in each level's `entry.vsf` the blocks and colours are the
+  first level's byte for byte, and the characters differ in at most 65
+  bytes, the animated ones.
+- The ending: a multicolour bitmap of the tower (`$788F`, screen colours
+  `$97CF`, colour RAM `$9BB7`) with eight explosion sprites over it
+  (interrupt `$6D7D`, set up at `$6F2D`). All eight step together, one
+  of ten shapes every nine frames, then each waits a random time and
+  steps every five; after 50 explosions they stop. The first time sprite
+  0 shows `$84`, `$6C25` copies five runs of 344 bytes in all over the
+  top of the picture.
+- The title's logo: 18 runs of bitmap, 2,384 bytes for 11 rows of 40
+  cells, built at `$E000` by `$7921`; at line `$88` the title sets
+  `$D011` to `$7B`, which the chip draws black, to hide the change from
+  bitmap to text (`$6D29`).
 
 ## Mechanics
 
@@ -180,6 +217,29 @@ which the title takes the low six bits (`title_fame_page`, $7384).
   the ending's tunes share one module player (level 3-3 $6C00, title
   $9BD0, ending $A400), the same code moved; level 3-1 has a smaller
   player of its own.
+- The ending's tune runs a sound program for each note, one byte a
+  frame. Program 18 ends with `$E8` `$15`, go on with program 21, but
+  the ending's file holds programs 0 to 20 only: the 22nd place of the
+  table at `$B732`, `$B75C`, holds `$1808`, inside the engine's screen
+  copy (`shift_up_cc00`, `$17C0`) and colour copy (`$1866`). A voice
+  then plays the engine's code from `$1808` up to `$18C6` as notes and
+  commands. From the tune's start, voice 1 reads it at frames 14 to 199
+  and 298 to 481, voice 3 at 395 to 576 (the page test). *live*: in
+  VICE, from the ending's `work/play.vsf`, a load watch on
+  `$1808`-`$18C6` counted 413 reads in 1,500 frames, and twelve stops
+  out of twelve were the player's read at `$A8EE` with `$F4` = `$1808`;
+  the snapshot holds the engine's bytes there unchanged.
+- The loading tune's player (Romuzak V6.3) EORs its credit line,
+  `$8209`-`$8255` in its own copy, and compares the result with `$56`
+  (boot `$D9EE`); on a mismatch it keeps the wrong value at `$808F` and
+  adds it every 1,024 frames to two bytes of each voice's state
+  (`$D9D5`, `$802C,x` and `$802F,x`). With one letter changed (ROMUZAK
+  to SOMUZAK), the tune first differs at frame 769 and starts about a
+  quarter of the notes over the next 3,000 frames (simulator). *live*:
+  a byte of the line changed in VICE while the tune played set `$808F`.
+- Every tune and effect on the pages was held, call for call, to the
+  game's own player run on the listings' bytes (`test_pages.js`):
+  16,154 calls and 264,098 SID writes for 40 buttons.
 
 ## The listing's error rate
 
@@ -213,6 +273,14 @@ the module player and the engine's eight scroll routines for what is
 drawn in characters. The sample is over the mark, and the listing has
 not had a full audit.
 
+Building the Graphics tab found nine more comments wrong, outside the
+sample: eight read a sprite's mode backwards (bit 0 of `$0259,x` set is
+single colour) in levels 1-2, 2-1, 3-2 and 5-1, and the engine's
+`$0D5C` gave the wheel's sprites as multicolour and the shield's
+colours wrongly. All nine are corrected. Reading the ending's tune
+corrected one more: the table at `$B732` said that no row names its
+22nd place, which program 18 does.
+
 ## Live tests
 
 Run in VICE 3.10 (vice-mcp), driven frame by frame from the snapshots
@@ -239,4 +307,6 @@ named in `orientation.md`.
 - *live* The whip with its length ($036F) poked: at 40 and at 0 it
   reaches the screen's edge from the same place (20 steps), at 16 it
   stops at 16 and at 2 it is a stub of 2.
-
+- *live* The recorded frames: level 1-1's frame drawn from its memory
+  and video-chip writes matches VICE's screenshot in 104,447 of 104,448
+  pixels; the loading picture in all 104,448.

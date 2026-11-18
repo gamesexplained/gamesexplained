@@ -39,6 +39,7 @@ const { start } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
     // a tune or effect button of a SID player: pressed, and its clock running
     const plays = async (root, button, name) => {
       await button.click();
+      await button.evaluate(b => new Promise(ok => { const t = Date.now(), w = () => b.getAttribute('aria-pressed') === 'true' || Date.now() - t > 3000 ? ok() : setTimeout(w, 50); w(); }));
       assert.equal(await button.getAttribute('aria-pressed'), 'true', name + ' is pressed');
       await page.waitForFunction(r => { const t = document.querySelector(r + ' [data-g="time"]'); return t && t.textContent !== '0:00.0'; },
         root, { timeout: 5000 }).catch(() => assert.fail(name + ': the player\'s clock does not move'));
