@@ -1,4 +1,4 @@
-## next · 2026-11-17 · Summer Games (C64) · unorig with Claude
+## 0.0.359 · 2026-11-17 · Summer Games (C64) · unorig with Claude
 
 - **A flag that a comment leaves open is usually settled by the
   instruction before it.** Summer Games' diving adds to the difficulty
