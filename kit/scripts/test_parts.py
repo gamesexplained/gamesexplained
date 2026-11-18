@@ -403,6 +403,19 @@ class Parts(unittest.TestCase):
             self.assertEqual(away[(0x4012, 0x40FF)], 'Park')
             self.assertEqual(away[(0x4100, 0xFFFF)], 'The engine')
 
+    def test_the_bottom_part_keeps_its_ranges(self):
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            f = g / 'parts' / 'engine' / 'part.json'
+            f.write_text(json.dumps(dict(json.loads(f.read_text()), ranges=[['$4000', '$407F']])))
+            ps = P.parts(str(g))
+            by = {p['id']: p for p in ps}
+            away = {(lo, hi) for lo, hi, _ in P.elsewhere(ps, by['engine'])}
+            # the levels write $4000-$40FF; the engine's own bytes at $4000-$407F stay its own
+            self.assertEqual(away, {(0x4080, 0x40FF)})
+            # and a level over it still owns all of its own load
+            self.assertNotIn((0x4000, 0x40FF), {(lo, hi) for lo, hi, _ in P.elsewhere(ps, by['park'])})
+
     def test_the_layout_is_checked(self):
         with tempfile.TemporaryDirectory() as d:
             g = fixture(d)
