@@ -81,6 +81,10 @@ Sample of seed 2611: 60 of the 396 comments, checked by one checker on claude-op
 
 Sample of seed 2613, drawn as the maintainer's check at the contributor's request (unorig): 60 of the 396 comments, checked by a fresh checker on claude-opus-5-5 that wrote none of them. Eight were wrong in a detail (13.3 %, 95 % interval 6.9 % to 24.2 %), over the mark of one in 30: the title screen's fire wait (release, then press) and its name entry, which never returns (`$11A0`); the ground objects' record search, which runs from record 3 down (`$1670`); the approach rate's two forms and what `$32` counts (`$1720`); the aircraft's random change of up and down, said to be a turn every 32 passes (`$1AD9`); the strafing run's flak test, which tests sprite 7 (`$2CD0`); a title-screen field's extent (`$4023`); an explosion's colours (`$7000`); and the range of a result message (`$8BE0`). All eight were corrected. A full audit of every comment is needed before the game can be Silver.
 
+Full audit at the contributor's request (unorig): all 397 comments, in three address ranges, each checked by a fresh checker on claude-opus-5-5 that wrote none of them, and every claim in this file. 43 comments were corrected, most of them lists of a byte's uses or callers that missed one, counters said to count objects where they count moves, and colours and text extents; 4 claims here were corrected.
+
+Sample of seed 2618, after the audit (unorig): 60 of the 396 line comments, checked by a fresh checker on claude-opus-5-5 that took no part in the audit. Three were wrong in a detail (5.0 %, 95 % interval 1.7 % to 13.7 %), one over the mark of two: what the aircraft move counter `$39` counts while an aircraft explodes (`$1AD9`), the codes the digits use (`$4C00`), and the hits that select the "heavy damage" message, 48 to 63 (`$8BC0`). All three were corrected.
+
 ## Live tests
 
 - Controls, 13 November 2026: as above.
