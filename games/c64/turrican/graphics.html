@@ -1,0 +1,241 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turrican</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+</style>
+<style>.tu-bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:14px 0}
+.tu-bar label{display:flex;gap:8px;align-items:center;font-size:15px}
+.tu-cv{display:block;max-width:100%;image-rendering:pixelated;border-radius:6px}
+.tu-black{background:#000}
+.tu-row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.tu-list{columns:2;font-size:15px;margin:10px 0 0;padding-left:18px}
+.tu-state{font-size:14px;color:var(--muted,#8a8f98)}
+@media(max-width:650px){:root{--gx:20px;--h1:34px}.plate{padding:14px}.tu-list{columns:1}}</style><!-- tabs -->
+<header class="hero"><p class="eyebrow">1990 · Rainbow Arts · Commodore 64</p><h1>Turrican</h1><p class="sub">The hero, the enemies of all thirteen levels, the title, the ending and the loading picture, drawn from the bytes of the game’s own files.</p></header>
+<main class="wrap">
+<section id="hero" data-part="engine"><p class="fig">01 · the hero</p><h2 class="t">The hero is three sprites, drawn by one routine every frame</h2>
+<p>Three sprites on top of each other make the hero. Two multicolour sprites in red make his top half and his bottom half, with light grey and dark grey as the colours every sprite shares. A third sprite, in white, has one colour but is stretched to twice its height, and draws the outline over both halves.</p>
+<p>The viewer runs the engine’s own drawing routine at <code>$0D5C</code> on the kit’s 6502 once a frame, with the engine’s bytes from its listing, and draws the sprites from what the routine writes into the video chip. Walking, the hero steps through seven shapes, one every fourth frame, from the tables at <code>$1218</code> (right) and <code>$121F</code> (left). Standing, jumping and crouching have one shape each way. Rolled up as the wheel, he is two single-colour sprites at the same place, white over light blue, and turns one shape further every frame. With the shield on, the routine draws the hero only every other frame and three shield sprites on the frames between, so both flicker. The shield is white until its time is nearly over, then it flashes in light blue, blue and white.</p>
+<div class="plate"><div class="tu-bar">
+<button class="btn" data-hero="walk" aria-pressed="true">Walk</button><button class="btn" data-hero="stand" aria-pressed="false">Stand</button><button class="btn" data-hero="jump" aria-pressed="false">Jump</button><button class="btn" data-hero="crouch" aria-pressed="false">Crouch</button><button class="btn" data-hero="wheel" aria-pressed="false">Wheel</button><button class="btn" data-hero="shield" aria-pressed="false">Shield</button>
+<button class="btn" id="hero-face">Facing right</button></div>
+<canvas class="tu-cv tu-black" id="hero-canvas" width="512" height="336"></canvas>
+<div class="tu-bar"><label><input type="checkbox" id="hero-apart"> Show the three sprites side by side</label><label><input type="checkbox" id="hero-low"> The shield running out</label><span class="tu-state" id="hero-state"></span></div></div>
+</section>
+<section id="shared" data-part="engine"><p class="fig">02 · explosions and bonuses</p><h2 class="t">Explosions, symbols and bullets are the same in every level</h2>
+<p>After the hero’s shapes, the engine keeps the shapes that every level uses. An enemy that is destroyed plays the seven explosion shapes four frames each, from white through yellow and orange to red (the colours at <code>$5C0D</code>).</p>
+<div class="plate"><canvas class="tu-cv tu-black" id="boom-canvas" width="192" height="84"></canvas></div>
+<p>A shot container (<code>$92</code>) leaves a bonus symbol behind. The container flashes through the greys, a colour a frame. The bullet (<code>$93</code>) is the one the levels’ gunners and turrets fire. The four weapon and shield symbols are one shape, told apart by colour (the table at <code>$5EFD</code>).</p>
+<div class="plate tu-row"><canvas class="tu-cv tu-black" id="symbols-canvas" width="450" height="180"></canvas><canvas class="tu-cv tu-black" id="box-canvas" width="192" height="84"></canvas></div>
+<ul class="tu-list" id="symbols-list"></ul>
+<p>The messages after a death, TIME OUT, GAME OVER and CONTINUE with YES and NO, are three sprites each, stretched to twice their width, in light green. They are kept with the engine’s code at <code>$6301</code>. When one is needed, the engine swaps them into the place of the wheel’s last two frames and the first explosion shapes (<code>$6198</code>), and swaps them back afterwards.</p>
+<div class="plate"><canvas class="tu-cv tu-black" id="message-canvas" width="288" height="144"></canvas></div>
+</section>
+<section id="levels" data-part=""><p class="fig">03 · the levels’ sprites</p><h2 class="t">Each level file brings its own sprite shapes</h2>
+<p>Sprite shapes <code>$98</code> to <code>$FB</code>, at <code>$E600</code>-<code>$FEFF</code>, belong to the level: its enemies, its boss and the pieces they break into. Each level’s file loads its own shapes there. Level 3-2 loads fewer than 3-1, and the last of 3-1’s shapes stay in memory under it.</p>
+<p>The shapes do not say which colour they are drawn in, or whether they are multicolour: each enemy’s code chooses both when it starts. Most enemies are multicolour, with light grey and dark grey shared. A few are single colour, such as the lightning in level 1-2, the splash in 2-1 and the bars spat out in 3-2 and 5-1. The sheet draws every shape of the level one way, and the controls change it.</p>
+<div class="plate"><div class="pick"><button class="step" data-for="sheet-choice" data-step="-1" aria-label="Previous">‹</button><select id="sheet-choice"><option value="0">Level 1-1</option><option value="1">Level 1-2</option><option value="2">Level 1-3</option><option value="3">Level 2-1</option><option value="4">Level 2-2</option><option value="5">Level 3-1</option><option value="6">Level 3-2</option><option value="7">Level 3-3</option><option value="8">Level 4-1</option><option value="9">Level 4-2</option><option value="10">Level 4-3</option><option value="11">Level 5-1</option><option value="12">Level 5-2</option></select><button class="step" data-for="sheet-choice" data-step="1" aria-label="Next">›</button></div>
+<div class="tu-bar"><label>Drawn as <select id="sheet-mode"><option value="mc" selected>multicolour</option><option value="hr">single colour</option></select></label><label>Own colour <select id="sheet-colour"><option value="0">black</option><option value="1" selected>white</option><option value="2">red</option><option value="3">cyan</option><option value="4">purple</option><option value="5">green</option><option value="6">blue</option><option value="7">yellow</option><option value="8">orange</option><option value="9">brown</option><option value="10">light red</option><option value="11">dark grey</option><option value="12">grey</option><option value="13">light green</option><option value="14">light blue</option><option value="15">light grey</option></select></label><span class="tu-state" id="sheet-state"></span></div>
+<canvas class="tu-cv" id="sheet-canvas" width="560" height="600"></canvas></div>
+</section>
+<section id="title" data-part="title"><p class="fig">04 · the title</p><h2 class="t">The title’s sparkles grow from a dot into a star and fade</h2>
+<p>Eight sparkles twinkle over the logo on the title screen. Each steps through ten shapes, one every fourth frame: nothing, a dot, a small cross that grows into a star, which then breaks into a ring and fades. Then it starts again at a new place. They are white, in multicolour with light blue and blue (shapes at <code>$8BD4</code> in the title’s file).</p>
+<div class="plate"><canvas class="tu-cv tu-black" id="spark-canvas" width="480" height="144"></canvas><span class="tu-state" id="spark-state"></span></div>
+</section>
+<section id="ending" data-part="ending"><p class="fig">05 · the ending</p><h2 class="t">The ending breaks the top off the tower in its biggest flash</h2>
+<p>The ending shows a picture of a tower, a multicolour bitmap from the ending’s file, with eight explosion sprites over it in white, yellow and red. At first all eight step through the explosion’s ten shapes together, one every nine frames. After that, each waits a random time before it starts again, and steps every five frames.</p>
+<p>The first time sprite 0 shows the explosion’s brightest shape (<code>$84</code>), the ending copies five runs of bytes, 344 in all, over the top of the picture (<code>$6C25</code>). From then on the top of the tower is broken. After 50 explosions the sprites stop, and the scrolling text begins.</p>
+<div class="plate"><div class="tu-bar"><button class="btn" id="tower-play">Play the explosions</button><label><input type="checkbox" id="tower-broken"> The broken top</label><span class="tu-state" id="tower-state"></span></div>
+<canvas class="tu-cv" id="tower-canvas" width="640" height="400"></canvas></div>
+</section>
+<section id="loading"><p class="fig">06 · the loading picture</p><h2 class="t">The loading picture shows the hero in front of an explosion</h2>
+<p>The picture shows while the game loads, with the loading tune. It is a multicolour bitmap that the boot reads from sectors of the first side, together with the tune. The game loads over it, so no listing holds it. The page draws it from one frame of the video chip, recorded while it showed. Manfred Trenz’s initials, MT, are at the top right.</p>
+<div class="plate"><canvas class="tu-cv" id="load-canvas" width="768" height="544"></canvas></div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script id="tu-levels" type="application/json">[{"name": "1-1", "part": "level-1-1", "over": null}, {"name": "1-2", "part": "level-1-2", "over": null}, {"name": "1-3", "part": "level-1-3", "over": null}, {"name": "2-1", "part": "level-2-1", "over": null}, {"name": "2-2", "part": "level-2-2", "over": "level-2-1"}, {"name": "3-1", "part": "level-3-1", "over": null}, {"name": "3-2", "part": "level-3-2", "over": "level-3-1"}, {"name": "3-3", "part": "level-3-3", "over": null}, {"name": "4-1", "part": "level-4-1", "over": null}, {"name": "4-2", "part": "level-4-2", "over": null}, {"name": "4-3", "part": "level-4-3", "over": null}, {"name": "5-1", "part": "level-5-1", "over": null}, {"name": "5-2", "part": "level-5-2", "over": null}]</script>
+<script id="tu-loadpic" type="application/json">{"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[144,2,168,2,192,2,216,2,0,0,0,0,0,0,0,0,0,59,0,0,0,15,216,0,59,112,241,0,0,0,0,15,240,240,241,242,243,244,240,250,250,250,250,245,246,247,252],"cia2":[128,63],"cpu":[47,53],"writes":[[249,36,53265,51,51],[273,26,53265,187,59]],"colour":"AAAAAAAAAAAAAAALCwAAAAAAAAICDwsAAAkCAgAADwsAAAAAAAEPDwAAAAAAAAACAgkMCwsAAAICAgICAgwLCQwCAgIAAgsGBgIAAgAAAAAAAAACAgAPCwYGCwICCwYPBg8GBgsGCwwGBgICAgILBgYCAgICAAAAAAICCQIGBgYLCwICAgsGDAsPBg8LBgYIBgsMBgkCCwYGDAwCAgAAAAACAgYGBgYGAgYIBgYCDgICAg4CCA4OCg4KBwYGBg4GBgwGCAICAgACAgIMDAYMDwsOCg4OCAYMAg8GCwcGBgcGBgcGAgcODw4OBg4CAgIAAgICAgIODwILBgcGBggGDAgIDAEBBgsBAQYBDwYPBg8GDw4OAgICAAICAgIOBgsCAgwGBgsICAgKBwcBAQ8BAQ8BAQ8PBgYLBgYLDgICAAACAgICBgYGDwIMAgcHAQcKCAcHAQELDgcBBwcBBwsCCgYGAgYGAgAAAgICDwYGBgICAgcHBwcBAQcBAQcHBwsHAQEBBwcHAggPDwIGBgIAAAIMDAwLCwICCAIHBwEBAQcHCwcMCwcLBwcBAQcHBwoIAgICDwwLCwAAAg8MAgICAgIKBwcHAQcHBwICCwsMCwEHBwcKAgICAggCAg8LCwsAAgICAgICAgICCgcHBwcHBwcHBgYLCwsHBwcHAgIIAgIKCgICAgIAAAICAgICAggCCAICAgcHBwcHCwwMCwsLBwoIAgoCCAICAgICAgICAAACAgICAgIICAoHCAIHCgcIBwsLCwsLBwcIBwcHBwoCAgICAgICCQAAAgACAgIIAgcHBwcHAQEHBwoLDwsLCwoIBwEBBwcHAgICAggCAgAAAgwAAgIIBwcHAQEBAQcHBwgKCw8MDwYHBwcBAQcHCAgCAgICAgkACQkFAgICAgIHBwEBAQEHBwoKBwcPDwsLCwcHBwcKCgICAgICAgICAgIFDA8CAggIBwcHAQEBBwgHBwoLCwsLCwsHAggCAgICAgICCAICAgILDAUMCQIICAcHBwcBAQcHBwcHDAsIDA8LBwICAgIJAgICAgICAgkICw8LDAwCAggICAcHBwcHCgoKBwcMCAkLCgcCAgICAgICAgICAgkCBQ8FDAUFBQICAggHBwcICggCCggHAgICBwsKCgcCCAICCQICAAILDA8FBQsLCwsFAgICBQcICAgLCAoCCwsCAgILBwcCAgICAgICAgICAgsLCwsLCwsKBQoJAgUICAgLDAUKCwsLCQIJCQsHCAgCCAoCAgIPAgkJCwsMBQUFCAUIDAUFBQsFCwsFBQsKDwULAgsLBQsLCwIPDAwFAgkFCggPCQAADw8PDwAAAAAPDw8PAAAAAA8PDw8AAA==","ram":[{"a":50816,"b":"/Pz+/v7+xsbAxsbAxsbA/v78/Pz8wNjAwMzAwMbAwMb+wMb+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":50880,"b":"fHwA/v4AxsYAwMAAwMAA/PwAfn4ABgYABgYAxsYA/v4AfHwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":50944,"b":"fPwc/v4+xsZmwMbGwMbG/P7+fvz+BsDGBsDGxsDG/sDGfMDGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":51008,"b":"fP4A/v4AxsAAwMAAwMAAwPwAwPwAwMAAwMAAxsAA/v4AfP4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":52224,"b":"AAAAAAAAAAAAAADPwAAAAAAAAAAJa88AAAAJCQAAy88AAAAAAL+xsQAAAAAAAAAJufv7zwAAAAAAALC5ifssALmJqYkACfm8vAkACQAAAAAAAAAJCQC5n7/Lz4mJ+ftry7a/+8bPbLmcwokJiYn5/CvJiYkJAAAAAAkJ/PnPy79iz7n2xvzga8Zr68Yo/rgp72yyLCxplvz78mmJiQAAAAAJ+c+8z8v7/L+y8uv8YLm8/muKovq6h/a+q+/r+2v+7Pu8KYkJCQAJCflvuf5rtvxse/prL+C5+cbLbKF/68v7e6vva/JrLr/L/rKJiQkACampnPlvy7mf/sb86/LPti+8+7/38Ra39st7dr9i6yvvvmu5iQkJAAmpqQn56ykJn2/LvGGvrKuHqMH++7H7/hy898d2y7zy/Cvsa5sJAAAJiampn+vPyfsvq6gadqF4p6Eefrzvt6F/Ghp6H6e8vPz7y8+bCQAACfn5ac/7vLm5iqihoRp/ehp7px4a6/4bf3p6GhCoqazKy4/8+7kAAAD7v78syZuJKYqoGnJ6fxqhcRu3fIvPvBhwcBqoqCmpqcm5vG/8AAAAALy/sAkJCYlyqKEaehoeGniLwix/z3yhiqJyiYmJiSqJCbz8AAAACQkJCQmJiYmJkqmpKqIa8ahsq7zGb8+xHqIqiokpiYmJiQmJiQkAAAmJiYqJiSmJKZqJihqKGqih/Pv7z8/HGhehqZKJoomJiQmJqQkJAAAJCYmKiYkqoniop6iocaGpqHzPz8/Aq6KiGqGhonKKiYmJiYkJAAAAAAAJCYkqiqGhoKGhp34aqId8y8/GbCeiKn5+GqGhqYkJiqmJiQAAAFAACYmiiqKocHBwfxoaqHqJdm7767yrohpwcBoaeimJCQkJCQAAAAC8iYmJiqeiGnBwAHAfGoeJqGvra898fBqooaF4iYmJiYmJiQkJCbnJ+7xZiaenoaEQenBwGqIaqIfKbuLPwHyKiimJiYmpqYmJoomJCcmVtbm5tYmpp6gaGhpwehioqKiKt+yaurx6qImJCakACQkJiYmJm7y8z8vJv/tZiSmpp4qKqIqKeImHqLG5oip6K6uJqYmJiYmJCQkJycu5m8u/+8u8uImpeiqoqIqneKmJKKeriampKsK3cqKpKomaogkJAAnJv8vLy/z8/F+4iYmJi6Kap7nJmpKJKompCamKvCp6iYmJqampiQkAAJwpjJz8z1lbq7m8iSuSKblfubmJicmJuMkqus+iKbm5pym5ycmbm4oLxcBbubm5ybwpufv7v/ybXM+5mMmbuMvFWcnPyYnJyZy5+1mcWbwpub+8vA=="},{"a":53240,"b":"GhscHQ=="},{"a":57344,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBRtUAAAwQMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACIAwMODDgx5cQAwEDwEDwENwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAoAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAACAQGBQQEBA4AAAAAwEAwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACA8ODAwIBAANKLjISAwEAO0gICAgMBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAgKggAAAADAwwQYYYAMOGGCCAwoM/BDwQMADAAwAMADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUAIIAgojCikGoICg4rhf/1dwXnV+fn4eBuywwAADDDDAAAAAAAAAAwAAAAAAAggCKygqiiOvz6sqrrr+3197/rqgoOi66LqoIAAAAAAAAAAAAAAAAAACAgIHBQUFhSWNIQQIAQIwzMA8AAAAAECAECAAAAAAAACAgAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgsOAAAAwKDA6C4AAAAAAAAAAAAAAAICCietABQBRluswAACGaRDMAPP/4AAAzPOPfqUPBDwQMADAAwAIAKKKwsrDwACiKig6PLqIAAAAACAgwEIBCYanWN8swACA4uOrbilgFilAc029NgAUYNHDR40eqC0RME9z///BSYbnGB/v/7Pf9Q8kPBCwQIHLBCzTPN/wIDwbjoaXxwAMNDKQgoKKlpabGOwjL+zqmpqWtoUNvWgzrDC4PDA8KAAgCACAigCACAIKorovvgICwsiCggAIvnhgeGhgQsg88yzf3xPf38gICEgyfnJOSCIqLAouLT0ICoLLTmlvy4g6KJ6fOquqAAAAAAAgCCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMCi4LCwAAAwILguDgDMAA6BYZEOA+LAAACVagAAABBmiQAzzPmGCDDz/P/fYzzzz///9/LR98cPDAwMIK7BAwQcLFy9cOHD5/Ln97fz8DzTX2xPbU8Pz8c3+cH6cNBjUZIeEhIf8//9/9/9V1ta27vr+/r4uQc0HBwc3B8fntjQ0NLQ2N/97+3vZe1lZp7lT40PDwcg8MDDAAwAMefx8fHxseGx709PT09fb29isqq6q777v/v7+/nb+Vl5V2fnNwcLCws4Dg6HgeBkYWGVkqbrKPvL98U1xcV52Vqoooir77/alEQMRUcFysDKx/f1xfX19fX/r+/v7+////p6elpaWl5eUiAMjCcjoeDiIqs6+Lve/9oICgiOD4emwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAAAAAAICgACIICi6ofFMg4+zv498/8////75+OTg//9fby8vLy/09PT09PT01B4eHq5+fn5+Dy8/PT02Nhlsk79P/////2tra2tra1pqn5Ofn5+fn5/6Pv7+/nbWduEhLfHBPfH9f///////9X9BQGBAaGJsakJOAwwDAAMA9vb29vb2xjb+9v7e9vZe1jP8X1+vHXY1DCMqr/f911Wfn5+fl5+fn/b29vb29vb2fX/Xd1/7/u9vf39/f39uepSdn5+fn5+fqSmpa1l1X92fvb+3lbWVl/P/f/1fVnpo////66eHBwdYWFh4WNh+9p8fFxcXFxYX/3//1352Xlal7e3t6fn7+w0xzXG9jb2/X39dfn12Wq766KDIgiiKowAAACCIq6A+AAAAAAAAgIAAAAAAAAAAAAAAAAACAA4AAgAKAgMiCwu5ren5sbnNiQBB16v7/Pz80MBBAAQAEgof335/e396bnhwcHBwcvPr6enl7NTw0MDjcoGBgY2NsXd99/////99q7+3r7U9PTefn5+fn5+fn/7+/v7+ft5e1lLW1vbW9vZ99//f////82hqYmprbfx0gIAAQDAMMD0ODg4OHr7nR/79///P/8wDAguo/GDwgMNVXX3////7/2pva29vb2Nv2Xn5/j7zzgz//////78/P39/f39/f3985eXl5eXm6+//f///66Ojg5WVt5Wdt7+/YGBgYGNsb28GBimpqampqf7+/v7+9t11Ph5eXg8Pn4/9/f39/////359nZ+vj4uLf39/f3t//qtqampqatra2rLI8uCi6KDgvv6/vz6viy4gwICA4KAggAAAAAAAAAAACCCiqyoDCwqCK7q/9/3V9aiK6v/+f1996DhOUFRV9P+KKiqiqumx+Z+9v7+/////x+3e9PjQ4EBAAQIGChooQvLCxkYWVhYWqu7//v///3M/P79/f5+dpV9fX29vbL/MXn7+/v7K+Aj5ufXl9NjQ0P/MvLNibVhYsJDAQQEHBR0Wdt723vb+/QoKCgoefv3XQ2bc2PDw8PIBBQ8fP3///+u67///////lJeVlZWlpam8MPDAw8HNxSo6e/7/////alBYVFZV1dX/zT4EOBDgQoEJDSU1tf396vr6/v5/f1/09P39/8//s6urq6trb/119ff9////M/+Pn4+fn5eXl1VVVddd97+3RkJRkZCRkJH3/f///7+/v9ra9vb09vX+iKKIAIgCouoIAogAAKDAogAAgAAAAAAAAAAAAAAAAAAAAgAAAAAACPW/vS+7IiqL33//+ui44rr/7oooAoCg6KmJqYcnhweHVlZe1nb+3v7AAwAMADAAACACCiIKAgAAfv5+/v9/cz/V5PX4vf4vPzbPAA022GCA8A7pkAAAAAV/8wIDAgP+quDj7+93ZZa5qOjo+Pv/f1U5pSvPDet7e/1/XreX9eV9t3//d1+XX5fT1vb///7//v/////////////////9/Z2noqOsXHTVUK+///+/vx8H//////////9fX1dXVVVVVYOHj5+/v///+u66/u/77uqvq6uqqqqqqury+P7+f39f/zzwDwE22GDPM8yvYCsYGunp+Tk9DQ8Hf39/f39/T3/i6Pr4+Dn5+fX1/f3+/j4+/v7+9v1/VV33/f33vb20tbgowIAgIIAAAAAAAAAAAAAAAAAAAAAAAAgqri6oIIiCLasvKrKiOK7/39fX9d29//r6fvr+fvruGy9vby8vb7/4+Pj2/v3/zwAAAAAAQanVAgACCx300EC/9dRwAAAACltfRldVVVVVAAIJJbf3/f+v/9dfV5VdZ9XV9f2//6//VdX19f1/X1d33/33/f+/q/tqq+7/XldV+3rW/nXdd+39V///f/5++vX99d3VV3/f/////39fX39tycjS8vT8/c812WZW1jY1Tmpqatra9vbq/v7//////////fX1/X19Xfff/f////////76+u///2WVpZVVnZ9f+v7+////f3/AwMDDzvmWpRoaWvr6/v7/JJCAgIGDh49zT0xDUGRZVjrKDjIOMgJC+fn9/fH98c3//X9/f3+zv6Dg4OD4+Pj5gAAAAAAgACAAAAAAAAAAAAAAAAAAAAAAAgACAgAACAKrv8qggggCJe6rjiqoggVaqquHLbHEERCz/zPMAM0GGP88wzzAXKYJ/sUIFCBQgEBAAAEGChpquBprq6O7Disq//773m192tVmVZedX393X1V33fX9/7+v/39+/////+/9//v7fv/ff///f39fX19fdf///f/VVVb/V1Xf///6rv//7+dlaWtpquv++/+///3V1V9ff////13X1///v6/7Obn5/f39/v9bW2ebsM8/2///vb/1tb+/fX9fX39ff3929f3//////32dX1f//f3///9/f///f37///fd1dff//31/f/9////X3dd/V9+Wn6VVVXV9f319///f5+nqaqqct71/f39fZ3yAj7xH/T//398T3N/Y1xQ/v7+zv4/88+AiKDg+HhgXAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAsODw8/JwkCQJBs2/f9/78AAAADw71s1CCwgMADDAAw/ff391cPAyACCQklIZA9VOh44KiAAAICK7+fJaW9v+f9fbZ2d3t7+n+fp2dlmWVX/93//7+v///3f/31/XV9fff//3//f19ff/319f31/f/7/vru///7f1VXd9////76X19fa2unlZVff3+/v6+vr6qnv799//HUVf2/88Dw88//////v7+/v6dn69l5dXXNf1+fn09PT5/1VfX9/fX9/////////3/9//3///fV1ddf//7f3/76/v9//31fdVZm/f3//VVtVWrWdtXW2lZaZrXdvfe9ry0vX3df/n74/33l+aKCIwqiwP/r7viooICw8PDgcGx7Pj8UQAAQAACD6ywLAgsssMAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB6HgcBAAAAAPDw8LFgFAAAAEAAAAAAAAACAAAAAAACAAgCAAAAAACAAigKAgAAAgCmpaaVNaaii7+l6/n2t/2//3fp3ff//39//V/+3///9fXV/f/tv629f//9/9/X1VXV9fff/d//////f/399fXV1ddfe3/+//9XV/r+f797pb8cz/BwwDzTQ0hAc3F98DEwxICz87/D49X15+b2uuo+31OcnJycn5yNDS0tLS8/P9////33/f+//////7+uqvv///X3VWlVdX/3ftv+6q661dX66qKAKKBXf9e9LwspClRqeFjY+tzoJScvLYkrIoi/7uu/9fVXHmpceHrwXqSfyLq+LgggAAA/LxsGAQAAAGBfX1+f7zoAAAMMMADAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAIIAAIAAAAAAiCovgACIAAiiyoMAAAIggqLC8MgIKCIgCig4AgCAAIIAgoLACKKouq/8/sAAICA4KKK4gsiAooCgCDo77+7bmtaFQHff11VVVWVql3//9d1lWqp///7v++7W2v39931VVra1f///+2trbW166+vr7+////9///3f7+////++ebg9dqmv1/X963LvqwJhMHg8Pj/8TTPcg4J5mrf/vaml19zzz9XX3xccMBzcz4/f39/f//+f19fV9fX9fXV9////f993/67/ur66aWZv7e9zv72nbf6Vmpeenj6+ggioCiKvmVUuq6KCCCogtgAAgqCAgAAAJ9tdZYogAAA2tJgAIAAAAACAAMLCwsCAgiw831/Xf//AOOAw/pf3/8AAMCg6Pio4AAAAAAAAAAAAAAAAAAAAAACC6IrKgsKIvr8/t/+966KKi4Kyy+vtyU9B////3vtq+CIICKI5Mv1AgIAAgCAkGBVVZWfH52Xnftzf331Za1/VnX9r+uv53cBUDT/113qqigCAAB8f1SVDQ02NgY2+zavv7319fX3v/rq7vr66//v9bfX19ff3l79/fX79XddZn9f9////35+2tbW29vrq2t2+9r+vp6e3A53V1bevigAcFqlamnVz8BennJxccEDA3Nyfv7Kyso6+//+/37e/rql5an5ue397ZV9X7+ftZWWXr744q9u3XkaFmm67v/+/+vt/9//f/V1+nd3/+ura1s8+miq6KuelwAAgKL4X+bWCKKIqLL319kAiCAAIADCogAKqzq/vfXVq4ro/v9+Xl//rooCgAIgwKCAiAAgAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAqAIAAAAAAAAtLwkrCgIAAqtmWeXd//8P1VlZZtb66oiYeJoogqACAhdfe357etv/4vrrfXVdXdW7q+/9/339XX3f//39/3f/d19ff3efdVX5yf7+rqrpdf9/f19dl1Wnfd1VVXXW1lbtr6+tra21tdfef/r6+95f/1+/n5+fl597a3p6e3pucmScXNxQcPBADwc5OTcP19nfNdolPwAZ2sDwcPDDA8PPPT+9tfff3/39//33/d321fXdfWq/pamlan5fX9/XlfXd9d3//+/vvn339f39v/+/V59/X/3/f//6fvp+/v93359Vd319n5+v1NZ+eHqYaGLX1ZeeNCoIAIACgAoDKz+t9b+rK6pe/lVff/+7qi6Kg+iy+OLooICgAAAAAAAA8MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAooqAgggAAICK4utvwEFAVX3/ff+2trbNs7+u35dd3///35/99/1//+1vb///f///f////9dddf3/+//+1113///////VZpWqmqrr79ff////91dXX57f//+///+dlbedfbd9fX+ev5fXl9e90pKfn5+Xl5f4FCwcrO7e9vXPzAv+d9jUDUfAx/fNDDLywsP/48D15eq67v/fVfV/VZaaKpiooqqW1pqa6tvv69fV11fX3//f9/1/f////3391/X33/fd1//+v56+35///3/rb+9//Xd/1/e3nx6ePrijje3LiiKgIAAgiACggIA9f391vX91f+2X19XV1f2/svLasLo4sDiePjggCDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABwAAAAAAAAAAAgACAgoCCgMqr7W1/dW9tbu7//1f9Xf9aquuu6+uv69aVp1V9/3//19ff/dX3X//9XV1X11/f39dX19X339/f11f/39/////1V9//////fdXX39////ff/fX39/fX19//d/3/f399/1mWqrvv/rwot/XbVeXlZef319a2lpa2lr/V2f5+fn5/WfnfteXuz8396/9rS/XgoDOfv/9fEP8HvV3/f///7+/ZllV1XXd9f+/7b+9/63/u/9//////33f////9/339f1//19////++7/3/fv/+67qW15ra5quv/9W2tfd/f3d/aLg4Oh++/7qIoAgIIAiggu/qyoCoqjguP+q7ogqCCAAoKggiCAACIIAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAADAC900MBIbNFCAAACAAILAwICAAKA4OC44M2PryoJIoADWdbZ9f2/y79WdWX9/+vl5f///99fvedV/7///f///f1fX1//39fXX3///19/f/9f//////////////fV939///399dVXX39/f/7+7vrquuv+33VV133r+0ppVXVn/77vpZeVd993X3X9/f356Ojo6H59fb2XrS0vL0tjem5f6/YA8FCw0NC8bMLDwfEzMDw81bW1te1tbfv+//7////+/19f12lZ9dbVru//93VVV1Xv////3/1XXXVdf//7/vv6/fXVdlhYYEp9/a01va+Gf3d/fvp4cni4qKIAAAIKCwkvCCIAC7fXWQqOLL+8HHRcACDIIug67HgAACC4uigAAAAAAAAAAADIAAAAAAAAAqAjCC8ggDACAoIAAgopJ59/gjacaq/VYECAAAAARNpuFaooggAikkCAKq+/r7W9ta33df/39fVW2vX6VllWZVal9f/+6+r/f/3/9/ff19////ff/9/3//V1f99/f////9/////////f/////d3f///9//p/fv5/X395fWl9+Xv9f/+/9/XX/7+/9d3///9fn7+///291f3d/bP0U1Nzc3Nz3t/bxvbBzAxT8F9ggAICAtzURzfbHDnGPDQ3Nw0NzQHbHxc3NzXFxf7/7vr66vbppamVZ5fVlNy7zgNjmmhiolVZXeOoggAAV2XeaoICAKCgCqggqIAAALWNjS03vjig7vp8+Oi4oCAiCywCAwkvJbo3mvbV3Xffalp/23X99bU+GPN316W1bSiOD4mvh8rPLi+7LojiwKCo8ODggAIIAAUPHilNrzDAq79lVBAAEedMBDgwMCQIBEBj4sPBgSIbAAADQDDgcMAtq4qiCgIACFeV5a0viwKrl1Vd//XVt393V29fd199dffV1ff/7/+u3X//9/f/7+/VVdXXf/+/v///f3///39d9dX11VfVV1f/3/9/X1d/f9la2tb1/93//393X59nqWZ////eZmpprdZWWl9vb7uv0dT09X2/l5MwMDAwMDAwMAcFBwYODw4bh4ORoaSsratCgcHAkKBwIMnOzvLx8jEzVVbablZVevZUep57X1ReXjgiqDDM8DgoggAAAgAAAACI8v+8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"},{"a":65535,"b":"xQ=="}],"capture":{"phase_cycles_uncertain":2,"frame_cycles":19656,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":22,"colour_cells_changed_during_frame":0}}</script>
+<script src="../../lib/c64.js"></script><script src="../../lib/cpu6502.js"></script><script>
+const $=s=>document.getElementById(s),RGB=C64.PAL;
+document.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{const s=$(b.dataset.for);s.selectedIndex=(s.selectedIndex+Number(b.dataset.step)+s.options.length)%s.options.length;s.dispatchEvent(new Event('change'));});
+/* sprite pixels */
+// One sprite's 24 by 21 pixels as colour numbers, -1 where the sprite is clear. Hi-res: one bit a
+// pixel in its own colour. Multicolour: two bits for a pixel two wide, 01 the first shared colour
+// ($D025), 10 its own, 11 the second shared colour ($D026).
+function spritePixels(m,a,mc,own,s1,s2){const p=new Int8Array(24*21).fill(-1);
+ for(let y=0;y<21;y++)for(let b=0;b<3;b++){const v=m[a+y*3+b];
+  if(mc){for(let x=0;x<4;x++){const k=(v>>(6-2*x))&3;if(k){const c=[0,s1,own,s2][k];p[y*24+b*8+2*x]=c;p[y*24+b*8+2*x+1]=c;}}}
+  else for(let x=0;x<8;x++)if(v&(0x80>>x))p[y*24+b*8+x]=own;}
+ return p;}
+function plot(ctx,p,x,y,s,ex=1,ey=1){for(let j=0;j<21;j++)for(let i=0;i<24;i++){const c=p[j*24+i];if(c<0)continue;ctx.fillStyle=RGB[c&15];ctx.fillRect(x+i*s*ex,y+j*s*ey,s*ex,s*ey);}}
+function sized(cv,w,h){if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}const ctx=cv.getContext('2d');ctx.imageSmoothingEnabled=false;return ctx;}
+// end of sprite pixels
+const clocks=[];   // every animation on the page steps at the game's 50 frames a second
+let t0=null,done=0;
+function tick(t){if(t0===null)t0=t;const due=Math.floor((t-t0)/20);if(due-done>10)done=due-10;
+ while(done<due){done++;for(const c of clocks)c.step();}for(const c of clocks)c.draw();requestAnimationFrame(tick);}
+
+/* hero */
+// The hero is drawn by the engine's own routine at $0D5C, run on the kit's 6502 over the engine's
+// bytes from its listing. It writes the video chip's registers, which this page keeps and draws, and
+// the sprite pointers at $CBF8. The page sets only what the game's movement code would: the shape
+// ($2C) from the tables at $1218 to $122A, the wheel flag ($2D) and the shield's flag and timer.
+function heroViewer(ram){const m=ram.slice(),VIC=new Uint8Array(64);VIC[0x15]=7;VIC[0x25]=15;VIC[0x26]=11;
+ const io={read(a){return a>=0xD000&&a<0xD400?VIC[a&63]:a===0xDC04?Math.random()*256|0:0;},write(a,v){if(a>=0xD000&&a<0xD400)VIC[a&63]=v;}};
+ const cpu=new C64Cpu.CPU(m,{port:0x35,io}),H={mode:'walk',face:1,n:0,apart:false,low:false};
+ const W=128,Ht=84,X0=108,Y0=78,S=4,cv=$('hero-canvas');
+ function shape(){if(H.mode==='wheel'){const k=H.face?H.n&3:3-(H.n&3);return 0x7C+2*k;}
+  if(H.mode==='walk'){const t=H.face?0x1218:0x121F;return m[t+6-(H.n>>2)%7];}
+  return m[{stand:0x1228,shield:0x1228,jump:0x122A,crouch:0x1226}[H.mode]+H.face];}
+ return {H,step(){m[0x020A]=0;m[0x1E]=80;m[0x1F]=100;m[0x2D]=H.mode==='wheel'?1:0;m[0x2C]=shape();
+   m[0xBFFD]=H.mode==='shield'?1:0;m[0xBFFE]=H.low?0x20:0x80;cpu.call(0x0D5C,{},{maxSteps:20000});H.n++;},
+  draw(){const ctx=sized(cv,W*S,Ht*S);ctx.fillStyle=RGB[0];ctx.fillRect(0,0,W*S,Ht*S);
+   for(let i=2;i>=0;i--){if(!(VIC[0x15]>>i&1))continue;const x=VIC[2*i]+((VIC[0x10]>>i&1)<<8),y=VIC[2*i+1];
+    const p=spritePixels(m,0xC000+m[0xCBF8+i]*64,VIC[0x1C]>>i&1,VIC[0x27+i]&15,VIC[0x25]&15,VIC[0x26]&15);
+    plot(ctx,p,(x-X0+(H.apart?(i-1)*36:0))*S,(y-Y0)*S,S,(VIC[0x1D]>>i&1)+1,(VIC[0x17]>>i&1)+1);}
+   $('hero-state').textContent='Shapes '+[0,1,2].filter(i=>VIC[2*i]>0).map(i=>'$'+m[0xCBF8+i].toString(16).toUpperCase()).join(', ');}};}
+// end of hero
+
+/* objects */
+// The pieces every level shares, from the engine's listing: an object's sprite is multicolour
+// unless its code sets bit 0 of $0259, which none of these does, with the shared colours the engine
+// sets ($576B), light grey and dark grey.
+function objectViewers(m){
+ const ex=$('boom-canvas'),S=4;let n=0;
+ const boom={step(){n=(n+1)%(7*4+25);},draw(){const ctx=sized(ex,24*2*S,21*S);ctx.fillStyle=RGB[0];ctx.fillRect(0,0,ex.width,ex.height);
+   if(n<28){const k=n>>2;plot(ctx,spritePixels(m,0xC000+(0x84+k)*64,1,m[0x5C0D+k],15,11),12*S,0,S);}}};
+ const names=['Red: spread shot','Green: laser','Blue: longer whip','Light blue: shield','P: energy','G: grenade','M: mine','L: energy line','1UP: a life','Diamond'];
+ const sym=$('symbols-canvas'),cell=30,s2=3;{const ctx=sized(sym,5*cell*s2,2*30*s2);ctx.fillStyle=RGB[0];ctx.fillRect(0,0,sym.width,sym.height);
+  for(let k=0;k<10;k++)plot(ctx,spritePixels(m,0xC000+m[0x5EF3+k]*64,1,m[0x5EFD+k],15,11),(k%5)*cell*s2+3*s2,((k/5)|0)*30*s2+4*s2,s2);
+  $('symbols-list').innerHTML=names.map((t,k)=>'<li>'+t+' <code>$'+m[0x5EF3+k].toString(16).toUpperCase()+'</code></li>').join('');}
+ const box=$('box-canvas');let c=0;
+ const boxv={step(){c=(c+1)%24;},draw(){const ctx=sized(box,24*2*S,21*S);ctx.fillStyle=RGB[0];ctx.fillRect(0,0,box.width,box.height);
+   plot(ctx,spritePixels(m,0xC000+0x92*64,1,m[0x5D54+c],15,11),0,0,S);plot(ctx,spritePixels(m,0xC000+0x93*64,1,1,15,11),26*S,0,S);}};
+ const msg=$('message-canvas');{const ctx=sized(msg,3*48*3,3*24*3);ctx.fillStyle=RGB[0];ctx.fillRect(0,0,msg.width,msg.height);
+  [[0x83,0x84,0x85],[0x86,0x84,0x87],[0x80,0x81,0x82]].forEach((row,r)=>row.forEach((sh,i)=>plot(ctx,spritePixels(m,0x6301+(sh-0x80)*64,0,13,0,0),i*48*3,r*24*3,3,2,1)));}
+ return [boom,boxv];}
+// end of objects
+
+/* level sprites */
+// Shapes $98 to $FB, the sprites each level file brings to $E600-$FEFF, from the level's listing,
+// with the one it lies over beneath (2-2 over 2-1, 3-2 over 3-1).
+async function levelRam(q){const own=await C64.load('parts/'+q.part+'/listing.json');if(!q.over)return own;
+ const base=await C64.load('parts/'+q.over+'/listing.json'),ram=base.ram.slice(),has=base.has.slice();
+ for(let a=0;a<65536;a++)if(own.has[a]){ram[a]=own.ram[a];has[a]=1;}return {ram,has};}
+// the shapes whose bytes the level's file (or the one beneath) loads; the others are not the level's
+function loaded(L){const out=[];for(let sh=0x98;sh<=0xFB;sh++){const a=0xC000+sh*64;if(L.has.subarray(a,a+63).some(x=>x))out.push(sh);}return out;}
+function drawSheet(L,mc,own){const list=loaded(L),cv=$('sheet-canvas'),S=2,cw=28,ch=30,cols=10,rows=Math.ceil(list.length/cols),ctx=sized(cv,cols*cw*S,rows*ch*S);
+ ctx.fillStyle=RGB[0];ctx.fillRect(0,0,cv.width,cv.height);ctx.font=(7*S)+'px monospace';
+ list.forEach((sh,k)=>{const x=(k%cols)*cw*S,y=((k/cols)|0)*ch*S;
+  plot(ctx,spritePixels(L.ram,0xC000+sh*64,mc,own,15,11),x+2*S,y+S,S);ctx.fillStyle='#8a8f98';ctx.fillText('$'+sh.toString(16).toUpperCase(),x+2*S,y+(ch-1)*S);});
+ return list;}
+// end of level sprites
+
+/* title sparkles */
+// The title's ten sparkle shapes ($8BD4 in the title's file, $40 to $49 once copied to $D000): a
+// sparkle moves on a shape every fourth frame, white, in multicolour with light blue and blue.
+function sparkles(m){const cv=$('spark-canvas'),S=3,W=160,Ht=48,sp=[];
+ for(let i=0;i<8;i++)sp.push({x:Math.random()*(W-24)|0,y:Math.random()*(Ht-21)|0,n:-(Math.random()*40|0)});
+ return {step(){for(const s of sp){s.n++;if(s.n>=40){s.n=0;s.x=Math.random()*(W-24)|0;s.y=Math.random()*(Ht-21)|0;}}},
+  draw(){const ctx=sized(cv,W*S,Ht*S);ctx.fillStyle=RGB[0];ctx.fillRect(0,0,cv.width,cv.height);
+   for(const s of sp)if(s.n>=0)plot(ctx,spritePixels(m,0x8BD4+(s.n>>2)*64,1,1,14,6),s.x*S,s.y*S,S);}};}
+// end of title sparkles
+
+/* explosions */
+// A port of the ending's interrupt at $6D7D. Eight countdowns ($0A-$11), reloaded from $12, step the
+// sprites' shapes ($FBF8) from $80 to $89. After $89 a sprite holds $80 for a random 1 to 16 frames
+// (the timer at $DC04), and every sprite steps every five frames from then on. When 50 explosions
+// ($09) are over the sprites stop, where they are.
+function explosionStep(st,rnd){if(st.stop)return;
+ for(let x=7;x>=0;x--){if(--st.cnt[x]>=0)continue;st.cnt[x]=st.reload;
+  if(st.ptr[x]===0x89){if(--st.left===0){st.stop=true;return;}st.reload=4;st.cnt[x]=rnd()&15;st.ptr[x]=0x7F;}
+  st.ptr[x]++;}}
+// end of explosions
+
+/* broken top */
+// The five runs that $6C2C copies over the tower's bitmap: each run's length less one at $6FF6, its
+// source at $6FFB and $7000, and its place in the bitmap ($C000 on) at $7005 and $700A.
+function brokenTop(m,bmp){for(let r=0;r<5;r++){const n=m[0x6FF6+r]+1,src=m[0x6FFB+r]|m[0x7000+r]<<8,dst=(m[0x7005+r]|m[0x700A+r]<<8)-0xC000;bmp.set(m.slice(src,src+n),dst);}return bmp;}
+// end of broken top
+
+/* ending */
+// The tower from the ending's file: a multicolour bitmap ($788F), its screen colours ($97CF) and
+// colour RAM ($9BB7) on black. The eight explosions are a port of the interrupt at $6D7D, on the
+// places at $700F and the shapes at $A0F7, and the broken top is the five runs from $9F9F that
+// $6C25 copies over the bitmap when sprite 0 first shows shape $84.
+function ending(m){const cv=$('tower-canvas'),S=2,bmp=m.slice(0x788F,0x788F+8000),img=new ImageData(320,200),tmp=document.createElement('canvas');tmp.width=320;tmp.height=200;
+ const st={ptr:Array(8).fill(0x80),cnt:Array(8).fill(8),reload:8,left:50,stop:false,broken:false,run:false};
+ function paint(){const d=img.data,rgb=RGB.map(h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)));
+  for(let cy=0;cy<25;cy++)for(let cx=0;cx<40;cx++){const sc=m[0x97CF+cy*40+cx],cr=m[0x9BB7+cy*40+cx]&15,cols=[0,sc>>4,sc&15,cr];
+   for(let y=0;y<8;y++){const v=bmp[(cy*40+cx)*8+y];for(let x=0;x<4;x++){const k=rgb[cols[(v>>(6-2*x))&3]];for(let h=0;h<2;h++){const o=((cy*8+y)*320+cx*8+x*2+h)*4;d[o]=k[0];d[o+1]=k[1];d[o+2]=k[2];d[o+3]=255;}}}}
+  tmp.getContext('2d').putImageData(img,0,0);}
+ function patch(on){bmp.set(m.slice(0x788F,0x788F+8000));
+  if(on)brokenTop(m,bmp);
+  st.broken=on;$('tower-broken').checked=on;paint();}
+ function reset(){st.ptr.fill(0x80);st.cnt.fill(8);st.reload=8;st.left=50;st.stop=false;patch(false);}
+ patch(false);
+ return {st,reset,patch,step(){if(!st.run||st.stop)return;explosionStep(st,()=>Math.random()*256|0);
+   if(!st.broken&&st.ptr[0]===0x84)patch(true);},
+  draw(){const ctx=sized(cv,320*S,200*S);ctx.drawImage(tmp,0,0,320*S,200*S);
+   if(st.run)for(let i=7;i>=0;i--){const x=m[0x700F+2*i]+((m[0x701F]>>i&1)<<8)-24,y=m[0x7010+2*i]-50;
+    plot(ctx,spritePixels(m,0xA0F7+(st.ptr[i]-0x80)*64,1,1,7,2),x*S,y*S,S);}
+   $('tower-state').textContent=st.run?(st.stop?'All 50 explosions are over. The sprites stop here, and the scrolling text begins.':'Explosions left: '+st.left):'';}};}
+// end of ending
+
+const LEVELS=JSON.parse($('tu-levels').textContent);
+async function start(){
+ try{const eng=(await C64.load('parts/engine/listing.json')).ram;
+  const hv=heroViewer(eng);clocks.push(hv);
+  document.querySelectorAll('[data-hero]').forEach(b=>b.onclick=()=>{hv.H.mode=b.dataset.hero;hv.H.n=0;document.querySelectorAll('[data-hero]').forEach(c=>c.setAttribute('aria-pressed',c===b));});
+  $('hero-face').onclick=()=>{hv.H.face^=1;$('hero-face').textContent=hv.H.face?'Facing right':'Facing left';};
+  $('hero-apart').onchange=e=>hv.H.apart=e.target.checked;$('hero-low').onchange=e=>hv.H.low=e.target.checked;
+  clocks.push(...objectViewers(eng));}
+ catch(e){$('hero-state').textContent='The engine’s listing could not be loaded: '+e.message;}
+ let sheet=null;
+ async function showLevel(i){const q=LEVELS[i];$('sheet-state').textContent='Loading level '+q.name+'…';
+  try{const L=await levelRam(q);if($('sheet-choice').selectedIndex!==i)return;sheet=L;redraw();}
+  catch(e){$('sheet-state').textContent='The shapes could not be drawn: '+e.message;}}
+ function redraw(){if(!sheet)return;const list=drawSheet(sheet,$('sheet-mode').value==='mc'?1:0,Number($('sheet-colour').value));
+  $('sheet-state').textContent=list.length+' shapes, $'+list[0].toString(16).toUpperCase()+' to $'+list[list.length-1].toString(16).toUpperCase();}
+ $('sheet-choice').onchange=()=>showLevel($('sheet-choice').selectedIndex);$('sheet-mode').onchange=redraw;$('sheet-colour').onchange=redraw;showLevel(0);
+ try{clocks.push(sparkles((await C64.load('parts/title/listing.json')).ram));}catch(e){$('spark-state').textContent='The title’s listing could not be loaded: '+e.message;}
+ try{const en=ending((await C64.load('parts/ending/listing.json')).ram);clocks.push(en);
+  $('tower-play').onclick=()=>{en.reset();en.st.run=true;};$('tower-broken').onchange=e=>{en.st.run=false;en.patch(e.target.checked);};}
+ catch(e){$('tower-state').textContent='The ending’s listing could not be loaded: '+e.message;}
+ C64.drawFrame($('load-canvas'),JSON.parse($('tu-loadpic').textContent),2);
+ requestAnimationFrame(tick);}
+if(typeof C64==='undefined'||typeof C64Cpu==='undefined')document.querySelectorAll('.tu-state').forEach(e=>e.textContent='The pictures need the site’s c64.js and cpu6502.js, which load only when the page is served with the rest of the site.');else start();
+</script>

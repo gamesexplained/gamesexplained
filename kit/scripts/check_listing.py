@@ -235,6 +235,13 @@ def check_parts(gdir):
         elif not p["over"] and ranges(p):
             errs.append(f'part {p["id"]} has "ranges" but lies over no part: name the part beneath it as "over", '
                         "or drop the ranges")
+        keeps = settings(p).get("keeps") or []
+        if keeps and (p["over"] or p.get("bank") is not None):
+            errs.append(f'part {p["id"]} has "keeps" but lies over {p["over"]}: only the part at the bottom keeps '
+                        'addresses that a load above it writes; a part over another says what it owns in "ranges"')
+        for r in keeps:
+            if not (isinstance(r, list) and len(r) == 3 and all(isinstance(x, str) and x for x in r)):
+                errs.append(f'part {p["id"]}: "keeps" row {r} is not [first, last, why]')
         if p.get("bank") is not None and not p["over"]:
             errs.append(f'part {p["id"]} is bank {p["bank"]} but no part sees it: name the part whose code reads it '
                         'as its "seen_by"')

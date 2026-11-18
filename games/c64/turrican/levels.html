@@ -1,0 +1,92 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turrican</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+</style>
+<style>.tu-bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:14px 0}
+.tu-scroll{overflow:auto;max-height:680px;background:#15171c;border-radius:8px;padding:10px}
+.tu-mapcv{display:block;image-rendering:pixelated;max-width:none}
+.tu-shot{display:block;width:100%;max-width:640px;image-rendering:pixelated;border-radius:6px;margin:0 0 12px}
+.tu-facts{border-collapse:collapse;font-size:15px;margin:10px 0 16px}
+.tu-facts td{border-bottom:1px solid var(--line);padding:5px 14px 5px 0}
+@media(max-width:650px){:root{--gx:20px;--h1:34px}.plate{padding:14px}}</style><!-- tabs -->
+<header class="hero"><p class="eyebrow">1990 · Rainbow Arts · Commodore 64</p><h1>Turrican</h1><p class="sub">All thirteen maps, drawn whole from the bytes each level’s file loads.</p></header>
+<main class="wrap">
+<section id="maps" data-part=""><p class="fig">01 · maps</p><h2 class="t">The thirteen levels</h2>
+<p>Each level is a map of blocks, and each block is four characters across and four down (the <a href="index.html#levels">How it works</a> tab explains the format). Pick a level to see its whole map as it loads, before anything in it is destroyed, beside the screen as it looks in play. Enemies, symbols and the hero are not part of the map, so none of them is drawn.</p>
+<div class="pick"><button class="step" data-for="map-choice" data-step="-1" aria-label="Previous">‹</button><select id="map-choice"><option value="0">Level 1-1</option><option value="1">Level 1-2</option><option value="2">Level 1-3</option><option value="3">Level 2-1</option><option value="4">Level 2-2</option><option value="5">Level 3-1</option><option value="6">Level 3-2</option><option value="7">Level 3-3</option><option value="8">Level 4-1</option><option value="9">Level 4-2</option><option value="10">Level 4-3</option><option value="11">Level 5-1</option><option value="12">Level 5-2</option></select><button class="step" data-for="map-choice" data-step="1" aria-label="Next">›</button></div>
+<img id="map-shot" class="tu-shot" src="reference/play/level-1-1.png" alt="Level 1-1 in play">
+<p id="map-note"></p>
+<table class="tu-facts"><tbody id="map-facts"></tbody></table>
+<div class="tu-bar"><label>Zoom <select id="map-zoom"><option value="0.25">¼</option><option value="0.5" selected>½</option><option value="1">1×</option></select></label><span id="map-state"></span></div>
+<div class="tu-scroll"><canvas class="tu-mapcv" id="map-canvas" width="8" height="8"></canvas></div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script id="tu-levels" type="application/json">[{"name": "1-1", "part": "level-1-1", "over": null, "note": "The first level, on rocky ground under a light blue sky. The view starts 44 characters in from the left edge of the map."}, {"name": "1-2", "part": "level-1-2", "over": null, "note": "The second level of the first world, under the same sky."}, {"name": "1-3", "part": "level-1-3", "over": null, "note": "The first world’s last level, under a darker sky. It has the most time of any level, 601."}, {"name": "2-1", "part": "level-2-1", "over": null, "note": "The level starts at the top of its map and goes down a shaft of machinery to the pool where the fish waits. One more row of 50 blocks follows the map in memory (<code>$ADA4</code>), below the last row of the map."}, {"name": "2-2", "part": "level-2-2", "over": "level-2-1", "note": "Its file holds a map, objects, code and sprites. The characters, their colours and the blocks are the ones 2-1 left in memory. The machine waits at the far end."}, {"name": "3-1", "part": "level-3-1", "over": null, "note": "The flight: a shaft one screen wide and 269 blocks high, flown from the bottom up. Its boss is a tower."}, {"name": "3-2", "part": "level-3-2", "over": "level-3-1", "note": "Drawn with 3-1’s characters, colours and blocks, which stay in memory. The level ends when the hero drops out of the bottom of the map."}, {"name": "3-3", "part": "level-3-3", "over": null, "note": "The dive: a second shaft one screen wide and 299 blocks deep, from the top down. A gunship attacks on the way."}, {"name": "4-1", "part": "level-4-1", "over": null, "note": "A cave of slopes and falling water. The falling block shakes the screen when it lands."}, {"name": "4-2", "part": "level-4-2", "over": null, "note": "The shortest map, 25 blocks high, and the shortest time, 201. The level ends by climbing out of the top of the map."}, {"name": "4-3", "part": "level-4-3", "over": null, "note": "The level starts at the bottom right of its map and ends by walking out at the top right. Its boss, a creature with three mouths, is worth 20,000 points. Every other boss is worth 10,000 or less."}, {"name": "5-1", "part": "level-5-1", "over": null, "note": "The fifth world. The level starts at the bottom left of its map and ends by rising out of the top."}, {"name": "5-2", "part": "level-5-2", "over": null, "note": "The last level starts near the right of its map, where the Machine waits. After the Machine, a ship carries the hero away to the left."}]</script><script src="../../lib/c64.js"></script><script>
+const $=s=>document.getElementById(s),LV=JSON.parse($('tu-levels').textContent);
+document.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{const s=$(b.dataset.for);s.selectedIndex=(s.selectedIndex+Number(b.dataset.step)+s.options.length)%s.options.length;s.dispatchEvent(new Event('change'));});
+/* level image */
+// A level's memory as the game draws it: the level's own file laid over the one it keeps the
+// scenery of (2-2 over 2-1, 3-2 over 3-1), both as their listings hold them.
+async function levelImage(q){const own=await C64.load('parts/'+q.part+'/listing.json');if(!q.over)return own.ram;
+ const base=await C64.load('parts/'+q.over+'/listing.json'),m=base.ram.slice();for(let a=0;a<65536;a++)if(own.has[a])m[a]=own.ram[a];return m;}
+// end of level image
+/* map drawing */
+// The map's rows of block numbers at $8E00, the width at $ADE0 and the height at $ADE2; each block
+// 16 character codes at $B000; the character set at $C000; each character's colour at $AE10, 8 or
+// more for multicolour with the shared colours at $ADF1 and $ADF2 on the background at $ADF0.
+function levelMap(m){const W=m[0xADE0]|m[0xADE1]<<8,H=m[0xADE2]|m[0xADE3]<<8,rgb=C64.PAL.map(h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)));
+ const bg=m[0xADF0]&15,c1=m[0xADF1]&15,c2=m[0xADF2]&15,used=new Set();for(let i=0;i<W*H;i++)used.add(m[0x8E00+i]);
+ const blocks=new Map();for(const b of used){const px=new Uint8Array(32*32);for(let k=0;k<16;k++){const ch=m[0xB000+b*16+k],col=m[0xAE10+ch],ox=(k&3)*8,oy=(k>>2)*8;
+  for(let y=0;y<8;y++){const row=m[0xC000+ch*8+y];for(let x=0;x<8;x++){let c;if(col&8){const v=(row>>(6-2*(x>>1)))&3;c=[bg,c1,c2,col&7][v];}else c=row&(0x80>>x)?col&15:bg;px[(oy+y)*32+ox+x]=c;}}}blocks.set(b,px);}
+ return {W,H,bg,c1,c2,blocks,rgb,map:m.subarray(0x8E00,0x8E00+W*H)};}
+function paintMap(cv,L){cv.width=L.W*32;cv.height=L.H*32;const ctx=cv.getContext('2d'),img=ctx.createImageData(cv.width,cv.height),d=img.data,stride=cv.width*4;
+ for(let r=0;r<L.H;r++)for(let c=0;c<L.W;c++){const px=L.blocks.get(L.map[r*L.W+c]);for(let y=0;y<32;y++){let o=(r*32+y)*stride+c*32*4;for(let x=0;x<32;x++,o+=4){const k=L.rgb[px[y*32+x]];d[o]=k[0];d[o+1]=k[1];d[o+2]=k[2];d[o+3]=255;}}}
+ ctx.putImageData(img,0,0);}
+// end of map drawing
+const NAMES=['black','white','red','cyan','purple','green','blue','yellow','orange','brown','light red','dark grey','grey','light green','light blue','light grey'];
+let shown=null;
+async function show(i){const q=LV[i];$('map-state').textContent='Loading level '+q.name+'…';
+ $('map-shot').src='reference/play/level-'+q.name+'.png';$('map-shot').alt='Level '+q.name+' in play';$('map-note').innerHTML=q.note;
+ try{const m=await levelImage(q);if($('map-choice').selectedIndex!==i)return;const L=levelMap(m);paintMap($('map-canvas'),L);shown=L;zoom();
+  const t=m[0xAE07]*100+m[0xAE08]*10+m[0xAE09];
+  $('map-facts').innerHTML='<tr><td>Map</td><td>'+L.W+' blocks wide, '+L.H+' high ('+L.W*4+' by '+L.H*4+' characters)</td></tr><tr><td>Blocks used</td><td>'+L.blocks.size+'</td></tr><tr><td>Time</td><td>'+t+'</td></tr><tr><td>Colours</td><td>'+NAMES[L.bg]+' background, '+NAMES[L.c1]+' and '+NAMES[L.c2]+' shared</td></tr><tr><td>Source</td><td><a id="map-source">the map in the listing</a></td></tr>';$('map-source').href=['source',q.part].join('-')+'.html#8E00';
+  $('map-state').textContent='';}
+ catch(e){$('map-state').textContent='The map could not be drawn: '+e.message;}}
+function zoom(){if(!shown)return;const z=Number($('map-zoom').value);$('map-canvas').style.width=shown.W*32*z+'px';$('map-canvas').style.height=shown.H*32*z+'px';}
+$('map-choice').onchange=()=>show($('map-choice').selectedIndex);$('map-zoom').onchange=zoom;
+if(typeof C64==='undefined')$('map-state').textContent='The maps need the site’s c64.js, which loads only when the page is served with the rest of the site.';else show(0);
+</script>

@@ -413,6 +413,32 @@ class Parts(unittest.TestCase):
             self.assertEqual(away[(0x4012, 0x40FF)], 'Park')
             self.assertEqual(away[(0x4100, 0xFFFF)], 'The engine')
 
+    def test_the_part_at_the_bottom_keeps_what_a_load_over_it_writes_for_a_while(self):
+        # a title loads its picture where the game's sprites go once play starts: the engine counts
+        # its sprites there, and the title its picture
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            f = g / 'parts' / 'engine' / 'part.json'
+            own = json.loads(f.read_text())
+
+            def away():
+                ps = P.parts(str(g))
+                return P.elsewhere(ps, next(p for p in ps if p['id'] == 'engine'))
+
+            self.assertTrue(any(lo <= 0x4080 <= hi for lo, hi, _ in away()))
+            f.write_text(json.dumps(dict(own, keeps=[['$4080', '$408F', "the sprites, where the levels load"]])))
+            self.assertFalse(any(lo <= a <= hi for lo, hi, _ in away() for a in (0x4080, 0x408F)))
+            self.assertTrue(all(any(lo <= a <= hi for lo, hi, _ in away()) for a in (0x407F, 0x4090)))
+            run(KIT / 'scripts' / 'listing.py', g / 'parts' / 'engine', g / 'park.vsf')
+            self.assertIn('OK', run(KIT / 'scripts' / 'check_listing.py', g).stdout)
+            # a part over another says what it owns in its ranges instead
+            p = g / 'parts' / 'park' / 'part.json'
+            p.write_text(json.dumps(dict(json.loads(p.read_text()), keeps=[['$4080', '$408F', 'x']])))
+            f.write_text(json.dumps(dict(own, keeps=[['$4080', '$408F']])))
+            out = run(KIT / 'scripts' / 'check_listing.py', g, ok=False).stdout
+            self.assertIn('part park has "keeps" but lies over engine', out)
+            self.assertIn('"keeps" row [\'$4080\', \'$408F\'] is not [first, last, why]', out)
+
     def test_the_layout_is_checked(self):
         with tempfile.TemporaryDirectory() as d:
             g = fixture(d)
