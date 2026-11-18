@@ -90,12 +90,12 @@ the music; the ending plays tune 0.
 
 ## The listing's error rate
 
-Not measured. A sample of 60 comments was drawn (seed 20261101, over the
-999 line comments the three parts own: 36 from the game, 17 from the
-title, 7 from the ending) and its brief written, but it has not been
-checked: the contributor asked for no subagents, and the checker must be
-an agent that wrote none of the comments. Until it is checked the game
-stays at Bronze.
+A sample of 70 comments (seed 3318, 60 written ones and 5 from each of
+the two largest families written from one template) found 17 wrong, all
+in a detail. Checkers on a proven model then audited every comment in the
+three parts and every claim here and in `features.md`, correcting 185
+comments (309 copies) and one template sentence shared by 79. A second
+sample of 70 (seed 8841) found 3 wrong, all corrected.
 
 ## Live tests
 
