@@ -202,7 +202,10 @@ in `kit/style.md`.
    in the test's header and `facts.md`. Say beside a sound below about 100 Hz that laptop
    and phone speakers barely play it: a reader who hears nothing reports
    it missing. Before believing such a report, render the writes through
-   the model in node and measure the output.
+   the model in node and measure the output. In the text, say what is
+   unusual about the game's sound, such as two drivers or a tune timed
+   apart from the frame, and leave out what nearly every game does, such
+   as one driver for all its music: a reader learns nothing from it.
 - **Secrets, quirks and bugs.** These have a tab of their own,
    Discoveries (below). A section here whose mechanic leads to one links
    to it.

@@ -13,9 +13,9 @@ time, operating system and tool versions.
 
 ## What was changed in the kit
 
-- `kit/c64/snapshot.py`, `kit/c64/check_emulator.py`: find the RAM from the snapshot's `C64MEM` module, because VICE v4.0.0 puts a 23-byte `C64MEMHACKS` module ahead of it and the RAM moved from byte 209 to 232. The two files are copied byte for byte from the Licence To Kill branch (`game/c64/licence-to-kill`), which met the same change, so the two pull requests merge in either order.
-- `kit/c64/INSTALL.md`: a row for the v4.0.0 Linux release, 57 of 57 with the fix above.
-- `kit/lessons/2026-11-17-ikari-warriors.md`: encoded sectors, and the game's own level routine as the map.
+- `kit/lessons/2026-11-17-ikari-warriors.md`: encoded sectors, the game's own level routine as the map, and a run-time exclusion that hid a table.
+
+The snapshot fix for VICE v4.0.0 (`kit/c64/snapshot.py`, `kit/c64/check_emulator.py`) and its row in `kit/c64/INSTALL.md`, first made on this branch, reached `main` from another branch before this one; this branch takes `main`'s versions.
 
 ## Candidates
 

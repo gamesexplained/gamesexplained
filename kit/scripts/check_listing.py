@@ -19,6 +19,9 @@ that hold a BASIC line's link with nothing there saying so ("basic_start" in
 symbols_export.PLATFORM_DEFAULTS). A comment that names a label by an automatic name it
 no longer has (s_10B4, renamed show_bonus) fails (#641).
 
+A game whose notes leave a use open, or tell how the run checked, note after note, is
+named as a warning too (listing_shape.py), and never fails.
+
 Where a game commits a code map (codemap.json, from kit/<platform>/codemap.py),
 every byte of it that ran, outside the ledger's exclusions, is typed Code in symbols.json: code typed as data
 has no cross-references and still reads as explained (#184). Code only the
@@ -42,6 +45,7 @@ import glob, hashlib, json, os, subprocess, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from parts import ID, EMPTY, LEDGER_KEYS, parts, under, ranges, started, load_game, owned, settings   # noqa: E402
 from accuracy import SILVER_UP   # noqa: E402
+import listing_shape   # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LISTING = os.path.join(os.path.dirname(os.path.abspath(__file__)), "listing.py")
@@ -284,14 +288,21 @@ def main():
     workers = min(8, os.cpu_count() or 2)
     with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as ex:
         fut = {ex.submit(check, d): d for d in dirs}
+        shapes = {g: ex.submit(listing_shape.warnings, g) for g in games
+                  if not os.path.isfile(os.path.join(g, "part.json"))}
         got = {}
         for f in concurrent.futures.as_completed(fut):
             got[fut[f]] = f.result()
+        shapes = {g: f.result() for g, f in shapes.items()}
     for d in dirs:
         dir_errs, notes = got[d]
         for n in notes:
             print(f"  !  {n}")
         errs += dir_errs
+    for g in shapes:
+        for w in shapes[g]:
+            print(f"  !  {w}")
+            listing_shape.annotate(w)
     for e in errs:
         print("  x ", e)
     if errs:
