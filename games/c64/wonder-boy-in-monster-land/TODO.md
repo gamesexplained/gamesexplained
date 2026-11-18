@@ -4,7 +4,10 @@ All 490,491 counted bytes have descriptions. Silver needs one more step: a full 
 
 ## Before Silver
 
-- Audit every comment in every part, and every claim in `facts.md`, on proven models, then draw a new sample with a new seed (`kit/CHECKING.md`). The maintainer's sample of 17 November 2026 (seed 51117) found 17 of 80 comments wrong, over the mark of one in 30. Fifteen were character comments on bytes that are other data. That kind of comment was corrected wherever the load's own structures identify the bytes (5,060 comments); 4,881 character comments stay as they were, 1,006 of them on a selector's own character shapes and the rest on bytes no structure in the notes accounts for. The audit should start with those.
+- Audit every comment in every part, and every claim in `facts.md`, on proven models, then draw a new sample with a new seed (`kit/CHECKING.md`). The maintainer's sample of 17 November 2026 (seed 51117) found 17 of 80 comments wrong, over the mark of one in 30. Fifteen were character comments on bytes that are other data. That kind of comment was corrected wherever the load's own structures identify the bytes (5,060 comments), and on 18 November 2026 the listing was folded to one note per structure (14,310 notes; `facts.md`, "Listing error rate"). The audit should start with:
+  - the 779 notes on runs of a copy's characters, and in them the 187 that name a selector's own shapes: whether each run holds only characters, or bytes some other routine reads;
+  - the 75 notes that call bytes only "instruction bytes of the routine at" an address: each is a short piece of code with no description of its own, and needs one;
+  - the tables described one entry to a note, which could each be one note: 825 one-byte `RTS` entries of the entity vector tables, 816 subroutine targets, 408 prices and 408 message pointers of the shops' item tables.
 - Load 20's trigger callback at `$9396` (`LDA #$00`, `STA $BF1F`, `RTS`) lies inside the bytes the listing describes only as character rows; the audit should describe it as code.
 
 ## Leads that stay open
