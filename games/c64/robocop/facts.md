@@ -59,8 +59,16 @@ named in `orientation.md`. Addresses are given with their part
 
 - Every figure is three sprites: two outlines and a multicolour body
   (level-1 sprite frame notes).
-- Level two builds its left-facing arm and gun shapes at run time,
-  reversing 174 sprite rows into `$ACA8` (level-2 `$AC49`).
+- Each level builds its left-facing arm and gun shapes at run time by
+  mirroring the right-facing rows: 174 rows `$A708` to `$A971` in level
+  one (level-1 `$A912`), 174 into `$ACA8` in level two (level-2 `$AC49`),
+  86 rows `$A26C` to `$A3CD` in level three (level-3 `$A36E`). Graphics'
+  cast tiles rebuild them the same way.
+- Sound effects 10, 12 and 13 are in every level's effect table but no
+  routine asks for them; effect 13 has no end (Music page's effect table).
+- RoboCop's three-sprite composite (outlines `$7A`/`$7B` hi-res black,
+  body `$7C` multicolour double height) matched a live screenshot of
+  stage one on 18 November 2026.
 - The play area scrolls with two screens: one shown while the other is
   built in pieces, then the two swap (level-3 `$8E16`, the swap at
   `$0683`).

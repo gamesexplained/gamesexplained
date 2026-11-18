@@ -98,13 +98,11 @@ sup.fn + sup.fn::before{content:","}
   </div>
   <p>Every figure is three sprites (<a href="#figures">Three sprites to a figure</a>, below): an outline in black at the top, another 21 lines lower, and a multicolour body stretched to double height behind both. So most tiles show three shape numbers. RoboCop's body is the exception. Its upper rows are his arm, copied in for the way he aims, and its lower rows are his gun hand, copied in for each step of his walk and each way he faces. The game keeps two of these bodies, <code>$FE</code> and <code>$FF</code>, and builds the next one in whichever is not on screen, so the swap never shows half a picture (<span data-part="level-1"><code>$A069</code></span>). The left-facing arms and hands are not stored at all: each level makes them when it starts by mirroring the right-facing ones, row by row and pixel pair by pixel pair (<span data-part="level-1"><code>$A912</code></span>). The tiles here build both the same way.</p>
   <h3 class="cast-h3">Shapes no tile above shows</h3>
-  <p>The level's other shapes, each drawn on its own: the outline in black and the body in the figure colours. Some belong to poses that only last a frame or two in play; the listing names the rest where it knows them.</p>
+  <p>The level's other shapes that hold any pixels, each drawn twice: as an outline in black above, and as a multicolour body below, since a shape's use decides which it is. Most are poses the tiles above leave out, or pieces of RoboCop's arm and hand that the body tiles copy from; the shape's comment in the <a href="source-level-1.html#5000">Source</a> names its owner where the listing knows it.</p>
   <div class="cast-rest" id="cast-rest"></div>
 </section>
 <style>
 .cast-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
-.cast-tabs button{font:500 13px var(--fm);padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);cursor:pointer}
-.cast-tabs button[aria-selected="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
 .cast-tabs button[aria-selected="true"]::before{content:"▶ "}
 .cast-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .cast-tile{background:var(--surface-2);border-radius:6px;padding:6px;margin:0}
@@ -246,7 +244,7 @@ function build(lv){
   tile('The motorbike','$A1EF','two figures, the front twelve places right of the rear',ctx=>{fig(ctx,m,mc,1,8,4,...L1X.moto[0]);fig(ctx,m,mc,1,32,4,...L1X.moto[1]);});U(...L1X.moto[0],...L1X.moto[1]);}
  // the rest of the 192 shapes
  const rest=document.getElementById('cast-rest');rest.textContent='';
- for(let f=0x40;f<0x100;f++){if(used.has(f))continue;const fg=document.createElement('figure'),cv=document.createElement('canvas'),ctx=C64.canvas(cv,24*S,42*S);
+ for(let f=0x40;f<0x100;f++){if(used.has(f)||shape(m,f).every(b=>b===0))continue;const fg=document.createElement('figure'),cv=document.createElement('canvas'),ctx=C64.canvas(cv,24*S,42*S);
   C64.drawSpriteMC(ctx,shape(m,f),0,21*S,S,PAL[1],PAL[mc[0]],PAL[mc[1]]);C64.drawSprite(ctx,shape(m,f),0,0,S,PAL[0]);
   const c=document.createElement('figcaption');c.textContent='$'+f.toString(16).toUpperCase();fg.append(cv,c);rest.append(fg);}
  const grid=document.getElementById('cast-grid');grid.textContent='';
@@ -327,7 +325,7 @@ Promise.all(Object.keys(LV).map(lv=>C64.load('parts/'+lv+'/listing.json').then(L
     <p class="cap"><b>A figure.</b> Sprite 2 (dashed) is stretched to double height and holds the body in four colours. Sprites 0 and 1 (solid and thick borders) are 21 lines each, one above the other, and draw a black outline over it, in front because a lower-numbered sprite is drawn in front.</p>
   </div>
   <p>A C64 sprite is 24 pixels wide and 21 lines high, in one colour, or 12 double-wide pixels in three colours. Neither is enough for a tall figure with an outline, so each figure here is three sprites (<span data-part="level-1"><code>$879A</code></span>). Sprite 2 is a multicolour sprite stretched to double height: the body in the figure's own colour, orange, and blue. Over it sprites 0 and 1 draw a black outline at full width, sprite 1 starting 21 lines below sprite 0. The eight sprites make two figures of three sprites and a third of two, or, when four figures are on screen, the game sorts them by height and draws them with two sprites each.</p>
-  <p>The sprite shapes take <code>$5000</code> to <code>$7FFF</code>, which the VIC-II sees as shapes <code>$40</code> to <code>$FF</code> of bank 1. RoboCop's arm and gun are drawn into two shapes at the end, <code>$FE</code> and <code>$FF</code>, as he aims. Level two saves memory by building its left-facing arm and gun shapes when it starts: it reverses 174 rows of the right-facing ones, bit by bit, into <code>$ACA8</code> (<span data-part="level-2"><code>$AC49</code></span>).</p>
+  <p>The sprite shapes take <code>$5000</code> to <code>$7FFF</code>, which the VIC-II sees as shapes <code>$40</code> to <code>$FF</code> of bank 1. RoboCop's arm and gun are drawn into two shapes at the end, <code>$FE</code> and <code>$FF</code>, as he aims. Each level saves memory by building its left-facing arm and gun shapes when it starts, reversing the right-facing ones pixel pair by pixel pair: 174 rows in levels one and two (<span data-part="level-1"><code>$A912</code></span>, <span data-part="level-2"><code>$AC49</code></span>) and 86 in level three (<span data-part="level-3"><code>$A36E</code></span>).</p>
   <p>When RoboCop dies, his three shapes are copied to <code>$7F40</code> and rubbed out in nine passes, five frames apart. Each pass clears one bit of every byte through a list of eight masks, starting one mask later each byte, so the figure dissolves in a scatter of pixels (<span data-part="level-1"><code>$9E70</code></span>).</p>
 </section>
 </main>
