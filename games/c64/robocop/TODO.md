@@ -3,19 +3,23 @@
 Current tier and what is missing for the next one. Coverage gaps from
 `coverage.py`. Article ideas.
 
-## Tier: bronze
+## Tier: silver
 
-Coverage is 100 % in all four parts (154,005 bytes), on a proven model,
-and the listing has had its first sample. Silver is missing:
+Coverage 100 % in all four parts on a proven model, sample taken, the
+Graphics tab draws every figure, and the reader review is settled. Gold
+needs a human's curation pass, section by section.
 
-- **A Graphics tab that draws the sprite shapes.** `graphics.html`
-  explains the screen split, the scrolling, the tiles and the
-  three-sprite figures with diagrams, but does not draw the 192 sprite
-  shapes of each level. They show RoboCop, ED-209 and the film's other
-  characters, and this run left drawing them for the contributor to
-  decide.
-- **The reader review** (`kit/skills/core/75-review`), by an agent that
-  wrote none of the pages.
+Reader-review asks left open (work/reports/reader-review.md):
+
+- A scene for the level-three firing bug: a slider for the first enemy
+  slot's height and the street's enemies firing as it crosses.
+- A player for the leftover tune at `$BBCC`, once its patterns from
+  `$B800` are put back together with a tune entry.
+- Stage eight's map shown beside stage five's stairs, for the unreached
+  stairs code.
+- The high-score table and the pickups drawn in the game's own pictures.
+- A power-drain demonstration; each sound effect beside its event.
+- A two-sprite figure beside a three-sprite one on Graphics.
 
 ## Recommended
 

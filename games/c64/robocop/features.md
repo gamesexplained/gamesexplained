@@ -44,7 +44,7 @@ Found in the code, not in the manual.
 - Level three's enemies all fire when the first enemy is low enough:
   `enemy_fire` at level-3 `$9522` tests `$2F`, the first slot, instead of
   each enemy's own `$2F,x`.
-- The mirrored sprite shapes in level two are built at run time: 174
+- The mirrored sprite shapes are built at run time in every level (level one `$A912`, level three `$A36E`); in level two: 174
   rows of arm and gun shapes reversed into `$ACA8` (level-2 `$AC49`).
 - Leftovers: a tune no code plays and its instruments (resident
   `$BBCC`, level-1 `$B800`), a hex-number parser from a development tool
