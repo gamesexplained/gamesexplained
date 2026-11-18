@@ -1,0 +1,167 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoboCop: gameplay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.ft-grid{display:grid;gap:6px}
+.ft-grid button{padding:0;position:relative;line-height:0}
+.ft-grid canvas{width:100%;image-rendering:pixelated;display:block}
+.ft-tag{position:absolute;left:3px;top:3px;font:500 11px/1.3 var(--fm);background:rgba(255,255,255,.88);color:var(--ink);border-radius:3px;padding:1px 4px}
+.ft-mark{position:absolute;right:3px;bottom:3px;font:500 10px/1.3 var(--fm);background:var(--chip);color:var(--chip-ink);border-radius:3px;padding:1px 4px}
+.ft-big canvas{width:100%;max-width:768px;image-rendering:pixelated;display:block;margin:0 auto}
+.ft-table{border-collapse:collapse;font-size:14px;width:100%}
+.ft-table td,.ft-table th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.ft-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.ft-four{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 20px}
+.ft-four .plate,.ft-two .plate{margin:0;padding:12px}
+.ft-shot,.ft-px{width:100%;height:auto;image-rendering:pixelated;display:block}
+.ft-wide{max-width:960px;margin:0 auto}
+.plate{margin:0 0 22px}
+.ft-scroll{overflow-x:auto}
+.ft-lab{display:block;font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:6px 0}
+.ft-range{width:100%;max-width:520px;display:block}
+.ft-controls{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:12px 0 0}
+.ft-read{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin:12px 0 0}
+.ft-bar-out{height:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:10px 0 0;max-width:520px}
+.ft-bar-out div{height:100%;background:repeating-linear-gradient(45deg,var(--amber) 0 6px,#e08a3c 6px 12px)}
+.ft-meter{position:relative;width:110px;height:18px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.ft-meter span{position:absolute;left:0;top:0;bottom:0;background:var(--cyan);opacity:.35}
+.ft-meter b{position:relative;font:500 12px/18px var(--fm);padding-left:6px}
+.ft-objs{white-space:nowrap}
+.ft-obj{display:inline-flex;flex-direction:column;align-items:center;margin:0 3px 0 0;padding:2px;background:#222;border-radius:4px;vertical-align:top}
+.ft-obj i{font:500 10px/1.2 var(--fm);color:#fff;font-style:normal}
+.ft-swapped{outline:2px dashed var(--amber);outline-offset:-2px}
+.ft-swapped i{text-decoration:line-through;text-decoration-color:var(--amber)}
+.ft-table canvas{background:#222;border-radius:4px;image-rendering:pixelated}
+.ft-dead{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.ft-dead button{font-size:12px;padding:4px 8px}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.ft-two,.ft-four,.ft-controls{grid-template-columns:1fr}}
+sup.fn{font-size:.7em;line-height:0}
+sup.fn a{text-decoration:none}
+sup.fn + sup.fn::before{content:","}
+.overview-shot{margin:22px 0}
+.overview-shot img{width:100%;max-width:768px;height:auto;aspect-ratio:384/272;image-rendering:pixelated;display:block}
+.overview-shot figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px;max-width:768px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1988 · Data East</p>
+  <h1>RoboCop: gameplay</h1>
+  <p class="sub">Nine stages, each against its own clock, with one bar of power to last the whole game.</p>
+</header>
+<main class="wrap" data-part="">
+
+<section id="stages">
+  <p class="fig">01 · The stages</p>
+  <h2 class="t">Nine stages in three loads</h2>
+  <p class="lede">The game loads from disk three times. Each load is a level of the game, and holds the code, maps, and pictures of its stages. Six stages are walked, with RoboCop shooting his way to the end; three use a <a href="#hostage">crosshair</a> or the <a href="#photofit">photofit</a>.</p>
+  <div class="plate ft-scroll"><table class="ft-table">
+    <thead><tr><th>Stage</th><th>Load</th><th>Where</th><th>Clock</th><th>How it ends</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>1</td><td><a href="levels.html#stage1">A street</a></td><td>2:31</td><td>The end of the street: 2,000 points and 12 units of baby food</td></tr>
+      <tr><td>2</td><td>1</td><td><a href="levels.html#stage2">A hostage</a></td><td>0:36</td><td>20 hits on the gunman: 2,000 points and 8 units of baby food</td></tr>
+      <tr><td>3</td><td>1</td><td><a href="levels.html#stage3">A second street</a></td><td>2:21</td><td>The end of the street with no enemy left: 5,000 points</td></tr>
+      <tr><td>4</td><td>2</td><td><a href="levels.html#stage4">The photofit</a></td><td>0:40</td><td>A matching face, or UNSUCCESSFUL MATCH at 0:00</td></tr>
+      <tr><td>5</td><td>2</td><td><a href="levels.html#stage5">The drug factory</a></td><td>3:31</td><td>The way out</td></tr>
+      <tr><td>6</td><td>2</td><td><a href="levels.html#stage6">OCP and ED-209</a></td><td>1:01</td><td>Six punches on ED-209</td></tr>
+      <tr><td>7</td><td>2</td><td><a href="levels.html#stage7">The lifts</a></td><td>1:16</td><td>The way out</td></tr>
+      <tr><td>8</td><td>3</td><td><a href="levels.html#stage8">The steel mill</a></td><td>2:01</td><td>The exit</td></tr>
+      <tr><td>9</td><td>3</td><td><a href="levels.html#stage9">The boardroom</a></td><td>0:21</td><td>Eight hits on Dick Jones</td></tr>
+    </tbody></table>
+    <p class="cap">The clocks are set by <span data-part="level-1"><code>$AC8B</code></span> in level one, and by tables in each of the other loads. The end of each stage is checked in its main loop.</p></div>
+  <p>Level one starts from the title screen; levels two and three load when the level before them ends, after a screen that asks for the disk and a press of fire. The score goes with the player from one load to the next, kept in three bytes at <code>$0100</code>, below the stack, while the rest of memory is loaded over.</p>
+</section>
+
+<section id="power">
+  <p class="fig">02 · Power</p>
+  <h2 class="t">One power bar for the whole game</h2>
+  <p>RoboCop has no lives. His power is a number from 0 to 24, shown in the <a href="graphics.html#screen">status panel</a> as a bar of six characters, each of four units. Damage does not take effect at once. A hit adds to a store of damage waiting, and the game deals out one unit of it each time its slower jobs run, which is one frame in six (<span data-part="level-1"><code>$ACD1</code></span>). Baby food goes into a store of its own. While there is food in store, a unit of damage takes a unit of food instead of a unit of power, and the store also gives power back one unit at a time, up to the full 24 (<span data-part="level-1"><code>$ACFB</code></span>). So the bar drains and fills a character at a time. At 0 RoboCop dies and the game is over.</p>
+  <p>Walking into an enemy in levels two and three costs six units at once. On stage nine, a shot that hits the hostage puts 24 units of damage in the store, which is all the power there is.</p>
+</section>
+
+<section id="clock">
+  <p class="fig">03 · The clock</p>
+  <h2 class="t">A second on the clock is four-fifths of a second</h2>
+  <p>Each stage has a clock in minutes and seconds. RoboCop dies when it reaches 0:00, except on the hostage stage, where at 0:00 the gunman kills the hostage instead, and on the photofit, where it is the end of the stage. The clock counts frames: it takes a second off every 48 frames (<span data-part="level-1"><code>$ABFC</code></span>). On a European machine 48 frames would be just under a second. This disk is the American version, and an American machine shows about 60 frames a second, so each second on the clock lasts 0.8 of a real second, and stage one's 2:31 is about two minutes.</p>
+  <p>When a stage ends, the time left is turned into points: a second every four frames. Level one pays 100 points a second (<span data-part="level-1"><code>$ADB9</code></span>). Levels two and three pay 300 (<span data-part="level-2"><code>$B7AD</code></span>), a difference the published guides, which give 100, do not mention.</p>
+</section>
+
+<section id="scoring">
+  <p class="fig">04 · Points</p>
+  <h2 class="t">Points</h2>
+  <div class="plate ft-scroll"><table class="ft-table">
+    <thead><tr><th>For</th><th>Points</th></tr></thead>
+    <tbody>
+      <tr><td>A bullet that hits an enemy</td><td>20</td></tr>
+      <tr><td>Killing it, in levels two and three</td><td>30 more</td></tr>
+      <tr><td>A pickup collected</td><td>250</td></tr>
+      <tr><td>A punch on ED-209 (stage six)</td><td>70; the sixth scores 300 more</td></tr>
+      <tr><td>A hit on Dick Jones (stage nine)</td><td>75</td></tr>
+      <tr><td>Each second left on the clock</td><td>100 in level one, 300 in levels two and three</td></tr>
+      <tr><td>The ends of stages one, two, and three</td><td>2,000, 2,000, and 5,000</td></tr>
+    </tbody></table></div>
+  <p>The table of eight high scores keeps three decimal bytes for each score and fifteen letters for each name. The <a href="discoveries.html#scores">names the game ships with</a> are worth reading.</p>
+</section>
+
+<section id="pickups">
+  <p class="fig">05 · Pickups</p>
+  <h2 class="t">Every fifth kill leaves a pickup</h2>
+  <p>A run of kills is counted, and every fifth enemy killed drops a pickup instead of disappearing. It stays for a while and then vanishes. What it gives is chosen by a table of routines (<span data-part="level-1"><code>$9CEB</code></span> in level one): baby food, which adds 8 units to the <a href="#power">store</a>; three-way shots, which fire three bullets in a spread; and better bullets for 25 shots, some of which pass through enemies. A better bullet does not replace one that is better still, but the 25 shots are given either way.</p>
+  <p>In level three an armoured carrier leaves the Cobra cannon (<span data-part="level-3"><code>$A688</code></span>). It fires bullet type 6, of strength 51, which goes through enemies, and has eight shots.</p>
+</section>
+
+<section id="hostage">
+  <p class="fig">06 · Hostage stages</p>
+  <h2 class="t">Shooting past a hostage</h2>
+  <p>On stages two and nine RoboCop does not move. The joystick moves a crosshair, and fire shoots where it points. On stage two a gunman walks back and forth behind his hostage, following a list of moves, and needs 20 hits; if the clock runs out first, the hostage dies, RoboCop loses 14 units of power, and the game goes on to stage three.</p>
+  <p>On stage nine Dick Jones walks with OCP's president. Which of the two a shot hits depends on the crosshair's row and column against tables of their shapes (<span data-part="level-3"><code>$AA98</code></span>). Eight hits on Jones end the game; one on the president ends RoboCop.</p>
+  <figure class="overview-shot"><img src="reference/play-stage2.png" width="384" height="247" alt="Stage two: the crosshair over a gunman holding a hostage"><figcaption>Stage two, the first hostage stage.</figcaption></figure>
+</section>
+
+<section id="photofit">
+  <p class="fig">07 · The photofit</p>
+  <h2 class="t">Building a face</h2>
+  <p>Stage four is a puzzle against a 40-second clock. The player puts together a face from six features, each with several choices, to match the suspect's. A wrong answer, MISMATCH, turns the background red. A match gives the name of Murphy's killer; at 0:00 the game says UNSUCCESSFUL MATCH, puts eight units of damage in RoboCop's store, and goes on to stage five anyway.</p>
+  <figure class="overview-shot"><img src="reference/play-stage4-photofit.png" width="384" height="247" alt="The photofit screen with a face made of parts"><figcaption>The photofit. It has its own characters and its own <a href="music.html#music">tune</a>.</figcaption></figure>
+</section>
+
+<section id="stairs">
+  <p class="fig">08 · Stairs and ED-209</p>
+  <h2 class="t">Stairs, and a robot that can only be punched</h2>
+  <p>Stages five and seven have stairs. RoboCop climbs them by pushing the joystick diagonally when he stands at the right place at the foot or the top of a flight, and on the stairs fire and down shoots downward. Level three carries a copy of level two's stair code, but nothing in level three calls it, so stage eight has no stairs (<a href="discoveries.html#stairs">Discoveries</a>).</p>
+  <p>On stage six RoboCop meets ED-209 and Dick Jones. His programming will not let him fire at either, so fire and down throws a punch instead. Six punches on ED-209 destroy it. In level three an ED-209 returns as an enemy that can be shot: it has 50 hit points, scores 5,000, and while it is in view the street does not scroll when RoboCop walks left.</p>
+</section>
+</main>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

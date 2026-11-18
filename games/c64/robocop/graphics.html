@@ -1,0 +1,151 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoboCop: graphics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.ft-grid{display:grid;gap:6px}
+.ft-grid button{padding:0;position:relative;line-height:0}
+.ft-grid canvas{width:100%;image-rendering:pixelated;display:block}
+.ft-tag{position:absolute;left:3px;top:3px;font:500 11px/1.3 var(--fm);background:rgba(255,255,255,.88);color:var(--ink);border-radius:3px;padding:1px 4px}
+.ft-mark{position:absolute;right:3px;bottom:3px;font:500 10px/1.3 var(--fm);background:var(--chip);color:var(--chip-ink);border-radius:3px;padding:1px 4px}
+.ft-big canvas{width:100%;max-width:768px;image-rendering:pixelated;display:block;margin:0 auto}
+.ft-table{border-collapse:collapse;font-size:14px;width:100%}
+.ft-table td,.ft-table th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.ft-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.ft-four{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 20px}
+.ft-four .plate,.ft-two .plate{margin:0;padding:12px}
+.ft-shot,.ft-px{width:100%;height:auto;image-rendering:pixelated;display:block}
+.ft-wide{max-width:960px;margin:0 auto}
+.plate{margin:0 0 22px}
+.ft-scroll{overflow-x:auto}
+.ft-lab{display:block;font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:6px 0}
+.ft-range{width:100%;max-width:520px;display:block}
+.ft-controls{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:12px 0 0}
+.ft-read{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin:12px 0 0}
+.ft-bar-out{height:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:10px 0 0;max-width:520px}
+.ft-bar-out div{height:100%;background:repeating-linear-gradient(45deg,var(--amber) 0 6px,#e08a3c 6px 12px)}
+.ft-meter{position:relative;width:110px;height:18px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.ft-meter span{position:absolute;left:0;top:0;bottom:0;background:var(--cyan);opacity:.35}
+.ft-meter b{position:relative;font:500 12px/18px var(--fm);padding-left:6px}
+.ft-objs{white-space:nowrap}
+.ft-obj{display:inline-flex;flex-direction:column;align-items:center;margin:0 3px 0 0;padding:2px;background:#222;border-radius:4px;vertical-align:top}
+.ft-obj i{font:500 10px/1.2 var(--fm);color:#fff;font-style:normal}
+.ft-swapped{outline:2px dashed var(--amber);outline-offset:-2px}
+.ft-swapped i{text-decoration:line-through;text-decoration-color:var(--amber)}
+.ft-table canvas{background:#222;border-radius:4px;image-rendering:pixelated}
+.ft-dead{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.ft-dead button{font-size:12px;padding:4px 8px}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.ft-two,.ft-four,.ft-controls{grid-template-columns:1fr}}
+sup.fn{font-size:.7em;line-height:0}
+sup.fn a{text-decoration:none}
+sup.fn + sup.fn::before{content:","}
+.overview-shot{margin:22px 0}
+.overview-shot img{width:100%;max-width:768px;height:auto;aspect-ratio:384/272;image-rendering:pixelated;display:block}
+.overview-shot figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px;max-width:768px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1988 · Data East</p>
+  <h1>RoboCop: graphics</h1>
+  <p class="sub">Two screens in two memory banks, switched part way down every frame; streets built from tiles; and every figure made of three sprites.</p>
+</header>
+<main class="wrap" data-part="">
+
+<section id="screen">
+  <p class="fig">01 · The screen</p>
+  <h2 class="t">A panel and a play area, from two banks of memory</h2>
+  <p class="lede">The VIC-II chip, which draws the screen, can see 16 KB of memory at a time. RoboCop changes which 16 KB part way down every frame, so the status panel and the play area each have their own characters and their own screen.</p>
+  <div class="plate">
+    <svg viewBox="0 0 400 230" width="100%" style="max-width:640px;display:block;margin:0 auto" role="img" aria-label="Diagram of one frame: the status panel at the top from bank 3, a black band, then the play area from bank 1">
+      <rect x="40" y="10" width="320" height="50" fill="#d9d2f0" stroke="#2f3136"/>
+      <text x="200" y="32" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" fill="#2f3136">Status panel: bank 3</text>
+      <text x="200" y="49" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#2f3136">screen $C000, characters $D000</text>
+      <rect x="40" y="60" width="320" height="12" fill="#000"/>
+      <text x="368" y="70" font-family="IBM Plex Mono,monospace" font-size="10" fill="#2f3136">black band</text>
+      <rect x="40" y="72" width="320" height="140" fill="#f4e3c8" stroke="#2f3136" stroke-dasharray="5 3"/>
+      <text x="200" y="130" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" fill="#2f3136">Play area: bank 1</text>
+      <text x="200" y="147" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#2f3136">screen $4000 or $4400, characters $4800</text>
+      <text x="200" y="164" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#2f3136">sprites $5000-$7FFF</text>
+      <text x="4" y="14" font-family="IBM Plex Mono,monospace" font-size="10" fill="#2f3136">line 0</text>
+      <text x="4" y="66" font-family="IBM Plex Mono,monospace" font-size="10" fill="#2f3136">NMI</text>
+      <text x="4" y="210" font-family="IBM Plex Mono,monospace" font-size="10" fill="#2f3136">$E1</text>
+    </svg>
+    <p class="cap"><b>One frame.</b> The panel (solid border) comes from bank 3 and the play area (dashed border) from bank 1. A raster interrupt near the bottom sets up the panel for the next frame; a timer interrupt (NMI) part way down switches to the play area, and a second one about eleven lines later ends the black band that hides the switch.</p>
+  </div>
+  <p>The switch is made by three interrupts (level three's at <span data-part="level-3"><code>$851C</code>, <code>$83E3</code>, and <code>$8426</code></span>). On raster line <code>$E1</code>, near the bottom of the screen, one points the VIC-II at bank 3 for the panel: screen <code>$C000</code>, characters <code>$D000</code>, with extended colour mode on, which gives the panel's text four background colours. On line 0 the next starts a one-shot countdown on CIA 2's timer B. When it runs out, its NMI points the VIC-II at bank 1 for the play area.</p>
+  <p>Changing banks in the middle of a line would show as a ragged edge. The game hides it. The NMI turns on extended colour mode and multicolour mode together, a combination the VIC-II cannot show, so it draws black, and makes the switch behind that black. A second NMI, about eleven lines later, turns extended colour mode off and the play area appears. The black band is the line between the panel and the street in every <a href="levels.html">screenshot</a>.</p>
+</section>
+
+<section id="scroll">
+  <p class="fig">02 · Scrolling</p>
+  <h2 class="t">Two screens, built in pieces and swapped</h2>
+  <p>The play area has two screens, at <code>$4000</code> and <code>$4400</code>. While one is shown, the game copies the other a column (or a row) along, a part on each frame, while the VIC-II's fine scroll moves the shown one a pixel at a time. When the fine scroll has moved eight pixels, the screens swap: one bit of the value written to <code>$D018</code> is flipped (<span data-part="level-3"><code>$9247</code></span> in level three), and the fine scroll starts again.</p>
+  <p>Colour RAM cannot be swapped, because the VIC-II has only one. So on the same frame as the swap, the game moves the colours of rows 7 to 22 one column across, and draws the new column. The stages whose maps are taller than the screen scroll up and down as well, with the same method for rows.</p>
+</section>
+
+<section id="tiles">
+  <p class="fig">03 · Tiles</p>
+  <h2 class="t">Streets built from tiles of four by four characters</h2>
+  <p>Each stage's map is a list of tile numbers, a column at a time. A tile is 16 characters, four across and four down, so each map byte stands for a 32 by 32 pixel square. The tile sets and maps sit at <code>$1000</code> to about <code>$24FF</code> in each load, with a colour for each of the 256 characters at <code>$0F00</code>; the colour's bit 3 makes that character multicolour. Stage seven is the exception: its tiles are not in level two's files at all, but come with level one and wait at <code>$C400</code> until they are needed (<a href="discoveries.html#disk-b">Discoveries</a>). The <a href="levels.html">Maps</a> page draws every stage from these tables.</p>
+</section>
+
+<section id="figures">
+  <p class="fig">04 · Figures</p>
+  <h2 class="t">Three sprites to a figure</h2>
+  <div class="plate">
+    <svg viewBox="0 0 420 200" width="100%" style="max-width:640px;display:block;margin:0 auto" role="img" aria-label="Diagram of a figure made of three sprites: sprite 2 double height behind, sprite 0 at the top and sprite 1 below it in front">
+      <rect x="40" y="20" width="72" height="126" fill="#f4e3c8" stroke="#2f3136" stroke-dasharray="5 3"/>
+      <text x="76" y="170" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#2f3136">sprite 2</text>
+      <text x="76" y="186" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="#2f3136">body, multicolour</text>
+      <rect x="170" y="20" width="72" height="63" fill="#d9d2f0" stroke="#2f3136"/>
+      <rect x="170" y="83" width="72" height="63" fill="#cfe6d6" stroke="#2f3136" stroke-width="2"/>
+      <text x="206" y="56" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#2f3136">sprite 0</text>
+      <text x="206" y="119" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#2f3136">sprite 1</text>
+      <text x="206" y="170" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="#2f3136">outlines, black</text>
+      <rect x="300" y="20" width="72" height="126" fill="#f4e3c8" stroke="#2f3136" stroke-dasharray="5 3"/>
+      <rect x="300" y="20" width="72" height="63" fill="#d9d2f0" fill-opacity=".6" stroke="#2f3136"/>
+      <rect x="300" y="83" width="72" height="63" fill="#cfe6d6" fill-opacity=".6" stroke="#2f3136" stroke-width="2"/>
+      <text x="336" y="170" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#2f3136">together</text>
+      <text x="141" y="86" text-anchor="middle" font-size="16" fill="#2f3136">+</text>
+      <text x="271" y="86" text-anchor="middle" font-size="16" fill="#2f3136">=</text>
+    </svg>
+    <p class="cap"><b>A figure.</b> Sprite 2 (dashed) is stretched to double height and holds the body in four colours. Sprites 0 and 1 (solid and thick borders) are 21 lines each, one above the other, and draw a black outline over it, in front because a lower-numbered sprite is drawn in front.</p>
+  </div>
+  <p>A C64 sprite is 24 pixels wide and 21 lines high, in one colour, or 12 double-wide pixels in three colours. Neither is enough for a tall figure with an outline, so each figure here is three sprites (<span data-part="level-1"><code>$879A</code></span>). Sprite 2 is a multicolour sprite stretched to double height: the body in the figure's own colour, orange, and blue. Over it sprites 0 and 1 draw a black outline at full width, sprite 1 starting 21 lines below sprite 0. The eight sprites make two figures of three sprites and a third of two, or, when four figures are on screen, the game sorts them by height and draws them with two sprites each.</p>
+  <p>The sprite shapes take <code>$5000</code> to <code>$7FFF</code>, which the VIC-II sees as shapes <code>$40</code> to <code>$FF</code> of bank 1. RoboCop's arm and gun are drawn into two shapes at the end, <code>$FE</code> and <code>$FF</code>, as he aims. Level two saves memory by building its left-facing arm and gun shapes when it starts: it reverses 174 rows of the right-facing ones, bit by bit, into <code>$ACA8</code> (<span data-part="level-2"><code>$AC49</code></span>).</p>
+  <p>When RoboCop dies, his three shapes are copied to <code>$7F40</code> and rubbed out in nine passes, five frames apart. Each pass clears one bit of every byte through a list of eight masks, starting one mask later each byte, so the figure dissolves in a scatter of pixels (<span data-part="level-1"><code>$9E70</code></span>).</p>
+</section>
+</main>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
