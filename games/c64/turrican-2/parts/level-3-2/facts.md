@@ -1,6 +1,6 @@
 # Level 3-2 — technical facts
 
-The listing uses the pre-initialization `$551B` handover image and describes all 32190 tracked bytes, including 12122 code bytes. It excludes cleared workspace, generated colours, the generated beam sprite, the scene rotation workspace and the sixteen generated scene frames, with their producers named.
+The listing uses the pre-initialization `$551B` handover image and describes all 32190 tracked bytes, including 12123 code bytes. It excludes cleared workspace, generated colours, the generated beam sprite, the scene rotation workspace and the sixteen generated scene frames, with their producers named.
 
 ## Map and camera
 
@@ -12,7 +12,7 @@ A twenty-nine-entry script drives camera direction and countdown values. `$EA8C`
 
 The dedicated callback at `$E580` updates player state, then selects ordinary scripted scrolling or the boss-scene screen shift. It removes its caller return address and exits the interrupt directly. Vertical player steps are two pixels; horizontal steps are two half-pixels. Both differ from ordinary platform movement, and the vertical step differs from level 3-1.
 
-Scatter has ten character-shot records. Its upgraded allocator searches three groups of three. Laser has nine records and can allocate three pairs of secondary split records. Their restore paths compensate the other screen for camera movement. The enlarged beam uses the generated sprite at `$C700`, one/three/five vertical segments and five source templates. It records ordinary actor damage index sixteen at `$BC10,X`. In scene mode it sets separate side/central target flags through the rectangle helpers at `$A5A9/$A626`.
+Scatter has ten character-shot records. Its upgraded allocator searches three groups of three. The bounce weapon has nine records and can allocate three pairs of secondary split records. Their restore paths compensate the other screen for camera movement. The enlarged beam uses the generated sprite at `$C700`, one/three/five vertical segments and five source templates. It records ordinary actor damage index sixteen at `$BC10,X`. In scene mode it sets separate side/central target flags through the rectangle helpers at `$A5A9/$A626`.
 
 ## Actors and boss
 

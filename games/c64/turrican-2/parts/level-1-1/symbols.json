@@ -3770,13 +3770,13 @@
   },
   {
    "address": 36804,
-   "name": "map_horizontal_camera_limit",
+   "name": "unread_width_less_view",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 36806,
-   "name": "map_vertical_camera_limit",
+   "name": "unread_height_less_view",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -6923,12 +6923,12 @@
   {
    "address": 27648,
    "type": "line",
-   "text": "Actor type three. Initialize walking direction toward the player, animation dividers, health one and fall state. Test player overlap and projectile-character damage, animate four facing-dependent walk shapes, turn at blocking terrain and fall according to the vertical tables. The descending-player contact path changes the actor to its flattened state and can bounce the player; its second coordinate comparison uses player X. Wheel/immunity contact or the screen flash releases it through an explosion and awards 100 points."
+   "text": "Actor type three. Initialize walking direction toward the player, animation dividers, health one and fall state. Test player overlap and projectile-character damage, animate four facing-dependent walk shapes, turn at blocking terrain and fall according to the vertical tables. The descending-player contact path (jump index $23 or more, actor Y not above the player's and at least $3E) changes the actor to its flattened state and, unless the scroll direction is five or more, bounces the player and awards 500 points. Wheel/immunity contact, a fatal projectile hit or the screen flash releases it through an explosion and awards 100 points."
   },
   {
    "address": 27651,
    "type": "line",
-   "text": "Operand byte 1 of the BPL instruction at $6C02, within this level's existing actor or display routine. It is not an independent instruction entry. The shared call to $6C03 selects music only in overlays that contain the music driver; this level has an actor branch operand here."
+   "text": "Operand byte 1 of the BPL instruction at $6C02, within this level's type-three ground walker routine. It is not an independent instruction entry. The resident call jsr $6C03 at $0E7C, made only while $03EE is nonzero, is the per-update music play call in loads that hold the music driver at $6C00; this level has an actor branch operand here."
   },
   {
    "address": 27654,
@@ -6978,7 +6978,7 @@
   {
    "address": 29161,
    "type": "line",
-   "text": "Lookup base used with body indices one through six to read the six staggered explosion delays at $71EA-$71EF. The base byte itself belongs to the preceding turn-offset table."
+   "text": "Lookup base used with body indices one through six to read the six staggered explosion delays at $71EA-$71EF. The base byte itself, $04, would be the delay for index zero, the head; the loop stops before index zero and never reads it."
   },
   {
    "address": 29162,
@@ -7023,7 +7023,7 @@
   {
    "address": 30081,
    "type": "line",
-   "text": "Three subtype-dependent start delays, counted down before the curved flight begins."
+   "text": "Three subtype-dependent initial countdowns. For subtypes 0 and 1 ($20) it is the delay before the curved flight begins; for subtype 2 ($05) it is the wait before its first projectile."
   },
   {
    "address": 30084,
@@ -7033,7 +7033,7 @@
   {
    "address": 30086,
    "type": "line",
-   "text": "Five descending-trajectory thresholds used to select the five-frame pose within each facing/subtype sequence."
+   "text": "Thresholds on the descending flight counter that select the five-frame pose within each facing/subtype sequence: the counter is compared with $25, $1D, $10 and $09 in turn, and below $09 the pose is zero. The first byte, $00, is never compared."
   },
   {
    "address": 30091,
@@ -7063,7 +7063,7 @@
   {
    "address": 30159,
    "type": "line",
-   "text": "Actor type six. Start above the playfield with health four and three animated shapes, descend until terrain is reached, then release the actor and create a type-five flying enemy when a slot is available. Destruction by contact protection, projectile damage or screen flash awards 500 points and emits up to six type-sixteen projectiles with the velocity pairs at $76D2/$76D8."
+   "text": "Actor type six. Start above the playfield with health four and three animated shapes, descend until terrain is reached, then turn into an explosion and create a type-five flying enemy of subtype two when a slot is available; an actor that reaches Y $DE first is released. Destruction by contact protection, projectile damage or screen flash awards 500 points and emits up to six type-sixteen projectiles with the velocity pairs at $76D2/$76D8."
   },
   {
    "address": 30418,
@@ -7093,7 +7093,7 @@
   {
    "address": 30896,
    "type": "line",
-   "text": "Actor type nine. Subtype zero is a hidden controller that creates random nonzero-subtype particles at the right edge and can push an eligible player left while checking the terrain. Particle subtypes select shape, colour, X/Y increments and vertical divider from six parallel tables. Colour-five particles also animate their sprite on a subtype/slot-dependent divider. Release particles leaving the visible bounds."
+   "text": "Actor type nine. Subtype zero is a hidden controller that creates random nonzero-subtype particles at the right edge and can push an eligible player left while checking the terrain. Particle subtypes select shape, colour, X/Y increments and vertical divider from five parallel tables. Colour-five particles also animate their sprite on a divider read from a sixth table by actor slot. Release particles leaving the visible bounds."
   },
   {
    "address": 31108,
@@ -7108,7 +7108,7 @@
   {
    "address": 31140,
    "type": "line",
-   "text": "Sixteen signed animation-divider selectors. The updater reads this table by actor slot, using the sign to choose the three-frame animation direction."
+   "text": "Sixteen signed animation-divider selectors, read by actor slot, so only the first eleven are reached. The low seven bits reload the animation divider, zero meaning no animation, and the sign chooses the three-frame animation direction."
   },
   {
    "address": 31156,
@@ -7128,7 +7128,7 @@
   {
    "address": 31204,
    "type": "line",
-   "text": "Actor type ten. The initial state supplies a solid platform and changes to its reward state when struck by a projectile. Repeated qualified hits count down its reward counter, create bouncing collectible slots with randomized subtypes, and finally award 5000 points before explosion. Separate overlap paths let the player stand on it or bump it from below, maintaining the shared platform-contact flags. Spawned reward actors move with a signed trajectory until they become ordinary type-two pickups."
+   "text": "Actor type ten. The initial state $0E only tests for a projectile character; the first hit gives it sprite $C3 and state $0F, in which it is a platform. In that state the fourth and then every fifth call with projectile contact, and each new bump from below, counts down its reward counter of ten and creates a bouncing collectible slot with a randomized subtype; the count after the tenth awards 5000 points and turns it into an explosion. Separate overlap paths let the player stand on it or bump it from below, maintaining the shared platform-contact flags. Spawned reward actors move with a signed trajectory until they become ordinary type-two pickups."
   },
   {
    "address": 31706,
@@ -7143,12 +7143,12 @@
   {
    "address": 31745,
    "type": "line",
-   "text": "Actor type twelve. Alternate its shape on a two-call divider, enable multicolour, follow player X and form Y from player posture and wheel offsets. During the ascending part of a jump increment player Y. The picture's identity remains to be named from the graphics."
+   "text": "Actor type twelve. Alternate its shape between sprites $96 and $97 on a two-call divider, draw it in single colour (format byte $025A set to 1), follow player X and form Y from player posture and wheel offsets. During the ascending part of a jump increment player Y."
   },
   {
    "address": 31807,
    "type": "line",
-   "text": "Mutable sprite number and two-call divider for the player-attached type-twelve effect."
+   "text": "Mutable sprite number of the player-attached type-twelve effect, alternating between $96 and $97 on every second call."
   },
   {
    "address": 31808,
@@ -7168,12 +7168,12 @@
   {
    "address": 31813,
    "type": "line",
-   "text": "Actor type eleven. Animate its sprite on a two-call divider, enable multicolour, select its colour from the level background condition, and follow the player's X/Y with one of three vertical offsets. Its visual identity remains open."
+   "text": "Actor type eleven. Animate its sprite between $98 and $99 on a two-call divider, draw it in single colour (format byte $025A set to 1), select its colour from the level background condition, and follow the player's X/Y with one of three vertical offsets."
   },
   {
    "address": 31864,
    "type": "line",
-   "text": "Mutable sprite number, divider and vertical-offset selector for the player-attached type-eleven effect."
+   "text": "Mutable sprite number of the player-attached type-eleven effect, alternating between $98 and $99 on every second call."
   },
   {
    "address": 31865,
@@ -7193,7 +7193,7 @@
   {
    "address": 31870,
    "type": "line",
-   "text": "Test the terrain beside the player's upper/side cells for glyphs $C4-$C7 and allocate or remove a type-twelve attached effect accordingly. Rotate a strip of character bytes at $C61D-$C63F, copy its leading pair to glyph $18 and randomize six following glyph rows through the mask at $AFF3."
+   "text": "Test the cell one column right of the player's tile column, one row above the player's row when standing and in that row in wheel form, for glyphs $C4-$C7 and allocate or remove a type-twelve attached effect accordingly. Rotate the character bytes at $C61D-$C63F by two, copy the bytes then at $C61E/$C61F to the first two rows of glyph $18 and randomize its six following rows from $C62A-$C62F through the mask at $AFF3."
   },
   {
    "address": 31958,
@@ -7268,7 +7268,7 @@
   {
    "address": 32957,
    "type": "line",
-   "text": "Write the two projectile X high bits, X low bytes and Y values into hardware sprites six and seven, using the register-offset and mask pairs at $8610-$8615."
+   "text": "Write the two projectile X high bits, X low bytes and Y values into hardware sprites six and seven, using the clear masks at $8612 and the register offsets at $8614."
   },
   {
    "address": 32990,
@@ -7288,7 +7288,7 @@
   {
    "address": 33293,
    "type": "line",
-   "text": "Alternate the boss colour matrix and request the death sound while the countdown runs. Restore the shared camera and raster hooks, replace the actor slots with eleven offset explosions, request the palette flash and temporary player blocking state, then award 10000 points through the score hook."
+   "text": "Alternate the boss colour matrix and request the death sound while the countdown runs. Restore the shared camera and raster hooks, replace the actor slots with eleven offset explosions and request the palette flash. Start a thirty-update screen shake through $027E/$027F, during which the resident loop at $0C39 skips the player update, then award 10000 points through the score hook."
   },
   {
    "address": 33424,
@@ -7473,7 +7473,7 @@
   {
    "address": 34320,
    "type": "line",
-   "text": "Two X high-bit masks for hardware sprites six and seven, used when moving, testing and drawing the two boss projectiles."
+   "text": "Two X high-bit masks for hardware sprites six and seven, used when launching, moving and testing the two boss projectiles."
   },
   {
    "address": 34322,
@@ -7488,7 +7488,7 @@
   {
    "address": 34326,
    "type": "line",
-   "text": "Thirty colours, two facing groups of fifteen arranged as three sprite columns by five vertical rows. The first group is restored after hit flashes; the other supplies the opposite facing."
+   "text": "Thirty colours, two facing groups of fifteen arranged as three sprite columns by five vertical rows. While the boss lives, each update copies the current facing's group back to the live matrix, which ends a hit flash."
   },
   {
    "address": 34356,
@@ -8318,12 +8318,12 @@
   {
    "address": 36804,
    "type": "line",
-   "text": "Horizontal map limit of width minus ten visible macro-columns."
+   "text": "Word 153, the map width less the ten visible block columns. No instruction in the resident engine or this level reads it; the camera compares against the character-column extent at $8FCC, 612."
   },
   {
    "address": 36806,
    "type": "line",
-   "text": "Vertical map limit of height parameter minus five."
+   "text": "Word 45, the map height less the five visible block rows. No instruction in the resident engine or this level reads it; the camera compares against the character-row extent at $8FCE, 179."
   },
   {
    "address": 36808,
@@ -8508,12 +8508,12 @@
   {
    "address": 36848,
    "type": "line",
-   "text": "Retained little-endian count 8150, equal to 163 times fifty map bytes. Its CPU consumer remains open."
+   "text": "Little-endian count 8150, equal to 163 times fifty map bytes. No instruction in the resident engine or this level reads it."
   },
   {
    "address": 36850,
    "type": "line",
-   "text": "Fourteen retained bytes at the end of the level header. They include a second count and dimensions matching the map parameters; their editor/runtime consumers remain open."
+   "text": "Fourteen bytes at the end of the level header that no instruction in the resident engine or this level reads. They are the word $5FD6, the words 162 and 49 (the map width and height less one), the three playfield colours $0E, $0C and $09 as at $8FD0-$8FD2, a byte $06, and the map width 163 and height 50 as words."
   },
   {
    "address": 36864,
@@ -8903,7 +8903,7 @@
   {
    "address": 45049,
    "type": "line",
-   "text": "Seven loaded bytes after the six-row ripple mask and before the terrain block definitions at $B000. Their visual or gameplay role remains unidentified; the mask reader stops at $AFF8."
+   "text": "Seven zero bytes after the six-row ripple mask and before the terrain block definitions at $B000. No instruction in the resident engine or this level reads them; the mask reader stops at $AFF8."
   },
   {
    "address": 45056,
@@ -9118,7 +9118,7 @@
   {
    "address": 53248,
    "type": "line",
-   "text": "Sprite bitmap slots $40-$4F, each sixty-three row bytes plus one stride byte. Left-facing player walk components. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
+   "text": "Sprite bitmap slots $40-$4F, each sixty-three row bytes plus one byte the VIC does not display. Right-facing player walk components: the walk table at $08D3, read when the facing flag $25 is one, uses $40-$54. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
   },
   {
    "address": 53394,
@@ -9213,17 +9213,17 @@
   {
    "address": 54272,
    "type": "line",
-   "text": "Sprite bitmap slots $50-$5F, each sixty-three row bytes plus one stride byte. Player walk components for both facings. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
+   "text": "Sprite bitmap slots $50-$5F, each sixty-three row bytes plus one byte the VIC does not display. Player walk components for both facings. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
   },
   {
    "address": 55295,
    "type": "line",
-   "text": "RAM continuation within sprite $5F, byte offset 63, in the bitmap allocation beginning at $D000. The VIC reads these art bytes. CPU references to this same address with I/O visible instead access a SID register mirror; they do not read this sprite RAM."
+   "text": "Byte 63 of physical sprite slot $5F, the last byte of the slot, which the VIC does not fetch: a sprite's picture is the first 63 bytes. With I/O visible the CPU sees a SID register mirror at this address. The resident colour fill at $5575 names it only as the base of an indexed store, sta $D7FF,X with X from $C8 down to 1, which lands in colour RAM at $D800-$D8C7."
   },
   {
    "address": 55296,
    "type": "line",
-   "text": "Sprite bitmap slots $60-$6F, each sixty-three row bytes plus one stride byte. Right-facing walk and standing player components. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
+   "text": "Sprite bitmap slots $60-$6F, each sixty-three row bytes plus one byte the VIC does not display. Left-facing walk components $60-$69 and standing player components for both facings, $6A-$6C right and $6D-$6F left. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
   },
   {
    "address": 55297,
@@ -9338,7 +9338,7 @@
   {
    "address": 55615,
    "type": "line",
-   "text": "RAM continuation within sprite $64, byte offset 63, in the bitmap allocation beginning at $D000. The VIC reads these art bytes. CPU references to this same address with I/O visible instead access colour RAM; they do not read this sprite RAM."
+   "text": "Byte 63 of physical sprite slot $64, the last byte of the slot, which the VIC does not fetch: a sprite's picture is the first 63 bytes. With I/O visible the CPU sees a colour RAM cell at this address; no instruction in this level or the resident engine names it."
   },
   {
    "address": 55616,
@@ -9488,7 +9488,7 @@
   {
    "address": 55935,
    "type": "line",
-   "text": "RAM continuation within sprite $69, byte offset 63, in the bitmap allocation beginning at $D000. The VIC reads these art bytes. CPU references to this same address with I/O visible instead access colour RAM; they do not read this sprite RAM."
+   "text": "Byte 63 of physical sprite slot $69, the last byte of the slot, which the VIC does not fetch: a sprite's picture is the first 63 bytes. With I/O visible the CPU sees a colour RAM cell at this address; no instruction in this level or the resident engine names it."
   },
   {
    "address": 55936,
@@ -9598,52 +9598,52 @@
   {
    "address": 56319,
    "type": "line",
-   "text": "RAM continuation within sprite $6F, byte offset 63, in the bitmap allocation beginning at $D000. The VIC reads these art bytes. CPU references to this same address with I/O visible instead access colour RAM; they do not read this sprite RAM."
+   "text": "Byte 63 of physical sprite slot $6F, the last byte of the slot, which the VIC does not fetch: a sprite's picture is the first 63 bytes. With I/O visible the CPU sees the last colour RAM cell at this address, and the resident engine keeps a counter in its low nibble: read at $0EEB, $4BBD and $4ED2, incremented at $0EF4 and decremented at $4F4A."
   },
   {
    "address": 56320,
    "type": "line",
-   "text": "Sprite bitmap slots $70-$7F, each sixty-three row bytes plus one stride byte. Player airborne, crouch and wheel components. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
+   "text": "Sprite bitmap slots $70-$7F, each sixty-three row bytes plus one byte the VIC does not display. Player airborne, crouch and wheel components. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
   },
   {
    "address": 57344,
    "type": "line",
-   "text": "Sprite bitmap slots $80-$8F, each sixty-three row bytes plus one stride byte. Player effect frames, actor explosions and collectible shapes. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
+   "text": "Sprite bitmap slots $80-$8F, each sixty-three row bytes plus one byte the VIC does not display. The wheel-form pairs $80-$83, which continue $7C-$7F, actor explosions $84-$8A and collectible shapes $8B-$8F. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
   },
   {
    "address": 58368,
    "type": "line",
-   "text": "Sprite bitmap slots $90-$9F, each sixty-three row bytes plus one stride byte. Orb/projectile, splash and ground-walker frames. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
+   "text": "Sprite bitmap slots $90-$9F, each sixty-three row bytes plus one byte the VIC does not display. Orb $90, actor projectile $91, the blinking invulnerability effect's shapes $92-$95 listed at $0931, the two splash effects $96-$99 and ground-walker frames $9A-$9F. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
   },
   {
    "address": 59392,
    "type": "line",
-   "text": "Sprite bitmap slots $A0-$AF, each sixty-three row bytes plus one stride byte. Ground-walker, segmented-creature and small-flyer frames. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
+   "text": "Sprite bitmap slots $A0-$AF, each sixty-three row bytes plus one byte the VIC does not display. Ground-walker, segmented-creature and small-flyer frames. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
   },
   {
    "address": 60416,
    "type": "line",
-   "text": "Sprite bitmap slots $B0-$BF, each sixty-three row bytes plus one stride byte. Falling capsule, boss projectile, bonus object, wandering flyer and wind particles. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
+   "text": "Sprite bitmap slots $B0-$BF, each sixty-three row bytes plus one byte the VIC does not display. Small-flyer frames $B0-$B7, falling capsule $B8-$BA, boss projectile $BB, bonus object $BC, wandering flyer $BD/$BE, with $BE also a wind particle, and the stationary spawner $BF. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
   },
   {
    "address": 61440,
    "type": "line",
-   "text": "Sprite bitmap slots $C0-$CF, each sixty-three row bytes plus one stride byte. Wind particles, reward crate and giant-boss components. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
+   "text": "Sprite bitmap slots $C0-$CF, each sixty-three row bytes plus one byte the VIC does not display. Wind particles, reward crate and giant-boss components. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
   },
   {
    "address": 62464,
    "type": "line",
-   "text": "Sprite bitmap slots $D0-$DF, each sixty-three row bytes plus one stride byte. Giant-boss pose components and retained sprite slots. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
+   "text": "Sprite bitmap slots $D0-$DF, each sixty-three row bytes plus one byte the VIC does not display. Giant-boss pose components: partial pose A $D0-$D7, partial pose B $D8-$DB and the second facing's full pose $DC-$DF. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
   },
   {
    "address": 63488,
    "type": "line",
-   "text": "Sprite bitmap slots $E0-$EF, each sixty-three row bytes plus one stride byte. Opposite-facing giant-boss components and retained sprite slots. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
+   "text": "Sprite bitmap slots $E0-$EF, each sixty-three row bytes plus one byte the VIC does not display. Opposite-facing giant-boss components $E0-$E6 and $E8-$EF, and one slot, $E7, that nothing selects. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
   },
   {
    "address": 64512,
    "type": "line",
-   "text": "Sprite bitmap slots $F0-$F3, each sixty-three row bytes plus one stride byte. Four retained sprite slots immediately before the callback code at $FD00. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
+   "text": "Sprite bitmap slots $F0-$F3, each sixty-three row bytes plus one byte the VIC does not display. Giant-boss partial pose B for the second facing, immediately before the callback code at $FD00. The VIC bank is $C000, so each shape number selects its slot at $C000 plus sixty-four times the number."
   },
   {
    "address": 64768,

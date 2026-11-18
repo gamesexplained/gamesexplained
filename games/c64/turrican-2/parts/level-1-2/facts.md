@@ -18,7 +18,7 @@ The overhead enemy at `$7E39` starts with 444 health. Its body uses four columns
 
 The seven-band enemy at `$8223` starts with 300 health at `$8A06/$8A07`. Its body uses three columns of seven bands. After emerging, two adjacent terrain cells form its character-damage weak point. Death awards 15000 points and sets the exit explosion creation counter to fifty. These counts come from the immediate stores and score requests, rather than an elapsed-time observation.
 
-Sprite slots `$DE/$DF` contain boss control tables, not pictures. The preceding sprite `$DD` ends its visible bitmap at `$F77E`; its stride byte starts an alignment table. New bitmap slots supplied by this load are `$A6-$DD` and `$E0-$FD`.
+Sprite slots `$DE/$DF` contain boss control tables, not pictures. The preceding sprite `$DD` ends its visible bitmap at `$F77E`; its sixty-fourth byte, which the VIC does not display, starts an alignment table. New bitmap slots supplied by this load are `$A6-$DD` and `$E0-$FD`.
 
 ## Live evidence
 

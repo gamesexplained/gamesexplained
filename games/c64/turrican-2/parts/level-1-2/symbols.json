@@ -3638,13 +3638,13 @@
   },
   {
    "address": 36804,
-   "name": "map_horizontal_camera_limit",
+   "name": "unread_width_less_view",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 36806,
-   "name": "map_vertical_camera_limit",
+   "name": "unread_height_less_view",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5009,12 +5009,12 @@
   {
    "address": 27648,
    "type": "line",
-   "text": "Actor type three. Initialize walking direction toward the player, animation dividers, health one and fall state. Test player overlap and projectile-character damage, animate four facing-dependent walk shapes, turn at blocking terrain and fall according to the vertical tables. The descending-player contact path changes the actor to its flattened state and can bounce the player; its second coordinate comparison uses player X. Wheel/immunity contact or the screen flash releases it through an explosion and awards 100 points."
+   "text": "Actor type three. Initialize walking direction toward the player, animation dividers, health one and fall state. Test player overlap and projectile-character damage, animate four facing-dependent walk shapes, turn at blocking terrain and fall according to the vertical tables. The descending-player contact path (jump index $23 or more, actor Y not above the player's and at least $3E) changes the actor to its flattened state and, unless the scroll direction is five or more, bounces the player and awards 500 points. Wheel/immunity contact, a fatal projectile hit or the screen flash releases it through an explosion and awards 100 points."
   },
   {
    "address": 27651,
    "type": "line",
-   "text": "Operand byte 1 of the BPL instruction at $6C02, within this level's existing actor or display routine. It is not an independent instruction entry. The shared call to $6C03 selects music only in overlays that contain the music driver; this level has an actor branch operand here."
+   "text": "Operand byte 1 of the BPL instruction at $6C02, within this level's type-three ground walker routine. It is not an independent instruction entry. The resident call jsr $6C03 at $0E7C, made only while $03EE is nonzero, is the per-update music play call in loads that hold the music driver at $6C00; this level has an actor branch operand here."
   },
   {
    "address": 27654,
@@ -5089,7 +5089,7 @@
   {
    "address": 30637,
    "type": "line",
-   "text": "Actor type ten. The initial state supplies a solid platform and changes to its reward state when struck by a projectile. Repeated qualified hits count down its reward counter, create bouncing collectible slots with randomized subtypes, and finally award 5000 points before explosion. Separate overlap paths let the player stand on it or bump it from below, maintaining the shared platform-contact flags. Spawned reward actors move with a signed trajectory until they become ordinary type-two pickups."
+   "text": "Actor type ten. The initial state $0E only tests for a projectile character; the first hit gives it sprite $AD and state $0F, in which it is a platform. In that state the fourth and then every fifth call with projectile contact, and each new bump from below, counts down its reward counter of ten and creates a bouncing collectible slot with a randomized subtype; the count after the tenth awards 5000 points and turns it into an explosion. Separate overlap paths let the player stand on it or bump it from below, maintaining the shared platform-contact flags. Spawned reward actors move with a signed trajectory until they become ordinary type-two pickups."
   },
   {
    "address": 31139,
@@ -5099,17 +5099,17 @@
   {
    "address": 31148,
    "type": "line",
-   "text": "Thirty signed vertical offsets for newly launched rewards before they settle into the ordinary collectible behavior."
+   "text": "Thirty signed vertical offsets shared by five routines. Newly launched rewards add entries zero to twenty-nine in turn before they settle into the ordinary collectible behavior ($796A/$798E). The arc bomber adds them with an index counting down from $1C ($7022). The four-part enemy's fragments ($7677), the bouncing type-nine actors ($77A5) and the overhead enemy's fragment handler ($817C) subtract them, each with an index that counts down."
   },
   {
    "address": 31178,
    "type": "line",
-   "text": "Actor type twelve. Alternate its shape on a two-call divider, enable multicolour, follow player X and form Y from player posture and wheel offsets. During the ascending part of a jump increment player Y. The picture's identity remains to be named from the graphics."
+   "text": "Actor type twelve. Alternate its shape between sprites $96 and $97 on a two-call divider, draw it in single colour (format byte $025A set to 1), follow player X and form Y from player posture and wheel offsets. During the ascending part of a jump increment player Y."
   },
   {
    "address": 31240,
    "type": "line",
-   "text": "Actor type eleven. Animate its sprite on a two-call divider, enable multicolour, set colour one and follow the player's X/Y with one of three vertical offsets. This copy adds CLC before forming Y, and uses a fixed colour instead of the level-1-1 background test."
+   "text": "Actor type eleven. Animate its sprite on a two-call divider, draw it in single colour (format byte $025A set to 1), set colour one and follow the player's X/Y with one of three vertical offsets. This copy adds CLC before forming Y, and uses a fixed colour instead of the level-1-1 background test."
   },
   {
    "address": 31285,
@@ -5269,7 +5269,7 @@
   {
    "address": 34066,
    "type": "line",
-   "text": "Outside emergence, decrement the attack countdown and at two phase values choose one three-entry half of nine six-entry arrays at $9DAC-$9DE1. Copy those values into the live shape and bitmap-address matrices in $F7C5-$F7FF, reshape seven terrain rows using the width arrays at $8A22/$8A29, and request the paired sprite-projectile launch when both launch records are idle. A live read watchpoint confirmed the copy of $9DD1 to $F7F0."
+   "text": "Outside emergence, decrement the attack countdown and at two phase values choose one three-entry half of nine six-entry arrays at $9DAC-$9DE1. Copy those values into the live shape and bitmap-address matrices in $F7C5-$F7FF, reshape seven terrain rows using the width arrays at $8A22/$8A29, and request the paired sprite-projectile launch when both launch records are idle."
   },
   {
    "address": 34246,
@@ -5299,7 +5299,7 @@
   {
    "address": 34642,
    "type": "line",
-   "text": "Alternate body colours and request the death effect while the countdown runs, then erase the associated terrain strip, restore ordinary camera/multiplexer hooks and clear sprite priority. Initialize an exit-explosion actor in slot ten and pending count fifty, request the palette flash and temporary blocking state, and award 15000 points."
+   "text": "Alternate body colours and request the death effect while the countdown runs, then erase the associated terrain strip, restore ordinary camera/multiplexer hooks and clear sprite priority. Initialize an exit-explosion actor in slot ten and pending count fifty and request the palette flash. Start a thirty-update screen shake through $027E/$027F, during which the resident loop at $0C39 skips the player update, and award 15000 points."
   },
   {
    "address": 34807,
@@ -5419,7 +5419,7 @@
   {
    "address": 35324,
    "type": "line",
-   "text": "Convert A plus the separately supplied ninth-X selector in Y to an eight-bit half-pixel coordinate by setting carry and rotating A right."
+   "text": "Convert A plus the separately supplied ninth-X selector in Y to an eight-bit half-pixel coordinate: any nonzero Y sets carry, zero clears it, and A is rotated right through it."
   },
   {
    "address": 35334,
@@ -6069,12 +6069,12 @@
   {
    "address": 36804,
    "type": "line",
-   "text": "Horizontal camera limit 90, with ten visible macro-columns removed from the map width."
+   "text": "Word 90, the map width less the ten visible block columns. No instruction in the resident engine or this level reads it; the camera compares against the character-column extent at $8FCC, 360."
   },
   {
    "address": 36806,
    "type": "line",
-   "text": "Vertical camera limit 75, with five removed from the height parameter."
+   "text": "Word 75, the map height less the five visible block rows. No instruction in the resident engine or this level reads it; the camera compares against the character-row extent at $8FCE, 299."
   },
   {
    "address": 36808,
@@ -6259,12 +6259,12 @@
   {
    "address": 36848,
    "type": "line",
-   "text": "Retained count 8000, equal to 100 times 80 stored map bytes. Its direct CPU consumer remains open."
+   "text": "Little-endian count 8000, equal to 100 times eighty map bytes. No instruction in the resident engine or this level reads it."
   },
   {
    "address": 36850,
    "type": "line",
-   "text": "Fourteen retained header-tail bytes containing additional count/dimension-like values. Their consumers remain open; no editor feature is inferred."
+   "text": "Fourteen bytes at the end of the level header that no instruction in the resident engine or this level reads. They are the word $5F40, the words 99 and 79 (the map width and height less one), the three playfield colours $04, $0C and $09 as at $8FD0-$8FD2, a byte $06, and the map width 100 and height 80 as words."
   },
   {
    "address": 36864,
@@ -6619,7 +6619,7 @@
   {
    "address": 42828,
    "type": "line",
-   "text": "Stored terrain cell at block row 59, column 64. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 59, column 64. patch_level12_map_passage ($7B70) stores $E1 here at $7BB8; the loaded byte is $68. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 42864,
@@ -6629,7 +6629,7 @@
   {
    "address": 42929,
    "type": "line",
-   "text": "Stored terrain cell at block row 60, column 65. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 60, column 65. patch_level12_map_passage ($7B70) stores $E1 here at $7BB5; the loaded byte is $68. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 42964,
@@ -6644,7 +6644,7 @@
   {
    "address": 43130,
    "type": "line",
-   "text": "Stored terrain cell at block row 62, column 66. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 62, column 66. patch_level12_map_passage ($7B70) stores $E1 here at $7BB2; the loaded byte is $68. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 43164,
@@ -6659,7 +6659,7 @@
   {
    "address": 43329,
    "type": "line",
-   "text": "Stored terrain cell at block row 64, column 65. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 64, column 65. patch_level12_map_passage ($7B70) stores $E1 here at $7BAF; the loaded byte is $68. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 43364,
@@ -6674,7 +6674,7 @@
   {
    "address": 43528,
    "type": "line",
-   "text": "Stored terrain cell at block row 66, column 64. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 66, column 64. patch_level12_map_passage ($7B70) stores $E1 here at $7BAC; the loaded byte is $68. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 43564,
@@ -6689,7 +6689,7 @@
   {
    "address": 43729,
    "type": "line",
-   "text": "Stored terrain cell at block row 68, column 65. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 68, column 65. patch_level12_map_passage ($7B70) stores $E1 here at $7BA9; the loaded byte is $68. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 43764,
@@ -6704,7 +6704,7 @@
   {
    "address": 43930,
    "type": "line",
-   "text": "Stored terrain cell at block row 70, column 66. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 70, column 66. patch_level12_map_passage ($7B70) stores $E1 here at $7BA6; the loaded byte is $68. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 43964,
@@ -6714,7 +6714,7 @@
   {
    "address": 44042,
    "type": "line",
-   "text": "Stored terrain cell at block row 71, column 78. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 71, column 78. patch_level12_map_passage ($7B70) stores $D6 here at $7B72; the loaded byte is $F7. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44064,
@@ -6724,7 +6724,7 @@
   {
    "address": 44131,
    "type": "line",
-   "text": "Stored terrain cell at block row 72, column 67. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 72, column 67. patch_level12_map_passage ($7B70) stores $E1 here at $7BA3; the loaded byte is $68. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44164,
@@ -6739,7 +6739,7 @@
   {
    "address": 44329,
    "type": "line",
-   "text": "Stored terrain cell at block row 74, column 65. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 74, column 65. patch_level12_map_passage ($7B70) stores $E1 here at $7BA0; the loaded byte is $68. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44364,
@@ -6754,7 +6754,7 @@
   {
    "address": 44530,
    "type": "line",
-   "text": "Stored terrain cell at block row 76, column 66. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 76, column 66. patch_level12_map_passage ($7B70) stores $E1 here at $7B9D; the loaded byte is $68. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44564,
@@ -6764,22 +6764,22 @@
   {
    "address": 44627,
    "type": "line",
-   "text": "Stored terrain cell at block row 77, column 63. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 77, column 63. patch_level12_map_passage ($7B70) stores $54 here at $7B92; the loaded byte is $C6. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44632,
    "type": "line",
-   "text": "Stored terrain cell at block row 77, column 68. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 77, column 68. patch_level12_map_passage ($7B70) stores $D4 here at $7B8A; the loaded byte is $D6. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44638,
    "type": "line",
-   "text": "Stored terrain cell at block row 77, column 74. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 77, column 74. patch_level12_map_passage ($7B70) stores $54 here at $7B8F; the loaded byte is $75. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44642,
    "type": "line",
-   "text": "Stored terrain cell at block row 77, column 78. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 77, column 78. patch_level12_map_passage ($7B70) stores $D4 here at $7B87; the loaded byte is $D6. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44664,
@@ -6789,22 +6789,22 @@
   {
    "address": 44727,
    "type": "line",
-   "text": "Stored terrain cell at block row 78, column 63. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 78, column 63. patch_level12_map_passage ($7B70) stores $E5 here at $7B7A; the loaded byte is $75. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44729,
    "type": "line",
-   "text": "Stored terrain cell at block row 78, column 65. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 78, column 65. patch_level12_map_passage ($7B70) stores $E1 here at $7B9A; the loaded byte is $68. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44732,
    "type": "line",
-   "text": "Stored terrain cell at block row 78, column 68. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 78, column 68. patch_level12_map_passage ($7B70) stores $E5 in this cell and the six after it, columns 68 to 74 ($AEBC-$AEC2), with sta $AEBC,x at $7B7F for X from 6 down to 0; the loaded bytes are 0B 5A 2A 34 E7 34 C6. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44742,
    "type": "line",
-   "text": "Stored terrain cell at block row 78, column 78. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 78, column 78. patch_level12_map_passage ($7B70) stores $E5 here at $7B77; the loaded byte is $0B. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44764,
@@ -6814,7 +6814,7 @@
   {
    "address": 44830,
    "type": "line",
-   "text": "Stored terrain cell at block row 79, column 66. This address is also named by the level's map-patching or collapsing-strip code; the remaining bytes continue the row's nibble-exchanged block encoding."
+   "text": "Stored terrain cell at block row 79, column 66. patch_level12_map_passage ($7B70) stores $E1 here at $7B97; the loaded byte is $68. The routine runs when the level callback at $7B1C finds the camera X low byte ($09) equal to $44 with both camera high bytes ($0A, $0C) non-zero. The remaining bytes continue the row's nibble-exchanged block encoding."
   },
   {
    "address": 44864,
@@ -7004,27 +7004,27 @@
   {
    "address": 59776,
    "type": "line",
-   "text": "Sprite slots $A6-$AF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a stride byte, selected by shape number in VIC bank $C000."
+   "text": "Sprite slots $A6-$AF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a sixty-fourth byte the VIC does not display, selected by shape number in VIC bank $C000."
   },
   {
    "address": 60416,
    "type": "line",
-   "text": "Sprite slots $B0-$BF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a stride byte, selected by shape number in VIC bank $C000."
+   "text": "Sprite slots $B0-$BF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a sixty-fourth byte the VIC does not display, selected by shape number in VIC bank $C000."
   },
   {
    "address": 61440,
    "type": "line",
-   "text": "Sprite slots $C0-$CF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a stride byte, selected by shape number in VIC bank $C000."
+   "text": "Sprite slots $C0-$CF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a sixty-fourth byte the VIC does not display, selected by shape number in VIC bank $C000."
   },
   {
    "address": 62464,
    "type": "line",
-   "text": "Fourteen sprite slots $D0-$DD, each with sixty-three bitmap bytes. Sprite $DD ends its visible bitmap at $F77E; its stride byte at $F77F begins the boss alignment/control allocation, followed by two slots used for matrices rather than sprite art."
+   "text": "Fourteen sprite slots $D0-$DD, each with sixty-three bitmap bytes. Sprite $DD ends its visible bitmap at $F77E; its sixty-fourth byte at $F77F, which the VIC does not display, begins the boss alignment/control allocation, followed by two slots used for matrices rather than sprite art."
   },
   {
    "address": 63359,
    "type": "line",
-   "text": "Eight comparison values indexed by fine-scroll phase to select bitmap-row exchange. The first byte occupies the unused stride byte of sprite $DD; the remaining control data uses the next two unused sprite slots."
+   "text": "Eight comparison values indexed by fine-scroll phase to select bitmap-row exchange. The first byte occupies the sixty-fourth byte of sprite $DD, which the VIC does not display; the remaining control data uses the next two unused sprite slots."
   },
   {
    "address": 63367,
@@ -7039,7 +7039,7 @@
   {
    "address": 63369,
    "type": "line",
-   "text": "Three ninth-X-bit masks for the body columns on hardware sprites three, four and five."
+   "text": "Three bytes $08, $10 and $20, the ninth-X-bit masks of hardware sprites three, four and five, which carry the body columns. No instruction reads them; the drawing routine at $885A uses their combined value at $F78F."
   },
   {
    "address": 63372,
@@ -7199,12 +7199,12 @@
   {
    "address": 63488,
    "type": "line",
-   "text": "Sprite slots $E0-$EF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a stride byte, selected by shape number in VIC bank $C000."
+   "text": "Sprite slots $E0-$EF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a sixty-fourth byte the VIC does not display, selected by shape number in VIC bank $C000."
   },
   {
    "address": 64512,
    "type": "line",
-   "text": "Sprite slots $F0-$FD supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a stride byte, selected by shape number in VIC bank $C000."
+   "text": "Sprite slots $F0-$FD supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a sixty-fourth byte the VIC does not display, selected by shape number in VIC bank $C000."
   }
  ]
 }
