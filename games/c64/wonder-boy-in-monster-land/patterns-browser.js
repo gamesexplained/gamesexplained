@@ -17,7 +17,7 @@ const {start} = require('../../../kit/scripts/play_browser.js');
       [...canvas.getContext('2d').getImageData(0, 0, 24, 21).data]);
     assert.notDeepStrictEqual(after, before);
     assert((await page.locator('#shared-pattern-details a').getAttribute('href')).startsWith('source-stage-'));
-    assert((await page.locator('#shared-patterns').innerText()).includes('Where the game uses them'));
+    assert((await page.locator('#shared-patterns').innerText()).includes('24-by-21 grid'));
     assert.deepStrictEqual(errors, []);
     console.log('OK - repeated and single-load pattern viewer');
   } finally {
