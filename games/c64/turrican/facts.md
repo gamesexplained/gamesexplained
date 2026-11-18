@@ -170,7 +170,35 @@ which the title takes the low six bits (`title_fame_page`, $7384).
 
 ## The listing's error rate
 
-To be filled in by `60-verify`.
+Sample `sample-20261118`, seed 20261118: 80 of the listings' 8,059
+comments, in two strata, 60 from the 5,519 written one by one and 20
+from the 2,540 a decoder wrote from templates (the rows of the maps,
+squares and blocks, and the tunes' patterns, sound programs,
+instruments, order lists and songs). The checker ran on
+claude-fable-5-2 and wrote none of the comments. It marked 8 of the 80
+wrong in a detail, and each finding held when read against the code:
+10.0 %, with a 95 % interval of 5.2 % to 18.5 % (Wilson), and 10.0 %
+weighted by the strata's sizes. These are estimates, and the checker
+may have missed errors; the sure minimum is 8 of 8,059 (0.1 %). What
+was wrong: two of the ending tune's patterns were said to end at a $FF
+they do not hold (the song's pattern length ends them, and of the four
+tunes the module player plays, only the title tune's pattern 10 holds
+an end byte); the engine's routine that moves what is drawn in
+characters with the scroll called the mine, the grenade and the debris
+of broken walls shots; a prize block's burst lasts 3 to 10 frames, not
+3 to 11, because the carry is clear at the addition; the module
+player's vibrato step grows halfway through each run up or down, not at
+its turns; level 4-1's boss places the hero's sprites only on a frame
+when it lent top lines; level 5-1's table of row starts holds one start
+more than its comment said; and level 5-2's sprite-pointer bytes have a
+second writer, the routine that sets up the ship's picture in the
+walk to the ending. Each belief was searched for in every part and
+corrected wherever it appeared: 178 comments and 8 labels in 14 parts,
+among them every pattern comment of the four tunes, the row-start
+tables of ten levels, the four prize-block bursts, the three copies of
+the module player and the engine's eight scroll routines for what is
+drawn in characters. The sample is over the mark, and the listing has
+not had a full audit.
 
 ## Live tests
 
