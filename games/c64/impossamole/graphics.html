@@ -103,7 +103,10 @@ function imTick(m,a){if(!a.active||a.delay===255)return;if(a.delay){a.delay--;re
 for(let guard=0;guard<256;guard++){const v=m[0x8ec0+a.index];if(v!==255){a.shape=v;a.index=(a.index+1)&255;return;}const n=m[0x8ec0+((a.index+1)&255)];if(n===255){a.active=0;a.index=0;a.shape=0;return;}a.index=n;if(!n)return;}throw Error('Animation loop without a shape');}
 function imSprite(canvas,m,a){canvas.width=144;canvas.height=126;const c=canvas.getContext('2d');c.fillStyle='#292929';c.fillRect(0,0,144,126);if(!a.active)return;const b=m.slice(0xc000+64*a.shape,0xc03f+64*a.shape),pal=C64.PAL,ex=a.expandX?2:1,ey=a.expandY?2:1;
 if(a.multi)C64.drawSpriteMC(c,b,0,0,3,pal[a.colour&15],pal[11],pal[15],ex,ey);else C64.drawSprite(c,b,0,0,3,pal[a.colour&15],ex,ey);}
-function imTemplates(m){const out=[];for(let i=0;i<256;i++){const p=m[0x817c+2*i]|m[0x817d+2*i]<<8;if(p>=0x9142&&p+25<=0x9aff)out.push({id:i,p});}return out;}
+// A level's 26-byte templates run from $9128 to its first path stream, which the 36 pointers at $90E0 and $9104
+// name ($FFFF for none). The directory at $817C has entries $00-$F0; the tables at $835E follow it.
+function imTemplates(m){let end=0xffff;for(let i=0;i<36;i++){const p=m[0x90e0+2*i]|m[0x90e1+2*i]<<8;if(p<end)end=p;}
+ const out=[];for(let i=0;i<=0xf0;i++){const p=m[0x817c+2*i]|m[0x817d+2*i]<<8;if(p>=0x9128&&p+26<=end)out.push({id:i,p});}return out;}
 // end im-animation-port
 const IM_TYPES={1:'Shatterbomb',2:'Power gun',3:'Lazer gun',4:'Soup can',5:'Slimy worms',6:'Coin',7:'Pinta a day',9:'Shop entrance',10:'400 points',11:'800 points',0x37:'Coin'};
 const IM_MONTY=[[0,'Stand right'],[3,'Stand left'],[6,'Walk right'],[14,'Walk left'],[22,'Climb'],[28,'Fall right'],[31,'Fall left'],[34,'Jump right'],[37,'Jump left'],[40,'Jump right, high'],[43,'Jump left, high'],[46,'Hazard walk right'],[50,'Hazard walk left'],[54,'Hazard stand right'],[57,'Hazard stand left']];
