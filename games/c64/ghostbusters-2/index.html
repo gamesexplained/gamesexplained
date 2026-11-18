@@ -32,6 +32,12 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 .lede{color:var(--ink-soft);margin:0 0 30px}
 .plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
 .cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.sfx{width:100%;border-collapse:collapse;margin:22px 0 0;font-size:15px}
+.sfx th,.sfx td{text-align:left;vertical-align:top;padding:7px 10px;border-bottom:1px solid var(--line)}
+.sfx th{font-weight:700;color:var(--ink-soft)}
+.sfx td:first-child{white-space:nowrap}
+.sfx td.wrap-ok{white-space:normal}
+.sfx td:last-child{font-size:13px}
 .cap b{color:var(--ink);font-weight:700}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .controls{display:flex;flex-wrap:wrap;gap:8px}
@@ -55,26 +61,61 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">{{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">The film in three episodes: a cable down an airshaft, a walk down Broadway behind the Statue of Liberty, and a fight in the museum, with story screens between them.</p>
+  <p class="sub">The film in three episodes: down an airshaft on a cable, along Broadway behind the Statue of Liberty, and into the museum to fight Vigo. On the original disk, the two Ghostbusters in the museum can trap each other in a doorway.</p>
 </header>
 <main class="wrap">
 <section id="title-credits">
-  <h2 class="t">Credits rolled like a film’s</h2>
-  <p>The title screen names the team as if they were a film crew. Paul Baker is the code director, Steve Green the art director and D. Whittaker the sound recordist. Further down come a hair stylist, a makeup artist and the people on scenery and props. The lines scroll up in the same tall lettering the story screens use, each letter built from two characters stacked one on the other.</p>
+  <h2 class="t">The title screen credits the team like a film crew</h2>
+  <p>The title screen names the team as if they were a film crew. Paul Baker is the code director, Steve Green the art director and D. Whittaker the sound recordist. Further down come a hair stylist, a makeup artist and the people on scenery and props. The lines scroll up in the tall lettering that the story screens also use. Each letter is two characters, one on top of the other.</p>
   <div class="plate">
     <canvas id="credits" class="screen" width="320" height="136" aria-label="The title credits scrolling in the game’s lettering"></canvas>
     <p class="cap">The credits as the title stores them, thirty-six lines of forty characters, drawn with the game’s own letters.</p>
   </div>
 </section>
 <section id="music">
-  <h2 class="t">Music: one player for every scene</h2>
-  <p>The music is David Whittaker’s. The story screens and all three episodes use one sound player, kept at the same address in every load, and only the tune data change: the story screens share a tune, Broadway’s opening screen and the ending have their own, and two short jingles mark the airshaft won or lost. Broadway and the museum carry the same two jingles. The credits also name two songs from the film, Ray Parker Jr.’s Ghostbusters theme and Higher and Higher.</p>
+  <h2 class="t">Music: five tunes by David Whittaker, two of them for winning and losing</h2>
+  <p>The story screens share one tune, and Broadway’s opening screen and the ending each have their own. Two short jingles mark the airshaft won or lost, and Broadway and the museum carry the same two. The credits also name two songs from the film, Ray Parker Jr.’s Ghostbusters theme and Higher and Higher, without saying where they play, so the player names each tune by its place in the game.</p>
   <div class="plate"><div id="airshaft-sound"></div><p class="cap">Each tune runs through the game’s own player, one step per frame. Some low notes are hard to hear on laptop or phone speakers.</p></div>
+</section>
+<section id="sound-effects">
+  <h2 class="t">Sound: six of the game’s 26 sound effects are never played</h2>
+  <p class="lede">The sound player keeps 26 effects beside the music, numbered 0 to 25. The three episodes ask for 20 of them. Each button plays one effect on its own.</p>
+  <div class="plate"><div id="effects-sound"></div><p class="cap">Each effect runs through the game’s own sound player. It starts the way the episode starts it, and the player updates it once a frame, as in the game. The button plays effect 7 once, from start to end.</p></div>
+  <table class="sfx">
+    <thead><tr><th>Effect</th><th>The game asks for it when</th><th>Where</th></tr></thead>
+    <tbody>
+      <tr><td>3</td><td>the creature in the airshaft saws at the cable</td><td><code>$CB18</code>, <code>$CB34</code></td></tr>
+      <tr><td>4</td><td>the cable breaks, together with effect 12</td><td><code>$CB5A</code></td></tr>
+      <tr><td>5</td><td>a ghost sets off across the airshaft; on Broadway, a shot ghost leaves slime on the road</td><td><code>$C9D5</code>, <code>$CC40</code>; <code>$ABA5</code></td></tr>
+      <tr><td>6</td><td>an animation in the airshaft’s character set reaches its end; in the museum, Oscar has been out of his crib for a set time</td><td><code>$898C</code>, <code>$8A20</code>; <code>$824A</code></td></tr>
+      <tr><td>7</td><td>a proton beam is on in the museum: the game starts the effect again on every frame</td><td><code>$872D</code>, <code>$8DD4</code></td></tr>
+      <tr><td>8</td><td>a ghost in the airshaft, or the creature, is beaten</td><td><code>$C6BE</code>, <code>$CA7C</code></td></tr>
+      <tr><td>11</td><td>a ghost touches the Ghostbuster in the airshaft, and his courage drops</td><td><code>$9478</code></td></tr>
+      <tr><td>12</td><td>the Ghostbuster in the airshaft dies: his courage has run out, or the cable has broken</td><td><code>$86DE</code>, <code>$CB5F</code></td></tr>
+      <tr><td>13</td><td>a Ghostbuster in the museum fires slime</td><td><code>$9A83</code> and five more</td></tr>
+      <tr><td>14</td><td>the proton beam in the airshaft switches off</td><td><code>$841E</code>, <code>$9528</code>, <code>$AAFA</code>, <code>$ABD6</code></td></tr>
+      <tr><td>15</td><td>Space picks the next weapon in the airshaft; an item changes hands on the museum’s equipment panel</td><td><code>$AABD</code>; <code>$CF37</code></td></tr>
+      <tr><td>16</td><td>the Ghostbuster in the airshaft picks up the elixir or a piece of the scoop; a Ghostbuster in the museum picks up Oscar</td><td><code>$98C1</code>, <code>$9996</code>; <code>$95E5</code></td></tr>
+      <tr><td>17</td><td>a proton beam is on in the airshaft; a proton beam is switched on in the museum</td><td><code>$BE75</code>; <code>$8758</code>, <code>$8DFF</code></td></tr>
+      <tr><td>18</td><td>the shield goes up in the airshaft</td><td><code>$AB35</code></td></tr>
+      <tr><td>19</td><td>the bomb goes off in the airshaft; Janosz or Vigo sends an attack in the museum</td><td><code>$AB1C</code>; <code>$AAAF</code>, <code>$AFE6</code></td></tr>
+      <tr><td>20</td><td>the opponent rises in the museum, between the two fights</td><td><code>$AF8E</code></td></tr>
+      <tr><td>21</td><td>the Statue of Liberty finishes a stride</td><td><code>$83E7</code></td></tr>
+      <tr><td>22</td><td>a person on Broadway scoops up slime</td><td><code>$B2CF</code></td></tr>
+      <tr><td>24</td><td>the fireball hits something, or a ghost reaches the statue</td><td><code>$97D8</code> and seven more</td></tr>
+      <tr><td>25</td><td>the fireball shoots; an attack hits a Ghostbuster in the museum</td><td><code>$8CCD</code> and five more; <code>$AA6B</code></td></tr>
+      <tr><td class="wrap-ok">0, 1, 2, 9, 10, 23</td><td>never</td><td></td></tr>
+    </tbody>
+  </table>
+  <p class="cap">An address beginning with <code>$</code> is a hexadecimal location in the episode’s code: the instruction that asks for the effect.</p>
+  <p>Some effects serve two episodes. The bang of the bomb in the airshaft is the sound of Janosz or Vigo sending an attack in the museum, and the hum of the proton beam in the airshaft plays when a beam is switched on in the museum. Effects 0, 1, 2, 9, 10 and 23 sit in the table with the rest, but the game never asks for them. Each request in the three episodes gives the effect’s number in the instruction just before it, and none of those numbers is one of the six. One routine passes on a number it is given, and nothing in the code is known to call it.</p>
+  <p>The C64’s sound chip, the SID, has three voices, and each voice plays one sound at a time. An effect takes over one voice from the music. It is twelve bytes: a starting pitch, a step that the pitch climbs or falls by, how long the effect lasts, how often the pitch jumps back to its start, and the waveform. The music stays off that voice until the effect ends, and the game picks which voice each effect uses.</p>
 </section>
 <section id="story-screens">
   <h2 class="t">The story between episodes</h2>
   <p>Before each episode, and after the last, the game loads a picture and a few lines of story that roll up beneath it. They retell the film in a hurry, and with some cheek: when Spengler and Stantz investigate, “the GIGA-METER readings are as high as a month-old pastrami on rye!” The longest comes before Broadway. It opens with a rhyme, “it’s like evil, it’s like fear, the ghostbusters are back and help is near”, and warns that the city will soon “blow like a frog on a hotplate!”</p>
   <p>Cracked copies of the game lost that screen’s words. In their place is a note from whoever cracked it: “oh shit, error / but just relax and enjoy life, and get ready for vigo and his power.”</p>
+  <p>Two of the stories share a picture. The opening story’s second picture comes back, byte for byte, as the first picture before Broadway.</p>
   <div class="plate">
     <div class="controls">
       <label for="story-screen">Screen</label> <select id="story-screen"></select>
@@ -86,19 +127,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 <section id="airshaft">
   <h2 class="t">Down the airshaft</h2>
-  <p>The first episode hangs a Ghostbuster on a cable inside a brick shaft. Up and down move him along it. The percentage on the panel gives 70 for the descent and ten for each of three pieces of a slime scoop stuck to the walls. At the bottom, steady his swing and lower him to take the sample.</p>
-  <p>Ghosts fly at him on the way. Each touch costs some courage, and an elixir restores it. Space switches between three weapons: the proton beam, the PKR bomb and a shield. Hold fire with up or down to send a bomb along the shaft; let go of fire and it goes off. Worse than the ghosts is a creature that saws at the cable: its close-up wears through <a href="graphics.html#airshaft-slot-image">six stages of damage</a>, and the last one drops him.</p>
+  <p>The first episode hangs a Ghostbuster on a cable inside a brick shaft. Up and down move him along it. The panel shows how much of the job is done as a percentage. The descent is worth 70, and each of the three pieces of a slime scoop, stuck to the walls, is worth ten. At the bottom, steady his swing and lower him to take the sample.</p>
+  <p>Ghosts fly at him on the way. While a ghost touches him, a count goes up, and every 32 take one strip off his courage gauge. The gauge has seventeen strips, and he dies when the last one goes. An elixir fills it again. Space switches between three weapons: the proton beam, the PKR bomb and a shield. Hold fire with up or down to send a bomb along the shaft, then let go of fire to set it off. A creature that saws at the cable is worse than the ghosts. A close-up of the cable on the panel wears through <a href="graphics.html#airshaft-panel">six stages of damage</a>, and at the last one the cable breaks and he falls.</p>
   <div class="plate">
     <button type="button" id="sprites" aria-pressed="true">Sprites on</button>
     <p><canvas id="airshaft-frame" class="screen" aria-label="One frame of the airshaft"></canvas></p>
     <p class="cap">One frame of the airshaft, drawn from the game’s memory and the changes it makes as the picture is drawn. Turn the sprites off to see the shaft behind the Ghostbuster. The <a href="levels.html#shaft-map">Levels tab</a> shows the whole shaft.</p>
   </div>
+  <p>The airshaft gives the player three tries, and the game sums up each one in a few lines of its own. A win brings “great ghostbusting! you collected enough slime to analyse!” A lost try brings “you are a worthless slimeball! ...but you have 2 more chances”, and the number counts down. With one try left, the game also drops the last letter of “chances”, so the line reads “1 more chance”. After the third try, it says “you didn’t scoop enough slime to analyse / vigo will reign supreme”. Pressing Q to give up brings “what kind of ghostbuster would quit? you have a heart of slime”.</p>
+  <p>On the original disk, the quit screen ends with “press fire” and the game-over screen with “press fire to try again”. The cracked copies end both with “take a rest, drink beer, then press fire”. They also changed the museum’s quit screen, which ends “man take a biig rest and pre ss fire!!!” in place of “press fire”.</p>
 </section>
 <section id="broadway">
   <h2 class="t">Broadway before midnight</h2>
-  <p>In the second episode the Statue of Liberty walks down Broadway and the player steers a fireball that shoots the ghosts swooping in. A shot ghost leaves a puddle of slime on the road. Three people walk along the street, Space turns them round, and anyone who steps on a puddle scoops it up and puts a row back in the statue’s slime supply.</p>
-  <p>Everything else costs slime. The fireball holds twenty-two shots, counted off on a red bar; when they run out a fresh fireball appears and takes a row from the supply, and so does every third ghost that reaches the statue. When the supply is empty the walk is over. So is it when the clock reaches twelve: it starts at 10:10 and only goes forward. Vigo’s deadline in the film is midnight on New Year’s Eve.</p>
-  <p>The street is shorter than the walk. The scenery is a strip <a href="levels.html#broadway-map">480 characters long</a>. After the first 256 of them the strip starts again from its first column, so the opening blocks come round a second time, and the statue reaches the end of the street at the end of that second, full pass.</p>
+  <p>In the second episode, the Statue of Liberty walks down Broadway, and the player steers a fireball that shoots the ghosts as they swoop in. A shot ghost leaves a puddle of slime on the road. Three people walk along the street, and Space turns them round. Anyone who steps on a puddle scoops it up and puts a row back into the statue’s slime supply.</p>
+  <p>Everything else costs slime. The fireball holds twenty-two shots, counted off on a red bar. When they run out, a fresh fireball appears and takes a row from the supply. Every third ghost that reaches the statue takes a row too. When the supply is empty, the walk is over. The walk is also over when the clock reaches twelve. The clock starts at 10:10. Vigo’s deadline in the film is midnight on New Year’s Eve. Broadway’s code has a switch that turns off both ways of losing, and the game never sets it (<a href="discoveries.html#switch">Discoveries</a>).</p>
+  <p>The street is shorter than the walk. The scenery is a strip <a href="levels.html#broadway-map">480 characters long</a>. After the first 256 columns, the game goes back to the strip’s first column, so the start of the street goes past a second time. This time the game scrolls the whole strip, and the statue reaches the end of the street when the strip ends.</p>
   <div class="plate">
     <div class="hud"><img src="reference/broadway.png" alt="The bottom of the Broadway screen: a slime jar, a red bar of shots and the clock at 10:20" width="384" height="272"></div>
     <p class="cap">The panel under the street: the slime supply on the left, the fireball’s shots in the red bar, and the clock reading 10:20.</p>
@@ -106,7 +149,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 <section id="rope-descent">
   <h2 class="t">Down the rope into the museum</h2>
-  <p>The Ghostbusters reach the museum floor down a rope, one at a time. Up closes a Ghostbuster’s hands on the rope and slows him; down opens them. Every fourth step he also speeds up a little on his own, but only once he is moving: leave the stick alone at the top and he just hangs there. He walks away from a landing slower than 6. At 6 or faster he falls, and the panel marks him DEAD.</p>
+  <p>The Ghostbusters reach the museum floor down a rope, one at a time. Up closes a Ghostbuster’s hands on the rope and slows him; down opens them. Every fourth update of the rope, he also speeds up a little on his own, but only once he is moving. Leave the stick alone at the top, and he just hangs there. If he lands at a speed below 6, he walks away. At 6 or faster he falls, and the panel marks him DEAD.</p>
   <div class="plate">
     <canvas id="rope" class="screen" aria-label="A Ghostbuster sliding down the rope into the museum"></canvas>
     <div class="controls"><button type="button" data-rope="up">Up: grip</button><button type="button" data-rope="down">Down: let go</button></div>
@@ -116,16 +159,16 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
 </section>
 <section id="museum">
-  <h2 class="t">Janosz, Vigo and the baby</h2>
-  <p>Two Ghostbusters work the floor together, and Space hands the joystick from one to the other. Return opens the equipment panel, with the four of them in a row: move the cursor, and fire picks up or puts back an item.</p>
+  <h2 class="t">In the museum, it takes both proton beams to hurt Vigo</h2>
+  <p>Two Ghostbusters work the museum floor together, and Space hands the joystick from one to the other. Return opens the equipment panel, which shows the four Ghostbusters in a row. Move the cursor, and fire picks up or puts back an item. On the original disk, a Ghostbuster may not walk into his partner, and a doorway can turn that rule into a trap for both of them (<a href="discoveries.html#trapped">Discoveries</a>).</p>
   <div class="plate">
     <button type="button" id="panel-sprites" aria-pressed="true">Sprites on</button>
     <p><canvas id="panel-frame" class="screen" aria-label="The equipment panel"></canvas></p>
     <p class="cap">The equipment panel, drawn from the game’s picture, colours and sprites. Turn the sprites off to see the picture under the cursor and the status words.</p>
   </div>
-  <p>The two weapons behave differently. The slime weapon fires drops, up to three in the air for each Ghostbuster. A proton beam stays on until fire is pressed again. Both draw on weapon energy that slowly comes back.</p>
-  <p>Janosz, Vigo’s servant, goes down to slime: ten hits empty his twenty-row strength bar, and Vigo takes over. Vigo’s damage needs both proton beams: each one records whether it has touched him, and he loses strength once both have, so the two Ghostbusters have to line up and fire together. Forty rounds of damage empty his bar, and he wins rows back when the attack lets up. He falls twice: the first time his strength refills and the last phase begins, and the second time the game is won.</p>
-  <p>The baby, Oscar, lies in his crib on the floor. A Ghostbuster can pick him up and carry him, and while Janosz is still on his feet he can take Oscar back to the crib.</p>
+  <p>The two weapons behave differently. The slime weapon fires drops, up to three in the air for each Ghostbuster. A proton beam stays on until fire is pressed again. Both weapons use weapon energy, which slowly comes back.</p>
+  <p>Janosz, Vigo’s servant, is beaten with slime. Ten hits empty his strength bar of twenty rows, and then Vigo takes over. Each proton beam keeps a flag that says whether it touched Vigo the last time it was tested. Vigo loses strength only while both flags are set, and a beam is tested only while it is on. A beam that is switched off keeps its flag as it was. The plain way to set both flags is for the two Ghostbusters to line up and fire at Vigo together. Every two updates with both flags set take one row from his bar of twenty, so forty such updates empty it. He wins rows back when the Ghostbusters’ attack lets up. He falls twice. The first time, his strength refills and the last phase begins. The second time, the game is won.</p>
+  <p>The baby, Oscar, lies in his crib on the floor. A Ghostbuster can pick him up and carry him. If a Ghostbuster puts Oscar down while Janosz is still on his feet, Janosz can reach him and take him back to the crib.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
@@ -263,6 +306,20 @@ function storyLetterCodes(row, pairs) {
   choose();
 })();
 </script>
+<script id="sound-effects-list">
+/* sound-effects-list */
+// The 26 effects ($E7CA), each with the voice the game starts it on and a name for its button.
+// Voice: the voice of the game's first request (the airshaft's, where it asks); 1 for the six
+// effects the game never asks for.
+const SOUND_EFFECTS = [
+  [0, 1, 'never played'], [1, 1, 'never played'], [2, 1, 'never played'], [3, 2, 'sawing'], [4, 2, 'cable breaks'],
+  [5, 2, 'ghost sets off'], [6, 1, 'animation ends'], [7, 1, 'museum beam'], [8, 2, 'ghost beaten'],
+  [9, 1, 'never played'], [10, 1, 'never played'], [11, 3, 'ghost touch'], [12, 3, 'Ghostbuster dies'],
+  [13, 1, 'slime shot'], [14, 3, 'beam off'], [15, 1, 'next weapon'], [16, 1, 'pick up'], [17, 3, 'beam hum'],
+  [18, 1, 'shield'], [19, 1, 'bomb'], [20, 3, 'opponent rises'], [21, 2, 'statue’s stride'],
+  [22, 2, 'slime scooped'], [23, 1, 'never played'], [24, 3, 'hit'], [25, 1, 'fireball shot'],
+].map(([n, voice, name]) => ({n, voice, name}));
+</script>
 <script>
 /* airshaft-sound-driver */
 function createGhostSound(D, C64Cpu) {
@@ -288,6 +345,16 @@ function createGhostSound(D, C64Cpu) {
     get mem() { return memory; },
     init(tune) {
       memory = base.slice();
+      if (D.effects) {
+        // one effect alone: the music stopped and the chip cleared ($EB26), then the effect started
+        // on the voice the game gives it ($E6AD, $E70C or $E76B with the effect's number in A)
+        const e = D.effects[tune];
+        cpu = new C64Cpu.CPU(memory, {port: D.port || 0x35, io});
+        sid.fill(0); writes = []; bus = 0; tail = 0; over = false;
+        cpu.call(0xEB26, {});
+        cpu.call([0xE6AD, 0xE70C, 0xE76B][e.voice - 1], {a: e.n});
+        return;
+      }
       if (tune === 3) for (const [address, bytes] of D.ending) memory.set(bytes, address);
       if (tune === 4) for (const [address, bytes] of D.broadway) memory.set(bytes, address);
       cpu = new C64Cpu.CPU(memory, {port: D.port || 0x35, io});
@@ -298,7 +365,8 @@ function createGhostSound(D, C64Cpu) {
       writes = [];
       if (over) return;
       cpu.call(0xE13A, {});
-      if (!memory[0xE12E] && ++tail >= 25) over = true;
+      const busy = D.effects ? memory[0xE12F] | memory[0xE130] | memory[0xE131] : memory[0xE12E];
+      if (!busy && ++tail >= 25) over = true;
     },
     stop() { over = true; writes = []; },
     playing() { return !over; }
@@ -320,6 +388,8 @@ function createGhostSound(D, C64Cpu) {
   const ending = JSON.parse(document.getElementById('ending-sound-data').textContent);
   const broadway = JSON.parse(document.getElementById('broadway-sound-data').textContent);
   C64Sid.mount(root, {driver: createGhostSound, data: {mem, ending, broadway}, tunes: ['Story screens', 'Episode won', 'Episode lost', 'The ending', 'Broadway'], rows: [], filter: '6581'});
+  const effects = document.getElementById('effects-sound');
+  C64Sid.mount(effects, {driver: createGhostSound, data: {mem, effects: SOUND_EFFECTS}, tunes: SOUND_EFFECTS.map(e => e.n + ' ' + e.name), rows: [], filter: '6581'});
 })();
 </script>
 <script id="frame-data" type="application/json">{"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[104,42,242,42,128,42,172,42,218,42,0,0,131,91,0,0,0,119,0,209,0,255,216,0,29,112,241,0,23,0,255,255,240,249,245,240,243,246,254,247,241,243,252,250,240,240,240],"cia2":[202,63],"cpu":[47,53],"writes":[[11,12,53265,24,24],[11,18,53285,240,0],[11,24,53286,255,15],[11,48,18424,0,0],[11,52,18425,0,0],[11,56,18426,0,0],[11,60,18427,0,0],[12,1,18428,0,0],[12,14,53287,240,0],[12,18,53288,240,0],[12,22,53289,240,0],[12,26,53290,240,0],[12,30,53291,240,0],[12,36,53248,80,80],[12,42,53250,128,128],[12,48,53252,176,176],[12,54,53254,224,224],[12,60,53256,254,254],[15,38,53292,250,10],[16,15,53294,245,5],[16,33,788,74,74],[16,39,789,142,142],[43,48,53277,31,31],[43,54,53276,255,255],[44,28,53293,250,10],[44,53,788,177,177],[63,61,53276,240,240],[64,8,53277,15,15],[64,57,53256,0,0],[64,63,53257,0,0],[65,12,53291,252,12],[65,18,53287,252,12],[65,24,53248,158,158],[65,30,53249,66,66],[65,36,18424,162,162],[65,60,788,31,31],[66,3,789,143,143],[82,47,53288,252,12],[82,53,53250,158,158],[83,1,53251,86,86],[83,7,18425,162,162],[83,13,53289,252,12],[83,19,53252,158,158],[83,25,53253,106,106],[83,31,18426,162,162],[83,49,788,94,94],[123,46,53287,246,6],[123,50,53288,246,6],[124,2,53277,12,12],[124,12,53276,243,243],[124,20,53248,159,159],[124,32,53250,183,183],[124,44,53249,126,126],[124,48,53251,126,126],[125,31,18424,58,58],[125,37,18425,59,59],[126,15,788,228,228],[141,47,53289,246,6],[141,51,53290,246,6],[142,5,53277,0,0],[142,15,53276,255,255],[142,21,53252,159,159],[142,27,53254,183,183],[142,33,53253,147,147],[142,37,53255,147,147],[142,43,18426,60,60],[142,49,18427,61,61],[143,24,788,135,135],[143,30,789,144,144],[165,47,53249,168,168],[165,51,53251,168,168],[165,57,18424,62,62],[166,7,18425,15,15],[166,51,788,205,205],[201,46,788,231,231],[248,53,53265,119,119],[248,59,53292,240,0],[248,63,53293,240,0],[249,4,53294,240,0],[249,10,53276,23,23],[249,22,53285,246,6],[249,28,53286,254,14],[249,34,53248,104,104],[249,40,53250,242,242],[249,46,53252,128,128],[249,52,53254,172,172],[249,58,53256,218,218],[250,1,53249,251,251],[250,5,53251,251,251],[250,9,53253,251,251],[250,13,53255,251,251],[250,17,53257,251,251],[250,23,53287,247,7],[250,29,53288,241,1],[250,35,53289,243,3],[250,41,53290,252,12],[250,47,53291,250,10],[250,53,18424,7,7],[250,59,18425,180,180],[251,2,18426,9,9],[251,8,18427,6,6],[251,14,18428,1,1],[251,32,788,111,111],[251,38,789,141,141],[255,11,53249,42,42],[255,15,53251,42,42],[255,19,53253,42,42],[255,23,53255,42,42],[255,27,53257,42,42]],"colour":"CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","ram":[{"a":16384,"b":"qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"},{"a":16448,"b":"////1VVVwAAA1VVV1VVV1VVV1UAF1RVR1Oqo1FVU01/w01AB02AB0UFV04FV1AVV1BVV1VVV0AAA////1VVV"},{"a":16768,"b":"AAAAxjw8zm5uHM7OONbWcObm5u7uxnx8AAAAAAAAAAAAAAAAAAAAAAAAAHx8AM7OAObmAH5+AAYGAM7OAHx8"},{"a":16832,"b":"////1VVVwAAA1X0V1XUV1VkV1ToF1epF1OpB1+pR16qR1+qR16pR1+qR16pR1+qR1WpR1FVBwAAA////VVVV"},{"a":16960,"b":"////1VVXwAAD1VVX1VVX1VVX1VVX1VVX1VVX1VVX1VVX1VVX1VVX1VVX1VVX1VVX1VVX1VVX1VVX////VVVV"},{"a":17088,"b":"AAAAAAAAABQAAGkAALoAAGUAAKYAAOcAAOcAAOcAAOcAAOcAAOcAAKYAAGUAAKUAAFUAABQAAAAAAAAAAAAA"},{"a":17344,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":17408,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAElMTU9QUVJTVFVWV1hZWlsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYGNkCgsODxIPZ2gSD2lqa2xtbnFyAAAAAAAAAAAAAAAAAAAAAAAAYWJlZgwNEBETERMVExETFRMVb3BzdHV2AAAAAAAAAAAAAAAAAAAAAQIDBgcKCw4PEg8SDxIPEg8SFBYXGhseHyIAAAAAAAAAAAAAAAAAAAEEBQgJDA0QERMRExETERMRExUYGRwdICEiAAAAAAAAAAAAAAAAAAABAgMGBwoLDg8SDxIPEg8SDxIUFhcaGx4fIgAAAAAAAAAAAAAAAAAAAQQFCAkMDRARExETERMRExETFRgZHB0gISIAAAAAAAAAAAAAAAAAAAECAwYHCgsODxIPEg8SDxIPEhQWFxobHh8iAAAAAAAAAAAAAAAAAAABBAUICQwNEBETERMRExETERMVGBkcHSAhIgAAAAAAAAAAAAAAAAAAAQIDBgcKCw4PEg8SDxIPEg8SFBYXGhseHyIAAAAAAAAAAAAAAAAAAAEEBQgJDA0QERMRExETERMRExUYGRwdICEiAAAAAAAAAAAAAAAAAAABAgMGBwoLDg8SDxIPEg8SDxIUFhcaGx4fIgAAAAAAAAAAAAAAAAAAAQQFCAkMDRARExETERMRExETFRgZHB0gISIAAAAAAAAAAAAAAAAAAAECAwYHCgsODxIPEg8SDxIPEhQWFxobHh8iAAAAAAAAAAAAAAAAAAABBAUICQwNEBETERMRExETERMVGBkcHSAhIgAAAAAAAAAAAAAAAAAAAQIDBgcKCw4PEg8SDxIPEg8SFBYXGhseHyIAAAAAAAAAAAAAAAAAAAEEBQgJDA0QERMRExETERMRExUYGRwdICEiAAAAAAAAAAAAAAAAAAABAgMGBwoLDg8SDxIPEg8SDxIUFhcaGx4fIgAAAAAAAAAAAAAAAAAAAQQFCAkMDRARExETERMRExETFRgZHB0gISIAAAAAAAAAAAAAAAAAAAECAwYHCgsODxIPEg8SDxIPEhQWFxobHh8iAAAAAAAAAAAAAAAAAAABBAUICQwNEBETERMRExETERMVGBkcHSAhIgAAAAAAAAAAAAAAAAAAAQIDBgcKCw4PEg8SDxIPEg8SFBYXGhseHyIAAAAAAAAAAAAAAAAAAAEEBQgJDA0QERMRExETERMRExUYGRwdICEiAAAAAAAAAA=="},{"a":18424,"b":"B7QJBgELrA8="},{"a":20096,"b":"AAAAAAABAAABAAABAAABAAAAAAAAAAABAAACAAABAAABAAAAAAAAAAAAAAABAAABAAABAAABAAAVAABVVFVV"},{"a":20160,"b":"VAAAVQAAVQAApUAA9UAA9UAAtkAAekAA/1QA/VwA/lwAu10AZp0AVl0AlVkA5VUAlpVAW9ZAW9ZAb5ZAb9ZA"},{"a":20224,"b":"9VVVpWZVVXVaAJWvAFVvAFWbABVmAABVAABVAABlAAG5AAb9ABv5AF/pAG+5AL7lAa2ZAfpVAvVAAugAAvQA"},{"a":20288,"b":"b5VAbldAm5dA1ldA2ZZA1VUAlZUAVfkAW1QAv1QAvkAAaUAAVQAAmQAAV0AAV0AAd0AAZkAAFkAABUAAAAAA"},{"a":20352,"b":"FuQAFrQAFuQAArQAAuAAAZAAAVAAAUAAFVAAVVAAVUAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":26752,"b":"AAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAgAAAAA"},{"a":27392,"b":"AFQAAbkAAVUAApoABnZAB7uQC/5ABv+AC+pADpeQG2ZAJnuQG65AJr1QEeoQVZ0wEGogAZ0ACEgQLhUASABA"},{"a":27904,"b":"////VVVX0AQD1DgH1CQH1RAX1QQX1TgX1SQX1RAX1QQX1TgX1SQX1RAX1QQX1TgX1SQX1BAH0AQH////VVVX"},{"a":28672,"b":"qqqqqqqqqqqqqqKqKqqqqiqoqqiqqKCDsoqiggriCiIwwAjiKqiiiIooo4yzgLOAjzOPMIIIo4w6yCOPv4+/jD/888AyyCOMsoqijj7+Pv4////88sgjj4KKoo4+/v7+P////PLII4/yyCOAjL+Msqr///zw/P8Aqs4ywjLCMgKq/v7+zj7CIqrDDMAAAMgiqgDMACIAiCqqAs4CCjKKIqoA/z////wiqg8zDz8PvyyCooqyvL+/v/z//z+PI8jyjyPIAjL+Mo78//8/jyPI8qwjyPL+8v4y8szyDIIgyjKOooqyvL+8v/w/zwOMI8gyjqKKgqCLoIioKqoqqioKwqIoyjLOAs4CDAMgi6gqiiKqqoqqqKqqqg=="},{"a":29256,"b":"qqqoqqqqqiA="},{"a":29280,"b":"qqKKqqqqqiKqIoCiqqqDMA=="},{"a":29304,"b":"qqqIIogPwKqoIogP8AiqIooiAP8CCIqqqioigCKIqqqqqqqKIoqqqKqoqogiqoqqiKqqogyiqqqIqogyqiiqqqijjKKoqoojjCqqIqqqIsCqqqqoo6giiqqqqogqoqooqqqqqqqiqKI="},{"a":29440,"b":"qqqqqqoiqoqqqqoqqqKqKqqqqqqIIqqyqqqqqogyiACqqqoiyCCAMqyjwDLII4yPiqKOPv4+/jqiqioiAIgqqqqqqgoyiiKqqKooKiqIKqoPIoiiqqKqqioiqiqqIqqqiqqqqqiqIqiqqqogiKqADzyqqooyj6gqI8gCMv4yjoIqwD+PI8jy/KoiqogiqiKqqqqqiKqqqqCqqoKsv7y/rIyPA4wjyDLyqgoiiiqiqo6qiqqqqiqqqA=="},{"a":31231,"b":"wg=="},{"a":32767,"b":"/w=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19656,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":112,"colour_cells_changed_during_frame":0}}</script>

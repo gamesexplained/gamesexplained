@@ -868,7 +868,7 @@
   },
   {
    "address": 955,
-   "name": "flame_piece_count",
+   "name": "dragon_piece_count",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -880,7 +880,7 @@
   },
   {
    "address": 957,
-   "name": "rat_motion_delay",
+   "name": "armorog_motion_delay",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -3460,7 +3460,7 @@
   },
   {
    "address": 9808,
-   "name": "update_dragon_and_lift",
+   "name": "update_gator_and_portcullis",
    "type": "Branch",
    "kind": "user"
   },
@@ -3532,7 +3532,7 @@
   },
   {
    "address": 10087,
-   "name": "update_alligator",
+   "name": "update_hawk",
    "type": "Jump",
    "kind": "user"
   },
@@ -3598,7 +3598,7 @@
   },
   {
    "address": 10249,
-   "name": "update_rat_tunnel",
+   "name": "update_armorog",
    "type": "Jump",
    "kind": "user"
   },
@@ -3646,7 +3646,7 @@
   },
   {
    "address": 10416,
-   "name": "update_dragon_fire",
+   "name": "update_dragon_neck",
    "type": "Jump",
    "kind": "user"
   },
@@ -7497,12 +7497,6 @@
    "kind": "user"
   },
   {
-   "address": 50838,
-   "name": "initial_object_shapes_offset_7e",
-   "type": "Field",
-   "kind": "user"
-  },
-  {
    "address": 50846,
    "name": "object_rooms",
    "type": "Field",
@@ -9209,7 +9203,7 @@
   {
    "address": 176,
    "type": "line",
-   "text": "Low byte of the room-stream cursor; reused for a screen-plane pointer while clearing the playfield."
+   "text": "Low byte of the room-stream cursor; reused while clearing the playfield as the pointer into the attribute (collision) plane at $5800, which that routine zeroes."
   },
   {
    "address": 177,
@@ -9264,7 +9258,7 @@
   {
    "address": 255,
    "type": "line",
-   "text": "Shared one-byte scratch used for sprite-frame bases, room-stream coordinates, bit reversal and colour masks. Each caller establishes it before its use."
+   "text": "Shared one-byte scratch used for sprite-frame bases ($1E6E/$1E94), the shape renderer's clip arithmetic on draw X ($2C97–$2CAC), the index of the dragon's neck and head pieces ($2901/$2906), their attribute value ($2F80/$2F8A), the saved X index in sprite inversion ($2AA3), a bit-reversed byte in row mirroring ($2E4B) and the moved-object attribute bit, $08 or zero, that $3384 returns for $336E to OR into the drawing attribute. Each caller establishes it before its use."
   },
   {
    "address": 653,
@@ -9284,12 +9278,12 @@
   {
    "address": 825,
    "type": "line",
-   "text": "Address immediately before the state block cleared by $1915. X counts from $C6 down to one, so the writes begin at $033A and end at $03FF."
+   "text": "Address immediately before the state block cleared by $1915. X counts from $C6 down to one, so the writes run from $03FF down to $033A."
   },
   {
    "address": 826,
    "type": "line",
-   "text": "Shared drawing X coordinate in four-pixel units, or an X offset for player collision probes."
+   "text": "Shared drawing X coordinate in four-pixel units, or an X offset for player collision probes. Also the left edge of the pickup and overlap rectangles ($1F62, $39EC), the character-row counter while clearing the playfield ($3025) and the particle half-width ($33D1)."
   },
   {
    "address": 827,
@@ -9334,12 +9328,12 @@
   {
    "address": 837,
    "type": "line",
-   "text": "Saved X register used by drawing, delays and sprite updates."
+   "text": "Saved X register used by drawing ($2B60), the busy delay ($31D9), sprite-register updates ($31EE), the ROM random reader at $3257 and particle movement ($3282)."
   },
   {
    "address": 838,
    "type": "line",
-   "text": "Shared scratch: mirror-row right index, particle-loop counter or saved X in the ROM random reader."
+   "text": "Shared scratch: mirror-row right index ($2E32), saved X in colour composition ($30B2) and in the one-to-four random reader ($326A), and the particle-group counter ($3442)."
   },
   {
    "address": 839,
@@ -9364,7 +9358,7 @@
   {
    "address": 846,
    "type": "line",
-   "text": "Current hardware sprite slot or temporarily saved object index."
+   "text": "Current hardware sprite slot; also the caller's X saved by $29C1, and the first index of the animated-scenery list pass at $3938."
   },
   {
    "address": 850,
@@ -9474,7 +9468,7 @@
   {
    "address": 923,
    "type": "line",
-   "text": "Stored left X coordinate of the current message line."
+   "text": "Message cursor X: a position byte stores its value minus $44 here, the message reader draws each character at it and adds two, and the box drawer takes it as the box's left edge."
   },
   {
    "address": 924,
@@ -9504,7 +9498,7 @@
   {
    "address": 955,
    "type": "line",
-   "text": "Number of dragon-fire pieces included in the vertical movement prefix; oscillates between zero and six."
+   "text": "One less than the number of the dragon's neck and head pieces that move, counted from the head: pieces 0 to this count move, so 0 moves one piece and 6 moves all seven. It oscillates between zero and six."
   },
   {
    "address": 956,
@@ -9514,7 +9508,7 @@
   {
    "address": 957,
    "type": "line",
-   "text": "Rat-tunnel activation counter; capped at $28, with motion enabled from $20."
+   "text": "Armorog's activation counter; capped at $28, with motion enabled from $20."
   },
   {
    "address": 958,
@@ -9609,7 +9603,7 @@
   {
    "address": 987,
    "type": "line",
-   "text": "Shared loop scratch: message ID while rendering text, object index during drawing and event animation."
+   "text": "Shared loop scratch: message ID while rendering text ($357D), object index $73-$7A in the drop check ($242F), platform index in strip setup ($30E3), life-slot index ($3816), heart counter ($384E), strip column ($38D8), scenery-list limit ($3935) and the breath strip's end X ($3AA5)."
   },
   {
    "address": 988,
@@ -9619,7 +9613,7 @@
   {
    "address": 989,
    "type": "line",
-   "text": "Starting object index for descending room-object scans; $86 draws all 134 objects and $3F draws the pickup layer."
+   "text": "One more than the first object index of the descending room-object scan, which decrements before each test: $86 scans all 134 objects and $3F scans the pickup layer, IDs below $3F."
   },
   {
    "address": 991,
@@ -9669,7 +9663,7 @@
   {
    "address": 2915,
    "type": "line",
-   "text": "Selects one voice, advances note duration on tempo ticks, and handles semitone rises or falls on other ticks. When a note expires, decodes the pattern commands: $FF selects the next pattern, $FE stops, $FD sets volume, $F0 upward sets tempo, $C0 upward selects an instrument, and $80 upward sets duration."
+   "text": "Selects one voice. On a tempo tick advances note duration, and raises the note a semitone while the flag at $119D is set; on other ticks lowers it a semitone while the countdown at $11A0 runs. When a note expires, decodes the pattern commands: $FF selects the next pattern, $FE stops, $FD sets volume, $F0 upward sets tempo, $C0 upward selects an instrument, and $80 upward sets duration."
   },
   {
    "address": 3099,
@@ -9684,7 +9678,7 @@
   {
    "address": 3293,
    "type": "line",
-   "text": "Reads instrument flags and chooses a first-tick noise or pulse attack, table-driven waveform/frequency changes, or normal modulation. The waveform and frequency table operands at $0D36/$0D37 and $0D41/$0D42 are rewritten from $11ED according to the instrument."
+   "text": "Reads instrument flags and chooses a first-tick noise ($81) or triangle ($11) attack, table-driven waveform/frequency changes, or normal modulation. The waveform and frequency table operands at $0D36/$0D37 and $0D41/$0D42 are rewritten from $11ED according to the instrument."
   },
   {
    "address": 3382,
@@ -9754,7 +9748,7 @@
   {
    "address": 3998,
    "type": "line",
-   "text": "Rotates an eight-bit mask through carry, copying the selected semitone offsets from $115E into the voice's buffer at $11CD plus its offset from $115B. Terminates the buffer with $FF and clears pitch-slide state."
+   "text": "Rotates an eight-bit mask through carry, copying the selected semitone offsets from $115E into the voice's buffer at $11CD, starting one byte past its offset from $115B. Terminates the buffer with $FF and clears pitch-slide state."
   },
   {
    "address": 4035,
@@ -9769,7 +9763,7 @@
   {
    "address": 4095,
    "type": "line",
-   "text": "Immediate target-note operand of LDX at $0FFE, patched by the pitch-slide decoder. The following code chooses addition or subtraction and calculates a frequency difference."
+   "text": "Immediate target-note operand of LDX at $0FFE, patched at $0EA3 by the slide path from the target note in $1194. The following code chooses addition or subtraction and calculates a frequency difference."
   },
   {
    "address": 4175,
@@ -9839,7 +9833,7 @@
   {
    "address": 4462,
    "type": "line",
-   "text": "Shared tempo reload value selected by $F0-$FF-class pattern commands."
+   "text": "Shared tempo reload value: the low nibble of a pattern byte of $F0 or more that is not one of the commands $FD-$FF."
   },
   {
    "address": 4463,
@@ -9914,7 +9908,7 @@
   {
    "address": 4503,
    "type": "line",
-   "text": "Per-voice slide speed and duration parameters."
+   "text": "Per-voice slide parameter from command $7B: the high nibble is the number of duration ticks before the slide starts, the low nibble the number it lasts."
   },
   {
    "address": 4506,
@@ -10059,7 +10053,7 @@
   {
    "address": 4589,
    "type": "line",
-   "text": "Groups of four bytes used to patch the waveform and frequency-effect lookup operands at $0D35 and $0D40. Indexing uses four times the low instrument nibble."
+   "text": "Two groups of four bytes used to patch the waveform and frequency-effect lookup operands at $0D35 and $0D40: a waveform-table pointer, then a frequency-table pointer. Indexing uses four times the low instrument nibble. Group zero holds $1205 and $11F5, group one $1225 and $1215; both instruments that take this path select group one. The tables at $11F5 and $1205 follow the groups in the same allocation."
   },
   {
    "address": 4590,
@@ -10074,7 +10068,7 @@
   {
    "address": 4592,
    "type": "line",
-   "text": "Offset $03 within sound_effect_pointer_sets at $11ED. Groups of four bytes used to patch the waveform and frequency-effect lookup operands at $0D35 and $0D40. Indexing uses four times the low instrument nibble."
+   "text": "Offset $03 within sound_effect_pointer_sets at $11ED: the high byte of group zero's frequency-table pointer. Group one follows at $11F1-$11F4 ($1225, $1215). The rest of the record is the two tables group zero points to, frequency-effect bytes from $11F5 and waveform bytes from $1205, for the patched lookups at $0D40 and $0D35."
   },
   {
    "address": 4629,
@@ -10329,12 +10323,12 @@
   {
    "address": 5961,
    "type": "line",
-   "text": "Retained copies of object names and title lettering, also present in the name/message region beneath I/O. Byte $3A is space; $5F marks name endings."
+   "text": "$1749-$17FF are a copy of $D749-$D7FF in the name and message region beneath I/O: the end of the name BRASS DOOR KNOCKER, five more object names each ending at $5F, and the start of message script $00, the title text with its position and colour bytes. Byte $3A is space. $1800-$1802 are 4C 0E 19, which decode as JMP $190E, the game entry; $1803-$180D are 10 E8 64 0A 01, 27 03 00 00 00 (the low and high bytes of 10000, 1000, 100, 10 and 1) and $D8. No instruction in the listing reads any of these bytes."
   },
   {
    "address": 6158,
    "type": "line",
-   "text": "Low bytes of 25 screen-row addresses followed by one retained byte at $1827. Colour composition, collision sampling and drawing combine the row entries with $1828."
+   "text": "Low bytes of 25 screen-row addresses followed by one retained byte at $1827. Drawing ($2C19), playfield clearing ($3041), colour composition ($30A1), collision sampling ($3182), strip animation ($38CB) and inventory highlighting ($3A88) combine the row entries with $1828."
   },
   {
    "address": 6184,
@@ -10344,12 +10338,12 @@
   {
    "address": 6210,
    "type": "line",
-   "text": "Retained short tables between the colour and bitmap row directories. The nearby active tables have separate boundaries; the purpose of these retained parameters is open."
+   "text": "Thirty-eight bytes at $1842-$1867 that no instruction in the listing reads or writes: nine zeros, then 29 values from $00 to $29."
   },
   {
    "address": 6248,
    "type": "line",
-   "text": "Retained coordinate values beside the bitmap-column offsets: includes two fives-step-like row-offset sequences. Their original consumer is open."
+   "text": "Fifteen bytes that no instruction in the listing reads: $29, $01, $02, $F1, $F2, then two five-entry sequences in steps of $28 (40, the width of a screen row), $28 to $C8 and $2B to $CB."
   },
   {
    "address": 6263,
@@ -10419,7 +10413,7 @@
   {
    "address": 6388,
    "type": "line",
-   "text": "Four live platform heights, updated with movement and used when the player stands on a platform."
+   "text": "Four live platform heights, updated as the platforms move. The room setup at $30CD reads them to draw each platform pair down to its current height."
   },
   {
    "address": 6392,
@@ -10469,7 +10463,7 @@
   {
    "address": 7987,
    "type": "line",
-   "text": "Clears selected-object and pickup indices. Action is suppressed while moving or airborne. A fresh action scans object IDs below $3F for a visible pickup within the player's pickup rectangle, then tests fixed interaction objects for conversation and switches."
+   "text": "Clears selected-object and pickup indices. Action is suppressed while moving or airborne. A fresh action scans object IDs below $3F for one in the current room whose attribute bit 7 is clear, within the player's pickup rectangle, then tests fixed interaction objects for conversation and switches."
   },
   {
    "address": 8324,
@@ -10509,7 +10503,7 @@
   {
    "address": 9376,
    "type": "line",
-   "text": "Checks eleven object IDs and their death-message IDs, then dragon frame $7C, room-specific moving hazards and collision-plane flags. Attribute bit $20 selects fire message $2F; bit $10 selects water or lava according to room $4D. The following death path preserves the reason while running disappearance and messages."
+   "text": "Checks eleven object IDs and their death-message IDs, then the 'gator, object $56, while its shape is frame $7C (message $31), room-specific moving hazards and collision-plane flags. Attribute bit $20 selects fire message $2F; bit $10 selects water or lava according to room $4D. The following death path preserves the reason while running disappearance and messages."
   },
   {
    "address": 9586,
@@ -10524,7 +10518,7 @@
   {
    "address": 9808,
    "type": "line",
-   "text": "Room $35 alternates dragon mouth frames while object $10 remains. Room $33 moves the lift strip up one or down four between its Y bounds unless its switch attribute is five. Room $2D animates object $4A's Y before the four moving-platform cases."
+   "text": "Room $35 switches the 'gator, object $56, between shapes $7B and $7C while object $10, the rope, has not been removed. Room $33 moves the portcullis, object $54, up one or down four between Y $60 and $88 unless the attribute of its lever, object $53, is five. Room $2D animates object $4A's Y before the four moving-platform cases."
   },
   {
    "address": 9960,
@@ -10539,17 +10533,17 @@
   {
    "address": 10249,
    "type": "line",
-   "text": "In room $32 on odd passes while object five remains, builds a delay counter based on player height and object $52. After count $20, moves object $51 by two, reversing below X=$37 (the even-position path reaches $36) and at $4E. When the right bound is reached with object five's attribute high bit set, removes object five and changes the rat attribute."
+   "text": "In room $32 on odd passes while object five remains, builds a delay counter based on player height and object $52. After count $20, moves object $51, Armorog, by two, reversing below X=$37 (the even-position path reaches $36) and at $4E. When the right bound is reached with object five's attribute high bit set, removes object five and sets object $51's attribute to $92."
   },
   {
    "address": 10416,
    "type": "line",
-   "text": "In rooms $28 and $36, erases seven fire pieces and moves a prefix of them up or down by two on even passes. The prefix length oscillates from zero through six. The following section arms and advances the horizontal breath effect according to room and dragon state."
+   "text": "In rooms $28 and $36, erases the dragon's seven pieces, objects $6C-$72 (six neck segments and the head, $72), and moves a prefix of them, counted from the head, up or down by two on even passes. The prefix runs from one to seven pieces. The following section arms and advances the horizontal breath effect according to room and dragon state."
   },
   {
    "address": 10590,
    "type": "line",
-   "text": "In room $28 when object $46 is removed, or room $36 at the end of the fire cycle with a random result one, starts a breath sweep at $42. Counts it down by two, switches its shape to $6D after it falls below $2A, and draws the active sweep before the scenery animation and next loop pass."
+   "text": "In room $28 when object $46 is removed, or room $36 when the moving-piece count $03BB is zero with a random result one, starts a breath sweep at $42. Counts it down by two, switches object $72's shape to $6D after it falls below $2A, and draws the active sweep before the scenery animation and next loop pass."
   },
   {
    "address": 10689,
@@ -10574,7 +10568,7 @@
   {
    "address": 10798,
    "type": "line",
-   "text": "Requires overlap with object $67. In room $5E shows message $0B, moves cage fields, hides sprites, runs the celebration and message $0C. Else checks coin tens against three: three shows message $0E and returns to title, other counts show message $0D."
+   "text": "Requires overlap with object $67, Daisy. In room $5E shows message $0B, moves Daisy to room $49 (Daisy's empty hut) at X $32, Y $4D, hides sprites, runs the celebration and message $0C, then selects sound 2. Else checks coin tens against three: three shows message $0E and returns to title, other counts show message $0D."
   },
   {
    "address": 10879,
@@ -10649,7 +10643,7 @@
   {
    "address": 11510,
    "type": "line",
-   "text": "Operand byte of the compositor at $2CF5: $EA produces LDA $EAEA,Y and $FB selects the existing bitmap pointer for ORA/EOR. The following code stores pixels, colour and collision attributes and advances to the next source row."
+   "text": "Operand byte of the compositor at $2CF5. $EA, with opcode $EA, makes two NOPs, so the masked source byte is written as it is; $FB names the bitmap pointer for ORA ($FB),Y or EOR ($FB),Y. The following code stores pixels, colour and collision attributes and advances to the next source row."
   },
   {
    "address": 11669,
@@ -10704,7 +10698,7 @@
   {
    "address": 12628,
    "type": "line",
-   "text": "Computes a probe at player X plus $033A minus one and player Y plus $033B plus $27. Resolves bitmap and attribute row pointers, reads one nibble from the collision plane and returns it in A; carry records attribute bit $40. Stores probe coordinates and masks in scratch bytes."
+   "text": "Computes a probe at player X plus $033A minus one and player Y plus $033B plus $27. Resolves bitmap and attribute row pointers, stores the probe cell's collision-plane byte in $033F and returns one nibble of the bitmap byte at the probe in A and $033E; carry records attribute bit $40. Stores probe coordinates and masks in scratch bytes."
   },
   {
    "address": 12758,
@@ -10744,7 +10738,7 @@
   {
    "address": 13097,
    "type": "line",
-   "text": "Scans all 134 live objects in descending order and draws those whose room matches $03E5. For IDs below $3F, combines per-object colour with the global mask and checks initial room/X/Y to mark moved objects. Leaves the scan index reset to $86 and mask $FF."
+   "text": "Scans live objects in descending order from the limit in $03DD ($86 for all 134 on a room redraw, $3F for the pickup layer on a drop) and draws those whose room matches $03E5. For IDs below $3F, combines per-object colour with the global mask and checks initial room/X/Y to mark moved objects. Leaves the scan index reset to $86 and mask $FF."
   },
   {
    "address": 13188,
@@ -10794,7 +10788,7 @@
   {
    "address": 13853,
    "type": "line",
-   "text": "Reads width and interior height from the text stream, hides hardware sprites, and draws the four corners, horizontal borders and interior rows through $36E3. Uses $0398/$0399 as the dimensions and moves the text cursor inside the box."
+   "text": "Reads width and interior height from the text stream, hides hardware sprites, and draws the four end pieces ($2C above, $2D below), horizontal borders and interior rows through $36E3. Uses $0398/$0399 as the dimensions and leaves text Y $039C on the row of the lower end pieces."
   },
   {
    "address": 13954,
@@ -10824,7 +10818,7 @@
   {
    "address": 14198,
    "type": "line",
-   "text": "Rebuilds the inventory list, chooses message $37 or $38 depending on whether object zero is carried, and draws each carried object's name in rows eight pixels apart. An empty list shows message $3B."
+   "text": "Rebuilds the inventory list, chooses message $37 or $38 depending on whether object zero is carried, and draws each carried object's name in rows eight pixels apart. An empty list shows message $3B, whose pointer, $EFFC, runs on into the retained copy of message $09's text at $F000: it draws “EEN TAKEN TO” and “THE WIZARD'S CASTLE”, waits, then draws Denzil's reply."
   },
   {
    "address": 14288,
@@ -10839,7 +10833,7 @@
   {
    "address": 14409,
    "type": "line",
-   "text": "Clears the playfield, selects sound four, then draws 256 pseudo-random letters at pseudo-random X and Y positions, delaying five units after each. Shape selection maps random result four to one before adding $1C."
+   "text": "Clears the playfield, selects sound four, then draws 256 hearts, shapes $1D–$1F in three sizes, at pseudo-random X ((random AND $3F) + $20) and Y ((random AND $7F) + $30), delaying five units after each. A random result of four is taken as one before $1C is added."
   },
   {
    "address": 14483,
@@ -10854,7 +10848,7 @@
   {
    "address": 14743,
    "type": "line",
-   "text": "Accepts selected object IDs $1A-$37, marks the object's room $FF and clears the selection, increments decimal coin units at $18E6 with carry to tens $18E5, selects sound three and redraws the counter. Shows message $36 and restores sound two when the sound toggle is clear."
+   "text": "Accepts pickup IDs $1A-$37 in $18DE, marks the object's room $FF and sets $18DE to $FF, increments decimal coin units at $18E6 with carry to tens $18E5, selects sound three and redraws the counter. Shows message $36 and restores sound two when the sound toggle is clear."
   },
   {
    "address": 14804,
@@ -10889,7 +10883,7 @@
   {
    "address": 15104,
    "type": "line",
-   "text": "Compares seven successive KERNAL key codes against $3AE9, requiring release after each. On success hides sprites, restores spare lives to two, draws the lives panel and permits room selection with joystick directions using signed steps at $3AF0. Accepts room IDs $15-$A7; action exits and reenables sprites."
+   "text": "Compares seven successive KERNAL key codes against $3AE9, waiting for each to change; the next code must follow at once, and any other value, a release ($40) included, ends the check. On success hides sprites, restores spare lives to two, draws the lives panel and permits room selection with joystick directions using signed steps at $3AF0. Accepts room IDs $15-$A7; action exits and reenables sprites."
   },
   {
    "address": 15193,
@@ -11254,17 +11248,17 @@
   {
    "address": 24576,
    "type": "line",
-   "text": "Loaded bitmap allocation at $6000. The status decoration and outside frame are authored pixels; game drawing replaces the interior and text cells, excluded separately in the ledger."
+   "text": "Loaded bitmap at $6000-$63FF: cell rows 0 to 2 and the first eight cells of row 3, the top of the frame and the status decoration, all counted in the ledger. The game draws the spare-life eggs ($3814) and the coin digits ($3A30) into row 1."
   },
   {
    "address": 25600,
    "type": "line",
-   "text": "Loaded bitmap allocation at $6400. The status decoration and outside frame are authored pixels; game drawing replaces the interior and text cells, excluded separately in the ledger."
+   "text": "Loaded bitmap at $6400-$67A7: the rest of cell row 3, rows 4 and 5 and the five left frame cells of row 6, status decoration and frame, all counted in the ledger. The room name is drawn into row 3 from $6410 by $37D0."
   },
   {
    "address": 26624,
    "type": "line",
-   "text": "Loaded bitmap allocation at $6800. The status decoration and outside frame are authored pixels; game drawing replaces the interior and text cells, excluded separately in the ledger."
+   "text": "Loaded bitmap at $6800–$6BFF: pieces of the side frame and the playfield. The game clears the playfield at $3023, and the ledger leaves it out as 17 spans of 240 bytes, $67A8–$6897 to $7BA8–$7C97."
   },
   {
    "address": 26776,
@@ -11284,7 +11278,7 @@
   {
    "address": 27648,
    "type": "line",
-   "text": "Loaded bitmap allocation at $6C00. The status decoration and outside frame are authored pixels; game drawing replaces the interior and text cells, excluded separately in the ledger."
+   "text": "Bitmap at $6C00-$6FFF: side frame and playfield of cell rows 9 to 12. $6C00 itself lies in the cleared playfield span $6B68-$6C57, which the ledger leaves out; the counted frame pieces follow from $6C58."
   },
   {
    "address": 27736,
@@ -11304,7 +11298,7 @@
   {
    "address": 28672,
    "type": "line",
-   "text": "Loaded bitmap allocation at $7000. The status decoration and outside frame are authored pixels; game drawing replaces the interior and text cells, excluded separately in the ledger."
+   "text": "Bitmap at $7000-$73FF: side frame and playfield of cell rows 12 to 15. $7000 itself lies in the cleared playfield span $6F28-$7017, which the ledger leaves out; the counted frame pieces follow from $7018."
   },
   {
    "address": 28696,
@@ -11329,12 +11323,12 @@
   {
    "address": 29696,
    "type": "line",
-   "text": "Loaded bitmap allocation at $7400. The status decoration and outside frame are authored pixels; game drawing replaces the interior and text cells, excluded separately in the ledger."
+   "text": "Loaded bitmap at $7400-$77FF: side frame and playfield of cell rows 16 to 19. $7400-$7427 is the five left frame cells of row 16; the frame pieces at $7518, $7658 and $7798 lie between playfield spans the ledger leaves out."
   },
   {
    "address": 30720,
    "type": "line",
-   "text": "Loaded bitmap allocation at $7800. The status decoration and outside frame are authored pixels; game drawing replaces the interior and text cells, excluded separately in the ledger."
+   "text": "Bitmap at $7800-$7BFF: side frame and playfield of cell rows 19 to 22. $7800 itself lies in the cleared playfield span $77E8-$78D7, which the ledger leaves out; the counted frame pieces follow from $78D8."
   },
   {
    "address": 30936,
@@ -11354,12 +11348,12 @@
   {
    "address": 31744,
    "type": "line",
-   "text": "Loaded bitmap allocation at $7C00. The status decoration and outside frame are authored pixels; game drawing replaces the interior and text cells, excluded separately in the ledger."
+   "text": "Bitmap at $7C00-$7FFF: the end of cell row 22, the bottom frame rows 23 and 24 up to $7F3F, and 192 bytes past the bitmap. $7C00 itself lies in the cleared playfield span $7BA8-$7C97, which the ledger leaves out; the counted bytes follow from $7C98."
   },
   {
    "address": 31896,
    "type": "line",
-   "text": "Loaded bitmap frame bytes $7C98-$7FFF, continuing the allocation for this part of the screen. The playfield writes are excluded; retained rows and side cells supply the fixed decoration."
+   "text": "Loaded bitmap frame bytes $7C98-$7F3F: the five right frame cells of row 22 and the bottom frame rows 23 and 24. $7F40-$7FFF is past the 8000-byte bitmap and is not displayed: 21 bytes of code at $7F40 (store $C6 in $DD00, $3B in $D011, $78 in $D018 and 0 in $D020, then RTS, the same instructions as the start of $3B6D), which nothing calls, then zeros."
   },
   {
    "address": 32768,
@@ -11374,12 +11368,12 @@
   {
    "address": 33143,
    "type": "line",
-   "text": "Room $01: 12 drawing records. A record stores shape, X and Y; X bit 7 reuses the preceding attribute, otherwise a fourth byte supplies attribute XOR $40."
+   "text": "Stream $01: 12 drawing records, drawn over room $3A at $2FE6 once object 4's room is $FF. A record stores shape, X and Y; X bit 7 reuses the preceding attribute, otherwise a fourth byte supplies attribute XOR $40."
   },
   {
    "address": 33187,
    "type": "line",
-   "text": "Room $02: 4 drawing records. A record stores shape, X and Y; X bit 7 reuses the preceding attribute, otherwise a fourth byte supplies attribute XOR $40."
+   "text": "Stream $02: 4 drawing records, drawn over room $24 at $2FD3 while object $14's room is not $FF. A record stores shape, X and Y; X bit 7 reuses the preceding attribute, otherwise a fourth byte supplies attribute XOR $40."
   },
   {
    "address": 33200,
@@ -11639,7 +11633,7 @@
   {
    "address": 42240,
    "type": "line",
-   "text": "240 little-endian offsets relative to $A700, with 16-bit wrapping. Negative offsets point back into the preceding bytes; shape lookup adds the base to the high byte."
+   "text": "240 little-endian offsets relative to $A700, one for each shape ID $00-$EF. Shape lookup at $3893 adds $A7 to the high byte. 196 entries have a high byte of $1C or less and point at the shape headers from $A702 to $C308. The other 44 have high byte $FF, so the addition carries, and the renderer returns at $2B70 without drawing when the carry is set. Those 44 sums fall at $A60D-$A6FF, inside this table and the unused bytes after it, where there are no shape headers."
   },
   {
    "address": 42754,
@@ -12657,11 +12651,6 @@
    "text": "134 initial object bitmap shape IDs. Copied into the corresponding live table by the new-game loop at $19DA."
   },
   {
-   "address": 50838,
-   "type": "line",
-   "text": "Offset $7E in initial_object_shapes, beginning at $C618. 134 initial object bitmap shape IDs. Copied into the corresponding live table by the new-game loop at $19DA."
-  },
-  {
    "address": 50846,
    "type": "line",
    "text": "134 live object room IDs; four denotes carried and $FF removed. Object drawing and puzzle events index these parallel tables by object ID."
@@ -13064,7 +13053,7 @@
   {
    "address": 53240,
    "type": "line",
-   "text": "Startup clears the first byte of this retained eight-byte pointer area. Bitmap-game video uses the sprite pointers at $5FF8 instead."
+   "text": "Eight zero bytes. Startup stores zero in the first at $19CF, among the stores that clear the sprite registers; no other instruction names any of them. The game's screen is at $5C00, so the video chip takes its sprite pointers from $5FF8, not from here."
   },
   {
    "address": 53248,
@@ -13104,557 +13093,557 @@
   {
    "address": 53698,
    "type": "line",
-   "text": "Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53719,
    "type": "line",
-   "text": "Offset $15 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $15 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53720,
    "type": "line",
-   "text": "Offset $16 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $16 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53721,
    "type": "line",
-   "text": "Offset $17 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $17 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53722,
    "type": "line",
-   "text": "Offset $18 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $18 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53723,
    "type": "line",
-   "text": "Offset $19 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $19 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53724,
    "type": "line",
-   "text": "Offset $1A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $1A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53725,
    "type": "line",
-   "text": "Offset $1B within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $1B within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53726,
    "type": "line",
-   "text": "Offset $1C within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $1C within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53727,
    "type": "line",
-   "text": "Offset $1D within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $1D within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53728,
    "type": "line",
-   "text": "Offset $1E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $1E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53729,
    "type": "line",
-   "text": "Offset $1F within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $1F within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53730,
    "type": "line",
-   "text": "Offset $20 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $20 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53731,
    "type": "line",
-   "text": "Offset $21 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $21 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53732,
    "type": "line",
-   "text": "Offset $22 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $22 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53733,
    "type": "line",
-   "text": "Offset $23 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $23 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53734,
    "type": "line",
-   "text": "Offset $24 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $24 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53735,
    "type": "line",
-   "text": "Offset $25 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $25 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53736,
    "type": "line",
-   "text": "Offset $26 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $26 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53737,
    "type": "line",
-   "text": "Offset $27 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $27 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53738,
    "type": "line",
-   "text": "Offset $28 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $28 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53739,
    "type": "line",
-   "text": "Offset $29 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $29 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53740,
    "type": "line",
-   "text": "Offset $2A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $2A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53761,
    "type": "line",
-   "text": "Offset $3F within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $3F within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53782,
    "type": "line",
-   "text": "Offset $54 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $54 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53803,
    "type": "line",
-   "text": "Offset $69 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $69 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53804,
    "type": "line",
-   "text": "Offset $6A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $6A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53805,
    "type": "line",
-   "text": "Offset $6B within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $6B within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53806,
    "type": "line",
-   "text": "Offset $6C within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $6C within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53807,
    "type": "line",
-   "text": "Offset $6D within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $6D within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53808,
    "type": "line",
-   "text": "Offset $6E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $6E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53809,
    "type": "line",
-   "text": "Offset $6F within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $6F within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53830,
    "type": "line",
-   "text": "Offset $84 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $84 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53831,
    "type": "line",
-   "text": "Offset $85 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $85 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53832,
    "type": "line",
-   "text": "Offset $86 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $86 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53833,
    "type": "line",
-   "text": "Offset $87 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $87 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53854,
    "type": "line",
-   "text": "Offset $9C within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $9C within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53875,
    "type": "line",
-   "text": "Offset $B1 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $B1 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53876,
    "type": "line",
-   "text": "Offset $B2 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $B2 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53877,
    "type": "line",
-   "text": "Offset $B3 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $B3 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53898,
    "type": "line",
-   "text": "Offset $C8 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $C8 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53919,
    "type": "line",
-   "text": "Offset $DD within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $DD within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53940,
    "type": "line",
-   "text": "Offset $F2 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $F2 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53941,
    "type": "line",
-   "text": "Offset $F3 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $F3 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53942,
    "type": "line",
-   "text": "Offset $F4 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $F4 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53943,
    "type": "line",
-   "text": "Offset $F5 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $F5 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53964,
    "type": "line",
-   "text": "Offset $10A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $10A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 53985,
    "type": "line",
-   "text": "Offset $11F within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $11F within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54006,
    "type": "line",
-   "text": "Offset $134 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $134 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54027,
    "type": "line",
-   "text": "Offset $149 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $149 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54048,
    "type": "line",
-   "text": "Offset $15E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $15E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54069,
    "type": "line",
-   "text": "Offset $173 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $173 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54090,
    "type": "line",
-   "text": "Offset $188 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $188 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54111,
    "type": "line",
-   "text": "Offset $19D within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $19D within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54132,
    "type": "line",
-   "text": "Offset $1B2 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $1B2 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54153,
    "type": "line",
-   "text": "Offset $1C7 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $1C7 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54174,
    "type": "line",
-   "text": "Offset $1DC within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $1DC within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54195,
    "type": "line",
-   "text": "Offset $1F1 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $1F1 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54216,
    "type": "line",
-   "text": "Offset $206 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $206 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54237,
    "type": "line",
-   "text": "Offset $21B within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $21B within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54258,
    "type": "line",
-   "text": "Offset $230 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $230 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54302,
    "type": "line",
-   "text": "Offset $25C within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $25C within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54303,
    "type": "line",
-   "text": "Offset $25D within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $25D within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54304,
    "type": "line",
-   "text": "Offset $25E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $25E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54305,
    "type": "line",
-   "text": "Offset $25F within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $25F within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54326,
    "type": "line",
-   "text": "Offset $274 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $274 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54347,
    "type": "line",
-   "text": "Offset $289 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $289 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54368,
    "type": "line",
-   "text": "Offset $29E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $29E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54389,
    "type": "line",
-   "text": "Offset $2B3 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $2B3 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54410,
    "type": "line",
-   "text": "Offset $2C8 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $2C8 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54431,
    "type": "line",
-   "text": "Offset $2DD within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $2DD within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54452,
    "type": "line",
-   "text": "Offset $2F2 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $2F2 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54473,
    "type": "line",
-   "text": "Offset $307 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $307 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54494,
    "type": "line",
-   "text": "Offset $31C within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $31C within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54515,
    "type": "line",
-   "text": "Offset $331 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $331 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54536,
    "type": "line",
-   "text": "Offset $346 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $346 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54537,
    "type": "line",
-   "text": "Offset $347 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $347 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54538,
    "type": "line",
-   "text": "Offset $348 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $348 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54539,
    "type": "line",
-   "text": "Offset $349 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $349 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54540,
    "type": "line",
-   "text": "Offset $34A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $34A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54541,
    "type": "line",
-   "text": "Offset $34B within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $34B within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54562,
    "type": "line",
-   "text": "Offset $360 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $360 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54583,
    "type": "line",
-   "text": "Offset $375 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $375 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54604,
    "type": "line",
-   "text": "Offset $38A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $38A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54625,
    "type": "line",
-   "text": "Offset $39F within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $39F within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54646,
    "type": "line",
-   "text": "Offset $3B4 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $3B4 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54667,
    "type": "line",
-   "text": "Offset $3C9 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $3C9 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54688,
    "type": "line",
-   "text": "Offset $3DE within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $3DE within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54689,
    "type": "line",
-   "text": "Offset $3DF within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $3DF within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54710,
    "type": "line",
-   "text": "Offset $3F4 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $3F4 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54731,
    "type": "line",
-   "text": "Offset $409 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $409 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54752,
    "type": "line",
-   "text": "Offset $41E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $41E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54773,
    "type": "line",
-   "text": "Offset $433 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $433 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54774,
    "type": "line",
-   "text": "Offset $434 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $434 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54775,
    "type": "line",
-   "text": "Offset $435 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $435 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54776,
    "type": "line",
-   "text": "Offset $436 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $436 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54777,
    "type": "line",
-   "text": "Offset $437 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $437 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54778,
    "type": "line",
-   "text": "Offset $438 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $438 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54799,
    "type": "line",
-   "text": "Offset $44D within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $44D within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54819,
    "type": "line",
-   "text": "Offset $461 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $461 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54838,
    "type": "line",
-   "text": "Offset $474 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $474 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54857,
    "type": "line",
-   "text": "Offset $487 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $487 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54876,
    "type": "line",
-   "text": "Offset $49A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $49A within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54897,
    "type": "line",
-   "text": "Offset $4AF within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $4AF within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54918,
    "type": "line",
-   "text": "Offset $4C4 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $4C4 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54933,
    "type": "line",
-   "text": "Offset $4D3 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $4D3 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54953,
    "type": "line",
-   "text": "Offset $4E7 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $4E7 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54973,
    "type": "line",
-   "text": "Offset $4FB within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $4FB within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 54989,
    "type": "line",
-   "text": "Offset $50B within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $50B within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 55005,
    "type": "line",
-   "text": "Offset $51B within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $51B within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 55022,
    "type": "line",
-   "text": "Offset $52C within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $52C within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 55038,
@@ -13664,57 +13653,57 @@
   {
    "address": 55056,
    "type": "line",
-   "text": "Offset $54E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $54E within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 55074,
    "type": "line",
-   "text": "Offset $560 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $560 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 55091,
    "type": "line",
-   "text": "Offset $571 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $571 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 55110,
    "type": "line",
-   "text": "Offset $584 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $584 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 55129,
    "type": "line",
-   "text": "Offset $597 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $597 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 55146,
    "type": "line",
-   "text": "Offset $5A8 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $5A8 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 55162,
    "type": "line",
-   "text": "Offset $5B8 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $5B8 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 55180,
    "type": "line",
-   "text": "Offset $5CA within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $5CA within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 55195,
    "type": "line",
-   "text": "Offset $5D9 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. Names terminate at $5F or a byte outside the drawable range; title and maker lettering is retained among them."
+   "text": "Offset $5D9 within room_and_object_names at $D1C2. Room and object name streams in the shape alphabet. A room name ends at $5F; an object name ends at any byte outside $26–$5A. The first, at $D1C2, is room $00's name, “I.GRAY--OLIVER TWINS”, which the title screen draws."
   },
   {
    "address": 55215,
    "type": "line",
-   "text": "Message script $00, beginning at $D7AF: FANTASY WORLD / STARRING / THE YOLKFOLK / D / I / Z / Z / Y / D / A / I / S / Y / DENZIL DYLAN / DOZY / GRAND / DIZZY. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $00, beginning at $D7AF: FANTASY WORLD / STARRING / THE YOLKFOLK / D / I / Z / Z / Y / D / A / I / S / Y / DENZIL DYLAN / DOZY / GRAND / DIZZY. Commands position and colour the shape-font letters and wait for action; this script draws no box. The renderer reads it with RAM banked in."
   },
   {
    "address": 55325,
    "type": "line",
-   "text": "Message script $01, beginning at $D81D: YOU GIVE / THE APPLE / T0 THE TROLL / \"FOR ME? / YOU'RE SO / GENEROUS\" / \"I'D LIKE TO LET / YOU PASS, BUT IF / THE KING FOUND OUT / HE'D TORTURE ME!\" / \"BUT YOU. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $01, beginning at $D81D: YOU GIVE / THE APPLE / T0 THE TROLL / \"FOR ME? / YOU'RE SO / GENEROUS\" / \"I'D LIKE TO LET / YOU PASS, BUT IF / THE KING FOUND OUT / HE'D TORTURE ME!\" / \"BUT YOU COULD / ESCAPE THROUGH THE / FIRE USING THE WATER\". Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
   },
   {
    "address": 55559,
@@ -13729,12 +13718,12 @@
   {
    "address": 55681,
    "type": "line",
-   "text": "Message script $04, beginning at $D981: \"G'DAY DIZ, AHH! A PIGMY / COW THAT'S INTERESTIN'\" / \"WELL, HOW ABOUT / 10 GOLD COINS FOR IT? / \"STREWTH MATE, I / SAID INTERESTIN' / NOT VALUABLE\" / \"WELL, OK,. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $04, beginning at $D981: \"G'DAY DIZ, AHH! A PIGMY / COW THAT'S INTERESTIN'\" / \"WELL, HOW ABOUT / 10 GOLD COINS FOR IT? / \"STREWTH MATE, I / SAID INTERESTIN' / NOT VALUABLE\" / \"WELL, OK, / 5 GOLD COINS\" / \"BE SERIOUS, IT AIN'T / WORTH SPIT, HERE'S A / BEAN, THAT'S GENEROUS\" / \"ER, UM, / BUT ...\" / \"NOW STOP / WASTIN' / MY TIME!\" / AND HE THROWS / THE BEAN / ON THE CRATE / YOU LEAVE - LET'S / FACE IT DIZZY, / YOU CAN'T BARTER!. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
   },
   {
    "address": 56146,
    "type": "line",
-   "text": "Message script $05, beginning at $DB52: \"HEY! DOZY / GET UP!\" / YOU KICK THE / DECK CHAIR AND / HE WAKES UP / \"OH! WHAT'S THE / PROBLEM DIZZY?\" / \"DAISY'S BEEN EGGNAPPED / AND IS BEING HELD IN THE / W. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $05, beginning at $DB52: \"HEY! DOZY / GET UP!\" / YOU KICK THE / DECK CHAIR AND / HE WAKES UP / \"OH! WHAT'S THE / PROBLEM DIZZY?\" / \"DAISY'S BEEN EGGNAPPED / AND IS BEING HELD IN THE / WIZARD'S CLOUD CASTLE, / AND NOBODY WILL HELP / ME RESCUE HER!\" / \"AHH, THAT'S / BAD LUCK. / I'LL HELP / YOU, DIZZY\" / \"HERE'S SOME / SLEEPING POTION, / THAT SHOULD HELP\" / \"BUT I'D LIKE / YOU TO HELP ME\" / \"SORRY DIZZY, / LOVE TO BUT / IT'S FAR TOO / NICE A DAY TO / RESCUE MAIDENS\" / I DON'T THINK HE'S / GOING TO HELP, AND / HE'S FALLEN ASLEEP. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
   },
   {
    "address": 56698,
@@ -13744,7 +13733,7 @@
   {
    "address": 56832,
    "type": "line",
-   "text": "Message script $07, beginning at $DE00: \"HEY MAN, LIKE / WHAT'S HAPPENIN ?\" / \"PLEASE HELP ME DYLAN, / I'M TRYING TO RESCUE / DAISY BUT I CAN'T FIND / THE CLOUD CASTLE.\" / \"IT'S QUITE EASY, / REMEMBER. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $07, beginning at $DE00: \"HEY MAN, LIKE / WHAT'S HAPPENIN ?\" / \"PLEASE HELP ME DYLAN, / I'M TRYING TO RESCUE / DAISY BUT I CAN'T FIND / THE CLOUD CASTLE.\" / \"IT'S QUITE EASY, / REMEMBER HOW JACK / FOUND THE CASTLE\". Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
   },
   {
    "address": 57040,
@@ -13754,12 +13743,12 @@
   {
    "address": 57090,
    "type": "line",
-   "text": "Message script $09, beginning at $DF02: \"WHAT ARE YOU DOING HERE / DENZIL - DON'T YOU KNOW / IT'S DANGEROUS?\" / \"HEY, STAY COOL, DIZ. / I SAW THE KING LEAVE / AND THOUGHT I'D CHECK / OUT THE CASTLE.\" . Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $09, beginning at $DF02: \"WHAT ARE YOU DOING HERE / DENZIL - DON'T YOU KNOW / IT'S DANGEROUS?\" / \"HEY, STAY COOL, DIZ. / I SAW THE KING LEAVE / AND THOUGHT I'D CHECK / OUT THE CASTLE.\" / \"BUT DAISY AND I WERE / CAUGHT. I WAS THROWN / IN THE DUNGEONS AND / DAISY'S BEEN TAKEN TO / THE WIZARD'S CASTLE\" / \"OH! WE WONDERED / WHERE YOU HAD GONE. / I'M TOO BUSY TO HELP, / BUT HERE'S THE ROPE / YOU LENT ME LAST WEEK.\" (the space in DAISY'S BEEN is the byte $00 at $DFFF, drawn as a space like any byte outside $26-$5A). Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
   },
   {
    "address": 57344,
    "type": "line",
-   "text": "Continuation of message nine across the $E000 memory-map edge: Denzil explains where Daisy was taken and gives Dizzy his rope. Read as banked message bytecode, with $3A spaces and $5F action waits."
+   "text": "Continuation of message nine across the $E000 memory-map edge, to $E098: BEEN TAKEN TO / THE WIZARD'S CASTLE\", the end of the third box, in which Dizzy says where Daisy was taken, then the fourth box, in which Denzil hands back the rope Dizzy lent him. Read as banked message bytecode, with $3A spaces and $5F action waits."
   },
   {
    "address": 57497,
@@ -13774,27 +13763,27 @@
   {
    "address": 57618,
    "type": "line",
-   "text": "Message script $0C, beginning at $E112: WELL, DAISY DOESN'T / HANG AROUND, SHE'S RUN / HOME AND WANTS YOU TO / BRING HER 30 GOLD COINS / SO THAT YOU CAN BUY A / HOME TOGETHER AND LIVE / HAPPILY EVER A. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $0C, beginning at $E112: WELL, DAISY DOESN'T / HANG AROUND, SHE'S RUN / HOME AND WANTS YOU TO / BRING HER 30 GOLD COINS / SO THAT YOU CAN BUY A / HOME TOGETHER AND LIVE / HAPPILY EVER AFTER. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
   },
   {
    "address": 57787,
    "type": "line",
-   "text": "Message script $0D, beginning at $E1BB: \"OH DIZZY! YOU'RE / SO BRAVE AND CLEVER / AND NOW WE CAN BUY / THAT TREE COTTAGE\" / \"ER, UM, WELL ACTUALLY / I WAS WONDERING IF WE / NEEDED ALL 30 COINS?\" / \"YO. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $0D, beginning at $E1BB: \"OH DIZZY! YOU'RE / SO BRAVE AND CLEVER / AND NOW WE CAN BUY / THAT TREE COTTAGE\" / \"ER, UM, WELL ACTUALLY / I WAS WONDERING IF WE / NEEDED ALL 30 COINS?\" / \"YOU DISAPPOINT ME, / OF COURSE WE DO!\" / BACK YOU GO DIZZY. / SHE'S A REAL SLAVE / DRIVER, BUT WORTH IT. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
   },
   {
    "address": 58000,
    "type": "line",
-   "text": "Offset $D5 within message_0d at $E1BB. Message script $0D, beginning at $E1BB: \"OH DIZZY! YOU'RE / SO BRAVE AND CLEVER / AND NOW WE CAN BUY / THAT TREE COTTAGE\" / \"ER, UM, WELL ACTUALLY / I WAS WONDERING IF WE / NEEDED ALL 30 COINS?\" / \"YO. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Offset $D5 within message_0d at $E1BB: the wait that ends the third box of message $0D (\"YOU DISAPPOINT ME, / OF COURSE WE DO!\") and the colour, position and box commands that open the fourth. The renderer reads these bytes with RAM banked in. The random reader at $3260 names this address too, but it runs with $01=$36 and so reads the KERNAL ROM at $E290 plus its index, not these bytes."
   },
   {
    "address": 58072,
    "type": "line",
-   "text": "Message script $0E, beginning at $E2D8: \"WOW! YOU'VE GOT THEM\" / \"WELL, IT WAS NOTHING\" / LIAR! / H / AND SO WE SAY GOODBYE / TO THE HAPPY COUPLE / UNTIL ..... / WELL,WHO KNOWS WHAT / MIGHT HAPPEN NEX. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $0E, beginning at $E2D8: \"WOW! YOU'VE GOT THEM\" / \"WELL, IT WAS NOTHING\" / LIAR! / H / AND SO WE SAY GOODBYE / TO THE HAPPY COUPLE / UNTIL ..... / WELL,WHO KNOWS WHAT / MIGHT HAPPEN NEXT? / WE HOPE YOU HAVE / ENJOYED THIS GAME / THAT'S ALL FOLKS! / THE OLIVER TWINS / AND IAN GRAY. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
   },
   {
    "address": 58360,
    "type": "line",
-   "text": "Message script $0F, beginning at $E3F8: \"AFTERNOON YOUNG DIZZY / YOU LOOK FRANTIC, / ANYTHING YOUR OLD GRAND / DIZZY CAN DO TO HELP?\" / \"HAVEN'T YOU HEARD? / DAISY'S BEING HELD IN / THE CLOUD CASTLE A. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $0F, beginning at $E3F8: \"AFTERNOON YOUNG DIZZY / YOU LOOK FRANTIC, / ANYTHING YOUR OLD GRAND / DIZZY CAN DO TO HELP?\" / \"HAVEN'T YOU HEARD? / DAISY'S BEING HELD IN / THE CLOUD CASTLE AND / I'M TRYING TO SAVE HER\" / \"JUST WAIT HERE AND / I'LL GET MY HAT\" / \"WHAT! WELL THANKS FOR / OFFERING, BUT I THINK / YOU SHOULD STAY HERE.\" / \"WELL, IF YOU THINK / IT'S BEST, BUT PLEASE / TAKE THIS CROWBAR. / I REMEMBER WHEN....\" / YOU DECIDE TO LEAVE / AS HE STARTS TO TELL / YOU HIS LIFE STORY. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
   },
   {
    "address": 58851,
@@ -13889,7 +13878,7 @@
   {
    "address": 60131,
    "type": "line",
-   "text": "Message script $20, beginning at $EAE3: KNOCK AND ENTER. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $20, beginning at $EAE3: KNOCK AND ENTER. It ends at $EAFC, the second of two $5F bytes. A second script follows at $EAFD-$EB47, THAT'S EASIER SAID / THAN DONE WHEN YOU'RE / WEARING BOXING GLOVES, with a box, colours and a wait of its own; no entry in the pointer table at $D148 points at it, so message $20 does not show it. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
   },
   {
    "address": 60232,
@@ -13934,67 +13923,67 @@
   {
    "address": 60720,
    "type": "line",
-   "text": "Message script $29, beginning at $ED30: YOU LOSE A LIFE!. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $29, beginning at $ED30: YOU LOSE A LIFE!. Commands draw a box and position and colour the shape-font letters; the script does not wait for action and ends at $FF. The renderer reads it with RAM banked in."
   },
   {
    "address": 60747,
    "type": "line",
-   "text": "Message script $2A, beginning at $ED4B: ARMOROG CAUGHT / YOU TRESPASSING. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $2A, beginning at $ED4B: ARMOROG CAUGHT / YOU TRESPASSING. Its only commands position the shape-font letters: it sets no colour, draws no box and does not wait for action, and it ends at $FF. The renderer reads it with RAM banked in."
   },
   {
    "address": 60781,
    "type": "line",
-   "text": "Message script $2B, beginning at $ED6D: YOU WERE STABBED / BY THE SPIKES OF / THE PORTCULLIS. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $2B, beginning at $ED6D: YOU WERE STABBED / BY THE SPIKES OF / THE PORTCULLIS. Its only commands position the shape-font letters: it sets no colour, draws no box and does not wait for action, and it ends at $FF. The renderer reads it with RAM banked in."
   },
   {
    "address": 60834,
    "type": "line",
-   "text": "Message script $2C, beginning at $EDA2: YOU GOT TRAPPED / IN THE COGS ON / TOP OF THE LIFT. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $2C, beginning at $EDA2: YOU GOT TRAPPED / IN THE COGS ON / TOP OF THE LIFT. Its only commands position the shape-font letters: it sets no colour, draws no box and does not wait for action, and it ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 60885,
    "type": "line",
-   "text": "Message script $2D, beginning at $EDD5: THE DRAGON BITES / YOU AND YOU KEEL / OVER AND DIE. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $2D, beginning at $EDD5: THE DRAGON BITES / YOU AND YOU KEEL / OVER AND DIE. Its only commands position the shape-font letters: it sets no colour, draws no box and does not wait for action, and it ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 60936,
    "type": "line",
-   "text": "Message script $2E, beginning at $EE08: YOU ARE ROASTED / BY THE DRAGON'S / FIREY BREATH. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $2E, beginning at $EE08: YOU ARE ROASTED / BY THE DRAGON'S / FIREY BREATH. Its only commands position the shape-font letters: it sets no colour, draws no box and does not wait for action, and it ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 60985,
    "type": "line",
-   "text": "Message script $2F, beginning at $EE39: YOU WERE BURNT / BY THE FLAMES. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $2F, beginning at $EE39: YOU WERE BURNT / BY THE FLAMES. Its only commands position the shape-font letters: it sets no colour, draws no box and does not wait for action, and it ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 61017,
    "type": "line",
-   "text": "Message script $30, beginning at $EE59: YOU FELL IN THE / WATER AND DROWNED. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $30, beginning at $EE59: YOU FELL IN THE / WATER AND DROWNED. Its only commands position the shape-font letters: it sets no colour, draws no box and does not wait for action, and it ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 61054,
    "type": "line",
-   "text": "Message script $31, beginning at $EE7E: THE GATOR HAS / YOU FOR LUNCH. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $31, beginning at $EE7E: THE GATOR HAS / YOU FOR LUNCH. Its only commands position the shape-font letters: it sets no colour, draws no box and does not wait for action, and it ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 61085,
    "type": "line",
-   "text": "Message script $32, beginning at $EE9D: THE DIZZY-HAWK / SWOOPS DOWN / AND KILLS YOU. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $32, beginning at $EE9D: THE DIZZY-HAWK / SWOOPS DOWN / AND KILLS YOU. Its only commands position the shape-font letters: it sets no colour, draws no box and does not wait for action, and it ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 61130,
    "type": "line",
-   "text": "Message script $33, beginning at $EECA: THE RAT GOES / STRAIGHT FOR / YOUR NECK. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $33, beginning at $EECA: THE RAT GOES / STRAIGHT FOR / YOUR NECK. Its only commands position the shape-font letters: it sets no colour, draws no box and does not wait for action, and it ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 61170,
    "type": "line",
-   "text": "Message script $34, beginning at $EEF2: YOU WERE BURNT / BY THE HOT LAVA / IN THE VOLCANO. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $34, beginning at $EEF2: YOU WERE BURNT / BY THE HOT LAVA / IN THE VOLCANO. Its only commands position the shape-font letters: it sets no colour, draws no box and does not wait for action, and it ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 61220,
    "type": "line",
-   "text": "Message script $35, beginning at $EF24: YOU'RE SKEWERED BY / THE SHARP DAGGERS. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $35, beginning at $EF24: YOU'RE SKEWERED BY / THE SHARP DAGGERS. Its only commands position the shape-font letters: it sets no colour, draws no box and does not wait for action, and it ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 61260,
@@ -14004,22 +13993,22 @@
   {
    "address": 61301,
    "type": "line",
-   "text": "Message script $37, beginning at $EF75: YOU ARE CARRYING. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $37, beginning at $EF75: YOU ARE CARRYING. Commands draw a box and position and colour the shape-font letters; the script does not wait for action and ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 61328,
    "type": "line",
-   "text": "Message script $38, beginning at $EF90: YOU ARE CARRYING. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $38, beginning at $EF90: YOU ARE CARRYING. Commands draw a box and position and colour the shape-font letters; the script does not wait for action and ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 61355,
    "type": "line",
-   "text": "Message script $39, beginning at $EFAB: CHOOSE ITEM TO / USE OR DROP. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $39, beginning at $EFAB: CHOOSE ITEM TO / USE OR DROP. Commands draw a box and position and colour the shape-font letters; the script does not wait for action and ends at $FE. The renderer reads it with RAM banked in."
   },
   {
    "address": 61392,
    "type": "line",
-   "text": "Message script $3A, beginning at $EFD0: YOU ARE CARRYING / TOO MUCH TO HOLD. Commands position and colour the shape-font letters, draw boxes and wait for action; the renderer reads it with RAM banked in."
+   "text": "Message script $3A, beginning at $EFD0: YOU ARE CARRYING / TOO MUCH TO HOLD. Commands draw a box and position and colour the shape-font letters; the script does not wait for action and ends at $FF. The renderer reads it with RAM banked in."
   },
   {
    "address": 61436,
@@ -14029,22 +14018,22 @@
   {
    "address": 61592,
    "type": "line",
-   "text": "Retained dialogue fragments at $F098; 64-byte windows match the earlier message allocation at varying offsets. A loader store watch stopped in the descending page-copy loop at $0402. These bytes remain in the ledger as retained game text, rather than being declared unused."
+   "text": "Retained copy of message text, $F098-$F497. $F098-$F362 equal $E099-$E363, the bytes $0FFF below: message $0A to the UNTIL of message $0E. The five full stops at $E364-$E368 are four bytes here, $14 $3E $0B $2C at $F363-$F366, so $F367-$F497 equal $E369-$E499, $0FFE below: the rest of message $0E and message $0F to its offset $A1. No pointer in the name or message tables points here; message $3B ends just before, at $F097."
   },
   {
    "address": 62616,
    "type": "line",
-   "text": "Retained dialogue fragments at $F498; 64-byte windows match the earlier message allocation at varying offsets. A loader store watch stopped in the descending page-copy loop at $0402. These bytes remain in the ledger as retained game text, rather than being declared unused."
+   "text": "Retained copy of message text, $F498-$F897. $F498-$F592 equal $E49A-$E594, the bytes $0FFE below, in message $0F. The four full stops at $E595-$E598 are $10 $3E $0B $25 at $F593-$F596. $F597-$F7BB equal $E599-$E7BD, $0FFE below: the end of message $0F to message $14. The three full stops at $E7BE-$E7C0 are four bytes here, $0C $3E $23 $3E at $F7BC-$F7BF, so $F7C0-$F897 equal $E7C1-$E898, $0FFF below: message $14 to the first byte of message $18. No pointer in the name or message tables points here."
   },
   {
    "address": 63640,
    "type": "line",
-   "text": "Retained dialogue fragments at $F898; 64-byte windows match the earlier message allocation at varying offsets. A loader store watch stopped in the descending page-copy loop at $0402. These bytes remain in the ledger as retained game text, rather than being declared unused."
+   "text": "Retained copy of message text: every byte of $F898-$FC97 equals the byte $0FFF below it, $E899-$EC98, from the second byte of message $18 to the sixth byte of message $27. No pointer in the name or message tables points here."
   },
   {
    "address": 64664,
    "type": "line",
-   "text": "Retained dialogue fragments at $FC98; 64-byte windows match the earlier message allocation at varying offsets. A loader store watch stopped in the descending page-copy loop at $0402. These bytes remain in the ledger as retained game text, rather than being declared unused."
+   "text": "Retained copy of message text: every byte of $FC98–$FFFD equals the byte $0FFF below it, $EC99–$EFFE, from the seventh byte of message $27 to the end of message $3A and the first three bytes of message $3B. Only $FFFE and $FFFF, which hold $04 and $00, differ. No pointer in the name or message tables points here."
   }
  ]
 }

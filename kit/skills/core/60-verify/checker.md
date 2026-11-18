@@ -17,8 +17,9 @@ five things for this game:
   disassembler (`kit/skills/<platform>/steps`, "fixes");
 - the game, its platform and its folder, and the snapshot the listing was
   built from;
-- the comments to check, each with its address, label and text (for an
-  audit, its range of addresses instead);
+- the comments to check, in the draw's order, each with its address,
+  label, text and stratum (for an audit, its range of addresses
+  instead);
 - the commands for this platform's references search and its simulator
   (`kit/skills/<platform>/steps`, "references" and "simulator");
 - what is established about the program, from `facts.md`: the memory
@@ -76,13 +77,17 @@ are wrong in a detail:
   most rows but not all; check every row when a comment generalises.
 - **What a field means**: a byte named for its first use when the code
   shows it is something else.
+- **What data is**: bytes named for what one routine does with them, a
+  copy, a clear or a checksum, when another routine reads them as
+  something else, such as a screen, a tune or a message. A copy reads
+  every byte it moves, whatever the bytes are.
 - Addresses, decimal values and line numbers that are slightly off.
 
 ## For each comment
 
 Check every concrete detail it states. Read the instructions, the bytes
 or the lines at and after the address, and follow the values they use.
-Three kinds of detail need more than the lines in front of you:
+Four kinds of detail need more than the lines in front of you:
 
 - **Lists and universal words.** For every list of callers, readers or
   setters, and every "only", "never", "every", "always" or "nothing", run
@@ -96,6 +101,18 @@ Three kinds of detail need more than the lines in front of you:
   routine draws, computes or leaves behind, and it can be run, run it in
   the simulator with arguments its callers pass, and compare the result
   with the comment.
+- **What data is.** For a comment on data, look in the listing for other
+  comments whose record, table or stream takes in the same address (a
+  range they state, a pointer or a length that reaches it), and for the
+  routine that reads the bytes for what they are. A comment that names
+  its bytes by one use, or leaves their use open, where the listing or
+  the code says what they are, is `wrong-detail`.
+
+Comments in a stratum named `family` were written by one script from
+one template, and come side by side. Check each one, then read them
+together: a sentence that holds for one may not hold for the next, and
+comments that all name their bytes the same way may all be on something
+else.
 
 Verdict:
 

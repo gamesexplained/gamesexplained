@@ -29,7 +29,10 @@ annotate it byte by byte.
    changes the game's code (`games/c64/master-of-magic/cheats.md`) and
    can leave code of its own on the game's interrupt with its options
    off, so compare the code in play with another release's when one can
-   be had, and mark what differs as the crackers'.
+   be had, and mark what differs as the crackers'. A patch in the game's
+   own code is a lead for `70-minisite`: play the original's code at that
+   spot, since a patch can hide a bug that only the original has
+   (games/c64/ghostbusters-2/discoveries.html).
 
    **Read the file's header before trusting its name.** An extension
    says what the file was called, not what it is: a file named as a
