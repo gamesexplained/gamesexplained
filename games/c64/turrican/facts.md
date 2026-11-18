@@ -148,6 +148,19 @@ which the title takes the low six bits (`title_fame_page`, $7384).
   `weapon_damage`, $0720).
 - Only a mine's blast sets $0305 negative; the levels' walkers and
   gunners leap off the screen when it does.
+- Pause is CTRL held; the main program sets the pause flag ($0203)
+  again every time round its loop, and fire clears it only for the
+  first half of the frame. With CTRL and fire held, the hero moves, the
+  time runs and the view scrolls, while the objects are neither made
+  nor moved (`main_loop`, $08EA; `frame_logic`, $0B48; `irq_bottom`,
+  $0CAB; *live*).
+- The whip is 16 steps long at the start, two longer for each blue
+  symbol up to 40, and four shorter for a lost life down to 16
+  (`whip_update`, $391B; `bonus_symbol`, $5E69; `weapons_down`, $5647).
+  Level 2-1's fish keeps the length to give back only when it is 22 or
+  more; below that it gives back 0, which the step count meets only after 256 steps, so the
+  whip runs to the screen's edge until a blue symbol makes it 2 (level
+  2-1 $6D31, $704F; *live* for the lengths 0 and 2).
 
 ## Data tables
 
@@ -202,4 +215,28 @@ not had a full audit.
 
 ## Live tests
 
-To be filled in by `60-verify`.
+Run in VICE 3.10 (vice-mcp), driven frame by frame from the snapshots
+named in `orientation.md`.
+
+- *live* Booting both disk sides to play, and every level and the
+  ending loaded by the route in `orientation.md`.
+- *live* The ending, from the ending's `work/entry.vsf`: the tower
+  picture, the ship leaving it, the explosions over the top, the top
+  drawn broken from then on, and the text rising in sprites, with
+  "Now enjoy the music or Press Space" at the end (about 6,000 frames).
+- *live* After SPACE: TURN THE DISK !, then, with side 1 in the drive,
+  YOUR RESULT with LEVEL : !-! (the score poked to 200,000 at $0216
+  first). RETURN with no name puts ♥ MR. RETURN ♥ at the top of the hall
+  of fame, with the level !-!.
+- *live* S on the hall of fame shows INSERT SIDE 1 OF YOUR GAMEDISK, AND
+  PRESS FIRE, RUN-STOP => CANCEL. RUN/STOP goes back to the title; fire
+  with no disk in the drive shows SAVING HALL OF FAME, then DANN EBEN
+  NICHT !! in light red, then the title.
+- *live* In level 1-1, from `work/play-w1l1.vsf`: walking right for six
+  seconds fills up to ten of the eleven object slots; CTRL, fire and right
+  held together for the same six seconds scroll the view to exactly the
+  same places and count the time down, and no object is made.
+- *live* The whip with its length ($036F) poked: at 40 and at 0 it
+  reaches the screen's edge from the same place (20 steps), at 16 it
+  stops at 16 and at 2 it is a stub of 2.
+
