@@ -9,7 +9,7 @@ time, operating system and tool versions.
 
 - `kit/skills/core/15-parts`: "The part beneath keeps its own ranges then": made the 2 KB swapped in at `$4000` a part over `main`, which showed that the bottom part had no way to keep its own sprites there.
 - `kit/skills/core/60-verify`: "Read every comment it marks wrong or doubtful against the code yourself": each finding of the sample was settled against the bytes before it was counted.
-- `kit/skills/core/12-media`: "every file, stray sector, cartridge bank and tape block": the 256-byte `S2` file turned out to be the last page of the packed game, read by the freezer's restart routine.
+- `kit/skills/core/12-media`: "every file, every run of sectors the disk's map marks as used that no file holds": the 256-byte `S2` file turned out to be the last page of the packed game, read by the freezer's restart routine.
 
 ## What was changed in the kit
 
