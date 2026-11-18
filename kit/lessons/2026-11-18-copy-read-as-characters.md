@@ -1,4 +1,4 @@
-## next · 2026-11-18 · Super Wonder Boy in Monster Land (C64) · 64kramsystem with Codex and Claude, reviewed by air with Claude
+## 0.0.355 · 2026-11-18 · Super Wonder Boy in Monster Land (C64) · 64kramsystem with Codex and Claude, reviewed by air with Claude
 
 - **A routine that copies a block says nothing about what the block
   holds.** Each of the game's 31 loads copies eight pages (2,048 bytes)
