@@ -14,3 +14,5 @@ let shapes=0;for(const id of [...Array.from({length:24},(_,i)=>0x68+i),...Array.
 const a0=call(m,0x8130,{h:position>>8,l:position&255});const addr=(a0.h<<8)|a0.l;
 call(m,0x80a0,{h:position>>8,l:position&255,d:0,e:31,ix:0xb450});for(let y=0;y<16;y++)for(let x=0;x<16;x++){const dest=addr+y*32+(x>>3),actual=!!(m[dest]&(128>>(x&7))),old=!!(bg&(128>>(x&7)));assert.equal(+actual,shapePixel(L.ram,0x8000+id*64,x,y,old));}shapes++;}
 console.log('PASS: '+grenadeCases+' grenade updates, '+antCases+' scheduling cases, '+shapes+' shape/background cases');
+
+for(const [flags,height] of [[4,0],[21,1],[20,1]]){const m=L.ram.slice();m.fill(0,0xb480,0xb4a0);m.set([130,130,0,220,0,0,0,flags],0xb480);m[0xc102]=0;m[0xc182]=1;call(m,0x8800,{ix:0xb480,iy:0xb490});assert.equal(m[0xb482],height,'automatic step-up flags '+flags);}console.log('PASS: original collision distinguishes ant, following companion, and launched grenade flags');
