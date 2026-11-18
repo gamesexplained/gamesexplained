@@ -41,7 +41,7 @@ for number in range(1, 32):
             assert f'{len(values)} captured bytes' in description
             assert f'beginning ${values[0]:02X} and ending ${values[-1]:02X}; {values.count(0)} are zero' in description
             assert f'column index from {width} through {stride-1}' in description
-            assert 'whether ordinary play reaches it' in description
+            assert 'The renderer at $6D41 can read this range' in description
         comment = next(c['text'] for c in symbols['comments'] if c['address'] == address and c['type'] == 'line')
         assert f'Map row {row + 1} of {rows}: {width} metatile indices' in comment, f'load {number}: row {row} description'
         assert f'first index is ${byte(address):02X} and the last is ${byte(address + width - 1):02X}' in comment, f'load {number}: row {row} endpoints'
