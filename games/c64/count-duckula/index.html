@@ -82,17 +82,19 @@ function spritePixels(m,p){
  return out;
 }
 // Sprites over a picture of w by h pixels held as colour indices. Each is {p, x, y, c} in the
-// game's own coordinates, where X 24 and Y 50 are the top left of the screen; later ones are drawn
-// over earlier ones. shared is [$D025, $D026].
+// game's own coordinates, where X 24 and Y 50 are the top left of the screen, with tall set for a
+// sprite stretched to double height; later ones are drawn over earlier ones. shared is
+// [$D025, $D026].
 function drawSprites(px,w,h,m,list,shared=[1,0]){
- for(const s of list){const sp=spritePixels(m,s.p);for(let y=0;y<21;y++)for(let x=0;x<24;x++){const v=sp[y*24+x];if(!v)continue;const X=s.x-24+x,Y=s.y-50+y;if(X>=0&&Y>=0&&X<w&&Y<h)px[Y*w+X]=[0,shared[0],s.c,shared[1]][v];}}
+ for(const s of list){const sp=spritePixels(m,s.p),k=s.tall?2:1;for(let y=0;y<21*k;y++)for(let x=0;x<24;x++){const v=sp[Math.floor(y/k)*24+x];if(!v)continue;const X=s.x-24+x,Y=s.y-50+y;if(X>=0&&Y>=0&&X<w&&Y<h)px[Y*w+X]=[0,shared[0],s.c,shared[1]][v];}}
  return px;
 }
 // Duckula is three sprites: the shape base and base+2 at his Y, in yellow and green, and base+1
-// twenty-one lines below, in yellow (setup at $2B85, walking frames at $3B56). Sprite 0 is drawn
-// over sprite 2, as the video chip does.
+// twenty-one lines below, in yellow (setup at $2B85, walking frames at $3B56). The green one,
+// sprite 2, is stretched to double height ($D017 = 4 at $2CE9 and $58C3), so it reaches down
+// behind his legs. Sprites 0 and 1 are drawn over sprite 2, as the video chip does.
 function duckula(base,x,y,colours=[7,7,5]){
- return [{p:base+2,x,y,c:colours[2]},{p:base+1,x,y:y+21,c:colours[1]},{p:base,x,y,c:colours[0]}];
+ return [{p:base+2,x,y,c:colours[2],tall:1},{p:base+1,x,y:y+21,c:colours[1]},{p:base,x,y,c:colours[0]}];
 }
 // end of duckula-drawing
 /* duckula-contact */
