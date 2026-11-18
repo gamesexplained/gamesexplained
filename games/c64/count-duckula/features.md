@@ -21,6 +21,6 @@
 | Crows climb and fall | traced | Four route records, room-row changes by thirteen, and two-part climbing/falling frames in $4A61/$4B6A. |
 | Bats remove points | differs | Bat actor 20 belongs to the same contact loop at $BCC0, which reaches the clock path. The documented point-loss claim remains unsupported by this decoded path. |
 | Television theme | confirmed | $0E00, request $87, three voice streams. Page wrapper matches 9,000 native ticks. |
-| Typed door cheat | confirmed | Fourteen-byte BURN THE WITCH plus final space at $42C4; recogniser $42D2 and bypass tests $36E0/$372A. Typed in play on the kit's machine model; the main loop $24D2 then blacks out Duckula and both shared sprite colours. |
+| Typed door cheat | confirmed | Fourteen-byte BURN THE WITCH at $42C4, complete on the H; recogniser $42D2 and bypass tests $36E0/$372A, walking only. Typed in play on the kit's machine model; the main loop $24D2 then blacks out Duckula and both shared sprite colours. |
 
 The named states in reference/title.png and reference/play.png establish the title and opening scene. No input recording or optional solution route was made.
