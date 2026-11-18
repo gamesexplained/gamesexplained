@@ -396,6 +396,16 @@ class Parts(unittest.TestCase):
             self.assertNotIn(0x4010, [a for lo, hi, _ in P.elsewhere(ps, by['park']) for a in (lo, hi)])
             names = P.names_under(str(g / 'parts' / 'room'))
             self.assertEqual((names[0x4000], names[0x1003]), ('park_entry', 'engine_get'))
+            # an address the park's load wrote takes no name from the engine beneath it, even where
+            # the park has none there: the bytes are the park's, not what the engine named
+            symbols(g, 'engine', [(0x1000, 0x1006, 'Code'), (0x1010, 0x1010, 'Byte')],
+                    [sym(0x1000, 'engine_main'), sym(0x1003, 'engine_get'), sym(0x1010, 'engine_var', 'AbsoluteAddress'),
+                     sym(0x4005, 'engine_level_hook', 'AbsoluteAddress')],
+                    [line(0x1000, 'Calls the level, then reads the variable.'), line(0x1003, 'Reads the variable.'),
+                     line(0x1010, 'The variable.')])
+            names = P.names_under(str(g / 'parts' / 'room'))
+            self.assertNotIn(0x4005, names)
+            self.assertEqual(names[0x1010], 'engine_var')
             # what the room does not own is named after the part whose load wrote it, not the nearest
             away = {(lo, hi): who for lo, hi, who in P.elsewhere(ps, by['room'])}
             self.assertEqual(away[(0x0000, 0x3FFF)], 'The engine')
