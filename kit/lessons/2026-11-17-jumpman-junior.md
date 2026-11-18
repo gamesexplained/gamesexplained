@@ -1,4 +1,4 @@
-## next · 2026-11-17 · Jumpman Junior (C64) · unorig with Claude
+## 0.0.357 · 2026-11-17 · Jumpman Junior (C64) · unorig with Claude
 
 - **A cartridge game run from RAM turns its stores to ROM into real
   writes.** Jumpman Junior's disk release loads the 16 KB cartridge
