@@ -68,7 +68,7 @@ return address to skip that data. Sixteen such arguments were decoded.
 
 - The route tables select eight rooms per load. The map allocations hold
   eight 60-byte records in loads 1, 3, and 4, and ten in the docking load. Ten columns
-  each contain five tile numbers and one byte of reflection bits. Each
+  each contain five tile numbers and one byte of their ninth bits. Each
   tile covers four by four character cells; the resulting playfield is
   forty columns by twenty rows.
 - The first load's room records begin at `$3C2F`; the others begin at
@@ -76,7 +76,7 @@ return address to skip that data. Sixteen such arguments were decoded.
   `$3C` bytes per room.
 - The tile writers are at `$C300`, `$B96B`, `$BE8E` and `$C1E5`. Their
   unrolled code reads sixteen glyph planes and eight packed colour
-  planes, selecting another plane offset for reflected tiles.
+  planes, adding $100 to every plane address for tiles 256 and up.
 - Per-room tables select the three multicolour backgrounds and a
   character-bank exchange. The fourth load's exchange begins at `$0810`;
   the other three begin at `$0800`. The differing immediate operand was
@@ -112,4 +112,4 @@ return address to skip that data. Sixteen such arguments were decoded.
 
 ## Retained data
 
-The eleven sixteen-byte images at `$B504-$B5B3` draw digits and a currency sign. Their later use remains open. The authored player descriptors contain 79 distinct records behind 84 indices.
+The eleven sixteen-byte images at `$B504-$B5B3` hold the digits zero through nine and a left arrow above a right arrow. No instruction in this load or the resident part names or indexes them. The authored player descriptors contain 79 distinct records behind 84 indices.
