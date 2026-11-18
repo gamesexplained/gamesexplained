@@ -20,6 +20,6 @@ The sprite directory at `$C2CA` has 271 entries. Its original unpacker is `$BA4F
 
 ## Sound and checks
 
-The music bytes `$EEAE-$FB9B` are identical to Complex 7. The local platform setup at `$79F3` uses eight five-byte overrides; nine moving-platform records cover rooms 6 and 7. `$88A8` changes an actor phase when its local trigger condition holds. The horizontal movement entry `$AA69` takes displacement in A and derives its sign with `CMP #$80`.
+The music bytes `$EEAE-$FB9B` are identical to Complex 7. The local platform setup at `$79F3` uses eight five-byte overrides; nine moving-platform records cover rooms 6 and 7. `$88A8` starts the six-step body change when no change flash is running and the other body has at least 33 energy; the callback at `$7B0A` calls it. The horizontal movement entry `$AA69` takes displacement in A and derives its sign with `CMP #$80`.
 
 The root `../../facts.md` records all native checks, the single independent comment sample, and exact page-test counts. `../../features.md` identifies the documented features that remain visually unidentified or untested as input sequences.
