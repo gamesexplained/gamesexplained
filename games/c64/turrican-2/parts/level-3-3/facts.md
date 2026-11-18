@@ -14,7 +14,7 @@ Two patched readers traverse a 448-byte signed speed stream, initially 112 bytes
 
 The ship moves horizontally by two half-pixels and vertically by three pixels. Its dedicated player callback handles entry, protection, death, respawn and exit, then removes its caller return address and enters the interrupt exit. The environment callback separately runs music.
 
-Scatter has ten records and three upgraded allocation groups. Its restore path writes characters without restoring colour RAM. Laser has seven ordinary records; negative scene mode limits allocation to the first three. The enlarged beam uses five source templates and the generated sprite `$C700`, caches the last upgrade and records ordinary actor hit index twenty, whose damage amount is seven. The boss has a separate rectangle test. Camera compensation adds eight-bit offsets; the subsequent weapon updates handle bounds.
+Scatter has ten records and three upgraded allocation groups. Its restore path writes characters without restoring colour RAM. The bounce weapon has seven ordinary records; negative scene mode limits allocation to the first three. The enlarged beam uses five source templates and the generated sprite `$C700`, caches the last upgrade and records ordinary actor hit index twenty, whose damage amount is seven. The boss has a separate rectangle test. Camera compensation adds eight-bit offsets; the subsequent weapon updates handle bounds.
 
 ## Actors and boss
 

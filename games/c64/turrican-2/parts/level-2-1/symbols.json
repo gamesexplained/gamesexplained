@@ -3530,13 +3530,13 @@
   },
   {
    "address": 36804,
-   "name": "map_horizontal_camera_limit",
+   "name": "unread_width_less_view",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 36806,
-   "name": "map_vertical_camera_limit",
+   "name": "unread_height_less_view",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -6898,7 +6898,7 @@
   {
    "address": 27651,
    "type": "line",
-   "text": "Operand byte 1 of the BPL instruction at $6C02, within the described level actor or raster routine. This name marks a patched operand rather than another routine entry."
+   "text": "Operand byte 1 of the BPL instruction at $6C02, within the type-three rising water effect routine. No instruction writes it. The address has a name because the resident engine's music call at $0E7C is jsr $6C03, made only while $03EE is nonzero; loads that hold the music driver at $6C00 have its per-update play entry there, and this level's code does not write $03EE."
   },
   {
    "address": 27754,
@@ -6998,7 +6998,7 @@
   {
    "address": 28828,
    "type": "line",
-   "text": "If an actor slot is available, create the shared type-sixteen projectile five pixels below and four half-pixels to the right of this actor. Store signed X and timer-selected Y motion in the generated projectile arrays at $CB53/$CB5E."
+   "text": "If an actor slot is available, create the shared type-sixteen projectile six pixels below and four half-pixels to the right of this actor (the ADC #$05 runs with carry set from the health subtraction). Store signed X and timer-selected Y motion in the generated projectile arrays at $CB53/$CB5E."
   },
   {
    "address": 28911,
@@ -7093,7 +7093,7 @@
   {
    "address": 29813,
    "type": "line",
-   "text": "Variant two periodically chooses a timer-based delay and allocates a type-sixteen shot. Timer-selected signed vertical motion is also used as the horizontal step after OR one; the shot starts at the actor plus its fixed offsets."
+   "text": "Variant two periodically chooses a timer-based delay and allocates a type-sixteen shot. Its X step is a timer-selected entry of the signed Y-step table at $716B, ORed with one; its Y step is another entry of that table, selected by a second read of the timer. The shot starts six pixels below the actor (the ADC #$05 runs with carry set from the CMP at $7471) and four half-pixels to its right."
   },
   {
    "address": 29892,
@@ -7148,12 +7148,12 @@
   {
    "address": 29921,
    "type": "line",
-   "text": "Actor type ten starts in platform state fourteen with ten reward-count steps. A character hit changes it to state fifteen; later hits count down a five-hit divider, spawn reward actors and eventually destroy it for 5000 points. Player standing and underside contact update the shared platform flags. A triggered bump uses the nine-byte curve at $9C3A. Spawned rewards remain type ten while flying and become ordinary type-two pickups on terrain contact or after their motion curve."
+   "text": "Actor type ten starts in platform state fourteen with ten reward-count steps. A character hit changes it to state fifteen; later hits count down a hit divider that starts at four and is reloaded with five, spawn reward actors and eventually destroy it for 5000 points. In state fifteen, player standing and underside contact update the shared platform flags. A triggered bump uses the nine-byte curve at $9C3A. Spawned rewards remain type ten while flying and become ordinary type-two pickups on terrain contact or after their motion curve."
   },
   {
    "address": 30000,
    "type": "line",
-   "text": "The first hit changes the platform's shape and state. Subsequent hits flash it, count down the hit divider and decrement its reward counter; underflow clears platform flags and explodes it. Otherwise allocate a reward with timer-selected subtype and signed launch steps."
+   "text": "The first hit changes the platform's shape and state. Subsequent hits flash it and count down the hit divider; each time the divider runs out it is reloaded with five and the reward counter is decremented. Underflow clears the platform flags and explodes it. Otherwise allocate a reward with a timer-selected subtype of zero to seven, a signed X step of minus two to plus one and a starting index of zero to three in the vertical curve."
   },
   {
    "address": 30133,
@@ -7163,7 +7163,7 @@
   {
    "address": 30271,
    "type": "line",
-   "text": "Compute terrain pointers and reflect signed X motion at an edge or obstacle. Read the thirty-one-entry vertical curve at $A0E0; terrain or the final index converts the actor to a freshly initialized type-two pickup. The side selector reads $BC6C without X while the movement step reads $BC6C,X."
+   "text": "Compute terrain pointers and reflect signed X motion at an edge or obstacle. Add the thirty signed steps of the vertical curve at $A0E0; terrain or index thirty converts the actor to a freshly initialized type-two pickup. At index thirty the byte after the curve, $10 at $A0FE, is sign-tested but not added. The side selector reads $BC6C without X while the movement step reads $BC6C,X."
   },
   {
    "address": 30423,
@@ -7173,7 +7173,7 @@
   {
    "address": 30534,
    "type": "line",
-   "text": "Actor type twelve allows one active instance, records its slot and replaces the end-of-frame callback with $77C8. It adjusts the saved surface Y by the scrolling phase and selects shared multicolours above/below the surface. When the surface moves above the playfield, it restores the normal callback and clears the active flag."
+   "text": "Actor type twelve allows one active instance, records its slot and replaces the first-band raster handler pointer at $06D9/$06DA with $77C8. Each update it realigns its Y, the saved surface Y at $03DF, to the vertical fine-scroll phase. While the surface is on screen it sets the level multicolours to $03 and $09. When the surface moves above the playfield (Y below $32, multicolours $0E and $0B) or below it (Y $EB or more, multicolours $03 and $09), it restores the default multiplexer handler, clears the active flag and $03E0, rewrites type twelve into the two actor records at $8ABE and $8AC3, sets $03DF to $DE and releases the slot."
   },
   {
    "address": 30664,
@@ -7183,7 +7183,7 @@
   {
    "address": 30702,
    "type": "line",
-   "text": "Shared initialization and per-update callback for this level. Reset surface state on player death, test the grounded right-side exit, choose location-dependent character animations, and replace the player movement hook while the sampled terrain character identifies water. Water entry adjusts weapon motion parameters; leaving water restores the saved player hook and can initiate an upward transition."
+   "text": "Shared initialization and per-update callback for this level. While the viewport-mask transition flag $07FE is set, clear the surface-controller flag and rewrite type twelve into the two actor records at $8ABE and $8AC3. Test the grounded right-side exit, choose location-dependent character animations, and replace the player movement hook with $7AD6 while the sampled terrain character is $11-$14, $6A or $6B. Water entry sets the player colours to 4 and $0E and, when the vertical fine scroll is four, halves the vertical scroll step $ED and the actor Y corrections at $087E/$087F to two; leaving water restores the saved player hook, the colours 2 and 1 and the step of four, and starts a jump ten pixels higher."
   },
   {
    "address": 30960,
@@ -7193,12 +7193,12 @@
   {
    "address": 31157,
    "type": "line",
-   "text": "Rotate a two-character bitmap strip, shift adjacent double-width glyphs in opposite directions and copy two phase-selected glyph frames. Side terrain characters $66-$69 push player X by one half-pixel when adjacent terrain is passable and the opposing joystick direction is not held."
+   "text": "Rotate the sixteen rows of glyphs $64/$65 down by three, shift the double-width pairs $66/$67 and $68/$69 two pixels in opposite directions and copy two phase-selected glyph frames to $6C and $6D. With no beam active, a terrain character $66 or $67 beside the player pushes player X one half-pixel left, and $68 or $69 one half-pixel right, when the adjacent terrain is passable and the joystick is not already held in that direction."
   },
   {
    "address": 31350,
    "type": "line",
-   "text": "Rotate the two sixteen-byte glyph halves, then select one of nine low/high routine targets through the camera subphase at $19. The patched JMP chooses no extra rotation, a left rotate or a right rotate."
+   "text": "Rotate the two sixteen-byte glyph pairs $28/$29 and $2A/$2B down by two rows, then select one of nine low/high routine targets through the scroll direction at $19. The patched JMP chooses no extra rotation for no scroll or a vertical one, a left rotate for the three leftward directions or a right rotate for the three rightward ones."
   },
   {
    "address": 31412,
@@ -7223,7 +7223,7 @@
   {
    "address": 31446,
    "type": "line",
-   "text": "Replace normal player movement on the water-character path. Set swimming weapon offsets and movement flags, sample fire, build the terrain pointer, periodically allocate rising effects, and scan eight joystick bit masks. A matching direction patches a JSR from the split tables at $9B26/$9B2E and selects a speed. With no direction, save the checkpoint and apply alternate-update vertical bobbing. Select the facing-dependent swimming shape before returning."
+   "text": "Replace normal player movement on the water-character path. Set swimming weapon offsets and movement flags, clear $1C while the Space key (CIA 1 port B bit four) is held, build the terrain pointer, periodically allocate rising effects, and, unless the splash delay is running, scan eight joystick bit masks. A matching direction patches a JSR from the split tables at $9B26/$9B2E and selects a speed. With no direction, save the checkpoint and apply alternate-update vertical bobbing. Select the facing-dependent swimming shape before returning."
   },
   {
    "address": 31639,
@@ -7333,7 +7333,7 @@
   {
    "address": 32757,
    "type": "line",
-   "text": "Operand byte 2 of the LDA instruction at $7FF3, within the described level actor or raster routine. This name marks a patched operand rather than another routine entry."
+   "text": "Operand byte 2 of the LDA instruction at $7FF3, within this level's code. No instruction writes it. The address has a name because the resident engine's jmp at $5447 names it: $7FF5 is the entry of the title file, which that code loads first."
   },
   {
    "address": 32864,
@@ -7348,12 +7348,12 @@
   {
    "address": 33259,
    "type": "line",
-   "text": "During transition state $D3, animate six selected body cells on individual timer delays. Completed explosions hide the corresponding shape. Once all six are finished, change to state $D4, reduce the body-band limits and clear the twelve-character terrain strip."
+   "text": "During transition state $D3, animate six selected body cells on individual timer delays. Completed explosions hide the corresponding shape. The end test reads only the flag of cell zero, the last one the loop visits: on the update after that cell has finished, change to state $D4, reduce the body-band limits and clear the twelve-character terrain strip."
   },
   {
    "address": 33409,
    "type": "line",
-   "text": "Alternate the body's twenty-four colours while the death counter runs. On expiry restore camera/raster hooks, request eleven ordinary actor explosions around the body, clear eight special-weapon flags and award 10000 points. The normal kill flag is requested when it was clear."
+   "text": "Alternate the body's twenty-four colours while the death counter runs. On expiry restore camera/raster hooks, request eleven ordinary actor explosions around the body, clear the eight camera scroll-inhibit flags at $081A-$0821 and award 10000 points. The screen-flash request $07EB is set to $D3 when it was clear."
   },
   {
    "address": 33559,
@@ -7363,7 +7363,7 @@
   {
    "address": 33650,
    "type": "line",
-   "text": "For each active two-character shot, restore the prior characters and colours unless a damaging character replaced them. Advance its column by the phase-dependent signed step; out-of-range columns release it. Save the next underlying cells and draw the two shot characters in colour nine. The state and save arrays share nominal map storage at $9A93 onward."
+   "text": "For each active two-character shot, restore the saved characters and colours, skipping a cell whose saved character is $C8 or above. Advance its column by the phase-dependent signed step; out-of-range columns release it. Save the next underlying cells and draw the two shot characters in colour nine, leaving alone a cell that holds a character of $C8 or above. The state and save arrays share nominal map storage at $9A93 onward."
   },
   {
    "address": 33780,
@@ -7373,7 +7373,7 @@
   {
    "address": 33834,
    "type": "line",
-   "text": "Clear the body-band and per-frame flags, put the first band Y into hardware sprites three through six, and publish its preceding scanline as the saved surface coordinate."
+   "text": "Clear the current band index at $0813 and the byte at $0814, put the first band's Y into hardware sprites three to six and store the line before it in $03DF, which the playfield interrupt at $0A74 takes as the raster line of its next interrupt."
   },
   {
    "address": 33862,
@@ -8178,17 +8178,17 @@
   {
    "address": 36802,
    "type": "line",
-   "text": "Sixteen-bit map height parameter, 114 block rows in this level."
+   "text": "Word 114, the map height in block rows. No instruction in the resident engine or this level reads it."
   },
   {
    "address": 36804,
    "type": "line",
-   "text": "Horizontal camera limit 60, with ten visible macro-columns removed from the map width."
+   "text": "Word 60, the map width of 70 less the ten visible block columns. No instruction in the resident engine or this level reads it; the camera compares against the character-column extent at $8FCC, 240, which is four times this value."
   },
   {
    "address": 36806,
    "type": "line",
-   "text": "Vertical camera limit 109, with five removed from the height parameter."
+   "text": "Word 109, the map height of 114 less the five visible block rows. No instruction in the resident engine or this level reads it; the camera compares against the character-row extent at $8FCE, 435."
   },
   {
    "address": 36808,
@@ -8373,12 +8373,12 @@
   {
    "address": 36848,
    "type": "line",
-   "text": "Retained count 7980, equal to 70 times 114 stored map bytes. Its direct CPU consumer remains open."
+   "text": "Count 7980, equal to 70 times 114 stored map bytes. No instruction in the resident engine or this level reads it."
   },
   {
    "address": 36850,
    "type": "line",
-   "text": "Fourteen retained header-tail bytes containing additional count/dimension-like values. Their consumers remain open; no editor feature is inferred."
+   "text": "Fourteen bytes at the end of the level header that no instruction in the resident engine or this level reads. They are the word $5F2C (the map byte count 7980 plus $4000), the words 69 and 113 (the map width and height less one), the three playfield colours $00, $03 and $09 as at $8FD0-$8FD2, a byte $06, and the map width 70 and height 114 as words."
   },
   {
    "address": 36864,
@@ -8503,7 +8503,7 @@
   {
    "address": 38544,
    "type": "line",
-   "text": "Stored map row 24, 70 bytes corresponding to character rows 96-99. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 4 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 24, 70 bytes at $9690-$96D5, corresponding to character rows 96-99. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 51 of the 70 bytes are terrain block numbers, at $9690-$96BD and $96D1-$96D5; they select 13 distinct definitions, all within the 196 definitions at $B000. The other 19 bytes are described by other notes and are not counted here: $96BE-$96D0 hold the data noted at $96BE (boss_flash_delays), $96C0 (boss_initial_strip_characters) and $96C4 (boss_action_pointer_lows)."
   },
   {
    "address": 38590,
@@ -8523,17 +8523,17 @@
   {
    "address": 38614,
    "type": "line",
-   "text": "Stored map row 25, 70 bytes corresponding to character rows 100-103. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 13 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 25, 70 bytes at $96D6-$971B, corresponding to character rows 100-103. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 57 of the 70 bytes are terrain block numbers, at $96D6-$9703 and $9711-$971B; they select 13 distinct definitions, all within the 196 definitions at $B000. The other 13 bytes are described by other notes and are not counted here: $9704-$9710 hold the data noted at $9704 (boss_action_pointer_highs)."
   },
   {
    "address": 38660,
    "type": "line",
-   "text": "Thirteen routine-address high bytes paired with $96C4. The live seven-instruction trace of $7DC6 patches the first target as $7E1F."
+   "text": "Thirteen routine-address high bytes paired with $96C4, all $7E. The pairs are $7E1F for action IDs zero to three, $7E5B for four to seven, $7E94 for eight to eleven and $7EB7 for twelve."
   },
   {
    "address": 38684,
    "type": "line",
-   "text": "Stored map row 26, 70 bytes corresponding to character rows 104-107. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 2 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 26, 70 bytes at $971C-$9761, corresponding to character rows 104-107. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 57 of the 70 bytes are terrain block numbers, at $971C-$9749 and $9757-$9761; they select 18 distinct definitions, all within the 196 definitions at $B000. The other 13 bytes are described by other notes and are not counted here: $974A-$9756 hold the data noted at $974A (boss_action_durations)."
   },
   {
    "address": 38730,
@@ -8543,7 +8543,7 @@
   {
    "address": 38754,
    "type": "line",
-   "text": "Stored map row 27, 70 bytes corresponding to character rows 108-111. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 4 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 27, 70 bytes at $9762-$97A7, corresponding to character rows 108-111. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 46 of the 70 bytes are terrain block numbers, at $9762-$978F; they select 17 distinct definitions, all within the 196 definitions at $B000. The other 24 bytes are described by other notes and are not counted here: $9790-$97A7 hold the data noted at $9790 (boss_damage_span_starts) and $9793 (boss_damage_offsets_a)."
   },
   {
    "address": 38800,
@@ -8558,7 +8558,7 @@
   {
    "address": 38824,
    "type": "line",
-   "text": "Stored map row 28, 70 bytes corresponding to character rows 112-115. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 3 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 28, 70 bytes at $97A8-$97ED, corresponding to character rows 112-115. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 49 of the 70 bytes are terrain block numbers, at $97A8-$97D5 and $97EB-$97ED; they select 15 distinct definitions, all within the 196 definitions at $B000. The other 21 bytes are described by other notes and are not counted here: $97D6-$97EA hold the data noted at $97D6 (boss_damage_offsets_b)."
   },
   {
    "address": 38870,
@@ -8568,7 +8568,7 @@
   {
    "address": 38894,
    "type": "line",
-   "text": "Stored map row 29, 70 bytes corresponding to character rows 116-119. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Its terrain encoding selects 19 distinct definitions."
+   "text": "Stored map row 29, 70 bytes at $97EE-$9833, corresponding to character rows 116-119. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 56 of the 70 bytes are terrain block numbers, at $97EE-$981F and $982E-$9833; they select 10 distinct definitions, all within the 196 definitions at $B000. The other 14 bytes are described by other notes and are not counted here: $9820-$982D hold the data noted at $9820 (boss_raster_alignment), $9828 (boss_band_count), $9829 (boss_last_band) and $982A (boss_column_high_x_masks)."
   },
   {
    "address": 38944,
@@ -8593,7 +8593,7 @@
   {
    "address": 38964,
    "type": "line",
-   "text": "Stored map row 30, 70 bytes corresponding to character rows 120-123. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 1 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 30, 70 bytes at $9834-$9879, corresponding to character rows 120-123. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 64 of the 70 bytes are terrain block numbers, at $9834-$9865 and $986C-$9879; they select 19 distinct definitions, all within the 196 definitions at $B000. The other 6 bytes are described by other notes and are not counted here: $9866-$986B hold the data noted at $9866 (boss_exploding_cell_indices)."
   },
   {
    "address": 39014,
@@ -8603,7 +8603,7 @@
   {
    "address": 39034,
    "type": "line",
-   "text": "Stored map row 31, 70 bytes corresponding to character rows 124-127. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 4 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 31, 70 bytes at $987A-$98BF, corresponding to character rows 124-127. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 48 of the 70 bytes are terrain block numbers, at $987A-$98A7 and $98BE-$98BF; they select 19 distinct definitions, all within the 196 definitions at $B000. The other 22 bytes are described by other notes and are not counted here: $98A8-$98BD hold the data noted at $98A8 (boss_death_explosion_x_offsets) and $98B3 (boss_death_explosion_y_offsets)."
   },
   {
    "address": 39080,
@@ -8618,7 +8618,7 @@
   {
    "address": 39104,
    "type": "line",
-   "text": "Stored map row 32, 70 bytes corresponding to character rows 128-131. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 1 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 32, 70 bytes at $98C0-$9905, corresponding to character rows 128-131. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 63 of the 70 bytes are terrain block numbers, at $98C0-$98F1 and $98F9-$9905; they select 20 distinct definitions, all within the 196 definitions at $B000. The other 7 bytes are described by other notes and are not counted here: $98F2-$98F8 hold the data noted at $98F2 (boss_shot_left_characters), $98F4 (boss_shot_right_characters) and $98F6 (boss_pose_copy_end_indices)."
   },
   {
    "address": 39154,
@@ -8638,7 +8638,7 @@
   {
    "address": 39174,
    "type": "line",
-   "text": "Stored map row 33, 70 bytes corresponding to character rows 132-135. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Its terrain encoding selects 17 distinct definitions."
+   "text": "Stored map row 33, 70 bytes at $9906-$994B, corresponding to character rows 132-135. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 59 of the 70 bytes are terrain block numbers, at $9906-$9937 and $9943-$994B; they select 17 distinct definitions, all within the 196 definitions at $B000. The other 11 bytes are described by other notes and are not counted here: $9938-$9942 hold the data under the 8 notes from $9938 (boss_column_x) to $993F (boss_geometry_993f)."
   },
   {
    "address": 39224,
@@ -8683,7 +8683,7 @@
   {
    "address": 39244,
    "type": "line",
-   "text": "Stored map row 34, 70 bytes corresponding to character rows 136-139. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Its terrain encoding selects 15 distinct definitions."
+   "text": "Stored map row 34, 70 bytes at $994C-$9991, corresponding to character rows 136-139. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 46 of the 70 bytes are terrain block numbers, at $994C-$9979; they select 15 distinct definitions, all within the 196 definitions at $B000. The other 24 bytes are described by other notes and are not counted here: $997A-$9991 hold the data under the 6 notes from $997A (boss_live_colours) to $998C (boss_colour_column3_band0)."
   },
   {
    "address": 39290,
@@ -8718,7 +8718,7 @@
   {
    "address": 39314,
    "type": "line",
-   "text": "Stored map row 35, 70 bytes corresponding to character rows 140-143. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Its terrain encoding selects 25 distinct definitions."
+   "text": "Stored map row 35, 70 bytes at $9992-$99D7, corresponding to character rows 140-143. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 46 of the 70 bytes are terrain block numbers, at $9992-$99BF; they select 25 distinct definitions, all within the 196 definitions at $B000. The other 24 bytes are described by other notes and are not counted here: $99C0-$99D7 hold the data under the 6 notes from $99C0 (boss_live_shapes) to $99D2 (boss_shape_column3_band0)."
   },
   {
    "address": 39360,
@@ -8753,7 +8753,7 @@
   {
    "address": 39384,
    "type": "line",
-   "text": "Stored map row 36, 70 bytes corresponding to character rows 144-147. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Its terrain encoding selects 24 distinct definitions."
+   "text": "Stored map row 36, 70 bytes at $99D8-$9A1D, corresponding to character rows 144-147. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 46 of the 70 bytes are terrain block numbers, at $99D8-$9A05; they select 24 distinct definitions, all within the 196 definitions at $B000. The other 24 bytes are described by other notes and are not counted here: $9A06-$9A1D hold the data under the 6 notes from $9A06 (boss_live_bitmap_lows) to $9A18 (boss_bitmap_low_column3_band0)."
   },
   {
    "address": 39430,
@@ -8788,7 +8788,7 @@
   {
    "address": 39454,
    "type": "line",
-   "text": "Stored map row 37, 70 bytes corresponding to character rows 148-151. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Its terrain encoding selects 19 distinct definitions."
+   "text": "Stored map row 37, 70 bytes at $9A1E-$9A63, corresponding to character rows 148-151. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 46 of the 70 bytes are terrain block numbers, at $9A1E-$9A4B; they select 19 distinct definitions, all within the 196 definitions at $B000. The other 24 bytes are described by other notes and are not counted here: $9A4C-$9A63 hold the data under the 6 notes from $9A4C (boss_live_bitmap_highs) to $9A5E (boss_bitmap_high_column3_band0)."
   },
   {
    "address": 39500,
@@ -8823,7 +8823,7 @@
   {
    "address": 39524,
    "type": "line",
-   "text": "Stored map row 38, 70 bytes corresponding to character rows 152-155. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Its terrain encoding selects 15 distinct definitions."
+   "text": "Stored map row 38, 70 bytes at $9A64-$9AA9, corresponding to character rows 152-155. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 49 of the 70 bytes are terrain block numbers, at $9A64-$9A91 and $9AA7-$9AA9; they select 15 distinct definitions, all within the 196 definitions at $B000. The other 21 bytes are described by other notes and are not counted here: $9A92-$9AA6 hold the data under the 6 notes from $9A92 (boss_shot_divider) to $9AA3 (boss_shot_saved_left_colours)."
   },
   {
    "address": 39570,
@@ -8858,7 +8858,7 @@
   {
    "address": 39594,
    "type": "line",
-   "text": "Stored map row 39, 70 bytes corresponding to character rows 156-159. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Its terrain encoding selects 16 distinct definitions."
+   "text": "Stored map row 39, 70 bytes at $9AAA-$9AEF, corresponding to character rows 156-159. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 58 of the 70 bytes are terrain block numbers, at $9AAA-$9ADB and $9AE8-$9AEF; they select 16 distinct definitions, all within the 196 definitions at $B000. The other 12 bytes are described by other notes and are not counted here: $9ADC-$9AE7 hold the data noted at $9ADC (boss_shot_saved_right_colours), $9AE0 (boss_shot_columns) and $9AE4 (boss_shot_rows)."
   },
   {
    "address": 39644,
@@ -8878,7 +8878,7 @@
   {
    "address": 39664,
    "type": "line",
-   "text": "Stored map row 40, 70 bytes corresponding to character rows 160-163. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 4 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 40, 70 bytes at $9AF0-$9B35, corresponding to character rows 160-163. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 46 of the 70 bytes are terrain block numbers, at $9AF0-$9B1D; they select 17 distinct definitions, all within the 196 definitions at $B000. The other 24 bytes are described by other notes and are not counted here: $9B1E-$9B35 hold the data noted at $9B1E (swimming_control_masks), $9B26 (swimming_direction_lows) and $9B2E (swimming_direction_highs)."
   },
   {
    "address": 39710,
@@ -8898,7 +8898,7 @@
   {
    "address": 39734,
    "type": "line",
-   "text": "Stored map row 41, 70 bytes corresponding to character rows 164-167. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 3 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 41, 70 bytes at $9B36-$9B7B, corresponding to character rows 164-167. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 51 of the 70 bytes are terrain block numbers, at $9B36-$9B67 and $9B7B; they select 17 distinct definitions, all within the 196 definitions at $B000. The other 19 bytes are described by other notes and are not counted here: $9B68-$9B7A hold the data under the 9 notes from $9B68 (swimming_side_sample_offsets) to $9B7A (swimming_splash_delay)."
   },
   {
    "address": 39784,
@@ -8948,7 +8948,7 @@
   {
    "address": 39804,
    "type": "line",
-   "text": "Stored map row 42, 70 bytes corresponding to character rows 168-171. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Its terrain encoding selects 17 distinct definitions."
+   "text": "Stored map row 42, 70 bytes at $9B7C-$9BC1, corresponding to character rows 168-171. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 62 of the 70 bytes are terrain block numbers, at $9B7C-$9BAD and $9BB6-$9BC1; they select 15 distinct definitions, all within the 196 definitions at $B000. The other 8 bytes are described by other notes and are not counted here: $9BAE-$9BB5 hold the data noted at $9BAE (swimming_direction_speeds)."
   },
   {
    "address": 39854,
@@ -8958,12 +8958,12 @@
   {
    "address": 39874,
    "type": "line",
-   "text": "Stored map row 43, 70 bytes corresponding to character rows 172-175. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Its terrain encoding selects 17 distinct definitions."
+   "text": "Stored map row 43, 70 bytes at $9BC2-$9C07, corresponding to character rows 172-175. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 52 of the 70 bytes are terrain block numbers, at $9BC2-$9BF3 and $9C06-$9C07; they select 13 distinct definitions, all within the 196 definitions at $B000. The other 18 bytes are described by other notes and are not counted here: $9BF4-$9C05 hold the data noted at $9BF4 (water_rotation_pointer_lows) and $9BFD (water_rotation_pointer_highs)."
   },
   {
    "address": 39924,
    "type": "line",
-   "text": "Nine rotation-routine low bytes indexed by the camera subphase and paired with $9BFD."
+   "text": "Nine rotation-routine low bytes indexed by the scroll direction at $19 and paired with $9BFD: the RTS at $7AC5 for no scroll, up and down, the left rotate $7AB6 for directions three, five and six, and the right rotate $7AC6 for four, seven and eight."
   },
   {
    "address": 39933,
@@ -8973,7 +8973,7 @@
   {
    "address": 39944,
    "type": "line",
-   "text": "Stored map row 44, 70 bytes corresponding to character rows 176-179. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 4 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 44, 70 bytes at $9C08-$9C4D, corresponding to character rows 176-179. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 61 of the 70 bytes are terrain block numbers, at $9C08-$9C39 and $9C43-$9C4D; they select 14 distinct definitions, all within the 196 definitions at $B000. The other 9 bytes are described by other notes and are not counted here: $9C3A-$9C42 hold the data noted at $9C3A (platform_bump_steps)."
   },
   {
    "address": 39994,
@@ -8983,12 +8983,12 @@
   {
    "address": 40014,
    "type": "line",
-   "text": "Stored map row 45, 70 bytes corresponding to character rows 180-183. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 10 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 45, 70 bytes at $9C4E-$9C93, corresponding to character rows 180-183. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 50 of the 70 bytes are terrain block numbers, at $9C4E-$9C7F; they select 20 distinct definitions, all within the 196 definitions at $B000. The other 20 bytes are described by other notes and are not counted here: $9C80-$9C93 hold the data noted at $9C80 (retained_nonterrain_table)."
   },
   {
    "address": 40064,
    "type": "line",
-   "text": "Twenty-one retained non-terrain-looking bytes, including repeated $8C and short value sequences. Their direct CPU reader is unresolved; their intended meaning remains open."
+   "text": "Twenty bytes in the unused tail of map row 45 that match the resident collectible tables at $089B-$08AE: the ten sprite pointers, the colours and the byte after them. No instruction in the resident engine or this level reads this copy."
   },
   {
    "address": 40084,
@@ -9068,7 +9068,7 @@
   {
    "address": 41064,
    "type": "line",
-   "text": "Stored map row 60, 70 bytes corresponding to character rows 240-243. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Its terrain encoding selects 17 distinct definitions."
+   "text": "Stored map row 60, 70 bytes at $A068-$A0AD, corresponding to character rows 240-243. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 50 of the 70 bytes are terrain block numbers, at $A068-$A099; they select 9 distinct definitions, all within the 196 definitions at $B000. The other 20 bytes are described by other notes and are not counted here: $A09A-$A0AD hold the data noted at $A09A (boss_action_sequence)."
   },
   {
    "address": 41114,
@@ -9078,17 +9078,17 @@
   {
    "address": 41134,
    "type": "line",
-   "text": "Stored map row 61, 70 bytes corresponding to character rows 244-247. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. This row also holds non-terrain data: 11 values index beyond the 196 authored block definitions."
+   "text": "Stored map row 61, 70 bytes at $A0AE-$A0F3, corresponding to character rows 244-247. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 40 of the 70 bytes are terrain block numbers, at $A0B8-$A0DF; they select 12 distinct definitions, all within the 196 definitions at $B000. The other 30 bytes are described by other notes and are not counted here: $A0AE-$A0B7 continue the data noted at $A09A (boss_action_sequence); $A0E0-$A0F3 hold the data noted at $A0E0 (reward_vertical_curve)."
   },
   {
    "address": 41184,
    "type": "line",
-   "text": "Thirty-one signed Y increments for the reward launch, including the rising arc and subsequent increasing fall speed."
+   "text": "Thirty signed Y increments for the reward launch, a rising arc from minus seven and then a fall that speeds up to ten, at $A0E0-$A0FD. The byte after them, $10 at $A0FE, is only sign-tested when the index reaches thirty and is never added."
   },
   {
    "address": 41204,
    "type": "line",
-   "text": "Stored map row 62, 70 bytes corresponding to character rows 248-251. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Its terrain encoding selects 18 distinct definitions."
+   "text": "Stored map row 62, 70 bytes at $A0F4-$A139, corresponding to character rows 248-251. Terrain drawing exchanges each stored byte's nibbles to select a sixteen-byte definition. Only 59 of the 70 bytes are terrain block numbers, at $A0FF-$A139; they select 9 distinct definitions, all within the 196 definitions at $B000. The other 11 bytes are described by other notes and are not counted here: $A0F4-$A0FE continue the data noted at $A0E0 (reward_vertical_curve)."
   },
   {
    "address": 41274,
@@ -9423,7 +9423,7 @@
   {
    "address": 45045,
    "type": "line",
-   "text": "Saved actor slot read by the temporary surface raster callback. The trailing ten bytes before the block definitions are retained and their consumers remain open."
+   "text": "Saved actor slot read by the temporary surface raster callback. The ten zero bytes after it, up to the block definitions at $B000, are read by no instruction in the resident engine or this level."
   },
   {
    "address": 45056,
@@ -10443,12 +10443,12 @@
   {
    "address": 49288,
    "type": "line",
-   "text": "Row-byte 0 of playfield character $11. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 0 of playfield character $11, named as the destination base of a thirty-two-byte copy: on an eight-update divider animate_water_and_surface_effects ($790A-$790D) copies one of the three frames at $AF4F into characters $11-$14 ($C088-$C0A7)."
   },
   {
    "address": 49320,
    "type": "line",
-   "text": "Row-byte 0 of playfield character $15. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 0 of playfield character $15, named as the destination base of an eight-byte copy: on a five-update divider animate_water_and_surface_effects ($79AA-$79AD) copies one of the three frames at $AF32 into $C0A8-$C0AF."
   },
   {
    "address": 49344,
@@ -10463,52 +10463,52 @@
   {
    "address": 49472,
    "type": "line",
-   "text": "Row-byte 0 of playfield character $28. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 0 of playfield character $28, the first byte of the sixteen-byte column made by characters $28 over $29 ($C140-$C14F), which animate_turning_water_glyphs ($7A76) rotates down by two rows each call and rotate_water_left/right ($7AB6, $7AC6) shift by a bit. The down rotation stores here the byte wrapped from row 6 of character $29 ($7AA2); the address is also the index base of its fourteen-byte move ($7A87) and of the bit rotations."
   },
   {
    "address": 49473,
    "type": "line",
-   "text": "Row-byte 1 of playfield character $28. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 1 of playfield character $28, the second byte of the sixteen-byte column made by characters $28 over $29 ($C140-$C14F), which animate_turning_water_glyphs ($7A76) rotates down by two rows each call and rotate_water_left/right ($7AB6, $7AC6) shift by a bit. The down rotation stores here the byte wrapped from row 7 of character $29 ($7A9F)."
   },
   {
    "address": 49474,
    "type": "line",
-   "text": "Row-byte 2 of playfield character $28. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 2 of playfield character $28, in the sixteen-byte column made by characters $28 over $29 ($C140-$C14F), which animate_turning_water_glyphs ($7A76) rotates down by two rows each call and rotate_water_left/right ($7AB6, $7AC6) shift by a bit. Named as the destination base of the down rotation's fourteen-byte move: $C140+X goes to $C142+X for X = 13 down to 0 ($7A87-$7A8A)."
   },
   {
    "address": 49486,
    "type": "line",
-   "text": "Row-byte 6 of playfield character $29. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 6 of playfield character $29, the fifteenth byte of the sixteen-byte column made by characters $28 over $29 ($C140-$C14F), which animate_turning_water_glyphs ($7A76) rotates down by two rows each call and rotate_water_left/right ($7AB6, $7AC6) shift by a bit. The down rotation reads it first ($7A76) and wraps it to row 0 of character $28."
   },
   {
    "address": 49487,
    "type": "line",
-   "text": "Row-byte 7 of playfield character $29. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 7 of playfield character $29, the last byte of the sixteen-byte column made by characters $28 over $29 ($C140-$C14F), which animate_turning_water_glyphs ($7A76) rotates down by two rows each call and rotate_water_left/right ($7AB6, $7AC6) shift by a bit. The down rotation reads it at $7A79 and wraps it to row 1 of character $28."
   },
   {
    "address": 49488,
    "type": "line",
-   "text": "Row-byte 0 of playfield character $2A. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 0 of playfield character $2A, the first byte of the sixteen-byte column made by characters $2A over $2B ($C150-$C15F), which animate_turning_water_glyphs ($7A76) rotates down by two rows each call and rotate_water_left/right ($7AB6, $7AC6) shift by a bit. The down rotation stores here the byte wrapped from row 6 of character $2B ($7A9B); the address is also the index base of its fourteen-byte move ($7A8D) and of the bit rotations."
   },
   {
    "address": 49489,
    "type": "line",
-   "text": "Row-byte 1 of playfield character $2A. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 1 of playfield character $2A, the second byte of the sixteen-byte column made by characters $2A over $2B ($C150-$C15F), which animate_turning_water_glyphs ($7A76) rotates down by two rows each call and rotate_water_left/right ($7AB6, $7AC6) shift by a bit. The down rotation stores here the byte wrapped from row 7 of character $2B ($7A97)."
   },
   {
    "address": 49490,
    "type": "line",
-   "text": "Row-byte 2 of playfield character $2A. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 2 of playfield character $2A, in the sixteen-byte column made by characters $2A over $2B ($C150-$C15F), which animate_turning_water_glyphs ($7A76) rotates down by two rows each call and rotate_water_left/right ($7AB6, $7AC6) shift by a bit. Named as the destination base of the down rotation's fourteen-byte move: $C150+X goes to $C152+X for X = 13 down to 0 ($7A8D-$7A90)."
   },
   {
    "address": 49502,
    "type": "line",
-   "text": "Row-byte 6 of playfield character $2B. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 6 of playfield character $2B, the fifteenth byte of the sixteen-byte column made by characters $2A over $2B ($C150-$C15F), which animate_turning_water_glyphs ($7A76) rotates down by two rows each call and rotate_water_left/right ($7AB6, $7AC6) shift by a bit. The down rotation reads it at $7A7D and wraps it to row 0 of character $2A."
   },
   {
    "address": 49503,
    "type": "line",
-   "text": "Row-byte 7 of playfield character $2B. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 7 of playfield character $2B, the last byte of the sixteen-byte column made by characters $2A over $2B ($C150-$C15F), which animate_turning_water_glyphs ($7A76) rotates down by two rows each call and rotate_water_left/right ($7AB6, $7AC6) shift by a bit. The down rotation reads it at $7A81 and wraps it to row 1 of character $2A."
   },
   {
    "address": 49536,
@@ -10548,67 +10548,67 @@
   {
    "address": 49952,
    "type": "line",
-   "text": "Row-byte 0 of playfield character $64. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 0 of playfield character $64, the first byte of the sixteen-byte column made by characters $64 over $65 ($C320-$C32F), which animate_flowing_terrain ($79B5) rotates down by three rows each call. It receives the byte wrapped from row 5 of character $65 ($79D3) and is the index base of the thirteen-byte move ($79C2)."
   },
   {
    "address": 49953,
    "type": "line",
-   "text": "Row-byte 1 of playfield character $64. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 1 of playfield character $64, the second byte of the sixteen-byte column made by characters $64 over $65 ($C320-$C32F), which animate_flowing_terrain ($79B5) rotates down by three rows each call. It receives the byte wrapped from row 6 of character $65 ($79CF)."
   },
   {
    "address": 49954,
    "type": "line",
-   "text": "Row-byte 2 of playfield character $64. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 2 of playfield character $64, the third byte of the sixteen-byte column made by characters $64 over $65 ($C320-$C32F), which animate_flowing_terrain ($79B5) rotates down by three rows each call. It receives the byte wrapped from row 7 of character $65 ($79CB)."
   },
   {
    "address": 49955,
    "type": "line",
-   "text": "Row-byte 3 of playfield character $64. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 3 of playfield character $64, in the sixteen-byte column made by characters $64 over $65 ($C320-$C32F), which animate_flowing_terrain ($79B5) rotates down by three rows each call. Named as the destination base of the thirteen-byte move: $C320+X goes to $C323+X for X = 12 down to 0 ($79C2-$79C5)."
   },
   {
    "address": 49965,
    "type": "line",
-   "text": "Row-byte 5 of playfield character $65. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 5 of playfield character $65, the fourteenth byte of the sixteen-byte column made by characters $64 over $65 ($C320-$C32F), which animate_flowing_terrain ($79B5) rotates down by three rows each call. The routine reads it first ($79B5) and wraps it to row 0 of character $64."
   },
   {
    "address": 49966,
    "type": "line",
-   "text": "Row-byte 6 of playfield character $65. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 6 of playfield character $65, the fifteenth byte of the sixteen-byte column made by characters $64 over $65 ($C320-$C32F), which animate_flowing_terrain ($79B5) rotates down by three rows each call. The routine reads it at $79B9 and wraps it to row 1 of character $64."
   },
   {
    "address": 49967,
    "type": "line",
-   "text": "Row-byte 7 of playfield character $65. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 7 of playfield character $65, the last byte of the sixteen-byte column made by characters $64 over $65 ($C320-$C32F), which animate_flowing_terrain ($79B5) rotates down by three rows each call. The routine reads it at $79BD and wraps it to row 2 of character $64."
   },
   {
    "address": 49968,
    "type": "line",
-   "text": "Row-byte 0 of playfield character $66. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 0 of playfield character $66, named as an index base: for X = 7 down to 0 animate_flowing_terrain ($79E6-$79F7) rotates each sixteen-bit row made of $C330+X and $C338+X (characters $66 and $67 side by side) left by two bits, with wrap."
   },
   {
    "address": 49976,
    "type": "line",
-   "text": "Row-byte 0 of playfield character $67. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 0 of playfield character $67, named as an index base: for X = 7 down to 0 animate_flowing_terrain ($79E6-$79F7) rotates each sixteen-bit row made of $C330+X and $C338+X (characters $66 and $67 side by side) left by two bits, with wrap."
   },
   {
    "address": 49984,
    "type": "line",
-   "text": "Row-byte 0 of playfield character $68. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 0 of playfield character $68, named as an index base: for X = 7 down to 0 animate_flowing_terrain ($79FA-$7A0B) rotates each sixteen-bit row made of $C340+X and $C348+X (characters $68 and $69 side by side) right by two bits, with wrap."
   },
   {
    "address": 49992,
    "type": "line",
-   "text": "Row-byte 0 of playfield character $69. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 0 of playfield character $69, named as an index base: for X = 7 down to 0 animate_flowing_terrain ($79FA-$7A0B) rotates each sixteen-bit row made of $C340+X and $C348+X (characters $68 and $69 side by side) right by two bits, with wrap."
   },
   {
    "address": 50016,
    "type": "line",
-   "text": "Row-byte 0 of playfield character $6C. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 0 of playfield character $6C, named as the destination base of an eight-byte copy: each call animate_flowing_terrain ($7A0E-$7A11) copies one of the four frames at $AFB0 into $C360-$C367, the frame chosen by the flow phase."
   },
   {
    "address": 50024,
    "type": "line",
-   "text": "Row-byte 0 of playfield character $6D. This reference names a source or destination inside the animated character bitmap allocation."
+   "text": "Row 0 of playfield character $6D, named as the destination base of an eight-byte copy: each call animate_flowing_terrain ($7A14-$7A17) copies one of the four frames at $AFD0 into $C368-$C36F, the frame chosen by the flow phase."
   },
   {
    "address": 50048,
@@ -10668,37 +10668,37 @@
   {
    "address": 58752,
    "type": "line",
-   "text": "Sprite slots $96-$9F supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a stride byte, selected by shape number in VIC bank $C000."
+   "text": "Sprite slots $96-$9F supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a sixty-fourth byte the VIC does not display, selected by shape number in VIC bank $C000."
   },
   {
    "address": 59392,
    "type": "line",
-   "text": "Sprite slots $A0-$AF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a stride byte, selected by shape number in VIC bank $C000."
+   "text": "Sprite slots $A0-$AF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a sixty-fourth byte the VIC does not display, selected by shape number in VIC bank $C000."
   },
   {
    "address": 60416,
    "type": "line",
-   "text": "Sprite slots $B0-$BF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a stride byte, selected by shape number in VIC bank $C000."
+   "text": "Sprite slots $B0-$BF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a sixty-fourth byte the VIC does not display, selected by shape number in VIC bank $C000."
   },
   {
    "address": 61440,
    "type": "line",
-   "text": "Sprite slots $C0-$CF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a stride byte, selected by shape number in VIC bank $C000."
+   "text": "Sprite slots $C0-$CF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a sixty-fourth byte the VIC does not display, selected by shape number in VIC bank $C000."
   },
   {
    "address": 62464,
    "type": "line",
-   "text": "Sprite slots $D0-$DF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a stride byte, selected by shape number in VIC bank $C000."
+   "text": "Sprite slots $D0-$DF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a sixty-fourth byte the VIC does not display, selected by shape number in VIC bank $C000."
   },
   {
    "address": 63488,
    "type": "line",
-   "text": "Sprite slots $E0-$EF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a stride byte, selected by shape number in VIC bank $C000."
+   "text": "Sprite slots $E0-$EF supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a sixty-fourth byte the VIC does not display, selected by shape number in VIC bank $C000."
   },
   {
    "address": 64512,
    "type": "line",
-   "text": "Sprite slots $F0-$FD supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a stride byte, selected by shape number in VIC bank $C000."
+   "text": "Sprite slots $F0-$FD supplied by this level load. Each sixty-four-byte slot holds twenty-one three-byte bitmap rows and a sixty-fourth byte the VIC does not display, selected by shape number in VIC bank $C000."
   }
  ]
 }

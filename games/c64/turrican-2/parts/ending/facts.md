@@ -10,7 +10,7 @@ A counter panel and three category-selected sprites show the resource being conv
 
 ## Pictures and text generation
 
-The visible bitmap occupies `$C000-$DF3F`, forty by twenty-five eight-by-eight cells, with its authored screen/colour attributes stored lower in the main load. Another thirteen-row, ten-cell-wide bitmap strip is copied into the display. A four-page scene-pattern source is copied repeatedly with source operands advancing four bytes between phases.
+The visible bitmap occupies `$C000-$DF3F`, forty by twenty-five eight-by-eight cells, with its authored screen/colour attributes stored lower in the main load. Another thirteen-row, ten-cell-wide bitmap strip is copied into the display. A four-page scene-pattern source is copied repeatedly with the high bytes of its source operands advancing by four, so four pages, between phases; the eight repetitions copy `$9EB2-$BEB1`.
 
 The ending has two fonts: 110 eight-byte glyphs at `$906C` and 64 at `$93DC`. Rendered glyph sheets confirmed uppercase/screen-code characters, lowercase characters in the first set and border glyphs for the counter panel. Text commands select a font. Ordinary uppercase bytes are masked to six bits; lowercase bytes subtract $20 before glyph lookup.
 
@@ -28,10 +28,10 @@ The final indirect return at `$7C9E` reads the word at `$0A40`. A targeted instr
 
 ## Music and effects
 
-One song has thirteen patterns, thirteen instruments and sixteen arpeggio selectors. All 816 core instructions pair with the title driver; the three-voice loop is unchanged. Its leading register/frequency tables are displaced four bytes from the title's, and the listing uses the actual operand-selected addresses.
+One song has thirteen patterns, thirteen instruments and sixteen arpeggio selectors. All 816 core instructions pair with the title driver; the three-voice loop is unchanged. Its leading register/frequency tables are displaced four bytes from the title's, because the four-byte text "SOS!" at `$73E1` precedes them, and the listing uses the actual operand-selected addresses.
 
 A separate local effects driver has seven nonzero pattern selectors and three voices. It serves resource conversion, movement and explosions. The bitmap reveal also installs a fixed three-voice pulse setup directly before the composed ending song starts. The composed song starts at `$7C18`, during text-display setup.
 
 ## Open questions
 
-Some image-format bytes after the consumed four-page source, the auxiliary bytes overwritten by the initial screen clear and 379 bytes after the second completion marker have no established separate consumer. They remain described loaded data. The intended visible identities of the three-part object and several effect pictures remain open. No optional playthrough or combined-mechanics replay was recorded.
+The 334 bytes at `$BEB2-$BFFF` after the scene-pattern source, which ends at `$BEB1`, the auxiliary bytes overwritten by the initial screen clear and 379 bytes after the second completion marker have no established separate consumer. They remain described loaded data. The intended visible identities of the three-part object and several effect pictures remain open. No optional playthrough or combined-mechanics replay was recorded.

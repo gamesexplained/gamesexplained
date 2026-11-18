@@ -50,8 +50,8 @@ projectile handlers.
 
 The ground walker at `$6C00` uses facing-dependent four-frame animation,
 terrain turns and falling tables. Its descending-player contact branch
-has a coordinate comparison against player X at `$6C7F`; whether that
-comparison was intended remains open.
+compares the actor's Y, less `$20`, with the immediate constant `$1E` at `$6C7F` (`C9 1E`, `cmp #$1E`); the value only happens to equal
+the address of player X.
 
 The segmented creature at `$6E9C` allocates six body slots behind one
 head. Its body positions use six phase-shifted vertical and horizontal

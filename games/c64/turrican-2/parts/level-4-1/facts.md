@@ -4,11 +4,11 @@ The handover listing describes all 34994 tracked bytes, including 5283 code byte
 
 ## Map and actors
 
-The map is eighty columns by one hundred rows, 8000 stored bytes at `$9000-$AF3F`. Nibble-swapped indices select 176 sixteen-character terrain definitions. The actor directory reaches 117 distinct terminated streams. Initialization installs ordinary platform movement and weapon hooks; this level disables the local music flag and uses resident sound effects.
+The map is eighty columns by one hundred rows, 8000 stored bytes at `$9000-$AF3F`. Nibble-swapped indices select the 128 sixteen-character terrain definitions at `$B000-$B7FF`; the next 768 bytes, `$B800-$BAFF`, are twelve sprite bitmaps that `$7DFA` exchanges with sprite slots `$E2-$ED`. The actor directory reaches 117 distinct terminated streams. Initialization installs ordinary platform movement and weapon hooks; this level disables the local music flag and uses resident sound effects.
 
-Actor type three reserves two additional slots for a three-part timed appearing/disappearing hazard. Type four is a stationary emitter and its falling-then-horizontal projectile. Type five has a parent whose destruction can allocate two curved offspring. Type six bursts into timer-derived particles whose signed velocities reflect on sampled solid terrain. Type seven clears wheel mode and allows horizontal joystick adjustment while the player has the selected climbing state. Type eight performs repeated explosion animations. Types nine through fourteen select the resident no-op.
+Actor type three reserves two additional slots for a three-part timed appearing/disappearing hazard. Type four is a stationary emitter and its falling-then-horizontal projectile. Type five has a parent whose destruction can allocate two curved offspring. Type six bursts into flying collectibles of timer-derived subtypes whose signed velocities reflect on sampled solid terrain; each then becomes the resident type-two collectible. Type seven clears wheel mode and allows horizontal joystick adjustment while the player has the selected climbing state. Type eight performs repeated explosion animations. Types nine through fourteen select the resident no-op.
 
-The particle randomizers index program bytes as well as reading the CIA timer; those bytes remain code in the listing.
+The burst's randomizers index program bytes as well as reading the CIA timer; those bytes remain code in the listing.
 
 ## Gate sequence and environment
 
@@ -30,4 +30,4 @@ The raster reuses hardware sprites three through seven. At fine-scroll collision
 
 The intended visible identities of several hazards and the gate's departing sprite remain open. Fourteen retained bytes following terrain-property overrides have no established separate consumer. No optional playthrough or combined-mechanics replay was recorded.
 
-Type-six ordinary unprotected contact damages the player without forcing the particle burst. Weapon-health underflow, protected/wheel contact, or flash starts the burst. Expiring particles become resident collectible type two.
+Type-six ordinary unprotected contact damages the player without forcing the burst. Weapon-health underflow, protected/wheel contact, or flash starts the burst. The flying pieces become resident collectible type two.
