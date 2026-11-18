@@ -142,7 +142,7 @@ section table{margin:6px 0 18px}
   <ul class="pl-list">
     <li>Every vehicle is drawn by the game's object routine, <code>draw_object</code>, through object slot 9: one of the Dart slots among the moving objects that the game never uses. Near ones are wire models turned by the game's 64-step heading, far ones the game's single dots, with the game's own rules for what is too far to see.</li>
     <li>The hit test is the game's <code>missile_hit_test</code> ($8833), run on the borrowed slot.</li>
-    <li>The two reprisals are event scripts in the game's own byte code, twelve bytes each: a call to the landmarks' YOU HAVE JUST DESTROYED ($0CC1), a line printed from words in the game's dictionary, then a jump into the landmarks' scripts at $0CC4 or $0CCC, which print the attack line and set <code>$BEF8</code>. They sit at $BC90, in bytes nothing reads, and entries 30 and 31 of the script table point at them while the mod is on.</li>
+    <li>The two reprisals are event scripts in the game's own byte code, twelve bytes each: a call to the landmarks' YOU HAVE JUST DESTROYED ($0CC1), a line printed from words in the game's dictionary, then a jump into the landmarks' scripts at $0CC4 or $0CCC, which print the attack line and set <code>$BEF8</code>. They sit at $BC90, in bytes the game never reads, and entries 30 and 31 of the script table point at them while the mod is on.</li>
     <li>The mod keeps its own random numbers, so the game's generator at $ADEF runs the same sequence with the mod on or off. The traffic is not in saved positions: a save is the game's own 1,904 bytes.</li>
     <li>The owners are the mod's choice. The game names no owner for any craft; the mod gives the Hexapods and the Darts to the Palyars and the Concord 111s and the CHEESE to the Mechanoids, and each car the owner of the square it starts on, or either side on a square that is nobody's.</li>
     <li>The traffic costs the game no time. On a C64 the extra drawing would slow every pass; the port leaves it out of its clock.</li>
@@ -151,7 +151,7 @@ section table{margin:6px 0 18px}
 <section id="port">
   <p class="fig">02 · The port</p>
   <h2 class="t">Every routine of the game, written again in JavaScript</h2>
-  <p class="lede">Nothing on this page emulates a 6502. The game's 294 routines are written out in JavaScript, one function each, named by the listing's labels, and run on the game's own 64 KB of memory.</p>
+  <p class="lede">This page does not emulate a 6502. The game's 294 routines are written out in JavaScript, one function each, named by the listing's labels, and run on the game's own 64 KB of memory.</p>
   <p>The page loads that memory from the listing, the same bytes the Source code tab shows, and puts back the original disk's first message (the listing was made from a copy that says ABC UNLIMITED in the same 26 bytes). From then on the port reads and writes the game's variables where the game keeps them, draws into the game's two bitmaps, and runs the game's event scripts, messages and save files as bytes. Every value the game computes, the port computes with the same arithmetic: its truncating floating point, its sine tables, and the operands its code rewrites in itself.</p>
   <h3>Where the original depends on its interrupts</h3>
   <p>The port runs the raster interrupts between the steps of a pass; the C64 runs them wherever they fall. Two routines in the game give different results depending on where, and the port shows the case where the interrupt came after the step.</p>

@@ -22,7 +22,7 @@
   <p>The mix is never quite the same twice in a minute. Every fifth frame the program draws a lead phrase and a bass transposition together at random (<code>$CE6B</code>), and each voice takes the latest draw when its phrase ends. The lead column picks which set of seven phrases the lead draws from, the bass and drums columns pick the pattern those voices repeat, and the FX column picks the lead's instrument. The draws come from a shift register (<code>$CF36</code>) that starts from the same bytes on every tape, so with the stick left alone the random tune is the same every time it loads.</p>
   <p>The message along the bottom credits "ROBBBB HUBBARD" for the music, Bob Stevenson for the graphics and "GARG LIDDON" for the implementation, and adds "LOADER NOT BY JOHN TWIDDY". It advertises Mantrax and Starline from Thalamus, Wizball from Ocean and Morpheus from Graftgold. Then its thanks list turns into the cast of EastEnders, from Den and Angie to Dot, Pauline and the Queen Vic, and the message signs off with "ANYONE CAN FALL IN LOVE", the 1986 single Anita Dobson sang to the show's theme.</p>
   <p>Bug: about a third of the twinkles on the logo are drawn off the screen. To put one twinkle past x 255, the program adds one to the register that holds the sprites' ninth x bit (<code>inc $D010</code> at <code>$CEC1</code>) instead of setting the bit, and never clears it. From then until that twinkle comes round again, every other twinkle lands 256 pixels to the right of its place on the logo.</p>
-  <p>The bytes after the program's tables spell "HELLO TAZZS" (<code>$BFF4</code>). Nothing reads them.</p>
+  <p>The bytes after the program's tables spell "HELLO TAZZS" (<code>$BFF4</code>). The game never reads them.</p>
 </section>
 
 <section id="tunes">
@@ -35,7 +35,7 @@
   </div>
   <p>The game asks for a tune by writing its number plus one into <code>$117D</code>, and the sound routine at <code>$9D60</code> passes it on once a frame. Tune 11 starts with the title screen (a direct call at <code>$17C3</code>) and comes back at game over and name entry. Tune 12 plays when all 32 stages are cleared (<code>game_completed</code>, <code>$9D00</code>). Tune 0 is the in-game music, requested whenever play starts and at each player's turn.</p>
   <p>By default the player never hears tune 0. In play, the game uses the SID for its sound effects (<code>$0FFD</code> = 1). Pressing F5 on the title swaps the effects for the music, and then the request for tune 0 starts it. With the effects on, the same request only hands the three voices back to the effect player at <code>$0406</code>.</p>
-  <p>Tunes 1 to 10 are short pieces of a few seconds that end on their own. They sit in the tune table at <code>$C4F4</code> with the rest, and nothing in the game asks for them.</p>
+  <p>Tunes 1 to 10 are short pieces of a few seconds that end on their own. They sit in the tune table at <code>$C4F4</code> with the rest, and the game never asks for them.</p>
 </section>
 
 <section id="effects">
@@ -62,7 +62,7 @@
     <tr><td>16</td><td>the drone while an indestructible enemy is on screen (<code>$50</code>)</td></tr>
     <tr><td>17</td><td>an enemy firing (<code>sfx_enemy_fire</code>)</td></tr>
   </table></div>
-  <p>When the ship is destroyed, the death pattern plays effects 5, 11 and 18 on voices 1 and 2 (<code>$07C7</code>). For effects 0, 2, 8, 12 to 15, 19 and 20, no instruction that writes their request was found. They play in full from their records, and they may be unused, or asked for through a route the search missed.</p>
+  <p>When the ship is destroyed, the death pattern plays effects 5, 11 and 18 on voices 1 and 2 (<code>$07C7</code>). For effects 0, 2, 8, 12 to 15, 19 and 20, the search found no instruction that writes their request. They play in full from their records, and they may be unused, or asked for through a route the search missed.</p>
 </section>
 
 </main>

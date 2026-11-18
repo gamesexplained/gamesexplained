@@ -153,7 +153,7 @@ summary{cursor:pointer;font-weight:700;color:var(--ink-soft)}
     </div>
     <p class="cap">The turn digits poked to 9998, then SCORE and LOOK. The port stops where the patched code would run.</p>
   </div>
-  <p>The digits are at <code>$0F68</code> to <code>$0F6B</code>. <code>get_command</code> (<code>$13BD</code>) adds one to the last and carries to the left with the X register. After 9999 the carry out of the thousands leaves X at <code>$FF</code>, and the store indexed by X lands on <code>$1067</code>, inside <code>print_record</code>. That byte is the opcode of <code>STA $61</code>, <code>$85</code>, and it becomes <code>$86</code>, <code>STX $61</code>. From then on <code>print_record</code> takes the length of each text from X, which its callers mostly leave at 0, so every room and message comes out as a blank line, and the turns read 0000. The game also keeps a 16-bit count of the turns at <code>$0CA1</code>, which nothing reads.</p>
+  <p>The digits are at <code>$0F68</code> to <code>$0F6B</code>. <code>get_command</code> (<code>$13BD</code>) adds one to the last and carries to the left with the X register. After 9999 the carry out of the thousands leaves X at <code>$FF</code>, and the store indexed by X lands on <code>$1067</code>, inside <code>print_record</code>. That byte is the opcode of <code>STA $61</code>, <code>$85</code>, and it becomes <code>$86</code>, <code>STX $61</code>. From then on <code>print_record</code> takes the length of each text from X, which its callers mostly leave at 0, so every room and message comes out as a blank line, and the turns read 0000. The game also keeps a 16-bit count of the turns at <code>$0CA1</code>, which the game never reads.</p>
   <figure class="plate" style="margin:18px 0 0;max-width:432px"><img class="ca-shot" src="reference/turn-10000-blank.png" width="384" height="272" alt="The C64 screen after the 10,000th command: blank, with only the typed word score and the cursor"><figcaption class="cap">The same moment on a C64: after the 10,000th command, LOOK and SCORE print only blank lines.</figcaption></figure>
 </section>
 
@@ -168,8 +168,8 @@ summary{cursor:pointer;font-weight:700;color:var(--ink-soft)}
     <p class="ca-facts" id="ca-scorefacts"></p>
     <p class="cap">Tick the objects that lie in the building; the score is <code>act_score</code> (<code>$19E4</code>) run by the port. Objects 1, 2, 28 and 29 start there.</p>
   </div>
-  <p>Eighteen objects have the treasure bit, bit 4 of their flags, and fifteen of them can be carried home. Of the other three, 67 is the vase resting on the pillow, which takes the vase's place and scores instead of it; 76 is the chain on the bear's wall, which no rule moves; and 78, "Underneath the body is a small flute.", is placed by no rule.</p>
-  <p>The score is kept as three ASCII digits inside the message and counted there. A carry out of the tens writes a 1 into the hundreds instead of adding one, so 200 would read 100. No game reaches 200, but objects 1 to 20 poked into the building as treasures show the fault.</p>
+  <p>Eighteen objects have the treasure bit, bit 4 of their flags, and fifteen of them can be carried home. Of the other three, 67 is the vase resting on the pillow, which takes the vase's place and scores instead of it; 76 is the chain on the bear's wall, which none of the rules moves; and 78, "Underneath the body is a small flute.", is not placed by any rule.</p>
+  <p>The score is kept as three ASCII digits inside the message and counted there. A carry out of the tens writes a 1 into the hundreds instead of adding one, so 200 would read 100. A game never reaches 200, but objects 1 to 20 poked into the building as treasures show the fault.</p>
   <p>The same pass decides when the cave closes. <code>act_score</code> counts every object in the building, treasure or not, and a SCORE that finds exactly fifteen sets flag 12 (<code>$1A27</code>). The next arrival in the hall of mists then closes the cave (section 02). With the treasures and the lamp in the building there are sixteen, and the cave stays open.</p>
 </section>
 
@@ -189,7 +189,7 @@ summary{cursor:pointer;font-weight:700;color:var(--ink-soft)}
     </div>
     <p class="cap">The player poked into the bear's room with the lit lamp and the food.</p>
   </div>
-  <p>Rule 190 (<code>$567D</code>) needs the gentle bear and object 78, "Underneath the body is a small flute.", which no rule ever places; object 76, the bear locked to the wall with a golden chain, is the one that makes sense there. With rule 190 never running, GET BEAR falls through to the rule that takes the bear, and the bear follows the player while the chain stays on the wall.</p>
+  <p>Rule 190 (<code>$567D</code>) needs the gentle bear and object 78, "Underneath the body is a small flute.", which is never placed by any rule; object 76, the bear locked to the wall with a golden chain, is the one that makes sense there. With rule 190 never running, GET BEAR falls through to the rule that takes the bear, and the bear follows the player while the chain stays on the wall.</p>
 </section>
 
 <section id="troll">
@@ -227,7 +227,7 @@ summary{cursor:pointer;font-weight:700;color:var(--ink-soft)}
     </div>
     <p class="cap">A new game. The player takes the lamp, goes through to the dark debris room without lighting it, looks, lights the lamp, looks, puts it out, and looks twice more.</p>
   </div>
-  <p>The count is flag 5, <code>$0C99</code>. <code>describe_room</code> (<code>$1503</code>) takes one from it each time it prints "It is now pitch dark", on arriving and on every LOOK, and a move that a status rule turns into a second description takes two. Rooms 1 to 9, 100, 115, 116, and 126 are lit, and any other only while the lit lamp is carried or lies there. Nothing sets the count but a new game, which sets 4, and a death, which sets 3, so four dark descriptions in one life are the limit however far apart they come.</p>
+  <p>The count is flag 5, <code>$0C99</code>. <code>describe_room</code> (<code>$1503</code>) takes one from it each time it prints "It is now pitch dark", on arriving and on every LOOK, and a move that a status rule turns into a second description takes two. Rooms 1 to 9, 100, 115, 116, and 126 are lit, and any other only while the lit lamp is carried or lies there. Only a new game, which sets 4, and a death, which sets 3, set the count, so four dark descriptions in one life are the limit however far apart they come.</p>
   <h3>Dying</h3>
   <p>Room 0 is death. <code>death</code> (<code>$1B35</code>) prints the reincarnation text with the lives left in it, puts a carried lamp back on the road, drops everything else carried in the room the player came from, and wakes the player in the building with the darkness count at 3. The fifth death ends the game with the score, which dying does not reduce.</p>
 </section>
@@ -235,11 +235,11 @@ summary{cursor:pointer;font-weight:700;color:var(--ink-soft)}
 <section id="never">
   <p class="fig">07 · Rules that never run</p>
   <h2 class="t">Secret: the dwarf can never be hit</h2>
-  <p class="lede">THROW AXE at the dwarf needs flag 11, and no rule sets flag 11. The dwarf cannot be hit, and status rule 22 puts his axe back in the canyon each time the player comes without it.</p>
+  <p class="lede">THROW AXE at the dwarf needs flag 11, and none of the rules sets flag 11. The dwarf cannot be hit, and status rule 22 puts his axe back in the canyon each time the player comes without it.</p>
   <p>Other parts of the tables are written for things the game never does:</p>
   <ul>
-    <li>Flags 0, 1, 3, 4, 8, and 9 are read by no rule. Flags 3 and 4 are counted down by the code and never set, and 8 and 9 are set by the two blasts.</li>
-    <li>Action 9, offer another game, and action 14, set a flag to 4, have handlers, and no rule uses either.</li>
+    <li>Flags 0, 1, 3, 4, 8, and 9 are not read by any rule. Flags 3 and 4 are counted down by the code and never set, and 8 and 9 are set by the two blasts.</li>
+    <li>Action 9, offer another game, and action 14, set a flag to 4, have handlers, and none of the rules uses either.</li>
   </ul>
 </section>
 

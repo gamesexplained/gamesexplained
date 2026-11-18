@@ -83,7 +83,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <table class="gx-tab">
       <tr><th>Effect</th><th>When it plays</th><th>Started by</th><th>Frames</th></tr>
       <tr><td><code>$00</code></td><td>A ghost hits and vanishes</td><td>monster_attack <code>$BC81</code></td><td>9</td></tr>
-      <tr><td><code>$01</code></td><td>Never played</td><td>no code starts it</td><td>9</td></tr>
+      <tr><td><code>$01</code></td><td>Never played</td><td>the game never starts it</td><td>9</td></tr>
       <tr><td><code>$02</code></td><td>Death's touch</td><td>death_drain <code>$BCBE</code></td><td>25</td></tr>
       <tr><td><code>$03</code></td><td>A level begins</td><td>level_begin <code>$8113</code></td><td>21</td></tr>
       <tr><td><code>$04</code></td><td>A player fires</td><td>shot_fire <code>$A75B</code></td><td>6</td></tr>
@@ -105,7 +105,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p>OBJDIS loads at <code>$F000</code>. Its first 36 bytes are the offsets of the eighteen effects' streams (sfx_table), and the streams follow, two bytes for every frame of sound: the first byte's high nibble sets the sustain and release and its low nibble picks noise or a pulse wave, and the second byte is the pitch. A zero ends the effect. Each frame, sfx_play restarts the voice's note with the new pitch and wave (sfx_note, <code>$CE47</code>), so an effect is a run of short notes, one a frame.</p>
   <p>sfx_start picks the voice. While the treasure-room tune plays, every effect goes to voice 1 and any other effect stops. Otherwise it takes a voice already playing the same effect, then a free one, then the one furthest through its effect. Effects run from the raster interrupt, beside the tune, so the game never waits for one unless it asks to: the message screens and the end of a treasure room wait for the sound to finish (sfx_wait, <code>$CEAA</code>).</p>
-  <p>Effect 1 is on the disk and nothing starts it: every call to sfx_start in the program loads its effect's number directly or from the pickup table, and none of them gives 1. When an effect on voice 3 ends, the zeroing meant for the voice's frequency goes to <code>$D414</code> and <code>$D415</code>, its sustain and release and the filter's cutoff; the voice falls silent anyway, its sustain now 0.</p>
+  <p>Effect 1 is on the disk and the game never starts it: every call to sfx_start in the program loads its effect's number directly or from the pickup table, and none of them gives 1. When an effect on voice 3 ends, the zeroing meant for the voice's frequency goes to <code>$D414</code> and <code>$D415</code>, its sustain and release and the filter's cutoff; the voice falls silent anyway, its sustain now 0.</p>
 </section>
 
 </main>

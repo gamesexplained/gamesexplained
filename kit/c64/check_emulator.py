@@ -180,7 +180,7 @@ def stopped(rpc):
 
 
 def saved_word(name, a):
-    """A 16-bit value as a snapshot file holds it, its RAM found as kit/c64/snapshot.py finds it."""
+    """A 16-bit value as a snapshot file holds it, read where snapshot.py reads RAM (snapshot-ram-offset)."""
     d = snapshot.read(os.path.join(SNAPDIR, name + ".vsf"))
     return d[a] + 256 * d[a + 1]
 
@@ -330,10 +330,9 @@ def p1(rpc):
     path = os.path.join(SNAPDIR, "emutest_p1.vsf")
     check("snapshot-save", r.get("status") == "ok" and os.path.exists(path), "a snapshot lands in tools/vice-home", json.dumps(r)[:80])
     data = open(path, "rb").read() if os.path.exists(path) else b""
-    at = snapshot.ram_offset(data) if data.startswith(snapshot.MAGIC) else None
-    check("snapshot-ram-offset", at is not None and data[at + BASE: at + BASE + len(CODE)] == CODE,
-          "kit/c64/snapshot.py finds the RAM in the file, in the C64MEM module",
-          f"C64MEM's RAM at {at}, the program found at {data.find(CODE) - BASE}")
+    at = snapshot.ram_offset(data) if data else 0
+    check("snapshot-ram-offset", data[at + BASE: at + BASE + len(CODE)] == CODE,
+          "kit/c64/snapshot.py finds RAM in the file (the C64MEM module)", f"found at {data.find(CODE) - BASE}, read at {at}")
     cp_del(rpc, n); run(rpc)
 
 
@@ -527,7 +526,7 @@ def p2(rpc):
     # the line because those few, and the passes between the two readings, go by the host's calls.
     try:
         np_ = (word(rpc, PASSES) - saved_word("emutest_nocp", PASSES)) & 0xFFFF
-    except (OSError, IndexError, SystemExit):
+    except (OSError, IndexError):
         np_ = 0
     check("checkpoints-survive-load", np_ > 0 and 2 * h >= np_,
           "a checkpoint keeps counting after loading a snapshot saved without any", f"{h} hits in {np_} passes")

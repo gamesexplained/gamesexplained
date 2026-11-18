@@ -100,7 +100,7 @@ cmp $4DC7,x     <span class="c">; against the target's defence</span>
 bpl hit</div>
   <div class="plate"><div data-w="spells"></div>
   <p class="cap">MAGIC MISSILE has power 20, FIREBALL and ENERGY DRAIN 60. Cast from six different random states, each gives the same result every time.</p></div>
-  <p>So a spell either always hits a creature or always misses it. MAGIC MISSILE always hits everything but the first vampire and the minotaur, which it always misses; FIREBALL and ENERGY DRAIN miss only the minotaur. The cost in mind is paid before you pick a target, so choosing <code>-NOTHING-</code> still spends it. The Magical Shield takes 8 off every creature's roll and a point of mind every 100 passes, and while it is up the menu offers UNCAST instead of CAST, so no other spell can be cast.</p>
+  <p>So a spell either always hits a creature or always misses it. MAGIC MISSILE always hits everything but the first vampire and the minotaur, which it always misses; FIREBALL and ENERGY DRAIN miss only the minotaur. The cost in mind is paid before you pick a target, so choosing <code>-NOTHING-</code> still spends it. The Magical Shield takes 8 off every creature's roll and a point of mind every 100 passes, and while it is up the menu offers UNCAST instead of CAST, so the player cannot cast another spell.</p>
 </section>
 
 <section id="overlap">
@@ -108,7 +108,7 @@ bpl hit</div>
   <h2 class="t">Bug: the second vampire's defence is your to-hit score</h2>
   <p class="lede">Strength, defence and to-hit are three tables of 64 entries, indexed by entry number. They were placed only 62 bytes apart, so the last two entries of each, the second vampire and the minotaur, are the first two of the next. The second vampire's defence is the player's to-hit score, 25, where the first vampire's is 60, and the minotaur's defence is to-hit entry 1, an unused object slot that holds 133. Every blow is a roll against one of them, the defender's defence (<a href="index.html#combat">Fighting</a>).</p>
   <div class="plate"><div data-w="overlap"></div></div>
-  <p>With a defence of 133, no roll reaches the minotaur, and the Dagger of Death is the only way through: <code>$2B93</code> replaces the roll with the minotaur's own defence, a certain hit, and <code>$2B26</code> makes the damage 30. The first vampire, at 60, is out of reach of a roll that tops out at 56, unless you wear the Ring of Dexterity, which adds 8.</p>
+  <p>With a defence of 133, a roll never reaches the minotaur, and the Dagger of Death is the only way through: <code>$2B93</code> replaces the roll with the minotaur's own defence, a certain hit, and <code>$2B26</code> makes the damage 30. The first vampire, at 60, is out of reach of a roll that tops out at 56, unless you wear the Ring of Dexterity, which adds 8.</p>
 </section>
 
 <section id="weapons">
@@ -171,20 +171,20 @@ bne $2B8C
   <div class="card"><h3>The first game after loading rolls different dice</h3>
   <p>The random numbers depend on two indices that step by +1 and −3, so the sequence repeats every 256 numbers, on one of 256 separate cycles. The demonstration resets them to its own starting point, and every game after it continues on that cycle. A game started straight after loading, before the demonstration has ever run, starts from the indices saved in the file and runs on a different cycle, with different odds: the wizard is hit 45 % of the time instead of 47 %.</p></div>
 
-  <div class="card"><h3>Two descriptions nobody can read</h3>
-  <p>EXAMINE picks one of 28 descriptions through a table at <code>$571E</code>. No entry points at text 3, "THE WRITING ON IT SAYS -THE SAPPHIRE IS CURSED, IT BRINGS BAD LUCK-", or at text 5, "IT HAS A SHARP EDGE AND A LONG BLADE". The warning about the cursed ring is in the game and can never be shown.</p></div>
+  <div class="card"><h3>Two descriptions a player can never read</h3>
+  <p>EXAMINE picks one of 28 descriptions through a table at <code>$571E</code>. None of the entries points at text 3, "THE WRITING ON IT SAYS -THE SAPPHIRE IS CURSED, IT BRINGS BAD LUCK-", or at text 5, "IT HAS A SHARP EDGE AND A LONG BLADE". The warning about the cursed ring is in the game and can never be shown.</p></div>
 
   <div class="card"><h3>The wizard who will heal your wounds</h3>
-  <p>A scroll says "THE KIND OLD WIZARD LEGGOLESS WILL HEAL YOUR WOUNDS", and EXAMINE calls him "A SHORT HARMLESS LOOKING WIZARD". Nothing in the game raises your body strength except the two healing potions, and the wizard's FIREBALL SPELL does 3 to 18 damage, the hardest blow of any creature. Two other scrolls say the Dagger of Death "WEAKENS HIS MIND"; in the code it takes 30 from the minotaur's body.</p></div>
+  <p>A scroll says "THE KIND OLD WIZARD LEGGOLESS WILL HEAL YOUR WOUNDS", and EXAMINE calls him "A SHORT HARMLESS LOOKING WIZARD". Only the two healing potions raise your body strength, and the wizard's FIREBALL SPELL does 3 to 18 damage, the hardest blow of any creature. Two other scrolls say the Dagger of Death "WEAKENS HIS MIND"; in the code it takes 30 from the minotaur's body.</p></div>
 
   <div class="card"><h3>The title screen re-enters its interrupt 126 times a frame <span class="tag live">live</span></h3>
   <p>The title's interrupt handler <code>$5D08</code> acknowledges the video chip and leaves at once when the interrupt came from somewhere else, without acknowledging the CIA timer that sent it. The timer keeps asking, so the processor enters the handler again and again until the KERNAL's exit, later in the frame, finally acknowledges it. Over 100 frames of the title the handler ran 12,685 times, 12,586 of them for nothing.</p></div>
 
   <div class="card"><h3>A timed action cannot be cut short <span class="tag live">live</span></h3>
-  <p>After every action the pass loop tests the fire button, as if pressing it could end the action early. It can only end RUN: nothing reads the joystick during the other actions' passes, so the test never sees fire. INVENTORY took its 12 passes with fire held all the way through.</p></div>
+  <p>After every action the pass loop tests the fire button, as if pressing it could end the action early. It can only end RUN: the game never reads the joystick during the other actions' passes, so the test never sees fire. INVENTORY took its 12 passes with fire held all the way through.</p></div>
 
   <div class="card"><h3>A machine-code monitor left in the middle</h3>
-  <p>Between the menu verbs and the nouns, <code>$41D9</code>–<code>$4587</code> holds 943 bytes of a machine-code monitor, the kind with commands for memory, assembly and disk: nothing calls it, and its own jumps land in the game's tables. Its remains also fill the unused object slots of several creature tables, among them its disassembler's table of addressing modes at <code>$4F06</code>.</p></div>
+  <p>Between the menu verbs and the nouns, <code>$41D9</code>–<code>$4587</code> holds 943 bytes of a machine-code monitor, the kind with commands for memory, assembly and disk: the game never calls it, and its own jumps land in the game's tables. Its remains also fill the unused object slots of several creature tables, among them its disassembler's table of addressing modes at <code>$4F06</code>.</p></div>
 </section>
 
 </main>

@@ -71,7 +71,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section data-part="map">
   <p class="fig">02 · The computer's plans</p>
   <h2 class="t">Bug: the computer's plan for South Virginia has no code</h2>
-  <p>Each turn the computer sets a plan number from 0 to 4 (<code>ai_plan</code>, <code>$3C98</code>, kept at <code>$0F10</code>). Plan 2 is set when the European reinforcements are on and South Virginia, where their ship lands, is not the computer's. Two routines read the plan. <code>ai_plan_scores</code> (<code>$3D09</code>) has steps for plans 0, 1 and 3 and returns for any other, and <code>ai_occupied</code> (<code>$3E11</code>) asks only whether it is 3. So plan 2 changes nothing, and the computer plays it exactly as plan 4, the plan for a side with fewer armies than the enemy. Nothing makes the computer go for the territory where the reinforcements land.</p>
+  <p>Each turn the computer sets a plan number from 0 to 4 (<code>ai_plan</code>, <code>$3C98</code>, kept at <code>$0F10</code>). Plan 2 is set when the European reinforcements are on and South Virginia, where their ship lands, is not the computer's. Two routines read the plan. <code>ai_plan_scores</code> (<code>$3D09</code>) has steps for plans 0, 1 and 3 and returns for any other, and <code>ai_occupied</code> (<code>$3E11</code>) asks only whether it is 3. So plan 2 changes nothing, and the computer plays it exactly as plan 4, the plan for a side with fewer armies than the enemy. The computer has no rule that sends it to the territory where the reinforcements land.</p>
   <p>The <a href="index.html">How it works</a> page lets you set the four questions and see the plan.</p>
 </section>
 
@@ -96,7 +96,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section data-part="battle">
   <p class="fig">06 · The developers' link</p>
   <h2 class="t">Secret: the battle file carries a remote monitor</h2>
-  <p>At <code>$CE00</code> the battle file holds 478 bytes of code that nothing in the game calls (<code>devlink</code>). It turns the border and background grey, keeps a copy of the processor's registers (the few values it is working on), and takes commands one byte at a time over the user port, the connector at the back of the C64: <code>$B4</code> writes bytes into memory, <code>$B6</code> sends them back, <code>$B5</code> calls a routine, <code>$BA</code> runs any one instruction, and <code>$B7</code> to <code>$B9</code> set the memory map and the registers. A routine at <code>$8110</code>, also never called, jumps into it when two lines of the port differ (<code>devlink_check</code>). It reads as the tool the developers used to inspect and change the game from another computer while it ran, saved into the file with the rest of memory.</p>
+  <p>At <code>$CE00</code> the battle file holds 478 bytes of code that the game never calls (<code>devlink</code>). It turns the border and background grey, keeps a copy of the processor's registers (the few values it is working on), and takes commands one byte at a time over the user port, the connector at the back of the C64: <code>$B4</code> writes bytes into memory, <code>$B6</code> sends them back, <code>$B5</code> calls a routine, <code>$BA</code> runs any one instruction, and <code>$B7</code> to <code>$B9</code> set the memory map and the registers. A routine at <code>$8110</code>, also never called, jumps into it when two lines of the port differ (<code>devlink_check</code>). It reads as the tool the developers used to inspect and change the game from another computer while it ran, saved into the file with the rest of memory.</p>
 </section>
 
 <section data-part="">
@@ -113,7 +113,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section data-part="battle">
   <p class="fig">08 · The canyon</p>
-  <h2 class="t">Secret: nothing falls into the bottom of the canyon</h2>
+  <h2 class="t">Secret: the bottom of the canyon works like a bridge</h2>
   <p>On the canyon field an object falls in when its row of the hazard table has a column within four of its position (<code>hazards</code>, <code>$A113</code>; the canyon's table <code>$876C</code>). The table's bottom five rows, 20 to 24, hold <code>$FF</code>, as the bridge's rows do, so a soldier or rider low enough on the field crosses where the picture shows the canyon. A ball that lands there counts as a hit on the bridge (<code>ball_crater</code>, <code>$A6D0</code>). This comes from the code; it was not tried in play, and whether a unit can reach those rows depends on how low the lanes go. The <a href="levels.html">Maps</a> tab shows the cells.</p>
 </section>
 
@@ -126,7 +126,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section data-part="">
   <p class="fig">10 · The loader</p>
   <h2 class="t">Secret: the loader has a message for crackers</h2>
-  <p>While the menu runs, memory at <code>$F2CC</code> holds code of the Cyberload loader with a line of text in it telling hackers, in rude words, to go away and die. It is left over from the loads before the menu; the menu's files load around it and the map's file over it, so it is in none of the listings. Nothing prints it. It is there for whoever disassembles the loader to copy the game.</p>
+  <p>While the menu runs, memory at <code>$F2CC</code> holds code of the Cyberload loader with a line of text in it telling hackers, in rude words, to go away and die. It is left over from the loads before the menu; the menu's files load around it and the map's file over it, so it is in none of the listings. The game never prints it. It is there for whoever disassembles the loader to copy the game.</p>
 </section>
 
 </main>

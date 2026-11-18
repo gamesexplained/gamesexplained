@@ -197,7 +197,7 @@ const morale = (c) => porMorale(C.slice(), CPU, Object.assign({ rec: 255, hp: 60
   check(pen(22, 7) === 0 && pen(22, 8) === -2 && pen(22, 14) === -2 && pen(22, 15) === -5, 'the thirds of 22');
   check(C[0x11F1] === 0x6D && (C[0x11F2] | C[0x11F3] << 8) === 0x2B7B && C[0x11F9] === 0x69 && C[0x11FA] === 0xFE, 'the penalty and a backstab are added to the AC figure');
   says('That puts the first third at 42 squares, and no bow or thrown weapon in the game reaches so far: the long bows\' 22 is the longest');
-  says('Only item type 127, which no item has, would shoot 60');
+  says('Only item type 127 would shoot 60, and the game has no item of that type');
 }
 
 // --- surprise and initiative
