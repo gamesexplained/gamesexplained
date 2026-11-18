@@ -1,0 +1,195 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "licence-to-kill",
+  "title": "Licence To Kill",
+  "year": 1989,
+  "publisher": "Domark",
+  "developer": "Quixel",
+  "title_image": "reference/title-credits.png",
+  "build": "G64 disk image of a Trilogic Expert freezer backup, loaded by a fast loader (BOND) and frozen in the first second after the game started; the listing comes from memory resumed at the program's first instruction, $07F8. A second disk holds another build of the same program, 16 bytes longer",
+  "tier": "silver",
+  "coverage_percent": 100.0,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "Chris West",
+      "role": "code (Commodore 64)"
+    },
+    {
+      "by": "Tony West",
+      "role": "graphics"
+    },
+    {
+      "by": "David Whittaker",
+      "role": "sound"
+    },
+    {
+      "by": "John Kavanagh",
+      "role": "management"
+    }
+  ],
+  "tools": {
+    "host": "Linux x86_64 (Claude cloud container)",
+    "emulator": "release v4.0.0, v4.0.0-linux-x86_64-gui.zip",
+    "disassembler": "regenerator2000 0.9.20",
+    "publication": "Python 3; symbols_export.py and listing.py",
+    "subagents": "one checker agent for the 60-comment sample; one reader agent for the review; one agent for everything else",
+    "widget tests": "node 22: the music player runs against the game's code on the kit's 6502 simulator (test_music.js)"
+  },
+  "model": "claude-opus-5-5",
+  "step_models": {
+    "50-coverage": [
+      "claude-opus-5-5"
+    ],
+    "60-verify": [
+      "claude-opus-5-5"
+    ],
+    "70-minisite": [
+      "claude-opus-5-5"
+    ],
+    "75-review": [
+      "claude-fable-5-2"
+    ]
+  },
+  "accuracy": [
+    {
+      "step": "research",
+      "web": true,
+      "models": [
+        "claude-opus-5-5"
+      ]
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "claude-opus-5-5"
+      ]
+    },
+    {
+      "step": "sample",
+      "size": 60,
+      "wrong": 11,
+      "fixed": 11,
+      "seed": 2616,
+      "models": [
+        "claude-fable-5-2"
+      ]
+    }
+  ],
+  "kit_version": "0.0.353",
+  "created": "2026-11-16",
+  "video": {
+    "screen": "$4000",
+    "charset": "$4800"
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0002",
+        "$00A2",
+        "zero page the game does not use: BASIC's and the KERNAL's. $22 appears only as the snapshot's value of the pointer operand at $0A81, which copy_tile_row sets before each use"
+      ],
+      [
+        "$0200",
+        "$033B",
+        "the KERNAL's work area and vectors: the game writes only the screen page $0288 and the interrupt vector $0314/$0315, which are the system's"
+      ],
+      [
+        "$03B0",
+        "$03FF",
+        "the rest of the cassette buffer, which nothing reads"
+      ],
+      [
+        "$0400",
+        "$07F7",
+        "the KERNAL's text screen, which draw_picture_tiles uses as the work area for the pictures that slide onto the play screen; the image holds what was there when the backup was made"
+      ],
+      [
+        "$4000",
+        "$47FF",
+        "runtime: the two play screens at $4000 and $4400 and their sprite pointers, redrawn by the game"
+      ],
+      [
+        "$4800",
+        "$4DFF",
+        "runtime: the character set in use, copied here by copy_charset from $D000, $D600, $DC00, $E200 or $E800 at each level and at the title"
+      ],
+      [
+        "$4E00",
+        "$4FFF",
+        "runtime: characters the game draws into, the shots at $4E00 and the panel's gauges from $4E80 (init_panel_chars, draw_bar_gauge_1, draw_gauge_2_top and _bottom)"
+      ]
+    ],
+    "extra": [],
+    "include": [
+      [
+        "$D000",
+        "$DFFF",
+        "the character sets for levels 1 to 3 at $D000, $D600 and $DC00, under the I/O area; copy_charset reads them with the I/O banked out"
+      ]
+    ]
+  },
+  "io": [
+    [
+      "$2054",
+      "$208E",
+      "ram",
+      "copy_charset banks the I/O out from $205A to $208C"
+    ]
+  ],
+  "regions": [],
+  "links": {
+    "wiki": {
+      "title": "Licence to Kill – C64-Wiki",
+      "url": "https://www.c64-wiki.com/wiki/Licence_to_Kill"
+    },
+    "manual": {
+      "title": "",
+      "url": ""
+    },
+    "review": {
+      "title": "Zzap!64 issue 53 – Internet Archive",
+      "url": "https://archive.org/details/zzapp_64_issue_053_600dpi"
+    }
+  },
+  "tabs": [
+    [
+      "index.html",
+      "Overview"
+    ],
+    [
+      "gameplay.html",
+      "Gameplay"
+    ],
+    [
+      "controls.html",
+      "Controls"
+    ],
+    [
+      "levels.html",
+      "Maps"
+    ],
+    [
+      "graphics.html",
+      "Graphics"
+    ],
+    [
+      "music.html",
+      "Music"
+    ],
+    [
+      "discoveries.html",
+      "Discoveries"
+    ],
+    [
+      "source.html",
+      "Source code"
+    ],
+    [
+      "about.html",
+      "About"
+    ]
+  ]
+}
