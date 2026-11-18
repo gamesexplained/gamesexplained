@@ -1,10 +1,11 @@
 'use strict';
 // Turrican's pages in Chromium: every widget from its first state, and what it must show.
-// How it works: the tune and effect players play, the frame's panel switch, the map's sliders, the
-// damage table and the level pictures. Levels: every map draws, each differently. Graphics: the
-// hero's six actions, both ways round; the shared shapes; every level's sprite sheet, with the count
-// of shapes its file brings; the title's sparkles; the ending's 50 explosions and the broken top they
-// leave; the loading picture. Discoveries: the hall of fame, the signature's two tunes and the
+// How it works: the tune and effect players play, the frame's panel switch, the map's sliders and
+// grid, the damage table and the level pictures. Levels: every map draws, each differently, with
+// 2-1's extra row, the objects, and the buttons and links that find the places the notes name.
+// Graphics: the hero's six actions, both ways round; the shared shapes; every level's sprite sheet,
+// with the count of shapes its file brings; the title's sparkles; the ending's 50 explosions and the
+// broken top they leave; the loading picture. Discoveries: the hall of fame, the signature's two tunes and the
 // ending's tune. On every page, no error and no sideways scrolling at phone width.
 // Run after kit/scripts/build.py; argv as play_browser.js.
 const assert = require('assert/strict'), path = require('path');
@@ -66,12 +67,19 @@ const { start } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
     await page.locator('#tu-map-x').evaluate(e => { e.value = 200; e.dispatchEvent(new Event('input')); });
     assert.notEqual(await hash('#tu-map'), map, 'the Across slider moves the view');
     assert.notEqual(await page.locator('#tu-map-at').textContent(), '', 'the view\'s place is shown');
+    const plain = await hash('#tu-map');
+    await page.locator('#tu-map-grid').check();
+    assert.notEqual(await hash('#tu-map'), plain, 'Blocks and squares draws the lines');
+    await page.locator('#tu-map-grid').uncheck();
+    assert.equal(await hash('#tu-map'), plain, 'and takes them away');
+    const widest = await page.locator('#tu-damage .tu-dmg').evaluateAll(b => Math.max(...b.map(x => x.offsetWidth)));
+    assert(widest <= 110, 'the damage bars stay within 110 pixels: ' + widest);
     const shots = await page.locator('#shot-choice option').evaluateAll(o => o.map(x => x.value));
     for (const v of shots) {
       await page.selectOption('#shot-choice', v);
       await page.waitForFunction(() => { const i = document.getElementById('shot'); return i.complete && i.naturalWidth > 0; });
     }
-    console.log('OK - How it works: 6 tunes and an effect play; the frame, the map, the damage table and', shots.length, 'level pictures');
+    console.log('OK - How it works: 6 tunes and an effect play; the frame, the map and its grid, the damage table and', shots.length, 'level pictures');
 
     // Levels
     await page.goto(url('levels.html'));
@@ -85,7 +93,38 @@ const { start } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
       const h = await hash('#map-canvas');
       assert.notEqual(h, last, 'level ' + v + ' differs from the one before'); last = h;
     }
-    console.log('OK - Levels: all 13 maps draw, each its own');
+    // the extra row after 2-1's map, and the buttons that find the places the notes name
+    await page.selectOption('#map-choice', { label: 'Level 2-1' });
+    await page.waitForFunction(() => !/Loading/.test(document.getElementById('map-state').textContent), null, { timeout: 20000 });
+    const high = Number((await page.locator('#map-facts').textContent()).match(/(\d+) high/)[1]);
+    assert.equal(await page.locator('#map-canvas').evaluate(c => c.height / 32), high + 1, '2-1 is drawn one row taller than its map');
+    assert.match(await page.locator('#map-facts').textContent(), /1 more row after it/, '2-1 draws the row after its map');
+    const spots = { 'Level 1-1': 2, 'Level 1-2': 1, 'Level 1-3': 1, 'Level 2-2': 1, 'Level 4-3': 2 };
+    for (const [lv, n] of Object.entries(spots)) {
+      await page.selectOption('#map-choice', { label: lv });
+      await page.waitForFunction(() => !/Loading/.test(document.getElementById('map-state').textContent), null, { timeout: 20000 });
+      const b = page.locator('#map-spots button');
+      assert.equal(await b.count(), n, lv + ' has ' + n + ' place buttons');
+      for (let i = 0; i < n; i++) {
+        await page.locator('#map-scroll').evaluate(e => { e.scrollLeft = 0; e.scrollTop = 0; });
+        await b.nth(i).click();
+        assert.equal(await page.locator('#map-mark').isVisible(), true, lv + ': the place is outlined');
+        const at = await page.locator('#map-scroll').evaluate(e => e.scrollLeft + e.scrollTop);
+        assert(at > 0, lv + ': the map scrolls to the place');
+      }
+    }
+    await page.selectOption('#map-choice', { label: 'Level 1-1' });
+    await page.waitForFunction(() => !/Loading/.test(document.getElementById('map-state').textContent), null, { timeout: 20000 });
+    assert.match(await page.locator('#map-facts').textContent(), /Objects\d+/, 'the objects are counted');
+    const marked = await hash('#map-canvas');
+    await page.locator('#map-objects').uncheck();
+    assert.notEqual(await hash('#map-canvas'), marked, 'Objects takes the marks away');
+    await page.locator('#map-objects').check();
+    assert.equal(await hash('#map-canvas'), marked, 'and puts them back');
+    await page.goto(url('levels.html?level=1-3&show=DTE'));
+    await page.waitForFunction(() => !document.getElementById('map-mark').hidden, null, { timeout: 20000 });
+    assert.equal(await page.locator('#map-choice').evaluate(s => s.options[s.selectedIndex].text), 'Level 1-3', 'a link opens its level');
+    console.log('OK - Levels: all 13 maps draw, each its own; 2-1\'s extra row; the objects; 7 place buttons and a link to one');
 
     // Graphics
     await page.goto(url('graphics.html'));

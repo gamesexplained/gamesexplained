@@ -47,12 +47,13 @@ Sources:
 
 Found in the code, not in the manual.
 
-- An anti-cracker message from Manfred Trenz in the title's memory, "HI FOLKS, THE MANIAC IS BACK !!!", with the date he started (01.02.1989). Not shown on any screen yet found.
+- An anti-cracker message from Manfred Trenz in the title's memory, "HI FOLKS, THE MANIAC IS BACK !!!", with the date he started (01.02.1989). No screen reached in the run shows it.
+- Pale blocks spell 1989 inside the rock of level 1-1's map, and DTE on its side inside a rock of level 1-3's; DTE also opens the title's unread line DTE+DTZ+ACU+MWS+AV IN 1990 (`facts.md`, Mechanics; the Levels tab).
 - The default high-score table names the team, from Manfred Trenz's 100,000 at 4-2 down: MANFRED TRENZ, RAMIRO VACA, ADAM BULKA, MARKUS W., ALEXANDER ERNST, CHRIS HUELSBECK, MARC A. ULRICH, then !COPYRIGHT 1990!, !      BY      ! and ! RAINBOW ARTS ! (engine `high_scores`, $6860, from the file `IH`).
 - After the ending the game over reads the level's name from the ending's own bytes, so the result screen and the hall of fame show LEVEL !-! (title $7087; live).
 - RETURN with no name enters ♥ MR. RETURN ♥ in the hall of fame (title $7CE2; live).
-- Beating level 2-1's fish with a whip shorter than 22 leaves the whip with length 0, which acts as no limit; the next blue symbol makes it 2 (level 2-1 $6D31, $704F; engine $3A25, $5E69; the lengths 0 and 2 tested live).
+- Beating level 2-1's fish with a whip shorter than 22 gives the whip back as whatever $BE9E held, a byte the fight writes only for a longer whip; a length of 0 acts as no limit, and the next blue symbol makes it 2 (level 2-1 $6D31, $704F; engine $3A25, $5E69; the lengths 0 and 2 tested live, poked). What $BE9E holds in normal play is open.
 
 ## Open questions
 
-- C64-Wiki's extra-lives trick in level 1-1 (jump blind off the tower's left edge onto a tiny platform). What does the code do there?
+- C64-Wiki's extra-lives trick in level 1-1 (jump blind off the tower's left edge onto a tiny platform). The level's lists hold four 1UPs in a row near the top of the map, at characters (313-336, 18), and two more elsewhere (`facts.md`, Mechanics); whether the trick's platform is the one under the four is not checked.

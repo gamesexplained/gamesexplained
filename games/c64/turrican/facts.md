@@ -185,6 +185,26 @@ which the title takes the low six bits (`title_fame_page`, $7384).
   `weapon_damage`, $0720).
 - Only a mine's blast sets $0305 negative; the levels' walkers and
   gunners leap off the screen when it does.
+- Objects: each level's map is cut into squares of 32 by 32
+  characters, each with a list of six-byte records (type, state, X and
+  Y in characters) ending with $D3 ($8CAA, $8CCF, $8D51). Each frame the
+  spawner reads one of the four squares around the view; an object less
+  than 44 columns right of the view's top left corner and less than 23
+  rows below it goes into a free one of eleven slots ($03C8-$03D2), and
+  its record's type is set to 0, so it never starts again
+  (`spawn_objects`, $5923: the store at $5A2C, the skip at $59D9). An
+  object scrolled off the screen is removed (`objects_scroll`, $5A53).
+  Hardware sprites 3 to 7 serve the eleven slots (`irq_multiplex`,
+  $5A9A).
+- Object type 1 is the floating container and type 2 a symbol lying
+  free, its state less $80 the symbol's number; the other types are
+  each level's own. Level 1-1's lists hold six 1UPs: at character (58,
+  23) among four other symbols, four in a row at (313-336, 18) near the
+  top of the map, and one at (6, 78) (level 1-1, squares 1, 9 and 48).
+- Writing in the maps: level 1-1's blocks spell 1989 at block columns
+  54-68, rows 44-48, inside the rock; level 1-3's spell DTE on its side,
+  reading upwards, at block columns 89-93, rows 40-50, the map's last
+  row. Both are drawn from the maps as they load (the Levels tab).
 - Pause is CTRL held; the main program sets the pause flag ($0203)
   again every time round its loop, and fire clears it only for the
   first half of the frame. With CTRL and fire held, the hero moves, the
@@ -194,10 +214,13 @@ which the title takes the low six bits (`title_fame_page`, $7384).
 - The whip is 16 steps long at the start, two longer for each blue
   symbol up to 40, and four shorter for a lost life down to 16
   (`whip_update`, $391B; `bonus_symbol`, $5E69; `weapons_down`, $5647).
-  Level 2-1's fish keeps the length to give back only when it is 22 or
-  more; below that it gives back 0, which the step count meets only after 256 steps, so the
-  whip runs to the screen's edge until a blue symbol makes it 2 (level
-  2-1 $6D31, $704F; *live* for the lengths 0 and 2).
+  Level 2-1's fish keeps the length in $BE9E to give back only when it
+  is 22 or more; below that $BE9E is not written, and the whip comes
+  back as whatever that byte held, which lies outside every part's load
+  (level 2-1 $6D31, $704F). A length of 0 is met by the step count only
+  after 256 steps, so such a whip runs to the screen's edge until a blue
+  symbol makes it 2 (*live* for the lengths 0 and 2, poked). What the
+  byte holds in normal play is not known.
 
 ## Data tables
 

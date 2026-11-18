@@ -140,7 +140,7 @@ function heroViewer(ram){const m=ram.slice(),VIC=new Uint8Array(64);VIC[0x15]=7;
 // sets ($576B), light grey and dark grey.
 function objectViewers(m){
  const ex=$('boom-canvas'),S=4;let n=0;
- const boom={step(){n=(n+1)%(7*4+25);},draw(){const ctx=sized(ex,24*2*S,21*S);ctx.fillStyle=RGB[0];ctx.fillRect(0,0,ex.width,ex.height);
+ const boom={step(){n=(n+1)%(7*4+6);},draw(){const ctx=sized(ex,24*2*S,21*S);ctx.fillStyle=RGB[0];ctx.fillRect(0,0,ex.width,ex.height);
    if(n<28){const k=n>>2;plot(ctx,spritePixels(m,0xC000+(0x84+k)*64,1,m[0x5C0D+k],15,11),12*S,0,S);}}};
  const names=['Red: spread shot','Green: laser','Blue: longer whip','Light blue: shield','P: energy','G: grenade','M: mine','L: energy line','1UP: a life','Diamond'];
  const sym=$('symbols-canvas'),cell=30,s2=3;{const ctx=sized(sym,5*cell*s2,2*30*s2);ctx.fillStyle=RGB[0];ctx.fillRect(0,0,sym.width,sym.height);
@@ -223,10 +223,10 @@ function ending(m){const cv=$('tower-canvas'),S=2,bmp=m.slice(0x788F,0x788F+8000
 const LEVELS=JSON.parse($('tu-levels').textContent);
 async function start(){
  try{const eng=(await C64.load('parts/engine/listing.json')).ram;
-  const hv=heroViewer(eng);clocks.push(hv);
-  document.querySelectorAll('[data-hero]').forEach(b=>b.onclick=()=>{hv.H.mode=b.dataset.hero;hv.H.n=0;document.querySelectorAll('[data-hero]').forEach(c=>c.setAttribute('aria-pressed',c===b));});
-  $('hero-face').onclick=()=>{hv.H.face^=1;$('hero-face').textContent=hv.H.face?'Facing right':'Facing left';};
-  $('hero-apart').onchange=e=>hv.H.apart=e.target.checked;$('hero-low').onchange=e=>hv.H.low=e.target.checked;
+  const hv=heroViewer(eng),now=()=>{hv.step();hv.draw();};clocks.push(hv);   // a control redraws at once
+  document.querySelectorAll('[data-hero]').forEach(b=>b.onclick=()=>{hv.H.mode=b.dataset.hero;hv.H.n=0;document.querySelectorAll('[data-hero]').forEach(c=>c.setAttribute('aria-pressed',c===b));now();});
+  $('hero-face').onclick=()=>{hv.H.face^=1;$('hero-face').textContent=hv.H.face?'Facing right':'Facing left';now();};
+  $('hero-apart').onchange=e=>{hv.H.apart=e.target.checked;now();};$('hero-low').onchange=e=>{hv.H.low=e.target.checked;now();};
   clocks.push(...objectViewers(eng));}
  catch(e){$('hero-state').textContent='The engine’s listing could not be loaded: '+e.message;}
  let sheet=null;
