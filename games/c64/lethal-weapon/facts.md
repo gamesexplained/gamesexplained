@@ -41,7 +41,8 @@ from `$E1AC`, the panel at `$1281` (line `$BF`), `$12F4` (`$C6`) and
 ## Controls
 
 Both joystick ports are read together (`$F314`): either port plays. Fire
-shoots one round a press (`$1DB3`). Up jumps (`$20EF`) or climbs a ladder;
+shoots one bullet a press (`$1DB3`); the press that finds the gun empty
+fires and refills it from a magazine without taking a round (`$1E39`). Up jumps (`$20EF`) or climbs a ladder;
 up at a door goes through it (`$21A1`). P pauses (`$E12F`, matrix `$29`).
 RESTORE goes to an `RTI` (`$EC65`). At the select screen, fire held with
 right picks Riggs and with left Murtaugh (`$C34C`): *live*.
@@ -56,8 +57,10 @@ n), sorted by line (`$F2B3`) and multiplexed onto eight sprites (`$E1AC`).
 
 ## Mechanics
 
-- Lives 3 (`$373C`), energy `$40` (`$F373`), 25 magazines (`$F359`) of 6
-  rounds (`$E914`), clock 5:00 (`$F421`-`$F423`).
+- Lives 3 (`$373C`), energy `$40` (`$F373`), 25 magazines (`$F359`), a
+  gun of 6 rounds (`$E914`), clock 5:00 (`$F421`-`$F423`). A magazine gives
+  seven shots: the six rounds, and the press that finds the gun empty,
+  which fires and reloads (`$1E39`-`$1E53`).
 - A magazine every time the clock's seconds digit reaches 0 or 5 (`$F47A`).
 - At 0:00 a life is lost and the clock is set to 9:00 (`$F491`).
 - Damage by weapon level (`$285C`): 1, 2, 3. Weapon level 0, 3, 6 (`$1193`).
@@ -70,8 +73,10 @@ n), sorted by line (`$F2B3`) and multiplexed onto eight sprites (`$E1AC`).
 
 ## Data tables
 
-Stage files are packed; `$F5D5` unpacks them (Huffman-coded literal
-lengths, offsets and lengths, three tables a block). A stage map is 144
+A stage's map (.MAP) and characters (.CHR), and COL0, are packed; `$F5D5`
+unpacks them (Huffman-coded literal lengths, offsets and lengths, three
+tables a block). The tiles (.BLK), colours (.ATT), overlay, sprite and
+panel files load as they are (`$1B28`). A stage map is 144
 tile columns × 64 rows; an A stage builds rows 29-63 and its X stage rows
 0-34 (`$3824` in each overlay: `$441D` or `$4400`).
 
@@ -79,8 +84,9 @@ tile columns × 64 rows; an A stage builds rows 29-63 and its X stage rows
 
 Game: an effects engine (`$F889` init, `$F88C` start, `$F88F` update), 18
 effects (`$FA71`). Title and ending: Mark Cooksey's music driver (`MUSI`,
-`$E000` init, `$E003` play), three tunes; the title plays tune 0 and tune
-2, the ending tune 0.
+`$E000` init, `$E003` play), three tunes; the title plays tune 0; tune 2,
+started when a man is chosen, holds a note for a few frames and stops
+the music; the ending plays tune 0.
 
 ## The listing's error rate
 
