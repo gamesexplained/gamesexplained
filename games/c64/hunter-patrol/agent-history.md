@@ -16,3 +16,7 @@
 - A live test of the stick showed that a climb rate of `$FF` moves the plane down the screen, which the first run had right and a comment of this run had stated ambiguously.
 - The loading picture is in no snapshot: a boot to the picture and a read of `$E000` and `$DC00` while it was up gave its 10,000 bytes.
 - The run stays Bronze in `game.json`: the kit asks for a maintainer's sample when any of the coverage ran on an unproven model, whatever came after.
+
+## Audit and reader review, 18 November 2026
+
+At the contributor's request the listing had a full audit on claude-opus-5-5: three fresh checkers, one address range each, checked all 397 comments and corrected 43 (A $0000-$1A10: 19; B $1A11-$8090: 15; C $8091 on: 9), and C checked every claim in facts.md and corrected 4. A new sample (seed 2618) by a fresh checker then found 3 of 60 wrong in a detail, all corrected. A reader on claude-opus-5-5 read the built site and made 16 findings. Fixed: the strafing run's aircraft hits on Gameplay, the flak's `$09` linked to the unused player on Discoveries, the test steps taken off Controls, Discoveries and Music, and four sentences reworded (Gameplay's collision test, Graphics' band copy and stripes, Music's timer periods). Left, in TODO.md: drawings of the unused shapes and of the target hit on one end, a sound-effects player, a section on the documents' faster later levels and on the extra strafing run. The "not complete" banner is the site template's and goes once the game is Silver.
