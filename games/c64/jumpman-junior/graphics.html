@@ -1,0 +1,44 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/jj-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Forty-five sprite shapes of eight pixels by ten lines, packed into 900 bytes, and eight shapes that build every level.</p>
+</header>
+<main class="wrap">
+<section id="sprites">
+  <p class="fig">01 · Sprites</p>
+  <h2 class="t">Jumpman and everything that moves</h2>
+  <p class="lede">Every moving thing is a sprite, and every sprite shape in the game is one of these 45, from Jumpman's walk to the debris of the hurricane.</p>
+  <div class="plate"><div class="jj-gal" id="spriteRoot"></div>
+    <p class="cap">Each shape as the sprite pointer that shows it, <code>$90</code> to <code>$BC</code>, with what the game uses it for, from the routines that set the pointers. White and purple are the two colours every sprite shares; red stands for the sprite's own colour, which each set-up chooses: red for Jumpman and the fires, cyan for the moving ladders, white for the bullets and stones.</p></div>
+  <p>The shapes are stored packed at <a href="source.html#82B8"><code>sprite_shapes</code></a>: ten rows of two bytes each, eight multicolour pixels a row, twenty bytes a shape. A sprite block holds 64 bytes, and at start-up <a href="source.html#8243"><code>build_sprites</code></a> copies each shape's rows into its own block at <code>$6400</code>, leaving the third byte of every row and the rows below the tenth empty. All eight sprites are multicolour (<code>$D01C</code> = <code>$FF</code>), with white and purple as the shared colours (<a href="source.html#81B8"><code>$81B8</code></a>).</p>
+  <p>Jumpman walks in two frames each way, climbs in four, and jumps in a single frame, leaning the way he goes (<a href="source.html#A3B8"><code>start_jump</code></a>). Hit, he takes a random shape from <code>$91</code> to <code>$98</code> and tumbles through four more as he bounces down the screen (<a href="source.html#A4C0"><code>death_task</code></a>). A new Jumpman does not use a shape from this table at all: <a href="source.html#9A56"><code>new_life</code></a> points his sprite at <code>$BD</code>, the block after the last one, and copies his rows into it a few at a time, each with a rising note, so he appears from the top down.</p>
+</section>
+
+<section id="shapes">
+  <p class="fig">02 · Level shapes</p>
+  <h2 class="t">Eight shapes build every level</h2>
+  <p class="lede">The levels are not drawn from tiles or characters but stamped into a bitmap, one shape at a time, by the <a href="levels.html#scripts">draw scripts</a>.</p>
+  <div class="plate"><div class="jj-gal" id="shapeRoot"></div>
+    <p class="cap">Each shape stamped once by the port of <a href="source.html#8A91"><code>draw_shape</code></a> that draws the Maps tab, in the level colours. The erasers draw in black, so they show as nothing here.</p></div>
+  <p>A shape is a list of rows, each a count of pixels, an X and a Y offset, and one colour for each pixel. A girder piece is a block of green four pixels wide and six lines high with two holes through its middle. A ladder piece is two blue rails eight lines high with one rung, and a rope piece is a line two pixels wide and eight lines high that zigzags, green for up and blue for down. The bomb is a small orange ring. Each eraser sets the same pixels as its shape to colour 0. The girder's covers its whole block of four by six, holes and all, and a bomb fits inside that block, so the game wipes bombs with it too.</p>
+</section>
+
+<section id="screen">
+  <p class="fig">03 · The screen</p>
+  <h2 class="t">A multicolour bitmap with a text bar under it</h2>
+  <p class="lede">Play is a multicolour bitmap of 160 by 200 double-width pixels. The bottom two text rows are the status bar, in hires.</p>
+  <p>The game keeps everything in the VIC-II's second bank: the bitmap at <code>$4000</code>, its screen at <code>$6000</code>, and the sprite blocks from <code>$6400</code> (<code>$D018</code> = <code>$81</code>). Each level is painted the same three colours (<a href="source.html#8BD4"><code>level_colours</code></a>): orange for the bombs, green for girders and up ropes, and blue for ladders and down ropes. Those colours are the whole of the game's map, because Jumpman's movement reads them back from the bitmap (<a href="gameplay.html#floor">the floor</a>).</p>
+  <p>The raster interrupt at line <code>$E8</code>, near the bottom of the playfield, switches multicolour off for the status bar's two rows and back on for the next frame (<a href="source.html#863C"><code>irq</code></a>). The status bar's text is drawn into the bitmap from a RAM copy of the character set at <code>$2000</code>, which the start-up copies out of the character ROM.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="reference/jj-page.js"></script>
+<script>JJ.mountSprites(document.getElementById('spriteRoot')); JJ.mountShapes(document.getElementById('shapeRoot'));</script>
