@@ -23,7 +23,7 @@
     "Shared gameplay engine"
    ],
    [
-    5494,
+    6488,
     6495,
     "Shared gameplay engine"
    ],
@@ -38,9 +38,9 @@
     "Shared gameplay engine"
    ],
    [
-    6752,
-    11239,
-    "2 parts: TO title, AD title"
+    6906,
+    11263,
+    "Gameplay colour transfer (CM)"
    ],
    [
     34304,
@@ -70,7 +70,7 @@
     "Shared gameplay engine"
    ],
    [
-    5494,
+    6488,
     6495,
     "Shared gameplay engine"
    ],
@@ -85,9 +85,9 @@
     "Shared gameplay engine"
    ],
    [
-    6752,
-    11239,
-    "2 parts: TO title, AD title"
+    6906,
+    11263,
+    "Gameplay colour transfer (CM)"
    ],
    [
     34304,
@@ -99,8 +99,8 @@
  "blocks": [
   {
    "start": 5408,
-   "end": 5493,
-   "type": "Undefined"
+   "end": 6487,
+   "type": "Byte"
   },
   {
    "start": 6496,
@@ -144,6 +144,42 @@
   }
  ],
  "symbols": [
+  {
+   "address": 5408,
+   "name": "to_loader_storage_entry",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5540,
+   "name": "to_loader_staged_receive_setup",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5643,
+   "name": "to_loader_staged_destination",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5931,
+   "name": "to_loader_staged_tables",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6187,
+   "name": "to_loader_staged_drive_body",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6262,
+   "name": "to_loader_staged_serial_transfer",
+   "type": "UserDefined",
+   "kind": "user"
+  },
   {
    "address": 6496,
    "name": "begin_to_disk_transition",
@@ -200,9 +236,9 @@
   },
   {
    "address": 6679,
-   "name": "f_1A17",
+   "name": "to_disk_destination_highs",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6698,
@@ -212,21 +248,21 @@
   },
   {
    "address": 6699,
-   "name": "f_1A2B",
+   "name": "to_disk_resource_second_letters",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6718,
-   "name": "a_1A3E",
+   "name": "to_active_file_first_letter",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 6719,
-   "name": "a_1A3F",
+   "name": "to_active_file_second_letter",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 33024,
@@ -267,6 +303,36 @@
  ],
  "comments": [
   {
+   "address": 5408,
+   "type": "line",
+   "text": "Start of the staging image copied to $0393 before TO requests a disk file. $19A9 exchanges all 1,080 bytes with the low memory, then exchanges them back after the call."
+  },
+  {
+   "address": 5540,
+   "type": "line",
+   "text": "The instructions from here become executable at $0417. They prepare the serial handler and hardware state after the drive program has been sent."
+  },
+  {
+   "address": 5643,
+   "type": "line",
+   "text": "Relocates to $047E. Two immediate loads set up the input buffer address and are patched from the chosen file's destination words."
+  },
+  {
+   "address": 5931,
+   "type": "line",
+   "text": "Relocates to $059E. This storage separates the fallback jump into the KERNAL from the drive data at $069E."
+  },
+  {
+   "address": 6187,
+   "type": "line",
+   "text": "Relocates to $069E. The serial setup points at this body and sends it in blocks of 30 bytes to the drive."
+  },
+  {
+   "address": 6262,
+   "type": "line",
+   "text": "Relocates to $06E9. The receiver preparation copies bytes beginning at that address as it iterates eight-bit Y. The part of that source within the exchanged image begins here."
+  },
+  {
    "address": 6496,
    "type": "line",
    "text": "Receives the disk resource selector in A and saves it on the stack. Disables VIC raster interrupts and CIA 1 timer A, installs the loader-time vectors, exposes the KERNAL while keeping I/O active, clears the SID register range and colour RAM, then jumps to the TO-specific transition code at $8100."
@@ -287,9 +353,29 @@
    "text": "Table of ten little-endian destination addresses. The loader copies the selected word into the immediate operands at $047F and $0483 before the low-memory call."
   },
   {
+   "address": 6679,
+   "type": "line",
+   "text": "The high byte of each destination word, indexed by twice the selected resource number. The low bytes begin at $1A16."
+  },
+  {
    "address": 6698,
    "type": "line",
    "text": "Consecutive two-byte names L0 through L5, IN, CM, MN and ED. The two bytes after these ten entries are a separate filename buffer, filled by the loader at $1A3E."
+  },
+  {
+   "address": 6699,
+   "type": "line",
+   "text": "Second letters of the two-character resource names, read on the same doubled index as the first letters."
+  },
+  {
+   "address": 6718,
+   "type": "line",
+   "text": "First byte of the selected filename. SETNAM is passed this address and a length of two."
+  },
+  {
+   "address": 6719,
+   "type": "line",
+   "text": "Second byte of the active filename. The remaining bytes before the title are zero padding."
   },
   {
    "address": 33024,
