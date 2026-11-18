@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Holds the page's music player against the game's own driver. index.html's lw-music block
+// Holds the page's music player against the game's own driver. music.html's lw-music block
 // (createDriver) runs the bytes of MUSI from the page's own copy; here the same driver runs on the
 // kit's simulator over the title part's listing ($E000-$F5D5 as the title loads them), called as
 // the title calls it: $E000 with A = the tune, then $E003 once a frame. Both must write the same
@@ -11,7 +11,7 @@ const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const kit = require(path.join(ROOT, 'kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname);
 g.sameBlock('lw-music');
-const { createDriver, LW_TUNES, LW_MUSIC } = g.run('index.html', 'lw-music', 'createDriver', 'LW_TUNES', 'LW_MUSIC');
+const { createDriver, LW_TUNES, LW_MUSIC } = g.run('music.html', 'lw-music', 'createDriver', 'LW_TUNES', 'LW_MUSIC');
 const L = g.listing('parts/title/listing.json');
 let bad = 0, frames = 0, notes = 0, reads = 0;
 for (let t = 0; t < LW_TUNES.length; t++) {
