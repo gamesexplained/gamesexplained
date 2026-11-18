@@ -40,3 +40,16 @@ Reaching the game from a crack that has a scrolling intro, text pages, a loading
 ### Maintainer asks
 
 - **Say in `kit/CHECKING.md` what a run does when an unproven model made only the start of the coverage and a proven model rewrote every comment after it.** This run rewrote all 48 of the first run's comments and sampled the result on a proven model, and `models.py` still asks for a maintainer's sample, because `step_models` names the unproven model under `50-coverage`. That may be the rule's intent (its labels and types stayed), but the text does not say so, and a run could be tempted to leave the first model out of `step_models`.
+
+## Play tab run, on claude-opus-5-5 (18 November 2026)
+
+### Skill text that changed what I did
+
+- `70-minisite/play.md`, "Pace it by the machine's clock": "measure each routine's own cycles instead" with `kit/cpu/profile.js`. The least-squares fit left the page 2.8 % slow and gave a loop turn of nine cycles a cost of 1,450; the profiler brought it within 1 %.
+- `kit/c64/lockstep.js`, irqBytes: "the port reads each through `P.io.irqByte(a)` and gets, in turn, the values the game's main program read" — the collision latches only agreed once the port made one read for each of the game's LDAs.
+
+### Where the kit fell short
+
+- A polling loop on an address that is not the raster's (the fire button at `$DC01`), yielded as bare turns, let the port leave the loop on input the game had not reached; the lockstep then ran the game for `maxFrames` and reported only that no checkpoint came. Naming the loop's head as a checkpoint at every turn fixed it. `play.md` could say so where it describes bare yields.
+- A `{ cycles, at }` yield followed by the same yield with no checkpoint between counts as one stop, so a loop whose only yield is its delay loses every other turn; the loop's head needs a checkpoint of its own.
+- `kit/cpu/profile.js`'s `perCall` charges a generator routine (one that yields across many stretches, such as a main loop) all its own cycles per call, which made one stretch cost minus a million cycles. Leaving such routines' code out with `place` (returning null) and not counting their calls fixed it; the profiler's header could say so.
