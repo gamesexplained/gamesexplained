@@ -1696,7 +1696,7 @@
   },
   {
    "address": 38417,
-   "name": "copied_charset_boundary_9611",
+   "name": "load11_motion_first_stream_tail",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2164,7 +2164,7 @@
   },
   {
    "address": 41046,
-   "name": "charset_bytes_a056",
+   "name": "type10_horizontal_deltas_tail",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2524,7 +2524,7 @@
   },
   {
    "address": 62592,
-   "name": "matching_blank_sprite_shape_d2",
+   "name": "blank_sprite_shape_d2",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2536,7 +2536,7 @@
   },
   {
    "address": 62720,
-   "name": "matching_blank_sprite_shape_d4",
+   "name": "blank_sprite_shape_d4",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2548,7 +2548,7 @@
   },
   {
    "address": 62848,
-   "name": "after_sprite_slot_f57f",
+   "name": "blank_sprite_shape_d6",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3098,7 +3098,7 @@
   {
    "address": 38399,
    "type": "line",
-   "text": "Beginning of a 23-byte encoded motion stream through $9615. The resident reader yields 38 values before the $80 reset, including ten $03 values and ten $FD values. The bytes at $9601–$9610 also belong to the copied character source."
+   "text": "Load 11: the first 18 bytes of a 23-byte encoded motion stream that runs to $9615. $95F4, the motion routine named by entity record 1 at $A0F3 (a moving platform), points $54/$55 here and jumps to the resident reader at $6A3A, which yields 38 values before the $80 reset, including ten $03 values and ten $FD values. $95FF–$9610 are also the last 18 bytes of the eight-page base character copy that starts at $8E11."
   },
   {
    "address": 38417,
@@ -3128,7 +3128,7 @@
   {
    "address": 38478,
    "type": "line",
-   "text": "For entity index X, set type $10, sprite base $D7, parameter $14, two state bytes to 6, animation countdown to 7, auxiliary state to zero, flags and coordinate state to 1, and three coordinate bytes to $00, $FA and $96. Load X/Y with message pointer $968D and jump to $77E0. The captured stage-object record at $963E contains this address; the display callback and ordinary-play reachability remain separate."
+   "text": "For the free entity slot X that the resident routine at $073F found with $190B, set type $10, sprite base $D7, parameter $14, display attributes $19F6 and $1A18 to 6, animation countdown to 7, auxiliary state to zero, flags $192A and direct-coordinate state $19B2 to 1, and the screen position to X $00FA, Y $96. Load X/Y with message pointer $968D (“KRAKEN!”) and jump to $77E0. Load 11’s stage-object record at $963E names this routine in fields 9 and 10, and $073F calls it through the patched JSR at $0778."
   },
   {
    "address": 38541,
@@ -3388,7 +3388,7 @@
   {
    "address": 40581,
    "type": "line",
-   "text": "State 1 first calls $9F40. If that returns, call $4574 with A=6 when $1B28,X is nonnegative, or $45BC with A=6 when it is negative. If the result masked with 6 equals 2, jump to the frame update. Otherwise set $1AD3,X to 7, call the state increment and frame update at $9E7F, exclusive-OR $1B28,X with $FA and return. Callback behavior and ordinary-play reachability remain open."
+   "text": "Load 11: state 1 first calls the shared collision check at $9F40, which leaves the handler early when it moves the entity to state 4 or 5. If it returns, call $4574 with A=6 when $1B28,X is nonnegative, or $45BC with A=6 when it is negative. If the result masked with 6 equals 2, jump to the frame update at $9F2B. Otherwise set $1AD3,X to 7, call $9E7F, which increments the state to 2 and runs the frame update, then exclusive-OR $1B28,X with $FA and return. The dispatcher enters here for state 1, and state 3 jumps here at $9EE9 after setting the state back to 1 when $44DE returns carry set."
   },
   {
    "address": 40626,
@@ -3438,7 +3438,7 @@
   {
    "address": 40873,
    "type": "line",
-   "text": "Working byte written from $1B28,X and tested for its sign by state 4; other handler paths also use it."
+   "text": "Load 11: working byte, $20 in the load. State 4 at $9F07 and the collision path at $9F7C copy $1B28,X into it before testing its sign at $9F0C and $9F82. The hit path instead rotates the carry from $72FC into its bit 7 at $9F52, reads the result back at $9F55 and stores it in $1B28,X, then tests it at $9F5E. The tests at $9F5E and $9F82 choose whether 6 is added to the sprite frame, and the one at $9F0C chooses the direction state 4 moves in."
   },
   {
    "address": 40874,
@@ -3448,7 +3448,7 @@
   {
    "address": 40875,
    "type": "line",
-   "text": "Use $1AB1,X to patch the jump at $9FBD from split target tables at $9FC0/$9FC2. Call the position helper at $A0BE before the jump. The index is not locally bounded; two captured pairs are described."
+   "text": "Use $1AB1,X as Y to copy a target from the split tables at $9FC0/$9FC2 into the operand of the jump at $9FBD, call the position helper at $A0BE, then take the jump: state 0 runs $9FC4 and state 1 runs $A042. Entity creation clears $1AB1,X at $4494, and the type-$10 code changes it only at $A034, from 0 to 1."
   },
   {
    "address": 40893,
@@ -3458,7 +3458,7 @@
   {
    "address": 40896,
    "type": "line",
-   "text": "Two captured low target bytes paired with $9FC2: $9FC4 and $A042. Ordinary-play index bounds remain open."
+   "text": "Low bytes $C4 and $42 of the two state targets, paired with the high bytes at $9FC2: state 0 runs $9FC4 and state 1 runs $A042. $9FAE reads them with $1AB1,X as index."
   },
   {
    "address": 40898,
@@ -3473,7 +3473,7 @@
   {
    "address": 40937,
    "type": "line",
-   "text": "Read a signed byte at $A09C,Y using $1AD3,X as Y. If negative, negate it and call $4342; otherwise call $4368 with the byte. If $1AD3,X equals $21, set it to $FF, then increment it. Neither input index is bounded before its read."
+   "text": "Read a signed byte at $A09C,Y using $1AD3,X as Y. If negative, negate it and call $4342; otherwise call $4368 with the byte. If $1AD3,X equals $21, set it to $FF, then increment it. Both indexes start at 0, cleared at $4494 when the entity is created, and the wraps keep $1AC2,X within 0–$49 and $1AD3,X within 0–$21, the 74 and 34 bytes of the tables at $A052 and $A09C."
   },
   {
    "address": 40974,
@@ -3493,7 +3493,7 @@
   {
    "address": 41046,
    "type": "line",
-   "text": "Load 11: bytes 1952–2021 of the eight-page character copy for visual selector 2, which starts at $98B6, in characters $F4–$FC. $717C copies them to $D7A0–$D7E5."
+   "text": "Load 11: bytes 4–73 of the type-$10 horizontal delta table at $A052, which state 0 reads at $9FC7 (LDA $A052,Y). The eight-page character copy for visual selector 2, which starts at $98B6, also takes these 70 bytes (its bytes 1952–2021, characters $F4–$FC) to $D7A0–$D7E5."
   },
   {
    "address": 41116,
@@ -3793,7 +3793,7 @@
   {
    "address": 62592,
    "type": "line",
-   "text": "Load 11: the 63 zero bytes at $F480 occupy the bitmap portion of bank-3 slot $D2, immediately after the matched nonzero shape at slot $D1. In the verified source capture from load 27, slots $D5/$D6 form a nonzero layer and a blank layer; this range matches that blank layer. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 11: the 63 zero bytes at $F480 are the picture of bank-3 sprite slot $D2, the same bytes as load 9’s blank second layer of its shot frame $D1. Load 11’s own entities are drawn from other slots: its two moving platforms from $B7, its type-$0E entity from $B9–$C3 and its type-$10 entity from $D7 upward. The slot’s 64th byte, $00, is not part of the picture."
   },
   {
    "address": 62656,
@@ -3803,7 +3803,7 @@
   {
    "address": 62720,
    "type": "line",
-   "text": "Load 11: the 63 zero bytes at $F500 occupy the bitmap portion of bank-3 slot $D4, immediately after the matched nonzero shape at slot $D3. In the verified source capture from load 17, slots $C5/$C6 form a nonzero layer and a blank layer; this range matches that blank layer. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 11: the 63 zero bytes at $F500 are the picture of bank-3 sprite slot $D4, the same bytes as load 9’s blank second layer of its shot frame $D3. Load 11’s own entities are drawn from other slots: its two moving platforms from $B7, its type-$0E entity from $B9–$C3 and its type-$10 entity from $D7 upward. The slot’s 64th byte, $00, is not part of the picture."
   },
   {
    "address": 62784,
@@ -3813,7 +3813,7 @@
   {
    "address": 62848,
    "type": "line",
-   "text": "Load 11: 63 zero bytes at $F580–$F5BE, aligned as bank-3 sprite slot $D6. They make an entirely transparent 24-by-21 pixel mask. The stage decoder writes this range as part of the high-memory stream."
+   "text": "Load 11: 63 zero bytes at $F580–$F5BE, the picture of bank-3 sprite slot $D6, the same bytes as load 9’s blank second layer of its shot frame $D5. Load 11’s own entities are drawn from other slots: its two moving platforms from $B7, its type-$0E entity from $B9–$C3 and its type-$10 entity from $D7 upward. The stage decoder writes this range as part of the high-memory stream."
   },
   {
    "address": 62911,

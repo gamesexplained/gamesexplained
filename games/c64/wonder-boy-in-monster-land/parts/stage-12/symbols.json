@@ -2536,7 +2536,7 @@
   },
   {
    "address": 37601,
-   "name": "copied_charset_boundary_92e1",
+   "name": "object_message_92da_tail_call",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5324,7 +5324,7 @@
   {
    "address": 37601,
    "type": "line",
-   "text": "Load X/Y with pointer $92E8 and tail-jump to $77E0 to display that message."
+   "text": "Load X/Y with pointer $931D, the second message (“the pyramids key.”), and tail-jump to $77E0 to display it. The only way here is the fall-through after the first message call at $92DE."
   },
   {
    "address": 37608,
@@ -5429,27 +5429,27 @@
   {
    "address": 38982,
    "type": "line",
-   "text": "Two jump entries: the first enters setup at $984C, and the second jumps to $996C. The second entry was not exercised in the setup tests. These bytes can also overlap captured character or graphics sources."
+   "text": "Two jump entries: $9846 enters the price setup at $984C, and $9849 jumps to the item-pair setup at $996C. Load 12’s stage record 1 at $927B names $9846 as its callback; no stage record, instruction or pointer in load 12 or the resident part names $9849. The eight-page character copy for visual selector 1, which starts at $9333, also takes these six bytes, to $D513–$D518."
   },
   {
    "address": 38988,
    "type": "line",
-   "text": "Write $46 plus 1 modulo 256 to $9BAB and $9BF5, set sound state $2C15 to 2, and use stage index $7B to format fields $4783,X and $4789,X through $98AF for destination selectors $9B and $AF. The formatter’s display callback was stubbed in the controlled checks."
+   "text": "Write $46 plus 1 modulo 256 to the high address byte at $9BAB of the digit store at $9BA9 and to the layout gate at $9BF5, set sound state $2C15 to 2, and use stage index $7B to format fields $4783,X and $4789,X through $98AF with Y=$9B and Y=$AF as the screen offsets of their last digits."
   },
   {
    "address": 39020,
    "type": "line",
-   "text": "Use selected-player index $4DBD. If $4DC7,Y is nonzero, or if $4DC9,Y is at least stage field $4789,X under an unsigned byte comparison, go to $989A. Otherwise inspect stage field $4753,X. These tests do not establish which values occur in ordinary play."
+   "text": "Use selected-player index $4DBD. If $4DC7,Y is nonzero, or if $4DC9,Y is at least stage field $4789,X under an unsigned byte comparison, go to $989A. Otherwise inspect stage field $4753,X."
   },
   {
    "address": 39045,
    "type": "line",
-   "text": "For stage field 3, or another even value, select message $9CE4 and jump to $9B36. The destination’s display behavior is separate."
+   "text": "Reached when stage field $4753,X is 3 or has bit 0 clear: select message $9CE4 and jump to the message call at $9B36."
   },
   {
    "address": 39052,
    "type": "line",
-   "text": "Test bit 0 of the stage field. A clear bit selects $9CE4; a set bit calls $9B7D, then selects $9CCE. The called gate was stubbed in the controlled checks."
+   "text": "Reached when stage field $4753,X is not 3: test its bit 0. A clear bit selects message $9CE4; a set bit calls $9B7D, which stores $FF in $4753,X, then selects message $9CCE and jumps to the message call at $9B36."
   },
   {
    "address": 39066,
@@ -5459,12 +5459,12 @@
   {
    "address": 39087,
    "type": "line",
-   "text": "Save X and Y in immediate operands, call $36E9 to split A into nibbles plus one, clear the first two bytes at $9BF0, and write the tens and units codes to the next two bytes. A tens code of 1 is written as zero. Restore Y, call $9B97, restore X and return. The display callback was stubbed in the controlled checks."
+   "text": "Save X in the immediate operand at $98D7 and Y in the one at $98D2, call $36E9 to split A into nibbles plus one, clear the first two bytes at $9BF0, and write the tens and units codes to the next two bytes. A tens code of 1 is written as zero. Restore Y, call $9B97, restore X and return."
   },
   {
    "address": 39129,
    "type": "line",
-   "text": "The incoming processor flags select the path: negative enters the first-price balance check at $990B; zero selects a message at $9959; otherwise use the second-price path at $98DD. The controlled cases set these flags directly, so ordinary-play choice mapping remains open."
+   "text": "The flags come from the selection byte $9BF6, loaded at $9AC2 before the only jump here ($9AC5, taken when the layout gate $9BF5 is nonzero): negative ($FF, left) enters the first-price balance check at $990B; zero selects message $9CB7 at $9959; otherwise (1, right) take the second-price path at $98DD."
   },
   {
    "address": 39133,
@@ -5499,7 +5499,7 @@
   {
    "address": 39241,
    "type": "line",
-   "text": "Push A, call $77E0 with the selected message pointer and pull A. Continue at $994E; the message routine was stubbed."
+   "text": "Push A, call $77E0 with the message pointer in X/Y and pull A, then continue at $994E, which adds A to the player’s meter through $77A9. The second-price fallback jumps here from $9908 with A=4 and message $9D25; the first-price fallback falls in from $9943 with A=8 and message $9D40."
   },
   {
    "address": 39246,
@@ -5509,12 +5509,12 @@
   {
    "address": 39257,
    "type": "line",
-   "text": "Load the message pointer encoded here and jump to $9B36. This branch was reached by forcing the incoming zero flag."
+   "text": "Load X/Y with message pointer $9CB7 and jump to the message call at $9B36. $98DB branches here when the selection byte read at $9AC2 is zero."
   },
   {
    "address": 39264,
    "type": "line",
-   "text": "Reload stage index, decrement $4753,X, load the message pointer encoded here and jump to $9B36. Its ordinary caller was not exercised by the choice tests."
+   "text": "Reload stage index, decrement $4753,X, load message pointer $9D01 in X/Y and jump to the message call at $9B36. The only jump here is from the timeout path at $9A6E, taken when the layout gate $9BF5 is nonzero."
   },
   {
    "address": 39276,
@@ -5524,7 +5524,7 @@
   {
    "address": 39293,
    "type": "line",
-   "text": "Read $476B,X. If nonzero, pass it and $4771,X separately through the conditional-item resolver at $9B45; store the returned values at $9BFB/$9BFC, then jump to $99BA. Four forced VICE inputs per load checked this and the implicit path with the real resolver."
+   "text": "Read $476B,X. If nonzero, pass it and $4771,X separately through the conditional-item resolver at $9B45; store the returned values at $9BFB/$9BFC, then jump to $99BA. If zero, branch to the implicit pair at $9996."
   },
   {
    "address": 39318,
@@ -5534,7 +5534,7 @@
   {
    "address": 39338,
    "type": "line",
-   "text": "Read the patched absolute address, clear carry and add $9BFD,Y. Store the result at $9BFB, then store that result plus one modulo 256 at $9BFC. Continue at $99BA; the later drawing callbacks were not exercised."
+   "text": "Read the absolute address patched by $99A0 and $99A7, $4DD5 plus stage field $4771,X plus the selected player index; clear carry and add $9BFD,Y, where Y is that stage field. Store the result at $9BFB, then store that result plus one modulo 256 at $9BFC. Continue at $99BA."
   },
   {
    "address": 39339,
@@ -5554,7 +5554,7 @@
   {
    "address": 39373,
    "type": "line",
-   "text": "Call the patched target with A=$E4. Then read the first item byte at $9BFB, multiply it by eight modulo 256 and patch a second JSR from the same pointer table. Controlled checks replaced both selected targets with logging stubs; actual drawing effects remain separate."
+   "text": "Call the patched target with A=$E4. Then read the first item byte at $9BFB, multiply it by eight modulo 256 and patch the JSR operand at $99E8/$99E9 from the same pointer table."
   },
   {
    "address": 39381,
@@ -5564,7 +5564,7 @@
   {
    "address": 39397,
    "type": "line",
-   "text": "Call the second patched target with A=$D0, then set the temporary row counter at $9F4B to 3 and begin filling colour RAM. The target was replaced with a logging stub in the controlled checks."
+   "text": "Call the second patched target with A=$D0, then set the temporary row counter at $9F4B to 3 and begin filling colour RAM."
   },
   {
    "address": 39409,
@@ -5579,12 +5579,12 @@
   {
    "address": 39433,
    "type": "line",
-   "text": "Store $46 plus one modulo 256 at $9BAB. Pass the first selected item at $9BFB to $9BB2, then call $9B97 with Y=$73. Repeat for the second item at $9BFC with Y=$87. The format and display callbacks were stubbed in the controlled tests."
+   "text": "Store $46 plus one modulo 256 at $9BAB. Pass the first selected item at $9BFB to $9BB2, then call $9B97 with Y=$73. Repeat for the second item at $9BFC with Y=$87."
   },
   {
    "address": 39465,
    "type": "line",
-   "text": "Call $77E0 with the message pointer selected by the preceding path, then fall through to the mode and countdown initializer at $9A2C. The ordinary label path loads $9C02; earlier branches can supply other pointers. The message callback was stubbed in the controlled tests."
+   "text": "Call $77E0 with the message pointer selected by the preceding path, then fall through to the mode and countdown initializer at $9A2C. The item-pair path loads $9C02; the price path jumps here from $98A5 or $98AC with $9C90 or $9C79."
   },
   {
    "address": 39468,
