@@ -19135,12 +19135,12 @@
   {
    "address": 4253,
    "type": "line",
-   "text": "Subtract 7 from the patched sum at $108E and patch the result into the immediate subtraction at $10A8. Subtract that byte from player X at $47/$48, including the borrow from the first subtraction when the sum is below 7. If the high byte is zero and the low byte is below $1C, clamp the low byte to $1C. Set $4D6A to 7 and return."
+   "text": "Subtract 7 from the patched sum at $108E and patch the result into the immediate subtraction at $10A8. Subtract that byte from player X at $47/$48, with the carry the first subtraction leaves set: $1082 is the only writer of $108E and stores only sums of 8 or more, so the result is 1 or more and nothing borrows. If the high byte is zero and the low byte is below $1C, clamp the low byte to $1C. Set $4D6A to 7 and return."
   },
   {
    "address": 4265,
    "type": "line",
-   "text": "Immediate operand of the SBC at $10A8, patched by $10A3 with ($108E - 7) modulo 256. The carry from that earlier subtraction is still live: if $108E was below 7, the player X subtraction also borrows one. The result at $47/$48 is clamped to $001C when its high byte is zero and its low byte is below $1C."
+   "text": "Immediate operand of the SBC at $10A8, patched by $10A3 with ($108E - 7) modulo 256. The carry from that earlier subtraction is still live, and always set: $1082, the only writer of $108E, stores only sums of 8 or more (the CMP #$08 at $107A), so the player X subtraction never borrows. The result at $47/$48 is clamped to $001C when its high byte is zero and its low byte is below $1C."
   },
   {
    "address": 4292,
