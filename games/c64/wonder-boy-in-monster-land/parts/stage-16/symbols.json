@@ -1948,13 +1948,13 @@
   },
   {
    "address": 62272,
-   "name": "matching_sprite_shape_cd",
+   "name": "sprite_shape_cd",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 62336,
-   "name": "matching_sprite_shape_ce",
+   "name": "sprite_shape_ce",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2410,32 +2410,32 @@
   {
    "address": 36592,
    "type": "line",
-   "text": "After calling $792C, load Y from $1AB1,X, read the split tables at $8F05/$8F0C and patch the low and high operands of the jump at $8F02. The state index is not locally bounded."
+   "text": "Handler for entity types $06 and $14: the vectors at $7EDF/$7F0F point here for both. Call $792C, then read state $1AB1,X into Y, patch the jump at $8F02 from the split tables at $8F05/$8F0C, and jump. The type's own code stores only 0 to 6 in that state, one for each table entry: 1 at $8F38, 2 at $8F76, 3 at $8F9C, 4 at $9008, 0 at $904A, and 5 or 6 at $90D5; $447A clears it to 0 when a slot is freed or set up."
   },
   {
    "address": 36610,
    "type": "line",
-   "text": "Jump through the absolute operand patched at $8EF9 and $8EFF. The entry snapshot contains the placeholder $FF00; a controlled VICE stop observed $9023 after patching."
+   "text": "Jump through the absolute operand that STA $8F03 at $8EF9 and STA $8F04 at $8EFF patch from the split tables at $8F05/$8F0C, indexed by state $1AB1,X. The load holds the placeholder $FF00 there."
   },
   {
    "address": 36613,
    "type": "line",
-   "text": "Seven captured low bytes paired with the high bytes at $8F0C. The pairs target $8F13, $8F4B, $8F7C, $8FAA, $9023, $904E and $907E. The state index read at $8EF3 is not locally bounded."
+   "text": "Seven low bytes paired with the high bytes at $8F0C. The pairs target $8F13, $8F4B, $8F7C, $8FAA, $9023, $904E and $907E, the handlers for states 0 to 6. The dispatcher at $8EF0 reads them at $8EF6 with Y = state $1AB1,X, which the type's own code keeps between 0 and 6."
   },
   {
    "address": 36620,
    "type": "line",
-   "text": "Seven captured high bytes paired with the low bytes at $8F05. The pairs target $8F13, $8F4B, $8F7C, $8FAA, $9023, $904E and $907E. The state index read at $8EF3 is not locally bounded."
+   "text": "Seven high bytes paired with the low bytes at $8F05. The pairs target $8F13, $8F4B, $8F7C, $8FAA, $9023, $904E and $907E, the handlers for states 0 to 6. The dispatcher at $8EF0 reads them at $8EFC with Y = state $1AB1,X, which the type's own code keeps between 0 and 6."
   },
   {
    "address": 36627,
    "type": "line",
-   "text": "State 0 copies $1990,X and $197F,X to $1B06,X and $1B17,X, calls $71DB, and uses its returned X as a patched comparison threshold for $6F3C. It stores $00 or $08 at $1AD3,X according to that comparison, sets $1AB1,X to 1, stores the threshold minus 6 with a floor of zero at $1AE4,X, and jumps to $909C. The compare operand at $8F2A is patched at runtime. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+   "text": "State 0 copies $1990,X and $197F,X to $1B06,X and $1B17,X, calls $71DB, and uses its returned X as a patched comparison threshold for $6F3C. It stores $00 or $08 at $1AD3,X according to that comparison, sets $1AB1,X to 1, stores the threshold minus 6 with a floor of zero at $1AE4,X, and jumps to $909C. The compare operand at $8F2A is patched at runtime. The dispatcher at $8EF0 (the vector for types $06 and $14) jumps here when state $1AB1,X is 0, the value state 4 stores at $904A and $447A leaves when the slot is set up."
   },
   {
    "address": 36649,
    "type": "line",
-   "text": "Compare the value loaded from $6F3C with an immediate byte patched by STX $8F2A at $8F22 after $71DB returns. The entry snapshot holds $FF; the patched value depends on the caller of $71DB. The branch at $8F2B uses the resulting carry."
+   "text": "Compare the value loaded from $6F3C with an immediate byte patched by STX $8F2A at $8F22 after $71DB returns: the entity’s tile column. The load holds $FF there. The branch at $8F2B uses the resulting carry."
   },
   {
    "address": 36651,
@@ -2445,42 +2445,42 @@
   {
    "address": 36683,
    "type": "line",
-   "text": "State 1 returns immediately when $1A29,X is zero. Otherwise it checks that $6F3C is greater than $1AE4,X and no greater than that byte plus $0C, then subtracts $1A and the selected display-slot Y from $49. When those checks pass, it stores the resulting difference shifted right three bits at $1AE4,X and sets $1AB1,X to 2. The arithmetic is eight-bit and can wrap; the non-return paths jump to $909C. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+   "text": "State 1 returns immediately when $1A29,X is zero. Otherwise it checks that $6F3C is greater than $1AE4,X and no greater than that byte plus $0C, then subtracts $1A and the selected display-slot Y from $49. When those checks pass, it stores the resulting difference shifted right three bits at $1AE4,X and sets $1AB1,X to 2. The arithmetic is eight-bit and can wrap; the non-return paths jump to $909C. The dispatcher at $8EF0 (the vector for types $06 and $14) jumps here when state $1AB1,X is 1, which state 0 stores at $8F38."
   },
   {
    "address": 36732,
    "type": "line",
-   "text": "State 2 calls $909C and decrements $1AE4,X. A negative result sets $1AB1,X to 3, $1AF5,X to 1 and $1AE4,X to 7. Otherwise it calls $4368 with A=$08, then calls $43A2 when $1AD3,X is zero or $43F0 when it is nonzero. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+   "text": "State 2 calls $909C and decrements $1AE4,X. A negative result sets $1AB1,X to 3, $1AF5,X to 1 and $1AE4,X to 7. Otherwise it calls $4368 with A=$08, then calls $43A2 when $1AD3,X is zero or $43F0 when it is nonzero. The dispatcher at $8EF0 (the vector for types $06 and $14) jumps here when state $1AB1,X is 2, which state 1 stores at $8F76."
   },
   {
    "address": 36778,
    "type": "line",
-   "text": "State 3 calls $909C and $4368, decrements $1AE4,X when nonzero, and increments $1AF5,X unless it equals 5. It calls $43A2 or $43F0 according to $1AD3,X, then compares a shifted display-slot position with $4DAE. On the qualifying side of that comparison, unless $1AB1,X already equals 4, it sets that state to 4, writes $52 or $5E to $1B28,X and toggles bit $08 in $1AD3,X. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+   "text": "State 3 calls $909C and $4368, decrements $1AE4,X when nonzero, and increments $1AF5,X unless it equals 5. It calls $43A2 or $43F0 according to $1AD3,X, then compares a shifted display-slot position with $4DAE. On the qualifying side of that comparison, unless $1AB1,X already equals 4, it sets that state to 4, writes $52 or $5E to $1B28,X and toggles bit $08 in $1AD3,X. The dispatcher at $8EF0 (the vector for types $06 and $14) jumps here when state $1AB1,X is 3, which state 2 stores at $8F9C."
   },
   {
    "address": 36899,
    "type": "line",
-   "text": "State 4 calls $909C and $35C1 with $1B28,X, then compares the 16-bit value $197F/$1990,X with the saved $1B17/$1B06,X using subtraction. If the subtraction borrows, it restores the saved two bytes and sets $1AB1,X to zero; otherwise it returns without that restoration. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+   "text": "State 4 calls $909C and $35C1 with $1B28,X, then compares the 16-bit value $197F/$1990,X with the saved $1B17/$1B06,X using subtraction. If the subtraction borrows, it restores the saved two bytes and sets $1AB1,X to zero; otherwise it returns without that restoration. The dispatcher at $8EF0 (the vector for types $06 and $14) jumps here when state $1AB1,X is 4, which the turn at $9008 stores."
   },
   {
    "address": 36942,
    "type": "line",
-   "text": "State 5 checks $1A8F,X. When nonzero, it sets $19F6,X to $0F and $19C3,X to $19E5,X plus 6, then jumps to $4574 or $45BC with A=$08 according to $1AD3,X. When zero, it copies $1AC2,X to $19F6,X, clears $1AC2,X and jumps to the shared path at $8FFF. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+   "text": "State 5 checks $1A8F,X. When nonzero, it sets $19F6,X to $0F and $19C3,X to $19E5,X plus 6, then jumps to $4574 or $45BC with A=$08 according to $1AD3,X. When zero, it copies $1AC2,X to $19F6,X, clears $1AC2,X and jumps to the shared path at $8FFF. The dispatcher at $8EF0 (the vector for types $06 and $14) jumps here when state $1AB1,X is 5, which the shared update stores at $90D5 with A=5."
   },
   {
    "address": 36990,
    "type": "line",
-   "text": "State 6 sets $19F6,X to $0F and $19C3,X to $19E5,X plus 6, then decrements $1AC2,X. If the result is nonzero it returns; if zero it calls $4B0E with A=$02 and jumps to $5DB9 with A=$01. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+   "text": "State 6 sets $19F6,X to $0F and $19C3,X to $19E5,X plus 6, then decrements $1AC2,X. If the result is nonzero it returns; if zero it calls $4B0E with A=$02 and jumps to $5DB9 with A=$01. The dispatcher at $8EF0 (the vector for types $06 and $14) jumps here when state $1AB1,X is 6, which the shared update stores at $90D5 with A=6."
   },
   {
    "address": 37020,
    "type": "line",
-   "text": "Increment $1AC2,X, reset it to zero when it reaches 8, and use it to select an offset at $90F2. Add that offset, $19E5,X and $1AD3,X with eight-bit wrap and store the result in $19C3,X. If $1A29,X is zero, return. Otherwise call $732A: on carry set, a positive nonzero $1A6D,X saves $19F6,X to $1AC2,X and selects state 5; zero or negative sets $1AC2,X to $0A and selects state 6. Both paths pop two stack bytes before returning, so they can bypass a caller’s continuation. On carry clear, call $7227; if it returns carry set, call $5D7A with A=$02 and jump to $8FFF, otherwise return. The animation index has no local bounds check before the table read."
+   "text": "Increment $1AC2,X, reset it to zero when it reaches 8, and use it to select an offset at $90F2. Add that offset, $19E5,X and $1AD3,X with eight-bit wrap and store the result in $19C3,X. If $1A29,X is zero, return. Otherwise call $732A: on carry set, a positive nonzero $1A6D,X saves $19F6,X to $1AC2,X and selects state 5; zero or negative sets $1AC2,X to $0A and selects state 6. Both paths pop two stack bytes before returning, so they can bypass a caller’s continuation. On carry clear, call $7227; if it returns carry set, call $5D7A with A=$02 and jump to $8FFF, otherwise return. The index is 0 to 7 at the table read: $447A clears $1AC2,X when the slot is set up, this routine wraps 8 to 0, and state 5 clears it again after holding $19F6,X there; state 6, which counts it down from $0A, never calls this routine."
   },
   {
    "address": 37106,
    "type": "line",
-   "text": "Eight captured animation offsets: $00, $00, $02, $02, $04, $04, $02, $02. The shared routine at $909C indexes this table after incrementing $1AC2,X; only the equality with 8 resets the index, so other initial values are not locally bounded."
+   "text": "Eight animation offsets: $00, $00, $02, $02, $04, $04, $02, $02. The shared routine at $909C reads them at $90AC with Y = $1AC2,X after incrementing it and wrapping 8 to 0. The index is always 0 to 7 there: $447A clears it when the slot is set up, and state 5 clears it again after holding $19F6,X there."
   },
   {
    "address": 37114,
