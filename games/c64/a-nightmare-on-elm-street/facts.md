@@ -155,3 +155,18 @@ listing is relied on.
   `shape_walls` (`$3F16`) on the kit's 6502 over each level's files.
 - The tune and effects on the Music tab are the game's own player run on
   the kit's 6502.
+
+## From the instruction guide
+
+- The guide (Monarch Software, printed number 700412) is one booklet for the
+  Commodore 64 and the IBM PC. It credits Phil Gorrow and Shawn Smith
+  (programming), Maurine Starkey and Joseph Hewitt (art), Brett W. Sperry
+  (producer and director), and Paul Mudra (sounds and music).
+- All ten answers at house `$5B7A` (3, 0, 0, 1, 2, 3, 1, 2, 1, 3) pick the
+  answer this guide's pages give, in `COPY`'s order of questions
+  (checked against side 2's `COPY` and the guide's scan).
+- The guide lists 13 of the 26 items; its gun, rifle, ammo, and rope are the
+  game's PISTOL, SHOTGUN, BULLETS, and JUMP ROPE.
+- The guide gives CTRL and S for sound; the house's key table has `$13`
+  (HOME) for it (house `action_keys` `$396A`).
+
