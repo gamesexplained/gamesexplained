@@ -5199,17 +5199,17 @@
   {
    "address": 32479,
    "type": "line",
-   "text": "Load 23: low bytes of 48 entity-handler addresses. Pair each byte with the byte at the same index in $7F0F–$7F3E; $2027–$2036 patches that pair into a call. Captured index:address pairs are $00:$0000, $01:$B076, $02:$B139, $03:$B13A, $04:$B13B, $05:$B13C, $06:$B13D, $07:$B13E, $08:$B13F, $09:$B140, $0A:$B141, $0B:$B142, $0C:$B143, $0D:$B144, $0E:$B145, $0F:$B146, $10:$B147, $11:$B148, $12:$B3D1, $13:$B3D2, $14:$B13D, $15:$B13C, $16:$B076, $17:$B3D3, $18:$B145, $19:$B141, $1A:$B3D4, $1B:$B3D5, $1C:$B140, $1D:$B3D6, $1E:$B3D7, $1F:$B3D8, $20:$B3D9, $21:$B3D1, $22:$B3DA, $23:$B3DC, $24:$B3DB, $25:$B3DD, $26:$B3DE, $27:$3D51, $28:$3DB9, $29:$3DFF, $2A:$B3D5, $2B:$72E6, $2C:$B4A1, $2D:$B4A2, $2E:$B4A2, $2F:$B4A2. The caller does not bound the index here."
+   "text": "Load 23: low bytes of the handler addresses for entity types $00–$2F. Pair each byte with the byte at the same index in $7F0F–$7F3E: $2027 reads this byte with Y = the entity's type from $1919,X and $202A stores it in the low byte of the JSR at $2036, which runs with A = $1A29,X. Only positive types reach the table: $1FE1 skips an empty slot (type 0) and $2024 sends a negative type (a pickup) to $203C, so entry $00 is never called. The type:handler pairs are $00:$0000, $01:$B076, $02:$B139, $03:$B13A, $04:$B13B, $05:$B13C, $06:$B13D, $07:$B13E, $08:$B13F, $09:$B140, $0A:$B141, $0B:$B142, $0C:$B143, $0D:$B144, $0E:$B145, $0F:$B146, $10:$B147, $11:$B148, $12:$B3D1, $13:$B3D2, $14:$B13D, $15:$B13C, $16:$B076, $17:$B3D3, $18:$B145, $19:$B141, $1A:$B3D4, $1B:$B3D5, $1C:$B140, $1D:$B3D6, $1E:$B3D7, $1F:$B3D8, $20:$B3D9, $21:$B3D1, $22:$B3DA, $23:$B3DC, $24:$B3DB, $25:$B3DD, $26:$B3DE, $27:$3D51, $28:$3DB9, $29:$3DFF, $2A:$B3D5, $2B:$72E6, $2C:$B4A1, $2D:$B4A2, $2E:$B4A2, $2F:$B4A2."
   },
   {
    "address": 32527,
    "type": "line",
-   "text": "Load 23: high bytes paired by index with $7EDF–$7F0E. The 48 pairs name 38 distinct addresses; $202D patches the selected high byte into the call at $2036. This table alone does not establish which indices occur in play."
+   "text": "Load 23: high bytes of the handler addresses for entity types $00–$2F, paired by index with $7EDF–$7F0E. The 48 pairs name 38 distinct addresses, $0000 among them for type 0. $202D reads the byte with Y = the entity's type from $1919,X and $2030 stores it in the high byte of the JSR at $2036. Only positive types reach the table: $1FE1 skips an empty slot (type 0) and $2024 sends a negative type (a pickup) to $203C."
   },
   {
    "address": 32575,
    "type": "line",
-   "text": "Load 23: little-endian update target $94E9, dispatched by the resident indirect jump at $0450. The target begins inside the eight-page character-copy source at $8D01; those bytes have both code and graphics uses."
+   "text": "Load 23: little-endian update target $94E9. The resident indirect jump at $0450, the last step of a main-loop pass, takes it while the game-exit flag $0840 is zero, the selected player's meter $4DCD,X is nonzero and the status $5284 that $7B84 returns is nonzero. The eight-page character copy from $7F41, which starts at $8D01, also takes the routine's bytes from $D7E8 on, as characters $FD–$FF; none of the load's four metatile corner tables names them, so the map never draws them."
   },
   {
    "address": 32577,
@@ -5219,7 +5219,7 @@
   {
    "address": 32579,
    "type": "line",
-   "text": "Load 23: values $00, $08, $06. $6C62–$6C70 copies them to $529C, $529D and $6F respectively. Later code may update those bytes."
+   "text": "Load 23: values $00, $08, $06. $6C62–$6C70 copies them to $529C and $529D, the shadows of the shared multicolour registers $D022 and $D023, and to $6F, which the split interrupt writes to the background register $D021 at $133F. $33C1–$33CA copies the first two to $529C and $529D again when $3384 restores the display after a stage-object interaction. Other code writes those shadows too: $7165–$7173 from the visual-resource tables, and the down action at $0841–$08ED."
   },
   {
    "address": 32582,
@@ -5229,17 +5229,17 @@
   {
    "address": 32583,
    "type": "line",
-   "text": "Load 23: captured player X-low, X-high and Y bytes are $2B, $00, $A2. $6C31–$6C3E copies them to $47–$49."
+   "text": "Load 23: the player's starting X low, X high and Y bytes, $2B, $00 and $A2. $6C31–$6C3E copies them to $47–$49. At stage start $03B8–$03C4 also tests the X bytes: when X high is zero and X low is below $AB, $03C6 sets $4D6A to 7, otherwise to 0."
   },
   {
    "address": 32586,
    "type": "line",
-   "text": "Row stride in bytes: the scroll code at $2D35 and $2D62 adds this value to the map source pointer."
+   "text": "Load 23: the map's row stride in bytes, $69. The scroll routines add it to the map source pointer at $2D35 and $2D62 (scrolling right) and $2E2A and $2E57 (left), and $4738 uses it as the offset of the lower pair when $471B writes a stage record's two-by-two block of metatiles."
   },
   {
    "address": 32587,
    "type": "line",
-   "text": "The rightward-scroll check at $0EF7–$0F02 compares the next map-column position with this value."
+   "text": "Load 23: the map's width in metatiles, $42. The rightward-scroll check at $0EF7–$0F02 compares the metatile column just past the view's right edge with it and skips the scroll when that column is not smaller, and the entity rightward move at $4593 undoes a move whose next column equals it."
   },
   {
    "address": 32588,
@@ -5249,7 +5249,7 @@
   {
    "address": 32589,
    "type": "line",
-   "text": "Load 23: captured view-origin bytes are $00, $0C. $6D8B–$6DA0 copies them to the left and top view bounds and computes right and bottom by adding $25 and $12 modulo 256. The bytes can be changed by $33F7–$3408."
+   "text": "Load 23: the view origin, column $00 and row $0C in characters. The screen builder $6D17 halves them at $6D26 and $6D2B to find the first metatile to draw; $6D8B–$6DA0 copies them to the left and top view bounds and computes right and bottom by adding $25 and $12 modulo 256; $6DA3–$6DBE scrolls once more down or right for an odd row or column; and $6DC1–$6DD6 stores the final bounds, adding $26 and $13. $33EC–$3408 saves both bytes, puts the current view's left and top ($569B, $569D) there for $6D17 to redraw the screen, and restores them."
   },
   {
    "address": 32591,
@@ -5259,7 +5259,7 @@
   {
    "address": 32593,
    "type": "line",
-   "text": "The initial entity-slot limit is 4. The initializer at $186D uses this value while loading records; later records can be selected by the slot-reuse path at $3632."
+   "text": "The initial entity-slot limit is 4. $186D copies it to $4DBA, which bounds the slots that entity records fill: the initializer at $1863 loads records into slots 1 to 4 ($18CB). The load has 6 entity records, so the initializer stops at the limit with records 5–6 left; each pass, the slot scan at $3622 checks slots 1 to 4 ($3629), and $3632 gives an empty slot the next record (counter $7C) or, once the zero byte after record 6 is reached, reloads the slot's own record at $366A."
   },
   {
    "address": 32594,
@@ -5269,7 +5269,7 @@
   {
    "address": 32596,
    "type": "line",
-   "text": "Load 23: 2 six-byte records for $7979. That loader does not skip its loop when this count is zero."
+   "text": "Load 23: 2 six-byte map-trigger records for $7979, which copies them into the trigger arrays at stage start, stopping when X reaches this count ($79B0). The dispatcher at $48BF reads the count again on every pass of the main loop and checks the records from the last to the first. Every load's count is at least 1; $7979 does not skip its loop for a zero count."
   },
   {
    "address": 32597,
@@ -5279,12 +5279,12 @@
   {
    "address": 32599,
    "type": "line",
-   "text": "Load 23: 3 16-byte records for $4655. A zero count makes that routine return before dereferencing $7F55."
+   "text": "Load 23: 3 sixteen-byte stage-object records for $4655, which copies them at stage start and stops after record 3 ($46CD). $478F reads the count again at $479C on each pass in which its tests pass, to scan the records for one at the player's tile. A zero count would make both return at once ($465A, $479F)."
   },
   {
    "address": 32600,
    "type": "line",
-   "text": "Load 23: three little-endian sound stream pointers: $AE4A, $AE52, $AE5A. The sequence at $2256–$2277 copies them into the three voice-stream operands."
+   "text": "Load 23: the addresses of the three voices' lists of pattern addresses, $AE4A, $AE52 and $AE5A. When sound request 1 starts, $2256–$2277 copies them to offsets 2 and 3 of the voice records at $2225, $222C and $2233 ($2227/$2228, $222E/$222F and $2235/$2236), which the list reader at $22DF reads."
   },
   {
    "address": 32606,
@@ -5299,12 +5299,12 @@
   {
    "address": 32621,
    "type": "line",
-   "text": "Load 23: captured replacement bytes $FF, $FF, $FF, $FF, $90, $91, $92, $93. If a stage record requires replacement, $46EC–$4719 copies the first four to $7D–$80 when $7A is zero, or the last four when it is nonzero; $471B then writes a two-by-two map area."
+   "text": "Load 23: replacement metatiles $FF, $FF, $FF, $FF, $90, $91, $92, $93. When a stage-object record's state byte ($4753,X, record byte 3) is negative, $46D6 writes a replacement two-by-two block at the record's column and row instead of the record's own bytes 12–15: $46EC–$4719 copies the first four to $7D–$80 when $7A is zero, or the last four when it is nonzero, and $471B writes them. $4655 calls $46D6 for each record at stage start, and $4806 calls it after an interaction has taken 2 off the state byte."
   },
   {
    "address": 32629,
    "type": "line",
-   "text": "Load 23: captured comparison bytes $80, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF. $60F3 scans the six bytes at $7F77–$7F7C. Other paths compare sampled values against $7F75, $7F76 and $7F7D–$7F80; their behavior depends on player and collision state."
+   "text": "Load 23: comparison metatiles $80, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, for the map values sampled at the player, $61D6 and $61D7. $60F3 scans the six at $7F77–$7F7C for $61D6, and a match can set or clear the movement latch $4DB3; $086F, in the down-action check $0841, scans the same six for $61D7. $613B compares $61D6 with $7F76, a match doubling the hourglass speed; $6150 and $6183 compare it with $7F75 and $7F7D, a match calling the damage routine $5D7A with A=8 when $4DDD and $4DE1 are zero; and $61B6–$61CD store 0 in $61D5 when $61D7 equals $7F7E, $7F7F or $7F80, $61D7 itself otherwise, and $FF when $7F7E is $FF."
   },
   {
    "address": 32641,
@@ -5379,27 +5379,27 @@
   {
    "address": 32975,
    "type": "line",
-   "text": "A 256-byte attribute table indexed by the map's metatile value. The downward movement check at $0C57 tests bits 0–1, and the horizontal movement checks at $0EB8 and $1051 test bit 1 when clipping the player against a tile."
+   "text": "A 256-byte attribute table indexed by the map's metatile value. The player's downward check tests bits 0–1 at $0C57 and, for the next column, at $0C7A; the player's horizontal checks at $0EB8 and $1051 test bit 1 when clipping the player against a tile. For entities, the downward scan at $450C tests bits 0–1 at $4532 and $4542, and the horizontal test at $460C reads four attributes through $4632 (at $464C), keeping bit 1 of the first two and bit 0 of the last two."
   },
   {
    "address": 33231,
    "type": "line",
-   "text": "A 256-byte table of top-left character codes indexed by a metatile value. The resident draw loop at $6D4D writes the selected code to the first cell of a two-by-two screen block."
+   "text": "A 256-byte table of top-left character codes indexed by a metatile value. The full-screen draw loop at $6D4D writes the selected code to the first cell of a two-by-two screen block. The scroll routines $2C8D, $2D82, $2E77 and $2F45 read it through a pointer when they draw a newly exposed column or row: they point ($58) at $2D02 (scrolling right) and $2DF7 (left), for a column of left halves, and at $2EF0 (down) and $2FCB (up), for a row of top halves."
   },
   {
    "address": 33487,
    "type": "line",
-   "text": "A 256-byte table of top-right character codes indexed by a metatile value. The resident draw loop at $6D53 writes the selected code to the cell to the right of the first cell."
+   "text": "A 256-byte table of top-right character codes indexed by a metatile value. The full-screen draw loop at $6D53 writes the selected code to the cell to the right of the first cell. The scroll routines $2C8D, $2D82, $2E77 and $2F45 read it through a pointer when they draw a newly exposed column or row: they point ($58) at $2CF1 (scrolling right) and $2DE6 (left), for a column of right halves, and ($5A) at $2EF0 (down) and $2FCB (up), for a row of top halves."
   },
   {
    "address": 33743,
    "type": "line",
-   "text": "A 256-byte table of bottom-left character codes indexed by a metatile value. The resident draw loop at $6D5A writes the selected code one 40-character screen row below the first cell."
+   "text": "A 256-byte table of bottom-left character codes indexed by a metatile value. The full-screen draw loop at $6D5A writes the selected code to one 40-character screen row below the first cell. The scroll routines $2C8D, $2D82, $2E77 and $2F45 read it through a pointer when they draw a newly exposed column or row: they point ($5A) at $2D02 (scrolling right) and $2DF7 (left), for a column of left halves, and ($58) at $2EDF (down) and $2FBA (up), for a row of bottom halves."
   },
   {
    "address": 33999,
    "type": "line",
-   "text": "A 256-byte table of bottom-right character codes indexed by a metatile value. The resident draw loop at $6D60 writes the selected code one row below and one cell to the right of the first cell."
+   "text": "A 256-byte table of bottom-right character codes indexed by a metatile value. The full-screen draw loop at $6D60 writes the selected code to one row below and one cell to the right of the first cell. The scroll routines $2C8D, $2D82, $2E77 and $2F45 read it through a pointer when they draw a newly exposed column or row: they point ($5A) at $2CF1 (scrolling right) and $2DE6 (left), for a column of right halves, and at $2EDF (down) and $2FBA (up), for a row of bottom halves."
   },
   {
    "address": 34255,
@@ -5604,7 +5604,7 @@
   {
    "address": 38121,
    "type": "line",
-   "text": "Load 23 update entry: load X from $4DBD and write $08 to $4DCB,X. It jumps to $0732 when column $6F3C equals $40; otherwise it jumps to $0200. The entry bytes also belong to the captured character-copy source. The conditions are tested with controlled inputs; this does not establish a natural route to them."
+   "text": "Load 23 update entry: load X from $4DBD and write $08, the round number, to $4DCB,X. It jumps to $0732, which loads the next part, when column $6F3C equals $40; otherwise it jumps to $0200. The eight-page character copy from $7F41, which starts at $8D01, also takes these bytes from $D7E8 on, as characters $FD–$FF; none of the load's four metatile corner tables names them."
   },
   {
    "address": 38142,
@@ -5699,7 +5699,7 @@
   {
    "address": 38426,
    "type": "line",
-   "text": "Load a message pointer from this entry, set A=4 and enter $9661; that path calls $77E0 and restores A before adding to the meter. The controlled tests stubbed the message routine."
+   "text": "Second-price fallback: load X/Y with message $9A3D (“Nice and cold, / is'nt it?”, control byte $10, so the panel shows it for 16 updates), set A=4 and jump to $9661, which calls $77E0, pulls A and adds 4 to the selected player's life meter through $77A9. $9602 branches here when the callback high byte $4771,X (record byte 5) is zero, after $78D1 has taken the second price, record byte 9, from the gold; the high byte is cleared once that record's callback has run. In load 23 stage-object record 2 at $953D names the price set-up $955E as its callback."
   },
   {
    "address": 38435,
@@ -5714,7 +5714,7 @@
   {
    "address": 38491,
    "type": "line",
-   "text": "Load a message pointer from this entry, set A=8 and enter $9661; that path calls $77E0 and restores A before adding to the meter. The controlled tests stubbed the message routine."
+   "text": "First-price fallback: load X/Y with message $9A58 (“How do you like / the cocktail?”, control byte $10, so the panel shows it for 16 updates), set A=8 and fall into $9661, which calls $77E0, pulls A and adds 8 to the selected player's life meter through $77A9. $9643 branches here when the callback high byte $477D,X (record byte 7) is zero, after $78D1 has taken the first price, record byte 8, from the gold; the high byte is cleared once that record's callback has run. In load 23 stage-object record 2 at $953D names the price set-up $955E as its callback."
   },
   {
    "address": 38497,
@@ -5749,7 +5749,7 @@
   {
    "address": 38574,
    "type": "line",
-   "text": "Use $4771,X as Y. Clear carry, add selected-player index $4DBD to A, then add $D5 with the carry from that first addition. Patch this as the low byte of an absolute read; load $4D and add the carry from the second addition to form its high byte. Index values and carry behavior are not locally bounded."
+   "text": "Use $4771,X, byte 5 of the stage-object record selected by $7B, as Y. Clear carry, add the selected player $4DBD (0 or 1) and then $D5, and store the sum as the low byte of the LDA at $96C2; store $4D plus the carry as its high byte. Load 23's records on this path, record 1 at $952D and record 3 at $954D, have 2 and 4 in byte 5, so neither addition carries and the LDA reads the selected player's byte of $4DD7 or $4DD9."
   },
   {
    "address": 38594,
@@ -5759,7 +5759,7 @@
   {
    "address": 38610,
    "type": "line",
-   "text": "Load the second selected item byte at $9914, multiply it by eight modulo 256 and read a target pointer from the table at $9C66. Patch the JSR operand at $96E8/$96E9. The item index is not locally bounded."
+   "text": "Load the second item's number from $9914, multiply it by eight modulo 256 and read the picture-routine address at offsets 2 and 3 of its row in the 24-row item table at $9C64. Patch the JSR operand at $96E8/$96E9. Load 23's shop records give second items 7–12 and 14–18 here, all rows of the table: record 1 at $952D gives the selected player's $4DD7 byte (0–4) plus 13 and that plus one; record 3 at $954D gives the selected player's $4DD9 byte (0–5) plus 6 and that plus one."
   },
   {
    "address": 38613,
@@ -5884,7 +5884,7 @@
   {
    "address": 39069,
    "type": "line",
-   "text": "Multiply A by 8 using three eight-bit shifts, clear carry, add 6 and use the eight-bit result as X. Read the high byte from $9C65,X into Y and the low byte from $9C64,X into X, then jump to $77E0. Inputs 0–23 select the item-message pointers; the arithmetic aliases inputs modulo 32 and there is no local bound check. Entry $77E0 loads A with 0, so the message routine uses this X/Y pointer directly."
+   "text": "Multiply A, an item's number, by 8 using three eight-bit shifts, clear carry, add 6 and use the eight-bit result as X. Read the high byte from $9C65,X into Y and the low byte from $9C64,X into X, the message pointer at offsets 6 and 7 of the item's row in the 24-row item table at $9C64, then jump to $77E0. Entry $77E0 loads A=0, so the message routine uses X/Y as a direct pointer. The selection paths call this routine at $97AC with the first item's number from $9913 and at $97CC with the second's from $9914. Load 23's shop records give items 6–18 here, all rows of the table: record 1 at $952D gives the selected player's $4DD7 byte (0–4) plus 13 and that plus one; record 3 at $954D gives the selected player's $4DD9 byte (0–5) plus 6 and that plus one."
   },
   {
    "address": 39087,
@@ -5894,7 +5894,7 @@
   {
    "address": 39105,
    "type": "line",
-   "text": "Load 23: write A through this absolute-indexed store, whose high operand can be patched by surrounding layout code, then write colour 1 to $D900,Y and return. Colour RAM requires I/O visible."
+   "text": "Load 23: store A at offset Y of the page after $46, through STA $FF00,Y. $9567 and $9724 each set its high byte $98C3 to $46 plus one, $C1 or $C5, since $46 holds the screen page $C0 or $C4; the load holds $FF there. Then write colour 1 to $D900,Y, the matching colour RAM, and return. Called from $98B9. Colour RAM requires I/O visible."
   },
   {
    "address": 39114,
@@ -7484,7 +7484,7 @@
   {
    "address": 46302,
    "type": "line",
-   "text": "A zero first byte ends this entity-record sequence. The initializer at $18C7 and the slot-reuse path at $3641 test this byte before taking another record."
+   "text": "A zero first byte ends this load's 6 entity records. The slot-reuse path at $3641 tests it before taking another record and, finding zero, reloads the slot's own record at $366A. The initializer stops at the slot limit 4 ($18CB) after record 4, so its test at $18C7 does not reach this byte."
   },
   {
    "address": 60224,
