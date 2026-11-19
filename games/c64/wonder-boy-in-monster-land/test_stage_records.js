@@ -14,7 +14,7 @@ for(let n=1;n<=31;n++){
  function checkRows(rows,start,size,prefix){for(let i=0;i<rows.length;i++){
   const a=start+i*size,b=symbols.blocks.find(b=>b.start===a),label=symbols.symbols.find(s=>s.address===a),c=symbols.comments.find(c=>c.address===a&&c.type==='line');
   assert(b&&b.type==='Byte'&&b.end===a+size-1,`load ${n}: block`);assert(label&&label.name===`${prefix}_${String(i+1).padStart(2,'0')}`);
-  const bytes=rows[i].map(v=>`$${v.toString(16).toUpperCase().padStart(2,'0')}`).join(', ');assert(c&&c.text.includes(`initial bytes ${bytes}`),`load ${n}: field description`);
+  const bytes=rows[i].map(v=>`$${v.toString(16).toUpperCase().padStart(2,'0')}`).join(', ');assert(c&&(c.text.includes(`initial bytes ${bytes}`)||c.text.includes(`: bytes ${bytes}.`)),`load ${n}: field description`);
   if(size===6){const addr=rows[i][4]|rows[i][5]<<8;assert(c.text.includes(`callback address is $${addr.toString(16).toUpperCase().padStart(4,'0')}`));}
  }}
  checkRows(rows6,ptr6,6,'load_trigger_record');checkRows(rows16,ptr16,16,'load_stage_object_record');

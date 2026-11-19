@@ -2,7 +2,7 @@
 const assert=require('assert'),fs=require('fs'),path=require('path');
 const dir=path.join(__dirname,'parts/resident');const symbols=JSON.parse(fs.readFileSync(path.join(dir,'symbols.json'))), listing=JSON.parse(fs.readFileSync(path.join(dir,'listing.json'))), mem=new Uint8Array(65536);
 for(const r of listing.records)if(r.b)mem.set(r.b,r.a);
-const patterns=symbols.symbols.filter(x=>x.name.startsWith('captured_sound_pattern_')).sort((a,b)=>a.address-b.address);assert.equal(patterns.length,25);
+const patterns=symbols.symbols.filter(x=>/^sound_pattern_\d+$/.test(x.name)).sort((a,b)=>a.address-b.address);assert.equal(patterns.length,25);
 const ranges=[[0x23f5,0x2401],[0x24d1,0x24fd],[0x25c0,0x2612]];
 for(let i=0;i<patterns.length;i++){
  const a=patterns[i].address,end=i+1<patterns.length?patterns[i+1].address:0x2934;

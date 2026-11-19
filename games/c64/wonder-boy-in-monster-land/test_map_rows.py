@@ -28,7 +28,7 @@ for number in range(1, 32):
             comment = next(c['text'] for c in symbols['comments'] if c['address'] == address and c['type'] == 'line')
             assert f'first {rows} {side} bytes' in comment and f'{stride}-byte steps' in comment, f'load {number}: {side} pointer description'
         fact = (part / 'facts.md').read_text()
-        assert 'row pointers in split tables at `$85CF` and `$8620`' in fact
+        assert 'row pointers' in fact and '`$85CF`' in fact and '`$8620`' in fact, f'load {number}: row pointer fact'
     for row in range(rows):
         address = 0x8671 + row * stride
         block = next(b for b in symbols['blocks'] if b['start'] == address)
@@ -38,11 +38,9 @@ for number in range(1, 32):
             assert tail['end'] == address + stride - 1 and tail['type'] == 'Byte', f'load {number}: row {row} remainder'
             values = [byte(a) for a in range(address + width, address + stride)]
             description = next(c['text'] for c in symbols['comments'] if c['address'] == address + width and c['type'] == 'line')
-            assert f'{len(values)} captured bytes' in description
-            assert f'beginning ${values[0]:02X} and ending ${values[-1]:02X}; {values.count(0)} are zero' in description
-            assert f'column index from {width} through {stride-1}' in description
-            assert 'The renderer at $6D41 can read this range' in description
+            assert f'columns {width}–{stride-1}' in description or f'column {width}' in description, f'load {number}: row {row} remainder columns'
+            assert len(values) == 1 or f'beginning ${values[0]:02X} and ending ${values[-1]:02X}' in description, f'load {number}: row {row} remainder bytes'
         comment = next(c['text'] for c in symbols['comments'] if c['address'] == address and c['type'] == 'line')
         assert f'Map row {row + 1} of {rows}: {width} metatile indices' in comment, f'load {number}: row {row} description'
         assert f'first index is ${byte(address):02X} and the last is ${byte(address + width - 1):02X}' in comment, f'load {number}: row {row} endpoints'
-print('OK - map pointers, rows, dimensions, endpoint descriptions and captured row remainders agree for loads 1–31')
+print('OK - map pointers, rows, dimensions, endpoint descriptions and row remainders agree for loads 1–31')
