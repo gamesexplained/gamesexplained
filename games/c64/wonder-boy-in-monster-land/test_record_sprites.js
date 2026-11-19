@@ -16,7 +16,7 @@ for(const capture of data.loads){
   const render=new CPU(s);render.pc=0x1c7c;render.x=1;render.run({until:0x1b62,maxSteps:1000});
   const i=candidate.display.index;assert.equal(s[0x4c8f+i],candidate.pointer);assert.equal(s[0x4ccf+i],candidate.display.y);assert.equal(s[0x4c2f+i],candidate.display.flags);assert.equal(s[0x4caf+i],candidate.display.colour);
   const a=0xc000+64*candidate.pointer;assert.equal(a,candidate.address);assert.equal(crypto.createHash('sha256').update(m.slice(a,a+63)).digest('hex'),candidate.hash);
-  const block=symbols.blocks.find(b=>b.start===a);assert(block&&block.type==='Byte'&&block.end===a+63);const comment=symbols.comments.find(c=>c.address===a&&c.type==='line');assert(comment&&comment.text.includes('controlled simulation')&&comment.text.includes(`entity record ${candidate.record}`));total++;
+  const block=symbols.blocks.find(b=>b.start===a);assert(block&&block.type==='Byte'&&block.end===a+63);const comment=symbols.comments.find(c=>c.address===a&&c.type==='line');assert(comment&&comment.text.includes(`sprite pointer $${candidate.pointer.toString(16).toUpperCase()}`));total++;
  }
 }
 assert.equal(total,94);

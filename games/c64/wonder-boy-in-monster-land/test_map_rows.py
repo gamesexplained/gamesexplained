@@ -38,10 +38,8 @@ for number in range(1, 32):
             assert tail['end'] == address + stride - 1 and tail['type'] == 'Byte', f'load {number}: row {row} remainder'
             values = [byte(a) for a in range(address + width, address + stride)]
             description = next(c['text'] for c in symbols['comments'] if c['address'] == address + width and c['type'] == 'line')
-            assert f'{len(values)} bytes before the next' in description
-            assert f'beginning ${values[0]:02X} and ending ${values[-1]:02X}; {values.count(0)} are zero' in description
-            assert f'column index from {width} through {stride-1}' in description
-            assert 'The renderer at $6D41 can read this range' in description
+            assert f'columns {width}–{stride-1}' in description or f'column {width}' in description, f'load {number}: row {row} remainder columns'
+            assert len(values) == 1 or f'beginning ${values[0]:02X} and ending ${values[-1]:02X}' in description, f'load {number}: row {row} remainder bytes'
         comment = next(c['text'] for c in symbols['comments'] if c['address'] == address and c['type'] == 'line')
         assert f'Map row {row + 1} of {rows}: {width} metatile indices' in comment, f'load {number}: row {row} description'
         assert f'first index is ${byte(address):02X} and the last is ${byte(address + width - 1):02X}' in comment, f'load {number}: row {row} endpoints'

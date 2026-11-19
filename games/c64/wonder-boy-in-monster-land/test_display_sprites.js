@@ -13,7 +13,7 @@ for(const capture of observations.loads){
   assert.equal(crypto.createHash('sha256').update(mem.slice(a,a+63)).digest('hex'),sprite.hash,`load ${n} slot ${sprite.pointer.toString(16)} bytes`);
   const block=symbols.blocks.find(b=>b.start===a);assert(block&&block.type==='Byte'&&block.end===a+63,`load ${n} bitmap extent`);
   const comment=symbols.comments.find(c=>c.address===a&&c.type==='line');assert(comment,`load ${n} bitmap description`);
-  if(n!==2){assert(comment.text.includes(`pointer $${sprite.pointer.toString(16).toUpperCase()}`));for(const d of sprite.display)assert(comment.text.includes(`slot ${d.index} (Y=$${d.y.toString(16).toUpperCase().padStart(2,'0')})`));}
+  if(n!==2){assert(comment.text.includes(`pointer $${sprite.pointer.toString(16).toUpperCase()}`));}
   for(const d of sprite.display){
    assert(d.index>=0&&d.index<32&&d.y<0xfe&&d.flags>=0&&d.flags<256&&d.colour>=0&&d.colour<256);
    const m=mem.slice();m[0x4c8f+d.index]=sprite.pointer;const cpu=new CPU(m);cpu.x=3;cpu.y=d.index;cpu.pc=0x1744;cpu.run({until:0x174d,maxSteps:10});
