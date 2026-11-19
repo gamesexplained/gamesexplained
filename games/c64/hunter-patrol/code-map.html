@@ -1,0 +1,291 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/hunter-page.css">
+<style>
+  /* The jobs' colours are the Okabe-Ito set, chosen to stay apart for colour-blind readers; every box and band also names its job in words. */
+  :root{--j-cracker:#999999;--j-title:#CC79A7;--j-flow:#E69F00;--j-scenery:#009E73;--j-plane:#56B4E9;--j-enemies:#D55E00;--j-hits:#0072B2;--j-sound:#F0E442;--j-other:#bbbbbb;--edge:#6a6d74;--edge-hi:#1f2024;--data:#9a9890;--empty:#f4f3ef}
+  .cm-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:10px 0 0;font-size:14px;align-items:center}
+  .cm-legend span{display:inline-flex;align-items:center;gap:6px}
+  .cm-sw{width:28px;height:15px;border-radius:3px;border:1.5px solid var(--ink-mute);display:inline-block}
+  .cm-scroll{overflow-x:auto}
+  .cm-strip text,.cm-graph text{font-family:var(--fb)}
+  .cm-strip .mono,.cm-graph .mono{font-family:var(--fm)}
+  .cm-seg{cursor:pointer}
+  .cm-seg:hover,.cm-seg.on{stroke:var(--edge-hi);stroke-width:2}
+  .cm-grid{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:16px;align-items:start}
+  @media (max-width:820px){.cm-grid{grid-template-columns:minmax(0,1fr)}}
+  .cm-graph{display:block;width:100%}
+  .cm-node{cursor:pointer}
+  .cm-node rect.box{stroke-width:1.6}
+  .cm-node:focus{outline:none}
+  .cm-node:focus rect.box,.cm-node.sel rect.box{stroke-width:3.2;stroke:var(--edge-hi)}
+  .cm-node.dim{opacity:.22}
+  .cm-edge{opacity:.28}
+  .cm-edge.hi{opacity:1}
+  .cm-edge.dim{opacity:.05}
+  .cm-edge path{fill:none;stroke:var(--edge);stroke-width:1.3}
+  .cm-edge.jump path{stroke-dasharray:6 4}
+  .cm-edge.falls path{stroke-dasharray:1.5 3.5;stroke-width:2}
+  .cm-edge.hi path{stroke:var(--edge-hi);stroke-width:2.3}
+  #cm-detail{position:sticky;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;font-size:15px}
+  #cm-detail h3{font-family:var(--fm);font-size:16px;margin:0 0 2px;word-break:break-all}
+  #cm-detail .meta{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);margin:0 0 10px}
+  #cm-detail .tag{display:inline-block;font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;border:1.5px solid;margin:0 0 8px}
+  #cm-detail p{font-size:14.5px;margin:0 0 10px}
+  #cm-detail h4{font-size:11.5px;font-family:var(--fm);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:12px 0 4px;font-weight:500}
+  #cm-detail ul{list-style:none;margin:0;padding:0;font-family:var(--fm);font-size:13px}
+  .cm-tip{position:fixed;pointer-events:none;background:var(--chip);color:var(--chip-ink);font-family:var(--fm);font-size:12px;padding:5px 8px;border-radius:5px;z-index:5;max-width:280px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Every subroutine in the program, where it sits in memory and which others it calls, drawn from the annotated listing.</p>
+</header>
+<main class="wrap">
+<section id="memory">
+  <p class="fig">01 · Where it lives</p>
+  <h2 class="t">A game in three slices of memory</h2>
+  <p class="lede">The top bar is the machine's whole 64 KB. The bars below it zoom into the stretches that hold code, one segment for each subroutine or table.</p>
+  <div class="plate"><div class="cm-scroll"><svg id="cm-strip" class="cm-strip" width="100%" role="img" aria-label="The program's place in memory"></svg></div>
+  <div class="cm-legend" id="cm-strip-legend"></div>
+  <p class="cap">Point at a segment to name it, and click a subroutine to find it in the map below. The engine runs from <a href="source.html#0c55"><code>$0C55</code></a> to <a href="source.html#2fb0"><code>$2FB0</code></a>, with the cracker's additions at its start; Rob Hubbard's <a href="music.html">music driver</a> sits on its own at <a href="source.html#a000"><code>$A000</code></a>.</p></div>
+</section>
+
+<section id="calls">
+  <p class="fig">02 · Who calls whom</p>
+  <h2 class="t">The wiring between the subroutines</h2>
+  <p class="lede">Each box is one subroutine, taller when it is longer, in a band for its job. Inside a band, the boxes run from the first reached to the last. Hover over a box to light up its connections, or click it to keep them lit and read what it does.</p>
+  <div class="cm-legend" id="cm-graph-legend"></div>
+  <div class="cm-grid" style="margin-top:14px">
+    <div class="plate" style="padding:8px"><svg id="cm-graph" class="cm-graph" role="img" aria-label="Call graph"></svg></div>
+    <aside id="cm-detail" aria-live="polite"></aside>
+  </div>
+  <p class="cap">The lines come from the program's own <code>JSR</code>, <code>JMP</code> and branch instructions. Calls made through a pointer are not drawn: the raster interrupt <a href="source.html#13ab"><code>game_irq</code></a>, the music's <a href="source.html#ae03"><code>music_irq</code></a>, and the <a href="source.html#2f30">RESTORE restart</a> are reached through vectors, and <a href="source.html#0d14"><code>read_joystick</code></a> through a call the trainer rewrites, so they start bands of their own. The unused tune's player, <a href="discoveries.html#unused-tune"><code>tune2_start</code></a> to <code>tune2_tick</code>, has no callers at all.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<div class="cm-tip" id="cm-tip" hidden></div>
+
+<script src="../../lib/c64.js"></script>
+<script>
+(function () {
+  // Which job each subroutine does: the one hand-made part of the map. Everything else is read
+  // from listing.json: the routines and their extents, the calls, and the tables.
+  const JOBS = {
+    cracker: ['The cracker', 'save_highscores trainer_skip read_joystick'],
+    title: ['Title and highscores', 'init_video reload_video title_screen colour_title colour_title_rows insert_score insert_row enter_name show_score_row'],
+    flow: ['Game flow', 'start_game game_loop main_loop setup_raster_irq game_irq new_game_screen new_game start_level reset_after_life restore_restart init_noise read_inputs set_hits_needed bar_fill_bits'],
+    scenery: ['Ground and hills', 'scroll_ground point_hill_rows next_hill_row scroll_left scroll_right hill_column_right hill_column_left set_fine_scroll point_stripe point_stripe_template move_stripes colour_play draw_distance_bar'],
+    plane: ['The plane and its shots', 'steer_plane move_plane plane_shadow set_plane_pictures point_shot point_shot_template fire_shot move_shots move_shot_records shot_down shot_up place_shot sort_shot free_shots'],
+    enemies: ['Enemies and flak', 'point_ground point_ground_template spawn_ground move_ground free_ground place_ground sort_ground point_aircraft point_aircraft_template spawn_aircraft move_aircraft aircraft_up aircraft_down free_aircraft place_aircraft sort_aircraft point_flak point_flak_template spawn_flak move_flak move_flak_record flak_up flak_down place_flak move_by_scroll move_left move_right'],
+    hits: ['Hits, scores and strafing runs', 'hits_play hits_sky_crash sprite_slot_hi sprite_slot_lo plane_crash add_score resolve_hits strafing_runs start_run place_target hits_strafing run_slot_hi run_slot_lo target_hit show_target_hits run_result'],
+    sound: ['Sound and music', 'start_music start_engine_sound engine_sound shot_sound hit_sound music_init music_play music_start music_irq music_stop music_reset music_silence tune2_start tune2_irq tune2_init tune2_tick'],
+  };
+  const ORDER = Object.keys(JOBS).concat(['other']);
+  const JOBNAME = Object.assign({ other: 'Other' }, Object.fromEntries(Object.entries(JOBS).map(([k, v]) => [k, v[0]])));
+  const jobOf = {}; for (const [k, v] of Object.entries(JOBS)) for (const n of v[1].split(' ')) jobOf[n] = k;
+  const $ = id => document.getElementById(id);
+  const hex = a => '$' + a.toString(16).toUpperCase().padStart(4, '0');
+  const id4 = a => a.toString(16).padStart(4, '0');
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (t, a, p) => { const e = document.createElementNS(NS, t); for (const k in a || {}) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+  const jcol = j => `var(--j-${j})`;
+  const tint = j => `color-mix(in srgb, var(--j-${j}) 28%, #ffffff)`;
+  const tip = $('cm-tip');
+  const showTip = (e, h) => { tip.innerHTML = h; tip.hidden = false; tip.style.left = Math.min(e.clientX + 14, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 16) + 'px'; };
+  const hideTip = () => { tip.hidden = true; };
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const firstSentences = (c, n) => (c || '').split(/(?<=[.!?])\s+/).slice(0, n).join(' ');
+
+  if (typeof C64 === 'undefined') { $('cm-detail').textContent = 'The map needs the site\'s shared scripts: open the page from the built site.'; return; }
+  C64.load('listing.json').then(M => {
+    const L = M.listing, recs = L.records.filter(r => r.b);
+    const code = recs.filter(r => r.t === 'code'), isCode = new Set(code.map(r => r.a));
+    const R = L.index.filter(i => i.k === 'routine' && isCode.has(i.a)).sort((a, b) => a.a - b.a)
+      .map((i, n) => ({ i: n, a: i.a, n: i.n, size: 0, e: i.a, g: jobOf[i.n] || 'other', c: '' }));
+    const starts = R.map(r => r.a);
+    const owner = a => { let lo = 0, hi = starts.length - 1, o = -1; while (lo <= hi) { const m = (lo + hi) >> 1; if (starts[m] <= a) { o = m; lo = m + 1; } else hi = m - 1; } return o; };
+    const last = [];
+    for (const r of code) { const o = owner(r.a); if (o < 0) continue; R[o].size += r.b.length; R[o].e = Math.max(R[o].e, r.a + r.b.length - 1); last[o] = r; }
+    for (const r of L.records) if (r.l && r.c) { const o = R.findIndex(x => x.a === r.a); if (o >= 0) R[o].c = r.c; }
+    // the calls: JSR, a JMP or a branch into another routine, and code that runs on into the next one
+    const E = new Map();
+    for (const r of code) {
+      if (r.oa === undefined || !isCode.has(r.oa)) continue;
+      const o = owner(r.a), t = owner(r.oa); if (o < 0 || t < 0 || o === t) continue;
+      const m = r.m; let k = null;
+      if (m === 'jsr') k = 'call'; else if (m === 'jmp' || (m[0] === 'b' && m !== 'bit' && m !== 'brk')) k = 'jump';
+      if (!k) continue;
+      const key = o + ',' + t; if (!E.has(key) || k === 'call') E.set(key, k);
+    }
+    last.forEach((r, i) => { if (r && !['rts', 'rti', 'jmp'].includes(r.m) && i + 1 < R.length && R[i + 1].a === r.a + r.b.length) { const key = i + ',' + (i + 1); if (!E.has(key)) E.set(key, 'falls'); } });
+    const EDGES = [...E].map(([k, kind]) => { const [a, b] = k.split(',').map(Number); return { a, b, k: kind }; });
+    const calls = R.map(() => []), callers = R.map(() => []);
+    EDGES.forEach(e => { calls[e.a].push(e); callers[e.b].push(e); });
+    const tables = L.index.filter(i => i.k === 'table').sort((a, b) => a.a - b.a);
+    const tableAt = a => { for (const t of tables) if (a >= t.a && a < t.a + (t.len || 1)) return t; return null; };
+    const reads = R.map(() => new Set());
+    for (const r of code) { if (r.oa === undefined || r.m === 'jsr' || r.m === 'jmp' || (r.m[0] === 'b' && r.m !== 'bit')) continue; const o = owner(r.a), t = tableAt(r.oa); if (o >= 0 && t) reads[o].add(t.n); }
+
+    /* ---------- patterns ---------- */
+    function defs(svg) {
+      const d = el('defs', {}, svg);
+      const h = el('pattern', { id: 'cm-hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, d);
+      el('rect', { width: 6, height: 6, fill: 'var(--empty)' }, h); el('rect', { width: 2.2, height: 6, fill: 'var(--data)' }, h);
+      const x = el('pattern', { id: 'cm-cross', width: 7, height: 7, patternUnits: 'userSpaceOnUse' }, d);
+      el('rect', { width: 7, height: 7, fill: 'var(--empty)' }, x); el('path', { d: 'M0 3.5H7M3.5 0V7', stroke: 'var(--data)', 'stroke-width': 1.4 }, x);
+      const ar = el('marker', { id: 'cm-arr', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, d);
+      el('path', { d: 'M0 0L10 5L0 10Z', fill: 'var(--edge)' }, ar);
+      const ah = el('marker', { id: 'cm-arrh', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, d);
+      el('path', { d: 'M0 0L10 5L0 10Z', fill: 'var(--edge-hi)' }, ah);
+    }
+
+    /* ---------- the memory strip ---------- */
+    // code stretches: routines closer than 4 KB to the last one belong to the same stretch
+    const clusters = [];
+    R.forEach(r => { const c = clusters[clusters.length - 1]; if (c && r.a - c[1] < 0x1000) c[1] = Math.max(c[1], r.e); else clusters.push([r.a, r.e]); });
+    clusters.forEach(c => { c[0] &= 0xFF00; c[1] = Math.min(0xFFFF, c[1] | 0xFF); });
+    // game.json's regions, and zero page
+    const regions = [[0x0000, 0x00FF, 'tables', 'zero page'], [0x0C00, 0x0CEF, 'code', "the cracker's highscore loader and its file name"], [0x1170, 0x2FA8, 'code', "the game's engine: title, input, scrolling, objects, collisions, sound effects"], [0x4000, 0x4FFF, 'tables', "title and status screens, screen matrix and character set"], [0x5000, 0x7FFF, 'graphics', "sprite shapes"], [0x8000, 0x8FFF, 'tables', "sprite registers, object records, templates and texts"], [0xA000, 0xAE40, 'code', "Rob Hubbard's music driver and its tune data"]];
+    const strip = $('cm-strip'), SEGS = {};
+    function drawStrip() {
+      strip.innerHTML = ''; defs(strip);
+      const W = Math.max(strip.clientWidth || 900, 600), pad = 4, inner = W - pad * 2;
+      const H = 58 + clusters.length * 96; strip.setAttribute('viewBox', `0 0 ${W} ${H}`); strip.setAttribute('height', H);
+      const X = a => pad + a / 65536 * inner, y1 = 18, h1 = 22;
+      el('text', { x: pad, y: 12, 'font-size': 11.5, fill: 'var(--ink-mute)', class: 'mono' }, strip).textContent = '$0000';
+      el('text', { x: W - pad, y: 12, 'font-size': 11.5, fill: 'var(--ink-mute)', 'text-anchor': 'end', class: 'mono' }, strip).textContent = '$FFFF · all 64 KB';
+      el('rect', { x: pad, y: y1, width: inner, height: h1, fill: 'var(--empty)', stroke: 'var(--line)', rx: 3 }, strip);
+      for (const [a, b, k, what] of regions) {
+        const x = X(a), w = Math.max(2, X(b + 1) - x), fill = k === 'code' ? 'var(--ink)' : k === 'graphics' ? 'url(#cm-cross)' : 'url(#cm-hatch)';
+        const r = el('rect', { x, y: y1, width: w, height: h1, fill, stroke: 'var(--ink-mute)', 'stroke-width': .7 }, strip);
+        r.addEventListener('mousemove', e => showTip(e, `${hex(a)}–${hex(b)}<br>${esc(what)}`)); r.addEventListener('mouseleave', hideTip);
+      }
+      clusters.forEach(([z0, z1], ci) => {
+        const y2 = 66 + ci * 96, h2 = 44, Z = a => pad + (a - z0) / (z1 + 1 - z0) * inner;
+        el('path', { d: `M${X(z0)} ${y1 + h1} L${pad} ${y2 - 16} M${X(z1 + 1)} ${y1 + h1} L${W - pad} ${y2 - 16}`, stroke: 'var(--ink-mute)', 'stroke-dasharray': '3 3', fill: 'none', opacity: .7 }, strip);
+        el('text', { x: W / 2, y: y2 - 5, 'font-size': 12, 'text-anchor': 'middle', fill: 'var(--ink-soft)' }, strip).textContent = `${hex(z0)}–${hex(z1)}, ${((z1 + 1 - z0) / 1024).toFixed(1)} KB`;
+        el('rect', { x: pad, y: y2, width: inner, height: h2, fill: 'var(--empty)' }, strip);
+        let run = null; const runs = [];
+        for (const r of recs) {
+          if (r.a < z0 || r.a > z1) continue;
+          let key; if (r.t === 'code') { const o = owner(r.a); key = 'c' + o; } else { const t = tableAt(r.a); key = 't' + (t ? t.n : ''); }
+          if (run && run.key === key && run.a + run.n >= r.a - 4) run.n = r.a + r.b.length - run.a; else { run = { key, a: r.a, n: r.b.length }; runs.push(run); }
+        }
+        for (const s of runs) {
+          const x = Z(s.a), w = Math.max(1, Z(s.a + s.n) - x); let fill, label, tipx, ri = -1;
+          if (s.key[0] === 'c' && s.key !== 'c-1') { ri = +s.key.slice(1); const r = R[ri]; fill = jcol(r.g); label = r.n; tipx = `<b>${r.n}</b><br>${hex(s.a)} · ${r.size} bytes of code<br>${JOBNAME[r.g]}`; }
+          else { const n = s.key.slice(1) || (s.key === 'c-1' ? 'code outside any named routine' : 'data'); fill = 'url(#cm-hatch)'; label = n; tipx = `<b>${esc(n)}</b><br>${hex(s.a)} · ${s.n} bytes`; }
+          const rr = el('rect', { x, y: y2, width: w, height: h2, fill, stroke: '#ffffff', 'stroke-width': .5, class: 'cm-seg' }, strip);
+          rr.addEventListener('mousemove', e => showTip(e, tipx)); rr.addEventListener('mouseleave', hideTip);
+          if (ri >= 0) { (SEGS[ri] = SEGS[ri] || []).push(rr); rr.addEventListener('click', () => select(ri, true)); }
+          if (ri >= 0 && w > 64) { const t = el('text', { x: x + w / 2, y: y2 + h2 + 13, 'font-size': 10.5, 'text-anchor': 'middle', fill: 'var(--ink-soft)', class: 'mono' }, strip); t.textContent = label.length * 6.4 > w ? label.slice(0, Math.max(3, Math.floor(w / 6.4) - 1)) + '…' : label; }
+        }
+        el('text', { x: pad, y: y2 + h2 + 30, 'font-size': 10.5, fill: 'var(--ink-mute)', class: 'mono' }, strip).textContent = hex(z0);
+        el('text', { x: W - pad, y: y2 + h2 + 30, 'font-size': 10.5, fill: 'var(--ink-mute)', 'text-anchor': 'end', class: 'mono' }, strip).textContent = hex(z1);
+      });
+      if (cur !== null) markStrip(cur);
+    }
+    function markStrip(i) { strip.querySelectorAll('.cm-seg.on').forEach(s => s.classList.remove('on')); (SEGS[i] || []).forEach(s => s.classList.add('on')); }
+    const sw = f => `<svg width="28" height="15" aria-hidden="true"><rect x=".75" y=".75" width="26.5" height="13.5" rx="3" fill="${f}" stroke="var(--ink-mute)" stroke-width="1.5"/></svg>`;
+    $('cm-strip-legend').innerHTML = `<span>${sw('var(--ink)')}code (in the zoomed bars, coloured by job as below)</span><span>${sw('url(#cm-hatch)')}tables and data</span><span>${sw('url(#cm-cross)')}sprite shapes</span>`;
+    // the legend's swatches use the strip's patterns; a hidden copy keeps them defined
+    const hid = el('svg', { width: 0, height: 0, style: 'position:absolute' }, document.body); defs(hid);
+    const used = ORDER.filter(j => R.some(r => r.g === j));
+    $('cm-graph-legend').innerHTML = used.map(j => `<span><i class="cm-sw" style="background:${tint(j)};border-color:${jcol(j)}"></i>${JOBNAME[j]}</span>`).join('') +
+      `<span style="flex-basis:100%;height:0"></span>
+      <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="1.6"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>calls and comes back (JSR)</span>
+      <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="1.6" stroke-dasharray="6 4"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>jumps there for good</span>
+      <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="2" stroke-dasharray="1.5 3.5"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>runs straight on into the next</span>`;
+
+    /* ---------- the call graph: one band per job, boxes wrapping inside it ---------- */
+    const depth = R.map(() => 99), q = [];
+    R.forEach(r => { if (!callers[r.i].length) { depth[r.i] = 0; q.push(r.i); } });
+    while (q.length) { const i = q.shift(); calls[i].forEach(e => { if (depth[e.b] > depth[i] + 1) { depth[e.b] = depth[i] + 1; q.push(e.b); } }); }
+    const svg = $('cm-graph'); let NODES = [], LINES = [], POS = [], GW = 0;
+    function layout() {
+      svg.innerHTML = ''; defs(svg);
+      const W = Math.max(svg.parentElement.clientWidth - 16, 300), BW = 168, GAP = 10, cols = Math.max(1, Math.floor((W + GAP) / (BW + GAP)));
+      const bw = (W - (cols - 1) * GAP) / cols; GW = W;
+      let y = 4; POS = [];
+      const bands = [];
+      for (const j of used) {
+        const list = R.filter(r => r.g === j).sort((a, b) => depth[a.i] - depth[b.i] || a.a - b.a);
+        const top = y; y += 26;
+        for (let k = 0; k < list.length; k += cols) {
+          const row = list.slice(k, k + cols), rh = Math.max(...row.map(r => 34 + Math.round(Math.min(r.size, 400) / 400 * 26)));
+          row.forEach((r, c) => { const h = 34 + Math.round(Math.min(r.size, 400) / 400 * 26); POS[r.i] = { x: c * (bw + GAP), y: y + (rh - h) / 2, w: bw, h }; });
+          y += rh + 10;
+        }
+        bands.push([j, top, y]); y += 12;
+      }
+      svg.setAttribute('viewBox', `0 0 ${W} ${y}`); svg.setAttribute('height', y);
+      for (const [j, top, bot] of bands) {
+        el('rect', { x: 0, y: top, width: W, height: bot - top, rx: 8, fill: tint(j), opacity: .28 }, svg);
+        el('text', { x: 8, y: top + 18, 'font-size': 13, 'font-weight': 700, fill: 'var(--ink-soft)' }, svg).textContent = JOBNAME[j];
+      }
+      const eL = el('g', {}, svg), nL = el('g', {}, svg);
+      LINES = EDGES.map(e => {
+        const A = POS[e.a], B = POS[e.b]; let d;
+        const ax = A.x + A.w / 2, bx = B.x + B.w / 2;
+        if (Math.abs(A.y - B.y) < 4) { const dir = bx > ax ? 1 : -1, x0 = dir > 0 ? A.x + A.w : A.x, x1 = dir > 0 ? B.x : B.x + B.w, yy = A.y + 8; d = `M${x0} ${yy} C${x0 + dir * 20} ${yy - 22} ${x1 - dir * 20} ${yy - 22} ${x1} ${B.y + 8}`; }
+        else if (B.y > A.y) { const y0 = A.y + A.h, y1 = B.y, m = Math.max(24, (y1 - y0) * .45); d = `M${ax} ${y0} C${ax} ${y0 + m} ${bx} ${y1 - m} ${bx} ${y1}`; }
+        else { const y0 = A.y, y1 = B.y + B.h, m = Math.max(24, (y0 - y1) * .45); d = `M${ax} ${y0} C${ax} ${y0 - m} ${bx} ${y1 + m} ${bx} ${y1}`; }
+        const g = el('g', { class: 'cm-edge ' + e.k }, eL), p = el('path', { d, 'marker-end': 'url(#cm-arr)' }, g);
+        return { e, g, p, layer: eL };
+      });
+      NODES = R.map(r => {
+        const P = POS[r.i], g = el('g', { class: 'cm-node', tabindex: 0, role: 'button', 'aria-label': `${r.n}, ${r.size} bytes, ${JOBNAME[r.g]}` }, nL);
+        el('rect', { class: 'box', x: P.x, y: P.y, width: P.w, height: P.h, rx: 6, fill: tint(r.g), stroke: jcol(r.g) }, g);
+        el('text', { x: P.x + 8, y: P.y + 13, 'font-size': 9, 'letter-spacing': '.06em', fill: 'var(--ink-soft)', class: 'mono' }, g).textContent = JOBNAME[r.g].toUpperCase().slice(0, 26);
+        const nm = el('text', { x: P.x + 8, y: P.y + 28, 'font-size': 11, 'font-weight': 500, fill: 'var(--ink)', class: 'mono' }, g); nm.textContent = r.n;
+        if (r.n.length * 6.65 > P.w - 14) nm.textContent = r.n.slice(0, Math.floor((P.w - 14) / 6.65) - 1) + '…';
+        if (P.h >= 48) el('text', { x: P.x + 8, y: P.y + P.h - 7, 'font-size': 10, fill: 'var(--ink-mute)', class: 'mono' }, g).textContent = `${hex(r.a)} · ${r.size} bytes`;
+        g.addEventListener('click', () => select(r.i, false));
+        g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); select(r.i, false); } });
+        g.addEventListener('mouseenter', () => { if (cur === null) focusOn(r.i); });
+        g.addEventListener('mouseleave', () => { if (cur === null) focusOn(null); });
+        return g;
+      });
+      focusOn(cur);
+    }
+    let cur = null;
+    function focusOn(i) {
+      const near = new Set(i === null ? [] : [i, ...calls[i].map(e => e.b), ...callers[i].map(e => e.a)]);
+      NODES.forEach((g, n) => { g.classList.toggle('dim', i !== null && !near.has(n)); g.classList.toggle('sel', n === i); });
+      LINES.forEach(L => { const on = i !== null && (L.e.a === i || L.e.b === i); L.g.classList.toggle('hi', on); L.g.classList.toggle('dim', i !== null && !on); L.p.setAttribute('marker-end', on ? 'url(#cm-arrh)' : 'url(#cm-arr)'); if (on) L.layer.appendChild(L.g); });
+    }
+    const KIN = { call: '', jump: ' (jumps)', falls: ' (runs on)' };
+    const list = (arr, end) => arr.length ? '<ul>' + arr.slice().sort((x, y) => R[x[end]].a - R[y[end]].a).map(e => `<li><a href="#calls" data-i="${e[end]}">${R[e[end]].n}</a><span style="color:var(--ink-mute)">${KIN[e.k]}</span></li>`).join('') + '</ul>' : '<ul><li style="color:var(--ink-mute)">none</li></ul>';
+    function detail(i) {
+      const D = $('cm-detail');
+      if (i === null) {
+        const big = R.slice().sort((a, b) => b.size - a.size).slice(0, 5), most = R.slice().sort((a, b) => callers[b.i].length - callers[a.i].length).slice(0, 5);
+        D.innerHTML = `<p style="margin:0 0 8px"><b>${R.length} subroutines, ${EDGES.length} links.</b> Click a box to see what it does, what it calls and what calls it.</p>
+          <h4>Longest</h4><ul>${big.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${r.size}</span></li>`).join('')}</ul>
+          <h4>Called from most places</h4><ul>${most.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${callers[r.i].length}</span></li>`).join('')}</ul>`;
+      } else {
+        const r = R[i], rd = [...reads[i]];
+        D.innerHTML = `<span class="tag" style="border-color:${jcol(r.g)};background:${tint(r.g)}">${JOBNAME[r.g]}</span>
+          <h3>${r.n}</h3><p class="meta">${hex(r.a)}–${hex(r.e)} · ${r.size} bytes</p><p>${esc(firstSentences(r.c, 3))}</p>
+          <h4>Calls</h4>${list(calls[i], 'b')}<h4>Called from</h4>${list(callers[i], 'a')}
+          ${rd.length ? `<h4>Tables it reads</h4><ul>${rd.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+          <p style="margin:12px 0 0"><a href="source.html#${id4(r.a)}">Read it in the Source code tab</a></p>`;
+      }
+      D.querySelectorAll('a[data-i]').forEach(b => b.addEventListener('click', ev => { ev.preventDefault(); select(+b.dataset.i, true); }));
+    }
+    function select(i, scroll) {
+      cur = (cur === i && !scroll) ? null : i; focusOn(cur); detail(cur); markStrip(cur);
+      if (cur !== null && scroll) NODES[cur].scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && cur !== null) select(cur, false); });
+    detail(null); layout(); drawStrip();
+    let w0 = svg.parentElement.clientWidth;
+    new ResizeObserver(() => { const w = svg.parentElement.clientWidth; if (w !== w0) { w0 = w; layout(); drawStrip(); } }).observe(svg.parentElement);
+  });
+})();
+</script>
