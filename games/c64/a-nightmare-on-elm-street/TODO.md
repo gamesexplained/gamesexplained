@@ -13,9 +13,11 @@ Tier: Silver, copy `agent-draft`. Coverage is 100 % in all three parts.
   fixed, but the rate says more remain.
 - Play to level 10 and see whether its clock reaches 12 before the player
   reaches Freddy, and record the final fight live.
-- Find who programmed, drew, and scored the Commodore 64 version: no
-  credit is stored on the disk. Retro Gamer 1 (2007), "License to Kill", is
-  cited by Wikipedia for the Monarch link and was not read.
+- Find which of the people the instruction guide credits worked on the
+  Commodore 64 version: the guide is one booklet for the C64 and the PC.
+- Try CTRL and S live: the guide gives it for sound, and the page says it
+  types the same code as HOME (`$13`), which the house reads; not run in
+  the emulator.
 - Find a contemporary review of the Commodore 64 version.
 - A Play tab: the street walk with Freddy chasing is small enough to port
   first.

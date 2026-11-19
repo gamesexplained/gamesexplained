@@ -2,7 +2,7 @@
 
 Tier: silver. The run was on `claude-sonnet-5-5`, which the kit has not proven, so a maintainer measured the listing on `claude-opus-5-5` (`kit/CHECKING.md`): a sample, an audit of all 358 comments and every claim in `facts.md`, and a second sample (`game.json`, `accuracy`).
 
-For Gold, a human's pass over every section of the pages.
+Gold: the contributor (unorig) went through every page on 19 November 2026 (copy human-edited). Next: a Play tab for Platinum.
 
 Open:
 

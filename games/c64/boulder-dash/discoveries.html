@@ -77,17 +77,22 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <p class="fig">03 · Bug: the magic wall cuts a turn short</p>
   <h2 class="t">A boulder on the magic wall stops the cave for a step</h2>
 
-  <p>The game moves the cave one cell at a time, row by row from the top, and each object's routine hands back to the sweep when it is done. A boulder that falls onto a magic wall is the exception. Its routine ends by jumping into the routine for the diamond sound (<code>$7775</code>), and that routine's return leaves the whole sweep instead of the boulder's turn (<code>$71E6</code>). Everything after that cell, the rest of its row and every row below, sits out the step: boulders below hang in the air and creatures stand still. It happens for every boulder that lands on the wall, alive or dead.</p>
-  <p>A dead wall is a trap of its own. When its time is up the wall goes back to looking like brick (<code>$7E84</code>), but the game still treats it as magic wall, and a boulder or diamond that falls onto it disappears with nothing coming out underneath (<code>$776E</code>, <code>$72C6</code>).</p>
+  <p>The game moves the cave one cell at a time, row by row from the top, and each object's routine hands back to the sweep when it is done. A boulder that falls onto a magic wall is the exception. Its routine ends by jumping into the routine for <a href="music.html#effects">the diamond sound</a> (<code>$7775</code>), and that routine's return leaves the whole sweep instead of the boulder's turn (<code>$71E6</code>). Everything after that cell, the rest of its row and every row below, sits out the step: boulders below hang in the air and creatures stand still. It happens for every boulder that lands on the wall, alive or dead.</p>
+</section>
+<section id="wall-dead-trap">
+  <p class="fig">04 · Bug: a dead magic wall</p>
+  <h2 class="t">A dead magic wall eats boulders</h2>
+
+  <p>When its time is up the wall goes back to looking like brick (<code>$7E84</code>), but the game still treats it as magic wall, and a boulder or diamond that falls onto it disappears with nothing coming out underneath (<code>$776E</code>, <code>$72C6</code>).</p>
 </section>
 <section id="seconds">
-  <p class="fig">04 · Quirk: a slow second in Europe</p>
+  <p class="fig">05 · Quirk: a slow second in Europe</p>
   <h2 class="t">The cave clock counts American seconds</h2>
 
   <p>The time on the status line goes down once every 60 frames (<code>$74A9</code>). That is a second on an American machine, which draws its picture 60 times a second. A European machine draws 50, so there each of the game's seconds lasts 1.2 real ones, and cave A's 150 seconds on level 1 last three minutes. The disk First Star sold for European machines counts 60 frames too: on it, 600 frames, twelve real seconds, take ten off the clock. The magic wall's time is counted the same way.</p>
 </section>
 <section id="labels">
-  <p class="fig">05 · Leftover: the programmer's own names</p>
+  <p class="fig">06 · Leftover: the programmer's own names</p>
   <h2 class="t">The author's labels are still in the file</h2>
 
   <p>After the last instruction, the file ends with 195 bytes that the game never reads (<code>$8F3D</code>-<code>$8FFF</code>). They are a piece of the assembler's table of labels, left in memory when the game was saved: each entry is a name the programmer typed and the address it stood for. Sixteen survive, from the end of the interrupt routine and the four routines after it. The routine that takes away a man after a death is NXTPLY, next player, because in a two-player game that is what it does next. Names that start with a colon are local to the routine above them, so <code>:LOOP1</code> and <code>:SK1</code> each appear twice.</p>
@@ -104,28 +109,22 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <p class="cap">One more entry, <code>:SK2</code>, is cut off by the end of the file: its address reads <code>$FF1F</code>, and why the high byte is <code>$FF</code> is not known.</p>
 </section>
 <section id="seeds">
-  <p class="fig">06 · Secret: the same cave every time</p>
+  <p class="fig">07 · Secret: the same cave every time</p>
   <h2 class="t">Seeds make the caves repeatable</h2>
 
   <p>The cave's dirt, boulders and diamonds look random but are not. Each of a cave's five levels has a seed byte in its header, and a small generator started from it places every cell the same way each time (<code>$7085</code>, <code>$8029</code>). The recipe is on the <a href="levels.html#recipe">Maps tab</a>, and the page redraws any cave from it. A player who learns where the boulders sit in cave A, level 1, can rely on it. The routine for random bytes elsewhere in the game is a different one, driven by timers (<code>$6E68</code>). It serves the amoeba, Rockford's push and idle animation, the cave's opening and closing, the glisten, and the sound. The fireflies and butterflies make no random choices at all.</p>
 </section>
 <section id="tune-bytes">
-  <p class="fig">07 · Secret: the tune is in the pictures</p>
+  <p class="fig">08 · Secret: the tune is in the pictures</p>
   <h2 class="t">Tune bytes double as characters</h2>
 
   <p>The title tune, 256 bytes of note numbers, starts at <code>$5FE8</code>. So does the tile character set. The start-up copies 1,024 bytes from there to <code>$3000</code> (<code>$8D11</code>), and the music routine reads the same bytes at their original address (<code>$8754</code>). The first thirty-two tile characters are therefore the tune. Whether the sharing was designed or a happy accident is not known.</p>
 </section>
-<section id="push">
-  <p class="fig">08 · Quirk: a boulder moves one push in four</p>
-  <h2 class="t">The push succeeds one time in four</h2>
+<section id="handled">
+  <p class="fig">09 · Trick: every moving thing has a twin</p>
+  <h2 class="t">A “handled” copy stops a boulder falling twice</h2>
 
-  <p>When Rockford walks into a boulder beside him, the game takes a random byte and moves the boulder only when its low two bits are zero (<code>$7543</code>). The same step does not count as a move on the other three tries, so the player seems to lean on the boulder until it gives.</p>
-</section>
-<section id="speed">
-  <p class="fig">09 · Quirk: the easy levels are slow</p>
-  <h2 class="t">Speed is a delay loop</h2>
-
-  <p>The game has no clock for its pace. After each row of the cave, a loop of idle counts runs, for 12, 6, 3, 1 or 0 passes depending on the level (<code>$8065</code>). Level 5 runs flat out.</p>
+  <p>The game keeps a “handled” twin of each moving object to stop a thing that has just moved from moving again in the same pass. The scan visits the cells from the top row down, so a boulder that fell into a lower cell would otherwise be stepped again as the scan reached it. The twin has no routine, and a table turns it back as the scan passes (<code>$81AD</code>, <code>$5EE8</code>).</p>
 </section>
 <section id="open">
   <p class="fig">10 · Open questions</p>

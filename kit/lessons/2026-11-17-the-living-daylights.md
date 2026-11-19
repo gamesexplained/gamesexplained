@@ -1,4 +1,4 @@
-## next · 2026-11-17 · The Living Daylights (C64) · unorig with Claude
+## 0.0.360 · 2026-11-17 · The Living Daylights (C64) · unorig with Claude
 
 - **A sprite's part in a figure comes from where the code puts it, not
   from its number.** The run named Bond's three sprites head, body and

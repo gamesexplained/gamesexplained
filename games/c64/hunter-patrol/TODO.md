@@ -1,18 +1,21 @@
 # Hunter Patrol: TODO
 
-Tier: **bronze**, with every Silver requirement met but one. Coverage is 100 % (36,848 bytes), the media are answered, the sample of 60 comments on a proven model found 5 wrong (all corrected), and the minisite has its Music and Graphics tabs. The first 28 % of the annotation was made on a model the kit does not list as proven, so the game is Silver only once a maintainer's sample is in `accuracy` with their login as `by` (`kit/CHECKING.md`). The page carries the banner until then.
-
-## For Gold
-
-- The contributor's Gold pass has been through every tab (Overview, Gameplay, Controls, Levels, Graphics, Music, and Discoveries) and `copy` is `human-edited`. The game becomes Gold as soon as it is Silver: Gold sits on top of Silver, so the tier stays bronze until the audit below is done.
-
-## For Silver
-
-- The maintainer's sample (seed 2613) found 8 of 60 wrong, over the mark, so a full audit of the 397 comments on a proven model is needed, then a sample after it (`kit/CHECKING.md`).
+Tier: **gold**. Coverage is 100 % (36,848 bytes). After the 28 % of the annotation made on an unproven model, the listing had a full audit of all 397 comments on claude-opus-5-5 (43 corrected) and a sample after it (seed 2618: 3 of 60 wrong, all corrected), both run by the contributor (unorig) as the maintainer's check (`kit/CHECKING.md`). The contributor's Gold pass has been through every tab, and the reader review is settled.
 
 ## Recommended
 
-- A full audit of the listing's 397 comments by fresh checkers on a proven model, then a second sample. The first sample's interval (3.6 % to 18.1 %) does not rule out an error rate over the mark.
+- The post-audit sample was one over the mark of two in 60: a second audit and a new sample would let the Source tab call the listing audited and low in error rate.
+- A maintainer may want to confirm the check: it was made by the contributor's agent, and unorig is not in `kit/contributors.json`.
+
+## For Platinum
+
+
+## From the reader review
+
+- Draw the unused shapes (`$B2-$BF`, `$D2-$DF` and the shot shapes from `$B1`) on Discoveries beside the search that found no use.
+- Show the target hit on one end with its middle part black (Discoveries, target colour).
+- A section on the documents' faster later levels and meaner flak, which the code does not do (`features.md`, differs), and on the strafing run the documents do not promise.
+- A player for the sound effects (engine, shot, hit, crash) beside the tunes.
 
 ## Open questions
 
@@ -22,6 +25,5 @@ Tier: **bronze**, with every Silver requirement met but one. Coverage is 100 % (
 
 ## Ideas
 
-- A Play tab: the ground, the aircraft and the flak are table-driven and small enough to port.
-- A player for the sound effects (engine, shot, hit, crash) beside the tunes.
 - A route that wins a target run with 64 hits.
+- The listing has no bytes for the play screen's sky rows (`$4400-$453F`), which the game fills before the snapshot's entry point; the Play tab fills them with spaces and puts "DISTANCE TO TARGET" in row 23 to match the reference shot. Reading those bytes from a fresh snapshot would let the listing and the page carry them.

@@ -70,3 +70,13 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   rates (given in passes); guesses in Discoveries (removed). Left for later,
   in TODO.md: drawing level 10's DEAT1 death pictures, naming the 20
   unnamed sound effects, and pictures of items and floors.
+
+## 19 November 2026: the instruction guide
+
+The contributor supplied a scan of the instruction guide. Its credits filled
+the gap the Silver run left, with the caveat that the booklet covers both
+machines. Side 2's `COPY` was extracted from the image and its ten questions
+compared with the guide: every answer at `$5B7A` matches, so the questions
+went onto the Gameplay tab in full. The emulator could not be installed in
+this session, so CTRL and S was not tried live.
+

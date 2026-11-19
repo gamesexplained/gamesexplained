@@ -65,7 +65,8 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <div class="plate">
     <div class="bd-row"><button id="mu-play" type="button">Play the title tune</button><span id="mu-pos" class="cap" style="margin:0"></span></div>
     <canvas id="mu-grid" class="bd-cv" style="max-width:512px" aria-label="The tune's notes, pitch upward against time, voice 1 as short bars above voice 2" role="img"></canvas>
-    <p class="cap">The page plays the 128 note pairs with a triangle wave on the Web Audio clock, using the SID chip's frequency formula for a PAL machine. It is an approximation of the sound chip, and the envelope shape is a guess at the real one. Voice 1 is drawn in the lighter colour, voice 2 in the darker, and voice 1's bars are one pixel shorter, so the two stay apart without relying on colour.</p>
+    <p class="cap">Voice 1 is the lighter, shorter bars; voice 2 the darker.</p>
+    <details class="cap"><summary>More detail</summary><p>The page plays the 128 note pairs with a triangle wave on the Web Audio clock, using the SID chip's frequency formula for a PAL machine. It is an approximation of the sound chip, and the envelope shape is a guess at the real one. Voice 1 is drawn in the lighter colour, voice 2 in the darker, and voice 1's bars are one pixel shorter, so the two stay apart without relying on colour.</p></details>
   </div>
 </section>
 <section id="format">
@@ -74,7 +75,7 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
 
   <p>The tune is a list of note numbers with no durations. Each step of the music routine (<code>$8754</code>) takes two bytes from <code>$5FE8</code>: the first for voice 2 and the second for voice 1. Each number selects a 16-bit frequency from a table of 49 notes that rise by semitones from <b>$02DC</b> to <b>$2DC0</b> (<code>$86CA</code>). The step counter runs through 128 pairs and then wraps, and each wrap adds one to a second counter; when it reaches 2 and the demonstration flag is set, the title hands over to play, which runs the demonstration (<code>$87CA</code>).</p>
   <p>The title step runs twice a frame, at both of the raster interrupt's lines (<code>$87EE</code>), and the music routine works on every other step, so once a frame. It holds each pair for eight of those calls, so a pair of notes lasts eight frames, about a sixth of a second on a PAL machine. In most pairs one voice repeats a note while the other moves: first voice 2 repeats a low note under short figures in voice 1, then voice 1 holds a high note while voice 2 moves.</p>
-  <p>The tune bytes also sit at the start of the tile character set in the program file. The start-up copies the whole block to <code>$3000</code> as characters (<code>$8D11</code>), which means the first thirty-two tile characters hold the tune and are not drawn as tiles. That the two uses share the same bytes is what the code shows; whether it is deliberate is not known.</p>
+  <p>The same bytes double as the first 32 tile characters, <a href="discoveries.html#tune-bytes">as Discoveries shows</a>.</p>
 </section>
 <section id="effects">
   <p class="fig">03 · Sound: the effects</p>
@@ -86,12 +87,31 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <tr><td>Diamond falling or landing, boulder into the magic wall</td><td>1</td><td>A random pitch, waveform <code>$11</code> (<code>$71C0</code>)</td></tr>
   <tr><td>Boulder thud</td><td>1</td><td>Noise, pitch <b>$0932</b> (<code>$71E7</code>)</td></tr>
   <tr><td>Explosion</td><td>2</td><td>Noise, pitch <b>$1432</b> (<code>$713D</code>)</td></tr>
-  <tr><td>Quota reached, cave start</td><td>3</td><td>Pitch from <b>$2F32</b> (<code>$7418</code>)</td></tr>
+  <tr><td>Quota reached, cave start</td><td>3</td><td>Noise, pitch <b>$2F32</b>, for 33 frames (<code>$7418</code>, <code>$7D13</code>)</td></tr>
   <tr><td>Low time</td><td>2</td><td>A beep that rises as the last second digit falls (<code>$7424</code>)</td></tr></table></div>
+  <div class="plate" style="margin-top:20px"><div id="bd-sfx"></div>
+    <p class="cap">Each button runs the game's own effect code on the listing's bytes, then its sound routine once a frame (<code>$7D09</code>), as play does. The falling diamond's random pitch comes from the page, not the C64's timers.</p></div>
 </section>
 
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="reference/bd-sfx.js"></script>
+<script>
+(async function () {
+  const root = document.getElementById('bd-sfx');
+  if (!window.C64Sid || !window.C64Cpu || !window.C64) { root.textContent = 'This player needs the site\u2019s shared scripts, lib/sid.js and lib/cpu6502.js.'; return; }
+  let G; try { G = await C64.load('listing.json'); } catch (e) { root.textContent = 'The player needs listing.json: ' + e.message; return; }
+  let s = ''; for (let i = 0; i < G.ram.length; i += 8192) s += String.fromCharCode.apply(null, G.ram.subarray(i, i + 8192));
+  C64Sid.mount(root, {
+    driver: BDSFX.createDriver,
+    data: { blocks: [[0, btoa(s)]] },
+    tunes: ['A diamond picked up', 'A diamond falling', 'A boulder thud', 'An explosion', 'The quota reached', 'Low time: 3, 2, 1'],
+  });
+})();
+</script>
 <script>
 const MU = {"tune":[22,34,29,38,34,41,37,46,20,36,31,39,32,41,39,48,18,42,18,44,30,46,18,49,32,44,51,55,33,45,49,53,22,34,22,46,22,29,22,36,20,32,20,48,20,36,20,32,22,34,22,46,22,29,22,36,30,42,30,58,30,46,30,42,20,32,20,44,20,27,20,34,28,40,28,56,28,44,28,40,17,29,41,45,17,31,41,46,15,39,15,39,22,51,22,39,22,46,22,46,22,46,22,46,34,46,34,46,22,46,22,46,20,46,20,46,20,46,20,46,32,46,32,46,20,46,20,46,22,46,50,46,22,46,51,46,34,46,50,46,22,46,51,46,20,46,50,46,20,46,51,46,32,44,48,44,20,44,49,44,22,46,22,58,22,46,53,56,34,46,34,55,22,46,49,53,20,44,20,56,20,44,20,56,32,44,32,51,20,44,20,56,22,46,50,46,22,46,51,46,34,46,50,46,22,46,51,46,20,46,50,46,20,46,51,46,32,44,48,44,20,44,49,44,46,50,41,46,38,41,34,38,44,48,39,44,36,39,20,32,53,50,50,46,46,41,41,38,39,48,36,44,32,39,20,32],"notes":[732,778,826,876,928,978,1042,1100,1170,1238,1312,1390,1464,1556,1652,1752,1856,1956,2084,2200,2340,2476,2624,2780,2928,3112,3304,3504,3712,3912,4168,4400,4680,4952,5248,5560,5856,6224,6608,7008,7424,7824,8336,8800,9360,9904,10496,11120,11712]};
 (function () {
