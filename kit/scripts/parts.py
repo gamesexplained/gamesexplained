@@ -231,7 +231,8 @@ def _gaps(lo, hi, taken):
 def elsewhere(P, p):
     """[[first, last, whose]] for every address p does not own: all but its own ranges when it
     lies over another part, and the ranges of the parts that lie over it, except where they
-    fall in p's own ranges (p's load wrote those bytes; a load over it writes others there)."""
+    fall in p's own ranges (for the bottom part, the bytes its own snapshot holds there, which a
+    load over it swaps out for a while)."""
     out, lower = [], under(P, p)
     own = ranges(p) if lower else []
     if lower:
@@ -430,8 +431,9 @@ def say_left(P, me, left):
 
 
 def names_under(gdir, game=None):
-    """{address: name} from the parts gdir's part lies over, nearest first, for the addresses
-    it does not own: how an operand that points out of the part is named. {} for a game
+    """{address: name} from the parts gdir's part lies over, for the addresses it does not own,
+    each from the part whose load wrote it there: how an operand that points out of the part is
+    named. A deeper part's name for bytes a nearer load replaced would describe other bytes. {} for a game
     folder, or a part that lies over none. An address in the part's "names" rows is its own
     even where it has no name for it, so it takes none from beneath."""
     top, pid = home(gdir)
@@ -441,12 +443,19 @@ def names_under(gdir, game=None):
     game = game or load_game(gdir)
     away, mine = game.get("elsewhere") or [], game.get("names") or []
     P = parts(top)
+
+    def whose(a):       # the first row is the part beneath whose load wrote the address
+        return next((w for lo, hi, w in away if lo <= a <= hi), None)
     for q in under(P, next(p for p in P if p["id"] == pid)):
         f = os.path.join(q["dir"], "symbols.json")
         if os.path.isfile(f):
             for s in json.load(open(f))["symbols"]:
                 a = s["address"]
-                if not owned(a, away) and not any(lo <= a <= hi for lo, hi, _ in mine):
+                # a deeper part's name stays out where a nearer one's load replaced its bytes,
+                # unless that part's "names" rows make the address its own
+                w = whose(a)
+                theirs = w == q["title"] or (w is not None and any(lo <= a <= hi for lo, hi, _ in named(q)))
+                if theirs and not any(lo <= a <= hi for lo, hi, _ in mine):
                     out.setdefault(a, s["name"])
     return out
 
