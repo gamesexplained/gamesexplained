@@ -18,7 +18,7 @@ Type-$0C states 0, 1 and 2 at `$9F1C`, `$9F40` and `$9F59` call an event helper 
 
 Type-$0C state 3 at `$9F77` uses `$1AC2,X` as a positive countdown or a negative phase and chooses a callback from the sign of `$9FE0`; at the end of the phase it calls `$4B0E` with A=`$20` and jumps to `$5DB9`. The event helper at `$9FB1` can select state 3 and remove its own return address so that it skips the rest of the calling handler.
 
-Load 10 has three LDX/LDY pairs that load a message record's address with a call or jump to `$77E0` a few bytes later; they name `$9A49`, `$990B` and `$992D`. Another nine pairs load a record's address and jump to a shared `JSR $77E0` at `$9732` and `$983F`. `$77E0` copies each of the record's three zero-terminated lines into the message buffers, turning spaces into glyph zero. Glyph `$60`, a downward-pointing triangle, is the marker that the resident routine at `$6DDE` blinks while it waits for Fire.
+Load 10 has three LDX/LDY pairs that load a message record's address with a call or jump to `$77E0` a few bytes later; they name `$9A49`, `$990B` and `$992D`. Another ten pairs load a record's address and jump to a shared `JSR $77E0`: nine to `$9732` and `$983F`, and the one at `$960B`, with A = 4, to `$9652`, which `$964C` also falls into. `$77E0` copies each of the record's three zero-terminated lines into the message buffers, turning spaces into glyph zero. Glyph `$60`, a downward-pointing triangle, is the marker that the resident routine at `$6DDE` blinks while it waits for Fire.
 The item-message selector at `$988E` multiplies A by eight and adds 6, and passes the pointer at bytes 6 and 7 of that row of the item table at `$9C55` to `$77E0`. The table's 24 rows name 21 distinct three-line records, the item names among them.
 
 The price selector at `$97FA` sends the first two bytes of an eight-byte item row to `$7901` as a packed-decimal amount. `$7901` subtracts it from the selected player's gold when there is enough; otherwise it restores the balance and returns carry clear. Item 4 selects the Winged Boots message and costs 30.
@@ -63,7 +63,7 @@ The 48 low and high entity-handler bytes at `$7EDF–$7F3E` pair into 38 distinc
 
 The 42 bytes at `$7F58–$7F81` hold the sound pointers (`$7F58–$7F5D`), reward and item values, map replacements, sampled-map comparisons and, at `$7F81`, the visual-resource selector that `$06A1` reads.
 
-The bytes at `$7F43–$7F49` supply initial colour shadows, player frame and position; `$7F4D/$7F4E` supply view-origin values that the code at `$33F7–$3408` later changes.
+The bytes at `$7F43–$7F49` supply initial colour shadows, player frame and position; `$7F4D/$7F4E` supply the view origin, which `$33EC–$3408` replaces with the current view's left and top while `$6D17` redraws the screen and then restores.
 
 The price formatter at `$98BB` splits an item's two packed price bytes into four digit values at `$98F9`–`$98FC` and blanks leading zeros. The routine at `$98A0` then writes the four cells, each through the digit writer `$98B2` with colour 1 in colour RAM.
 

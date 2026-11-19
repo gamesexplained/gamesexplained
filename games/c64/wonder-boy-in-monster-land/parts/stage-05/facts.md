@@ -28,7 +28,7 @@ The 48 low and high entity-handler bytes at `$7EDF–$7F3E` pair into 38 distinc
 
 The 42 bytes at `$7F58–$7F81` hold the sound pointers (`$7F58–$7F5D`), reward and item values, map replacements, sampled-map comparisons and, at `$7F81`, the visual-resource selector that `$06A1` reads.
 
-The bytes at `$7F43–$7F49` supply initial colour shadows, player frame and position; `$7F4D/$7F4E` supply view-origin values that the code at `$33F7–$3408` later changes.
+The bytes at `$7F43–$7F49` supply initial colour shadows, player frame and position; `$7F4D/$7F4E` supply the view origin, which `$33EC–$3408` replaces with the current view's left and top while `$6D17` redraws the screen and then restores.
 
 Load 5's split row-pointer tables hold 81 pairs, all 104 bytes apart from `$8671`, the last at `$A6F1`; the map's 14 rows use the first 14. `test_later_row_pointer_tails.js` checks all pairs.
 
