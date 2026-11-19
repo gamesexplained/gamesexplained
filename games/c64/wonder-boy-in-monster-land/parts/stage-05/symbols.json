@@ -2551,12 +2551,12 @@
   {
    "address": 37939,
    "type": "line",
-   "text": "Absolute jump whose low and high operands at $9434/$9435 are patched from the state tables before execution. The entry snapshot contains placeholder $FF00; controlled dispatch tests reach the four captured targets."
+   "text": "Absolute jump whose operands at $9434/$9435 the dispatcher at $9424 patches from the target tables at $9436/$943A, indexed by state $1AB1,X; the load holds the placeholder $FF00."
   },
   {
    "address": 37942,
    "type": "line",
-   "text": "Four captured low bytes of state-handler addresses, paired with high bytes at $943A. The pairs target $943E, $9477, $956F, $9593. The state index has no local bounds check."
+   "text": "Four low bytes of state-handler addresses, paired with high bytes at $943A. The pairs target $943E, $9477, $956F, $9593. The dispatcher at $9424 indexes them with state $1AB1,X, which the record loader clears to 0; the type’s own code only increments it (at $9474, $9525 and $953E) or stores 1 ($957B), so the state runs 0 to 3 and each pair has a state that selects it."
   },
   {
    "address": 37946,
@@ -2566,7 +2566,7 @@
   {
    "address": 37950,
    "type": "line",
-   "text": "Load 5, state 0: set $1A07,X to 7 and call $71DB. Save its returned X and Y in the immediate operands at $944E/$9456, then restore the entity index from A. Store returned X minus 4 at $1AC2,X and returned Y minus 2 at $1AD3,X, both with eight-bit wrap. Call $3020: if its returned negative flag is set, store $FD at $1AE4,X; otherwise store $03. Call $3020 again, store its low nibble at $1AF5,X and increment $1AB1,X. Execution falls through to state 1 at $9477; the caller’s possible state indexes and natural reachability are not locally established."
+   "text": "Load 5, state 0: set $1A07,X to 7 and call $71DB. Save its returned X and Y in the immediate operands at $944E/$9456, then restore the entity index from A. Store returned X minus 4 at $1AC2,X and returned Y minus 2 at $1AD3,X, both with eight-bit wrap. Call $3020: if its returned negative flag is set, store $FD at $1AE4,X; otherwise store $03. Call $3020 again, store its low nibble at $1AF5,X and increment $1AB1,X. Execution falls through to state 1 at $9477. The dispatcher at $9424 jumps here when state $1AB1,X is 0, as the record loader leaves it."
   },
   {
    "address": 38007,
@@ -2596,7 +2596,7 @@
   {
    "address": 38101,
    "type": "line",
-   "text": "Read $1AE4,X. For a negative value, form its two’s-complement magnitude, call $4342 with that value in A and continue at $94E8. For a nonnegative value, call $4368 with A unchanged before continuing. The external routines’ effects are separate from this trace."
+   "text": "Read $1AE4,X. For a negative value, form its two’s-complement magnitude, call the upward move $4342 with that value in A and continue at $94E8. For a nonnegative value, call the downward move $4368 with A unchanged before continuing."
   },
   {
    "address": 38120,
@@ -2621,7 +2621,7 @@
   {
    "address": 38210,
    "type": "line",
-   "text": "Call $7227. Return if carry is clear; if carry is set, jump to $5D7A with A=2. The external routines’ behavior is separate from this local control flow."
+   "text": "Call the player-contact test $7227. Return if carry is clear; if carry is set, jump to the damage routine $5D7A with A=2."
   },
   {
    "address": 38221,
@@ -2631,7 +2631,7 @@
   {
    "address": 38255,
    "type": "line",
-   "text": "Load 5, state 2: if $1A8F,X is zero, clear $1AF5,X, set $1AB1,X to 1 and jump to state 1 at $9477. Otherwise call the shared routine at $95B4, then inspect $1B06,X: a negative value jumps to $4574 with A=$0A, and a nonnegative value jumps to $45BC with A=$0A. Ordinary reachability and the external callbacks are not established by this local trace."
+   "text": "Load 5, state 2: if $1A8F,X is zero, clear $1AF5,X, set $1AB1,X to 1 and jump to state 1 at $9477. Otherwise call the shared routine at $95B4, then inspect $1B06,X: a negative value jumps to the move right $4574 with A=$0A, and a nonnegative value jumps to the move left $45BC with A=$0A. The contact check at $9525 selects this state when $732A returns carry set and $1A6D,X is positive, after rotating the $72FC carry into $1B06,X."
   },
   {
    "address": 38291,
@@ -2641,7 +2641,7 @@
   {
    "address": 38324,
    "type": "line",
-   "text": "Load 5: decrement $1B28,X; if the result is odd, return carry clear without changing the frame. Otherwise form $19E5,X plus 4 plus twice bit 0 of $1B17,X, with eight-bit wrap. If $1AF5,X is nonnegative, add 8 with wrap; if that addition produces zero, return carry set without storing the frame or decrementing $1B17,X. Otherwise store the resulting frame at $19C3,X and decrement $1B17,X. If its result has the sign bit set, replace it with 6 and return carry set; otherwise return carry clear. The entry’s callers and ordinary-play reachability are not established here."
+   "text": "Load 5: decrement $1B28,X; if the result is odd, return carry clear without changing the frame. Otherwise form $19E5,X plus 4 plus twice bit 0 of $1B17,X, with eight-bit wrap. If $1AF5,X is nonnegative, add 8 with wrap; if that addition produces zero, return carry set without storing the frame or decrementing $1B17,X. Otherwise store the resulting frame at $19C3,X and decrement $1B17,X. If its result has the sign bit set, replace it with 6 and return carry set; otherwise return carry clear. States 2 and 3 call it, at $9581 and $9593."
   },
   {
    "address": 38379,

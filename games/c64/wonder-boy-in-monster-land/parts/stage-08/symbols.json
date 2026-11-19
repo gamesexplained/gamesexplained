@@ -1554,7 +1554,7 @@
   },
   {
    "address": 38295,
-   "name": "copied_charset_boundary_9597",
+   "name": "sound_pattern_02_tail",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1962,7 +1962,7 @@
   },
   {
    "address": 39504,
-   "name": "unattributed_loaded_byte_9a50",
+   "name": "unused_byte_9a50",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2730,7 +2730,7 @@
   {
    "address": 38295,
    "type": "line",
-   "text": "Load 8, continuation of sound pattern 2 at $9563: offsets 52–79, addresses $9597–$95B2. The voice-list record selects the pattern start, and the resident event parser at $2332 advances through this range to the zero marker at $95B2, tested at $2322. The recorded selector-1 simulation reached that marker. These bytes belong to the same event stream despite intervening labels; their interpretation depends on voice state and tick."
+   "text": "Load 8: the last 28 bytes of sound pattern 2, which starts at $9563: event bytes at offsets 52–78 ($9597–$95B1) and the zero end marker at offset 79 ($95B2). The resident sequencer parses the events at $2332 and, when $2322 reads the zero marker, loads the voice’s next pattern through $22DC."
   },
   {
    "address": 38323,
@@ -2815,12 +2815,12 @@
   {
    "address": 38672,
    "type": "line",
-   "text": "Absolute jump whose low and high operands at $9711/$9712 are patched from the state tables before execution. The entry snapshot contains placeholder $FF00; controlled dispatch tests reach the four captured targets."
+   "text": "Absolute jump whose operands at $9711/$9712 the dispatcher at $9701 patches from the target tables at $9713/$9717, indexed by state $1AB1,X; the load holds the placeholder $FF00."
   },
   {
    "address": 38675,
    "type": "line",
-   "text": "Four captured low bytes of state-handler addresses, paired with high bytes at $9717. The pairs target $971B, $973F, $9758, $9776. The state index has no local bounds check."
+   "text": "Four low bytes of state-handler addresses, paired with high bytes at $9717. The pairs target $971B, $973F, $9758, $9776. The dispatcher at $9701 indexes them with state $1AB1,X; the type’s own code stores only 0, 1, 2 ($973B) and 3 ($97CE) in that state, so each pair has a state that selects it."
   },
   {
    "address": 38679,
@@ -2885,7 +2885,7 @@
   {
    "address": 38908,
    "type": "line",
-   "text": "Load 8: an unattributed loaded byte $60 between the preceding data and the next code entry. A VICE checkpoint for CPU reads, writes and instruction entry recorded zero hits during 200 frames; the control checkpoint at $13EA recorded 200 hits. This bounded observation does not prove that another state cannot use it. Its semantic role remains unknown."
+   "text": "Load 8: one byte, $60 in the load, between the type-$0D target tables at $97F2–$97FB and state 0 at $97FD. No instruction names it. The dispatcher at $97E0 would read it as the high byte of a sixth target only for state 5, and the type’s code stores only 0 to 4 in the state, so nothing reads it."
   },
   {
    "address": 38909,
@@ -3015,7 +3015,7 @@
   {
    "address": 39302,
    "type": "line",
-   "text": "Load 8: type-$25 uses $1AB1,X as an index into split target tables at $9998/$999A and patches the jump at $9995. Two captured target pairs follow; this dispatcher does not bound the index."
+   "text": "Load 8: the type-$25 handler uses $1AB1,X as an index into split target tables at $9998/$999A, patches the jump at $9995 and takes it. The type’s own code stores only 1 in the state ($9A3C), and a released slot’s state is 0, so the two target pairs cover every state that occurs."
   },
   {
    "address": 39317,
@@ -3070,7 +3070,7 @@
   {
    "address": 39504,
    "type": "line",
-   "text": "Load 8: an unattributed loaded byte $35 after the event-transition routine. A VICE checkpoint for CPU reads, writes and instruction entry recorded zero hits during 200 frames; the control checkpoint at $13EA recorded 200 hits. This bounded observation does not prove that another state cannot use it. Its semantic role remains unknown."
+   "text": "Load 8: one byte, $35 in the load, between the type-$25 event helper, which ends with JMP $9A2C at $9A4D, and the return stub at $9A51. No instruction in load 8 or in the resident part reads, writes or indexes it."
   },
   {
    "address": 39505,

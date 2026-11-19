@@ -2937,7 +2937,7 @@
   },
   {
    "address": 38430,
-   "name": "copied_charset_boundary_961e",
+   "name": "object_message_961a_tail_jump",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3207,7 +3207,7 @@
   },
   {
    "address": 42680,
-   "name": "shop_insufficient_even",
+   "name": "shop_insufficient_message",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3225,13 +3225,13 @@
   },
   {
    "address": 42722,
-   "name": "visual_copy_boundary_a6e2",
+   "name": "shop_format_stage_price",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 42762,
-   "name": "visual_copy_boundary_a70a",
+   "name": "shop_saved_x_operand",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3321,7 +3321,7 @@
   },
   {
    "address": 42986,
-   "name": "visual_copy_boundary_a7ea",
+   "name": "shop_store_second_item",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3807,7 +3807,7 @@
   },
   {
    "address": 44414,
-   "name": "shop_draw_remaining",
+   "name": "shop_work_counter",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -4965,7 +4965,7 @@
   },
   {
    "address": 46727,
-   "name": "unattributed_loaded_byte_b687",
+   "name": "unused_byte_b687",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5115,7 +5115,7 @@
   },
   {
    "address": 47361,
-   "name": "type0b_rotated_working_byte",
+   "name": "type0b_direction_byte",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -6513,27 +6513,27 @@
   {
    "address": 42617,
    "type": "line",
-   "text": "Two jump entries: the first enters setup at $A67F, and the second jumps to $A79F. The second entry was not exercised in the setup tests. These bytes can also overlap captured character or graphics sources."
+   "text": "Two jump entries: $A679 enters the price setup at $A67F, and $A67C jumps to the item-pair setup at $A79F. Load 6’s stage record 1 at $95EA names $A679 as its callback, and records 2 and 3 at $95FA and $960A name $A67C; no instruction in load 6 or in the resident part names either. The eight-page character copy for visual selector 3, which starts at $A05A, also takes these six bytes, to $D61F–$D624."
   },
   {
    "address": 42623,
    "type": "line",
-   "text": "Write $46 plus 1 modulo 256 to $A9DE and $AA28, set sound state $2C15 to 2, and use stage index $7B to format fields $4783,X and $4789,X through $A6E2 for destination selectors $9B and $AF. The formatter’s display callback was stubbed in the controlled checks."
+   "text": "Write $46 plus 1 modulo 256 to the high address byte at $A9DE of the digit store at $A9DC and to the layout gate at $AA28, set sound state $2C15 to 2, and use stage index $7B to format fields $4783,X and $4789,X through $A6E2 with Y=$9B and Y=$AF as the screen offsets of their last digits."
   },
   {
    "address": 42655,
    "type": "line",
-   "text": "Use selected-player index $4DBD. If $4DC7,Y is nonzero, or if $4DC9,Y is at least stage field $4789,X under an unsigned byte comparison, go to $A6CD. Otherwise inspect stage field $4753,X. These tests do not establish which values occur in ordinary play."
+   "text": "Use selected-player index $4DBD. If $4DC7,Y is nonzero, or if $4DC9,Y is at least stage field $4789,X under an unsigned byte comparison, go to $A6CD. Otherwise inspect stage field $4753,X."
   },
   {
    "address": 42680,
    "type": "line",
-   "text": "For stage field 3, or another even value, select message $AB17 and jump to $A969. The destination’s display behavior is separate."
+   "text": "Reached when stage field $4753,X is 3 or has bit 0 clear: select message $AB17 and jump to the message call at $A969."
   },
   {
    "address": 42687,
    "type": "line",
-   "text": "Test bit 0 of the stage field. A clear bit selects $AB17; a set bit calls $A9B0, then selects $AB01. The called gate was stubbed in the controlled checks."
+   "text": "Reached when stage field $4753,X is not 3: test its bit 0. A clear bit selects message $AB17; a set bit calls $A9B0, which stores $FF in $4753,X, then selects message $AB01 and jumps to the message call at $A969."
   },
   {
    "address": 42701,
@@ -6553,7 +6553,7 @@
   {
    "address": 42764,
    "type": "line",
-   "text": "The incoming processor flags select the path: negative enters the first-price balance check at $A73E; zero selects a message at $A78C; otherwise use the second-price path at $A710. The controlled cases set these flags directly, so ordinary-play choice mapping remains open."
+   "text": "The flags come from the selection byte $AA29, loaded at $A8F5 before the only jump here ($A8F8, taken when the layout gate $AA28 is nonzero): negative ($FF, left) enters the first-price balance check at $A73E; zero selects message $AAEA at $A78C; otherwise (1, right) take the second-price path at $A710."
   },
   {
    "address": 42768,
@@ -6583,7 +6583,7 @@
   {
    "address": 42876,
    "type": "line",
-   "text": "Push A, call $77E0 with the selected message pointer and pull A. Continue at $A781; the message routine was stubbed."
+   "text": "Push A, call $77E0 with the message pointer in X/Y and pull A, then continue at $A781, which adds A to the player’s meter through $77A9. The second-price fallback jumps here from $A73B with A=4 and message $AB58; the first-price fallback falls in from $A776 with A=8 and message $AB73."
   },
   {
    "address": 42881,
@@ -6593,12 +6593,12 @@
   {
    "address": 42892,
    "type": "line",
-   "text": "Load the message pointer encoded here and jump to $A969. This branch was reached by forcing the incoming zero flag."
+   "text": "Load X/Y with message pointer $AAEA and jump to the message call at $A969. $A70E branches here when the selection byte read at $A8F5 is zero."
   },
   {
    "address": 42899,
    "type": "line",
-   "text": "Reload stage index, decrement $4753,X, load the message pointer encoded here and jump to $A969. Its ordinary caller was not exercised by the choice tests."
+   "text": "Reload stage index, decrement $4753,X, load message pointer $AB34 in X/Y and jump to the message call at $A969. The only jump here is from the timeout path at $A8A1, taken when the layout gate $AA28 is nonzero."
   },
   {
    "address": 42911,
@@ -6608,7 +6608,7 @@
   {
    "address": 42928,
    "type": "line",
-   "text": "Read $476B,X. If nonzero, pass it and $4771,X separately through the conditional-item resolver at $A978; store the returned values at $AA2E/$AA2F, then jump to $A7ED. Four forced VICE inputs per load checked this and the implicit path with the real resolver."
+   "text": "Read $476B,X. If nonzero, pass it and $4771,X separately through the conditional-item resolver at $A978; store the returned values at $AA2E/$AA2F, then jump to $A7ED. If zero, branch to the implicit pair at $A7C9."
   },
   {
    "address": 42953,
@@ -6618,7 +6618,7 @@
   {
    "address": 42973,
    "type": "line",
-   "text": "Read the patched absolute address, clear carry and add $AA30,Y. Store the result at $AA2E, then store that result plus one modulo 256 at $AA2F. Continue at $A7ED; the later drawing callbacks were not exercised."
+   "text": "Read the absolute address patched by $A7D3 and $A7DA, $4DD5 plus stage field $4771,X plus the selected player index; clear carry and add $AA30,Y, where Y is that stage field. Store the result at $AA2E, then store that result plus one modulo 256 at $AA2F. Continue at $A7ED."
   },
   {
    "address": 42986,
@@ -6638,7 +6638,7 @@
   {
    "address": 43008,
    "type": "line",
-   "text": "Call the patched target with A=$E4. Then read the first item byte at $AA2E, multiply it by eight modulo 256 and patch a second JSR from the same pointer table. Controlled checks replaced both selected targets with logging stubs; actual drawing effects remain separate."
+   "text": "Call the patched target with A=$E4. Then read the first item byte at $AA2E, multiply it by eight modulo 256 and patch the JSR operand at $A81B/$A81C from the same pointer table."
   },
   {
    "address": 43016,
@@ -6648,7 +6648,7 @@
   {
    "address": 43032,
    "type": "line",
-   "text": "Call the second patched target with A=$D0, then set the temporary row counter at $AD7E to 3 and begin filling colour RAM. The target was replaced with a logging stub in the controlled checks."
+   "text": "Call the second patched target with A=$D0, then set the temporary row counter at $AD7E to 3 and begin filling colour RAM."
   },
   {
    "address": 43044,
@@ -6658,12 +6658,12 @@
   {
    "address": 43068,
    "type": "line",
-   "text": "Store $46 plus one modulo 256 at $A9DE. Pass the first selected item at $AA2E to $A9E5, then call $A9CA with Y=$73. Repeat for the second item at $AA2F with Y=$87. The format and display callbacks were stubbed in the controlled tests."
+   "text": "Store $46 plus one modulo 256 at $A9DE. Pass the first selected item at $AA2E to $A9E5, then call $A9CA with Y=$73. Repeat for the second item at $AA2F with Y=$87."
   },
   {
    "address": 43100,
    "type": "line",
-   "text": "Call $77E0 with the message pointer selected by the preceding path, then fall through to the mode and countdown initializer at $A85F. The ordinary label path loads $AA35; earlier branches can supply other pointers. The message callback was stubbed in the controlled tests."
+   "text": "Call $77E0 with the message pointer selected by the preceding path, then fall through to the mode and countdown initializer at $A85F. The item-pair path loads $AA35; the price path jumps here from $A6D8 or $A6DF with $AAC3 or $AAAC."
   },
   {
    "address": 43103,
@@ -6688,7 +6688,7 @@
   {
    "address": 43164,
    "type": "line",
-   "text": "If $AA28 is nonzero, jump to $A793. Otherwise load X from $7B, store $FF at $4753,X, load X/Y with message pointer $AA6A, and jump to the $77E0 call at $A969. The selector used by $77E0 and natural timeout reachability remain open."
+   "text": "Reached when the countdown at $AA2D reaches zero. If $AA28 is nonzero, jump to $A793. Otherwise load X from $7B, store $FF at $4753,X, load X/Y with message pointer $AA6A, and jump to the $77E0 call at $A969."
   },
   {
    "address": 43186,
@@ -6703,7 +6703,7 @@
   {
    "address": 43248,
    "type": "line",
-   "text": "Read $AA28; if nonzero, load $AA29 and jump to $A70C. Otherwise load X from $7B and read $AA29. If nonzero, branch to the purchase index choice at $A919, preserving the negative flag from that read. If zero, inspect $4753,X: a negative value or a clear bit 1 selects message pointer $AA92; a nonnegative value with bit 1 set selects $AA7B. Both paths jump to the $77E0 message call. The meanings and ordinary-play ranges of the two gate bytes remain open."
+   "text": "Read the layout gate $AA28; if nonzero, load the selection byte $AA29 and jump to $A70C. Otherwise load X from $7B and read $AA29. If nonzero, branch to the purchase index choice at $A919, preserving the negative flag from that read. If zero, inspect $4753,X: a negative value or a clear bit 1 selects message pointer $AA92; a nonnegative value with bit 1 set selects $AA7B. Both paths jump to the $77E0 message call. $AA28 is $46 plus one on the price path ($A685) and zero on the item-pair path ($A7A1)."
   },
   {
    "address": 43289,
@@ -6728,7 +6728,7 @@
   {
    "address": 43358,
    "type": "line",
-   "text": "Pull the selected item index, clear carry, add 1 in binary mode and call the JSR whose operand was patched by the selector. Load X/Y with $AA57 and call $77E0, then call $3C2A and $370B repeatedly while $4D6B is nonzero. Return once it is zero. The effect, message and waiting callbacks were stubbed in controlled tests; this does not establish ordinary-play reachability."
+   "text": "Pull the selected item index, clear carry, add 1 in binary mode and call the JSR whose operand was patched by the selector. Load X/Y with $AA57 and call $77E0, then call $3C2A and $370B repeatedly while $4D6B is nonzero. Return once it is zero."
   },
   {
    "address": 43384,
@@ -6773,12 +6773,12 @@
   {
    "address": 43555,
    "type": "line",
-   "text": "Load 6: four working price-display bytes, written by the formatter at $A9E5 and read in reverse by the digit writer. Their captured initial values can be overwritten before drawing."
+   "text": "Load 6: four working price-display bytes. The item-price formatter at $A9E5 and the stage-price formatter at $A6E2 write them, and the drawing loop at $A9CA reads them in reverse, from $AA26 down to $AA23, passing each to the digit writer at $A9DC."
   },
   {
    "address": 43559,
    "type": "line",
-   "text": "Load 6: captured byte $04 immediately after the four price-display cells at $AA23–$AA26, before the layout gate. The normal price formatter bounds X to 0–3, so it does not write this fifth position; an out-of-range indexed access can reach it. A separate ordinary-play role for this intervening byte is unresolved."
+   "text": "Load 6: one byte, $04 in the load, between the four price-display cells at $AA23–$AA26 and the layout gate at $AA28. No instruction in load 6 or in the resident part names it, and the indexed accesses to $AA23 at $A9CC, $AA13 and $AA1A keep X between 0 and 3, so none reaches it."
   },
   {
    "address": 43560,
@@ -6793,7 +6793,7 @@
   {
    "address": 43562,
    "type": "line",
-   "text": "Load 6: three captured cursor-position bytes indexed by the selection byte plus one in the cursor helper. Other indexes and runtime changes are not locally constrained."
+   "text": "Load 6: three cursor-position bytes, $5F, $B4 and $FF, for selections $FF, 0 and 1: the cursor helper at $A9A0 reads them at $A9A9 with the selection byte plus one as index, and passes the byte in X to $719E. No instruction writes them."
   },
   {
    "address": 43565,
@@ -6803,12 +6803,12 @@
   {
    "address": 43566,
    "type": "line",
-   "text": "Load 6: mutable first item ID, read by the left-selection description and purchase paths."
+   "text": "Load 6: mutable first item ID. $A7BA or $A7E4 stores it; the item drawing at $A805, the price label at $A842, the left-selection description at $A8C4 and the purchase paths at $A921 and $A94A read it."
   },
   {
    "address": 43567,
    "type": "line",
-   "text": "Load 6: mutable second item ID, read by the right-selection description and purchase paths."
+   "text": "Load 6: mutable second item ID. $A7C3 or $A7EA stores it; the item drawing at $A7ED, the price label at $A84D, the right-selection description at $A8E4 and the purchase paths at $A91B and $A944 read it."
   },
   {
    "address": 43568,
@@ -6988,7 +6988,7 @@
   {
    "address": 44339,
    "type": "line",
-   "text": "Return without drawing. Several controlled item indexes select this entry."
+   "text": "Return without drawing. Items 0–3, 6–10 and 13–16 of the table at $AD7F name this entry as their drawing routine."
   },
   {
    "address": 44340,
@@ -7028,7 +7028,7 @@
   {
    "address": 44414,
    "type": "line",
-   "text": "Working byte used as the number of tile writes remaining; the drawing routine overwrites it before use."
+   "text": "Working counter with two users, each of which stores it before use: the tile-drawing routine at $AD5B keeps the number of tile writes remaining here ($AD5B, $AD78), and the colour fill at $A824 keeps its count of three rows here ($A81F, $A837)."
   },
   {
    "address": 44415,
@@ -7513,7 +7513,7 @@
   {
    "address": 44607,
    "type": "line",
-   "text": "Call $76FD and tail-call the helper at $A9B0. Controlled item indexes 4 and 5 select this routine; $76FD sets the Wing Boots flag and timer."
+   "text": "Call $76FD and tail-call the helper at $A9B0. Items 4 and 5 of the table at $AD7F name this as their effect routine; $76FD sets the Wing Boots flag $08 and the counter $4DE0 to $FF."
   },
   {
    "address": 44613,
@@ -7533,7 +7533,7 @@
   {
    "address": 44631,
    "type": "line",
-   "text": "Load the selected player index from $4DBD, store A at $4DD5,X and tail-call $A9B0. Controlled item indexes 0–3 select this routine with A equal to index plus 1."
+   "text": "Load the selected player index from $4DBD, store A at $4DD5,X and tail-call $A9B0. Items 0–3 of the table at $AD7F name this as their effect routine, and the purchase call at $A962 passes A equal to the item index plus 1, so $4DD5,X becomes 1 to 4."
   },
   {
    "address": 44640,
@@ -7678,12 +7678,12 @@
   {
    "address": 45292,
    "type": "line",
-   "text": "Six captured low bytes of handler addresses, paired with high bytes at $B0F2. The pairs target $B0F8, $B125, $B1B8, $B1D7, $B15D, $B18B. State index bounds and handler reachability are open."
+   "text": "Six low bytes of handler addresses, paired with high bytes at $B0F2. The pairs target $B0F8, $B125, $B1B8, $B1D7, $B15D, $B18B. The dispatcher at $B0DA indexes them with state $1AB1,X. The type’s own code stores only 1, 2, 3, 4 and 5 in that state, at $B121 (1, 4 or 5) and $B245 (1, 2 or 3), and the record loader leaves it 0, so each pair has a state that selects it."
   },
   {
    "address": 45298,
    "type": "line",
-   "text": "Six captured high bytes paired with low bytes at $B0EC. The pairs target $B0F8, $B125, $B1B8, $B1D7, $B15D, $B18B. State index bounds and handler reachability are open."
+   "text": "Six high bytes paired with low bytes at $B0EC. The pairs target $B0F8, $B125, $B1B8, $B1D7, $B15D, $B18B. The dispatcher at $B0DA indexes them with state $1AB1,X. The type’s own code stores only 1, 2, 3, 4 and 5 in that state, at $B121 (1, 4 or 5) and $B245 (1, 2 or 3), and the record loader leaves it 0, so each pair has a state that selects it."
   },
   {
    "address": 45304,
@@ -7693,7 +7693,7 @@
   {
    "address": 45349,
    "type": "line",
-   "text": "State 1 calls $B22C, the flag setter at $B1EE, and the movement helper at $B205. If movement returns carry set, A bit 3 selects the direction toggle when set, or clears the flag and $1B28,X and stores state 4 when clear. With carry clear, A bits 0–1 index the paired tables at $B155/$B159, patching the jump at $B152. The external callbacks and natural reachability remain open."
+   "text": "State 1 calls $B22C, the flag setter at $B1EE, and the movement helper at $B205. If movement returns carry set, A bit 3 selects the direction toggle when set, or clears the flag and $1B28,X and stores state 4 when clear. With carry clear, A bits 0–1 index the paired tables at $B155/$B159, patching the jump at $B152. The dispatcher at $B0DA jumps here when state $1AB1,X is 1; the carry and A tested here are those the resident collision moves $4574 and $45BC return through $B205."
   },
   {
    "address": 45394,
@@ -7728,7 +7728,7 @@
   {
    "address": 45451,
    "type": "line",
-   "text": "State 5 calls $B22C, clears $1A7E,X and increments $1B28,X with eight-bit wrap. For a result below 7, jump to movement at $B205. For 7–255 except 11, increment $1B17,X, pass it to $4368 and jump to movement at $B207 with A=1. For 11, call $4368 with A=6 and store state 1. Natural reachability and the external callbacks remain open."
+   "text": "State 5 calls $B22C, clears $1A7E,X and increments $1B28,X with eight-bit wrap. For a result below 7, jump to movement at $B205. For 7–255 except 11, increment $1B17,X, pass it to $4368 and jump to movement at $B207 with A=1. For 11, call $4368 with A=6 and store state 1. The dispatcher at $B0DA jumps here when state $1AB1,X is 5, which the setup at $B17C stores."
   },
   {
    "address": 45496,
@@ -7768,7 +7768,7 @@
   {
    "address": 45612,
    "type": "line",
-   "text": "Return immediately when $1A29,X is zero. Otherwise call $792C and $732A. On set carry from $732A, a positive $1A6D,X calls state 0 at $B0F8 and selects state 2; zero or negative sets $1AE4,X to 10 and selects state 3. In the latter case a nonzero $1AF5,X becomes an X index for decrementing $1B28,X; the original X is saved into the immediate operand at $B25B and restored afterward. No local bound on that alternate index is established. On clear carry from $732A, call $7227; if it returns set carry, call $5D7A with A=2 and jump to the direction toggle at $B1FD; otherwise return. External callees and natural reachability remain open."
+   "text": "Return immediately when $1A29,X is zero. Otherwise call $792C and $732A. On set carry from $732A, a positive $1A6D,X calls state 0 at $B0F8 and selects state 2; zero or negative sets $1AE4,X to 10 and selects state 3. In the latter case a nonzero $1AF5,X becomes an X index for decrementing $1B28,X; the original X is saved into the immediate operand at $B25B and restored afterward. No local bound on that alternate index is established. On clear carry from $732A, call $7227; if it returns set carry, call $5D7A with A=2 and jump to the direction toggle at $B1FD; otherwise return. States 1, 4 and 5 call this routine, at $B125, $B15D and $B18B."
   },
   {
    "address": 45637,
@@ -7793,12 +7793,12 @@
   {
    "address": 45696,
    "type": "line",
-   "text": "Six captured low bytes of handler addresses, paired with high bytes at $B286. The pairs target $B28C, $B31A, $B3C8, $B414, $B453, $B476. State index bounds and handler reachability are open."
+   "text": "Six low bytes of handler addresses, paired with high bytes at $B286. The pairs target $B28C, $B31A, $B3C8, $B414, $B453, $B476. The dispatcher at $B26E indexes them with state $1AB1,X. The type’s own code stores only 0 to 5 in that state: constants at $B316 (1 or 2), $B3C4 (0), $B410 (3), $B44F (0) and $B4D7 (4 or 5), and at $B472 the state that the event helper saved at $B4C8, which is 0 to 3 because only states 0 to 3 call that helper."
   },
   {
    "address": 45702,
    "type": "line",
-   "text": "Six captured high bytes paired with low bytes at $B280. The pairs target $B28C, $B31A, $B3C8, $B414, $B453, $B476. State index bounds and handler reachability are open."
+   "text": "Six high bytes paired with low bytes at $B280. The pairs target $B28C, $B31A, $B3C8, $B414, $B453, $B476. The dispatcher at $B26E indexes them with state $1AB1,X. The type’s own code stores only 0 to 5 in that state: constants at $B316 (1 or 2), $B3C4 (0), $B410 (3), $B44F (0) and $B4D7 (4 or 5), and at $B472 the state that the event helper saved at $B4C8, which is 0 to 3 because only states 0 to 3 call that helper."
   },
   {
    "address": 45708,
@@ -7848,7 +7848,7 @@
   {
    "address": 46256,
    "type": "line",
-   "text": "Copy $1B17,X to the frame working byte at $B4F6, call $792C and $732A, and branch on the latter’s carry. On set carry, a positive $1A6D,X saves the old state in $1AE4,X, calls the frame helper at $B4A0 with A=4 and selects state 4; zero or negative clears $1AD3,X and selects state 5. Both paths set $1AC2,X to 10 and then enter $B4DA. On clear carry, call $7227; if it returns clear, return normally, otherwise tail-call $5D7A with A=4. The external callees and natural reachability remain open."
+   "text": "Copy $1B17,X to the frame working byte at $B4F6, call $792C and $732A, and branch on the latter’s carry. On set carry, a positive $1A6D,X saves the old state in $1AE4,X, calls the frame helper at $B4A0 with A=4 and selects state 4; zero or negative clears $1AD3,X and selects state 5. Both paths set $1AC2,X to 10 and then enter $B4DA. On clear carry, call $7227; if it returns clear, return normally, otherwise tail-call $5D7A with A=4. States 0, 1, 2 and 3 call this helper, at $B28C, $B33A, $B3C8 and $B414."
   },
   {
    "address": 46298,
@@ -7863,22 +7863,22 @@
   {
    "address": 46326,
    "type": "line",
-   "text": "Working byte tested with BIT by the frame helper. Several handler paths write $1B17,X here; its value differs among the captured snapshots."
+   "text": "Working copy of $1B17,X. $B2D1, $B332, $B3CE, $B41A, $B47E and $B4B3 store that field here; the frame helper at $B4A0 and the paths at $B3A9, $B3EC and $B438 test its sign with BIT, and $B38B copies it to $1AC2,X of the entity that state 1 spawns."
   },
   {
    "address": 46327,
    "type": "line",
-   "text": "Temporary byte used when state 0 subtracts the returned position from $6F3C. Its captured value differs across the five snapshots."
+   "text": "Temporary byte used when state 0 subtracts the returned tile column from $6F3C: $B2B6 stores the column here and $B2BD subtracts it. No other instruction in load 6 or in the resident part names it."
   },
   {
    "address": 46328,
    "type": "line",
-   "text": "Four captured frame offsets 2, 2, 0, 0. The state-2 and state-3 paths index these with $1AF5,X and call the frame helper at $B4A0; the index has no local bound."
+   "text": "Four frame offsets 2, 2, 0, 0. The state-2 and state-3 paths index these with $1AF5,X at $B3D4 and $B420 and call the frame helper at $B4A0. Each path then increments the index and wraps it to 0 at 4, and state 0 clears it at $B311 before selecting state 2."
   },
   {
    "address": 46332,
    "type": "line",
-   "text": "Four captured frame offsets 4, 4, 2, 2. The state-5 path indexes these with $1AD3,X and calls the frame helper at $B4A0; the index has no local bound."
+   "text": "Four frame offsets 4, 4, 2, 2. The state-5 path indexes these with $1AD3,X at $B484 and calls the frame helper at $B4A0. It then increments the index and wraps it to 0 at 4, and the event helper clears it at $B4DF before selecting state 5."
   },
   {
    "address": 46336,
@@ -7903,7 +7903,7 @@
   {
    "address": 46340,
    "type": "line",
-   "text": "Load 6: type-$0A uses $1AB1,X as an index into split target tables at $B516/$B51B and patches the jump at $B513. Five captured target pairs follow; this dispatcher does not bound the index."
+   "text": "Load 6: the type-$0A handler uses $1AB1,X as an index into split target tables at $B516/$B51B and patches the jump at $B513, then takes it. The handler table sends types $0A and $19 here. The type’s own code stores only 0 to 4 in the state: 1 at $B53A, 2 or 0 at $B587, 0 at $B5E6, 3 or 4 at $B667, and at $B607 the state that the event helper saved in $1B28,X at $B642, which is 0, 1 or 2 because only states 0, 1 and 2 call that helper."
   },
   {
    "address": 46355,
@@ -7933,12 +7933,12 @@
   {
    "address": 46409,
    "type": "line",
-   "text": "Decrement $1AC2,X. If nonnegative, call the frame helper at $B619, copy $1AD3,X to the working byte $B686, then call $45BC for a negative direction or $4574 otherwise with A=6. If the returned value masked with 6 is not 2, select state 0."
+   "text": "Decrement $1AC2,X. If nonnegative, call the frame helper at $B619, copy $1AD3,X to the working byte $B686, then call $45BC for a negative direction or $4574 otherwise with A=6. If the returned value masked with 6 is 2, return; otherwise continue at $B56E, as when the countdown goes negative."
   },
   {
    "address": 46446,
    "type": "line",
-   "text": "For a negative countdown, call $3020. If its result is nonnegative, select state 0. Otherwise call $3020 again, store its top bit in $1AD3,X, set $1AE4,X=4 and $1AF5,X=8, and select state 2."
+   "text": "Reached when the countdown $1AC2,X goes negative ($B54C) or when the state-1 move returns a value whose AND 6 is not 2 ($B565). Call $3020. If its result is nonnegative, select state 0. Otherwise call $3020 again, store its top bit in $1AD3,X, set $1AE4,X=4 and $1AF5,X=8, and select state 2."
   },
   {
    "address": 46479,
@@ -7988,17 +7988,17 @@
   {
    "address": 46726,
    "type": "line",
-   "text": "Working direction byte tested by state 3 and written by other parts of this handler."
+   "text": "Working direction byte, a copy of $1AD3,X: states 1 and 2 and the frame helper store that field here ($B554, $B59E, $B61C), and the event helper rotates the $72FC carry into it at $B657 and copies it back to $1AD3,X at $B65A. State 1 ($B559), state 2 ($B5B3), state 3 ($B5F1) and the frame helper ($B62F) test its sign with BIT to choose the direction."
   },
   {
    "address": 46727,
    "type": "line",
-   "text": "Load 6: an unattributed loaded byte $69 between the direction working byte and the next handler. A VICE checkpoint for CPU reads, writes and instruction entry recorded zero hits during 200 frames; the control checkpoint at $13EA recorded 200 hits. This bounded observation does not prove that another state cannot use it. Its semantic role remains unknown."
+   "text": "Load 6: one byte, $69 in the load, between the type-$0A direction byte at $B686 and the type-$0B dispatcher at $B688. No instruction in load 6 or in the resident part reads, writes or indexes it."
   },
   {
    "address": 46728,
    "type": "line",
-   "text": "Load 6: type-$0B calls $B895; if that returns, it uses $1AB1,X as an index into split target tables at $B69D/$B6A4 and patches the jump at $B69A. Seven captured target pairs follow; this dispatcher does not bound the index."
+   "text": "Load 6: the type-$0B handler first calls the event helper at $B895, which may change the state, then uses $1AB1,X as an index into split target tables at $B69D/$B6A4, patches the jump at $B69A and takes it. The type’s own code stores only 1 to 6 in that state (1 at $B6D0 and $B809, 2 at $B76C, 3 at $B71E, 4 at $B7A2, 5 or 6 at $B8C2), and at $B84E restores the state the helper saved at $B8B8; the record loader leaves it 0."
   },
   {
    "address": 46746,
@@ -8063,7 +8063,7 @@
   {
    "address": 47066,
    "type": "line",
-   "text": "Load $1AD3,X into A and tail-jump to $43A2 when $B901 is negative, otherwise $43F0. Indexed source bounds and ordinary-play reachability remain open."
+   "text": "Load $1AD3,X into A and tail-jump to $43A2 when $B901 is negative, otherwise $43F0. State 3 jumps here from $B7C0 after its upward move and falls in from $B7D7; $B901 then holds the direction state 3 copied from $B8DF,X."
   },
   {
    "address": 47080,
@@ -8078,7 +8078,7 @@
   {
    "address": 47186,
    "type": "line",
-   "text": "Decrement $1AC2,X and return if the result is nonnegative. If negative, call $4B20 with A=3, load A=2 and jump to $5DB9. The preliminary helper also writes $1AC2,X before the dispatcher; ordinary-play behavior depends on that path."
+   "text": "Decrement $1AC2,X and return if the result is nonnegative. If negative, call $4B20 with A=3, load A=2 and jump to $5DB9. The event helper at $B895, which the dispatcher calls before this handler on every pass, stores the rotated $B901 in $1AC2,X at $B89E, so after the pass that selects state 6 the value decremented here is that rotated byte, not the 10 stored at $B8C8."
   },
   {
    "address": 47202,
@@ -8108,17 +8108,17 @@
   {
    "address": 47327,
    "type": "line",
-   "text": "Load 6: seventeen-byte type-$0B working array of direction values, beginning at $B8DF. The movement path loads a value indexed by entity X into the direction scratch byte; its sign selects the horizontal movement helper. The indexed accesses do not locally bound X. Captured initial bytes need not describe a freshly initialized object. Direct reference sites: $B719 (STA), $B7AD (LDA)."
+   "text": "Load 6: seventeen-byte type-$0B working array of direction values, one per entity slot, at $B8DF–$B8EF. When state 1 selects state 3 it stores the direction byte $B901 here ($B719), and state 3 copies it back to $B901 ($B7AD), whose sign selects the horizontal move. State 3 is selected only after that store, so the bytes in the load are never read."
   },
   {
    "address": 47344,
    "type": "line",
-   "text": "Load 6: seventeen-byte type-$0B working array of saved state values, beginning at $B8F0. The contact path stores the entity’s previous $1AB1,X state here, and the delayed-return path reads it back after $1B28,X becomes negative. The indexed accesses do not locally bound X. Captured initial bytes need not describe a freshly initialized object. Direct reference sites: $B84B (LDA), $B8B8 (STA)."
+   "text": "Load 6: seventeen-byte type-$0B working array of saved states, one per entity slot, at $B8F0–$B900. The event helper stores the slot’s state $1AB1,X here ($B8B8) when it selects state 5, and state 5 restores it ($B84B) once $1B28,X goes negative. State 5 is selected only after that store, so the bytes in the load are never read."
   },
   {
    "address": 47361,
    "type": "line",
-   "text": "Working byte rotated through carry by the preliminary helper, then copied to $1AC2,X."
+   "text": "Working direction byte. The event helper rotates the $72FC carry into it ($B898) and copies it to $1AC2,X; state 0 sets it to $FF ($B6C8), $B87A and state 5 copy $1AC2,X into it ($B87D, $B824), state 2 copies $1AE4,X ($B777) and state 3 copies $B8DF,X ($B7B0). Its sign, tested with BIT at $B6DE, $B700, $B72C, $B77D, $B7DD, $B7F1, $B82A, $B840, $B865 and $B883, chooses the horizontal move and the frame offset, and state 1 saves it to $B8DF,X ($B716)."
   },
   {
    "address": 47362,
@@ -8223,7 +8223,7 @@
   {
    "address": 47402,
    "type": "line",
-   "text": "State 0: when $1A29,X is zero, jump to the alternate-slot cleanup at $B9B6. Otherwise copy $1AC2,X to $B9DD and call $B9C7. Then call $45BC with A=8 if the working byte is nonnegative or $4574 if negative. If that callback returns carry clear, return. If carry is set, clear $1AF5,X, set $1AE4,X to 3 and $1AB1,X to 1, then fall through to state 1. Callback behavior and natural reachability remain open."
+   "text": "State 0: when $1A29,X is zero, jump to the alternate-slot cleanup at $B9B6. Otherwise copy $1AC2,X to $B9DD and call $B9C7. Then call $45BC with A=8 if the working byte is nonnegative or $4574 if negative. If that callback returns carry clear, return. If carry is set, clear $1AF5,X, set $1AE4,X to 3 and $1AB1,X to 1, then fall through to state 1. The dispatcher at $B912 jumps here when state $1AB1,X is 0."
   },
   {
    "address": 47453,
@@ -8243,7 +8243,7 @@
   {
    "address": 47542,
    "type": "line",
-   "text": "Save X in the immediate operand at $B9C3, use $1AD3,X as an alternate X index and clear $1B28,X there. Restore the saved X and tail-call $4454. The alternate index range and ordinary-play reachability remain open."
+   "text": "Save X in the immediate operand at $B9C3, use $1AD3,X as an alternate X index and clear $1B28,X there. Restore the saved X and tail-call $4454. State 0 jumps here from $B92F when $1A29,X is zero, and state 2 branches here from $B9A8. The type-$05 spawner at $B369 stores its own slot index in the spawned entity’s $1AD3,X at $B3B7 and sets its own $1B28,X to 1 at $B3BD; this routine clears that byte again."
   },
   {
    "address": 47559,
@@ -8253,7 +8253,7 @@
   {
    "address": 47581,
    "type": "line",
-   "text": "Working byte tested for its sign by state 1 and by the state-2 setup; the state-0 entry writes $1AC2,X here."
+   "text": "Working byte: state 0 stores $1AC2,X here at $B935, and its sign is tested by state 0 at $B93D, by state 1 at $B965 and by the state-2 setup at $B98C."
   },
   {
    "address": 47582,

@@ -2158,7 +2158,7 @@
   },
   {
    "address": 40639,
-   "name": "type0b_rotated_working_byte",
+   "name": "type0b_direction_byte",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3377,12 +3377,12 @@
   {
    "address": 39566,
    "type": "line",
-   "text": "Absolute jump whose low and high operands at $9A8F/$9A90 are patched from the state tables before execution. The entry snapshot contains placeholder $FF00; controlled dispatch tests reach the four captured targets."
+   "text": "Absolute jump whose operands at $9A8F/$9A90 the dispatcher at $9A7F patches from the target tables at $9A91/$9A95, indexed by state $1AB1,X; the load holds the placeholder $FF00."
   },
   {
    "address": 39569,
    "type": "line",
-   "text": "Four captured low bytes of state-handler addresses, paired with high bytes at $9A95. The pairs target $9A99, $9AD2, $9BCA, $9BEE. The state index has no local bounds check."
+   "text": "Four low bytes of state-handler addresses, paired with high bytes at $9A95. The pairs target $9A99, $9AD2, $9BCA, $9BEE. The dispatcher at $9A7F indexes them with state $1AB1,X, which the record loader clears to 0; the type’s own code only increments it (at $9ACF, $9B80 and $9B99) or stores 1 ($9BD6), so the state runs 0 to 3 and each pair has a state that selects it."
   },
   {
    "address": 39573,
@@ -3392,7 +3392,7 @@
   {
    "address": 39577,
    "type": "line",
-   "text": "Load 7, state 0: set $1A07,X to 7 and call $71DB. Save its returned X and Y in the immediate operands at $9AA9/$9AB1, then restore the entity index from A. Store returned X minus 4 at $1AC2,X and returned Y minus 2 at $1AD3,X, both with eight-bit wrap. Call $3020: if its returned negative flag is set, store $FD at $1AE4,X; otherwise store $03. Call $3020 again, store its low nibble at $1AF5,X and increment $1AB1,X. Execution falls through to state 1 at $9AD2; the caller’s possible state indexes and natural reachability are not locally established."
+   "text": "Load 7, state 0: set $1A07,X to 7 and call $71DB. Save its returned X and Y in the immediate operands at $9AA9/$9AB1, then restore the entity index from A. Store returned X minus 4 at $1AC2,X and returned Y minus 2 at $1AD3,X, both with eight-bit wrap. Call $3020: if its returned negative flag is set, store $FD at $1AE4,X; otherwise store $03. Call $3020 again, store its low nibble at $1AF5,X and increment $1AB1,X. Execution falls through to state 1 at $9AD2. The dispatcher at $9A7F jumps here when state $1AB1,X is 0, as the record loader leaves it."
   },
   {
    "address": 39634,
@@ -3422,7 +3422,7 @@
   {
    "address": 39728,
    "type": "line",
-   "text": "Read $1AE4,X. For a negative value, form its two’s-complement magnitude, call $4342 with that value in A and continue at $9B43. For a nonnegative value, call $4368 with A unchanged before continuing. The external routines’ effects are separate from this trace."
+   "text": "Read $1AE4,X. For a negative value, form its two’s-complement magnitude, call the upward move $4342 with that value in A and continue at $9B43. For a nonnegative value, call the downward move $4368 with A unchanged before continuing."
   },
   {
    "address": 39747,
@@ -3447,7 +3447,7 @@
   {
    "address": 39837,
    "type": "line",
-   "text": "Call $7227. Return if carry is clear; if carry is set, jump to $5D7A with A=2. The external routines’ behavior is separate from this local control flow."
+   "text": "Call the player-contact test $7227. Return if carry is clear; if carry is set, jump to the damage routine $5D7A with A=2."
   },
   {
    "address": 39848,
@@ -3457,7 +3457,7 @@
   {
    "address": 39882,
    "type": "line",
-   "text": "Load 7, state 2: if $1A8F,X is zero, clear $1AF5,X, set $1AB1,X to 1 and jump to state 1 at $9AD2. Otherwise call the shared routine at $9C0F, then inspect $1B06,X: a negative value jumps to $4574 with A=$0A, and a nonnegative value jumps to $45BC with A=$0A. Ordinary reachability and the external callbacks are not established by this local trace."
+   "text": "Load 7, state 2: if $1A8F,X is zero, clear $1AF5,X, set $1AB1,X to 1 and jump to state 1 at $9AD2. Otherwise call the shared routine at $9C0F, then inspect $1B06,X: a negative value jumps to the move right $4574 with A=$0A, and a nonnegative value jumps to the move left $45BC with A=$0A. The contact check at $9B80 selects this state when $732A returns carry set and $1A6D,X is positive, after rotating the $72FC carry into $1B06,X."
   },
   {
    "address": 39918,
@@ -3467,12 +3467,12 @@
   {
    "address": 39951,
    "type": "line",
-   "text": "Load 7: decrement $1B28,X; if the result is odd, return carry clear without changing the frame. Otherwise form $19E5,X plus 4 plus twice bit 0 of $1B17,X, with eight-bit wrap. If $1AF5,X is nonnegative, add 8 with wrap; if that addition produces zero, return carry set without storing the frame or decrementing $1B17,X. Otherwise store the resulting frame at $19C3,X and decrement $1B17,X. If its result has the sign bit set, replace it with 6 and return carry set; otherwise return carry clear. The entry’s callers and ordinary-play reachability are not established here."
+   "text": "Load 7: decrement $1B28,X; if the result is odd, return carry clear without changing the frame. Otherwise form $19E5,X plus 4 plus twice bit 0 of $1B17,X, with eight-bit wrap. If $1AF5,X is nonnegative, add 8 with wrap; if that addition produces zero, return carry set without storing the frame or decrementing $1B17,X. Otherwise store the resulting frame at $19C3,X and decrement $1B17,X. If its result has the sign bit set, replace it with 6 and return carry set; otherwise return carry clear. States 2 and 3 call it, at $9BDC and $9BEE."
   },
   {
    "address": 40006,
    "type": "line",
-   "text": "Load 7: type-$0B calls $9E53; if that returns, it uses $1AB1,X as an index into split target tables at $9C5B/$9C62 and patches the jump at $9C58. Seven captured target pairs follow; this dispatcher does not bound the index."
+   "text": "Load 7: the type-$0B handler first calls the event helper at $9E53, which may change the state, then uses $1AB1,X as an index into split target tables at $9C5B/$9C62, patches the jump at $9C58 and takes it. The type’s own code stores only 1 to 6 in that state (1 at $9C8E and $9DC7, 2 at $9D2A, 3 at $9CDC, 4 at $9D60, 5 or 6 at $9E80), and at $9E0C restores the state the helper saved at $9E76; the record loader leaves it 0."
   },
   {
    "address": 40024,
@@ -3537,7 +3537,7 @@
   {
    "address": 40344,
    "type": "line",
-   "text": "Load $1AD3,X into A and tail-jump to $43A2 when $9EBF is negative, otherwise $43F0. Indexed source bounds and ordinary-play reachability remain open."
+   "text": "Load $1AD3,X into A and tail-jump to $43A2 when $9EBF is negative, otherwise $43F0. State 3 jumps here from $9D7E after its upward move and falls in from $9D95; $9EBF then holds the direction state 3 copied from $9E9D,X."
   },
   {
    "address": 40358,
@@ -3552,7 +3552,7 @@
   {
    "address": 40464,
    "type": "line",
-   "text": "Decrement $1AC2,X and return if the result is nonnegative. If negative, call $4B20 with A=3, load A=2 and jump to $5DB9. The preliminary helper also writes $1AC2,X before the dispatcher; ordinary-play behavior depends on that path."
+   "text": "Decrement $1AC2,X and return if the result is nonnegative. If negative, call $4B20 with A=3, load A=2 and jump to $5DB9. The event helper at $9E53, which the dispatcher calls before this handler on every pass, stores the rotated $9EBF in $1AC2,X at $9E5C, so after the pass that selects state 6 the value decremented here is that rotated byte, not the 10 stored at $9E86."
   },
   {
    "address": 40480,
@@ -3582,17 +3582,17 @@
   {
    "address": 40605,
    "type": "line",
-   "text": "Load 7: seventeen-byte type-$0B working array of direction values, beginning at $9E9D. The movement path loads a value indexed by entity X into the direction scratch byte; its sign selects the horizontal movement helper. The indexed accesses do not locally bound X. Captured initial bytes need not describe a freshly initialized object. Direct reference sites: $9CD7 (STA), $9D6B (LDA)."
+   "text": "Load 7: seventeen-byte type-$0B working array of direction values, one per entity slot, at $9E9D–$9EAD. When state 1 selects state 3 it stores the direction byte $9EBF here ($9CD7), and state 3 copies it back to $9EBF ($9D6B), whose sign selects the horizontal move. State 3 is selected only after that store, so the bytes in the load are never read."
   },
   {
    "address": 40622,
    "type": "line",
-   "text": "Load 7: seventeen-byte type-$0B working array of saved state values, beginning at $9EAE. The contact path stores the entity’s previous $1AB1,X state here, and the delayed-return path reads it back after $1B28,X becomes negative. The indexed accesses do not locally bound X. Captured initial bytes need not describe a freshly initialized object. Direct reference sites: $9E09 (LDA), $9E76 (STA)."
+   "text": "Load 7: seventeen-byte type-$0B working array of saved states, one per entity slot, at $9EAE–$9EBE. The event helper stores the slot’s state $1AB1,X here ($9E76) when it selects state 5, and state 5 restores it ($9E09) once $1B28,X goes negative. State 5 is selected only after that store, so the bytes in the load are never read."
   },
   {
    "address": 40639,
    "type": "line",
-   "text": "Working byte rotated through carry by the preliminary helper, then copied to $1AC2,X."
+   "text": "Working direction byte. The event helper rotates the $72FC carry into it ($9E56) and copies it to $1AC2,X; state 0 sets it to $FF ($9C86), $9E38 and state 5 copy $1AC2,X into it ($9E3B, $9DE2), state 2 copies $1AE4,X ($9D35) and state 3 copies $9E9D,X ($9D6E). Its sign, tested with BIT at $9C9C, $9CBE, $9CEA, $9D3B, $9D9B, $9DAF, $9DE8, $9DFE, $9E23 and $9E41, chooses the horizontal move and the frame offset, and state 1 saves it to $9E9D,X ($9CD4)."
   },
   {
    "address": 40640,
