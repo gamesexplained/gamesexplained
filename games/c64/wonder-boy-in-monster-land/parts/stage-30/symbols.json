@@ -495,6 +495,11 @@
   },
   {
    "start": 37791,
+   "end": 37880,
+   "type": "Code"
+  },
+  {
+   "start": 37881,
    "end": 37961,
    "type": "Undefined"
   },
@@ -541,7 +546,7 @@
   {
    "start": 38234,
    "end": 38240,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 38241,
@@ -2501,7 +2506,7 @@
   },
   {
    "address": 37791,
-   "name": "charset_bytes_939f",
+   "name": "quest_stage_4_reward",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -4763,25 +4768,25 @@
   },
   {
    "address": 60224,
-   "name": "spawned_sprite_ad",
+   "name": "sprite_shape_ad",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 60288,
-   "name": "spawned_sprite_ae",
+   "name": "sprite_shape_ae",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 60352,
-   "name": "spawned_sprite_af",
+   "name": "sprite_shape_af",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 60416,
-   "name": "spawned_sprite_b0",
+   "name": "sprite_shape_b0",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -4799,13 +4804,13 @@
   },
   {
    "address": 60608,
-   "name": "spawned_sprite_b3",
+   "name": "sprite_shape_b3",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 60672,
-   "name": "spawned_sprite_b4",
+   "name": "sprite_shape_b4",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -4823,37 +4828,37 @@
   },
   {
    "address": 60864,
-   "name": "frame_offset_sprite_b7",
+   "name": "sprite_shape_b7",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 60928,
-   "name": "frame_offset_sprite_b8",
+   "name": "sprite_shape_b8",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 60992,
-   "name": "frame_offset_sprite_b9",
+   "name": "unused_sprite_shape_b9",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61056,
-   "name": "frame_offset_sprite_ba",
+   "name": "unused_sprite_shape_ba",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61120,
-   "name": "frame_offset_sprite_bb",
+   "name": "unused_sprite_shape_bb",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61184,
-   "name": "frame_offset_sprite_bc",
+   "name": "unused_sprite_shape_bc",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5487,7 +5492,7 @@
   {
    "address": 37791,
    "type": "line",
-   "text": "Load 30: bytes 1582–1752 of the map's character set, the eight-page copy that starts at $8D71 (the source address at $7F41/$7F42), in characters $C5–$DB. $717C copies them to $D62E–$D6D8."
+   "text": "Load 30: a quest step; stage object record 4 at $938F names it in its bytes 11 and 12. It reads the selected player's progress number, bits 0–2 of $4DE2,Y. Unless it is 4, it passes message number $16 and then 0 to $77E2. When it is 4, it sets it to 5, shows the messages at $944A and $9482 (the first begins “You've done quite”) through $77E0, passes 0 to the message routine, copies the 72 bytes at $9402 to $CCD0–$CD17, characters $9A–$A2, and puts the nine codes at $93F9 into three rows of the status panel at $5023, $5038 and $504D. The map's eight-page character copy, which starts at $8D71, also takes $939F–$93F8 to $D62E–$D687 as characters $C5–$D0."
   },
   {
    "address": 37962,
@@ -5547,7 +5552,7 @@
   {
    "address": 38234,
    "type": "line",
-   "text": "Load 30: code held as bytes, LDX #$61 / LDY #$95 / JMP $77E0, which shows message $9561. Stage record 1 at $935F names it in its fields 5 and 6. The map's character copy also takes these seven bytes, bytes 2025–2031 of the copy, to $D7E9–$D7EF in character $FD."
+   "text": "Load 30: a message callback; stage object record 1 at $935F names it in its bytes 5 and 6. It shows message $9561 (“Yow!” …) through $77E0. The map's eight-page character copy also takes $955A–$9560 to $D7E9–$D7EF as character $FD."
   },
   {
    "address": 38241,
@@ -7372,22 +7377,22 @@
   {
    "address": 60224,
    "type": "line",
-   "text": "Load 30, sprite pointer $AD: 63-byte monochrome bitmap with 32 nonzero monochrome pixels on rows 14–20. Type $27 initialization at $0952, frame restore at $200D and display update at $1C7C select this layer and companion $AE. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $AD: the monochrome layer of frame $AD, which the display builders draw from slot $AD in monochrome and slot $AE in multicolour ($1CAB–$1CEC for an entity on world coordinates, $1EAB–$1EEC for one on screen coordinates). Item 1 of the player-item action table at $08D8 runs $0952, which sets up a type-$27 entity and stores $AD as its base and frame at once ($095F–$0964). $0988 places it from the prepared position at $04A6–$04A9, or at the player's screen position with $19B2,X set when $7A is zero ($0993–$09A8), and clears $1AA0,X ($0990), so the frame restore at $200D never runs for it. Its handler $3D51 keeps $AD while it flies (state 1, up to $32 passes); when $1B17,X is set or the count runs out, state 2 at $3D9F shows $A9 and then $A7 from the table at $3DB6 and frees the slot. Its 63 bytes at $EB40 are a monochrome bitmap with 32 nonzero monochrome pixels, occupying rows 14–20. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 60288,
    "type": "line",
-   "text": "Load 30, sprite pointer $AE: 63-byte multicolour bitmap with 4 nonzero multicolour pixel pairs on rows 15–17. Type $27 initialization at $0952, frame restore at $200D and display update at $1C7C select this layer and companion $AD. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $AE: the multicolour layer of frame $AD, which the display builders draw from slot $AD in monochrome and slot $AE in multicolour ($1CAB–$1CEC for an entity on world coordinates, $1EAB–$1EEC for one on screen coordinates). Item 1 of the player-item action table at $08D8 runs $0952, which sets up a type-$27 entity and stores $AD as its base and frame at once ($095F–$0964). $0988 places it from the prepared position at $04A6–$04A9, or at the player's screen position with $19B2,X set when $7A is zero ($0993–$09A8), and clears $1AA0,X ($0990), so the frame restore at $200D never runs for it. Its handler $3D51 keeps $AD while it flies (state 1, up to $32 passes); when $1B17,X is set or the count runs out, state 2 at $3D9F shows $A9 and then $A7 from the table at $3DB6 and frees the slot. Its 63 bytes at $EB80 are a multicolour bitmap with 4 nonzero multicolour pixel pairs, occupying rows 15–17. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 60352,
    "type": "line",
-   "text": "Load 30, sprite pointer $AF: 63-byte monochrome bitmap with 27 nonzero monochrome pixels on rows 10–19. Type $29 initialization at $096D, frame restore at $200D and display update at $1C7C select this layer and companion $B0. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $AF: the monochrome layer of frame $AF, which the display builders draw from slot $AF in monochrome and slot $B0 in multicolour ($1CAB–$1CEC for an entity on world coordinates, $1EAB–$1EEC for one on screen coordinates). Item 2 of the player-item action table at $08D8 runs $096D, which sets up a type-$29 entity and stores $AF as its base and frame at once ($097A–$097F). $0988 places it from the prepared position at $04A6–$04A9, or at the player's screen position with $19B2,X set when $7A is zero ($0993–$09A8), and clears $1AA0,X ($0990), so the frame restore at $200D never runs for it. Its handler $3DFF adds bit 1 of its countdown $1B28,X (from $5A) to the base at $3E45–$3E4E, so it shows $AF and $B1 in turn, two passes each, until the count runs out and $3E5A frees the slot. Its 63 bytes at $EBC0 are a monochrome bitmap with 27 nonzero monochrome pixels, occupying rows 10–19. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 60416,
    "type": "line",
-   "text": "Load 30, sprite pointer $B0: 63-byte multicolour bitmap with 26 nonzero multicolour pixel pairs on rows 10–20. Type $29 initialization at $096D, frame restore at $200D and display update at $1C7C select this layer and companion $AF. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $B0: the multicolour layer of frame $AF, which the display builders draw from slot $AF in monochrome and slot $B0 in multicolour ($1CAB–$1CEC for an entity on world coordinates, $1EAB–$1EEC for one on screen coordinates). Item 2 of the player-item action table at $08D8 runs $096D, which sets up a type-$29 entity and stores $AF as its base and frame at once ($097A–$097F). $0988 places it from the prepared position at $04A6–$04A9, or at the player's screen position with $19B2,X set when $7A is zero ($0993–$09A8), and clears $1AA0,X ($0990), so the frame restore at $200D never runs for it. Its handler $3DFF adds bit 1 of its countdown $1B28,X (from $5A) to the base at $3E45–$3E4E, so it shows $AF and $B1 in turn, two passes each, until the count runs out and $3E5A frees the slot. Its 63 bytes at $EC00 are a multicolour bitmap with 26 nonzero multicolour pixel pairs, occupying rows 10–20. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 60480,
@@ -7402,12 +7407,12 @@
   {
    "address": 60608,
    "type": "line",
-   "text": "Load 30, sprite pointer $B3: 63-byte monochrome bitmap with 23 nonzero monochrome pixels on rows 14–18. The type-$28 path at $0916, frame restore at $200D and display update at $1C7C select this layer and companion $B4. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $B3: the monochrome layer of frame $B3, which the display builders draw from slot $B3 in monochrome and slot $B4 in multicolour ($1CAB–$1CEC for an entity on world coordinates, $1EAB–$1EEC for one on screen coordinates). Item 0 of the player-item action table at $08D8 runs $08F5, which picks an entity on the side the player faces ($08F5–$0914) and sets up a type-$28 entity with $B3 as its base and frame ($093A–$093F). $0988 places it from the prepared position at $04A6–$04A9, or at the player's screen position with $19B2,X set when $7A is zero ($0993–$09A8), and clears $1AA0,X ($0990), so the frame restore at $200D never runs for it. Its handler $3DB9 sends it toward where that entity was ($3DCF–$3DFC) and never changes its frame; it frees the slot when $1B17,X is set ($3DB9–$3DBE) or when it has no display slot ($3E54). Its 63 bytes at $ECC0 are a monochrome bitmap with 23 nonzero monochrome pixels, occupying rows 14–18. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 60672,
    "type": "line",
-   "text": "Load 30, sprite pointer $B4: 63-byte multicolour bitmap with 20 nonzero multicolour pixel pairs on rows 13–19. The type-$28 path at $0916, frame restore at $200D and display update at $1C7C select this layer and companion $B3. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $B4: the multicolour layer of frame $B3, which the display builders draw from slot $B3 in monochrome and slot $B4 in multicolour ($1CAB–$1CEC for an entity on world coordinates, $1EAB–$1EEC for one on screen coordinates). Item 0 of the player-item action table at $08D8 runs $08F5, which picks an entity on the side the player faces ($08F5–$0914) and sets up a type-$28 entity with $B3 as its base and frame ($093A–$093F). $0988 places it from the prepared position at $04A6–$04A9, or at the player's screen position with $19B2,X set when $7A is zero ($0993–$09A8), and clears $1AA0,X ($0990), so the frame restore at $200D never runs for it. Its handler $3DB9 sends it toward where that entity was ($3DCF–$3DFC) and never changes its frame; it frees the slot when $1B17,X is set ($3DB9–$3DBE) or when it has no display slot ($3E54). Its 63 bytes at $ED00 are a multicolour bitmap with 20 nonzero multicolour pixel pairs, occupying rows 13–19. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 60736,
@@ -7422,32 +7427,32 @@
   {
    "address": 60864,
    "type": "line",
-   "text": "Load 30, sprite pointer $B7: 63-byte monochrome bitmap with 209 nonzero monochrome pixels, occupying rows 0–20. With record 1 at $B5E9 in a slot and its prior frame offset $00, the update at $4261 and the display routine at $1C7C select this bitmap. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $B7: the monochrome layer of frame $B7, which the display builders draw from slot $B7 in monochrome and slot $B8 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Frame $B7 is the lower frame under the base, with the direction byte not negative. Its 63 bytes at $EDC0 are a monochrome bitmap with 209 nonzero monochrome pixels, occupying rows 0–20. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 60928,
    "type": "line",
-   "text": "Load 30, sprite pointer $B8: 63-byte multicolour bitmap with 108 nonzero multicolour pixel pairs, occupying rows 0–19. With record 1 at $B5E9 in a slot and its prior frame offset $00, the update at $4261 and the display routine at $1C7C select this bitmap. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $B8: the multicolour layer of frame $B7, which the display builders draw from slot $B7 in monochrome and slot $B8 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Frame $B7 is the lower frame under the base, with the direction byte not negative. Its 63 bytes at $EE00 are a multicolour bitmap with 108 nonzero multicolour pixel pairs, occupying rows 0–19. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 60992,
    "type": "line",
-   "text": "Load 30, sprite pointer $B9: 63-byte monochrome bitmap with 180 nonzero monochrome pixels, occupying rows 0–20. With record 1 at $B5E9 in a slot and its prior frame offset $02, the update at $4261 and the display routine at $1C7C select this bitmap. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $B9: the monochrome layer of a frame $B9, which the display builders would draw from slot $B9 in monochrome and slot $BA in multicolour ($1CAB–$1CEC for an entity on world coordinates, $1EAB–$1EEC for one on screen coordinates). No load-30 code that runs shows frame $B9 or $BB. Only the type-$0B routine at $B3FA would set the base plus 4 over the base plus 6 ($B9 over $BB, or $CB over $CD when the direction byte $B5D2 is negative), and no instruction or entry of the state table at $B36E/$B375 in load 30 reaches it; the type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows only $B5 over $B7, $BF over $C1 and $C3 over $C5, or those plus $12. Its 63 bytes at $EE40 are a monochrome bitmap with 180 nonzero monochrome pixels, occupying rows 0–20. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61056,
    "type": "line",
-   "text": "Load 30, sprite pointer $BA: 63-byte multicolour bitmap with 82 nonzero multicolour pixel pairs, occupying rows 2–20. With record 1 at $B5E9 in a slot and its prior frame offset $02, the update at $4261 and the display routine at $1C7C select this bitmap. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $BA: the multicolour layer of a frame $B9, which the display builders would draw from slot $B9 in monochrome and slot $BA in multicolour ($1CAB–$1CEC for an entity on world coordinates, $1EAB–$1EEC for one on screen coordinates). No load-30 code that runs shows frame $B9 or $BB. Only the type-$0B routine at $B3FA would set the base plus 4 over the base plus 6 ($B9 over $BB, or $CB over $CD when the direction byte $B5D2 is negative), and no instruction or entry of the state table at $B36E/$B375 in load 30 reaches it; the type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows only $B5 over $B7, $BF over $C1 and $C3 over $C5, or those plus $12. Its 63 bytes at $EE80 are a multicolour bitmap with 82 nonzero multicolour pixel pairs, occupying rows 2–20. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61120,
    "type": "line",
-   "text": "Load 30, sprite pointer $BB: 63-byte monochrome bitmap with 193 nonzero monochrome pixels, occupying rows 0–20. With record 1 at $B5E9 in a slot and its prior frame offset $04, the update at $4261 and the display routine at $1C7C select this bitmap. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $BB: the monochrome layer of a frame $BB, which the display builders would draw from slot $BB in monochrome and slot $BC in multicolour ($1CAB–$1CEC for an entity on world coordinates, $1EAB–$1EEC for one on screen coordinates). No load-30 code that runs shows frame $B9 or $BB. Only the type-$0B routine at $B3FA would set the base plus 4 over the base plus 6 ($B9 over $BB, or $CB over $CD when the direction byte $B5D2 is negative), and no instruction or entry of the state table at $B36E/$B375 in load 30 reaches it; the type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows only $B5 over $B7, $BF over $C1 and $C3 over $C5, or those plus $12. Its 63 bytes at $EEC0 are a monochrome bitmap with 193 nonzero monochrome pixels, occupying rows 0–20. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61184,
    "type": "line",
-   "text": "Load 30, sprite pointer $BC: 63-byte multicolour bitmap with 92 nonzero multicolour pixel pairs, occupying rows 0–19. With record 1 at $B5E9 in a slot and its prior frame offset $04, the update at $4261 and the display routine at $1C7C select this bitmap. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $BC: the multicolour layer of a frame $BB, which the display builders would draw from slot $BB in monochrome and slot $BC in multicolour ($1CAB–$1CEC for an entity on world coordinates, $1EAB–$1EEC for one on screen coordinates). No load-30 code that runs shows frame $B9 or $BB. Only the type-$0B routine at $B3FA would set the base plus 4 over the base plus 6 ($B9 over $BB, or $CB over $CD when the direction byte $B5D2 is negative), and no instruction or entry of the state table at $B36E/$B375 in load 30 reaches it; the type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows only $B5 over $B7, $BF over $C1 and $C3 over $C5, or those plus $12. Its 63 bytes at $EF00 are a multicolour bitmap with 92 nonzero multicolour pixel pairs, occupying rows 0–19. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61248,
@@ -7462,62 +7467,62 @@
   {
    "address": 61376,
    "type": "line",
-   "text": "Load 30, sprite pointer $BF: the monochrome layer of frame $BF, which the display builders draw from slot $BF in monochrome and slot $C0 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $EFC0 are a monochrome bitmap with 178 nonzero monochrome pixels, occupying rows 2–20. The same 63 bytes are at $F3C0 in load 7. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $BF: the monochrome layer of frame $BF, which the display builders draw from slot $BF in monochrome and slot $C0 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $EFC0 are a monochrome bitmap with 178 nonzero monochrome pixels, occupying rows 2–20. The same 63 bytes are at $F3C0 in load 7. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61440,
    "type": "line",
-   "text": "Load 30, sprite pointer $C0: the multicolour layer of frame $BF, which the display builders draw from slot $BF in monochrome and slot $C0 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F000 are a multicolour bitmap with 105 nonzero multicolour pixel pairs, occupying rows 3–20. The same 63 bytes are at $F400 in load 22. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $C0: the multicolour layer of frame $BF, which the display builders draw from slot $BF in monochrome and slot $C0 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F000 are a multicolour bitmap with 105 nonzero multicolour pixel pairs, occupying rows 3–20. The same 63 bytes are at $F400 in load 22. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61504,
    "type": "line",
-   "text": "Load 30, sprite pointer $C1: the monochrome layer of frame $C1, which the display builders draw from slot $C1 in monochrome and slot $C2 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F040 are a monochrome bitmap with 148 nonzero monochrome pixels, occupying rows 0–20. The same 63 bytes are at $F440 in load 7. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $C1: the monochrome layer of frame $C1, which the display builders draw from slot $C1 in monochrome and slot $C2 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F040 are a monochrome bitmap with 148 nonzero monochrome pixels, occupying rows 0–20. The same 63 bytes are at $F440 in load 7. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61568,
    "type": "line",
-   "text": "Load 30, sprite pointer $C2: the multicolour layer of frame $C1, which the display builders draw from slot $C1 in monochrome and slot $C2 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F080 are a multicolour bitmap with 81 nonzero multicolour pixel pairs, occupying rows 0–19. The same 63 bytes are at $F480 in load 22. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $C2: the multicolour layer of frame $C1, which the display builders draw from slot $C1 in monochrome and slot $C2 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F080 are a multicolour bitmap with 81 nonzero multicolour pixel pairs, occupying rows 0–19. The same 63 bytes are at $F480 in load 22. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61632,
    "type": "line",
-   "text": "Load 30, sprite pointer $C3: the monochrome layer of frame $C3, which the display builders draw from slot $C3 in monochrome and slot $C4 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F0C0 are a monochrome bitmap with 169 nonzero monochrome pixels, occupying rows 0–20. The same 63 bytes are at $F4C0 in load 7. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $C3: the monochrome layer of frame $C3, which the display builders draw from slot $C3 in monochrome and slot $C4 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F0C0 are a monochrome bitmap with 169 nonzero monochrome pixels, occupying rows 0–20. The same 63 bytes are at $F4C0 in load 7. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61696,
    "type": "line",
-   "text": "Load 30, sprite pointer $C4: the multicolour layer of frame $C3, which the display builders draw from slot $C3 in monochrome and slot $C4 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F100 are a multicolour bitmap with 98 nonzero multicolour pixel pairs, occupying rows 1–20. The same 63 bytes are at $F500 in load 22. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $C4: the multicolour layer of frame $C3, which the display builders draw from slot $C3 in monochrome and slot $C4 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F100 are a multicolour bitmap with 98 nonzero multicolour pixel pairs, occupying rows 1–20. The same 63 bytes are at $F500 in load 22. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61760,
    "type": "line",
-   "text": "Load 30, sprite pointer $C5: the monochrome layer of frame $C5, which the display builders draw from slot $C5 in monochrome and slot $C6 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F140 are a monochrome bitmap with 183 nonzero monochrome pixels, occupying rows 0–18. The same 63 bytes are at $F540 in load 7. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $C5: the monochrome layer of frame $C5, which the display builders draw from slot $C5 in monochrome and slot $C6 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F140 are a monochrome bitmap with 183 nonzero monochrome pixels, occupying rows 0–18. The same 63 bytes are at $F540 in load 7. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61824,
    "type": "line",
-   "text": "Load 30, sprite pointer $C6: the multicolour layer of frame $C5, which the display builders draw from slot $C5 in monochrome and slot $C6 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F180 are a multicolour bitmap with 86 nonzero multicolour pixel pairs, occupying rows 0–17. The same 63 bytes are at $F580 in load 22. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $C6: the multicolour layer of frame $C5, which the display builders draw from slot $C5 in monochrome and slot $C6 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F180 are a multicolour bitmap with 86 nonzero multicolour pixel pairs, occupying rows 0–17. The same 63 bytes are at $F580 in load 22. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61888,
    "type": "line",
-   "text": "Load 30, sprite pointer $C7: the monochrome layer of frame $C7, which the display builders draw from slot $C7 in monochrome and slot $C8 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F1C0 are a monochrome bitmap with 166 nonzero monochrome pixels, occupying rows 0–20. The same 63 bytes are at $F5C0 in load 7. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $C7: the monochrome layer of frame $C7, which the display builders draw from slot $C7 in monochrome and slot $C8 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F1C0 are a monochrome bitmap with 166 nonzero monochrome pixels, occupying rows 0–20. The same 63 bytes are at $F5C0 in load 7. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 61952,
    "type": "line",
-   "text": "Load 30, sprite pointer $C8: the multicolour layer of frame $C7, which the display builders draw from slot $C7 in monochrome and slot $C8 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F200 are a multicolour bitmap with 86 nonzero multicolour pixel pairs, occupying rows 2–20. The same 63 bytes are at $F600 in load 22. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $C8: the multicolour layer of frame $C7, which the display builders draw from slot $C7 in monochrome and slot $C8 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F200 are a multicolour bitmap with 86 nonzero multicolour pixel pairs, occupying rows 2–20. The same 63 bytes are at $F600 in load 22. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 62016,
    "type": "line",
-   "text": "Load 30, sprite pointer $C9: the monochrome layer of frame $C9, which the display builders draw from slot $C9 in monochrome and slot $CA in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F240 are a monochrome bitmap with 209 nonzero monochrome pixels, occupying rows 0–20. The same 63 bytes are at $F640 in load 7. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $C9: the monochrome layer of frame $C9, which the display builders draw from slot $C9 in monochrome and slot $CA in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F240 are a monochrome bitmap with 209 nonzero monochrome pixels, occupying rows 0–20. The same 63 bytes are at $F640 in load 7. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 62080,
    "type": "line",
-   "text": "Load 30, sprite pointer $CA: the multicolour layer of frame $C9, which the display builders draw from slot $C9 in monochrome and slot $CA in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F280 are a multicolour bitmap with 108 nonzero multicolour pixel pairs, occupying rows 0–19. The same 63 bytes are at $F680 in load 22. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $CA: the multicolour layer of frame $C9, which the display builders draw from slot $C9 in monochrome and slot $CA in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F280 are a multicolour bitmap with 108 nonzero multicolour pixel pairs, occupying rows 0–19. The same 63 bytes are at $F680 in load 22. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 62144,
@@ -7552,42 +7557,42 @@
   {
    "address": 62528,
    "type": "line",
-   "text": "Load 30, sprite pointer $D1: the monochrome layer of frame $D1, which the display builders draw from slot $D1 in monochrome and slot $D2 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F440 are a monochrome bitmap with 178 nonzero monochrome pixels, occupying rows 2–20. The same 63 bytes are at $F840 in load 7. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $D1: the monochrome layer of frame $D1, which the display builders draw from slot $D1 in monochrome and slot $D2 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F440 are a monochrome bitmap with 178 nonzero monochrome pixels, occupying rows 2–20. The same 63 bytes are at $F840 in load 7. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 62592,
    "type": "line",
-   "text": "Load 30, sprite pointer $D2: the multicolour layer of frame $D1, which the display builders draw from slot $D1 in monochrome and slot $D2 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F480 are a multicolour bitmap with 105 nonzero multicolour pixel pairs, occupying rows 3–20. The same 63 bytes are at $F880 in load 22. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $D2: the multicolour layer of frame $D1, which the display builders draw from slot $D1 in monochrome and slot $D2 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F480 are a multicolour bitmap with 105 nonzero multicolour pixel pairs, occupying rows 3–20. The same 63 bytes are at $F880 in load 22. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 62656,
    "type": "line",
-   "text": "Load 30, sprite pointer $D3: the monochrome layer of frame $D3, which the display builders draw from slot $D3 in monochrome and slot $D4 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F4C0 are a monochrome bitmap with 148 nonzero monochrome pixels, occupying rows 0–20. The same 63 bytes are at $F8C0 in load 7. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $D3: the monochrome layer of frame $D3, which the display builders draw from slot $D3 in monochrome and slot $D4 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F4C0 are a monochrome bitmap with 148 nonzero monochrome pixels, occupying rows 0–20. The same 63 bytes are at $F8C0 in load 7. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 62720,
    "type": "line",
-   "text": "Load 30, sprite pointer $D4: the multicolour layer of frame $D3, which the display builders draw from slot $D3 in monochrome and slot $D4 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F500 are a multicolour bitmap with 81 nonzero multicolour pixel pairs, occupying rows 0–19. The same 63 bytes are at $F900 in load 22. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $D4: the multicolour layer of frame $D3, which the display builders draw from slot $D3 in monochrome and slot $D4 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F500 are a multicolour bitmap with 81 nonzero multicolour pixel pairs, occupying rows 0–19. The same 63 bytes are at $F900 in load 22. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 62784,
    "type": "line",
-   "text": "Load 30, sprite pointer $D5: the monochrome layer of frame $D5, which the display builders draw from slot $D5 in monochrome and slot $D6 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F540 are a monochrome bitmap with 169 nonzero monochrome pixels, occupying rows 0–20. The same 63 bytes are at $F940 in load 7. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $D5: the monochrome layer of frame $D5, which the display builders draw from slot $D5 in monochrome and slot $D6 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F540 are a monochrome bitmap with 169 nonzero monochrome pixels, occupying rows 0–20. The same 63 bytes are at $F940 in load 7. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 62848,
    "type": "line",
-   "text": "Load 30, sprite pointer $D6: the multicolour layer of frame $D5, which the display builders draw from slot $D5 in monochrome and slot $D6 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F580 are a multicolour bitmap with 98 nonzero multicolour pixel pairs, occupying rows 1–20. The same 63 bytes are at $F980 in load 22. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $D6: the multicolour layer of frame $D5, which the display builders draw from slot $D5 in monochrome and slot $D6 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F580 are a multicolour bitmap with 98 nonzero multicolour pixel pairs, occupying rows 1–20. The same 63 bytes are at $F980 in load 22. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 62912,
    "type": "line",
-   "text": "Load 30, sprite pointer $D7: the monochrome layer of frame $D7, which the display builders draw from slot $D7 in monochrome and slot $D8 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F5C0 are a monochrome bitmap with 183 nonzero monochrome pixels, occupying rows 0–18. The same 63 bytes are at $F9C0 in load 7. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $D7: the monochrome layer of frame $D7, which the display builders draw from slot $D7 in monochrome and slot $D8 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F5C0 are a monochrome bitmap with 183 nonzero monochrome pixels, occupying rows 0–18. The same 63 bytes are at $F9C0 in load 7. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 62976,
    "type": "line",
-   "text": "Load 30, sprite pointer $D8: the multicolour layer of frame $D7, which the display builders draw from slot $D7 in monochrome and slot $D8 in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F600 are a multicolour bitmap with 86 nonzero multicolour pixel pairs, occupying rows 0–17. The same 63 bytes are at $FA00 in load 22. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 30, sprite pointer $D8: the multicolour layer of frame $D7, which the display builders draw from slot $D7 in monochrome and slot $D8 in multicolour ($1EAB–$1EEC in the direct-coordinate builder $1DC8 for a frame in $19C3,X, $1F49–$1F88 for a lower frame in $19D4,X). Load 30's type-$0B entity, which the stage-object callback at $94AE sets up with base frame $B5, shows two frames at once, $19C3,X and the one two above it in $19D4,X, both $12 higher when the direction byte $B5D2 is negative: $B54B and state 4 at $B4B9 set the base ($B5 over $B7, or $C7 over $C9), state 5 at $B4ED the base plus $0A ($BF over $C1, or $D1 over $D3) and $B533 the base plus $0E ($C3 over $C5, or $D5 over $D7). Its 63 bytes at $F600 are a multicolour bitmap with 86 nonzero multicolour pixel pairs, occupying rows 0–17. The same 63 bytes are at $FA00 in load 22. The slot's 64th byte, $00, is not part of the picture."
   },
   {
    "address": 63040,
@@ -7598,6 +7603,11 @@
    "address": 63104,
    "type": "line",
    "text": "Load 30, sprite pointer $DA: the multicolour layer of frame $D9, which the display builders draw from slot $D9 in monochrome and slot $DA in multicolour ($1CAB–$1CEC for a frame in $19C3,X, $1D53–$1D92 for a lower frame in $19D4,X). Load 30's header byte $7F6B holds frame $D9; $5FE2 copies it to $19E5 and $19C3 for the type-$F9 pickup, whose contact handler $7661 sets the player's flag $40. Its 63 bytes at $F680 are a multicolour bitmap with 25 nonzero multicolour pixel pairs, occupying rows 9–19. The same 63 bytes are the picture of slot $C6 in load 16. The slot's 64th byte, $00, is not part of the picture."
+  },
+  {
+   "address": 37881,
+   "type": "line",
+   "text": "Load 30: the nine character codes, three rows of three, that $939F puts in the status panel at $5023, $5038 and $504D ($93F9–$9401), then the 72 bytes of glyph data it copies to $CCD0–$CD17, characters $9A–$A2 ($9402–$9449). The map's eight-page character copy, which starts at $8D71, also takes $93F9–$9449 to $D688–$D6D8 as characters $D1–$DB."
   }
  ]
 }
