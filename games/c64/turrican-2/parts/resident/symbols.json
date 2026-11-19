@@ -3380,7 +3380,7 @@
   },
   {
    "address": 2152,
-   "name": "scroll_left_column_step",
+   "name": "scroll_right_column_step",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -3494,13 +3494,13 @@
   },
   {
    "address": 2259,
-   "name": "player_walk_left_shapes",
+   "name": "player_walk_right_shapes",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 2266,
-   "name": "player_walk_right_shapes",
+   "name": "player_walk_left_shapes",
    "type": "Field",
    "kind": "user"
   },
@@ -3602,7 +3602,7 @@
   },
   {
    "address": 2353,
-   "name": "wheel_animation_shapes",
+   "name": "invulnerability_blink_shapes",
    "type": "Field",
    "kind": "user"
   },
@@ -7616,7 +7616,7 @@
   },
   {
    "address": 14268,
-   "name": "laser_trailing_glyph_base",
+   "name": "laser_front_glyph_base",
    "type": "Field",
    "kind": "user"
   },
@@ -12321,7 +12321,7 @@
   {
    "address": 45,
    "type": "line",
-   "text": "Nonzero selects the wheel's sprite layout, reduced collision height, faster horizontal step and wheel-specific animation. Down plus the CIA1 port-B bit-4 key test activates it; jumping with free space beneath can clear it."
+   "text": "Nonzero selects the wheel's sprite layout, reduced collision height, faster horizontal step and wheel-specific animation. Down plus the CIA1 port-B bit-4 key test activates it; a jump while the camera is not scrolling clears it when the cell above the wheel (row one, column one from the row pointer) is passable."
   },
   {
    "address": 100,
@@ -12371,7 +12371,7 @@
   {
    "address": 996,
    "type": "line",
-   "text": "Main-thread dispatch index. The table at $0A5B/$0A62 selects a busy wait, restart paths, the disk transition or the alternate start path; raster handlers request those transitions."
+   "text": "Main-thread dispatch index. The table at $0A5B/$0A62 gives seven targets: zero the busy wait at $0A49, one the checkpoint resume at $53C6, two the death-message shape install at $53DE, three the return to the title loader at $53E4, four the next-level load at $544A, five the reload of the current level at $5563 and six the game-over colour fill at $5571. Raster handlers request the stages, and machine initialization selects five at $5098."
   },
   {
    "address": 998,
@@ -12401,7 +12401,7 @@
   {
    "address": 1152,
    "type": "line",
-   "text": "Five eight-byte glyphs at codes $90-$94 draw the TIME label and its punctuation in the status panel."
+   "text": "Five eight-byte glyphs at codes $90-$94 draw the TIME label across five cells of the status panel; the last glyph is the right-hand part of the E."
   },
   {
    "address": 1296,
@@ -12426,7 +12426,7 @@
   {
    "address": 1544,
    "type": "line",
-   "text": "Continuation of the panel character bitmaps beginning at $0400. These rows include the energy-bar glyphs at the high end of the panel alphabet."
+   "text": "Glyphs $C1-$C3 of the panel font beginning at $0400. With $C0 at $0600 they form the two-by-two cross at panel cells $0773/$0774 and $079B/$079C, beside the lives digits. The three flying levels, level 4-1 and the title file each copy thirty-two bytes over $0600-$061F. The energy-bar glyphs follow at $0620."
   },
   {
    "address": 1568,
@@ -12446,7 +12446,7 @@
   {
    "address": 1685,
    "type": "line",
-   "text": "Final four entries of the eight-count raster-delay table beginning at $0691. The raster alignment code selects the count from the low three raster bits."
+   "text": "Final four entries of the eight delay-loop counts beginning at $0691, indexed by the low three bits of the control register read at $0C89, the vertical fine-scroll bits. The first of them, $0695, is rewritten: the viewport-mask IRQ stores $09 at $49D5 and $0D at $48EF, and level 2-2 writes it too. Level 5-2 patches the last, $0698."
   },
   {
    "address": 1689,
@@ -12466,7 +12466,7 @@
   {
    "address": 1747,
    "type": "line",
-   "text": "Indirect return continuation used by $0C86 after the player-update portion of the raster handler. Initialized and replaced with the level's scheduling configuration."
+   "text": "Indirect continuation taken at $0C86 after the player and camera update when no screen update is requested, and after $0C83 when the player update is skipped. Initialization and the idle camera path store the IRQ exit $0A3A; the camera scroll routines and the scroll scheduler ($1945, $2ACD) store the next staged character-copy routine."
   },
   {
    "address": 1749,
@@ -12541,17 +12541,17 @@
   {
    "address": 1773,
    "type": "line",
-   "text": "JMP hook called instead of ordinary actor setup when $03E1 is nonzero. Its saved target is the return stub; level initialization can replace the operand."
+   "text": "JMP hook that the playfield IRQ at $0AA0 calls in place of programming the actor sprites when $03E1 is nonzero. Its saved target is the return stub; a level's boss or scene controller stores its own sprite routine in the operand."
   },
   {
    "address": 1774,
    "type": "line",
-   "text": "Low target byte of the alternate player JMP hook at $06ED. Stores to this address change the selected handler without adding another routine."
+   "text": "Low target byte of the JMP hook at $06ED, which the playfield IRQ calls in place of programming the actor sprites when $03E1 is nonzero. Stores to this address change the selected handler without adding another routine."
   },
   {
    "address": 1775,
    "type": "line",
-   "text": "High target byte of the alternate player JMP hook at $06ED. Stores to this address change the selected handler without adding another routine."
+   "text": "High target byte of the JMP hook at $06ED, which the playfield IRQ calls in place of programming the actor sprites when $03E1 is nonzero. Stores to this address change the selected handler without adding another routine."
   },
   {
    "address": 1776,
@@ -12586,7 +12586,7 @@
   {
    "address": 1782,
    "type": "line",
-   "text": "JMP hook entered by energy depletion and timer-expiry paths. Its saved target is $4C4D."
+   "text": "JMP hook entered by the energy-depletion path at $4C37, the timer expiry at $0C29 and the test at $0C5C for a player Y of $E4 or more. Its saved target is $4C4D."
   },
   {
    "address": 1785,
@@ -13006,7 +13006,7 @@
   {
    "address": 2152,
    "type": "line",
-   "text": "Direction-three entry within the column-step table at $0865. Player reset installs minus one here, while movement can replace associated scroll-step entries."
+   "text": "Direction-four (rightward scroll) entry of the column-step table at $0865, its fourth byte: minus one, so a rightward scroll moves projectiles one column left. Player reset installs minus one here at $5259. Level 3-2 writes it at $EF70 and adds it at $EF90 and $EFA5."
   },
   {
    "address": 2157,
@@ -13061,7 +13061,7 @@
   {
    "address": 2201,
    "type": "line",
-   "text": "Initial closed-orb sprite pointer selected by the resident orb handler; reset writes $90 into this byte. The shape was rendered from the gameplay sprite bank."
+   "text": "Initial sprite pointer selected by the resident bouncing-orb handler at $57F1; level-vector initialization writes $90 into this byte at $514F, and levels 3-1, 3-2 and 3-3 write their own."
   },
   {
    "address": 2202,
@@ -13076,17 +13076,17 @@
   {
    "address": 2213,
    "type": "line",
-   "text": "Ten colours paired with the subtype sprite pointers at $089B. These distinguish the six reward orbs sharing a shape."
+   "text": "Colours paired with the subtype sprite pointers at $089B, read at $5944. Nine are here; the tenth, the diamond's white, is the byte at $08AE, which the actor handler low-byte table also takes in. The first six distinguish the reward orbs sharing a shape."
   },
   {
    "address": 2222,
    "type": "line",
-   "text": "Seventeen low-byte entries indexed by actor type zero through sixteen. The high-byte table begins at $08BE, overlapping the final low byte: both stored values are $27. Type zero is skipped; type sixteen combines $27 with $5B at $08CE to reach the projectile handler $5B27."
+   "text": "Seventeen low-byte entries indexed by actor type zero through sixteen. Type zero is skipped at $0E8E before the lookup, so entry zero is never read as a pointer: its byte, $01, is read at $5944 as the tenth collectible colour, the diamond's. The high-byte table begins at $08BE, overlapping the final low byte: both stored values are $27. Type sixteen combines $27 with $5B at $08CE to reach the projectile handler $5B27."
   },
   {
    "address": 2238,
    "type": "line",
-   "text": "Shared byte $27: low byte of actor handler sixteen and high byte of reserved handler zero. The seventeen high-byte entries continue through $08CE. A six-instruction live dispatch trace confirmed type sixteen reaches $5B27."
+   "text": "Shared byte $27: the low byte of actor handler sixteen, $5B27, and entry zero of the high-byte table, which is never read as a high byte because type zero is skipped at $0E8E. The seventeen high-byte entries continue through $08CE."
   },
   {
    "address": 2254,
@@ -13101,12 +13101,12 @@
   {
    "address": 2259,
    "type": "line",
-   "text": "Seven sprite numbers selected by the descending walk-animation index for facing left. The right-facing sequence begins at $08DA."
+   "text": "Seven right-facing walk-animation sprite numbers, read through the descending walk index at $28 when the facing flag $25 is set ($0973). The left-facing sequence follows at $08DA."
   },
   {
    "address": 2266,
    "type": "line",
-   "text": "Seven right-facing walk-animation sprite numbers, paired with the left-facing sequence at $08D3. $095B selects one sequence through the facing flag."
+   "text": "Seven left-facing walk-animation sprite numbers, paired with the right-facing sequence at $08D3. $096C reads this one when the facing flag $25 is zero, and walk_left at $1372 always does."
   },
   {
    "address": 2273,
@@ -13151,7 +13151,7 @@
   {
    "address": 2284,
    "type": "line",
-   "text": "Eleven signed Y adjustments indexed by the wheel transition counter $03DE. The wheel movement path applies them while the cell below is passable, then increments the counter toward ten."
+   "text": "Eleven signed Y adjustments indexed by the wheel counter $03DE. In wheel form with $29 clear, $10CC-$10DF add the indexed step to player Y when the cell above the wheel (row one, column one from the row pointer) is passable, and $10E1 increments the counter either way. The path is skipped once the counter is ten, so the eleventh byte is never read."
   },
   {
    "address": 2295,
@@ -13186,17 +13186,17 @@
   {
    "address": 2349,
    "type": "line",
-   "text": "Four colours selected by the low two CIA timer bits during the final part of the invulnerability countdown. Earlier phases use the active effect colour directly."
+   "text": "Four colours selected by the low two CIA timer bits while the invulnerability countdown $0816 is below $30. Before that the three sprites are white: A still holds the blink phase $0817, which is one on this path."
   },
   {
    "address": 2353,
    "type": "line",
-   "text": "Six sprite numbers for the wheel's rotating body. $0F83 places the chosen shape in both screen-buffer sprite directories."
+   "text": "Six sprite numbers, $92 $93 $94 $95 $94 $93, that the invulnerability blink cycles through. $0F83 places the chosen shape in both screen-buffer sprite directories; the wheel's own shapes are $7C-$83."
   },
   {
    "address": 2359,
    "type": "line",
-   "text": "Eight loop-delay counts indexed by the raster line's low three bits at $0CF4. They align the panel-to-game display-control write; this is timing data, not sprite colour data."
+   "text": "Eight delay-loop counts indexed by the low three bits of the control register read at $0CF4 ($D0D1, a mirror of $D011), the vertical fine-scroll bits. They time the display-control write at $0D05 that opens the status panel; this is timing data, not sprite colour data."
   },
   {
    "address": 2367,
@@ -13221,7 +13221,7 @@
   {
    "address": 2446,
    "type": "line",
-   "text": "Fill the first page of the other screen buffer and eight mask accumulators with $FF, select the inverse mask sense, set $07FE and reset its cursor. The mask completion path selects a main-thread transition stage."
+   "text": "Clear the first page of the other screen buffer and the eight mask accumulators $6F-$76 to zero, set the mask sense $77 to one (bits are then set as the mask advances), set $07FE to one and reset its cursor $78. The mask completion path selects a main-thread transition stage."
   },
   {
    "address": 2458,
@@ -13261,7 +13261,7 @@
   {
    "address": 2624,
    "type": "line",
-   "text": "Little-endian ending return vector $53E4. The ending exits through JMP ($0A40) at $7C9E; a targeted instruction step confirmed that it enters the resident title-file loader handler."
+   "text": "Little-endian ending return vector $53E4, the resident routine that loads the title file. The ending exits through JMP ($0A40) at $7C9E."
   },
   {
    "address": 2626,
@@ -13336,22 +13336,22 @@
   {
    "address": 4195,
    "type": "line",
-   "text": "Derive terrain row and column pointers and collision height for standing or wheel form. Read joystick up edges for jumping, test right and left movement against tile properties at $BE91, and handle down plus the port-B bit-4 key test for wheel form. Select walking, crouching, jumping or wheel shapes and update coordinates; negative terrain properties call the damage path unless wheel/effect flags bypass it."
+   "text": "Derive the terrain row pointer and column from the player position, and the horizontal step for standing or wheel form: $2B is one or two, copied to the actor scroll steps $0878/$0879, and $1A is twice that. Read joystick up edges for jumping, send right and left to the walk routines, which test tile properties at $BE91, and handle down plus the port-B bit-4 key test for wheel form. Select crouching, standing, airborne or wheel shapes and update coordinates. A negative property under the feet calls the damage path unless the wheel or invulnerability flag ($2D, $0815) bypasses it; the four-row body test at $11F8 calls it with no such bypass."
   },
   {
    "address": 4708,
    "type": "line",
-   "text": "Test headroom across the player's occupied columns through the tile-property table. A solid ceiling switches to curve index $21; otherwise advance the jump curve and Y position. Wheel form can end when its lower tile is empty, and direction input feeds the horizontal movement paths."
+   "text": "Test headroom across the player's occupied columns through the tile-property table. A solid ceiling switches to curve index $21; otherwise advance the jump curve and Y position. Wheel form ends when the camera is not scrolling and the cell above the wheel (row one, column one from the row pointer) is passable, and direction input feeds the horizontal movement paths."
   },
   {
    "address": 4821,
    "type": "line",
-   "text": "Advance the walking animation divider and right-facing shape sequence when standing, then set facing right and test the terrain cells on the right. Empty cells permit adding $2B to the player X coordinate; solid cells stop movement, and wheel form reverses direction at a wall."
+   "text": "Advance the walking animation divider and right-facing shape sequence when standing, then set facing right and test the terrain cells on the right. Where they are empty, the step held in $2B (one, or two in wheel form) is added to the player X coordinate unless X has reached $98. A cell with a negative property calls the damage step at $1349 unless wheel form or invulnerability ($2D, $0815) is set, and the player still moves. A solid cell stops movement, and wheel form reverses direction at a wall."
   },
   {
    "address": 4957,
    "type": "line",
-   "text": "Advance the left-facing walking animation sequence when standing, select left-facing movement and test the terrain cells on the left. Empty cells permit subtracting $2B from X; negative terrain properties invoke damage unless wheel/effect flags bypass it, and a solid wall reverses wheel direction."
+   "text": "Advance the left-facing walking animation sequence when standing, select left-facing movement and test the terrain cells on the left. Where they are empty, the step held in $2B is subtracted from X unless X is below $12. A cell with a negative property calls the damage step at $13D1 unless wheel form or invulnerability ($2D, $0815) is set, and the player still moves; a solid wall stops movement and reverses wheel direction."
   },
   {
    "address": 5091,
@@ -13376,27 +13376,27 @@
   {
    "address": 5375,
    "type": "line",
-   "text": "Respect the downward inhibit flag and compare the 16-bit map Y position with the level header's limit at $8FCE/$8FCF. Compensate player Y by subtracting $ED, advance the fine-scroll phase and increment map Y when a character row is crossed; schedule direction one through $1924."
+   "text": "Respect the downward inhibit flag and compare the 16-bit map Y position with the level header's limit at $8FCE/$8FCF. Compensate player Y by subtracting $ED, advance the fine-scroll phase and increment map Y when a character row is crossed; then call $1924 with X = 1, this direction (two) minus one."
   },
   {
    "address": 5476,
    "type": "line",
-   "text": "Respect the left inhibit flag and map-X zero limit, choose the buffer-specific copy continuation and compensate player X by adding $2B. Advance the horizontal fine phase by $1A, adjusting the 16-bit map X position and scheduling direction two at a character boundary. Wheel/up input has a path that leaves wheel form when the supporting tile is empty."
+   "text": "Respect the left inhibit flag and map-X zero limit, choose the buffer-specific copy continuation and compensate player X by adding $2B. Advance the horizontal fine phase by $1A, adjusting the 16-bit map X position and calling $1924 with X = 2 (direction three minus one) at a character boundary. With up held, wheel form ends when the cell above the wheel (row one, column one from the row pointer) is passable."
   },
   {
    "address": 5627,
    "type": "line",
-   "text": "Respect the right inhibit flag and the 16-bit map-X limit at $8FCC/$8FCD. Compensate player X by subtracting $2B and adjust the fine phase; increment map X and schedule direction three when the phase wraps. A wheel/up path can leave wheel form after checking the supporting tile."
+   "text": "Respect the right inhibit flag and the 16-bit map-X limit at $8FCC/$8FCD. Compensate player X by subtracting $2B and adjust the fine phase; when the phase wraps, increment map X and call $1924 with X = 3 (direction four minus one). With up held at the wrap, wheel form ends instead when the cell above the wheel (row one, column one from the row pointer) is passable."
   },
   {
    "address": 5765,
    "type": "line",
-   "text": "Select the diagonal copy continuation, with fallbacks to an axial direction at map boundaries. Compensate both player coordinates, test the adjacent terrain while recentring, update both fine phases and decrement both map coordinates at a character boundary before scheduling direction four."
+   "text": "Select the diagonal copy continuation, with fallbacks to an axial direction at map boundaries. Compensate both player coordinates, test the adjacent terrain while recentring, update both fine phases and decrement both map coordinates at a character boundary before calling $1924 with X = 4 (direction five minus one)."
   },
   {
    "address": 5928,
    "type": "line",
-   "text": "Select the diagonal copy continuation with map-boundary fallbacks. Compensate player X toward the viewport centre and subtract four from player Y; adjust the two fine phases and, at a boundary, decrement map X and increment map Y before scheduling direction five."
+   "text": "Select the diagonal copy continuation with map-boundary fallbacks. Compensate player X toward the viewport centre and subtract four from player Y; adjust the two fine phases and, at a boundary, decrement map X and increment map Y before calling $1924 with X = 5 (direction six minus one)."
   },
   {
    "address": 6094,
@@ -13416,7 +13416,7 @@
   {
    "address": 6493,
    "type": "line",
-   "text": "Store A into the wheel-form flag, scroll displacement and active-scroll flag, then return. The wheel/up paths use it after finding free supporting terrain."
+   "text": "Store A into the wheel-form flag, scroll displacement and active-scroll flag, then return. The wheel/up paths at $15EA and $1677 use it, with A zero, after finding the cell above the wheel passable."
   },
   {
    "address": 6501,
@@ -13516,7 +13516,7 @@
   {
    "address": 9985,
    "type": "line",
-   "text": "Address retained in actor-handler table entry zero, inside the screen-copy routine beginning at $269F. Actor dispatch skips zero types before table lookup, so this table value does not define another actor behavior."
+   "text": "DEX that closes the X loop of the screen copy beginning at $269F. Nothing jumps here. The address is only what the bytes at $08AE and $08BE spell when read as actor type zero's pointer, which the dispatcher never does: $08AE is the diamond's colour and $08BE is the low byte of handler sixteen."
   },
   {
    "address": 10084,
@@ -13611,7 +13611,7 @@
   {
    "address": 11326,
    "type": "line",
-   "text": "Apply direction-indexed column/row deltas to active bonus-block effects, projectiles and other transient object arrays. Clear records that leave their permitted screen bounds; shift the additional arrays at $0209/$0212 and $0801/$0808 without those clipping checks."
+   "text": "Apply the column and row steps for the scroll index in X (direction minus one) to the four wheel bombs ($0266/$026A), ten character projectiles ($0281/$028B) and five laser beams ($02EF/$02F4), clearing each record that leaves the screen: forty columns, and twenty-one rows, twenty for the lasers. Shift the nine bounce-shot positions at $0209/$0212 and, when $0800 is nonzero, the seven positions at $0801/$0808 that level 1-2 keeps, without those clipping checks."
   },
   {
    "address": 11519,
@@ -13631,7 +13631,7 @@
   {
    "address": 11844,
    "type": "line",
-   "text": "Update four character-cell bomb records. A new record saves its terrain character and draws glyph $DD with colour nine. Timed updates blink the colour and, on expiry, restore the saved cell in both screen buffers, activate matching bonus-block terrain and allocate a sprite effect when a slot is available. A short player-animation disturbance uses CIA timer samples and later restores the saved animation state."
+   "text": "Update four character-cell bomb records. A new record saves its terrain character and draws glyph $DD with colour nine. Timed updates blink the colour and, on expiry, restore the saved cell in both screen buffers, activate matching bonus-block terrain and allocate a sprite effect when a slot is available. Each expiry also starts a twelve-update screen shake through $027E-$0280: the low three CIA timer bits go into the vertical fine scroll $17 (the horizontal, $16, when $03E1 is set), and the saved fine scroll is put back when the count runs out."
   },
   {
    "address": 12163,
@@ -13666,7 +13666,7 @@
   {
    "address": 12929,
    "type": "line",
-   "text": "Walk ten projectile slots, restore the character and colour cells each previously covered in both terrain buffers, then advance by two columns with optional vertical motion. Bounce trajectories animate dedicated character shapes; passable destination cells receive the projectile glyph, while terrain collisions restore, animate or remove the slot and can activate a bonus-block record."
+   "text": "Walk ten projectile slots, restore the character and colour cells each previously covered in both terrain buffers, then advance by two columns with optional vertical motion. Diagonal shots animate dedicated character shapes: phases $FF and 1 rewrite the patterns of glyphs $E3-$E6 at $C718-$C737, phases $FE and 2 alternate two glyph codes. Passable destination cells receive the projectile glyph, while terrain collisions restore, animate or remove the slot and can activate a bonus block."
   },
   {
    "address": 13694,
@@ -13686,7 +13686,7 @@
   {
    "address": 13721,
    "type": "line",
-   "text": "Nine initial motion-mode flags paired with the three-slot scatter groups, copied into $02E5 for the updater."
+   "text": "Nine initial pattern-row indices paired with the three-slot scatter groups, copied into $02E5. The updater uses $02E5 as the row index when it rewrites a diagonal shot's glyph pattern at $C718-$C737: seven for the rising shot (phase $FF), zero for the level and falling ones."
   },
   {
    "address": 13730,
@@ -13706,7 +13706,7 @@
   {
    "address": 13761,
    "type": "line",
-   "text": "Ten initial motion-mode values copied to $02E5 for the scatter projectile updater; nonzero values select its additional movement paths."
+   "text": "Ten initial pattern-row indices copied to $02E5: seven for the two phase-$FF shots, zero for the rest. The updater uses $02E5 as the row index when it rewrites a diagonal shot's glyph pattern at $C718-$C737; its movement path comes from the vertical phase in $02BD."
   },
   {
    "address": 13771,
@@ -13761,12 +13761,12 @@
   {
    "address": 14267,
    "type": "line",
-   "text": "Three direction-dependent laser glyph selectors; the beam updater uses the first pair for its leading end and the overlapping second pair for its trailing end."
+   "text": "Three laser end glyphs read as two overlapping pairs indexed by facing. The beam updater draws the first pair, $E0 facing left or $DE facing right, in the beam's first cell, at its origin and so its rear end, and the overlapping pair at $37BC, $DE or $E0, in its last cell, the front."
   },
   {
    "address": 14268,
    "type": "line",
-   "text": "Address base of the overlapping trailing-end selector pair within the three glyph values beginning at $37BB. Facing selects the corresponding endpoint glyph."
+   "text": "Address base of the overlapping second pair of end glyphs within the three values beginning at $37BB. Facing selects the glyph for the beam's last cell, its front end: $DE facing left, $E0 facing right."
   },
   {
    "address": 14270,
@@ -14236,7 +14236,7 @@
   {
    "address": 17503,
    "type": "line",
-   "text": "Eighteen colour values cycled by the panel IRQ through $0741 while the once-per-life super weapon is available. The selected value colours the two panel cells at $DB71/$DB72."
+   "text": "Eighteen colour values cycled by the playfield actor IRQ at $0BD2-$0BF0: the index $0741 steps down and wraps from zero to seventeen while the once-per-life super weapon is available. The selected value colours the two panel cells at $DB71/$DB72."
   },
   {
    "address": 17521,
@@ -14296,7 +14296,7 @@
   {
    "address": 18823,
    "type": "line",
-   "text": "Write one shape pointer into seven sprite-pointer cells, advance the shape cursor and move the seven sprites down by $2A lines. After four rows, switch to the panel handler and restore its delay count; otherwise schedule the next row's raster line."
+   "text": "Write one shape pointer into seven sprite-pointer cells, advance the shape cursor and move the seven sprites down by $2A lines. After four rows, switch to the panel handler and set its delay count at $0695 to $09; otherwise schedule the next row's raster line."
   },
   {
    "address": 18824,
@@ -14376,7 +14376,7 @@
   {
    "address": 19324,
    "type": "line",
-   "text": "Increment the packed-BCD counter at $0737+X and draw it. A carry goes through the overflow path: a wrapped zero returns without drawing, while other values are decremented before drawing. X also selects the destination through $4BBB."
+   "text": "Increment the packed-BCD counter at $0737+X and draw it; X also selects the destination through $4BBB. A decimal carry, which only $99 wrapping to $00 can produce, falls into the decrement entry at $4B88, which finds the zero and returns without drawing. Neither caller reaches it: $0EE4 resets the diamond counter at $50 and $5AB7 skips the call at $99."
   },
   {
    "address": 19336,
@@ -14456,7 +14456,7 @@
   {
    "address": 19724,
    "type": "line",
-   "text": "Initialize one burst channel from CIA-timer-selected positions and timing, then alternate its hardware sprite between two positions. After its delay, walk the seven-entry shape/colour fade sequence. The shared burst counter controls reseeding; the channel eventually reaches a zero phase so death handling can finish."
+   "text": "Initialize one burst channel with shape $86 and CIA-timer-selected positions, then alternate its hardware sprite between two positions. After its delay, walk six shape/colour steps from the tables at $4DFF/$4E06, indices five down to zero. The shared burst counter controls reseeding; the channel eventually reaches a zero phase so death handling can finish."
   },
   {
    "address": 19927,
@@ -14466,12 +14466,12 @@
   {
    "address": 19967,
    "type": "line",
-   "text": "Seven sprite shape pointers used in reverse phase order by the death-burst channels."
+   "text": "Seven sprite shape numbers, $8A down to $84. The death-burst channels read indices five down to zero ($85 up to $8A) as their phase counts down; the last byte, $84, is not read through this table."
   },
   {
    "address": 19974,
    "type": "line",
-   "text": "Seven colours paired with the death-burst shape sequence."
+   "text": "Seven colours paired with the death-burst shape sequence at $4DFF. The channels read indices five down to zero; the last byte is not read."
   },
   {
    "address": 19981,
@@ -14496,7 +14496,7 @@
   {
    "address": 19993,
    "type": "line",
-   "text": "On a new high-bit request, configure three expanded hires sprites for TIME OUT!, GAME OVER or CONTINUE? and request the panel graphics through main stage two. Move the sprites into and out of view, hold them for the message timer, and route the final state to retry, continue selection or the viewport transition."
+   "text": "On a new high-bit request, configure three expanded hires sprites for TIME OUT!, GAME OVER or CONTINUE? and request main stage two, which copies the message sprite shapes into the other screen buffer ($53DE, $4FCC). Move the sprites into and out of view, hold them for the message timer, and route the final state to retry, continue selection or the viewport transition."
   },
   {
    "address": 20210,
@@ -14591,7 +14591,7 @@
   {
    "address": 21157,
    "type": "line",
-   "text": "Clear eleven actor slots' X, type, format and movement-state arrays. Seed each slot's Y from $0886 and the sorting/index array from its slot number; set shared sprite multicolours to $0F and $0B."
+   "text": "Clear eleven actor slots' X, type and format bytes and their Y-order links at $A6. Seed each slot's Y from $0886, leaving slot zero's value in $03DF, and the sorted-slot array at $B1 from its slot number; set shared sprite multicolours to $0F and $0B."
   },
   {
    "address": 21195,
@@ -14601,7 +14601,7 @@
   {
    "address": 21299,
    "type": "line",
-   "text": "Zero the engine's zero page, lower stack/work pages and actor-state areas in four indexed passes, then clear $FF80-$FFFB and the work area beginning at $07E8. This is initialization output, not authored data to decode as tables."
+   "text": "Zero $02-$01F7 and $0200-$03FF in one 256-step loop of four indexed stores (bases $02, $F8, $0200 and $0300), then clear $FF80-$FFFB and the 58 bytes at $07E8-$0821. This is initialization output, not authored data to decode as tables."
   },
   {
    "address": 21334,
@@ -14616,12 +14616,12 @@
   {
    "address": 21446,
    "type": "line",
-   "text": "Restore the scrolling checkpoint, reconstruct the terrain and colour-copy code, reset actors and transient slots, restore the player hooks and scroll state, then clear the main-stage request."
+   "text": "Restore the scrolling checkpoint, redraw the terrain and rebuild the colour-copy code, reset actors and transient slots, restore the weapon damage table and the life-loss jump, start the viewport mask, then clear the main-stage request."
   },
   {
    "address": 21470,
    "type": "line",
-   "text": "Call $4FCC and clear the main-stage request through $5584. The called routine determines the transition's player-visible meaning."
+   "text": "Call $4FCC, which copies the death-message sprite shapes into the other screen buffer, and clear the main-stage request through $5584. The death-message updater requests this stage at $4E4B when a message starts."
   },
   {
    "address": 21476,
@@ -14631,7 +14631,7 @@
   {
    "address": 21578,
    "type": "line",
-   "text": "Increment $03EF, retain the next filename from $8FEC/$8FED, blank and clear the playfield, and show the loading message. At index four require disk identity two. The $60F8 table decides whether to load an S-prefixed auxiliary file and copy its buffer under I/O. Load the level filename, invoke its setup hooks and return to the stage-zero wait; index $0B instead jumps to the ending at $7A01."
+   "text": "Increment $03EF, retain the next filename from $8FEC/$8FED, blank and clear the playfield, and show the loading message. At index four, unless the main stage is five (a continue reload entering at $5453), require disk identity two. The $60F8 table decides whether to load an S-prefixed auxiliary file and copy its buffer under I/O. Load the level filename, invoke its setup hooks and return to the stage-zero wait; index $0B instead jumps to the ending at $7A01."
   },
   {
    "address": 21859,
@@ -14806,7 +14806,7 @@
   {
    "address": 23496,
    "type": "line",
-   "text": "Eight 64-byte hires sprite records. The three pointer tables at $4FFA-$5002 combine them into TIME OUT!, GAME OVER and CONTINUE? with YES/NO. Rendered directly from these bytes to identify the words."
+   "text": "Eight 64-byte hires sprite records. The three pointer tables at $4FFA-$5002 combine them into TIME OUT!, GAME OVER and CONTINUE? with YES/NO."
   },
   {
    "address": 24008,
@@ -14886,7 +14886,7 @@
   {
    "address": 24704,
    "type": "line",
-   "text": "Top 16 component cells for a leading space followed by THE END. $625B appends this to the first eight displayed characters of LOADING LEVEL."
+   "text": "Top 16 component cells for a leading space followed by THE END. $625B draws it at $CD53, fourteen cells after the start of the loading row, so its leading space lands on the space that follows LOADING."
   },
   {
    "address": 24720,
@@ -14971,12 +14971,12 @@
   {
    "address": 25031,
    "type": "line",
-   "text": "Thirty border/background colour values used by the loading-screen raster handler. Its first and last colours frame the middle band; $61E5 XORs the central twenty-one entries with four to animate them."
+   "text": "Thirty border/background colour values used by the loading-screen raster handler. Its first and last colours frame the middle band; $61E5 XORs the central twenty-one entries with four, once when a turn-disk prompt appears and again when the right disk is found."
   },
   {
    "address": 25035,
    "type": "line",
-   "text": "Twenty-one animated middle entries of the thirty-colour palette beginning at $61C7. $61E5 toggles their bit two in place; the surrounding entries remain outside that toggle loop."
+   "text": "Twenty-one middle entries of the thirty-colour palette beginning at $61C7. $61E5 toggles their bit two in place, when a turn-disk prompt appears and again when the right disk is found; the surrounding entries remain outside that toggle loop."
   },
   {
    "address": 25061,
@@ -15066,7 +15066,7 @@
   {
    "address": 25606,
    "type": "line",
-   "text": "Eighteen runtime bytes, arranged in seven-byte voice strides: frequency high byte, frequency increment, command duration and command cursor are addressed here for each SID voice. This is interpreter state initialized by gameplay, not a packed sound pattern."
+   "text": "Eighteen runtime bytes, arranged in seven-byte voice strides: frequency high byte, frequency increment, command duration and command cursor are addressed here for each SID voice. This is state the effect interpreter writes as it runs, not a packed sound pattern."
   },
   {
    "address": 25609,
@@ -15251,7 +15251,7 @@
   {
    "address": 26624,
    "type": "line",
-   "text": "Ten retained twenty-five-byte score records. Each starts with seven decimal digit characters and a sixteen-byte name, followed by two digit characters. This release includes saved player names alongside the developer records; the final two columns need their menu consumer identified before assigning their meaning."
+   "text": "Ten twenty-five-byte score records, ranked, inserted and formatted by the title part ($9367, $939B, $AD50). Each starts with seven decimal digit characters and a sixteen-byte name, followed by the two digit characters of the world and stage reached, which $AD50 shows with a hyphen between them. This copy holds saved player names alongside the developer records."
   },
   {
    "address": 65472,

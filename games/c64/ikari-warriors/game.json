@@ -1,0 +1,214 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "ikari-warriors",
+  "title": "Ikari Warriors",
+  "year": 1988,
+  "publisher": "Elite Systems",
+  "developer": "Elite Systems",
+  "title_image": "reference/loading-screen.png",
+  "build": "G64 disk image: a 101-byte boot program and a 1,265-byte fast loader as files, and the game in raw sectors, its $4000-$CFFF EORed with $C9; one load, entered at $0F80",
+  "tier": "silver",
+  "coverage_percent": 100,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "John Twiddy",
+      "role": "programming; the game's own credits at $21EE"
+    },
+    {
+      "by": "Paul Walker, Rory Green, Karen Trueman and John Harrison",
+      "role": "graphics; the game's own credits at $21EE"
+    },
+    {
+      "by": "Jason Brooke",
+      "role": "music; the game's own credits at $21EE (GameBase64 adds Mark Cooksey)"
+    }
+  ],
+  "tools": {
+    "host": "Linux x86_64 (Claude cloud container)",
+    "emulator": "release v4.0.0, v4.0.0-linux-x86_64-gui.zip",
+    "disassembler": "regenerator2000 (kit/c64/r2000.py)",
+    "publication": "Python 3; symbols_export.py and listing.py; a Python port of draw_map_row for the map",
+    "subagents": "one checker agent for the 60-comment sample; one agent for everything else"
+  },
+  "model": "claude-opus-5-5",
+  "step_models": {
+    "10-orient": [
+      "claude-opus-5-5"
+    ],
+    "12-media": [
+      "claude-opus-5-5"
+    ],
+    "20-features": [
+      "claude-opus-5-5"
+    ],
+    "40-sweep": [
+      "claude-opus-5-5"
+    ],
+    "50-coverage": [
+      "claude-opus-5-5"
+    ],
+    "60-verify": [
+      "claude-opus-5-5"
+    ],
+    "70-minisite": [
+      "claude-opus-5-5"
+    ],
+    "75-review": [
+      "claude-opus-5-5"
+    ],
+    "80-retro": [
+      "claude-opus-5-5"
+    ]
+  },
+  "accuracy": [
+    {
+      "step": "research",
+      "web": true,
+      "models": [
+        "claude-opus-5-5"
+      ]
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "note": "every routine and table described on one model; the map objects' and tile sets' comments generated from the map script run on the kit's 6502 and checked against it"
+    },
+    {
+      "step": "sample",
+      "size": 80,
+      "wrong": 16,
+      "fixed": 16,
+      "seed": 1117,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "note": "20 drawn from the 182 generated comments (none wrong) and 60 from the 385 written ones (16 wrong)"
+    }
+  ],
+  "kit_version": "0.0.353",
+  "created": "2026-11-17",
+  "video": {
+    "screen": "$4000",
+    "charset": "$4800"
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0000",
+        "$00FF",
+        "runtime: zero page, the game's variables, zeroed by cold_start and written as it runs"
+      ],
+      [
+        "$0200",
+        "$03FF",
+        "runtime: the game's tables of tanks, bullets, grenades and soldiers ($020E-$03ED); at the hand-over pages 2 and 3 still hold the loader's leftovers"
+      ],
+      [
+        "$0400",
+        "$07FF",
+        "runtime: the map window's characters, 64 rows of 32 built by draw_map_row; at the hand-over it still holds the loader, which nothing runs again"
+      ],
+      [
+        "$0C00",
+        "$0F7F",
+        "runtime: the map window's colours (it runs on to $13FF, over the start-up code at $0F80, once play begins)"
+      ],
+      [
+        "$5000",
+        "$503F",
+        "runtime: sprite frame $40, the empty frame, cleared by cold_start"
+      ],
+      [
+        "$7A70",
+        "$7E7F",
+        "runtime: the multiplexer's bucket table ($7A80), the 36 moving objects ($7B00-$7BD5), the marker list ($7BDD-$7CCD), the map objects' slots ($7CE5-$7D6F), the blast and gun lists and the big explosion queue ($7D73-$7E2B)"
+      ],
+      [
+        "$E55C",
+        "$E5B8",
+        "runtime: the music driver's state for its three voices, cleared by start_tune"
+      ],
+      [
+        "$E5BC",
+        "$E603",
+        "runtime: the sound effects' slots and the voices' effect flags, written by start_effect_voice and effect_update"
+      ],
+      [
+        "$FF00",
+        "$FFFF",
+        "runtime: the processor's vectors, set by the game ($FFFA NMI, $FFFE IRQ); nothing else is loaded here"
+      ]
+    ],
+    "extra": [],
+    "include": [
+      [
+        "$D000",
+        "$DFFF",
+        "RAM under the I/O chips: map objects 0-35 ($D000-$D7FF) and the ground pattern ($D800-$DFFF), loaded with the game and read with the I/O banked out"
+      ]
+    ]
+  },
+  "io": [],
+  "regions": [],
+  "links": {
+    "wiki": {
+      "title": "Ikari Warriors (Elite) – C64-Wiki",
+      "url": "https://www.c64-wiki.de/wiki/Ikari_Warriors_(Elite)"
+    },
+    "manual": {
+      "title": "",
+      "url": ""
+    },
+    "mobygames": {
+      "title": "Ikari Warriors – MobyGames",
+      "url": "https://www.mobygames.com/game/6739/ikari-warriors/"
+    },
+    "gamebase": {
+      "title": "Ikari Warriors – GameBase64",
+      "url": "https://gb64.com/game.php?id=3709"
+    }
+  },
+  "tabs": [
+    [
+      "index.html",
+      "Overview"
+    ],
+    [
+      "gameplay.html",
+      "Gameplay"
+    ],
+    [
+      "controls.html",
+      "Controls"
+    ],
+    [
+      "levels.html",
+      "Maps"
+    ],
+    [
+      "graphics.html",
+      "Graphics"
+    ],
+    [
+      "music.html",
+      "Music"
+    ],
+    [
+      "discoveries.html",
+      "Discoveries"
+    ],
+    [
+      "source.html",
+      "Source code"
+    ],
+    [
+      "about.html",
+      "About"
+    ]
+  ]
+}

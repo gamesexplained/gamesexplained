@@ -1,0 +1,181 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ikari Warriors — gameplay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.plate{margin:0 0 22px}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.ik-two{grid-template-columns:1fr}}
+.ik-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.ik-table{border-collapse:collapse;font-size:14px;width:100%}
+.ik-table td,.ik-table th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.ik-px{image-rendering:pixelated;display:block;max-width:100%;height:auto}
+.ik-sheet{display:flex;flex-wrap:wrap;gap:6px}
+.ik-sheet figure{margin:0;background:#222;border-radius:4px;padding:3px;text-align:center}
+.ik-sheet figcaption{font:500 10px/1.3 var(--fm);color:#fff}
+.ik-sheet canvas{image-rendering:pixelated;display:block}
+.ik-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.ik-note{font-size:14px;color:var(--ink-mute)}
+sup.fn{font-size:.7em;line-height:0}
+sup.fn a{text-decoration:none}
+sup.fn + sup.fn::before{content:","}
+.overview-shot{margin:22px 0}
+.overview-shot img{width:100%;max-width:768px;height:auto;aspect-ratio:384/272;image-rendering:pixelated;display:block}
+.overview-shot figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px;max-width:768px}
+
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1988 · Elite Systems</p>
+  <h1>Ikari Warriors: gameplay</h1>
+  <p class="sub">How the road moves, what fire does when tapped and when held, and what each token, tank, and mine does, read from the game's code.</p>
+</header>
+<main class="wrap">
+
+<section id="route">
+  <p class="fig">01 · The road</p>
+  <h2 class="t">The screen moves only when you do</h2>
+  <p>The road scrolls up one pixel a frame while every living player is in the top four fifths of the screen, above raster line 188 (<code>$BC</code>, checked in <a href="source.html#3D44"><code>lower_panel_irq</code></a>). Hang back near the bottom and the scrolling stops.</p>
+  <p>The soldiers come from a list of 369 entries at <a href="source.html#ACA7"><code>route_list</code></a>, each a position along the road and the group of soldiers that appears there. <a href="source.html#194E"><code>spawn_from_route</code></a> starts a group only once the scroll has passed its position, so while nobody moves forward, no new soldiers arrive. The same list places the <a href="#mines">mines</a>, and a list of twelve at <a href="source.html#2A28"><code>tank_list</code></a> places the empty <a href="#tanks">tanks</a>.</p>
+  <p>The road itself is drawn from a script of 1,891 rows, which the <a href="levels.html">Maps</a> page runs from start to finish.</p>
+</section>
+
+<section id="fire">
+  <p class="fig">02 · Fire</p>
+  <h2 class="t">Tap to shoot, hold to throw</h2>
+  <p><a href="source.html#233A"><code>player_fire</code></a> reads the fire button every second frame. The moment it goes down, a bullet leaves at once, one of the 99 in the panel. Keep holding, and at the ninth count, eighteen frames after the press, a player on foot throws a grenade. The same long hold does two other jobs: beside an empty tank it climbs in, and inside a tank it climbs out.</p>
+  <div class="plate">
+    <label class="ik-note" for="fHold">Hold fire for <b id="fHoldV">10</b> frames (a frame is a fiftieth of a second)</label>
+    <input id="fHold" type="range" min="1" max="40" value="10" style="width:100%;max-width:520px;display:block">
+    <canvas id="fCanvas" width="640" height="70" class="ik-px" style="width:100%;max-width:640px"></canvas>
+    <p id="fOut" class="cap"></p>
+  </div>
+  <p>A hold of 16 frames fires one bullet only; holds of 20 and 30 frames fire a bullet and throw a grenade.<sup class="fn"><a href="about.html#src-6" title="Measurements">6</a></sup> A grenade flies a set distance for the way you face, from the table at <a href="source.html#24F3"><code>grenade_range</code></a>, and goes off where it lands. A wall stops a grenade, which falls where it meets it, unless the <a href="#items">cyan token</a> lets shots through; a grenade thrown with that token kills the first soldier it meets outright and flies on (<a href="source.html#B8F7"><code>update_grenade_hits</code></a>). The test reads player one's token for both players, <a href="discoveries.html#slips">a slip</a> in the code.</p>
+</section>
+
+<section id="friendly">
+  <p class="fig">03 · Two players</p>
+  <h2 class="t">Your partner's bullets hit you too</h2>
+  <p>In a two-player game every bullet is tested against both players, and only the one who fired it is spared (<a href="source.html#BA25"><code>update_bullet_hits</code></a>). A grenade's blast kills every player on foot inside it except the one who threw it (<a href="source.html#BE58"><code>blast_hits</code></a>). Two players have to keep out of each other's line of fire.</p>
+</section>
+
+<section id="items">
+  <p class="fig">04 · Tokens</p>
+  <h2 class="t">Seven tokens, given in turn</h2>
+  <p>Every fourth soldier <a href="source.html#194E"><code>spawn_from_route</code></a> starts carries a token. Which one comes next is fixed: the list at <a href="source.html#B53C"><code>item_cycle</code></a> hands them out in the same order every game. A carrier you kill drops its token where it falls (<a href="source.html#C192"><code>drop_item</code></a>), and walking over it calls <a href="source.html#BB1D"><code>pick_up_item</code></a>.</p>
+  <div class="plate"><table class="ik-table" id="itemTable"><thead><tr><th>Order</th><th>Token</th><th>What it does</th></tr></thead><tbody></tbody></table>
+  <p class="cap">Each token's colour comes from <a href="source.html#C36E"><code>item_colours</code></a>, and the swatches here are those colours. A token is drawn in multicolour, so only the low three bits of each colour show. The C64-Wiki lists the same colours.<sup class="fn"><a href="about.html#src-2" title="C64-Wiki, Ikari Warriors (Elite)">2</a></sup> Every power-up is taken away when you lose a life (<a href="source.html#231B"><code>init_player</code></a>).</p></div>
+  <p>An eighth token hides in <a href="source.html#BB1D"><code>pick_up_item</code></a>: a purple one worth 800 points that the list never hands out. <a href="discoveries.html#purple">Discoveries</a> has the details.</p>
+</section>
+
+<section id="tanks">
+  <p class="fig">05 · Tanks</p>
+  <h2 class="t">Tanks: proof against bullets, not against grenades</h2>
+  <p>Twelve empty tanks wait along the road, each with a flashing IN above it. Hold fire beside one to climb in. A player in a tank cannot be hit by bullets (<a href="source.html#BA25"><code>update_bullet_hits</code></a>), runs soldiers over for 100 points each (<a href="source.html#C02F"><code>check_trampling</code></a>), and fires shells instead of bullets: a shell flies like a grenade and blows up where it lands, so it destroys what bullets cannot. <a href="#water">Water</a> stops a tank (<a href="source.html#C485"><code>move_player</code></a>).</p>
+  <p>Fuel drains every six frames (<a href="source.html#BC90"><code>update_fuel</code></a>). When it runs out, or when a grenade hits the tank, a countdown of 100 frames starts, two seconds with a warning sound, and then the tank blows up with whoever is inside. Hold fire to climb out in time. A <a href="#items">black token</a> fills the tank again.</p>
+</section>
+
+<section id="mines">
+  <p class="fig">06 · Mines</p>
+  <h2 class="t">Mines that show themselves just in time</h2>
+  <p>A mine is invisible. <a href="source.html#B54B"><code>update_mines</code></a> looks at each one every eight frames, and when a player comes within 16 pixels across and 32 down it appears, flashing between the two colours at <a href="source.html#2908"><code>mine_flash_colours</code></a> and beeping. The mine goes off when a player is within 5 pixels across and 12 down, so there is just time to step around it.</p>
+</section>
+
+<section id="water">
+  <p class="fig">07 · Water</p>
+  <h2 class="t">Water</h2>
+  <p>A character whose colour has a low nibble of <code>$E</code> is water (<a href="source.html#7E80"><code>char_colours</code></a>). A player on foot with both feet in it is slowed every second frame (<a href="source.html#C485"><code>move_player</code></a>). A tank cannot enter it at all. A soldier in water dives under, drawn with frame <code>$6F</code>, and bullets pass over him (<a href="source.html#BA25"><code>update_bullet_hits</code></a>).</p>
+</section>
+
+<section id="enemies">
+  <p class="fig">08 · Enemies</p>
+  <h2 class="t">Soldiers, guns and helicopters</h2>
+  <p>One bullet kills a soldier, for 100 points. A player on foot who walks into a soldier dies (<a href="source.html#C02F"><code>check_trampling</code></a>); a player in a tank runs him over. A soldier in <a href="#water">water</a> dives under it, and a bullet passes over him. Enemy tanks and other vehicles, and the helicopters, ignore bullets: only a grenade's blast, or a shell's, destroys them (<a href="source.html#BE58"><code>blast_hits</code></a>).</p>
+  <p>The guns along the road come in two kinds (<a href="source.html#263C"><code>update_guns</code></a>). A turret, drawn in characters, turns to face the nearer player below it, left, down, or right, redrawing its barrel in the character set as it turns (<a href="source.html#AA47"><code>turret_left_gfx</code></a>, <a href="source.html#AA8F"><code>turret_right_gfx</code></a>), and fires single bullets. A mortar pit checks every 30 frames for a player below it, within 90 pixels, and fires three shells in a spread. A helicopter flies down the screen when the road's script calls for one (<a href="source.html#825B"><code>map_special</code></a>), and is worth 1,000 points brought down.</p>
+</section>
+
+<section id="score">
+  <p class="fig">09 · Score</p>
+  <h2 class="t">Points and extra lives</h2>
+  <p>The score is kept in hundreds of points, in decimal digits (<a href="source.html#BDCE"><code>add_score</code></a>). Each player starts with five lives, and the same routine gives an extra one at 20,000 points, at 50,000, and at every 50,000 after that.</p>
+  <table class="ik-table"><thead><tr><th>For</th><th>Points</th></tr></thead><tbody>
+    <tr><td>A soldier shot, blown up or run over</td><td>100</td></tr>
+    <tr><td>A token picked up</td><td>200</td></tr>
+    <tr><td>A helicopter brought down</td><td>1,000</td></tr>
+    <tr><td>Breakable scenery</td><td>what its entry in the road's script gives</td></tr>
+    <tr><td>Reaching the end of the road, with lives left</td><td>100,000</td></tr>
+  </tbody></table>
+    <p>A player who loses a life comes back at the bottom of the screen, in the nearest column where the ground is clear (<a href="source.html#C376"><code>respawn_players</code></a>).</p>
+</section>
+
+<section id="ending">
+  <p class="fig">10 · The end</p>
+  <h2 class="t">The end of the road</h2>
+  <p>Twelve rows before the road ends, its script puts eight figures on the screen (<a href="source.html#2EC1"><code>ending_setup</code></a>). At the last row it hands over to <a href="source.html#C77C"><code>route_finished</code></a>, which gives each player with lives left 100,000 points, in twenty steps of 5,000, and prints the message at <a href="source.html#B7F7"><code>ending_text</code></a>: "Congratulations, you have rescved Colonel Cook and received 100,000 pts. Continue to fight hard and bring freedom to the people you protect." The spelling is the game's own (<a href="discoveries.html#rescved">Discoveries</a>).</p>
+  <p>A top-ten score at the end of a game is entered in the high-score table with a name of nine letters (<a href="source.html#CA90"><code>enter_high_score</code></a>).</p>
+</section>
+</main>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  // Fire: player_fire ($233A) counts the hold every second frame; a bullet on the press, a grenade at the ninth count.
+  const draw = () => {
+    const n = +$('fHold').value, cv = $('fCanvas'), ctx = cv.getContext('2d'), W = cv.width, step = W / 41;
+    $('fHoldV').textContent = n;
+    ctx.clearRect(0, 0, W, cv.height);
+    ctx.fillStyle = '#d5d3cc'; ctx.fillRect(0, 30, W, 10);
+    ctx.fillStyle = '#1f5fa8'; ctx.fillRect(0, 30, n * step, 10);
+    ctx.font = '12px IBM Plex Mono, monospace'; ctx.fillStyle = '#2f3136';
+    ctx.fillText('press: bullet', 2, 20);
+    ctx.fillRect(18 * step, 24, 2, 22); ctx.fillText('frame 18: grenade', 18 * step - 40, 62);
+    $('fOut').textContent = n >= 18 ? 'Held ' + n + ' frames: a bullet on the press, then a grenade at frame 18.' : 'Held ' + n + ' frames: one bullet. Holding to frame 18 throws a grenade.';
+  };
+  $('fHold').oninput = draw; draw();
+  // Tokens, in item_cycle order ($B53C): the kind, then what pick_up_item does with it.
+  const PAL = ['#000000', '#ffffff', '#883932', '#67b6bd', '#8b3f96', '#55a049', '#40318d', '#bfce72'];
+  const ITEMS = [[0, 4, 'purple', '50 more bullets'], [7, 5, 'green', 'kills every soldier on the screen, for no points, and brings down a <a href="#enemies">helicopter</a> for 1,000'],
+    [5, 3, 'cyan', 'bullets pass through walls'], [1, 1, 'white', '50 more grenades'], [2, 0, 'black', 'bullets, grenades and shells to 99, and a full tank'],
+    [6, 2, 'red', 'grenades leave a big explosion'], [4, 7, 'yellow', 'bullets fly further']];
+  const tb = $('itemTable').tBodies[0];
+  ITEMS.forEach(([kind, c, name, does], i) => {
+    const tr = tb.insertRow();
+    tr.insertCell().textContent = String(i + 1);
+    const td = tr.insertCell(), sw = document.createElement('span');
+    sw.style.cssText = 'display:inline-block;width:14px;height:14px;border:1px solid #80838a;vertical-align:-2px;margin-right:6px;background:' + PAL[c];
+    td.appendChild(sw); td.appendChild(document.createTextNode(name + ' (kind ' + kind + ')'));
+    tr.insertCell().textContent = does;
+  });
+})();
+</script>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

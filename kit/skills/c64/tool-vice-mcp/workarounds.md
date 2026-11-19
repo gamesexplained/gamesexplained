@@ -2,8 +2,11 @@
 
 **The GUI releases from v3.13.2 on need none of this.** On 2 October
 2026 the v3.13.2 releases passed all 57 checks, in five runs on Linux
-x86_64 and five on macOS arm64, and on 29 October 2026 the v3.14.0
-release did on Linux x86_64, in five runs. On a build where
+x86_64 and five on macOS arm64, on 29 October 2026 the v3.14.0
+release did on Linux x86_64, in five runs, and on 17 November 2026 the
+v4.0.0 release did on Linux x86_64, in five runs. v4.0.0 moves a
+snapshot's RAM from file offset 209 to 232; `kit/c64/snapshot.py` finds
+it by its module, so read snapshots through it, never at a fixed offset. On a build where
 `check-emulator` reports nothing failed, stop reading here, unless its
 summary says the host is slow: that is a NOTE, not a failed check, and
 "A slow host" below is for it.

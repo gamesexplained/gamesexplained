@@ -10,8 +10,9 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 (vice-mcp) under Xvfb and regenerator2000 0.9.20. The image is the C64
 Preservation Project's G64 of both sides (`orientation.md`). The first
 snapshot read came back 23 bytes out: v4.0.0 adds a `C64MEMHACKS` module
-before the RAM, so `kit/c64/snapshot.py` now finds the `C64MEM` module by
-name, and the emulator check reads it the same way.
+before the RAM, so `kit/c64/snapshot.py` was changed to find the `C64MEM`
+module by name, and the emulator check to read it the same way. Another
+run's identical fix reached `main` first, and the merge kept it.
 
 **Parts.** The game is sixteen loads: the engine (with the hero's sprites
 from `FT`), the title, thirteen level files and the ending. Each packed
@@ -23,8 +24,10 @@ after a label in the title, which the level's own load had replaced, so
 `parts.py` now names an address only from the part whose load wrote it.
 And the hero's last 24 sprite shapes, at `$E000`-`$E5FF` under the
 KERNAL ROM, could not be counted by the engine, because the title's logo
-lies there while the title shows; the engine's `part.json` now says it
-"keeps" those addresses, and the ledger counts them. Coverage is 100 %,
+lies there while the title shows. This run added a "keeps" row for
+them; another run added the same idea as "ranges" on the bottom part
+first, so the engine's `part.json` lists them in its "ranges", and the
+ledger counts them. Coverage is 100 %,
 370,711 bytes in 16 parts.
 
 **Verify.** The checker (Claude Fable 5.2, one agent) marked 8 of 80

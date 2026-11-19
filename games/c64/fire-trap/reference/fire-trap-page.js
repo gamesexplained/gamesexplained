@@ -18,11 +18,13 @@ const FTP = (function () {
     return { map: s & 3, set: (s >> 1) & 1, colour: D.colours[(((s & 12) >> 2) + s) & 3] & 15 };
   }
   function rgb(c) { const h = PAL[c]; return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
-  // draw the whole building, 10 columns by 80 rows of 4 by 4 characters, into a 320 by 2560 canvas
+  // draw the whole building, 10 columns by 80 rows of 4 by 4 characters, into a 320 by 2592 canvas; draw_screen puts each column of cells DY[c] character rows lower, from the table at $CAA4
+  const DY = [0, 1, 2, 3, 4, 4, 3, 2, 1, 0];
   function drawMap(cv, n) {
     const st = stage(n), m = maps[st.map], bl = blocks[st.set], ch = chars[st.set];
     const bg = [0, 12, st.colour];
-    const ctx = cv.getContext('2d'), img = ctx.createImageData(320, 2560), px = img.data;
+    const ctx = cv.getContext('2d'), img = ctx.createImageData(320, 2592), px = img.data;
+    for (let i = 3; i < px.length; i += 4) px[i] = 255;
     for (let r = 0; r < 80; r++) for (let c = 0; c < 10; c++) {
       const v = m[r * 10 + c] % 73;
       for (let k = 0; k < 16; k++) {
@@ -34,7 +36,7 @@ const FTP = (function () {
             if (col & 8) ci = [bg[0], bg[1], bg[2], col & 7][(byte >> (6 - (x & 6))) & 3];
             else ci = (byte >> (7 - x)) & 1 ? col & 7 : bg[0];
             const [R, G, B] = rgb(ci);
-            const X = (c * 4 + (k & 3)) * 8 + x, Y = (r * 4 + (k >> 2)) * 8 + y, o = (Y * 320 + X) * 4;
+            const X = (c * 4 + (k & 3)) * 8 + x, Y = (r * 4 + DY[c] + (k >> 2)) * 8 + y, o = (Y * 320 + X) * 4;
             px[o] = R; px[o + 1] = G; px[o + 2] = B; px[o + 3] = 255;
           }
         }
@@ -47,7 +49,7 @@ const FTP = (function () {
     const bar = el('div', { class: 'row' });
     const info = el('p', { class: 'kv' });
     const wrap = el('div', { style: 'max-height:640px;overflow:auto;background:#000;border-radius:4px;text-align:center' });
-    const cv = el('canvas', { width: 320, height: 2560, class: 'scr', style: 'max-width:640px;width:640px;margin:0 auto' });
+    const cv = el('canvas', { width: 320, height: 2592, class: 'scr', style: 'max-width:640px;width:640px;margin:0 auto' });
     wrap.append(cv);
     let cur = 1;
     const btns = [];
@@ -61,7 +63,7 @@ const FTP = (function () {
       btns.forEach((b, i) => b.setAttribute('aria-pressed', i + 1 === n ? 'true' : 'false'));
       const st = drawMap(cv, n);
       info.innerHTML = '<b>Stage ' + n + '</b> · map ' + (st.map + 1) + ' of 4 (' + hex(0x8E00 + st.map * 0x320, 4) + ') · tile set ' + (st.set + 1) + ' of 2 · building colour ' + NAMES[st.colour] + ' (' + hex(st.colour, 2) + ')';
-      wrap.scrollTop = 2560 * (640 / 320) - 640;
+      wrap.scrollTop = 2592 * (640 / 320) - 640;
     }
     root.append(bar, info, wrap);
     show(1);

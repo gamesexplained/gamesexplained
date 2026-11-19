@@ -2,13 +2,11 @@
 """Read a VICE snapshot into a flat 64 KB image.
 
 The C64's snapshot is a `.vsf`: a text header block, then the modules,
-each a 22-byte header (name, version, size) and its body. The RAM image is
-in the C64MEM module, after its four bytes of port and cartridge lines.
-VICE 3.x put that module first after the processor's, so the RAM was at
-offset 209; vice-mcp v4.0.0 adds a C64MEMHACKS module before it, which
-moves it to 232. So `read` finds the module by name, and falls back to
-offset 209 only for a file with no module headers (the kit's own test
-images). `read` returns 0x10000 bytes of RAM
+each a 22-byte header (name, version, size with the header) and its body.
+The RAM image is the C64MEM module's body after four bytes of port and
+cartridge lines. It sat at offset 209 in the file until vice-mcp v4.0.0
+put a C64MEMHACKS module before it (23 bytes later, 232), so `read` walks
+the modules and keeps 209 only for a file it cannot walk. `read` returns 0x10000 bytes of RAM
 (the RAM under the I/O area and the ROMs is all here; what the CPU saw
 depends on `$01` at the time, which `kit/c64/cpu.py` and listing.py's
 "io" rows model).
@@ -29,20 +27,6 @@ import os, sys
 RAM_SIZE = 0x10000
 VSF_RAM_OFFSET = 209
 MAGIC = b"VICE Snapshot File"
-
-
-def ram_offset(blob):
-    """Where the 64 KB of RAM start in a .vsf: inside the C64MEM module when the file has modules,
-    else the fixed offset 209 of the kit's synthetic test images."""
-    pos = 58 if blob[37:50] == b"VICE Version\x1a" else 37
-    while pos + 22 <= len(blob):
-        size = int.from_bytes(blob[pos + 18:pos + 22], "little")
-        if size < 22 or pos + size > len(blob):
-            break
-        if blob[pos:pos + 16].split(b"\0")[0] == b"C64MEM" and size >= 26 + RAM_SIZE:
-            return pos + 26
-        pos += size
-    return VSF_RAM_OFFSET
 
 
 def read(path, bank=None):
@@ -70,6 +54,21 @@ def read(path, bank=None):
     return blob[at:at + RAM_SIZE]
 
 
+def ram_offset(blob):
+    """Where the 64 KB of RAM starts in a .vsf: C64MEM's body plus 4, found by walking the modules;
+    VSF_RAM_OFFSET for a file whose modules cannot be walked."""
+    pos = 58 if blob[37:50] == b"VICE Version\x1a" else 37
+    while pos + 22 <= len(blob):
+        name = blob[pos:pos + 16].split(b"\0")[0]
+        size = int.from_bytes(blob[pos + 18:pos + 22], "little")
+        if size < 22 or pos + size > len(blob):
+            break
+        if name == b"C64MEM" and size >= 26 + RAM_SIZE:
+            return pos + 26
+        pos += size
+    return VSF_RAM_OFFSET
+
+
 def main():
     argv = sys.argv[1:]
     if not argv or argv[0] in ("-h", "--help"):
@@ -89,15 +88,13 @@ def test():
         open(p, "wb").write(hdr + bytes(VSF_RAM_OFFSET - len(hdr)) + body)
         ram = read(p)
         assert len(ram) == RAM_SIZE and ram == body, "RAM must be the tail at the offset"
-        # modules as vice-mcp v4.0.0 writes them: a module before C64MEM moves the RAM to 232
-        def module(name, body):
-            return name.ljust(16, b"\0") + bytes([0, 1]) + (22 + len(body)).to_bytes(4, "little") + body
-        head = MAGIC + b"\x1a\x02\x00" + b"C64SC".ljust(16, b"\0") + b"VICE Version\x1a" + bytes(8)
-        blob = head + module(b"MAINC64CPU", bytes(103)) + module(b"C64MEMHACKS", b"\0") \
-            + module(b"C64MEM", b"\x37\x2f\x01\x01" + body + b"\x37") + module(b"CIA1", bytes(77))
-        q = os.path.join(d, "v4.vsf")
-        open(q, "wb").write(blob)
-        assert ram_offset(blob) == 232 and read(q) == body, "RAM must be read from the C64MEM module"
+        def module(name, payload):
+            return name.ljust(16, b"\0") + b"\0\1" + (22 + len(payload)).to_bytes(4, "little") + payload
+        head = MAGIC + b"\x1a\x02\x00" + b"C64SC".ljust(16, b"\0") + b"VICE Version\x1a" + b"\0" * 8
+        q = os.path.join(d, "hacks.vsf")
+        open(q, "wb").write(head + module(b"MAINCPU", b"\0" * 40) + module(b"C64MEMHACKS", b"\0")
+                            + module(b"C64MEM", b"\x37\x2f\0\0" + body + b"\0" * 16))
+        assert read(q) == body, "RAM must be read from the C64MEM module wherever it sits"
         for name, blob in (("short.vsf", MAGIC + b"\0" * 10), ("nope.vsf", b"not a snapshot")):
             q = os.path.join(d, name)
             open(q, "wb").write(blob)
@@ -107,7 +104,7 @@ def test():
                 assert str(e).strip(), name
             else:
                 raise AssertionError(f"{name}: should have been refused")
-    print("ok - snapshot.py self-check: RAM in the C64MEM module or at the offset, short and foreign files refused")
+    print("ok - snapshot.py self-check: RAM in the C64MEM module and at the old offset, short and foreign files refused")
 
 
 if __name__ == "__main__":

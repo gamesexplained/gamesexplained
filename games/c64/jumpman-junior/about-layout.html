@@ -1,0 +1,70 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}} — about</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="{{lib}}/site.css">
+<style>
+.research-details{border-top:1px solid var(--line);padding:16px 0}
+sup.fn{font-size:.7em;line-height:0}
+sup.fn a{text-decoration:none}
+sup.fn + sup.fn::before{content:","}
+.research-details summary{cursor:pointer;font-weight:700}
+.research-details[open] summary{margin-bottom:18px}
+</style>
+<body class="site">
+<!-- tabs -->
+<div class="wrap about">
+  <p class="eyebrow" style="margin-top:36px">{{platform_name}} · {{year}} · {{publisher}}</p>
+  <h1 style="margin-top:0">About this page</h1>
+  <h2 id="copy">The copy studied</h2>
+  <p>The pages describe a disk release of the game, as a G64 image. The disk holds two files. JR, 246 bytes, is a BASIC line that loads over the stack page, so the KERNAL's LOAD returns into it; it loads JUMPMAN JR., 16,431 bytes, into <code>$8000</code> to <code>$C02E</code>. That file is the 16 KB cartridge image, with the cartridge's CBM80 signature at <code>$8004</code>, followed by 47 bytes at <code>$C000</code> that copy the KERNAL ROM into the RAM under it and switch that copy in. One byte of the copy is patched, the value the KERNAL's IOINIT writes to <code>$01</code>, so that the game's own call of IOINIT leaves its code at <code>$A000</code> in place of BASIC's ROM.</p>
+  <p>The image on the disk is not the whole cartridge. Its first 268 bytes of code, from <code>$8009</code>, are a protection: a stub decrypts a second stage, which sends a program to the disk drive, reads the copy-protected track through it, and puts the cartridge's real first bytes back before starting the cartridge's own start-up. The protection is not described further on these pages.</p>
+  <p>The listing on the Source tab is built from memory saved a few seconds into level 1. Whether the disk is Epyx's own or a later conversion is not known from the image. The cartridge itself was not compared.</p>
+  <p>No game image is hosted here.</p>
+
+  <h2>Original game credits</h2>
+  <p>Randy Glover designed and programmed the game and wrote its music; Epyx published it.<sup class="fn"><a href="#src-2">2</a></sup></p>
+  {{game_credits}}
+
+  <h2>Site contributors</h2>
+  {{site_contributors}}
+
+  <h2>Other places to love this game</h2>
+  {{links}}
+
+  <h2 id="sources">Sources</h2>
+  <ol>
+    <li id="src-1">Wikipedia, "<a href="https://en.wikipedia.org/wiki/Jumpman_Junior">Jumpman Junior</a>", read 17 November 2026: the platforms and year, the follow-up to Jumpman and its thirty levels, the cut to twelve for a cartridge, and the 2004 re-release on the C64 Direct-to-TV.</li>
+    <li id="src-2">The instruction text, "JUMPMAN JUNIOR (C) 1983 EPYX, Inc.", typed in by Scott Wozniak on 17 March 1999, <a href="https://ctrl-alt-rees.com/archive/www.cyou.com-~richard/JUMPMNJR.TXT">at ctrl-alt-rees.com</a>, read 17 November 2026: the story and its quotations, and the credit "Game Design, Program &amp; Music: Randy Glover". It is the Atari cartridge's text: it names the Atari's keys and joystick port 1.</li>
+    <li id="src-3">sashanan, "<a href="https://www.honestgamers.com/8119/commodore-64/jumpman-junior/review.html">Jumpman Junior (Commodore 64) review</a>", HonestGamers, 19 June 2009, a reader's review, read 17 November 2026.</li>
+    <li id="src-4">MobyGames, "<a href="https://www.mobygames.com/game/12833/jumpman-junior/reviews/c64/">Jumpman Junior reviews, Commodore 64</a>", read 17 November 2026: a player's review, by Katakis; the page lists no critics' reviews of the Commodore 64 version.</li>
+    <li id="src-5">The timings and tests on the Gameplay, Maps, Music, and Discoveries pages: the game's own code run on the kit's 6502 machine over the listing's bytes, and the game run in the VICE emulator, as <code>facts.md</code> records.</li>
+  </ol>
+
+  <h2>Research record</h2>
+  <p>The write-up, facts and symbol map are available under CC BY-SA 4.0; code is under MIT.</p>
+  <details class="research-details"><summary>Version, coverage and tools</summary>
+    <div class="tablewrap"><table>
+      <tr><th>Tier</th><td>{{tier}}</td></tr>
+      <tr><th>Coverage</th><td>{{coverage}} of the bytes the game uses have a description</td></tr>
+      {{listing_row}}
+      <tr><th>Build analysed</th><td>{{build}}</td></tr>
+      <tr><th>Copy</th><td>{{copy}}</td></tr>
+      <tr><th>Tools</th><td>{{tools}}</td></tr>
+      <tr><th>Model</th><td>{{model}}</td></tr>
+      <tr><th>Kit version</th><td>{{kit_version}}</td></tr>
+    </table></div>
+    {{accuracy}}
+  </details>
+  <details class="research-details"><summary>What the game does, and how it was checked</summary>{{features}}</details>
+  <details class="research-details"><summary>Memory footprint</summary>
+    <p>Every byte of the C64's 64 KB, one pixel each, 512 to a row. Lit pixels are code, graphics, sound, text, tables and variables; dim areas are screen and working memory.</p>
+    <div id="memmap"></div>
+    {{footprint}}
+  </details>
+  <p>The symbol map is <a href="symbols.json">symbols.json</a>; the listing behind the Source tab is <a href="listing.json">listing.json</a>.</p>
+</div>
+<script src="{{lib}}/site.js"></script>
+<script src="{{lib}}/memmap.js"></script>
+<script>C64Map.render(document.getElementById('memmap'), 'memmap.json');</script>

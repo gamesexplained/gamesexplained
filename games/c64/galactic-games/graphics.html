@@ -1,0 +1,380 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Galactic Games: graphics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.plate{margin:0 0 22px}
+sup.fn{font-size:.7em;line-height:0}
+sup.fn a{text-decoration:none}
+sup.fn + sup.fn::before{content:","}
+.overview-shot{margin:22px 0}
+.overview-shot img{width:100%;max-width:768px;height:auto;aspect-ratio:384/272;image-rendering:pixelated;display:block}
+.overview-shot figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px;max-width:768px}
+.gg-px{image-rendering:pixelated;display:block;max-width:100%;height:auto;margin:0 auto 10px}
+.gg-wide{width:100%}
+.gg-read{font-family:var(--fm);font-size:13px;background:var(--surface-2);border-radius:6px;padding:8px 12px;margin:8px 0 10px}
+.gg-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:end}
+.gg-two figure{margin:0}
+.gg-two figcaption{font-family:var(--fm);font-size:12px;color:var(--ink-mute);text-align:center}
+.gg-lab{display:block;font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 4px}
+.gg-range{width:100%;max-width:520px;display:block}
+.gg-table{border-collapse:collapse;font-size:15px;width:100%;margin:0 0 12px}
+.gg-table td,.gg-table th{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.gg-scroll{overflow-x:auto}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.gg-two{grid-template-columns:1fr}}
+.gg-map{display:block;image-rendering:pixelated;cursor:crosshair;max-width:none}
+.gg-check{display:flex;align-items:center;gap:6px;margin-left:10px;font-family:var(--fm);font-size:13px}
+.gg-judo{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
+.gg-judo canvas{max-width:100%;height:auto;cursor:crosshair;image-rendering:auto}
+.gg-shields{display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+[data-own-look] .gg-shields button,[data-own-look] .gg-run button{font:500 13px var(--fm);padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);cursor:pointer}
+[data-own-look] .gg-shields button[aria-pressed="true"]{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
+.gg-run{display:flex;gap:8px;flex-wrap:wrap}
+[data-own-look] .gg-run button{min-width:96px;padding:10px 14px}
+.gg-bar{height:16px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:12px 0 0;max-width:520px}
+.gg-bar div{height:100%;width:0;background:repeating-linear-gradient(45deg,#c25a00 0 6px,#e08a3c 6px 12px)}
+@media (max-width:760px){.gg-judo{grid-template-columns:1fr}}
+</style>
+
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1987 · Activision</p>
+  <h1>Galactic Games: graphics</h1>
+  <p class="sub">Every alien in the five events, drawn from the game's own bytes and moved by its own animation tables: the racing worms, the hockey spheres, the psychic bolts, the Hruntan and its head, and the Metamorph in all five of its forms.</p>
+</header>
+<main class="wrap">
+
+<section id="worms">
+  <p class="fig">01 · 100m Slither</p>
+  <h2 class="t">A worm made of eight sprites</h2>
+  <p class="lede">Each worm is put together from all eight sprites at once, so the two lanes take turns with them: one band of the screen draws worm one, a band lower down draws worm two. A frame record says where each of the eight goes and which shape it shows; an animation script lists the frames and how long to hold each.</p>
+  <div class="plate">
+    <div class="pick"><a class="step" id="wPrev" aria-label="Previous animation">‹</a><select id="wSel" aria-label="Animation"></select><a class="step" id="wNext" aria-label="Next animation">›</a></div>
+    <div class="pick"><select id="wCol" aria-label="Lane"><option value="13">Worm one, far lane: light green</option><option value="7">Worm two, near lane: yellow</option></select></div>
+    <canvas id="wCv" class="gg-px gg-wide" aria-label="The worm playing the chosen animation"></canvas>
+    <p class="gg-read" id="wRead"></p>
+    <button type="button" id="wPlay" aria-pressed="true">Pause</button>
+    <p class="cap">Drawn by the game's own rules in <a href="source-slither.html#0E86"><code>set_worm_sprites</code></a>: the frame record (address from <a href="source-slither.html#2078"><code>frame_table</code></a>) gives each sprite a colour, where 6 keeps it blue and any other value takes the worm's own colour, then eight Y offsets and eight X offsets, each added to the one before, then the eight shapes. The scripts are <a href="source-slither.html#2956"><code>anim_scripts</code></a>, four bytes a step: the frame, two bytes nothing reads, and how many frames to hold it, counted once a frame by <a href="source-slither.html#28A5"><code>anim_step</code></a>.</p>
+  </div>
+  <p>The worm's blue body and its coloured stripe are separate sprites laid over each other, which is why most frame records name the shapes in pairs, such as 18 and 218: the first of each pair is blue and the second takes the lane's colour. Shape 183 is empty, and a record fills its unused sprites with it. Which animation runs is the worm's state: <a href="source-slither.html#3388"><code>st_wait_down</code></a> starts animation 1 when DOWN bunches the worm, <a href="source-slither.html#3247"><code>st_bunched</code></a> starts 2 for a <a href="gameplay.html#slither">super-slither</a> or else 0 or 8 when UP stretches it, and <a href="source-slither.html#3431"><code>st_finish</code></a> picks 5, 6, 9, or 10 from the race's result.</p>
+</section>
+
+<section id="hockey">
+  <p class="fig">02 · Space Hockey</p>
+  <h2 class="t">Spheres, a living puck and a black hole</h2>
+  <p class="lede">Space Hockey's things are plain one-colour sprites: the puck in white, player one in light red, player two in green, and the black hole in white at double size when the view reaches either end of the field. The puck has a face for each way it runs, and short animations for a hit, a bounce and falling into a hole.</p>
+  <div class="plate">
+    <div class="pick"><a class="step" id="hPrev" aria-label="Previous animation">‹</a><select id="hSel" aria-label="Animation"></select><a class="step" id="hNext" aria-label="Next animation">›</a></div>
+    <canvas id="hCv" class="gg-px" aria-label="The chosen hockey animation"></canvas>
+    <p class="gg-read" id="hRead"></p>
+    <p class="cap">The puck's four animations are the frame lists at <a href="source-hockey.html#2343"><code>anim_table</code></a>, a frame every five frames (<a href="source-hockey.html#2289"><code>puck_shape</code></a>); a swallowed player plays animation 3 in its own colour. The black hole steps through shapes $2F to $33 every four frames (<a href="source-hockey.html#20B0"><code>hole_shapes</code></a>).</p>
+  </div>
+  <div class="plate">
+    <canvas id="hSheet" class="gg-px gg-wide" aria-label="Every hockey shape, labelled"></canvas>
+    <p class="cap">Every shape from $10 to $33, at <a href="source-hockey.html#4400"><code>$4400</code></a> in video bank 1, coloured as the game colours its user. Players face the way the stick is held (<a href="source-hockey.html#1EB1"><code>player_shapes</code></a>), show shape $15 for the five frames of a <a href="gameplay.html#hockey">brake</a> and $2E when stunned (<a href="source-hockey.html#1DF5"><code>read_controls</code></a>). The puck shows $10 standing still, $16 to $19 running down, up, right, and left, and $1D while dazed. Shape $12 is the scanner's dot and $13 its window, and $11 is empty. Shapes marked with a dash appear in none of these lists.</p>
+  </div>
+</section>
+
+<section id="judo">
+  <p class="fig">03 · Psychic Judo</p>
+  <h2 class="t">Bolts in eight sizes</h2>
+  <p class="lede">The judo players are never seen: each half of the screen is one player's view down the arena. What moves is the bolt of psychic energy, a sprite that grows as it comes nearer, with a second sprite for its shadow on the floor. Its colour changes every three frames and its shape flickers every six.</p>
+  <div class="plate">
+    <div class="pick"><a class="step" id="jPrev" aria-label="Previous direction">‹</a><select id="jSel" aria-label="Steering"></select><a class="step" id="jNext" aria-label="Next direction">›</a></div>
+    <canvas id="jCv" class="gg-px gg-wide" aria-label="The bolt at each depth, with its shadow"></canvas>
+    <button type="button" id="jPlay" aria-pressed="true">Pause</button>
+    <p class="cap">Left to right, the bolt at depth bands 0 to 7 (its depth divided by eight), with its shadow under it. The shape comes from <a href="source-judo.html#2138"><code>bolt_shape_table</code></a>, eight bands for each way the bolt is steered, plus 0 or 5 from <a href="source-judo.html#212F"><code>flash_shape</code></a> for the flicker; the shadow is <a href="source-judo.html#2130"><code>shadow_shapes</code></a> plus 5 (<a href="source-judo.html#2182"><code>shape_bolt1</code></a>). <a href="source-judo.html#3567"><code>timers</code></a> runs all four bolt sprites through 14 colours from <a href="source-judo.html#1EB5"><code>$1EB5</code></a> and flips the flicker on every second colour.</p>
+  </div>
+  <p>Eight bands share five sizes: bands 1 and 2 show the same shape, and so do 3 and 4, and 5 and 6. Steering bends the bolt's shape the way it is pushed, which is why there are nine rows of shapes, one for no steering and one for each of the eight directions. Shapes $40 to $44 are shadows that no band uses.</p>
+</section>
+
+<section id="head">
+  <p class="fig">04 · Head Throwing</p>
+  <h2 class="t">A body in two layers, and a head that flies alone</h2>
+  <p class="lede">The Hruntan is drawn twice over: four hi-res sprites in blue give it its outline, and four multicolour sprites under them fill it in grey and the thrower's colour, light red for player one and yellow for player two. All eight are stretched to twice their height. When the head is thrown, the body is drawn into the screen and its eight sprites become the head.</p>
+  <div class="plate">
+    <div class="gg-two">
+      <figure><canvas id="bCv" class="gg-px" aria-label="The body in the chosen pose"></canvas><figcaption id="bCap"></figcaption></figure>
+      <figure><canvas id="kCv" class="gg-px" aria-label="The head turning"></canvas><figcaption id="kCap"></figcaption></figure>
+    </div>
+    <div class="pick"><select id="bWho" aria-label="Thrower"><option value="10">Player one: light red</option><option value="7">Player two: yellow</option></select></div>
+    <div class="pick"><a class="step" id="bPrev" aria-label="Previous pose">‹</a><select id="bSel" aria-label="Pose"></select><a class="step" id="bNext" aria-label="Next pose">›</a></div>
+    <div class="pick"><select id="kSel" aria-label="Head animation"><option value="turn">The head turning: 32 angles, frames $00 to $1F</option><option value="nose">The nose in the ground: frames $20 to $24</option><option value="ears">The ears flapping: frames $25 to $28</option></select></div>
+    <p class="cap">The 27 body poses are 200 bytes each, 40 rows of five bytes, found through <a href="source-head.html#2185"><code>body_frames</code></a>: entry A for the hi-res layer and entry A + 27 for the multicolour one (<a href="source-head.html#20FC"><code>draw_body_hires</code></a>, <a href="source-head.html#213F"><code>draw_body_multi</code></a>). The 41 head frames are 128 bytes each, 32 rows of four, at <a href="source-head.html#8E30"><code>$8E30</code></a> and <a href="source-head.html#A2B0"><code>$A2B0</code></a> (<a href="source-head.html#21F3"><code>draw_head_hires</code></a>, <a href="source-head.html#223B"><code>draw_head_multi</code></a>). The head's frame is its angle, or $24 plus the ear frame while the ears flap at the level angle 8 (<a href="source-head.html#117A"><code>draw_head</code></a>); five frames between the angles and the ears show the nose buried in the ground. Colours from <a href="source-head.html#20C6"><code>init_sprites</code></a> and <a href="source-head.html#109E"><code>next_throw</code></a>.</p>
+  </div>
+  <p>The head turns a step every ten frames while FIRE is held at the line, and again on the way down when FIRE starts it tipping: it sticks only if it lands at an angle from $0C to $0F (<a href="gameplay.html#head">Gameplay</a>). The ear frames are the lift that alternating UP and DOWN buys in flight.</p>
+</section>
+
+<section id="metamorph">
+  <p class="fig">05 · Metamorph Marathon</p>
+  <h2 class="t">One creature, five forms</h2>
+  <p class="lede">The Metamorph is six sprites: four black hi-res ones for its outline and two yellow ones, stretched to double width, for its body. Each frame the game copies the current shape into them from a store of 35, in five sets: the blob it rests as, the Flyer, the Runner, the Burrower, and the Jumper, and three frames for running out of energy.</p>
+  <div class="plate">
+    <div class="pick"><a class="step" id="mPrev" aria-label="Previous sequence">‹</a><select id="mSel" aria-label="Sequence"></select><a class="step" id="mNext" aria-label="Next sequence">›</a></div>
+    <canvas id="mCv" class="gg-px" aria-label="The Metamorph playing the chosen sequence"></canvas>
+    <p class="gg-read" id="mRead"></p>
+    <label class="gg-lab" for="mRate">Frames a step: <span id="mRateV"></span></label>
+    <input id="mRate" type="range" min="16" max="127" value="32" class="gg-range">
+    <p class="cap">The sequences are lists of frames at <a href="source-marathon.html#1F4A"><code>sequences</code></a>, each frame counted from the first shape of the form's set (<a href="source-marathon.html#346B"><code>shape_bases</code></a>); the Runner's lists hold a stride after each frame. The outline is 128 bytes from <a href="source-marathon.html#5A00"><code>$5A00</code></a> + shape x 128 and the body 64 bytes from <a href="source-marathon.html#6B80"><code>$6B80</code></a> + shape x 64 (<a href="source-marathon.html#34F7"><code>build_outline</code></a>, <a href="source-marathon.html#3543"><code>build_fill</code></a>). The game sets the rate: $50 frames for the blob, $10 for the Jumper, and for the others from $7F standing down to $10 at full power (<a href="source-marathon.html#2AD6"><code>rate_table</code></a>); the slider stands in for it.</p>
+  </div>
+  <div class="plate">
+    <canvas id="mSheet" class="gg-px gg-wide" aria-label="All 35 Metamorph shapes"></canvas>
+    <p class="cap">All 35 shapes, numbered. The first two of each form's set, such as $02 and $03 for the Flyer, are what sequence 1 plays when the blob changes into that form and sequence 2 when it changes back.</p>
+  </div>
+</section>
+
+<section id="titles">
+  <p class="fig">06 · Title screens</p>
+  <h2 class="t">Twenty-one letters for six titles</h2>
+  <p class="lede">Each event opens with its name in big letters over a field of stars. The letters are sprites, multicolour and double size, in two rows of up to eight. A rainbow runs through them: every second frame the top row's colours turn one place one way and the bottom row's the other.</p>
+  <div class="plate">
+    <div class="pick"><a class="step" id="tPrev" aria-label="Previous title">‹</a><select id="tSel" aria-label="Title"></select><a class="step" id="tNext" aria-label="Next title">›</a></div>
+    <canvas id="tCv" class="gg-px gg-wide" aria-label="The chosen title screen's letters"></canvas>
+    <p class="cap">Each title is 66 bytes from the table at <a href="source-resident.html#C899"><code>$C899</code></a>: the two rows' shapes, colours, positions, and high X bits, which <a href="source-resident.html#C540"><code>title_screen</code></a> copies to <a href="source-resident.html#C6CB"><code>title_now</code></a>. The shared colours are white and dark grey (<a href="source-resident.html#C8DE"><code>split_top</code></a>), and <a href="source-resident.html#C965"><code>split_colours</code></a> turns the rows' colours. The stars are left out here.</p>
+  </div>
+  <div class="plate">
+    <canvas id="tSheet" class="gg-px gg-wide" aria-label="The 21 letter shapes"></canvas>
+    <p class="cap">The shapes, $00 to $14, in video bank 3 from <a href="source-resident.html#C000"><code>$C000</code></a>. Shape $01 is blank, and a title puts it in every sprite it does not need. Shape $00, the U, sits where the records font's last characters end, and only JUDO uses it. Title 5, shown after a <a href="gameplay.html#championship">Galactic Championship</a>, reads THE END.</p>
+  </div>
+</section>
+
+<section id="ball">
+  <p class="fig">07 · The commentator</p>
+  <h2 class="t">A spinning ball that follows the words</h2>
+  <p class="lede">On the menu a commentator types each message letter by letter, and a ball of five sprites hops along behind the cursor. Four of the sprites are cyan; the fifth is multicolour at double size, and its second shared colour cycles through black, dark grey, grey, light grey, and white.</p>
+  <div class="plate">
+    <canvas id="nCv" class="gg-px" aria-label="The commentator's ball spinning"></canvas>
+    <p class="cap">Placed by <a href="source-menu.html#10AB"><code>place_ball</code></a> with shapes from <a href="source-menu.html#1116"><code>$1116</code></a> and colours from <a href="source-menu.html#111B"><code>ball_colours</code></a>. <a href="source-menu.html#1120"><code>ball_irq</code></a> changes sprite 2's shape through the list at <a href="source-menu.html#11E0"><code>$11E0</code></a>, pairs of shape and frames to hold it, and every six frames the colour from <a href="source-menu.html#11D7"><code>$11D7</code></a>.</p>
+  </div>
+</section>
+
+<section id="loading">
+  <p class="fig">08 · Loading screen</p>
+  <h2 class="t">The credits, while side 1 loads</h2>
+  <p class="lede">While the boot loads the rest of the game from tracks 19 to 22, a text screen gives the credits around the game's name in big blocks of characters, with the same spinning ball. The boot's data is packed on the disk and no listing holds this screen, so it is shown here as the emulator drew it.</p>
+  <figure class="overview-shot"><img src="reference/title-loading.png" width="384" height="272" alt="The loading screen: Design Copyright (C)1987 Tigress Designs, Copyright (C)1987 Activision, GALACTIC GAMES in big coloured block letters, All Rights Reserved, and A Software Studios production in association with Tigress Designs"><figcaption>The loading screen. When FIRE is pressed, the lines change to name the developers: "Developed by SYSTEM", "Graphics by Martin Chatfield and SYSTEM" and "Game Design by Tigress Designs".</figcaption></figure>
+</section>
+
+<section id="screens">
+  <p class="fig">09 · How the screens are built</p>
+  <h2 class="t">Three video banks and a split for every band</h2>
+  <p>Every part runs from the raster interrupt, which changes the video chip's settings as the beam passes set lines. The events use video bank 1, with their screen at $4000; the title screens use bank 3 with a hi-res bitmap at <code>$E000</code>; the menu and the records screen use bank 0, with the text screen at $0400. Space Hockey's field is a bitmap whose chequered floor is drawn by flipping four-pixel columns and rows where the bands cross (<a href="source-hockey.html#284B"><code>$284B</code></a>). Psychic Judo builds its two views of the arena through a 64-row depth table it computes at the start (<a href="source-judo.html#24BC"><code>$24BC</code></a>). The Marathon's course is a map of 32 rows by 256 tiles, drawn on the <a href="levels.html">Maps</a> tab.</p>
+</section>
+</main>
+
+<script src="../../lib/c64.js"></script>
+<script>
+(function () {
+  if (typeof C64 === 'undefined') { document.querySelectorAll('canvas').forEach(c => c.insertAdjacentHTML('afterend', '<p class="cap">The drawing needs the site\'s c64.js, which loads only on the built site.</p>')); return; }
+  const P = C64.PAL, $ = id => document.getElementById(id);
+  const hx = v => '$' + v.toString(16).toUpperCase().padStart(2, '0');
+  const s8 = v => v > 127 ? v - 256 : v;
+  const pick = (sel, prev, next, on) => { const n = () => sel.options.length; sel.onchange = () => on(+sel.value); prev.onclick = () => { sel.selectedIndex = (sel.selectedIndex + n() - 1) % n(); on(+sel.value); }; next.onclick = () => { sel.selectedIndex = (sel.selectedIndex + 1) % n(); on(+sel.value); }; };
+  const opts = (sel, list) => { sel.innerHTML = list.map(([v, t]) => `<option value="${v}">${t}</option>`).join(''); };
+  // Rows of hi-res bytes: wb bytes a row, n rows, each pixel ex wide and ey high.
+  function hires(ctx, m, a, wb, n, px, py, s, col, ex = 1, ey = 1) {
+    ctx.fillStyle = col;
+    for (let y = 0; y < n; y++) for (let b = 0; b < wb; b++) { const v = m[a + y * wb + b];
+      for (let x = 0; x < 8; x++) if (v & (0x80 >> x)) ctx.fillRect(px + (b * 8 + x) * s * ex, py + y * s * ey, s * ex, s * ey); }
+  }
+  // The same in multicolour: cols[1..3] for the bit pairs %01, %10, %11.
+  function multi(ctx, m, a, wb, n, px, py, s, cols, ex = 1, ey = 1) {
+    for (let y = 0; y < n; y++) for (let b = 0; b < wb; b++) { const v = m[a + y * wb + b];
+      for (let x = 0; x < 4; x++) { const c = cols[(v >> (6 - 2 * x)) & 3]; if (!c) continue;
+        ctx.fillStyle = c; ctx.fillRect(px + (b * 8 + 2 * x) * s * ex, py + y * s * ey, 2 * s * ex, s * ey); } }
+  }
+  const loops = [];
+  let tick = 0;
+  (function frame() { tick++; for (const f of loops) f(tick); setTimeout(() => requestAnimationFrame(frame), 20); })();
+
+  // 01 · Worms
+  C64.load('parts/slither/listing.json').then(L => {
+    const m = L.ram, rec = f => m[0x2078 + 2 * f] | m[0x2079 + 2 * f] << 8;
+    const pos = f => { const r = rec(f), o = []; let y = 0, x = 0;
+      for (let i = 0; i < 8; i++) { y += s8(m[r + 10 + i]); x += s8(m[r + 18 + i]); o.push([x, y, m[r + 2 + i], m[r + 26 + i]]); } return o; };
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    const ext = p => { let a = 24, b = -1, c = 21, d = -1; for (let y = 0; y < 21; y++) for (let x = 0; x < 24; x++) if (m[0x4000 + p * 64 + y * 3 + (x >> 3)] & (0x80 >> (x & 7))) { a = Math.min(a, x); b = Math.max(b, x); c = Math.min(c, y); d = Math.max(d, y); } return b < 0 ? null : [a, b, c, d]; };
+    const used = new Set(); for (let i = 0; i < 11; i++) { const a = m[0x2940 + 2 * i] | m[0x2941 + 2 * i] << 8; for (let k = a + 4; m[k] !== 0xFF; k += 4) used.add(m[k]); }
+    for (const f of used) for (const [x, y, , p] of pos(f)) { const e = ext(p); if (!e) continue; x0 = Math.min(x0, x + e[0]); x1 = Math.max(x1, x + e[1] + 1); y0 = Math.min(y0, y + e[2]); y1 = Math.max(y1, y + e[3] + 1); }
+    const S = 3, cv = $('wCv'), ctx = C64.canvas(cv, (x1 - x0 + 8) * S, (y1 - y0 + 8) * S);
+    const scripts = []; for (let i = 0; i < 11; i++) { const a = m[0x2940 + 2 * i] | m[0x2941 + 2 * i] << 8, st = [];
+      for (let k = 4; m[a + k] !== 0xFF; k += 4) st.push([m[a + k], m[a + k + 3], a + k]); scripts.push(st); }
+    const what = ['stretching, when the cooling level is 12 or more', 'bunching up on DOWN', 'the super-slither', 'standing ready on the line', 'the pace-maker bunching', 'first home', 'second home', 'after animation 9 or 10', 'stretching, when the cooling level is under 12', 'put out at the time limit', 'overheated'];
+    opts($('wSel'), scripts.map((s, i) => [i, `Animation ${i}: ${what[i]}, ${s.length} frames`]));
+    $('wSel').value = 2;
+    let an = 2, step = 0, held = 0, play = true;
+    const draw = () => { const [f, h, a] = scripts[an][step], own = P[+$('wCol').value];
+      ctx.fillStyle = P[3]; ctx.fillRect(0, 0, cv.width, cv.height);
+      if (f !== 0xFF) { const o = pos(f); for (let i = 7; i >= 0; i--) { const [x, y, c, p] = o[i]; if (p === 183) continue;
+        C64.drawSprite(ctx, m.subarray(0x4000 + p * 64), (x - x0 + 4) * S, (y - y0 + 4) * S, S, c === 6 ? P[6] : own); } }
+      $('wRead').textContent = `step ${step + 1} of ${scripts[an].length}: frame ${f}, held ${h} frame${h === 1 ? '' : 's'}`; };
+    pick($('wSel'), $('wPrev'), $('wNext'), v => { an = v; step = 0; held = 0; draw(); });
+    $('wCol').onchange = draw;
+    $('wPlay').onclick = () => { play = !play; $('wPlay').textContent = play ? 'Pause' : 'Play'; $('wPlay').setAttribute('aria-pressed', play); };
+    loops.push(() => { if (!play) return; if (++held >= scripts[an][step][1]) { held = 0; step = (step + 1) % scripts[an].length; if (step === 0) held = -40; draw(); } });
+    draw();
+  });
+
+  // 02 · Space Hockey
+  C64.load('parts/hockey/listing.json').then(L => {
+    const m = L.ram, spr = a => m.subarray(0x4000 + a * 64);
+    const anims = [0, 1, 2, 3].map(i => { const a = m[0x2343 + 2 * i] | m[0x2344 + 2 * i] << 8, f = []; for (let k = a; m[k] < 0x80; k++) f.push(m[k]); return f; });
+    const hole = []; for (let k = 0x20B0; m[k] < 0x80; k++) hole.push(m[k]);
+    const list = [['The puck hit', anims[0], 1, 5], ['The puck bouncing', anims[1], 1, 5], ['The puck swallowed by a hole', anims[2], 1, 5], ['Player one swallowed', anims[3], 10, 5], ['Player two swallowed', anims[3], 5, 5], ['The black hole, double size', hole, 1, 4]];
+    opts($('hSel'), list.map((l, i) => [i, l[0]]));
+    const S = 3, cv = $('hCv'), ctx = C64.canvas(cv, 56 * S, 50 * S);
+    let an = 0, step = 0, held = 0;
+    const draw = () => { const [, f, col] = list[an], sh = f[step], big = an === 5 ? 2 : 1;
+      ctx.fillStyle = P[0]; ctx.fillRect(0, 0, cv.width, cv.height);
+      C64.drawSprite(ctx, spr(sh), (big === 2 ? 4 : 16) * S, (big === 2 ? 4 : 14) * S, S, P[col], big, big);
+      $('hRead').textContent = `shape ${hx(sh)}, frame ${step + 1} of ${f.length}`; };
+    pick($('hSel'), $('hPrev'), $('hNext'), v => { an = v; step = 0; held = 0; draw(); });
+    loops.push(() => { if (++held >= list[an][3]) { held = 0; step = (step + 1) % list[an][1].length; if (step === 0) held = an === 5 ? 0 : -30; draw(); } });
+    draw();
+    // the sheet
+    const dirs = { 0x14: 'still', 0x1F: '↑', 0x22: '↓', 0x21: '←', 0x20: '→', 0x23: '↖', 0x24: '↙', 0x25: '↗', 0x26: '↘' };
+    const lab = sh => { if (dirs[sh]) return ['player ' + dirs[sh], 10]; const t = { 0x10: ['puck still', 1], 0x11: ['empty', 1], 0x12: ['scanner dot', 1], 0x13: ['scanner window', 1], 0x15: ['player braking', 10], 0x16: ['puck down', 1], 0x17: ['puck up', 1], 0x18: ['puck right', 1], 0x19: ['puck left', 1], 0x1A: ['puck bounce', 1], 0x1B: ['puck hit', 1], 0x1D: ['puck dazed', 1], 0x2E: ['player stunned', 10] }[sh];
+      if (t) return t; if (sh >= 0x27 && sh <= 0x29) return ['puck falls in', 1]; if (sh === 0x2A) return ['both fall in', 1]; if (sh >= 0x2B && sh <= 0x2D) return ['player falls in', 10]; if (sh >= 0x2F) return ['black hole', 1]; return ['—', 15]; };
+    const sc = $('hSheet'), per = 6, W = 56, H = 34, c2 = C64.canvas(sc, per * W * 2, Math.ceil(36 / per) * (H + 8) * 2);
+    c2.fillStyle = P[0]; c2.fillRect(0, 0, sc.width, sc.height); c2.font = '500 11px "IBM Plex Mono",monospace'; c2.textBaseline = 'top';
+    for (let sh = 0x10; sh <= 0x33; sh++) { const i = sh - 0x10, x = (i % per) * W * 2, y = Math.floor(i / per) * (H + 8) * 2, [t, c] = lab(sh);
+      C64.drawSprite(c2, spr(sh), x + 32, y + 2, 2, P[c]); c2.fillStyle = '#ddd'; c2.fillText(hx(sh), x + 4, y + 48); c2.fillText(t, x + 4, y + 62); }
+  });
+
+  // 03 · Psychic Judo
+  C64.load('parts/judo/listing.json').then(L => {
+    const m = L.ram, spr = a => m.subarray(0x4000 + a * 64);
+    const names = ['no steering', 'up', 'down', 'left', 'right', 'up and left', 'up and right', 'down and left', 'down and right'];
+    opts($('jSel'), names.map((n, i) => [i, 'Steered ' + n + ': shapes ' + hx(m[0x2138 + i * 8]) + ' to ' + hx(m[0x2138 + i * 8] + 9)]));
+    const cols = []; for (let k = 0x1EB5; m[k] < 0x80; k++) cols.push(m[k]);
+    const S = 2, cv = $('jCv'), ctx = C64.canvas(cv, 8 * 28 * S, 50 * S);
+    let row = 0, ci = 0, flash = 0, play = true;
+    const draw = () => { ctx.fillStyle = P[11]; ctx.fillRect(0, 0, cv.width, cv.height);
+      for (let b = 0; b < 8; b++) { const x = (b * 28 + 2) * S;
+        C64.drawSprite(ctx, spr(m[0x2138 + row * 8 + b] + flash), x, 2 * S, S, P[cols[ci]]);
+        C64.drawSprite(ctx, spr(m[0x2130 + b] + 5), x, 26 * S, S, P[0]); } };
+    pick($('jSel'), $('jPrev'), $('jNext'), v => { row = v; draw(); });
+    $('jPlay').onclick = () => { play = !play; $('jPlay').textContent = play ? 'Pause' : 'Play'; $('jPlay').setAttribute('aria-pressed', play); };
+    loops.push(t => { if (!play || t % 3) return; ci = (ci + 1) % cols.length; if (ci & 1) flash ^= 5; draw(); });
+    draw();
+  });
+
+  // 04 · Head Throwing
+  C64.load('parts/head/listing.json').then(L => {
+    const m = L.ram, S = 3;
+    const bAddr = i => m[0x2185 + 2 * i] | m[0x2186 + 2 * i] << 8;
+    const bc = $('bCv'), bx = C64.canvas(bc, 48 * S, 88 * S), kc = $('kCv'), kx = C64.canvas(kc, 40 * S, 40 * S);
+    opts($('bSel'), Array.from({ length: 27 }, (_, i) => [i, 'Body pose ' + i]));
+    let pose = 0, hf = 0;
+    const drawBody = () => { const mc = [null, P[12], P[12], P[+$('bWho').value]];
+      bx.fillStyle = P[5]; bx.fillRect(0, 0, bc.width, bc.height);
+      multi(bx, m, bAddr(pose + 27), 5, 40, 4 * S, 4 * S, S, mc, 1, 2);
+      hires(bx, m, bAddr(pose), 5, 40, 4 * S, 4 * S, S, P[6], 1, 2);
+      $('bCap').textContent = `pose ${pose}: data at ${'$' + bAddr(pose).toString(16).toUpperCase()} and ${'$' + bAddr(pose + 27).toString(16).toUpperCase()}`; };
+    const drawHead = () => { const mc = [null, P[12], P[12], P[+$('bWho').value]];
+      kx.fillStyle = P[5]; kx.fillRect(0, 0, kc.width, kc.height);
+      multi(kx, m, 0xA2B0 + hf * 128, 4, 32, 4 * S, 4 * S, S, mc);
+      hires(kx, m, 0x8E30 + hf * 128, 4, 32, 4 * S, 4 * S, S, P[6]);
+      $('kCap').textContent = `head frame ${hx(hf)}`; };
+    pick($('bSel'), $('bPrev'), $('bNext'), v => { pose = v; drawBody(); });
+    $('bWho').onchange = () => { drawBody(); drawHead(); };
+    const runs = { turn: [0, 0x1F], nose: [0x20, 0x24], ears: [0x25, 0x28] };
+    $('kSel').onchange = () => { hf = runs[$('kSel').value][0]; drawHead(); };
+    loops.push(t => { if (t % 10) return; const [a, b] = runs[$('kSel').value]; hf = hf < a || hf >= b ? a : hf + 1; drawHead(); });
+    drawBody(); drawHead();
+  });
+
+  // 05 · Metamorph Marathon
+  C64.load('parts/marathon/listing.json').then(L => {
+    const m = L.ram, S = 3, bases = [0, 1, 2, 3, 4, 5].map(i => m[0x346B + i]);
+    const shape = (ctx, n, px, py, s) => { hires(ctx, m, 0x6B80 + n * 64, 2, 32, px, py, s, P[7], 2, 1); hires(ctx, m, 0x5A00 + n * 128, 4, 32, px, py, s, P[0]); };
+    const seqs = []; for (let i = 0; i < 11; i++) { const a = m[0x1F4A + 2 * i] | m[0x1F4B + 2 * i] << 8; seqs.push(a); }
+    // sequence, set, title; the Runner's lists hold a stride after each frame
+    const list = [[0, 0, 'Sequence 0: the blob resting'], [1, 1, 'Sequence 1: the blob turning into the Flyer'], [3, 1, 'Sequence 3: the Flyer'], [1, 2, 'Sequence 1: the blob turning into the Runner'], [4, 2, 'Sequence 4: the Runner'], [5, 2, 'Sequence 5: the Runner'], [1, 3, 'Sequence 1: the blob turning into the Burrower'], [6, 3, 'Sequence 6: the Burrower digging'], [1, 4, 'Sequence 1: the blob turning into the Jumper'], [7, 4, 'Sequence 7: the Jumper crouching'], [8, 4, 'Sequence 8: the Jumper'], [2, 2, 'Sequence 2: the Runner changing back'], [9, 4, 'Sequence 9: the energy running out, here as the Jumper'], [10, 5, 'Sequence 10: out of energy, gone']];
+    const frames = ([q, set]) => { const out = []; for (let k = seqs[q]; m[k] < 0x80; k += set === 2 ? 2 : 1) out.push(m[k]); return out; };
+    opts($('mSel'), list.map((l, i) => [i, l[2]])); $('mSel').value = 4;
+    const cv = $('mCv'), ctx = C64.canvas(cv, 44 * S, 40 * S);
+    let it = 4, step = 0, held = 0;
+    const draw = () => { const fr = frames(list[it]), n = bases[list[it][1]] + fr[step % fr.length];
+      ctx.fillStyle = P[14]; ctx.fillRect(0, 0, cv.width, cv.height); shape(ctx, n, 6 * S, 4 * S, S);
+      $('mRead').textContent = `shape ${hx(n)}: frame ${fr[step % fr.length]} of set ${list[it][1]}, step ${step % fr.length + 1} of ${fr.length}`; };
+    const rate = () => { $('mRateV').textContent = $('mRate').value; };
+    $('mRate').oninput = rate; rate();
+    pick($('mSel'), $('mPrev'), $('mNext'), v => { it = v; step = 0; held = 0; draw(); });
+    loops.push(() => { if (++held >= +$('mRate').value) { held = 0; step = (step + 1) % frames(list[it]).length; draw(); } });
+    draw();
+    const sc = $('mSheet'), per = 9, cw = 40, ch = 46, c2 = C64.canvas(sc, per * cw * 2, 4 * ch * 2);
+    c2.fillStyle = P[14]; c2.fillRect(0, 0, sc.width, sc.height); c2.font = '500 10px "IBM Plex Mono",monospace'; c2.textBaseline = 'top';
+    for (let n = 0; n < 35; n++) { const x = (n % per) * cw * 2, y = Math.floor(n / per) * ch * 2; shape(c2, n, x + 8, y + 4, 2); c2.fillStyle = '#000'; c2.fillText(hx(n), x + 4, y + 72); }
+  });
+
+  // 06 · Titles
+  C64.load('parts/resident/listing.json').then(L => {
+    const m = L.ram, S = 2, spr = n => m.subarray(0xC000 + n * 64);
+    const names = ['100M SLITHER', 'HEAD THROWING', 'SPACE HOCKEY', 'PSYCHIC JUDO', 'META MORPH, the Marathon', 'THE END, after a championship'];
+    opts($('tSel'), names.map((n, i) => [i, 'Title ' + i + ': ' + n]));
+    const cv = $('tCv'), ctx = C64.canvas(cv, 320 * S, 140 * S);
+    let t = 0, top = [], bot = [];
+    const load = () => { const a = m[0xC899 + 2 * t] | m[0xC89A + 2 * t] << 8; top = Array.from(m.subarray(a + 8, a + 16)); bot = Array.from(m.subarray(a + 24, a + 32)); return a; };
+    let rec = load();
+    const draw = () => { ctx.fillStyle = P[0]; ctx.fillRect(0, 0, cv.width, cv.height);
+      for (const [row, sh, cols, xy, hi] of [[0, rec, top, rec + 32, rec + 48], [1, rec + 16, bot, rec + 49, rec + 65]])
+        for (let i = 7; i >= 0; i--) { const n = m[sh + i]; if (n === 1) continue;
+          const x = m[xy + 2 * i] + ((m[hi] >> i) & 1) * 256 - 24, y = m[xy + 2 * i + 1] - 50 - 40;
+          C64.drawSpriteMC(ctx, spr(n), x * S, y * S, S, P[cols[i] & 15], P[1], P[11], 2, 2); } };
+    pick($('tSel'), $('tPrev'), $('tNext'), v => { t = v; rec = load(); draw(); });
+    loops.push(k => { if (k % 2) return; top.push(top.shift()); bot.unshift(bot.pop()); draw(); });
+    draw();
+    const sc = $('tSheet'), c2 = C64.canvas(sc, 11 * 52 * 2, 2 * 52 * 2);
+    c2.fillStyle = P[0]; c2.fillRect(0, 0, sc.width, sc.height); c2.font = '500 10px "IBM Plex Mono",monospace'; c2.textBaseline = 'top';
+    for (let n = 0; n <= 0x14; n++) { const x = (n % 11) * 104, y = Math.floor(n / 11) * 104;
+      C64.drawSpriteMC(c2, spr(n), x + 4, y + 4, 2, P[[6, 2, 4, 5, 3, 7, 15, 14][n % 8]], P[1], P[11]); c2.fillStyle = '#ddd'; c2.fillText(hx(n), x + 4, y + 90); }
+  });
+
+  // 07 · The ball
+  C64.load('parts/menu/listing.json').then(L => {
+    const m = L.ram, S = 3, cv = $('nCv'), ctx = C64.canvas(cv, 72 * S, 52 * S);
+    const spin = []; for (let k = 0x11E0; m[k] < 0x80; k += 2) spin.push([m[k], m[k + 1]]);
+    const glow = []; for (let k = 0x11D7; m[k] < 0x80; k++) glow.push(m[k]);
+    let si = 0, held = 0, gi = 0;
+    const draw = () => { const ptr = [m[0x1116], m[0x1117], spin[si][0], m[0x1119], m[0x111A]], col = [0, 1, 2, 3, 4].map(i => P[m[0x111B + i] & 15]);
+      ctx.fillStyle = P[0]; ctx.fillRect(0, 0, cv.width, cv.height);
+      const at = [[0, 0], [0, 21], [24, 0], [24, 21], [16, 0]];
+      C64.drawSpriteMC(ctx, m.subarray(ptr[4] * 64), (at[4][0] + 4) * S, (at[4][1] + 4) * S, S, col[4], P[15], P[glow[gi]], 2, 2);
+      for (let i = 3; i >= 0; i--) C64.drawSprite(ctx, m.subarray(ptr[i] * 64), (at[i][0] + 4) * S, (at[i][1] + 4) * S, S, col[i]); };
+    loops.push(t => { if (++held >= spin[si][1]) { held = 0; si = (si + 1) % spin.length; } if (t % 6 === 0) gi = (gi + 1) % glow.length; draw(); });
+    draw();
+  });
+})();
+</script>

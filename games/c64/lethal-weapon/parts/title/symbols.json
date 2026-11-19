@@ -2514,7 +2514,7 @@
   {
    "address": 157,
    "type": "line",
-   "text": "The KERNAL's message flag: $80 at the start, 0 before each load."
+   "text": "The KERNAL's message flag: 0 at the start, $80 before each load."
   },
   {
    "address": 164,
@@ -2659,7 +2659,7 @@
   {
    "address": 33792,
    "type": "line",
-   "text": "The select screen's first character set, from the file PORT, copied to $4800: shown above line $10 and below line $C0, the band with SELECT and the two names."
+   "text": "The select screen's first character set, from the file PORT, copied to $4800: shown from the top of the screen down to line $C0, the two portraits."
   },
   {
    "address": 34048,
@@ -2699,7 +2699,7 @@
   {
    "address": 35840,
    "type": "line",
-   "text": "The select screen's second character set, from the file TTHR, copied to $5000: shown between lines $10 and $C0, the two portraits."
+   "text": "The select screen's second character set, from the file TTHR, copied to $5000: shown below line $C0, the band with SELECT and the two names."
   },
   {
    "address": 36096,
@@ -2769,7 +2769,7 @@
   {
    "address": 49152,
    "type": "line",
-   "text": "The title program's first instruction, run after the boot file F loads LOADER here. Banks the KERNAL in ($01=$36) and resets the I/O, then loads its files with its own fast loader ($C38A): LOGO at $5800 (the logo's sprites), MUSI at $E000 (the music), which it starts with tune 0, TCHR at $6000, SCN0 at $8000, PORT at $8400, TTHR at $8C00 and TCOL at $A000. Then points the IRQ at $C6E0 for line $30, turns on all eight sprites, picks VIC bank 1 ($4000-$7FFF) with the screen at $4000 and characters at $6000, clears both screens and colour RAM, prints the four lines of the title text ($C632) and waits for fire."
+   "text": "The title program's first instruction, run after the boot file F loads LOADER here. Banks the KERNAL in ($01=$36) and resets the I/O, then loads its files with its own fast loader ($C38A): LOGO at $5800 (the logo's sprites), MUSI at $E000 (the music), which it starts with tune 0, TCHR at $6000, SCN0 at $8000, PORT at $8400, TTHR at $8C00 and TCOL at $A000. Then points the IRQ at $C6E0 for line $30, turns on all eight sprites, picks VIC bank 1 ($4000-$7FFF) with the screen at $4400 and characters at $6000, clears both screens and fills colour RAM with white, prints the four lines of the title text ($C65A, by $C915) and waits for fire."
   },
   {
    "address": 49657,
@@ -2779,7 +2779,7 @@
   {
    "address": 49938,
    "type": "line",
-   "text": "The character select. Reads both joysticks ($C932) and, until fire is held with left or right, switches the character set by the raster: $D018 = $12 (characters at $4800) above line $10 and below $C0, $14 ($5000) between, so the two portraits use 512 characters."
+   "text": "The character select. Reads both joysticks ($C932) and, until fire is held with left or right, switches the character set by the raster: $D018 = $12 (characters at $4800) written above line $10 and kept down to line $C0, $14 ($5000) from $C0 down, so the portraits and the names below them each have 256 characters."
   },
   {
    "address": 49996,
@@ -2789,7 +2789,7 @@
   {
    "address": 50058,
    "type": "line",
-   "text": "The fast loader, the same code as the game's $03C3 at another address: loads the file named at ($BB) (length in $B7) at X/Y, with the KERNAL banked in for the drive commands."
+   "text": "The fast loader, nearly the same code as the game's $03C3 at another address: loads the file named at ($BB) (length in $B7) at X/Y, with the KERNAL banked in for the drive commands."
   },
   {
    "address": 50117,
@@ -2819,7 +2819,7 @@
   {
    "address": 50629,
    "type": "line",
-   "text": "Reads the two-byte load address of a block from the drive (the title's copy of the game's $0606)."
+   "text": "Reads the two-byte load address from the drive with the file's first block, putting the caller's X/Y in its place when $02 is 0 (the title's copy of the game's $0606)."
   },
   {
    "address": 50656,
@@ -2889,7 +2889,7 @@
   {
    "address": 51342,
    "type": "line",
-   "text": "The operand of this ORA, $00: the bit for the sprite's x high bit, which stays 0 here, so no logo sprite goes past x 255 with its high bit set."
+   "text": "The operand of this ORA, $00 in the snapshot: written 1 by $C802 and shifted left by $C894 for each sprite, the sprite's bit for $D010."
   },
   {
    "address": 51376,
@@ -2944,7 +2944,7 @@
   {
    "address": 51610,
    "type": "line",
-   "text": "Eight words: the x of each sprite of the logo's third row, 24 pixels apart, moved by $C7AC."
+   "text": "Eight words: the x of each sprite of the logo's third row, 24 pixels apart, moved by $C7EB."
   },
   {
    "address": 51611,
@@ -2979,7 +2979,7 @@
   {
    "address": 57347,
    "type": "line",
-   "text": "Plays one frame of music for all three voices, from the title's raster interrupts: counts each voice's note down; at the end of a note reads the next from its stream, a note number (plus the voice's transposition) and a byte giving its length (through $E662) and its instrument; codes from $60 are commands ($E39F), $6B stopping the music. Then works each voice's instrument: pulse-width sweep, vibrato, arpeggio (tables at $E890), waveform changes and the gate, and writes frequency, pulse and control; then sweeps the filter cutoff for the tune ($E8B1-$E8BD)."
+   "text": "Plays one frame of music for all three voices, from the title's raster interrupts: counts each voice's note down; at the end of a note reads the next from its stream, a note number (plus the voice's transposition) and a byte giving its length (through $E662) and its instrument; codes $60-$6B are commands ($E39F), $6B stopping the music. Then works each voice's instrument: pulse-width sweep, vibrato, arpeggio (tables at $E890), waveform changes and the gate, and writes frequency, pulse and control; then sweeps the filter cutoff for the tune ($E8B1-$E8BD)."
   },
   {
    "address": 57926,
@@ -2994,7 +2994,7 @@
   {
    "address": 58271,
    "type": "line",
-   "text": "A command in a note stream: $6B stops the music and gates all three voices off; others set a value through a short table and a length."
+   "text": "A command in a note stream: $6B stops the music and gates all three voices off; the others jump to their routine through the address tables at $E552 and $E55D."
   },
   {
    "address": 58299,
@@ -3009,7 +3009,7 @@
   {
    "address": 58318,
    "type": "line",
-   "text": "Command $60: the next byte is a length code; the next note is tied to this one (not struck again)."
+   "text": "Command $60: the next byte is a length code; for that length no new note is struck, and the note now sounding (or a rest) is held."
   },
   {
    "address": 58339,
@@ -3024,7 +3024,7 @@
   {
    "address": 58359,
    "type": "line",
-   "text": "Command $63: sets the filter mode bits ($E50F), written to $D418 with the volume."
+   "text": "Command $63: sets $E50F from the stream ($0A, the volume, in both tunes), written to $D418 ORed with the filter mode bits ($E548)."
   },
   {
    "address": 58374,
@@ -3059,7 +3059,7 @@
   {
    "address": 58518,
    "type": "line",
-   "text": "Command $6A: picks a filter sweep from the tables at $E8AD-$E8BD."
+   "text": "Command $6A: picks a filter sweep from the tables at $E8AD-$E8C0."
   },
   {
    "address": 58560,
@@ -3194,7 +3194,7 @@
   {
    "address": 58630,
    "type": "line",
-   "text": "Each voice's gate bit, 1 while its note sounds."
+   "text": "Each voice's gate bit, set to 1 when its note is struck; the gate-off at $E031 clears only voice 0's."
   },
   {
    "address": 58633,
@@ -3209,7 +3209,7 @@
   {
    "address": 58639,
    "type": "line",
-   "text": "The filter mode bits for $D418."
+   "text": "The volume command $63 sets for $D418 ($0A in both tunes)."
   },
   {
    "address": 58640,
@@ -3269,7 +3269,7 @@
   {
    "address": 58671,
    "type": "line",
-   "text": "Each voice's vibrato step count."
+   "text": "Each voice's vibrato flag: set at the first change of direction, when the depth is doubled."
   },
   {
    "address": 58674,
@@ -3304,7 +3304,7 @@
   {
    "address": 58692,
    "type": "line",
-   "text": "The filter sweep in use ($FF for none)."
+   "text": "The filter sweep in use (none while bit 7 is set)."
   },
   {
    "address": 58693,
@@ -3324,7 +3324,7 @@
   {
    "address": 58696,
    "type": "line",
-   "text": "The filter routing bits from $E8AD."
+   "text": "The filter mode bits for $D418, from $E8AD."
   },
   {
    "address": 58697,
@@ -3379,7 +3379,7 @@
   {
    "address": 58980,
    "type": "line",
-   "text": "The music's data, from the file MUSI: the rest of the length table, the instruments' tables (waveforms $E682, release waveforms $E690, attack/decay $E69E, sustain/release $E6AC, pulse width $E6BA/$E6C8, pulse sweep $E6D6, vibrato $E6F2-$E70E, arpeggio $E71C, waveform changes $E72A-$E754), the arpeggio tables ($E762, $E76D, $E890), the filter sweeps ($E8B1-$E8BD), the three tunes' stream addresses ($E8C1, $E8CA) and the note streams. Tune 0 plays on the title screen, tune 2 when a character is chosen."
+   "text": "The music's data, from the file MUSI: the rest of the length table, the instruments' tables (waveforms $E682, release waveforms $E690, attack/decay $E69E, sustain/release $E6AC, pulse width $E6BA/$E6C8, pulse sweep $E6D6, vibrato $E6F2-$E70E, arpeggio $E71C, waveform changes $E72A-$E754), the arpeggio tables' addresses ($E762, $E76D) and the tables ($E778-$E8AC), the filter sweeps ($E8AD-$E8C0), the three tunes' stream addresses ($E8C1, $E8CA) and the note streams. Tune 0 plays on the title screen; tune 2, started when a character is chosen, stops the music."
   },
   {
    "address": 58994,
@@ -3449,22 +3449,22 @@
   {
    "address": 59178,
    "type": "line",
-   "text": "Each instrument's second waveform."
+   "text": "Each instrument's alternate waveform for the second change and every second after; non-zero turns the changes on."
   },
   {
    "address": 59192,
    "type": "line",
-   "text": "Each instrument's third waveform."
+   "text": "Each instrument's alternate waveform for the first change and every second after."
   },
   {
    "address": 59206,
    "type": "line",
-   "text": "Each instrument's waveform-change delay."
+   "text": "Each instrument's waveform-change period: frames between changes."
   },
   {
    "address": 59220,
    "type": "line",
-   "text": "Each instrument's waveform-change count."
+   "text": "Each instrument's waveform-change delay: frames before the changes begin."
   },
   {
    "address": 59234,
@@ -3474,7 +3474,7 @@
   {
    "address": 59245,
    "type": "line",
-   "text": "The high bytes of the arpeggio tables' addresses."
+   "text": "The high bytes of the arpeggio tables' addresses ($E76D-$E777), then arpeggio tables 0-4 from $E778, note offsets each ending $7F."
   },
   {
    "address": 59536,
@@ -3484,7 +3484,7 @@
   {
    "address": 59565,
    "type": "line",
-   "text": "Each filter sweep's routing bits."
+   "text": "Each filter sweep's filter mode bits for $D418 ($10 low-pass)."
   },
   {
    "address": 59569,
@@ -3514,7 +3514,7 @@
   {
    "address": 59594,
    "type": "line",
-   "text": "The three tunes' note streams, high bytes."
+   "text": "The three tunes' note streams, high bytes ($E8CA-$E8D2); from $E8D3, the note streams themselves."
   },
   {
    "address": 60618,
@@ -3534,7 +3534,7 @@
   {
    "address": 62440,
    "type": "line",
-   "text": "The patterns' addresses, high bytes."
+   "text": "The patterns' addresses, high bytes (three, to $F3EA); what follows from $F3EB is other code of MUSI that the title does not call."
   },
   {
    "address": 65521,

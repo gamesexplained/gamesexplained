@@ -417,17 +417,17 @@
   {
    "address": 32448,
    "type": "line",
-   "text": "Level data $7EC0-$7EC1: Loaded level identifier checked at $16A6 and its following palette byte."
+   "text": "Level data $7EC0-$7EC1: Loaded level identifier (1), checked at $16A6, then the first entry of the five-byte table that $09AB reads with the level number as index for multicolour 1 ($D022). That first entry is Klondike's, 8 in every level's load, so nothing reads it while this level plays; this level's entry is $7EC2 in the resident part."
   },
   {
    "address": 33170,
    "type": "line",
-   "text": "Level data $8192-$8391: Level-loaded continuation of the actor-template directory and its adjacent level-specific actor parameters. Actor constructors use the pointer table at $817C, with the high-index half at $827C."
+   "text": "Level data $8192-$8391: The rest of the actor-template directory: two-byte pointers, the low-index half to $827B and the high-index half from $827C, read by $4EF9 and by the creators that double a template number and read $827C,Y. The highest template a creator names is $F0, whose pointer is at $835C-$835D. From $835E: the variables $835E and $835F, tables at $8360-$836E read by $4C50-$4C7A and $2315, then the random-spawn tables that $3D2B reads by level: masks at $836F, record bases at $8374 (low) and $8379 (high), and from $837E the four-byte random-spawn records described at $8392."
   },
   {
    "address": 33682,
    "type": "line",
-   "text": "Level data $8392-$83DF: Level-loaded continuation of the actor-template directory and its adjacent level-specific actor parameters. Actor constructors use the pointer table at $817C, with the high-index half at $827C."
+   "text": "Level data $8392-$83DF: Four-byte random-spawn records, the same in every level, continuing from $837E. $3D2B picks one with the level's mask at $836F and base at $8374/$8379 and spawns it through $3B4B when its position, bytes 0 and 1 (low, high), is less than $28 ahead of the scroll position $516D/$516E; bytes 2 and 3 are the row and the template. A record of FF FF 00 00 spawns nothing."
   },
   {
    "address": 36608,
@@ -437,12 +437,12 @@
   {
    "address": 36800,
    "type": "line",
-   "text": "Level data $8FC0-$90DF: Level exit records: edge selector, source world block, destination scroll positions, right scroll limits and destination X. The exit handler at $3096 searches the count in $806C."
+   "text": "Level data $8FC0-$90DF: Five parallel exit tables of 30 entries each: edge selector bytes at $8FC0 (0 for the top edge, 1 for the bottom), source world block words at $8FDE, destination scroll position words at $901A, right scroll limit words at $9056 and destination X block bytes at $9092. The exit handler at $3096 searches 31 entries, the count for this level in $806C, one more than the tables hold: for the 31st it reads $8FDE, the low byte of the first block word ($41), as the edge selector, which matches neither edge. $90B0-$90DF are 48 zero bytes after the tables that nothing reads."
   },
   {
    "address": 37088,
    "type": "line",
-   "text": "Level data $90E0-$9141: Paired path pointer directories used by $418E to select magnitude and direction streams."
+   "text": "Level data $90E0-$9141: Two path pointer directories of 18 two-byte pointers each, $FFFF for none, used by $418E: $90E0-$9103 point to the magnitude streams and $9104-$9127 to the direction streams (9 of each in use in this level). $9128-$9141 is the 26-byte actor template $37, which the directory entry at $81EA points to and $4730 creates."
   },
   {
    "address": 37186,
@@ -457,17 +457,17 @@
   {
    "address": 38210,
    "type": "line",
-   "text": "Level data $9542-$9741: Actor initialisation records addressed through the template directory. The two constructor readers copy 26 bytes into display, collision, health, animation and motion arrays; offset 6 is score class in $3C32 and X expansion in $4F04."
+   "text": "Level data $9542-$9741: The last actor templates, then path streams. $9542-$9551 is the last 16 bytes of the template at $9538, and $9552-$966F holds 11 more, 26 bytes apart from $9552 to $9656 (template numbers $56-$62 in the directory at $817C; $59 and $5A both point to $95A0; $5E and $5F both point to $9608): the last of the 52 templates that run from $9128. The two constructor readers copy 26 bytes into display, collision, health, animation and motion arrays; offset 6 is score class in $3C32 and X expansion in $4F04. From $9670 the bytes are path streams, which $418E reads through the pointer directories at $90E0 (magnitudes, each stream ending in a command byte from $FC to $FF) and $9104 (directions, one byte for each magnitude). The streams that start here, each path's magnitudes then its directions: path 0 at $9670 and $96B7, 1 at $96FD and $9712 and 2 at $9726, with its directions at $974B. The magnitude stream of path 2 runs on past $9741, to $974A. The directory entries for template numbers $69-$89, $92-$BB and $C6-$F0 all hold $9670, the address after the last template, so they lead to path stream 0 and not to a template; no spawn record of this level names any of them."
   },
   {
    "address": 38722,
    "type": "line",
-   "text": "Level data $9742-$9941: Actor initialisation records addressed through the template directory. The two constructor readers copy 26 bytes into display, collision, health, animation and motion arrays; offset 6 is score class in $3C32 and X expansion in $4F04."
+   "text": "Level data $9742-$9941: Not actor templates: this level's 26-byte templates end at $966F. To $9845 they are path streams, which $418E reads through the pointer directories at $90E0 (magnitudes, each stream ending in a command byte from $FC to $FF) and $9104 (directions, one byte for each magnitude). The piece opens inside the magnitude stream of path 2, which starts at $9726. The streams that start here, each path's magnitudes then its directions: path 2 at $974B for its directions (its magnitudes start at $9726), 3 at $976F and $978D, 4 at $97AA and $97BD, 5 at $97CF for its directions (its magnitudes are path 4's), 6 at $97E1 and $97EE, 7 at $97FA and $9814 and 8 at $982D and $983A. The last stream byte is at $9845. $9846-$9941: 252 bytes that no pointer in either path directory leads to and no instruction names. They are the same bytes as the Klondike load has at these addresses, where they are part of its path streams."
   },
   {
    "address": 39234,
    "type": "line",
-   "text": "Level data $9942-$9AFF: Actor initialisation records addressed through the template directory. The two constructor readers copy 26 bytes into display, collision, health, animation and motion arrays; offset 6 is score class in $3C32 and X expansion in $4F04."
+   "text": "Level data $9942-$9AFF: Not actor templates: this level's 26-byte templates end at $966F and its path streams at $9845. $9942-$9AFF: 446 bytes that no pointer in the template directory or in the two path directories leads to, and that no instruction names. They are the same bytes as the Klondike load has at these addresses, where they are part of its path streams."
   },
   {
    "address": 40960,
@@ -477,12 +477,12 @@
   {
    "address": 41472,
    "type": "line",
-   "text": "Level data $A200-$A3FF: Four-byte actor spawn records, read by $3B4B: world position high byte, position low byte, row, template identifier. Special template identifiers activate a guardian."
+   "text": "Level data $A200-$A3FF: Four-byte actor spawn records continuing from $A000, read by $3B4B: world position high byte, position low byte, row, template identifier. Special template identifiers activate a guardian. The list ends with the record 7F FF 00 00 at $A378; the bytes from $A37C to $A3FF are zeros that nothing reads."
   },
   {
    "address": 41984,
    "type": "line",
-   "text": "Level data $A400-$A40F: Four-byte actor spawn records, read by $3B4B: world position high byte, position low byte, row, template identifier. Special template identifiers activate a guardian."
+   "text": "Level data $A400-$A40F: Zero bytes after the end of the spawn list. The list ends with the record 7F FF 00 00 at $A378, a position the scroll never reaches, so the record cursor stops there and nothing reads the zeros from $A37C."
   },
   {
    "address": 42000,
@@ -542,17 +542,17 @@
   {
    "address": 47104,
    "type": "line",
-   "text": "Level data $B800-$B9FF: Sixteen row-major character codes per 4-by-4 map block, expanded by $5192 and $569C."
+   "text": "Level data $B800-$B9FF: Sixteen row-major character codes per 4-by-4 map block, expanded by $5192 and $569C: blocks $80-$94, at $B800-$B94F. $B950-$B9FF, the slots of blocks $95-$9F, is zero: this level's definitions end with block $94, and no byte of its map at $A410 selects a higher block."
   },
   {
    "address": 47616,
    "type": "line",
-   "text": "Level data $BA00-$BBFF: Sixteen row-major character codes per 4-by-4 map block, expanded by $5192 and $569C."
+   "text": "Level data $BA00-$BBFF: 512 zero bytes: the slots of map blocks $A0-$BF in the table of sixteen-byte block definitions at $B000 that $5192 and $569C expand. This level defines no block here: its definitions end with block $94 at $B94F, and no byte of its map at $A410 selects a higher block."
   },
   {
    "address": 48128,
    "type": "line",
-   "text": "Level data $BC00-$BD3F: Sixteen row-major character codes per 4-by-4 map block, expanded by $5192 and $569C."
+   "text": "Level data $BC00-$BD3F: 320 zero bytes: the slots of map blocks $C0-$D3 in the table of sixteen-byte block definitions at $B000 that $5192 and $569C expand. This level defines no block here: its definitions end with block $94 at $B94F, and no byte of its map at $A410 selects a higher block."
   },
   {
    "address": 52544,
@@ -592,27 +592,27 @@
   {
    "address": 57344,
    "type": "line",
-   "text": "Level data $E000-$E1FF: Level sprite slots in VIC bank $C000, including RAM beneath the I/O chips. Each 64-byte slot stores 21 rows of three bytes; the VIC interprets it using the actor multicolour and expansion flags."
+   "text": "Level data $E000-$E1FF: Level sprite slots in VIC bank $C000, in RAM beneath the KERNAL ROM. Each 64-byte slot stores 21 rows of three bytes; the VIC interprets it using the actor multicolour and expansion flags."
   },
   {
    "address": 57856,
    "type": "line",
-   "text": "Level data $E200-$E3FF: Level sprite slots in VIC bank $C000, including RAM beneath the I/O chips. Each 64-byte slot stores 21 rows of three bytes; the VIC interprets it using the actor multicolour and expansion flags."
+   "text": "Level data $E200-$E3FF: Level sprite slots in VIC bank $C000, in RAM beneath the KERNAL ROM. Each 64-byte slot stores 21 rows of three bytes; the VIC interprets it using the actor multicolour and expansion flags."
   },
   {
    "address": 58368,
    "type": "line",
-   "text": "Level data $E400-$E5FF: Level sprite slots in VIC bank $C000, including RAM beneath the I/O chips. Each 64-byte slot stores 21 rows of three bytes; the VIC interprets it using the actor multicolour and expansion flags."
+   "text": "Level data $E400-$E5FF: Level sprite slots in VIC bank $C000, in RAM beneath the KERNAL ROM. Each 64-byte slot stores 21 rows of three bytes; the VIC interprets it using the actor multicolour and expansion flags."
   },
   {
    "address": 58880,
    "type": "line",
-   "text": "Level data $E600-$E7FF: Level sprite slots in VIC bank $C000, including RAM beneath the I/O chips. Each 64-byte slot stores 21 rows of three bytes; the VIC interprets it using the actor multicolour and expansion flags."
+   "text": "Level data $E600-$E7FF: Level sprite slots in VIC bank $C000, in RAM beneath the KERNAL ROM. Each 64-byte slot stores 21 rows of three bytes; the VIC interprets it using the actor multicolour and expansion flags."
   },
   {
    "address": 61440,
    "type": "line",
-   "text": "Level data $F000-$F1FF: The level character set: 256 eight-byte glyphs used for map drawing. The raster handler selects its shared multicolour values and the level animator changes selected rows in place."
+   "text": "Level data $F000-$F1FF: Glyphs $00-$3F of the level character set, 256 eight-byte glyphs at $F000-$F7FF used for map drawing. The raster handler selects the set's shared multicolour values. No code changes the rows of this piece in this level: the level's character animation writes only $F701, $F705, $F708 and $F70C ($1252) and, through the rotator at $1175 that Klondike, Orient and Bermuda (levels 0, 1 and 4) share, $F398, $F39F, $F3A0 and $F3A7."
   },
   {
    "address": 61952,
@@ -622,7 +622,7 @@
   {
    "address": 62464,
    "type": "line",
-   "text": "Level data $F400-$F5FF: The level character set: 256 eight-byte glyphs used for map drawing. The raster handler selects its shared multicolour values and the level animator changes selected rows in place."
+   "text": "Level data $F400-$F5FF: Glyphs $80-$BF of the level character set, 256 eight-byte glyphs at $F000-$F7FF used for map drawing. The raster handler selects the set's shared multicolour values. No code changes the rows of this piece in this level: the level's character animation writes only $F701, $F705, $F708 and $F70C ($1252) and, through the rotator at $1175 that Klondike, Orient and Bermuda (levels 0, 1 and 4) share, $F398, $F39F, $F3A0 and $F3A7."
   },
   {
    "address": 62976,

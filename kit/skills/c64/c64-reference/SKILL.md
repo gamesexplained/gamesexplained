@@ -108,6 +108,11 @@ the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 | `$D020`/`$D021` | border / background colour; `$D022`–`$D024` extra backgrounds |
 | `$D025`–`$D026` | sprite multicolours; `$D027`–`$D02E` sprite colours |
 
+The VIC's registers repeat every 64 bytes from `$D000` to `$D3FF`, so a
+write to `$D208` lands in `$D008`, sprite 4's X. A store into that range
+outside `$D000`-`$D03F` is a VIC write, not a mistyped SID or colour RAM
+address that does nothing: name the register it reaches.
+
 Read back, the VIC's unused bits are 1: the top two of `$D016`, bit 0
 of `$D018`, bits 4-6 of `$D019`, the top four of `$D01A` and of every
 colour register `$D020`-`$D02E`. A register dump and a snapshot give
@@ -769,6 +774,13 @@ a copy meant for the RAM under the I/O area goes into the chips instead.
 One game restarted with its display off and a title that ignored fire.
 Press fire after the reset, and read `$D011` and `$DC02`, before calling
 a restart clean.
+
+The reset routine looks for the signature (`$FCE7`) before RAMTAS
+(`$FD50`) and the rest of the KERNAL's start-up, so a cartridge started at
+reset finds zero page as it was, not as the KERNAL leaves it: RAMTAS is
+what sets the tape buffer pointer `$B2`/`$B3` to `$033C`. A game that
+tests such a value can tell a cartridge start from a copy started after
+the KERNAL's own.
 
 ## Screen codes and PETSCII
 
