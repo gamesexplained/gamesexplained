@@ -2279,7 +2279,7 @@
   },
   {
    "address": 38310,
-   "name": "copied_charset_boundary_95a6",
+   "name": "shop_check_balance_low",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -4457,7 +4457,7 @@
   },
   {
    "address": 61824,
-   "name": "matching_blank_sprite_shape_c6",
+   "name": "blank_sprite_shape_c6",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -4469,7 +4469,7 @@
   },
   {
    "address": 61952,
-   "name": "after_sprite_slot_f1ff",
+   "name": "blank_sprite_shape_c8",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -4866,17 +4866,17 @@
   {
    "address": 38258,
    "type": "line",
-   "text": "Two jump entries: the first enters setup at $9578, and the second jumps to $9698. The second entry was not exercised in the setup tests. These bytes can also overlap captured character or graphics sources."
+   "text": "Two jump entries: $9572 enters the price setup at $9578, and $9575 jumps to the item-pair setup at $9698. Load 15’s stage-object record 1 at $9501 names $9572 as its callback; no record or instruction in load 15 or in the resident part names $9575. The map’s eight-page character copy, which starts at $8DA6, also takes these six bytes, to $D7CC–$D7D1."
   },
   {
    "address": 38264,
    "type": "line",
-   "text": "Write $46 plus 1 modulo 256 to $98D7 and $9921, set sound state $2C15 to 2, and use stage index $7B to format fields $4783,X and $4789,X through $95DB for destination selectors $9B and $AF. The formatter’s display callback was stubbed in the controlled checks."
+   "text": "Write $46 plus 1 modulo 256 to the high address byte at $98D7 of the digit store at $98D5 and to the layout gate at $9921, set sound state $2C15 to 2, and use stage index $7B to format fields $4783,X and $4789,X through $95DB with Y=$9B and Y=$AF as the screen offsets of their last digits."
   },
   {
    "address": 38296,
    "type": "line",
-   "text": "Use selected-player index $4DBD. If $4DC7,Y is nonzero, or if $4DC9,Y is at least stage field $4789,X under an unsigned byte comparison, go to $95C6. Otherwise inspect stage field $4753,X. These tests do not establish which values occur in ordinary play."
+   "text": "Use selected-player index $4DBD. If $4DC7,Y is nonzero, or if $4DC9,Y is at least stage field $4789,X under an unsigned byte comparison, go to $95C6. Otherwise inspect stage field $4753,X."
   },
   {
    "address": 38310,
@@ -4886,27 +4886,27 @@
   {
    "address": 38321,
    "type": "line",
-   "text": "For stage field 3, or another even value, select message $9A10 and jump to $9862. The destination’s display behavior is separate."
+   "text": "Reached when stage field $4753,X is 3 or has bit 0 clear: select message $9A10 and jump to the message call at $9862."
   },
   {
    "address": 38328,
    "type": "line",
-   "text": "Test bit 0 of the stage field. A clear bit selects $9A10; a set bit calls $98A9, then selects $99FA. The called gate was stubbed in the controlled checks."
+   "text": "Reached when stage field $4753,X is not 3: test its bit 0. A clear bit selects message $9A10; a set bit calls $98A9, which stores $FF in $4753,X, then selects message $99FA and jumps to the message call at $9862."
   },
   {
    "address": 38342,
    "type": "line",
-   "text": "Test bit 0 of stage field $4753,X. Clear selects message $99BC; set selects $99A5. Both jump to $9755. Destination effects are separate."
+   "text": "Reached from the balance check when the gold covers stage field $4789,X. Test bit 0 of stage field $4753,X: clear selects message $99BC, set selects $99A5. Both jump to $9755, which shows the message and starts the choice loop."
   },
   {
    "address": 38363,
    "type": "line",
-   "text": "Save X and Y in immediate operands, call $36E9 to split A into nibbles plus one, clear the first two bytes at $991C, and write the tens and units codes to the next two bytes. A tens code of 1 is written as zero. Restore Y, call $98C3, restore X and return. The display callback was stubbed in the controlled checks."
+   "text": "Save X in the immediate operand at $9603 and Y in the one at $95FE, call $36E9 to split A into nibbles plus one, clear the first two bytes at $991C, and write the tens and units codes to the next two bytes. A tens code of 1 is written as zero. Restore Y, call $98C3, restore X and return."
   },
   {
    "address": 38405,
    "type": "line",
-   "text": "The incoming processor flags select the path: negative enters the first-price balance check at $9637; zero selects a message at $9685; otherwise use the second-price path at $9609. The controlled cases set these flags directly, so ordinary-play choice mapping remains open."
+   "text": "The flags come from the selection byte $9922, loaded at $97EE before the only jump here ($97F1, taken when the layout gate $9921 is nonzero): negative ($FF, left) enters the first-price balance check at $9637; zero selects message $99E3 at $9685; otherwise (1, right) take the second-price path at $9609."
   },
   {
    "address": 38409,
@@ -4936,7 +4936,7 @@
   {
    "address": 38517,
    "type": "line",
-   "text": "Push A, call $77E0 with the selected message pointer and pull A. Continue at $967A; the message routine was stubbed."
+   "text": "Push A, call $77E0 with the message pointer in X/Y and pull A, then continue at $967A, which adds A to the player’s meter through $77A9. The second-price fallback jumps here from $9634 with A=4 and message $9A51; the first-price fallback falls in from $966F with A=8 and message $9A6C."
   },
   {
    "address": 38522,
@@ -4946,22 +4946,22 @@
   {
    "address": 38533,
    "type": "line",
-   "text": "Load the message pointer encoded here and jump to $9862. This branch was reached by forcing the incoming zero flag."
+   "text": "Load X/Y with message pointer $99E3 and jump to the message call at $9862. $9607 branches here when the selection byte read at $97EE is zero."
   },
   {
    "address": 38540,
    "type": "line",
-   "text": "Reload stage index, decrement $4753,X, load the message pointer encoded here and jump to $9862. Its ordinary caller was not exercised by the choice tests."
+   "text": "Reload stage index, decrement $4753,X, load message pointer $9A2D in X/Y and jump to the message call at $9862. The only jump here is from the timeout path at $979A, taken when the layout gate $9921 is nonzero."
   },
   {
    "address": 38552,
    "type": "line",
-   "text": "Store zero at $9921, set sound state $2C15 to 2, and set $4D69 to 7. Reload stage index from $7B and continue to the item-pair selection. The later drawing paths start at $96E6 and are separate."
+   "text": "Store zero at the layout gate $9921, set sound state $2C15 to 2, and set $4D69 to 7. Reload stage index from $7B and continue to the item-pair selection at $96A9. The jump entry at $9575 leads here."
   },
   {
    "address": 38569,
    "type": "line",
-   "text": "Read $476B,X. If nonzero, pass it and $4771,X separately through the conditional-item resolver at $9871; store the returned values at $9927/$9928, then jump to $96E6. Four forced VICE inputs per load checked this and the implicit path with the real resolver."
+   "text": "Read $476B,X. If nonzero, pass it and $4771,X separately through the conditional-item resolver at $9871; store the returned values at $9927/$9928, then jump to $96E6. If zero, branch to the implicit pair at $96C2."
   },
   {
    "address": 38594,
@@ -4971,7 +4971,7 @@
   {
    "address": 38614,
    "type": "line",
-   "text": "Read the patched absolute address, clear carry and add $9929,Y. Store the result at $9927, then store that result plus one modulo 256 at $9928. Continue at $96E6; the later drawing callbacks were not exercised."
+   "text": "Read the absolute address patched by $96CC and $96D3, $4DD5 plus stage field $4771,X plus the selected player index; clear carry and add $9929,Y, where Y is that stage field. Store the result at $9927, then store that result plus one modulo 256 at $9928. Continue at $96E6."
   },
   {
    "address": 38630,
@@ -4986,7 +4986,7 @@
   {
    "address": 38649,
    "type": "line",
-   "text": "Call the patched target with A=$E4. Then read the first item byte at $9927, multiply it by eight modulo 256 and patch a second JSR from the same pointer table. Controlled checks replaced both selected targets with logging stubs; actual drawing effects remain separate."
+   "text": "Call the patched target with A=$E4. Then read the first item byte at $9927, multiply it by eight modulo 256 and patch the JSR operand at $9714/$9715 from the same pointer table."
   },
   {
    "address": 38657,
@@ -4996,7 +4996,7 @@
   {
    "address": 38673,
    "type": "line",
-   "text": "Call the second patched target with A=$D0, then set the temporary row counter at $9C77 to 3 and begin filling colour RAM. The target was replaced with a logging stub in the controlled checks."
+   "text": "Call the second patched target with A=$D0, then set the temporary row counter at $9C77 to 3 and begin filling colour RAM."
   },
   {
    "address": 38685,
@@ -5006,22 +5006,22 @@
   {
    "address": 38709,
    "type": "line",
-   "text": "Store $46 plus one modulo 256 at $98D7. Pass the first selected item at $9927 to $98DE, then call $98C3 with Y=$73. Repeat for the second item at $9928 with Y=$87. The format and display callbacks were stubbed in the controlled tests."
+   "text": "Store $46 plus one modulo 256 at $98D7. Pass the first selected item at $9927 to $98DE, then call $98C3 with Y=$73. Repeat for the second item at $9928 with Y=$87."
   },
   {
    "address": 38741,
    "type": "line",
-   "text": "Call $77E0 with the message pointer selected by the preceding path, then fall through to the mode and countdown initializer at $9758. The ordinary label path loads $992E; earlier branches can supply other pointers. The message callback was stubbed in the controlled tests."
+   "text": "Call $77E0 with the message pointer selected by the preceding path, then fall through to the mode and countdown initializer at $9758. The item-pair path loads $992E; the price path jumps here from $95D1 or $95D8 with $99BC or $99A5."
   },
   {
    "address": 38744,
    "type": "line",
-   "text": "Store 0 in the shop mode byte at $9922, store $DC in the countdown at $9926, and fall through to the wait path at $9762. Starting from 0, the captured left and right handlers keep the mode among $FF, $00 and $01 if no other code changes it."
+   "text": "Store 0 in the selection byte at $9922, store $DC in the countdown at $9926, and fall through to the wait path at $9762. Besides this store, only the left and right handlers write the selection byte, and they keep it among $FF, 0 and 1."
   },
   {
    "address": 38754,
    "type": "line",
-   "text": "Call $3C2A, decrement the shop countdown at $9926 and branch to $9795 when it becomes zero. Otherwise call $370B, $9899 and $9886; on set carry, repeat this path. On clear carry, fall through to $9775. Starting from the initialized $DC and holding the tested branches, zero is reached after 220 calls to $3C2A."
+   "text": "Call $3C2A, decrement the shop countdown at $9926 and branch to $9795 when it becomes zero. Otherwise call $370B, $9899 and $9886; on set carry, repeat this path. On clear carry, fall through to $9775. Starting from the initialized $DC, the countdown reaches zero on the 220th call to $3C2A, counting the calls of this loop and of the one at $9775 together."
   },
   {
    "address": 38773,
@@ -5036,7 +5036,7 @@
   {
    "address": 38805,
    "type": "line",
-   "text": "If $9921 is nonzero, jump to $968C. Otherwise load X from $7B, store $FF at $4753,X, load X/Y with message pointer $9963, and jump to the $77E0 call at $9862. The selector used by $77E0 and natural timeout reachability remain open."
+   "text": "Reached when the countdown at $9926 reaches zero. If $9921 is nonzero, jump to $968C. Otherwise load X from $7B, store $FF at $4753,X, load X/Y with message pointer $9963, and jump to the $77E0 call at $9862."
   },
   {
    "address": 38827,
@@ -5051,7 +5051,7 @@
   {
    "address": 38889,
    "type": "line",
-   "text": "Read $9921; if nonzero, load $9922 and jump to $9605. Otherwise load X from $7B and read $9922. If nonzero, branch to the purchase index choice at $9812, preserving the negative flag from that read. If zero, inspect $4753,X: a negative value or a clear bit 1 selects message pointer $998B; a nonnegative value with bit 1 set selects $9974. Both paths jump to the $77E0 message call. The meanings and ordinary-play ranges of the two gate bytes remain open."
+   "text": "Read the layout gate $9921; if nonzero, load the selection byte $9922 and jump to $9605. Otherwise load X from $7B and read $9922. If nonzero, branch to the purchase index choice at $9812, preserving the negative flag from that read. If zero, inspect $4753,X: a negative value or a clear bit 1 selects message pointer $998B; a nonnegative value with bit 1 set selects $9974. Both paths jump to the $77E0 message call. $9921 is $46 plus one on the price path ($957E) and zero on the item-pair path ($969A)."
   },
   {
    "address": 38930,
@@ -5076,7 +5076,7 @@
   {
    "address": 38999,
    "type": "line",
-   "text": "Pull the selected item index, clear carry, add 1 in binary mode and call the JSR whose operand was patched by the selector. Load X/Y with $9950 and call $77E0, then call $3C2A and $370B repeatedly while $4D6B is nonzero. Return once it is zero. The effect, message and waiting callbacks were stubbed in controlled tests; this does not establish ordinary-play reachability."
+   "text": "Pull the selected item index, clear carry, add 1 in binary mode and call the JSR whose operand was patched by the selector. Load X/Y with $9950 and call $77E0, then call $3C2A and $370B repeatedly while $4D6B is nonzero. Return once it is zero."
   },
   {
    "address": 39025,
@@ -6051,7 +6051,7 @@
   {
    "address": 41673,
    "type": "line",
-   "text": "Load 15 captured sound pattern 1: 53 nonzero event bytes from $A2C9, followed by the zero marker at $A2FE. Voice-list pointer records at $A2B1, $A2B3 select it. The resident sequencer parses its events at $2332 and checks for its end at $2322; the captured selector-1 loop reached this marker in the simulator. Event meaning depends on voice state and tick."
+   "text": "Load 15 sound pattern 1: 53 nonzero event bytes from $A2C9, followed by the zero marker at $A2FE. Voice-list pointer records at $A2B1, $A2B3 select it. The resident sequencer reads them at $2332: a byte below $80 is a note, $80–$BF sets the duration, $C0–$EF the instrument, $F0–$FE the tempo, and $FF holds for one duration. The check at $2322 finds the zero marker and loads the voice's next pattern."
   },
   {
    "address": 41726,
@@ -6061,7 +6061,7 @@
   {
    "address": 41727,
    "type": "line",
-   "text": "Load 15 captured sound pattern 2: 79 nonzero event bytes from $A2FF, followed by the zero marker at $A34E. Voice-list pointer records at $A2B5 select it. The resident sequencer parses its events at $2332 and checks for its end at $2322; the captured selector-1 loop reached this marker in the simulator. Event meaning depends on voice state and tick."
+   "text": "Load 15 sound pattern 2: 79 nonzero event bytes from $A2FF, followed by the zero marker at $A34E. Voice-list pointer records at $A2B5 select it. The resident sequencer reads them at $2332: a byte below $80 is a note, $80–$BF sets the duration, $C0–$EF the instrument, $F0–$FE the tempo, and $FF holds for one duration. The check at $2322 finds the zero marker and loads the voice's next pattern."
   },
   {
    "address": 41806,
@@ -6071,22 +6071,22 @@
   {
    "address": 41807,
    "type": "line",
-   "text": "Load 15 captured sound pattern 3: 50 nonzero event bytes from $A34F, followed by the zero marker at $A381. Voice-list pointer records at $A2B9, $A2BB select it. The resident sequencer parses its events at $2332 and checks for its end at $2322; the captured selector-1 loop reached this marker in the simulator. Event meaning depends on voice state and tick."
+   "text": "Load 15 sound pattern 3: 50 nonzero event bytes from $A34F, followed by the zero marker at $A381. Voice-list pointer records at $A2B9, $A2BB select it. The resident sequencer reads them at $2332: a byte below $80 is a note, $80–$BF sets the duration, $C0–$EF the instrument, $F0–$FE the tempo, and $FF holds for one duration. The check at $2322 finds the zero marker and loads the voice's next pattern."
   },
   {
    "address": 41858,
    "type": "line",
-   "text": "Load 15 captured sound pattern 4: 79 nonzero event bytes from $A382, followed by the zero marker at $A3D1. Voice-list pointer records at $A2BD select it. The resident sequencer parses its events at $2332 and checks for its end at $2322; the captured selector-1 loop reached this marker in the simulator. Event meaning depends on voice state and tick."
+   "text": "Load 15 sound pattern 4: 79 nonzero event bytes from $A382, followed by the zero marker at $A3D1. Voice-list pointer records at $A2BD select it. The resident sequencer reads them at $2332: a byte below $80 is a note, $80–$BF sets the duration, $C0–$EF the instrument, $F0–$FE the tempo, and $FF holds for one duration. The check at $2322 finds the zero marker and loads the voice's next pattern."
   },
   {
    "address": 41938,
    "type": "line",
-   "text": "Load 15 captured sound pattern 5: 71 nonzero event bytes from $A3D2, followed by the zero marker at $A419. Voice-list pointer records at $A2C1, $A2C3 select it. The resident sequencer parses its events at $2332 and checks for its end at $2322; the captured selector-1 loop reached this marker in the simulator. Event meaning depends on voice state and tick."
+   "text": "Load 15 sound pattern 5: 71 nonzero event bytes from $A3D2, followed by the zero marker at $A419. Voice-list pointer records at $A2C1, $A2C3 select it. The resident sequencer reads them at $2332: a byte below $80 is a note, $80–$BF sets the duration, $C0–$EF the instrument, $F0–$FE the tempo, and $FF holds for one duration. The check at $2322 finds the zero marker and loads the voice's next pattern."
   },
   {
    "address": 42010,
    "type": "line",
-   "text": "Load 15 captured sound pattern 6: 119 nonzero event bytes from $A41A, followed by the zero marker at $A491. Voice-list pointer records at $A2C5 select it. The resident sequencer parses its events at $2332 and checks for its end at $2322; the captured selector-1 loop reached this marker in the simulator. Event meaning depends on voice state and tick."
+   "text": "Load 15 sound pattern 6: 119 nonzero event bytes from $A41A, followed by the zero marker at $A491. Voice-list pointer records at $A2C5 select it. The resident sequencer reads them at $2332: a byte below $80 is a note, $80–$BF sets the duration, $C0–$EF the instrument, $F0–$FE the tempo, and $FF holds for one duration. The check at $2322 finds the zero marker and loads the voice's next pattern."
   },
   {
    "address": 42130,
