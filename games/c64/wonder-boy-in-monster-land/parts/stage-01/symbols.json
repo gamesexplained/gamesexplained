@@ -4151,7 +4151,7 @@
   {
    "address": 32479,
    "type": "line",
-   "text": "Handler addresses for positive entity types: 48 low bytes at $7EDF followed by 48 high bytes at $7F0F, which the dispatcher at $2027 and $202D indexes by type. Type zero is skipped by the dispatcher, which has no local upper-bound check. In load 1, types 1, 2 and 3 have handlers at $B170, $B233 and $B371, type $16 shares $B170, types $27–$29 and $2B use the resident routines at $3D51, $3DB9, $3DFF and $72E6, and the other entries point at single RTS bytes in $B4D2–$B4EE. Entries $2D–$2F hold $B4EF, which is the first entity record and not code: its bytes begin 01 B5 02. Load 1's five entity records hold types 1 and 2 only."
+   "text": "Handler addresses for positive entity types: 48 low bytes at $7EDF followed by 48 high bytes at $7F0F, which the dispatcher at $2027 and $202D indexes by type. Type zero is skipped at $1FE1, and no record or routine stores a positive type above $2F. In load 1, types 1, 2 and 3 have handlers at $B170, $B233 and $B371, type $16 shares $B170, types $27–$29 and $2B use the resident routines at $3D51, $3DB9, $3DFF and $72E6, and the other entries point at single RTS bytes in $B4D2–$B4EE. Entries $2D–$2F hold $B4EF, which is the first entity record and not code: its bytes begin 01 B5 02. Load 1 never reads them, since its positive types are 1 and 2 from its records, 3 from $92FD, and $27, $28, $29 and $2B from the resident set-ups; its sixth record, type $FF, comes into use when $93CF raises the limit to 6 and goes through the negative-type table."
   },
   {
    "address": 32575,
@@ -4241,7 +4241,7 @@
   {
    "address": 32596,
    "type": "line",
-   "text": "Number of six-byte trigger records consumed by $7979; that loader does not locally validate the count."
+   "text": "Number of six-byte trigger records that $7979 copies, 8 in this load: the copy loop ends at the CPX $7F54 at $79B0, so it fills entries 0–7 of the sixteen-entry trigger arrays."
   },
   {
    "address": 32597,
@@ -5176,7 +5176,7 @@
   {
    "address": 42244,
    "type": "line",
-   "text": "Save X and Y in immediate operands, split the packed byte in A into two nibbles plus one, and clear the first two of four display positions. Store zero in the third position if the high nibble is zero, otherwise its nibble-plus-one value; store the low nibble plus one in the fourth position. Restore Y for the draw call, then restore X before returning. Nibbles are not validated as decimal digits."
+   "text": "Save X and Y in immediate operands, split the packed byte in A into two nibbles plus one, and clear the first two of four display positions. Store zero in the third position if the high nibble is zero, otherwise its nibble-plus-one value; store the low nibble plus one in the fourth position. Restore Y for the draw call, then restore X before returning. Its only callers, $A4B1 and $A4B9 in the price-shop entry $A49B, pass bytes 8 and 9 of load 1's stage-object record 2 at $92DB ($4783,X and $4789,X), $08 and $05, both decimal digits; that record is the only one that names $A49B."
   },
   {
    "address": 42279,

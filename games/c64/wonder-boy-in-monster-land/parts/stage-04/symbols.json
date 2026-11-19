@@ -5438,49 +5438,49 @@
   },
   {
    "address": 61888,
-   "name": "observed_display_bitmap_c7",
+   "name": "sprite_shape_c7",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61952,
-   "name": "observed_display_bitmap_c8",
+   "name": "sprite_shape_c8",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 62016,
-   "name": "observed_display_bitmap_c9",
+   "name": "sprite_shape_c9",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 62080,
-   "name": "observed_display_bitmap_ca",
+   "name": "sprite_shape_ca",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 62144,
-   "name": "observed_display_bitmap_cb",
+   "name": "sprite_shape_cb",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 62208,
-   "name": "observed_display_bitmap_cc",
+   "name": "sprite_shape_cc",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 62272,
-   "name": "observed_display_bitmap_cd",
+   "name": "sprite_shape_cd",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 62336,
-   "name": "observed_display_bitmap_ce",
+   "name": "sprite_shape_ce",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -6809,7 +6809,7 @@
   {
    "address": 43501,
    "type": "line",
-   "text": "Load 4: multiply item ID A by eight with eight-bit wrap, split the two packed bytes from the item table at $AD87 into four nibble-plus-one values at $AA2B, and replace consecutive leading ones with zero. Nibbles and item indexes are not locally validated."
+   "text": "Load 4: multiply item ID A by eight with eight-bit wrap, split the two packed bytes from the item table at $AD87 into four nibble-plus-one values at $AA2B, and replace consecutive leading ones with zero. $A84D and $A858 pass the first and second items on offer, which load 4's shop records make 0–5, all rows of the 24-row table, and every price in those rows is packed decimal, so each value is a digit plus one, 1 to 10."
   },
   {
    "address": 43563,
@@ -7744,7 +7744,7 @@
   {
    "address": 45274,
    "type": "line",
-   "text": "Absolute jump patched through its operands at $B0DB/$B0DC; the entry snapshot has placeholder $FF00."
+   "text": "Absolute jump whose target is stored in its operand before it runs: $B0D1 writes the low byte $B0DB from $B0DD,Y and $B0D7 the high byte $B0DC from $B0E3,Y, with Y the state $1AB1,X (0 to 5), so it goes to $B0E9, $B116, $B1A9, $B1C8, $B14E or $B17C. The load holds $FF00 there."
   },
   {
    "address": 45277,
@@ -7769,7 +7769,7 @@
   {
    "address": 45379,
    "type": "line",
-   "text": "Jump whose operands are patched from the split four-entry table; the snapshot placeholder is $FF00."
+   "text": "Absolute jump whose target is stored in its operand before it runs: $B13A writes the low byte $B144 from $B146,Y and $B140 the high byte $B145 from $B14A,Y, with Y the movement result AND 3 from $B134, so it goes to $B1EE, $B16D or $B115. The load holds $FF00 there."
   },
   {
    "address": 45382,
@@ -7839,7 +7839,7 @@
   {
    "address": 45597,
    "type": "line",
-   "text": "Return immediately when $1A29,X is zero. Otherwise call $792C and $732A. On set carry from $732A, a positive $1A6D,X calls state 0 at $B0E9 and selects state 2; zero or negative sets $1AE4,X to 10 and selects state 3. In the latter case a nonzero $1AF5,X becomes an X index for decrementing $1B28,X; the original X is saved into the immediate operand at $B24C and restored afterward. No local bound on that alternate index is established. On clear carry from $732A, call $7227; if it returns set carry, call $5D7A with A=2 and jump to the direction toggle at $B1EE; otherwise return. States 1, 4 and 5 call this routine, at $B116, $B14E and $B17C."
+   "text": "Return immediately when $1A29,X is zero. Otherwise call $792C and $732A. On set carry from $732A, a positive $1A6D,X calls state 0 at $B0E9 and selects state 2; zero or negative sets $1AE4,X to 10 and selects state 3. In the latter case a nonzero $1AF5,X becomes an X index for decrementing $1B28,X; the original X is saved into the immediate operand at $B24C and restored afterward. That byte is zero for a type-4 entity from the records, whose loaders leave it zero; for one that the type-8 code spawns at $B571–$B5AD, $B5AD stores the slot of the type-8 entity that spawned it, so the decrement counts down that entity's $1B28. On clear carry from $732A, call $7227; if it returns set carry, call $5D7A with A=2 and jump to the direction toggle at $B1EE; otherwise return. States 1, 4 and 5 call this routine, at $B116, $B14E and $B17C."
   },
   {
    "address": 45622,
@@ -7849,7 +7849,7 @@
   {
    "address": 45643,
    "type": "line",
-   "text": "Restore the entity index from the immediate operand at $B24C, patched by STX before using an alternate index. The snapshot placeholder is $FF."
+   "text": "Restore the entity index from the immediate operand at $B24C, which the STX at $B244 patched before $B247 took $1AF5,X as X: the slot of the type-8 entity that spawned this one ($B5AD). The load holds $FF there."
   },
   {
    "address": 45663,
@@ -7859,7 +7859,7 @@
   {
    "address": 45678,
    "type": "line",
-   "text": "Absolute jump patched through its operands at $B26F/$B270; the entry snapshot has placeholder $FF00."
+   "text": "Absolute jump whose target is stored in its operand before it runs: $B265 writes the low byte $B26F from $B271,Y and $B26B the high byte $B270 from $B277,Y, with Y the state $1AB1,X (0 to 5), so it goes to $B27D, $B30B, $B3B9, $B405, $B444 or $B467. The load holds $FF00 there."
   },
   {
    "address": 45681,
@@ -7894,12 +7894,12 @@
   {
    "address": 46009,
    "type": "line",
-   "text": "State 2: Call the event helper at $B4A1; the following describes the path when it returns here. Copy $1B17,X to the working byte at $B4E7, read the table at $B4E9 indexed by $1AF5,X, call the frame helper at $B491, then increment the index and replace values of 4 or above with 0. The table is read before the bound check. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set $1AD3,X from the immediate operand at $B3F3 (the snapshot has $FF and state 0 can patch it to $0A), toggle bit 7 of $1B17,X, set the state to 3 and return."
+   "text": "State 2: Call the event helper at $B4A1; the following describes the path when it returns here. Copy $1B17,X to the working byte at $B4E7, read the table at $B4E9 indexed by $1AF5,X, call the frame helper at $B491, then increment the index and replace values of 4 or above with 0. The index is 0 to 3 here: state 0 sets it to 0 at $B302 before it sets state 2, and the wraps at $B3CC and in state 3 at $B418 keep it below 4. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set $1AD3,X to $0A from the immediate operand at $B3F3 (the load holds $FF there, but state 0 stores $0A in it at $B2E8 each time before it sets state 2, and nothing else writes it), toggle bit 7 of $1B17,X, set the state to 3 and return."
   },
   {
    "address": 46085,
    "type": "line",
-   "text": "State 3: Call the event helper at $B4A1; the following describes the path when it returns here. Copy $1B17,X to the working byte at $B4E7, read the table at $B4E9 indexed by $1AF5,X, call the frame helper at $B491, then increment the index and replace values of 4 or above with 0. The table is read before the bound check. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set the state to 0 and return."
+   "text": "State 3: Call the event helper at $B4A1; the following describes the path when it returns here. Copy $1B17,X to the working byte at $B4E7, read the table at $B4E9 indexed by $1AF5,X, call the frame helper at $B491, then increment the index and replace values of 4 or above with 0. The index is 0 to 3 here: state 2, the only way into state 3, leaves it below 4 through the wrap at $B3CC, and this state's wrap at $B418 does the same. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set the state to 0 and return."
   },
   {
    "address": 46148,

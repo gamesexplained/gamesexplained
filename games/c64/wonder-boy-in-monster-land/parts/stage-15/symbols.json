@@ -5116,7 +5116,7 @@
   {
    "address": 39134,
    "type": "line",
-   "text": "Load 15: multiply item ID A by eight with eight-bit wrap, split the two packed bytes from the item table at $9C78 into four nibble-plus-one values at $991C, and replace consecutive leading ones with zero. Nibbles and item indexes are not locally validated."
+   "text": "Load 15: multiply item ID A by eight with eight-bit wrap, split the two packed bytes from the item table at $9C78 into four nibble-plus-one values at $991C, and replace consecutive leading ones with zero. It never runs in load 15: its callers at $973E and $9749 are reached only from the item-pair entry $9575, and the load's only shop record, stage record 0, names the price entry $9572 instead."
   },
   {
    "address": 39196,
@@ -6261,7 +6261,7 @@
   {
    "address": 43012,
    "type": "line",
-   "text": "Absolute jump patched through its operands at $A805/$A806; the entry snapshot has placeholder $FF00."
+   "text": "Absolute jump whose target is stored in its operand before it runs: $A7FB writes the low byte $A805 from $A807,Y and $A801 the high byte $A806 from $A80D,Y, with Y the state $1AB1,X (0 to 5), so it goes to $A813, $A8A1, $A94F, $A99B, $A9DA or $A9FD. The load holds $FF00 there."
   },
   {
    "address": 43015,
@@ -6296,12 +6296,12 @@
   {
    "address": 43343,
    "type": "line",
-   "text": "State 2: Call the event helper at $AA37; the following describes the path when it returns here. Copy $1B17,X to the working byte at $AA7D, read the table at $AA7F indexed by $1AF5,X, call the frame helper at $AA27, then increment the index and replace values of 4 or above with 0. The table is read before the bound check. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set $1AD3,X from the immediate operand at $A989 (the snapshot has $FF and state 0 can patch it to $0A), toggle bit 7 of $1B17,X, set the state to 3 and return."
+   "text": "State 2: Call the event helper at $AA37; the following describes the path when it returns here. Copy $1B17,X to the working byte at $AA7D, read the table at $AA7F indexed by $1AF5,X, call the frame helper at $AA27, then increment the index and replace values of 4 or above with 0. The index is 0 to 3 here: state 0 sets it to 0 at $A898 before it sets state 2, and the wraps at $A962 and in state 3 at $A9AE keep it below 4. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set $1AD3,X to $0A from the immediate operand at $A989 (the load holds $FF there, but state 0 stores $0A in it at $A87E each time before it sets state 2, and nothing else writes it), toggle bit 7 of $1B17,X, set the state to 3 and return."
   },
   {
    "address": 43419,
    "type": "line",
-   "text": "State 3: Call the event helper at $AA37; the following describes the path when it returns here. Copy $1B17,X to the working byte at $AA7D, read the table at $AA7F indexed by $1AF5,X, call the frame helper at $AA27, then increment the index and replace values of 4 or above with 0. The table is read before the bound check. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set the state to 0 and return."
+   "text": "State 3: Call the event helper at $AA37; the following describes the path when it returns here. Copy $1B17,X to the working byte at $AA7D, read the table at $AA7F indexed by $1AF5,X, call the frame helper at $AA27, then increment the index and replace values of 4 or above with 0. The index is 0 to 3 here: state 2, the only way into state 3, leaves it below 4 through the wrap at $A962, and this state's wrap at $A9AE does the same. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set the state to 0 and return."
   },
   {
    "address": 43482,

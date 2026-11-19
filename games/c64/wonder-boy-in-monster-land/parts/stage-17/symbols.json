@@ -2226,25 +2226,25 @@
   },
   {
    "address": 60736,
-   "name": "observed_display_bitmap_b5",
+   "name": "sprite_shape_b5",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 60800,
-   "name": "observed_display_bitmap_b6",
+   "name": "sprite_shape_b6",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 60864,
-   "name": "observed_display_bitmap_b7",
+   "name": "sprite_shape_b7",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 60928,
-   "name": "observed_display_bitmap_b8",
+   "name": "sprite_shape_b8",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2262,25 +2262,25 @@
   },
   {
    "address": 61120,
-   "name": "observed_display_bitmap_bb",
+   "name": "sprite_shape_bb",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61184,
-   "name": "observed_display_bitmap_bc",
+   "name": "sprite_shape_bc",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61248,
-   "name": "observed_display_bitmap_bd",
+   "name": "sprite_shape_bd",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61312,
-   "name": "observed_display_bitmap_be",
+   "name": "sprite_shape_be",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2298,37 +2298,37 @@
   },
   {
    "address": 61504,
-   "name": "observed_display_bitmap_c1",
+   "name": "sprite_shape_c1",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61568,
-   "name": "observed_display_bitmap_c2",
+   "name": "sprite_shape_c2",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61632,
-   "name": "wide_observed_display_bitmap_c3",
+   "name": "wide_sprite_shape_c3",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61696,
-   "name": "wide_observed_display_bitmap_c4",
+   "name": "wide_sprite_shape_c4",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61760,
-   "name": "observed_display_bitmap_c5",
+   "name": "sprite_shape_c5",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61824,
-   "name": "observed_display_bitmap_c6",
+   "name": "sprite_shape_c6",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3012,7 +3012,7 @@
   {
    "address": 40443,
    "type": "line",
-   "text": "Absolute jump patched through its operands at $9DFC/$9DFD; the entry snapshot has placeholder $FF00."
+   "text": "Absolute jump whose target is stored in its operand before it runs: $9DF2 writes the low byte $9DFC from $9DFE,Y and $9DF8 the high byte $9DFD from $9E04,Y, with Y the state $1AB1,X (0 to 5), so it goes to $9E0A, $9E98, $9F46, $9F92, $9FD1 or $9FF4. The load holds $FF00 there."
   },
   {
    "address": 40446,
@@ -3047,12 +3047,12 @@
   {
    "address": 40774,
    "type": "line",
-   "text": "State 2: Call the event helper at $A02E; the following describes the path when it returns here. Copy $1B17,X to the working byte at $A074, read the table at $A076 indexed by $1AF5,X, call the frame helper at $A01E, then increment the index and replace values of 4 or above with 0. The table is read before the bound check. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set $1AD3,X from the immediate operand at $9F80 (the snapshot has $FF and state 0 can patch it to $0A), toggle bit 7 of $1B17,X, set the state to 3 and return."
+   "text": "State 2: Call the event helper at $A02E; the following describes the path when it returns here. Copy $1B17,X to the working byte at $A074, read the table at $A076 indexed by $1AF5,X, call the frame helper at $A01E, then increment the index and replace values of 4 or above with 0. The index is 0 to 3 here: state 0 sets it to 0 at $9E8F before it sets state 2, and the wraps at $9F59 and in state 3 at $9FA5 keep it below 4. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set $1AD3,X to $0A from the immediate operand at $9F80 (the load holds $FF there, but state 0 stores $0A in it at $9E75 each time before it sets state 2, and nothing else writes it), toggle bit 7 of $1B17,X, set the state to 3 and return."
   },
   {
    "address": 40850,
    "type": "line",
-   "text": "State 3: Call the event helper at $A02E; the following describes the path when it returns here. Copy $1B17,X to the working byte at $A074, read the table at $A076 indexed by $1AF5,X, call the frame helper at $A01E, then increment the index and replace values of 4 or above with 0. The table is read before the bound check. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set the state to 0 and return."
+   "text": "State 3: Call the event helper at $A02E; the following describes the path when it returns here. Copy $1B17,X to the working byte at $A074, read the table at $A076 indexed by $1AF5,X, call the frame helper at $A01E, then increment the index and replace values of 4 or above with 0. The index is 0 to 3 here: state 2, the only way into state 3, leaves it below 4 through the wrap at $9F59, and this state's wrap at $9FA5 does the same. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set the state to 0 and return."
   },
   {
    "address": 40913,
