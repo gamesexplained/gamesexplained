@@ -3858,61 +3858,61 @@
   },
   {
    "address": 40453,
-   "name": "setup_graphics_01",
+   "name": "player_sprite_rows_01",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 40492,
-   "name": "setup_graphics_02",
+   "name": "player_sprite_rows_02",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 40531,
-   "name": "setup_graphics_03",
+   "name": "player_sprite_rows_03",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 40561,
-   "name": "setup_graphics_04",
+   "name": "player_sprite_rows_04",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 40591,
-   "name": "setup_graphics_05",
+   "name": "player_sprite_rows_05",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 40621,
-   "name": "setup_graphics_06",
+   "name": "player_sprite_rows_06",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 40651,
-   "name": "setup_graphics_07",
+   "name": "player_sprite_rows_07",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 40687,
-   "name": "setup_graphics_08",
+   "name": "player_sprite_rows_08",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 40723,
-   "name": "setup_graphics_09",
+   "name": "player_sprite_rows_09",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 40756,
-   "name": "setup_graphics_10",
+   "name": "player_sprite_rows_10",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5289,7 +5289,7 @@
   {
    "address": 32606,
    "type": "line",
-   "text": "Load 23: bytes $E1, $00, $00, $00, $E7, $00. $49E9 treats these as the first six entries of an eight-byte nonzero selection scan; the last two entries overlap $7F64/$7F65. The type-$FA setup entries at $5F8A–$5FB2 also load these bytes into Y."
+   "text": "Load 23: bytes $E1, $00, $00, $00, $E7, $00, the base frames of six reward pickups. $49E3 picks a random start and scans the eight bytes $7F5E–$7F65 at $49E9 for a nonzero one, so a zero byte disables its entry; the last two of the eight are $7F64/$7F65. Entries 0–5 jump through the table at $4A02/$4A0A to $5F88, $5F90, $5FA0, $5FA8, $5F98 and $5FB0, which load the entry’s byte into Y and the reward $05, $10, $20, $50, $10 or $00 into A; $5FB5 patches Y into the LDA at $5FC5, which stores it as the type-$FA entity’s frame $19E5/$19C3, and stores A in $1AB1,X, which the contact handler $7656 passes to $7756."
   },
   {
    "address": 32612,
@@ -5369,7 +5369,7 @@
   {
    "address": 32719,
    "type": "line",
-   "text": "A 256-byte lookup indexed by screen character value. The resident code at $6F59–$6F5F reads a character from the selected screen buffer and writes the corresponding table byte to colour RAM. The table continues across $8000."
+   "text": "A 256-byte lookup indexed by screen character value: entry N is the colour-RAM byte for character N. After $6D17 draws the 20-by-10 metatile map window, it jumps to $6F3E, whose loop at $6F59–$6F5F reads each character of that screen buffer and writes the corresponding table byte to colour RAM, 39 columns by 20 rows from $D8C8. The view-shift routines read the table the same way for the column or row a scroll exposes: $30E1 for the right column, $319C for the left column, $3256 for the bottom row and $3314 for the top row. The visual-selector screens take their colours from the tables at $7F9E/$7FA5 instead, through $70ED. The table continues across $8000."
   },
   {
    "address": 32768,
@@ -5409,12 +5409,12 @@
   {
    "address": 34271,
    "type": "line",
-   "text": "Load 23: low bytes for pointer entries 16–79 of the 81-entry split table. Paired with the high table, these encode $8D01 through $A6D8 in 105-byte steps modulo 65536. These entries extend beyond the 16 map rows."
+   "text": "Load 23: low bytes for pointer entries 16–79 of the 81-entry split table. Paired with the high table, these encode $8D01 through $A6D8 in 105-byte steps modulo 65536, the row stride at $7F4A. They lie beyond the map’s 16 rows, the count at $7F4C. The window draw at $6D30 and the scroll readers at $2CD4, $2DC9, $2EC2 and $2F9D index by the view’s rows, which the scroll check at $0CCC keeps within the map. The hero’s tile checks index the table by his row $6F3D ($0EA7, $1041, $6E77) or that row plus one ($0C47, $0C69, $6E8D); $6F3D reaches 16 when the view is at the bottom of the map and the hero at his lowest screen position $E1 ($0CFC), so entries 16 and 17 can be read, and no hero check reaches entries 18–79. The entity collision checks at $451D and $4638 index the table by an entity’s tile row from $71DB, plus one to three, with no bound of their own."
   },
   {
    "address": 34335,
    "type": "line",
-   "text": "Load 23: low bytes for pointer entries 80–80 of the 81-entry split table. Paired with the high table, these encode $A741 through $A741 in 105-byte steps modulo 65536. These entries extend beyond the 16 map rows."
+   "text": "Load 23: low byte for pointer entry 80, the last of the 81-entry split table. Paired with the high table, it encodes $A741, one 105-byte step (the row stride at $7F4A) after entry 79. It lies beyond the map’s 16 rows, the count at $7F4C. The window draw at $6D30 and the scroll readers at $2CD4, $2DC9, $2EC2 and $2F9D index by the view’s rows, which the scroll check at $0CCC keeps within the map. The hero’s tile checks reach at most entry 17 ($6F3D, which is at most 16, plus one at $0C47, $0C69 and $6E8D), so they never read it. The entity collision checks at $451D and $4638 index the table by an entity’s tile row from $71DB, plus one to three, with no bound of their own."
   },
   {
    "address": 34336,
@@ -5424,12 +5424,12 @@
   {
    "address": 34352,
    "type": "line",
-   "text": "Load 23: high bytes for pointer entries 16–79 of the 81-entry split table. Paired with the low table, these encode $8D01 through $A6D8 in 105-byte steps modulo 65536. These entries extend beyond the 16 map rows."
+   "text": "Load 23: high bytes for pointer entries 16–79 of the 81-entry split table. Paired with the low table, these encode $8D01 through $A6D8 in 105-byte steps modulo 65536, the row stride at $7F4A. They lie beyond the map’s 16 rows, the count at $7F4C. The window draw at $6D30 and the scroll readers at $2CD4, $2DC9, $2EC2 and $2F9D index by the view’s rows, which the scroll check at $0CCC keeps within the map. The hero’s tile checks index the table by his row $6F3D ($0EA7, $1041, $6E77) or that row plus one ($0C47, $0C69, $6E8D); $6F3D reaches 16 when the view is at the bottom of the map and the hero at his lowest screen position $E1 ($0CFC), so entries 16 and 17 can be read, and no hero check reaches entries 18–79. The entity collision checks at $451D and $4638 index the table by an entity’s tile row from $71DB, plus one to three, with no bound of their own."
   },
   {
    "address": 34416,
    "type": "line",
-   "text": "Load 23: high bytes for pointer entries 80–80 of the 81-entry split table. Paired with the low table, these encode $A741 through $A741 in 105-byte steps modulo 65536. These entries extend beyond the 16 map rows."
+   "text": "Load 23: high byte for pointer entry 80, the last of the 81-entry split table. Paired with the low table, it encodes $A741, one 105-byte step (the row stride at $7F4A) after entry 79. It lies beyond the map’s 16 rows, the count at $7F4C. The window draw at $6D30 and the scroll readers at $2CD4, $2DC9, $2EC2 and $2F9D index by the view’s rows, which the scroll check at $0CCC keeps within the map. The hero’s tile checks reach at most entry 17 ($6F3D, which is at most 16, plus one at $0C47, $0C69 and $6E8D), so they never read it. The entity collision checks at $451D and $4638 index the table by an entity’s tile row from $71DB, plus one to three, with no bound of their own."
   },
   {
    "address": 34417,
@@ -5634,17 +5634,17 @@
   {
    "address": 38189,
    "type": "line",
-   "text": "Load 23 stage object record 1 of 3: initial bytes $11, $09, $02, $04, $00, $02, $61, $8A, $9D, $00, $61, $95, $8A, $8B, $88, $89. $4655 copies the first 12 fields to per-record arrays and the final four to $7D–$80, then calls $46D6. That map updater can replace those four bytes according to the fourth field and world mode before writing cells. Initial selector $02 corresponds to reconstructed screen 6 when field 4 reaches the resource call at $47F5; that forced reconstruction does not establish this record’s ordinary-play reachability."
+   "text": "Load 23 stage-object record 1 of 3: bytes $11, $09, $02, $04, $00, $02, $61, $8A, $9D, $00, $61, $95, $8A, $8B, $88, $89. $4655 copies bytes 0–11 to the twelve arrays at $4747–$4789 (bytes 0–3 are the column, row, screen selector and state) and bytes 12–15 to $7D–$80, then calls $46D6, which writes those four map cells as the two-by-two block at columns $11–$12 of rows $08–$09; when the state byte is negative it first replaces them with $7F6D–$7F70, or $7F71–$7F74 when $7A is nonzero. When the main loop’s call of $478F at $042C finds the hero at column $11, row $09 ($6F3C/$6F3D) with $527D equal to $0F, the input byte $75 zero and the state not negative, $479C lowers the state ($04 at the start) by 2, passes byte 2, $02, in X to $7119 at $47F5, which draws the screen of visual selector 2, and calls the callback $9561 from bytes 10 and 11 through the JSR at $47FC; if the state is then negative, $46D6 rewrites the cells."
   },
   {
    "address": 38205,
    "type": "line",
-   "text": "Load 23 stage object record 2 of 3: initial bytes $1C, $07, $01, $05, $5D, $95, $5D, $95, $08, $05, $5E, $95, $86, $87, $84, $85. $4655 copies the first 12 fields to per-record arrays and the final four to $7D–$80, then calls $46D6. That map updater can replace those four bytes according to the fourth field and world mode before writing cells. Initial selector $01 corresponds to reconstructed screen 1 when field 4 reaches the resource call at $47F5; that forced reconstruction does not establish this record’s ordinary-play reachability."
+   "text": "Load 23 stage-object record 2 of 3: bytes $1C, $07, $01, $05, $5D, $95, $5D, $95, $08, $05, $5E, $95, $86, $87, $84, $85. $4655 copies bytes 0–11 to the twelve arrays at $4747–$4789 (bytes 0–3 are the column, row, screen selector and state) and bytes 12–15 to $7D–$80, then calls $46D6, which writes those four map cells as the two-by-two block at columns $1C–$1D of rows $06–$07; when the state byte is negative it first replaces them with $7F6D–$7F70, or $7F71–$7F74 when $7A is nonzero. When the main loop’s call of $478F at $042C finds the hero at column $1C, row $07 ($6F3C/$6F3D) with $527D equal to $0F, the input byte $75 zero and the state not negative, $479C lowers the state ($05 at the start) by 2, passes byte 2, $01, in X to $7119 at $47F5, which draws the screen of visual selector 1, and calls the callback $955E from bytes 10 and 11 through the JSR at $47FC; if the state is then negative, $46D6 rewrites the cells."
   },
   {
    "address": 38221,
    "type": "line",
-   "text": "Load 23 stage object record 3 of 3: initial bytes $1C, $04, $03, $04, $00, $04, $4F, $00, $00, $00, $61, $95, $8E, $8F, $8C, $8D. $4655 copies the first 12 fields to per-record arrays and the final four to $7D–$80, then calls $46D6. That map updater can replace those four bytes according to the fourth field and world mode before writing cells. Initial selector $03 corresponds to reconstructed screen 10 when field 4 reaches the resource call at $47F5; that forced reconstruction does not establish this record’s ordinary-play reachability."
+   "text": "Load 23 stage-object record 3 of 3: bytes $1C, $04, $03, $04, $00, $04, $4F, $00, $00, $00, $61, $95, $8E, $8F, $8C, $8D. $4655 copies bytes 0–11 to the twelve arrays at $4747–$4789 (bytes 0–3 are the column, row, screen selector and state) and bytes 12–15 to $7D–$80, then calls $46D6, which writes those four map cells as the two-by-two block at columns $1C–$1D of rows $03–$04; when the state byte is negative it first replaces them with $7F6D–$7F70, or $7F71–$7F74 when $7A is nonzero. When the main loop’s call of $478F at $042C finds the hero at column $1C, row $04 ($6F3C/$6F3D) with $527D equal to $0F, the input byte $75 zero and the state not negative, $479C lowers the state ($04 at the start) by 2, passes byte 2, $03, in X to $7119 at $47F5, which draws the screen of visual selector 3, and calls the callback $9561 from bytes 10 and 11 through the JSR at $47FC; if the state is then negative, $46D6 rewrites the cells."
   },
   {
    "address": 38237,
@@ -5694,7 +5694,7 @@
   {
    "address": 38389,
    "type": "line",
-   "text": "Call $78D1 with stage field $4789,X, where X comes from $7B. Reload X and read callback high byte $4771,X. If nonzero, patch the JSR operand from $476B/$4771, clear the high byte in the stage record and call the patched target; then use A=4 at $9666. If zero, enter the message path at $961A. Payment and callback effects were stubbed."
+   "text": "Reached from $95F1 when the shop selection byte is 1. Load X from $7B and call $78D1 with stage field $4789,X, record byte 9, the second price: $78D1 subtracts it in packed decimal from the selected player’s gold and restores the gold if that borrows. Reload X and read callback high byte $4771,X. If nonzero, patch the JSR operand at $9613 from $476B/$4771 (record bytes 4 and 5), clear the high byte in the stage record so that the callback runs only once, and call the patched target; then use A=4 at $9666, which adds it to the life meter. If zero, enter the message path at $961A, which shows message $9A3D and then does the same with A=4. In load 23, stage record 2 at $953D names this shop’s entry $955E, with second price $05 and callback $955D."
   },
   {
    "address": 38426,
@@ -5709,7 +5709,7 @@
   {
    "address": 38456,
    "type": "line",
-   "text": "Call $78D1 with stage field $4783,X and reload stage index. If callback high byte $477D,X is nonzero, patch the JSR from $4777/$477D, clear that high byte and call the target; then use A=8 at $9666. Otherwise enter the message path at $965B. Payment and callback effects were stubbed."
+   "text": "Reached from the balance check at $9623, which the selection path sends here when the shop selection byte is $FF and lets through when the selected player’s gold covers the first price. Call $78D1 with stage field $4783,X, record byte 8, the first price, which $78D1 subtracts in packed decimal from the gold, and reload the stage index. If callback high byte $477D,X is nonzero, patch the JSR operand at $9654 from $4777/$477D (record bytes 6 and 7), clear that high byte so that the callback runs only once, and call the target; then use A=8 at $9666, which adds it to the life meter. Otherwise enter the message path at $965B, which shows message $9A58 and then does the same with A=8. In load 23, stage record 2 at $953D names this shop’s entry $955E, with first price $08 and callback $955D."
   },
   {
    "address": 38491,
@@ -5724,7 +5724,7 @@
   {
    "address": 38502,
    "type": "line",
-   "text": "Call $77A9 with A=4 or A=8, reload stage index, decrement $4753,X and jump to $9851. The meter callback and destination effects were not exercised in these controlled checks."
+   "text": "Call $77A9 with A=4 or A=8, reload stage index, decrement $4753,X and jump to $9851. The two price paths jump here, $9617 with A=4 and $9658 with A=8, after paying. $77A9 adds A to the selected player’s life meter $4DCD,Y, capped at the limit $4DCF,Y; $9851 calls $3C2A and $370B until the message countdown $4D6B is zero and returns. In load 23 stage record $953D names this shop’s entry."
   },
   {
    "address": 38513,
@@ -5764,7 +5764,7 @@
   {
    "address": 38613,
    "type": "line",
-   "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $9C66,Y and $9C67,Y into the operand of the JSR at $96E7. Controlled inputs 0–23 select the pointer pairs; no local index bound is enforced."
+   "text": "Multiply A, the second item's number that $96D2 loads from $9914, by 8 with three eight-bit shifts and use the result as Y. Copy the item row's picture-routine address at $9C66,Y and $9C67,Y (row offsets 2 and 3) into the operand of the JSR at $96E7, which calls it with A=$E4. Load 23's shop records give items 7–12 and 14–18 here, all rows of the 24-row item table at $9C64."
   },
   {
    "address": 38629,
@@ -5774,7 +5774,7 @@
   {
    "address": 38637,
    "type": "line",
-   "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $9C66,Y and $9C67,Y into the operand of the JSR at $96FF. Controlled inputs 0–23 select the pointer pairs; no local index bound is enforced."
+   "text": "Multiply A, the first item's number that $96EA loads from $9913, by 8 with three eight-bit shifts and use the result as Y. Copy the item row's picture-routine address at $9C66,Y and $9C67,Y (row offsets 2 and 3) into the operand of the JSR at $96FF, which calls it with A=$D0. Load 23's shop records give items 6–11 and 13–17 here, all rows of the 24-row item table at $9C64."
   },
   {
    "address": 38653,
@@ -5844,7 +5844,7 @@
   {
    "address": 38921,
    "type": "line",
-   "text": "Multiply A by 8 with three eight-bit shifts, use the result as Y, and copy the two bytes at $9C64,Y and $9C65,Y to $7D/$7E. Call $7901, which subtracts the packed-decimal amount from the selected player’s gold, restores it on insufficient funds, returns carry set on success and clears decimal mode. Inputs 0–23 were checked; no local index bound is enforced."
+   "text": "Multiply A by 8 with three eight-bit shifts, use the result as Y, and copy the item row's price at $9C64,Y and $9C65,Y (row offsets 0 and 1) to $7D/$7E. Call $7901, which subtracts the packed-decimal amount from the selected player’s gold, restores it on insufficient funds, returns carry set on success and clears decimal mode. The code at $97FE passes the first item's number from $9913 when the selection byte is negative, or the second item's from $9914. Load 23's shop records give items 6–18 here, all rows of the 24-row item table at $9C64."
   },
   {
    "address": 38938,
@@ -5854,7 +5854,7 @@
   {
    "address": 38963,
    "type": "line",
-   "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $9C68,Y and $9C69,Y into the operand of the JSR at $9847. Controlled inputs 0–23 select the pointer pairs; no local index bound is enforced."
+   "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy the item row's purchase-routine address at $9C68,Y and $9C69,Y (row offsets 4 and 5) into the operand of the JSR at $9847, which calls it with the item number plus 1 in A. A is the bought item's number, pushed by the code before: the first item from $9913 when the selection byte is negative, otherwise the second from $9914. Load 23's shop records give items 6–18 here, all rows of the 24-row item table at $9C64."
   },
   {
    "address": 38979,
@@ -6704,52 +6704,52 @@
   {
    "address": 40453,
    "type": "line",
-   "text": "Load 23: 39-byte setup graphics source 1, copied by the routine at $9D8A to $D98F–$D9B5, $DA0F–$DA35, $DA8F–$DAB5."
+   "text": "Load 23: 39 bytes of player sprite rows, source 1 of the ten that the routine at $9D8A copies with $01 set to $30, so that the stores reach the RAM beneath I/O. It writes them to bytes 15–53, rows 5 to 17, of the monochrome player slots $66, $68 and $6A ($D98F–$D9B5, $DA0F–$DA35, $DA8F–$DAB5), and then calls $2086 seven times, from X=$66 and Y=$74, to mirror slots $66–$73 into $74–$81 for the other facing. Load 23's stage-object record 1 names $9D8A in its bytes 7 and 8 ($9534), which $4655 copies to $477D/$4783, and the shield purchase at $9D51 calls the routine those fields name."
   },
   {
    "address": 40492,
    "type": "line",
-   "text": "Load 23: 39-byte setup graphics source 2, copied by the routine at $9D8A to $D9CF–$D9F5, $DA4F–$DA75, $DACF–$DAF5."
+   "text": "Load 23: 39 bytes of player sprite rows, source 2 of the ten that the routine at $9D8A copies with $01 set to $30, so that the stores reach the RAM beneath I/O. It writes them to bytes 15–53, rows 5 to 17, of the multicolour player slots $67, $69 and $6B, the second layers of frames $66, $68 and $6A ($D9CF–$D9F5, $DA4F–$DA75, $DACF–$DAF5), and then calls $2086 seven times, from X=$66 and Y=$74, to mirror slots $66–$73 into $74–$81 for the other facing. Load 23's stage-object record 1 names $9D8A in its bytes 7 and 8 ($9534), which $4655 copies to $477D/$4783, and the shield purchase at $9D51 calls the routine those fields name."
   },
   {
    "address": 40531,
    "type": "line",
-   "text": "Load 23: 30-byte setup graphics source 3, copied by the routine at $9D8A to $DB18–$DB35."
+   "text": "Load 23: 30 bytes of player sprite rows, source 3 of the ten that the routine at $9D8A copies with $01 set to $30, so that the stores reach the RAM beneath I/O. It writes them to bytes 24–53, rows 8 to 17, of the monochrome player slot $6C ($DB18–$DB35), and then calls $2086 seven times, from X=$66 and Y=$74, to mirror slots $66–$73 into $74–$81 for the other facing. Load 23's stage-object record 1 names $9D8A in its bytes 7 and 8 ($9534), which $4655 copies to $477D/$4783, and the shield purchase at $9D51 calls the routine those fields name."
   },
   {
    "address": 40561,
    "type": "line",
-   "text": "Load 23: 30-byte setup graphics source 4, copied by the routine at $9D8A to $DB58–$DB75."
+   "text": "Load 23: 30 bytes of player sprite rows, source 4 of the ten that the routine at $9D8A copies with $01 set to $30, so that the stores reach the RAM beneath I/O. It writes them to bytes 24–53, rows 8 to 17, of the multicolour player slot $6D, the second layer of frame $6C ($DB58–$DB75), and then calls $2086 seven times, from X=$66 and Y=$74, to mirror slots $66–$73 into $74–$81 for the other facing. Load 23's stage-object record 1 names $9D8A in its bytes 7 and 8 ($9534), which $4655 copies to $477D/$4783, and the shield purchase at $9D51 calls the routine those fields name."
   },
   {
    "address": 40591,
    "type": "line",
-   "text": "Load 23: 30-byte setup graphics source 5, copied by the routine at $9D8A to $DB98–$DBB5."
+   "text": "Load 23: 30 bytes of player sprite rows, source 5 of the ten that the routine at $9D8A copies with $01 set to $30, so that the stores reach the RAM beneath I/O. It writes them to bytes 24–53, rows 8 to 17, of the monochrome player slot $6E ($DB98–$DBB5), and then calls $2086 seven times, from X=$66 and Y=$74, to mirror slots $66–$73 into $74–$81 for the other facing. Load 23's stage-object record 1 names $9D8A in its bytes 7 and 8 ($9534), which $4655 copies to $477D/$4783, and the shield purchase at $9D51 calls the routine those fields name."
   },
   {
    "address": 40621,
    "type": "line",
-   "text": "Load 23: 30-byte setup graphics source 6, copied by the routine at $9D8A to $DBD8–$DBF5."
+   "text": "Load 23: 30 bytes of player sprite rows, source 6 of the ten that the routine at $9D8A copies with $01 set to $30, so that the stores reach the RAM beneath I/O. It writes them to bytes 24–53, rows 8 to 17, of the multicolour player slot $6F, the second layer of frame $6E ($DBD8–$DBF5), and then calls $2086 seven times, from X=$66 and Y=$74, to mirror slots $66–$73 into $74–$81 for the other facing. Load 23's stage-object record 1 names $9D8A in its bytes 7 and 8 ($9534), which $4655 copies to $477D/$4783, and the shield purchase at $9D51 calls the routine those fields name."
   },
   {
    "address": 40651,
    "type": "line",
-   "text": "Load 23: 36-byte setup graphics source 7, copied by the routine at $9D8A to $DC15–$DC38."
+   "text": "Load 23: 36 bytes of player sprite rows, source 7 of the ten that the routine at $9D8A copies with $01 set to $30, so that the stores reach the RAM beneath I/O. It writes them to bytes 21–56, rows 7 to 18, of the monochrome player slot $70 ($DC15–$DC38), and then calls $2086 seven times, from X=$66 and Y=$74, to mirror slots $66–$73 into $74–$81 for the other facing. Load 23's stage-object record 1 names $9D8A in its bytes 7 and 8 ($9534), which $4655 copies to $477D/$4783, and the shield purchase at $9D51 calls the routine those fields name."
   },
   {
    "address": 40687,
    "type": "line",
-   "text": "Load 23: 36-byte setup graphics source 8, copied by the routine at $9D8A to $DC55–$DC78."
+   "text": "Load 23: 36 bytes of player sprite rows, source 8 of the ten that the routine at $9D8A copies with $01 set to $30, so that the stores reach the RAM beneath I/O. It writes them to bytes 21–56, rows 7 to 18, of the multicolour player slot $71, the second layer of frame $70 ($DC55–$DC78), and then calls $2086 seven times, from X=$66 and Y=$74, to mirror slots $66–$73 into $74–$81 for the other facing. Load 23's stage-object record 1 names $9D8A in its bytes 7 and 8 ($9534), which $4655 copies to $477D/$4783, and the shield purchase at $9D51 calls the routine those fields name."
   },
   {
    "address": 40723,
    "type": "line",
-   "text": "Load 23: 33-byte setup graphics source 9, copied by the routine at $9D8A to $DC95–$DCB5."
+   "text": "Load 23: 33 bytes of player sprite rows, source 9 of the ten that the routine at $9D8A copies with $01 set to $30, so that the stores reach the RAM beneath I/O. It writes them to bytes 21–53, rows 7 to 17, of the monochrome player slot $72 ($DC95–$DCB5), and then calls $2086 seven times, from X=$66 and Y=$74, to mirror slots $66–$73 into $74–$81 for the other facing. Load 23's stage-object record 1 names $9D8A in its bytes 7 and 8 ($9534), which $4655 copies to $477D/$4783, and the shield purchase at $9D51 calls the routine those fields name."
   },
   {
    "address": 40756,
    "type": "line",
-   "text": "Load 23: 33-byte setup graphics source 10, copied by the routine at $9D8A to $DCD5–$DCF5."
+   "text": "Load 23: 33 bytes of player sprite rows, source 10 of the ten that the routine at $9D8A copies with $01 set to $30, so that the stores reach the RAM beneath I/O. It writes them to bytes 21–53, rows 7 to 17, of the multicolour player slot $73, the second layer of frame $72 ($DCD5–$DCF5), and then calls $2086 seven times, from X=$66 and Y=$74, to mirror slots $66–$73 into $74–$81 for the other facing. Load 23's stage-object record 1 names $9D8A in its bytes 7 and 8 ($9534), which $4655 copies to $477D/$4783, and the shield purchase at $9D51 calls the routine those fields name."
   },
   {
    "address": 40789,
@@ -7094,7 +7094,7 @@
   {
    "address": 45174,
    "type": "line",
-   "text": "Load 23: the type-$01 vector in $7EDF/$7F0F selects this dispatcher. It reads $1AB1,X into Y, patches the jump at $B085 from the split tables at $B088/$B08B, and jumps to the selected handler. The state index is not locally bounded; only three table pairs are described."
+   "text": "Load 23: handler for entity types $01 and $16: the vectors at $7EDF/$7F0F point here for both. Read state $1AB1,X into Y, patch the jump at $B085 from the split tables at $B088/$B08B and jump to $B08E, $B0F3 or $B12A. The type’s own code stores only 0, 1 and 2 in that state, one for each table entry: 1 or 2 at $B0A4 and 0 at $B0FA; the record loader at $1896 leaves it 0 and $447A clears it to 0 when a slot is freed or set up."
   },
   {
    "address": 45189,
@@ -7219,7 +7219,7 @@
   {
    "address": 45384,
    "type": "line",
-   "text": "Load 23: the type-$11 vector in $7EDF/$7F0F selects this dispatcher. It reads $1AB1,X into Y, patches the jump at $B157 from split target tables at $B15A/$B160, and jumps to the selected handler. The state index is not locally bounded; six table pairs are described."
+   "text": "Load 23: handler for entity type $11: its vector at $7EDF/$7F0F points here. Read state $1AB1,X into Y, patch the jump at $B157 from the split tables at $B15A/$B160 and jump to $B166, $B1F9, $B29B, $B2E7, $B326 or $B349. The type’s own code stores only 0 to 5 in that state, one for each table entry: 1 or 2 at $B1F5, 0 at $B233, 3 at $B2E3, 0 at $B322 and 4 or 5 at $B3A8, and at $B345 state 4 puts back the state (0 to 3) that $B399 saved when the hit check began state 4; the record loader at $1896 leaves it 0 and $447A clears it to 0 when a slot is freed or set up."
   },
   {
    "address": 45399,
@@ -7454,12 +7454,12 @@
   {
    "address": 46242,
    "type": "line",
-   "text": "Entity record 1 (within the initial slot limit): type byte $01; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $0134 and the world-Y arrays $197F/$1990 receive $00E9. The remaining bytes $07, $00, $00 and $01 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$01 handler at $B076 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
+   "text": "Entity record 1 (within the initial slot limit): type byte $01; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $0134 and the world-Y arrays $197F/$1990 receive $00E9. The remaining bytes $07, $00, $00 and $01 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$01 handler at $B076 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4), and copy bit 0 of $192A,X into the flag $4CEF of both its display slots ($1C7F, $1CC2, $1E7F, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. Bit 0 is clear here, so the entity is one pair of sprites at normal width: the builders draw a lower pair from frame $19D4,X only when that bit is set ($1D24, $1F1A), and byte 7, which would colour that pair's multicolour sprite ($1D5C, $1F52), is never read. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
   },
   {
    "address": 46252,
    "type": "line",
-   "text": "Entity record 2 (within the initial slot limit): type byte $01; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $01E4 and the world-Y arrays $197F/$1990 receive $00C9. The remaining bytes $07, $00, $00 and $01 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$01 handler at $B076 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
+   "text": "Entity record 2 (within the initial slot limit): type byte $01; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $01E4 and the world-Y arrays $197F/$1990 receive $00C9. The remaining bytes $07, $00, $00 and $01 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$01 handler at $B076 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4), and copy bit 0 of $192A,X into the flag $4CEF of both its display slots ($1C7F, $1CC2, $1E7F, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. Bit 0 is clear here, so the entity is one pair of sprites at normal width: the builders draw a lower pair from frame $19D4,X only when that bit is set ($1D24, $1F1A), and byte 7, which would colour that pair's multicolour sprite ($1D5C, $1F52), is never read. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
   },
   {
    "address": 46262,
@@ -7474,12 +7474,12 @@
   {
    "address": 46282,
    "type": "line",
-   "text": "Entity record 5 (beyond the initial slot limit): type byte $11; $C5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $02E0 and the world-Y arrays $197F/$1990 receive $0119. The remaining bytes $0F, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. When the slot-reuse path selects the record, $369E performs the copy, and the entity tick at $2027 runs the type-$11 handler at $B148 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
+   "text": "Entity record 5 (beyond the initial slot limit): type byte $11; $C5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $02E0 and the world-Y arrays $197F/$1990 receive $0119. The remaining bytes $0F, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. When the slot-reuse path selects the record, $369E performs the copy, and the entity tick at $2027 runs the type-$11 handler at $B148 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4), and copy bit 0 of $192A,X into the flag $4CEF of both its display slots ($1C7F, $1CC2, $1E7F, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. Bit 0 is clear here, so the entity is one pair of sprites at normal width: the builders draw a lower pair from frame $19D4,X only when that bit is set ($1D24, $1F1A), and byte 7, which would colour that pair's multicolour sprite ($1D5C, $1F52), is never read. The handler calls $732A at $B38A, whose check of the player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
   },
   {
    "address": 46292,
    "type": "line",
-   "text": "Entity record 6 (beyond the initial slot limit): type byte $11; $C5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $03E0 and the world-Y arrays $197F/$1990 receive $0119. The remaining bytes $0F, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. When the slot-reuse path selects the record, $369E performs the copy, and the entity tick at $2027 runs the type-$11 handler at $B148 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
+   "text": "Entity record 6 (beyond the initial slot limit): type byte $11; $C5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $03E0 and the world-Y arrays $197F/$1990 receive $0119. The remaining bytes $0F, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. When the slot-reuse path selects the record, $369E performs the copy, and the entity tick at $2027 runs the type-$11 handler at $B148 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4), and copy bit 0 of $192A,X into the flag $4CEF of both its display slots ($1C7F, $1CC2, $1E7F, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. Bit 0 is clear here, so the entity is one pair of sprites at normal width: the builders draw a lower pair from frame $19D4,X only when that bit is set ($1D24, $1F1A), and byte 7, which would colour that pair's multicolour sprite ($1D5C, $1F52), is never read. The handler calls $732A at $B38A, whose check of the player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
   },
   {
    "address": 46302,

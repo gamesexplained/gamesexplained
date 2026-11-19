@@ -2909,7 +2909,7 @@
   {
    "address": 32606,
    "type": "line",
-   "text": "Load 31: bytes $00, $00, $00, $00, $00, $00. $49E9 treats these as the first six entries of an eight-byte nonzero selection scan; the last two entries overlap $7F64/$7F65. The type-$FA setup entries at $5F8A–$5FB2 also load these bytes into Y."
+   "text": "Load 31: bytes $00, $00, $00, $00, $00, $00, the base frames of six reward pickups. $49E3 picks a random start and scans the eight bytes $7F5E–$7F65 at $49E9 for a nonzero one, so a zero byte disables its entry; the last two of the eight are $7F64/$7F65. Entries 0–5 jump through the table at $4A02/$4A0A to $5F88, $5F90, $5FA0, $5FA8, $5F98 and $5FB0, which load the entry’s byte into Y and the reward $05, $10, $20, $50, $10 or $00 into A; $5FB5 patches Y into the LDA at $5FC5, which stores it as the type-$FA entity’s frame $19E5/$19C3, and stores A in $1AB1,X, which the contact handler $7656 passes to $7756. In load 31 all eight bytes $7F5E–$7F65 are zero, so the scan at $49E9 would never end if $49E3 ran."
   },
   {
    "address": 32612,
@@ -2989,7 +2989,7 @@
   {
    "address": 32719,
    "type": "line",
-   "text": "A 256-byte lookup indexed by screen character value. The resident code at $6F59–$6F5F reads a character from the selected screen buffer and writes the corresponding table byte to colour RAM. The table continues across $8000."
+   "text": "A 256-byte lookup indexed by screen character value: entry N is the colour-RAM byte for character N. After $6D17 draws the 20-by-10 metatile map window, it jumps to $6F3E, whose loop at $6F59–$6F5F reads each character of that screen buffer and writes the corresponding table byte to colour RAM, 39 columns by 20 rows from $D8C8. The view-shift routines read the table the same way for the column or row a scroll exposes: $30E1 for the right column, $319C for the left column, $3256 for the bottom row and $3314 for the top row. The visual-selector screens take their colours from the tables at $7F9E/$7FA5 instead, through $70ED. The table continues across $8000."
   },
   {
    "address": 32768,
@@ -3029,12 +3029,12 @@
   {
    "address": 34271,
    "type": "line",
-   "text": "Load 31: low bytes for pointer entries 16–79 of the 81-entry split table. Paired with the high table, these encode $8E71 through $ADF1 in 128-byte steps modulo 65536. These entries extend beyond the 16 map rows."
+   "text": "Load 31: low bytes for pointer entries 16–79 of the 81-entry split table. Paired with the high table, these encode $8E71 through $ADF1 in 128-byte steps modulo 65536, the row stride at $7F4A. They lie beyond the map’s 16 rows, the count at $7F4C. The window draw at $6D30 and the scroll readers at $2CD4, $2DC9, $2EC2 and $2F9D index by the view’s rows, which the scroll check at $0CCC keeps within the map. The hero’s tile checks index the table by his row $6F3D ($0EA7, $1041, $6E77) or that row plus one ($0C47, $0C69, $6E8D); $6F3D reaches 16 when the view is at the bottom of the map and the hero at his lowest screen position $E1 ($0CFC), so entries 16 and 17 can be read, and no hero check reaches entries 18–79. The entity collision checks at $451D and $4638 index the table by an entity’s tile row from $71DB, plus one to three, with no bound of their own."
   },
   {
    "address": 34335,
    "type": "line",
-   "text": "Load 31: low bytes for pointer entries 80–80 of the 81-entry split table. Paired with the high table, these encode $AE71 through $AE71 in 128-byte steps modulo 65536. These entries extend beyond the 16 map rows."
+   "text": "Load 31: low byte for pointer entry 80, the last of the 81-entry split table. Paired with the high table, it encodes $AE71, one 128-byte step (the row stride at $7F4A) after entry 79. It lies beyond the map’s 16 rows, the count at $7F4C. The window draw at $6D30 and the scroll readers at $2CD4, $2DC9, $2EC2 and $2F9D index by the view’s rows, which the scroll check at $0CCC keeps within the map. The hero’s tile checks reach at most entry 17 ($6F3D, which is at most 16, plus one at $0C47, $0C69 and $6E8D), so they never read it. The entity collision checks at $451D and $4638 index the table by an entity’s tile row from $71DB, plus one to three, with no bound of their own."
   },
   {
    "address": 34336,
@@ -3044,12 +3044,12 @@
   {
    "address": 34352,
    "type": "line",
-   "text": "Load 31: high bytes for pointer entries 16–79 of the 81-entry split table. Paired with the low table, these encode $8E71 through $ADF1 in 128-byte steps modulo 65536. These entries extend beyond the 16 map rows."
+   "text": "Load 31: high bytes for pointer entries 16–79 of the 81-entry split table. Paired with the low table, these encode $8E71 through $ADF1 in 128-byte steps modulo 65536, the row stride at $7F4A. They lie beyond the map’s 16 rows, the count at $7F4C. The window draw at $6D30 and the scroll readers at $2CD4, $2DC9, $2EC2 and $2F9D index by the view’s rows, which the scroll check at $0CCC keeps within the map. The hero’s tile checks index the table by his row $6F3D ($0EA7, $1041, $6E77) or that row plus one ($0C47, $0C69, $6E8D); $6F3D reaches 16 when the view is at the bottom of the map and the hero at his lowest screen position $E1 ($0CFC), so entries 16 and 17 can be read, and no hero check reaches entries 18–79. The entity collision checks at $451D and $4638 index the table by an entity’s tile row from $71DB, plus one to three, with no bound of their own."
   },
   {
    "address": 34416,
    "type": "line",
-   "text": "Load 31: high bytes for pointer entries 80–80 of the 81-entry split table. Paired with the low table, these encode $AE71 through $AE71 in 128-byte steps modulo 65536. These entries extend beyond the 16 map rows."
+   "text": "Load 31: high byte for pointer entry 80, the last of the 81-entry split table. Paired with the low table, it encodes $AE71, one 128-byte step (the row stride at $7F4A) after entry 79. It lies beyond the map’s 16 rows, the count at $7F4C. The window draw at $6D30 and the scroll readers at $2CD4, $2DC9, $2EC2 and $2F9D index by the view’s rows, which the scroll check at $0CCC keeps within the map. The hero’s tile checks reach at most entry 17 ($6F3D, which is at most 16, plus one at $0C47, $0C69 and $6E8D), so they never read it. The entity collision checks at $451D and $4638 index the table by an entity’s tile row from $71DB, plus one to three, with no bound of their own."
   },
   {
    "address": 34417,
@@ -3229,7 +3229,7 @@
   {
    "address": 37298,
    "type": "line",
-   "text": "Load 31 stage object record 1 of 1: initial bytes $06, $0A, $02, $01, $FF, $FF, $C2, $91, $16, $92, $3F, $07, $49, $4A, $4B, $4C. $4655 copies the first 12 fields to per-record arrays and the final four to $7D–$80, then calls $46D6. That map updater can replace those four bytes according to the fourth field and world mode before writing cells. Initial selector $02 corresponds to reconstructed screen 16 when field 4 reaches the resource call at $47F5; that forced reconstruction does not establish this record’s ordinary-play reachability."
+   "text": "Load 31 stage-object record 1 of 1: bytes $06, $0A, $02, $01, $FF, $FF, $C2, $91, $16, $92, $3F, $07, $49, $4A, $4B, $4C. $4655 copies bytes 0–11 to the twelve arrays at $4747–$4789 (bytes 0–3 are the column, row, screen selector and state) and bytes 12–15 to $7D–$80, then calls $46D6, which writes those four map cells as the two-by-two block at columns $06–$07 of rows $09–$0A; when the state byte is negative it first replaces them with $7F6D–$7F70, or $7F71–$7F74 when $7A is nonzero. When the main loop’s call of $478F at $042C finds the hero at column $06, row $0A ($6F3C/$6F3D) with $527D equal to $0F, the input byte $75 zero and the state not negative, $479C lowers the state ($01 at the start) by 2, passes byte 2, $02, in X to $7119 at $47F5, which draws the screen of visual selector 2, and calls the callback $073F from bytes 10 and 11 through the JSR at $47FC; if the state is then negative, $46D6 rewrites the cells."
   },
   {
    "address": 37314,
@@ -3574,7 +3574,7 @@
   {
    "address": 38763,
    "type": "line",
-   "text": "State 3 decrements $1B06,X with eight-bit wrap. If the result is nonnegative, call $983E and jump to $9647. If negative and its low two bits are nonzero, jump to $9647. Otherwise, if the byte at $962A equals 5, jump to $980B. If it differs, transfer X to Y, save X in the immediate operand at $980A, and call $190B. Carry clear branches to $9809 to restore X; carry set continues at $9794. Callback effects, the byte’s other uses and ordinary-play reachability remain open."
+   "text": "State 3 decrements $1B06,X with eight-bit wrap. If the result is nonnegative, call $983E and jump to $9647. If negative and its low two bits are nonzero, jump to $9647. Otherwise, if the byte at $962A equals 5, jump to $980B. If it differs, transfer X to Y, save X in the immediate operand at $980A, and call $190B. Carry clear branches to $9809 to restore X; carry set continues at $9794. Load 31 enters state 3 at $95E6–$9627 when state 1’s countdown $1AF5,X reaches zero: it stores 3, puts a random 0–7 in $1B06,X, saves its own position in $98C1/$98C2 and the player’s in $98BF/$98C0, and clears $962A. $962A counts the children, $9806 incrementing it after each, so one run of state 3 sets up at most five. $190B returns a free entity slot in X with carry set; from $9794 the child becomes type $2F (vector $9A11) with frame $E5, and $34EA turns the saved positions into its direction in $1B28,X. At $980B, once $1B06,X has counted down to $E0, $9817 stores state 1."
   },
   {
    "address": 38804,
@@ -3629,12 +3629,12 @@
   {
    "address": 39109,
    "type": "line",
-   "text": "State 5 decrements $1B28,X with eight-bit wrap. If the result is nonnegative, call $9820 and return; if negative, continue at $98CE. External callback behavior and ordinary-play reachability remain open."
+   "text": "State 5 decrements $1B28,X with eight-bit wrap. If the result is nonnegative, call $9820 and return; if negative, continue at $98CE. The contact test enters state 5 at $96FA–$970D when a hit leaves $1A6D,X zero or negative and $19E5,X is not $B5: it sets $1B28,X to $32 and $1A8F,X to $FF, so the state shows the frame from $9820 for 50 passes. $9820 stores base + 8 or $14, by the side of the player that $72FC reports, in $19C3,X and that plus 2 in $19D4,X. $98CE then adds $30 to the score’s middle byte, frees the slot and sets up the closing display."
   },
   {
    "address": 39118,
    "type": "line",
-   "text": "Call $4B20 with A=$30, then $4454 and $331D. Store $FE at $2C15 and $49, call $6ACB, clear $79, call $77E0 with X=Y=0, call $370B twice, load X=1 and call $7119. Continue at $98F7. The external routines’ effects are not assumed here."
+   "text": "Call $4B20 with A=$30, then $4454 and $331D. Store $FE at $2C15 and $49, call $6ACB, clear $79, call $77E0 with X=Y=0, call $370B twice, load X=1 and call $7119. Continue at $98F7. $4B20 adds $30 to the middle packed-decimal byte of the selected player’s score; $4454 frees this entity’s display slots and clears its fields; $331D saves the display-slot fields and view state; $FE in $2C15 silences the three voices; $6ACB resets sprite colours and the 32 display slots; $77E0 with X=Y=0 shows no message: $784D–$785D store 0 in the countdown $4D6B and $FF in $4DAD; $370B updates the status panel; $7119 with X=1 loads the selected visual resources."
   },
   {
    "address": 39159,
@@ -3714,7 +3714,7 @@
   {
    "address": 39607,
    "type": "line",
-   "text": "Entity record 1 (within the initial slot limit): type byte $01; $00 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $0000 and the world-Y arrays $197F/$1990 receive $0000. The remaining bytes $00, $00, $00 and $00 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$01 handler at $952D (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
+   "text": "Entity record 1 (within the initial slot limit): type byte $01; $00 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $0000 and the world-Y arrays $197F/$1990 receive $0000. The remaining bytes $00, $00, $00 and $00 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$01 handler at $952D (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4), and copy bit 0 of $192A,X into the flag $4CEF of both its display slots ($1C7F, $1CC2, $1E7F, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. Bit 0 is clear here, so the entity is one pair of sprites at normal width: the builders draw a lower pair from frame $19D4,X only when that bit is set ($1D24, $1F1A), and byte 7, which would colour that pair's multicolour sprite ($1D5C, $1F52), is never read. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
   },
   {
    "address": 39617,

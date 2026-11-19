@@ -2050,7 +2050,7 @@
   {
    "address": 32597,
    "type": "line",
-   "text": "Load 16: little-endian pointer $8D07 to the 16-byte records read by $4655 when the count at $7F57 is nonzero."
+   "text": "Load 16: little-endian pointer $8D07, the stage-object record pointer that $4655 reads at $465F and $4664 when the count at $7F57 is nonzero. Load 16’s count is 0, so $4655 returns at $465A without reading it; $8D07 holds four bytes that no instruction names (the map’s character copy also takes them), not records."
   },
   {
    "address": 32599,
@@ -2065,7 +2065,7 @@
   {
    "address": 32606,
    "type": "line",
-   "text": "Load 16: bytes $C7, $C9, $CF, $CD, $CB, $00. $49E9 treats these as the first six entries of an eight-byte nonzero selection scan; the last two entries overlap $7F64/$7F65. The type-$FA setup entries at $5F8A–$5FB2 also load these bytes into Y."
+   "text": "Load 16: bytes $C7, $C9, $CF, $CD, $CB, $00, the base frames of six reward pickups. $49E3 picks a random start and scans the eight bytes $7F5E–$7F65 at $49E9 for a nonzero one, so a zero byte disables its entry; the last two of the eight are $7F64/$7F65. Entries 0–5 jump through the table at $4A02/$4A0A to $5F88, $5F90, $5FA0, $5FA8, $5F98 and $5FB0, which load the entry’s byte into Y and the reward $05, $10, $20, $50, $10 or $00 into A; $5FB5 patches Y into the LDA at $5FC5, which stores it as the type-$FA entity’s frame $19E5/$19C3, and stores A in $1AB1,X, which the contact handler $7656 passes to $7756."
   },
   {
    "address": 32612,
@@ -2145,7 +2145,7 @@
   {
    "address": 32719,
    "type": "line",
-   "text": "A 256-byte lookup indexed by screen character value. The resident code at $6F59–$6F5F reads a character from the selected screen buffer and writes the corresponding table byte to colour RAM. The table continues across $8000."
+   "text": "A 256-byte lookup indexed by screen character value: entry N is the colour-RAM byte for character N. After $6D17 draws the 20-by-10 metatile map window, it jumps to $6F3E, whose loop at $6F59–$6F5F reads each character of that screen buffer and writes the corresponding table byte to colour RAM, 39 columns by 20 rows from $D8C8. The view-shift routines read the table the same way for the column or row a scroll exposes: $30E1 for the right column, $319C for the left column, $3256 for the bottom row and $3314 for the top row. The visual-selector screens take their colours from the tables at $7F9E/$7FA5 instead, through $70ED. The table continues across $8000."
   },
   {
    "address": 32768,
@@ -2185,12 +2185,12 @@
   {
    "address": 34269,
    "type": "line",
-   "text": "Load 16: low bytes for pointer entries 14–77 of the 81-entry split table. Paired with the high table, these encode $8797 through $8CC2 in 21-byte steps modulo 65536. These entries extend beyond the 14 map rows."
+   "text": "Load 16: low bytes for pointer entries 14–77 of the 81-entry split table. Paired with the high table, these encode $8797 through $8CC2 in 21-byte steps modulo 65536, the row stride at $7F4A. They lie beyond the map’s 14 rows, the count at $7F4C. The window draw at $6D30 and the scroll readers at $2CD4, $2DC9, $2EC2 and $2F9D index by the view’s rows, which the scroll check at $0CCC keeps within the map. The hero’s tile checks index the table by his row $6F3D ($0EA7, $1041, $6E77) or that row plus one ($0C47, $0C69, $6E8D); $6F3D reaches 14 when the view is at the bottom of the map and the hero at his lowest screen position $E1 ($0CFC), so entries 14 and 15 can be read, and no hero check reaches entries 16–77. The entity collision checks at $451D and $4638 index the table by an entity’s tile row from $71DB, plus one to three, with no bound of their own."
   },
   {
    "address": 34333,
    "type": "line",
-   "text": "Load 16: low bytes for pointer entries 78–80 of the 81-entry split table. Paired with the high table, these encode $8CD7 through $8D01 in 21-byte steps modulo 65536. These entries extend beyond the 14 map rows."
+   "text": "Load 16: low bytes for pointer entries 78–80 of the 81-entry split table. Paired with the high table, these encode $8CD7 through $8D01 in 21-byte steps modulo 65536, the row stride at $7F4A. They lie beyond the map’s 14 rows, the count at $7F4C. The window draw at $6D30 and the scroll readers at $2CD4, $2DC9, $2EC2 and $2F9D index by the view’s rows, which the scroll check at $0CCC keeps within the map. The hero’s tile checks reach at most entry 15 ($6F3D, which is at most 14, plus one at $0C47, $0C69 and $6E8D), so they never read these. The entity collision checks at $451D and $4638 index the table by an entity’s tile row from $71DB, plus one to three, with no bound of their own."
   },
   {
    "address": 34336,
@@ -2200,12 +2200,12 @@
   {
    "address": 34350,
    "type": "line",
-   "text": "Load 16: high bytes for pointer entries 14–77 of the 81-entry split table. Paired with the low table, these encode $8797 through $8CC2 in 21-byte steps modulo 65536. These entries extend beyond the 14 map rows."
+   "text": "Load 16: high bytes for pointer entries 14–77 of the 81-entry split table. Paired with the low table, these encode $8797 through $8CC2 in 21-byte steps modulo 65536, the row stride at $7F4A. They lie beyond the map’s 14 rows, the count at $7F4C. The window draw at $6D30 and the scroll readers at $2CD4, $2DC9, $2EC2 and $2F9D index by the view’s rows, which the scroll check at $0CCC keeps within the map. The hero’s tile checks index the table by his row $6F3D ($0EA7, $1041, $6E77) or that row plus one ($0C47, $0C69, $6E8D); $6F3D reaches 14 when the view is at the bottom of the map and the hero at his lowest screen position $E1 ($0CFC), so entries 14 and 15 can be read, and no hero check reaches entries 16–77. The entity collision checks at $451D and $4638 index the table by an entity’s tile row from $71DB, plus one to three, with no bound of their own."
   },
   {
    "address": 34414,
    "type": "line",
-   "text": "Load 16: high bytes for pointer entries 78–80 of the 81-entry split table. Paired with the low table, these encode $8CD7 through $8D01 in 21-byte steps modulo 65536. These entries extend beyond the 14 map rows."
+   "text": "Load 16: high bytes for pointer entries 78–80 of the 81-entry split table. Paired with the low table, these encode $8CD7 through $8D01 in 21-byte steps modulo 65536, the row stride at $7F4A. They lie beyond the map’s 14 rows, the count at $7F4C. The window draw at $6D30 and the scroll readers at $2CD4, $2DC9, $2EC2 and $2F9D index by the view’s rows, which the scroll check at $0CCC keeps within the map. The hero’s tile checks reach at most entry 15 ($6F3D, which is at most 14, plus one at $0C47, $0C69 and $6E8D), so they never read these. The entity collision checks at $451D and $4638 index the table by an entity’s tile row from $71DB, plus one to three, with no bound of their own."
   },
   {
    "address": 34417,
@@ -2615,27 +2615,27 @@
   {
    "address": 37140,
    "type": "line",
-   "text": "Entity record 1 (within the initial slot limit): type byte $14; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $00D0 and the world-Y arrays $197F/$1990 receive $009C. The remaining bytes $08, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$14 handler at $8EF0 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
+   "text": "Entity record 1 (within the initial slot limit): type byte $14; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $00D0 and the world-Y arrays $197F/$1990 receive $009C. The remaining bytes $08, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$14 handler at $8EF0 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4), and copy bit 0 of $192A,X into the flag $4CEF of both its display slots ($1C7F, $1CC2, $1E7F, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. Bit 0 is clear here, so the entity is one pair of sprites at normal width: the builders draw a lower pair from frame $19D4,X only when that bit is set ($1D24, $1F1A), and byte 7, which would colour that pair's multicolour sprite ($1D5C, $1F52), is never read. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
   },
   {
    "address": 37150,
    "type": "line",
-   "text": "Entity record 2 (within the initial slot limit): type byte $14; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $0140 and the world-Y arrays $197F/$1990 receive $00AC. The remaining bytes $08, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$14 handler at $8EF0 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
+   "text": "Entity record 2 (within the initial slot limit): type byte $14; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $0140 and the world-Y arrays $197F/$1990 receive $00AC. The remaining bytes $08, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$14 handler at $8EF0 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4), and copy bit 0 of $192A,X into the flag $4CEF of both its display slots ($1C7F, $1CC2, $1E7F, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. Bit 0 is clear here, so the entity is one pair of sprites at normal width: the builders draw a lower pair from frame $19D4,X only when that bit is set ($1D24, $1F1A), and byte 7, which would colour that pair's multicolour sprite ($1D5C, $1F52), is never read. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
   },
   {
    "address": 37160,
    "type": "line",
-   "text": "Entity record 3 (within the initial slot limit): type byte $14; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $0080 and the world-Y arrays $197F/$1990 receive $00CC. The remaining bytes $08, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$14 handler at $8EF0 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
+   "text": "Entity record 3 (within the initial slot limit): type byte $14; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $0080 and the world-Y arrays $197F/$1990 receive $00CC. The remaining bytes $08, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$14 handler at $8EF0 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4), and copy bit 0 of $192A,X into the flag $4CEF of both its display slots ($1C7F, $1CC2, $1E7F, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. Bit 0 is clear here, so the entity is one pair of sprites at normal width: the builders draw a lower pair from frame $19D4,X only when that bit is set ($1D24, $1F1A), and byte 7, which would colour that pair's multicolour sprite ($1D5C, $1F52), is never read. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
   },
   {
    "address": 37170,
    "type": "line",
-   "text": "Entity record 4 (within the initial slot limit): type byte $14; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $00F0 and the world-Y arrays $197F/$1990 receive $00DC. The remaining bytes $08, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$14 handler at $8EF0 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
+   "text": "Entity record 4 (within the initial slot limit): type byte $14; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $00F0 and the world-Y arrays $197F/$1990 receive $00DC. The remaining bytes $08, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$14 handler at $8EF0 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4), and copy bit 0 of $192A,X into the flag $4CEF of both its display slots ($1C7F, $1CC2, $1E7F, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. Bit 0 is clear here, so the entity is one pair of sprites at normal width: the builders draw a lower pair from frame $19D4,X only when that bit is set ($1D24, $1F1A), and byte 7, which would colour that pair's multicolour sprite ($1D5C, $1F52), is never read. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
   },
   {
    "address": 37180,
    "type": "line",
-   "text": "Entity record 5 (within the initial slot limit): type byte $F9; $C5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $00D0 and the world-Y arrays $197F/$1990 receive $00D8. The remaining bytes $07, $00, $00 and $01 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2042 runs type $F9 through $6086, the still-pickup update (table $2062/$2074), and touching it runs $7661 (table $754E/$7560), which sets flag $40 in the selected player's flags $4DE2 and releases the entity. The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width."
+   "text": "Entity record 5 (within the initial slot limit): type byte $F9; $C5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $00D0 and the world-Y arrays $197F/$1990 receive $00D8. The remaining bytes $07, $00, $00 and $01 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2042 runs type $F9 through $6086, the still-pickup update (table $2062/$2074), and touching it runs $7661 (table $754E/$7560), which sets flag $40 in the selected player's flags $4DE2 and releases the entity. The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4), and copy bit 0 of $192A,X into the flag $4CEF of both its display slots ($1C7F, $1CC2, $1E7F, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. Bit 0 is clear here, so the entity is one pair of sprites at normal width: the builders draw a lower pair from frame $19D4,X only when that bit is set ($1D24, $1F1A), and byte 7, which would colour that pair's multicolour sprite ($1D5C, $1F52), is never read."
   },
   {
    "address": 37190,
