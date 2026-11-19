@@ -30,3 +30,8 @@ Worth doing, found in the run and not done:
   it holds 68 byte offsets of 0-63.
 - The comment on `$4E` says which event sets it was not traced: the code
   lock's success path sets it (`$BF59`).
+
+## Loading picture and tune
+
+- A new section awaits the steward's pass: the disk's title screen, drawn in the C64's own
+  characters, on the Graphics tab (the last section).

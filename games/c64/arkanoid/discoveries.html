@@ -36,9 +36,8 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
 canvas{image-rendering:pixelated;max-width:100%;display:block}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
-button{font-family:var(--fm);font-size:13px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer}
-button:hover{border-color:var(--ink-mute)}
-button.on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+button{font-size:13px;padding:6px 11px}
+button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 input[type=range]{width:220px}
 .lab{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
 table{border-collapse:collapse;width:100%;font-size:15px;margin:8px 0 0}
@@ -52,7 +51,6 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
 .out{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin:12px 0 0;min-height:3.2em}
 .stages{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;margin:12px 0 0}
 .stages button{padding:5px 0;font-size:12px}
-.stages button.hz{border-bottom:3px solid var(--amber)}
 .msg{font-size:14px;color:var(--coral)}
 @media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.two{grid-template-columns:1fr}.stages{grid-template-columns:repeat(8,1fr)}}
 </style>
@@ -76,7 +74,7 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
       <button id="capRun">Break 10,000 bricks</button></div>
     <canvas id="capCv"></canvas>
     <div class="out" id="capOut"></div>
-    <p class="cap">Each bar is the share of 10,000 broken bricks that gave that capsule, with the frame counter, the ball's X and its height drawn at random, and each result fed back as the "last capsule". The chooser on this page is a port of <code>$B204</code>-<code>$B21B</code>, checked against the game's own code run in a 6502 simulator on 40,000 random cases, with no difference.</p>
+    <p class="cap">Each bar is the share of 10,000 broken bricks that gave that capsule, with the frame counter, the ball's X and its height drawn at random, and each result fed back as the "last capsule". The chooser on this page is a port of <code>$B204</code>-<code>$B21B</code>.</p>
   </div>
   <table>
     <tr><th>Frame counter <code>$0201</code></th><th>What falls</th></tr>
@@ -104,7 +102,7 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
   <h2 class="t">Secret: the protection scrambles its own second check</h2>
   <p>The game starts at <code>$9400</code> and hides its first steps behind undocumented opcodes: a <code>NOP</code> with an operand at <code>$9404</code> and another at <code>$095A</code>, which a disassembler that knows only the documented set shows as data. The bytes after the <code>JSR $B9C3</code> at <code>$095D</code> look like the continuation and never run, because <code>$B9C3</code> leaves by <code>JMP $F000</code>.</p>
   <p>The start-up then sends a byte out through the first CIA's serial port and waits for the chip to report it sent (<code>$5F42</code>), a test of the hardware rather than the disk. Both routines erase themselves when they finish: <code>$5F42</code> fills itself with <code>$01</code>, and <code>$B9C3</code> overwrites its first 40 bytes with <code>$20</code>.</p>
-  <p>On the way it XORs 97 bytes at <code>$BA0A</code> with a key at <code>$A71A</code>, which is live game code. The bytes at <code>$BA0A</code> are a longer serial-port check, and in the file they are plain code: the XOR turns them into noise. Nothing calls that check in this build, and the flag it would set, <code>$0944</code>, is the trigger for a routine that wipes memory (<code>$A523</code>). The only other writer of the flag is a checksum over <code>$9500</code>-<code>$A5FF</code> at <code>$F9BC</code>, which nothing calls either, so the wipe never runs.</p>
+  <p>On the way it XORs 97 bytes at <code>$BA0A</code> with a key at <code>$A71A</code>, which is live game code. The bytes at <code>$BA0A</code> are a longer serial-port check, and in the file they are plain code: the XOR turns them into noise. The game never calls that check in this build, and the flag it would set, <code>$0944</code>, is the trigger for a routine that wipes memory (<code>$A523</code>). The only other writer of the flag is a checksum over <code>$9500</code>-<code>$A5FF</code> at <code>$F9BC</code>, which the game never calls either, so the wipe never runs.</p>
 </section>
 
 </main>

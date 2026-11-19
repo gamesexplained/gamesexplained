@@ -42,9 +42,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .st-fig img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
 .st-row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:12px 0;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
 .st-row label{display:flex;gap:6px;align-items:center}
-.st-btn{font:inherit;font-family:var(--fm);font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
-.st-btn:hover{border-color:var(--ink-mute)}
-.st-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.st-btn{font-size:13px;padding:5px 12px}
 .st-out{font-family:var(--fm);font-size:13px;color:var(--ink);margin:10px 0 0;min-height:1.5em;line-height:1.55}
 .st-note{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
 .st-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:12px 0 18px}
@@ -52,7 +50,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .st-tbl th{font-weight:700;color:var(--ink-soft)}
 .st-wide{overflow-x:auto}
 .st-form{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
-.st-form input,.st-form select,.st-row select{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.st-form input{font-size:13px;padding:4px 6px}.st-form select,.st-row select{font-size:13px}
 .st-form input{width:6.5em}
 .st-slots{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;margin:10px 0 0;font-family:var(--fm);font-size:11px;text-align:center}
 .st-slots div{border:1px solid var(--line);border-radius:5px;padding:4px 2px;color:var(--ink-mute);background:var(--surface-2)}
@@ -69,7 +67,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1986 · Mastertronic</p>
   <h1>Storm</h1>
-  <p class="sub">A warrior and a wizard fight through a hundred rooms where nothing is a sprite: every figure is redrawn into the character set at each step. The magic that should clear a room counts its monsters, and after a kill the count lies.</p>
+  <p class="sub">A warrior and a wizard fight through a hundred rooms drawn without a single sprite: every figure is redrawn into the character set at each step. The magic that should clear a room counts its monsters, and after a kill the count lies.</p>
 </header>
 <main class="wrap">
 
@@ -89,7 +87,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Music: one tune, on the title only</h2>
   <p class="lede">David Whittaker's tune plays while the title waits and stops the moment play starts. A game has no music at all, only effects.</p>
   <div class="plate"><div id="st-sid"></div>
-    <p class="cap">The title tune played by the game's own music driver: its bytes, <code>$9000</code>-<code>$99C1</code>, run once a frame on the kit's 6502 simulator in the page, heard through the site's model of the SID. Checked against the same bytes called on the simulator directly: every register write of 7,000 frames matches. The bass goes down to about 31 Hz, which laptop and phone speakers barely play.</p></div>
+    <p class="cap">The title tune played by the game's own music driver: its bytes, <code>$9000</code>-<code>$99C1</code>, run once a frame in the page, heard through the site's model of the SID. The bass goes down to about 31 Hz, which laptop and phone speakers barely play.</p></div>
   <p>The driver is the file <code>storm-c</code>, the one HVSC lists as Whittaker's Storm: <code>music_init</code> at <code>$9000</code> starts it and <code>music_play</code> at <code>$911B</code> plays a frame of it. The title calls the first, and the interrupt that draws the panel calls the second once a frame while <code>title_mode</code> is set. When a game starts, <code>music_stop</code> at <code>$9227</code> silences the chip.</p>
   <p>Each voice reads an order list of patterns (<code>tune_orders</code>), and each pattern is a run of bytes: below <code>$80</code> a note, <code>$80</code>-<code>$93</code> a command such as a waveform, a drum, or the end of the pattern, <code>$C0</code>-<code>$CF</code> an arpeggio and <code>$E0</code>-<code>$FF</code> a note's length. A tick comes every five frames, and the whole tune is 640 ticks, so it loops every 64 seconds.</p>
   <table class="st-tbl">
@@ -105,7 +103,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Sound: fifteen effects on two voices</h2>
   <p class="lede">Every sound in play is one of fifteen records of twenty bytes, swept on voices 1 and 3 once a frame.</p>
   <div class="plate"><div id="st-sfx"></div>
-    <p class="cap">Each effect played by the game's own code, <code>sfx_start</code> and then <code>sfx_update</code> once a frame (<code>$5632</code>-<code>$5937</code>), on the kit's 6502 simulator in the page. Checked against the same code called on the simulator directly: every register write of all 15 effects, 805 frames, matches. Each starts from a silenced chip, as the first effect of a game does.</p></div>
+    <p class="cap">Each effect played by the game's own code, <code>sfx_start</code> and then <code>sfx_update</code> once a frame (<code>$5632</code>-<code>$5937</code>), in the page. Each starts from a silenced chip, as the first effect of a game does.</p></div>
   <p>A record (<code>sfx_records</code>) holds a duration, a step length, start frequencies, envelopes, waveforms, and pulse widths for both voices, a sweep for each, a repeat count, and a flag that adds a random byte to voice 1's pitch at each repeat. <code>sfx_update</code> sweeps both voices every frame, restarts them at each repeat, and stops the effect when its duration runs out. Effect 5 is never asked for.</p>
 </section>
 
@@ -125,7 +123,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <p class="st-out" id="st-room-desc"></p>
     <div class="st-wide"><table class="st-tbl" id="st-room-tbl"></table></div>
-    <p class="cap">Drawn by the game's own routines, run on the kit's 6502 simulator in the page over the listing's bytes, after <code>reset_walls</code> and <code>reset_objects</code> have put every room back as a new game finds it. Checked against the same code called on the simulator directly: in all 100 rooms, drawn whole and with each list left out, every byte of memory matches. <a href="levels.html">Maps</a> shows every room.</p>
+    <p class="cap">Drawn by the game's own routines, run in the page over the listing's bytes, after <code>reset_walls</code> and <code>reset_objects</code> have put every room back as a new game finds it. <a href="levels.html">Maps</a> shows every room.</p>
   </div>
   <p>The play area is 18 cells across and 18 down, a cell being two characters wide and one high (<code>cell_address</code>). Each room has a pointer into five tables, and each list ends early at a zero byte. Floor pieces (<code>floor_ptrs</code>) are runs of 4-by-2-character decorations; walls (<code>wall_ptrs</code>) are runs of single cells in one of three styles; generators (<code>gen_ptrs</code>) and objects (<code>obj_ptrs</code>) are one record each. The outer wall comes from no list: <code>draw_border</code> draws it with the last wall record's style and cuts a doorway where <code>exit_bits</code> has a bit set. In rooms 37 and 81, whose walls mix two styles, the outer wall <a href="discoveries.html#border">takes the second</a>.</p>
   <p>The rooms sit on a map of 16 by 12 places (<code>room_map</code>), each holding a room number in decimal, tens and units, or <code>$FF</code> for none. Leaving by a side moves one place along it, and by the top or the bottom sixteen. The game starts in room 0, at row 4, column 6.</p>
@@ -146,11 +144,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <canvas id="st-mon-cv" class="st-cv" width="320" height="144"></canvas>
     <p class="st-out" id="st-mon-out"></p>
     <div class="st-slots" id="st-mon-slots"></div>
-    <p class="cap">Each pass runs <code>move_monster</code> (<code>$5FB6</code>) and then <code>spawn</code> (<code>$5E11</code>), as the main loop does, on the page's 6502, over the room <code>enter_room</code> drew, with Agravain where a new game puts him (<code>start_places</code>), standing still. Run plays 19 passes a second, the rate counted in the emulator with six monsters out. Checked against the kit's 6502 simulator over 2,000 passes in each of the 47 rooms offered here: every byte of memory matches after every pass.</p>
+    <p class="cap">Each pass runs <code>move_monster</code> (<code>$5FB6</code>) and then <code>spawn</code> (<code>$5E11</code>), as the main loop does, on the page's 6502, over the room <code>enter_room</code> drew, with Agravain where a new game puts him (<code>start_places</code>), standing still. Run plays 19 passes a second, the game's rate with six monsters out.</p>
   </div>
   <p><code>spawn</code> counts passes, and at the 50th (<code>spawn_period</code>) it takes the next generator in turn. If that generator still stands and fewer than ten monsters are out, it tries the space above it, then to its right, below, and to its left, and puts a monster of the generator's kind into the first slot of ten that is empty. Kinds 1 to 3 start with as many hit points as their number, kinds 4 to 6 with two fewer.</p>
   <p><code>move_monster</code> takes the slots in turn, one a pass, so with ten out each monster steps once in ten passes. An empty slot costs a busy wait (<code>delay</code>), which keeps a pass about as long however many monsters there are. The monster heads for Agravain, or in a two-player game for Storm when he is nearer, and <code>step_monster</code> tries the vertical step first, then the horizontal one, each only if nothing is in the way. There is no path finding: a wall between a monster and its target holds it there, which is why monsters gather against walls.</p>
-  <p>Nothing here is a sprite: each monster is eight characters of its own, <code>$A0</code>-<code>$EF</code> between the ten, which the game builds again over the floor at every step (<a href="graphics.html#build">Graphics</a>). When a step finds a player in the way, <code>touch_damage</code> charges him four times the monster's kind byte. What that costs him is the next section's subject, and a spell that should clear the room has <a href="discoveries.html">a bug of its own</a>.</p>
+  <p>The monsters are not sprites: each monster is eight characters of its own, <code>$A0</code>-<code>$EF</code> between the ten, which the game builds again over the floor at every step (<a href="graphics.html#build">Graphics</a>). When a step finds a player in the way, <code>touch_damage</code> charges him four times the monster's kind byte. What that costs him is the next section's subject, and a spell that should clear the room has <a href="discoveries.html">a bug of its own</a>.</p>
 </section>
 
 <section id="energy">
@@ -169,7 +167,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" class="st-btn" id="st-en-fifty">Take it 50 times</button>
     </div>
     <div class="st-out" id="st-en-out"></div>
-    <p class="cap">Runs the game's own <code>lose_energy</code> (<code>$7FB6</code>) on the page's 6502, in decimal mode as the game does, with the player's armour, energy, and drain set as the main loop sets them. Checked against the kit's 6502 simulator over 21,060 cases (every armour from 0 to 12, 18 drains, 15 energies, and the three warning states, for both players): every byte of memory matches.</p>
+    <p class="cap">Runs the game's own <code>lose_energy</code> (<code>$7FB6</code>) on the page's 6502, in decimal mode as the game does, with the player's armour, energy, and drain set as the main loop sets them.</p>
   </div>
   <p>Agravain starts with 2,000 energy and Storm with 2,500, kept as four decimal digits (<code>game_init</code>). Every 25 passes of the main loop, about 1.3 seconds, hunger takes 2 from Agravain and 1 from Storm. A monster's touch adds four times its kind byte to the drain, so 4 for kind 1 up to 24 for kind 6; the kind byte also carries some monsters' animation, which <a href="discoveries.html">makes some touches far worse</a>.</p>
   <p><code>lose_energy</code> looks at the armour first. If the armour is greater than the drain, nothing is lost and the armour stays. Otherwise the armour goes down by one and the player loses the drain less the armour that is left. Below 1,000 and again below 500 a warning scrolls along the message line with a sound, and below zero the player dies.</p>
@@ -180,7 +178,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>Armour</td><td>2 for Agravain, 3 for Storm, while the armour is 9 or less</td></tr>
     <tr><td>Jewel-filled chest</td><td>1,000 points</td></tr>
   </table>
-  <p>So one piece of armour for Storm, or two for Agravain, ends hunger for good: armour 3 is greater than Storm's 1, and 4 greater than Agravain's 2. In the emulator, Agravain with armour 4 ended 500 frames with the energy he started with.</p>
+  <p>So one piece of armour for Storm, or two for Agravain, ends hunger for good: armour 3 is greater than Storm's 1, and 4 greater than Agravain's 2. Agravain with armour 4 ends 500 frames with the energy he started with.</p>
 </section>
 
 <section id="objects">
@@ -201,7 +199,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="st-stack"><canvas id="st-frame" class="st-cv"></canvas><canvas id="st-frame-ov" class="st-cv"></canvas></div>
     <div class="st-row"><button type="button" class="st-btn" id="st-frame-bands" aria-pressed="false">Mark the interrupts</button></div>
-    <p class="cap">A frame of play recorded in the emulator (every write to the video chip, with the line and cycle it came on, and memory as the frame began) and drawn by the site's model of the chip. All 104,448 pixels match the emulator's picture. The panel and the message line use the character ROM; the page carries only the 19 characters the panel shows, 152 bytes from Commodore's character ROM 901225-01 (the one VICE runs), at offsets <code>$0008-$01CF</code> of its upper-case set.</p>
+    <p class="cap">A frame of play (every write to the video chip, with the line and cycle it came on, and memory as the frame began) drawn by the site's model of the chip. The panel and the message line use the character ROM; the page carries only the 19 characters the panel shows, 152 bytes from Commodore's character ROM 901225-01 (the one VICE runs), at offsets <code>$0008-$01CF</code> of its upper-case set.</p>
   </div>
   <p>The interrupt routine <code>irq</code> runs a list (<code>irq_list</code>) of four entries, each naming the routine for this line and the line of the next interrupt.</p>
   <table class="st-tbl">

@@ -272,3 +272,21 @@ All in VICE v3.13.2 (barryw/vice-mcp build), 29 October 2026, through
   cursor sprite, once the month band's three routines (`$39B3`, `$3B0D`,
   `$1E84`) are run too: the How it works page's map widget, held by
   `test_map.js`.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- The buttons run the game's own music players on a simulator of the C64's processor, the 6502, and play what they write through the site's model of the C64's sound chip, the SID.
+- `test_music.js` checks every write to the chip, frame by frame, against the same code run over each part's whole memory.
+- The game's own sound player, run on the kit's 6502 from the map part's listing: `$F128` sets it up, `$F12B` starts sound A, `$F12E` plays a frame.
+- `test_music.js` checks these against the player as well.
+- Drawn by the map's own code, run on the kit's 6502 over the map part's listing: the places' backgrounds (`$23DC`, `$23E7`), the year's set-up (`year_setup`, `$28D3`) and the drawing of owners and armies (`$3B97`).
+- For 1861 the result differs from the emulator's picture of the game only in the 184 pixels the cursor covers (`test_map.js`).
+- `test_fields.js` checks the port against the game's own `$90C5` on all three.
+
+### levels.html
+
+- The map as it stands at the first turn of each start year, drawn by the map's own set-up and drawing code run on the kit's 6502 (`year_setup`, `$28D3`; `draw_changes`, `$3B97`).

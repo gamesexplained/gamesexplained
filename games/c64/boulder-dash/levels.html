@@ -40,8 +40,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .bd-fig figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px}
 .bd-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0 0 14px}
 .bd-row label{font-size:14px;color:var(--ink-soft)}
-.bd-row select,.bd-row button{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
-.bd-row button{cursor:pointer}
+.bd-row button{padding:6px 10px}
 canvas.bd-cv{width:100%;max-width:960px;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px;background:#000;display:block}
 .bd-legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px 16px;margin:14px 0 0;padding:0;list-style:none;font-size:14px}
 .bd-legend li{display:flex;gap:8px;align-items:center}.bd-legend canvas{width:32px;height:32px;image-rendering:pixelated;background:#000;border:1px solid var(--line)}
@@ -62,7 +61,7 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <p class="fig">01 · Every cave</p>
   <h2 class="t">Twenty caves, five levels each</h2>
 
-  <p class="lede">Choose a cave and a level to see its map as the game builds it. Sixteen caves are the playing caves A to P, and four are the short bonus caves that follow D, H, L and P.</p>
+  <p class="lede">Choose a cave and a level to see its map as the game builds it. Sixteen caves are the playing caves A to P, and four are the short bonus caves that follow D, H, L and P. A bonus cave is a 20 by 12 room walled in steel. Entering one gives a man, and dying in it costs none (<code>$83A9</code>, <code>$8C50</code>).</p>
   <div class="plate">
     <div class="bd-row"><label for="bd-cave">Cave</label><select id="bd-cave"></select><label for="bd-level">Level</label><select id="bd-level"></select></div>
     <canvas id="bd-map" class="bd-cv" aria-label="The cave's first screen" role="img"></canvas>
@@ -76,15 +75,15 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <h2 class="t">Random dirt first, then drawn walls</h2>
 
   <p>A cave is not stored as a picture. The game fills rows 1 to 21 of the 40 by 22 cave with random objects, then draws the cave's fixed features, the steel border first, on top. The fill takes each cell's random byte from a small sixteen-bit generator (<code>$7085</code>) and compares it with four thresholds in the cave's header: below the first threshold the cell becomes the first of four header codes, below the second the second code, and so on, with the last threshold that matches winning. A cell that matches none is dirt (<code>$8029</code>).</p>
-  <p>The generator starts from one of five seed bytes in the header, one for each level. The cave is therefore the same every time that cave and level are played, and levels differ in where the boulders and diamonds fall, not in the walls (<code>$8226</code>). The random-byte routine at <code>$6E68</code> is a different one, driven by the timers. It serves the amoeba, Rockford's push and idle animation, the cave's opening and closing, the glisten, and the sound; the fireflies and butterflies make no random choices.</p>
+  <p>The generator starts from one of five seed bytes in the header, one for each level. The cave is therefore the same every time that cave and level are played, and levels differ in where the boulders and diamonds fall, not in the walls (<code>$8226</code>).</p>
   <p>The fixed features are a list of records from <code>$2420</code> in the cave header copy: a single object, a line, a filled rectangle with a different inner object, or an outline rectangle. The top two bits of the first byte choose which, and the low six bits are the object (<code>$8518</code>). The list ends with <code>$FF</code>. The steel border is drawn first (<code>$85A7</code>), so a record can overwrite it.</p>
-  <p>To check the recipe, the page's builder was run for cave A, level 1, and compared with the 880 map bytes in the emulator right after play began. All but 33 cells matched, and the 33 differences are Rockford himself and boulders that had already fallen in the seconds of play before the snapshot.</p>
 </section>
 <section id="header">
   <p class="fig">03 · The header</p>
   <h2 class="t">Thirty-two bytes that set the cave’s rules</h2>
 
   <div class="bd-wrap"><table class="bd-t"><tr><th>Byte</th><th>Holds</th></tr>
+  <tr><td>0</td><td>Repeats the cave number</td></tr>
   <tr><td>1</td><td>Seconds for the amoeba to start growing fast and for the magic wall to stay active (<code>$7478</code>, <code>$7E9F</code>)</td></tr>
   <tr><td>2 and 3</td><td>Points for each diamond before and after the quota is met (<code>$74F6</code>)</td></tr>
   <tr><td>4 to 8</td><td>The random seed for levels 1 to 5</td></tr>
@@ -92,7 +91,7 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <tr><td>14 to 18</td><td>Seconds allowed on levels 1 to 5 (<code>$8274</code>)</td></tr>
   <tr><td>19, 20 and 21</td><td>The two extra multicolour colours and the colour of the cave (<code>$8226</code>)</td></tr>
   <tr><td>24 to 27 and 28 to 31</td><td>The four fill codes and their thresholds</td></tr></table></div>
-  <p>Bytes 0, 22 and 23 are not explained. Byte 0 repeats the cave number, and the use of bytes 22 and 23 was not found.</p>
+  <p>Bytes 22 and 23 have no known use.</p>
 </section>
 
 </main>

@@ -19,14 +19,14 @@
     <div id="sid"></div>
     <canvas id="zones" class="scr" style="margin-top:18px" role="img" aria-label="The mine, coloured by the tune that plays in each part"></canvas>
     <p class="legend" id="zkey"></p>
-    <p class="cap">The game's music player (<code>$7548</code>-<code>$7647</code>) ported to JavaScript and played through the site's model of the SID chip. The port matches the player itself, run in a 6502 simulator on the game's bytes, in all 25 sound registers after each of 30,000 frames of every tune. The map is coloured from the tests at <code>$74F5</code>-<code>$7534</code>: the Doctor's height and how far across the mine he is.</p>
+    <p class="cap">The game's music player (<code>$7548</code>-<code>$7647</code>) ported to JavaScript and played through the site's model of the SID chip. The map is coloured from the tests at <code>$74F5</code>-<code>$7534</code>: the Doctor's height and how far across the mine he is.</p>
   </div>
   <table class="t" style="margin-top:24px">
     <tr><th>Tune</th><th>Where it plays</th><th>Notes, voice 1 and 2</th><th>Before it repeats</th></tr>
     <tr><td>0</td><td>the middle third of the mine, and the upper right</td><td>206 and 145</td><td>43 seconds</td></tr>
     <tr><td>1</td><td>the left half, above the bottom</td><td>one list of 251, shared</td><td>30 seconds</td></tr>
     <tr><td>2</td><td>the bottom of the mine, below height $0300, where the TARDIS lands</td><td>174 and 132</td><td>31 seconds</td></tr>
-    <tr><td>3</td><td>nowhere: no test chooses it</td><td>174 and 22</td><td>4 seconds</td></tr>
+    <tr><td>3</td><td>nowhere: none of the tests chooses it</td><td>174 and 22</td><td>4 seconds</td></tr>
     <tr><td>4</td><td>a band on the right, from height $0300 to <code>$03FF</code></td><td>138 and 121</td><td>58 seconds</td></tr>
   </table>
   <p class="cap">Note counts from the length lists at <code>$1F00</code>-<code>$2D3F</code>; times are the player's first pass through each tune at 50 frames a second.</p>
@@ -38,7 +38,7 @@
   <p>The player is one of the simplest a Commodore game could have. Two of the SID chip's three voices play, both with a sawtooth wave and each with a fixed envelope, set once when a tune starts (<code>sid_init_list</code>, <code>$756B</code>). Each voice reads two lists: the notes, as the SID's own frequency numbers, high byte first, and how long each note lasts (<code>music_step</code>, <code>$75C0</code>). There are no instruments, no effects, and no repeats. One step before a note ends, the player switches its voice off, so every note is separated from the next by a short gap.</p>
   <p>The tune ends when either voice reaches a length of 0, and both voices start again from the top (<code>$7647</code>). So the two halves of a tune do not have to be the same length, and whichever is longer never plays its last notes. In tune 4, voice 2 has 264 steps of music that are never heard.</p>
   <p>Tune 1 saves memory a different way. Both voices read the same list: voice 2 starts at note 121 (<code>$2520</code>), so the second half of the melody is played against the first. When voice 2 reaches the end, both start over, and voice 1 never gets far past its middle.</p>
-  <p>Tune 3 is built from other tunes' lists. Its first voice plays tune 2's notes from the fifth note on, to tune 2's rhythm from the first (<code>$2768</code>), so notes and lengths are four apart, and its second voice is the last 22 lengths of the same list (<code>$26C0</code>). Nothing in the game picks tune 3. Heard, it is a jumble, because its notes and lengths were never written to go together, which suggests a tune that was never finished.</p>
+  <p>Tune 3 is built from other tunes' lists. Its first voice plays tune 2's notes from the fifth note on, to tune 2's rhythm from the first (<code>$2768</code>), so notes and lengths are four apart, and its second voice is the last 22 lengths of the same list (<code>$26C0</code>). The game never picks tune 3. Heard, it is a jumble, because its notes and lengths were never written to go together, which suggests a tune that was never finished.</p>
 </section>
 <section id="effects">
   <p class="fig">Sound effects</p>

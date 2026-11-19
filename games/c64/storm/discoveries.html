@@ -42,8 +42,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .st-fig img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
 .st-row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:12px 0;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
 .st-row label{display:flex;gap:6px;align-items:center}
-.st-btn{font:inherit;font-family:var(--fm);font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
-.st-btn:hover{border-color:var(--ink-mute)}
+.st-btn{font-size:13px;padding:5px 12px}
 .st-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
 .st-out{font-family:var(--fm);font-size:13px;color:var(--ink);margin:10px 0 0;min-height:1.5em;line-height:1.55}
 .st-note{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
@@ -52,7 +51,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .st-tbl th{font-weight:700;color:var(--ink-soft)}
 .st-wide{overflow-x:auto}
 .st-form{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
-.st-form input,.st-form select,.st-row select{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.st-form input{font-size:13px;padding:4px 6px}.st-form select,.st-row select{font-size:13px}
 .st-form input{width:6.5em}
 .st-slots{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;margin:10px 0 0;font-family:var(--fm);font-size:11px;text-align:center}
 .st-slots div{border:1px solid var(--line);border-radius:5px;padding:4px 2px;color:var(--ink-mute);background:var(--surface-2)}
@@ -65,7 +64,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 @media (max-width:640px){:root{--gx:16px}.st-two{grid-template-columns:1fr}.st-slots{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .st-cv[hidden]{display:none}
 .st-steps{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
-.st-steps button[aria-current="step"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .st-say{min-height:3.2em}
 .st-grid td{text-align:center}
 .st-text{font-family:var(--fm);font-size:13px;line-height:1.7;word-break:break-all;background:#2e2c9b;color:#fff;padding:8px 10px;border-radius:6px}
@@ -93,13 +91,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <img id="st-spell-img" class="st-cv" src="reference/spell-freeze.png" alt="The game after the second scroll: the panel and the play area written over with stray characters" hidden>
     <p class="st-out" id="st-spell-out"></p>
     <div class="st-slots" id="st-spell-slots"></div>
-    <p class="cap">Room 0 with Agravain standing where a new game puts him, run on the page's 6502 over the listing's bytes: the main loop's monster work (<code>move_monster</code>, <code>spawn</code>), the monster branch of <code>shot_hit</code> (<code>$7D0C</code>) for each shot, and the scroll's magic (<code>$69C0</code>). Checked against the kit's 6502 simulator: every byte of memory matches after each step up to the second scroll, which neither runs to its end. The last picture is the emulator's.</p>
+    <p class="cap">Room 0 with Agravain standing where a new game puts him, run on the page's 6502 over the listing's bytes: the main loop's monster work (<code>move_monster</code>, <code>spawn</code>), the monster branch of <code>shot_hit</code> (<code>$7D0C</code>) for each shot, and the scroll's magic (<code>$69C0</code>). Neither runs the second scroll to its end. The last picture is a screenshot of the game.</p>
   </div>
   <p>The magic (<a href="source.html#69C0"><code>$69C0</code></a>) takes the slots from 0 and stops when the slot number reaches <code>mon_count</code>, then sets the count to 0. That is right only while the monsters fill the lowest slots. A shot that kills the monster in slot 0 leaves five out in slots 1 to 5, so the spell stops after slot 4 and slot 5's monster walks on, uncounted.</p>
-  <p>Shoot it and <code>shot_hit</code> takes one from a count that is already 0, which leaves 255. <code>spawn</code> makes no monster while ten or more are out, so the room's generators stand idle until the players leave and come back, when <code>enter_room</code> sets the count to 0 again. In the emulator no monster appeared in 1,500 frames with the generator standing.</p>
-  <p>A second scroll in that room loops over 255 slots, reading positions from the bytes after the monster tables and erasing at the addresses they make. In the emulator it wrote over the panel and the play area, and the game froze: the main loop never ran again, and the raster interrupt fired about a hundred times a frame.</p>
+  <p>Shoot it and <code>shot_hit</code> takes one from a count that is already 0, which leaves 255. <code>spawn</code> makes no monster while ten or more are out, so the room's generators stand idle until the players leave and come back, when <code>enter_room</code> sets the count to 0 again. With the generator standing, 1,500 frames went by without a monster.</p>
+  <p>A second scroll in that room loops over 255 slots, reading positions from the bytes after the monster tables and erasing at the addresses they make. It writes over the panel and the play area, and the game freezes: the main loop never runs again, and the raster interrupt fires about a hundred times a frame.</p>
   <div class="st-two">
-    <figure class="st-fig"><img src="reference/spell-survivor.png" alt="Room 0 after a scroll, one monster still in the room"><p class="cap">In the emulator: slot 0 shot, then a scroll. Slot 5's monster is still there.</p></figure>
+    <figure class="st-fig"><img src="reference/spell-survivor.png" alt="Room 0 after a scroll, one monster still in the room"><p class="cap">Slot 0 shot, then a scroll. Slot 5's monster is still there.</p></figure>
     <figure class="st-fig"><img src="reference/spell-freeze.png" alt="The screen written over after the second scroll"><p class="cap">The survivor shot, then a second scroll: the game stops here.</p></figure>
   </div>
 </section>
@@ -110,10 +108,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The door to Corrine opens only for exactly three snake brooches, and brooches carry over from one game to the next. Go past three and the game cannot be won again until it is loaded afresh.</p>
   <div class="plate">
     <div class="st-wide"><table class="st-tbl st-grid"><tr><th>Brooches carried in</th><th colspan="4">Brooches picked up before reaching the door: 0, 1, 2, 3</th></tr><tr><th>0</th><td>shut</td><td>shut</td><td>shut</td><td>opens</td></tr><tr><th>1</th><td>shut</td><td>shut</td><td>opens</td><td>shut</td></tr><tr><th>2</th><td>shut</td><td>opens</td><td>shut</td><td>shut</td></tr><tr><th>3</th><td>opens</td><td>shut</td><td>shut</td><td>shut</td></tr></table></div>
-    <figure class="st-fig"><img src="reference/brooch-door.png" alt="Agravain stopped beside the laboratory door in room 3, the message line reading THREE SNAKE BROACHES ARE NEEDED"><p class="cap">In the emulator, with four brooches: the door refuses, and Agravain stays where he is.</p></figure>
-    <p class="cap">The door's test is <code>CMP #$03</code> and <code>BEQ</code> at <a href="source.html#6B41"><code>$6B41</code></a>. In the emulator, with <code>brooches</code> set to 4 in room 3, walking into the door brought the message and stopped the player; set to 3, the door opened and he walked through.</p>
+    <figure class="st-fig"><img src="reference/brooch-door.png" alt="Agravain stopped beside the laboratory door in room 3, the message line reading THREE SNAKE BROACHES ARE NEEDED"><p class="cap">With four brooches: the door refuses, and Agravain stays where he is.</p></figure>
+    <p class="cap">The door's test is <code>CMP #$03</code> and <code>BEQ</code> at <a href="source.html#6B41"><code>$6B41</code></a>. With <code>brooches</code> at 4 in room 3, walking into the door brings the message and stops the player; at 3, the door opens and he walks through.</p>
   </div>
-  <p>Three brooches can be taken in the whole game, in rooms 11, 44 and 63. <code>obj_effect</code> adds one for each, and <code>touch_object</code> opens the laboratory door in room 3 when the count is 3, not when it is 3 or more. A new game resets the rooms, so the brooches are back in place, but it leaves the count as the last game left it (<a href="#carry">carry-over</a>). Players who found all three last time hold 3 already: one more takes the count to 4, the door refuses, and no brooch can bring it back down. Neither a game over nor a reset clears it, since the restart goes through the same <code>game_init</code>. Only loading the game again does.</p>
+  <p>Three brooches can be taken in the whole game, in rooms 11, 44 and 63. <code>obj_effect</code> adds one for each, and <code>touch_object</code> opens the laboratory door in room 3 when the count is 3, not when it is 3 or more. A new game resets the rooms, so the brooches are back in place, but it leaves the count as the last game left it (<a href="#carry">carry-over</a>). Players who found all three last time hold 3 already: one more takes the count to 4, the door refuses, and a brooch can never bring it back down. Neither a game over nor a reset clears it, since the restart goes through the same <code>game_init</code>. Only loading the game again does.</p>
 </section>
 
 <section id="touch">
@@ -121,7 +119,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Bug: some monsters' touches cost far more on alternate steps</h2>
   <p class="lede">A touch costs four times the monster's kind, but the byte the game multiplies also holds the monster's animation frame, so the cost changes as it walks.</p>
   <div class="plate"><div class="st-wide"><table class="st-tbl" id="st-touch"></table></div>
-    <p class="cap">Each cost computed by the game's <code>touch_damage</code> (<code>$62A4</code>) on the kit's 6502 simulator in the page, for every value <code>mon_kind</code> takes, and checked against the same code called on the simulator directly. The same costs came out of the emulator.</p></div>
+    <p class="cap">Each cost computed by the game's <code>touch_damage</code> (<code>$62A4</code>) in the page, for every value <code>mon_kind</code> takes.</p></div>
   <p><code>mon_damage</code> adds the kind byte to itself twice in decimal mode, and <code>touch_damage</code> adds the result to the player's drain. The low three bits are the kind; kinds 2 and 4 flip bit 7 as they walk, and kind 5 counts through bits 4 and 5. Decimal addition of bytes that are not decimal numbers gives the odd results: <code>$82</code> becomes 30, and <code>$25</code> overflows past 99 to leave 1. So a kind-5 monster costs 20, 60, 1, or 41 depending on the frame it touches on, and armour, which stops any drain smaller than itself (<a href="index.html#energy">Energy</a>), stops the cheap frames and not the dear ones.</p>
 </section>
 
@@ -135,15 +133,15 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <figure class="st-fig"><canvas id="st-carry-after" class="st-cv" width="320" height="144"></canvas><p class="cap">The same room after <code>reset_walls</code> and <code>reset_objects</code>, as every game sees it.</p></figure>
     </div>
     <div class="st-wide"><table class="st-tbl" id="st-carry-tbl"></table></div>
-    <p class="cap">Both rooms drawn by the game's own routines on the kit's 6502 simulator in the page, and checked against the same code called on the simulator directly. The counters are the file's bytes. In the emulator, the first game after loading held 3 keys and 2 scrolls, and counters set to 7 keys, 2 brooches, and 5 scrolls before a game over were the same in the next game.</p>
+    <p class="cap">Both rooms drawn by the game's own routines in the page. The counters are the file's bytes. The first game after loading holds 3 keys and 2 scrolls, and counters of 7 keys, 2 brooches, and 5 scrolls at a game over are the same in the next game.</p>
   </div>
-  <p><code>game_init</code> runs <code>reset_walls</code> and <code>reset_objects</code> before the title draws room 0, so nobody sees the half-played room. It does not touch the counters of keys, special keys, snake brooches, amulets, masks, and scrolls. So the first game can open three locked doors and cast two scrolls before its players have picked anything up, and whatever a game ends holding passes to the next one. Players who end a game holding the three snake brooches can open the laboratory in the next without finding them again, and are shut out of it if they pick one up (<a href="#brooches">the laboratory</a>).</p>
+  <p><code>game_init</code> runs <code>reset_walls</code> and <code>reset_objects</code> before the title draws room 0, so the half-played room is never seen. It does not touch the counters of keys, special keys, snake brooches, amulets, masks, and scrolls. So the first game can open three locked doors and cast two scrolls before its players have picked anything up, and whatever a game ends holding passes to the next one. Players who end a game holding the three snake brooches can open the laboratory in the next without finding them again, and are shut out of it if they pick one up (<a href="#brooches">the laboratory</a>).</p>
 </section>
 
 <section id="armour">
   <p class="fig">05 · Armour</p>
   <h2 class="t">Secret: one piece of armour ends Storm's hunger</h2>
-  <p>Hunger takes 1 from Storm and 2 from Agravain every 25 passes of the main loop, and armour that is greater than a drain cancels it without wearing down (<a href="index.html#energy">Energy</a>). A piece of armour gives Storm 3 and Agravain 2, so Storm's first piece and Agravain's second stop hunger for good; only monsters' touches can then wear the armour down. In the emulator, Agravain with armour 4 still had 1968 energy after 500 frames, and with armour 2 the armour was gone within them.</p>
+  <p>Hunger takes 1 from Storm and 2 from Agravain every 25 passes of the main loop, and armour that is greater than a drain cancels it without wearing down (<a href="index.html#energy">Energy</a>). A piece of armour gives Storm 3 and Agravain 2, so Storm's first piece and Agravain's second stop hunger for good; only monsters' touches can then wear the armour down. Agravain with armour 4 still has 1968 energy after 500 frames, and with armour 2 the armour is gone within them.</p>
 </section>
 
 <section id="room69">
@@ -152,7 +150,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Each room's description should end with a zero byte. Room 69's has none, so the message line carries on into the next room's until it reaches its limit of 80 characters.</p>
   <div class="plate">
     <p class="st-text" id="st-room69"></p>
-    <figure class="st-fig"><img src="reference/room69-text.png" alt="The message line in room 69 reading CLOYINGDRIED BLOOD CLINGS T"><p class="cap">The message line in room 69, in the emulator.</p></figure>
+    <figure class="st-fig"><img src="reference/room69-text.png" alt="The message line in room 69 reading CLOYINGDRIED BLOOD CLINGS T"><p class="cap">The message line in room 69.</p></figure>
     <p class="cap" id="st-room69-cap">The 80 characters the message line scrolls in room 69, read from <code>room_msgs</code> as <code>panel_band</code> reads them; the part in red is room 70's.</p>
   </div>
 </section>
@@ -169,11 +167,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="border">
   <p class="fig">08 · Borders</p>
   <h2 class="t">Bug: rooms 37 and 81 draw their outer wall in their last wall's style</h2>
-  <p class="lede">No list says what the outer wall looks like. <code>draw_border</code> uses whatever the last inner wall left behind.</p>
+  <p class="lede">None of the lists says what the outer wall looks like. <code>draw_border</code> uses whatever the last inner wall left behind.</p>
   <div class="plate"><div class="st-two">
     <figure class="st-fig"><canvas id="st-border-37" class="st-cv" width="320" height="144"></canvas><p class="cap">Room 37, drawn by the game's routines on the page's 6502.</p></figure>
     <figure class="st-fig"><canvas id="st-border-81" class="st-cv" width="320" height="144"></canvas><p class="cap">Room 81.</p></figure></div>
-    <figure class="st-fig"><img src="reference/room37.png" alt="Room 37 in the emulator, its outer wall in a different style from most of its inner walls"><p class="cap">Room 37 in the emulator.</p></figure>
+    <figure class="st-fig"><img src="reference/room37.png" alt="Room 37, its outer wall in a different style from most of its inner walls"><p class="cap">Room 37.</p></figure>
   </div>
   <p><code>draw_walls</code> leaves its character and colour in <code>char_code</code> and <code>colour_ofs</code>, and <code>draw_border</code> draws the outer wall with them. In 98 rooms every wall has the same style, so this goes unseen. Rooms 37 and 81 mix two, and their outer walls take the style of the last record in the list, removed or not.</p>
 </section>

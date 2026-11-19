@@ -38,14 +38,11 @@ canvas{image-rendering:pixelated;display:block;max-width:100%}
 .screenwrap{background:#000;border-radius:6px;padding:0;display:inline-block;line-height:0;max-width:100%}
 .row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
 .col{flex:1 1 280px;min-width:0}
-button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);
- border:1px solid var(--line);border-radius:7px;padding:7px 13px;cursor:pointer}
-button:hover{border-color:var(--violet)}
-button.on{background:var(--violet);border-color:var(--violet);color:#0a0b18;font-weight:500}
-button:disabled{opacity:.4;cursor:default}
+button{font-size:12.5px;padding:7px 13px}
+button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0}
 label.inline{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);display:flex;gap:7px;align-items:center;cursor:pointer}
-input[type=range]{accent-color:var(--violet);width:190px;max-width:100%}
+input[type=range]{width:190px;max-width:100%}
 table{border-collapse:collapse;font-family:var(--fm);font-size:12.5px;width:100%}
 th,td{border-bottom:1px solid var(--line-soft);padding:6px 9px;text-align:left}
 th{color:var(--ink-mute);font-weight:500;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
@@ -92,9 +89,7 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
         one line on which the pad test can pass, and the amber bracket is the range of X it
         accepts, <code>$0160</code> to <code>$0190</code>. The whole manoeuvre is eight world units
         of sideways drift, so the inset shows the lander's feet and the pad's edge at eight times
-        the size. Every pass shown here was replayed in the emulator with the game's control read
-        redirected to this list of inputs; the positions matched to the byte, and the screen
-        printed what the last step shows.</p>
+        the size.</p>
       </div>
       <div class="col">
         <div class="ctl">
@@ -203,15 +198,15 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
   <div class="note">Set the velocity to 63, then 64. The needle leaves the yellow cell, and the
   landing still works: 64 through 71 all land. Then 71, then 72. The needle moves one pixel,
   inside the same cell, and the strip beside it turns from lands to SORRY NO BONUS. That pixel is
-  the line between nine hundred points and a destroyed ship, and nothing on the scale marks it.</div>
+  the line between nine hundred points and a destroyed ship, and the scale has no mark for it.</div>
 </section>
 
 <section id="quirks">
   <p class="fig">03 &middot; Quirks</p>
   <h2 class="t">Things a pilot would not know</h2>
   <div class="grid2">
-    <div class="card"><h3>Nothing is synchronised to the screen</h3><p>No raster interrupt is
-    enabled, and the timer interrupt is masked for the whole of a game. The game times itself by
+    <div class="card"><h3>The game never synchronises to the screen</h3><p>The game enables no raster
+    interrupt, and the timer interrupt is masked for the whole of a game. The game times itself by
     counting down a register ten times two hundred, which is about 10.3 milliseconds, and waits
     three of those per update. On an NTSC machine, with a faster clock, the whole game runs about
     four per cent quicker.</p></div>
@@ -223,7 +218,7 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
 
     <div class="card"><h3>The last 255 units of fuel are unspendable</h3><p>The tank is called
     empty when its high byte reaches zero, and that same test clears both thrust flags. Up to 255
-    units are still sitting in the low byte, and no thruster will ever touch them. It also means
+    units are still sitting in the low byte, and the thrusters will never touch them. It also means
     the counter can never underflow, which is presumably the point.</p></div>
 
     <div class="card"><h3>Running dry does not end the game</h3><p>OUT OF FUEL appears, the

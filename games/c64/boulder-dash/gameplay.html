@@ -40,8 +40,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .bd-fig figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px}
 .bd-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0 0 14px}
 .bd-row label{font-size:14px;color:var(--ink-soft)}
-.bd-row select,.bd-row button{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
-.bd-row button{cursor:pointer}
+.bd-row button{padding:6px 10px}
 canvas.bd-cv{width:100%;max-width:960px;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px;background:#000;display:block}
 .bd-legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px 16px;margin:14px 0 0;padding:0;list-style:none;font-size:14px}
 .bd-legend li{display:flex;gap:8px;align-items:center}.bd-legend canvas{width:32px;height:32px;image-rendering:pixelated;background:#000;border:1px solid var(--line)}
@@ -62,7 +61,7 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <p class="fig">01 · The aim</p>
   <h2 class="t">Reach the quota, then the exit</h2>
 
-  <p class="lede">The status line at the top gives, in order, the diamonds needed, the points for each diamond, the diamonds collected, the seconds left, and the score.</p>
+  <p class="lede">Win a cave by collecting enough diamonds, then walking into the exit. Everything else on this page is what stands in the way.</p>
   <p>Diamonds collected are counted against a quota set for each cave and level, though caves A, D, J and K and the bonus caves need the same number on all five levels (<code>$74C5</code>, <code>$74F6</code>). Reaching it flashes the screen white and starts a sound, and the closed exit, which looks like steel wall, turns into the open flashing exit (<code>$70EC</code>). Walking into the open exit ends the cave. In most caves each diamond is worth more points after the quota is met than before; in caves C, K and L and the bonus caves a diamond after the quota is worth nothing (<a href="levels.html#header">header bytes 2 and 3</a>). The seconds left are then counted into the score, adding the level number, 1 to 5, for each second (<code>$8BF0</code>).</p>
   <p>A man is added whenever the score passes a multiple of 500, up to nine (<code>$73DE</code>, <code>$73D1</code>); a game starts with three (<code>$8ADD</code>). Losing a man sends Rockford to the cave's start again, and with two players the turn passes to the other one if they still have men (<code>$8B05</code>).</p>
 </section>
@@ -71,14 +70,14 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <h2 class="t">Anything unsupported falls</h2>
 
   <p>The cave is a grid of objects, and every pass over it gives each object's routine a turn (<code>$8171</code>). A <a href="graphics.html">boulder</a> or diamond with an empty cell below starts to fall. One resting on another boulder, a diamond or a brick wall slips sideways, left first, when the cell beside it and the cell below that are both empty, so heaps do not stand (<code>$76F8</code>, <code>$731F</code>, <code>$71FD</code>).</p>
-  <p>A falling thing that lands on Rockford or on a creature explodes the three by three cells around the cell below it (<code>$70BA</code>). Rockford can push a boulder sideways into an empty cell, but the push works only one time in four, so a push usually takes several tries (<code>$7543</code>). Digging with the fire button held takes the dirt or diamond next to Rockford without moving him (<code>$75A9</code>).</p>
-  <p>To stop a thing that has just moved from moving again in the same pass, the game keeps a “handled” twin of each moving object. The scan visits the cells from the top row down, so a boulder that fell into a lower cell would otherwise be stepped again as the scan reached it. The twin has no routine, and a table turns it back as the scan passes (<code>$81AD</code>, <code>$5EE8</code>).</p>
+  <p>A falling thing that lands on Rockford or on a <a href="#creatures">creature</a> explodes the three by three cells around the cell below it (<code>$70BA</code>). Rockford can push a boulder sideways into an empty cell, but the push works only one time in four, so a push usually takes several tries (<code>$7543</code>). Digging with the fire button held takes the dirt or diamond next to Rockford without moving him (<code>$75A9</code>).</p>
+  <p>The scan has a trick to stop a thing that has just moved from moving twice in one pass, described in <a href="discoveries.html#handled">Discoveries</a>.</p>
 </section>
 <section id="creatures">
   <p class="fig">03 · Creatures</p>
   <h2 class="t">Fireflies and butterflies</h2>
 
-  <p>A firefly follows the wall on its left. It turns into the empty cell on its left side if there is one, else goes straight on, else turns right in place (<code>$7172</code>). A butterfly follows the wall on its right, the same rule mirrored (<code>$7245</code>). Both explode when Rockford or the amoeba is next to them, and they explode when a boulder or diamond falls on them. A firefly leaves empty space, and a butterfly leaves a three by three patch of diamonds, which is the usual way to collect a lot at once (<code>$764F</code>).</p>
+  <p>A <a href="graphics.html#creatures">firefly</a> follows the wall on its left. It turns into the empty cell on its left side if there is one, else goes straight on, else turns right in place (<code>$7172</code>). A <a href="graphics.html#creatures">butterfly</a> follows the wall on its right, the same rule mirrored (<code>$7245</code>). Both explode when Rockford or the <a href="#amoeba">amoeba</a> is next to them, and they explode when a boulder or diamond falls on them. A firefly leaves empty space, and a butterfly leaves a three by three patch of diamonds, which is the usual way to collect a lot at once (<code>$764F</code>).</p>
 </section>
 <section id="amoeba">
   <p class="fig">04 · The amoeba</p>

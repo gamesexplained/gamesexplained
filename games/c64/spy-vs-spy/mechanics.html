@@ -37,9 +37,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .svs-stack{position:relative}
 .svs-stack canvas+canvas{position:absolute;left:0;top:0}
 .svs-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px;font-family:var(--fm);font-size:12.5px}
-.svs-bar button,.svs-bar select{font:inherit;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:6px 10px;border-radius:6px;cursor:pointer}
-.svs-bar button:hover{border-color:var(--ink-mute)}
-.svs-bar button.svs-on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.svs-bar button{padding:6px 10px}
+.svs-bar button.svs-on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .svs-bar label{color:var(--ink-mute)}
 .svs-read{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.6em}
 .svs-tbl{border-collapse:collapse;width:100%;font-size:14.5px;margin:6px 0 0}
@@ -48,8 +47,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .svs-tbl td.svs-n{font-family:var(--fm);text-align:right;white-space:nowrap}
 .svs-scroll{overflow-x:auto}
 .svs-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}
-.svs-grid button{font:inherit;font-size:14px;text-align:left;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;color:var(--ink)}
-.svs-grid button:hover{border-color:var(--ink-mute)}
+.svs-grid button{font-size:14px;text-align:left;padding:8px 10px}
 .svs-grid button small{display:block;font-family:var(--fm);font-size:11.5px;color:var(--ink-mute)}
 .svs-panel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 6px}
 .svs-panel div{background:var(--surface-2);border-radius:8px;padding:10px 12px}
@@ -76,7 +74,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button data-k="bitmap">Sprites off</button>
     </div>
     <div class="svs-stack"><canvas id="svs-frame" class="svs-cv" width="768" height="494"></canvas><canvas id="svs-frame-ov" class="svs-cv"></canvas></div>
-    <p class="cap"><b>One frame of a two-player game, rebuilt from memory</b> by the site's renderer from the video chip's registers, the bitmap at <code>$4000</code> and the screen matrix at <code>$6000</code>, recorded in the emulator (NTSC). 94,840 of its 94,848 pixels match the emulator's picture. The 8 that differ are two bitmap bytes in the trapulators, <code>$43AD</code> and <code>$52AD</code>, which the game rewrote while the frame was being drawn; the rebuild uses memory as the frame began.</p>
+    <p class="cap"><b>One frame of a two-player game, rebuilt from memory</b> by the site's renderer from the video chip's registers, the bitmap at <code>$4000</code> and the screen matrix at <code>$6000</code>, on an NTSC machine. 8 pixels come out differently from the game's own picture: two bitmap bytes in the trapulators, <code>$43AD</code> and <code>$52AD</code>, which the game rewrites while the frame is being drawn; the rebuild uses memory as the frame began.</p>
   </div>
   <p>The whole play screen is one multicolour bitmap. The monitor frames, the trapulators and the panels come from the disk as a finished picture (the file <code>S2</code>), and the game draws the two room views into it: nine character rows each, one above the other.</p>
   <p>Two raster interrupts split the frame (<code>irq_handler</code> <code>$8FA6</code>, lines from <code>$1C5C</code>). At line 51 the first sets the top monitor's background colour and moves sprites 0-3 to the white spy's trapulator; at line 151 the second sets the bottom monitor's colour and moves the same four sprites down to the black spy's. "Where the interrupts fire" marks both lines on the frame.</p>
@@ -89,7 +87,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The theme plays all through a game, on two of the chip's three voices; the third is kept for the sound effects.</p>
   <div class="plate">
     <div id="svs-music"></div>
-    <p class="cap"><b>The game's own music driver, ported</b> from <code>play_music</code> (<code>$954E</code>) and played through the site's model of the SID at the NTSC clock, from the tune bytes <code>$23DA</code>-<code>$254C</code>. Checked against the original code run in a 6502 simulator: 20,000 frames, with the music switched off and on again with S, every register write the same and in the same order. The filter is never used. The lowest notes, below 100 Hz, barely sound on laptop and phone speakers.</p>
+    <p class="cap"><b>The game's own music driver, ported</b> from <code>play_music</code> (<code>$954E</code>) and played through the site's model of the SID at the NTSC clock, from the tune bytes <code>$23DA</code>-<code>$254C</code>. The filter is never used. The lowest notes, below 100 Hz, barely sound on laptop and phone speakers.</p>
   </div>
   <p>A note is three bytes: the pitch and octave, the length, and the instrument. The pitch indexes twelve frequencies of the top octave (<code>$23E2</code>, <code>$23EE</code>) and the octave says how many times to halve them. The length picks one of eight durations, from 5 to 80 interrupts (<code>$23DA</code>); a length code of 8 or more ties the note on without striking it again. Each of 16 instruments is eight bytes (<code>$240A</code>): a waveform, a pulse width, an envelope, and a slide or vibrato that nudges the frequency every few interrupts.</p>
   <p>The two voices loop at different lengths. Voice 2 reads 29 notes and starts again every 320 interrupts; voice 3 reads 41 notes in 960, exactly three of voice 2's loops. The whole theme therefore repeats every 960 interrupts, 16 seconds on an NTSC machine. The piano roll shows it: voice 2's notes repeat three times for every pass of voice 3.</p>
@@ -123,7 +121,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button id="svs-route-step">Step a round</button><button id="svs-route-run">Run</button><button id="svs-route-reset">Reset</button></div>
     <canvas id="svs-route" class="svs-cv" width="800" height="300"></canvas>
     <p class="svs-read" id="svs-route-read"></p>
-    <p class="cap"><b>The search, ported from <code>route_search</code> (<code>$A9EF</code>).</b> Click a room to set the goal (red outline), then another for the start (green). Each round, the search looks through every door of every room it reached in the round before, highest room number first and the doors from the last to the first, and marks the rooms behind them; the darker the blue, the later the round. Checked against the game's own routine in a 6502 simulator, with every level built by the game itself: all 6,667 pairs of start and goal give the same rounds and the same route.</p>
+    <p class="cap"><b>The search, ported from <code>route_search</code> (<code>$A9EF</code>).</b> Click a room to set the goal (red outline), then another for the start (green). Each round, the search looks through every door of every room it reached in the round before, highest room number first and the doors from the last to the first, and marks the rooms behind them; the darker the blue, the later the round.</p>
   </div>
   <p>The computer keeps a stack of tasks and picks its next goal from what each spy carries and what is already in the briefcase (<code>cpu_choose_goal</code> <code>$A847</code>). A goal can be a room, a room whose furniture holds a particular remedy, or a room where one of the items lies. The search runs until it reaches a room that passes the test, then walks back through the "came from" list to make the route (<code>route_to_waypoints</code> <code>$AB03</code>), one waypoint at each door.</p>
   <p>The test reads the game's own tables of where the items are (<code>$0210</code>) and what each piece of furniture holds. The computer never has to search: it knows where every item, remedy and trap is from the start.</p>
@@ -144,7 +142,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <div><span>Rank</span><b id="svs-score-rank" style="font-size:15px">-</b></div>
     </div>
     <p class="svs-read" id="svs-score-log"></p>
-    <p class="cap"><b>The game's scoring, ported</b> from <code>score_event</code> (<code>$8937</code>, tables at <code>$1D23</code>) and <code>final_score</code> (<code>$89AE</code>). Checked against both routines in a 6502 simulator over 600,000 random events and 3,000 escapes, including scores below zero and above 9,900.</p>
+    <p class="cap"><b>The game's scoring, ported</b> from <code>score_event</code> (<code>$8937</code>, tables at <code>$1D23</code>) and <code>final_score</code> (<code>$89AE</code>).</p>
   </div>
   <p>The score is four decimal digits. A spy who escapes gets 7 points for each second left on the clock, which on a 24-minute level can be over 10,000 by itself; every event in the table is worth 80 points or less, and most of them cost clock time too. The rank is just the thousands digit of the final score, one of ten from A KNEE HIGH SPY to GRAND MASTER SPY. On level 1, with 7 minutes, an instant escape would be worth 2,940.</p>
   <p>Scores below zero are kept as the ten's complement with a sign flag, so a spy can climb back out of the hole, and the airport shows a negative score as 0. The top end is capped clumsily: an addition that runs past 9,999 sets the top two digits to 99 and keeps the bottom two, so 9,990 plus 80 for a won fight becomes 9,970.</p>
@@ -162,7 +160,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <div><span>Frames</span><b id="svs-clock-frames">0</b></div>
       <div><span>Frames a second</span><b>100</b></div>
     </div>
-    <p class="cap"><b>The game's clock against a real one,</b> at the NTSC frame rate of 59.83 a second. <code>tick_clock</code> (<code>$9362</code>) counts a hundredths digit from 99 down to 0 once a frame before it takes a second off. Measured in the emulator: in 600 frames the interrupt ran 600 × 2 times and a spy's clock lost 6 seconds.</p>
+    <p class="cap"><b>The game's clock against a real one,</b> at the NTSC frame rate of 59.83 a second. <code>tick_clock</code> (<code>$9362</code>) counts a hundredths digit from 99 down to 0 once a frame before it takes a second off. In 600 frames the interrupt runs 600 × 2 times and a spy's clock loses 6 seconds.</p>
   </div>
   <p>The clock counts in hundredths of a second, and counts one hundredth each frame. That would be right on a machine running at 100 frames a second; on a 60 Hz machine every game second is 100 frames, 1.67 seconds long. Every time in the game stretches by the same factor, the penalties included: the 15 seconds for looking at the map cost 25 real seconds. A penalty does not come off the clock at once; it is queued and paid one second every ten frames, with a beep for each.</p>
 </section>
@@ -173,7 +171,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The options screen offers "TOTAL TRAPS AVAILABLE..12" on level 1. A spy can set 11.</p>
   <div class="plate">
     <div class="svs-scroll"><table class="svs-tbl"><thead><tr><th>Level</th><th>Rooms</th><th>Shown</th><th>Allowed</th></tr></thead><tbody id="svs-traps"></tbody></table></div>
-    <p class="cap"><b>Shown</b> is twice the room count, as the options screen draws it (<code>options_loop</code>, <code>$A0DD</code>). <b>Allowed</b> is what the trapulator hands out (<code>$9949</code>). Tested in the emulator on level 1: with the trap count set to 10 the trapulator handed over a bomb; with 11 it refused.</p>
+    <p class="cap"><b>Shown</b> is twice the room count, as the options screen draws it (<code>options_loop</code>, <code>$A0DD</code>). <b>Allowed</b> is what the trapulator hands out (<code>$9949</code>). On level 1, with the trap count at 10 the trapulator hands over a bomb; with 11 it refuses.</p>
   </div>
   <p>The two numbers come from different variables. The options screen doubles the level's room count. The trapulator doubles <code>$0225</code>, which holds the room count less one, and refuses a trap once the spy's count is past that, so the count can reach twice the rooms less one. Time bombs are not counted, but once the limit is passed the trapulator refuses them too.</p>
   <p>Each trap has one remedy, carried from the furniture: the fire bucket for the bomb, the wire cutters for the spring, the umbrella for the bucket of water over a door, the scissors for the gun on a string. Bombs and springs go into furniture; the bucket and the gun go on a closed door. A spy who walks into a trap without its remedy loses 80 points and 20 seconds and lies stunned for a while; with the remedy, the trap is used up and the spy gains 40 points for 10 seconds. The <a href="graphics.html">Graphics</a> tab plays each trap going off, step by step, at the game's pace.</p>
@@ -199,7 +197,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">09 · NTSC</p>
   <h2 class="t">Secret: on a PAL machine the game never starts</h2>
   <p class="lede">Outside North America, the disk loads and then the border keeps changing colour for ever.</p>
-  <p>Before play, <code>wait_ntsc_sync</code> (<code>$8E38</code>) turns interrupts off and waits for eleven raster interrupts in a row, each within 1,536 polls of the video chip's interrupt register, about 18,400 cycles. An American NTSC frame, 17,095 processor cycles, arrives in time. A PAL frame, 19,656 cycles, does not, and the routine starts again, changing the border colour each time. The game never reads the flag the Commodore's own ROM keeps for PAL or NTSC. Seen in the emulator: on PAL the load ends in that loop; on NTSC the same image plays.</p>
+  <p>Before play, <code>wait_ntsc_sync</code> (<code>$8E38</code>) turns interrupts off and waits for eleven raster interrupts in a row, each within 1,536 polls of the video chip's interrupt register, about 18,400 cycles. An American NTSC frame, 17,095 processor cycles, arrives in time. A PAL frame, 19,656 cycles, does not, and the routine starts again, changing the border colour each time. The game never reads the flag the Commodore's own ROM keeps for PAL or NTSC. On PAL the load ends in that loop; on NTSC the same image plays.</p>
 </section>
 
 <section>

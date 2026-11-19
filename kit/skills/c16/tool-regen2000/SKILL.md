@@ -108,7 +108,10 @@ map"). The kit's defaults leave $4000-$FFFF out of coverage
 (`symbols_export.py`), so for a game that uses that RAM:
 
 1. Find it: the code map (`tool-plus4emu`, "What ran") lists code that ran
-   above $3FFF, and `chips` says whether the ROMs were paged in (`rom`).
+   above $3FFF, and names apart, as `under_roms`, the code at $8000 up
+   that ran from the RAM beneath the ROMs; `codemap.py dump` keeps that
+   code in `codemap.json`, so `check_listing.py` holds the listing to it.
+   `chips` says whether the ROMs are paged in now (`rom`).
    A census of $FF3E and $FF3F (`kit/cpu/census.py`, `rom_ram`) finds
    where the game pages them, and of $FDD0-$FDDF (`rom_bank`) where it
    chooses among them.

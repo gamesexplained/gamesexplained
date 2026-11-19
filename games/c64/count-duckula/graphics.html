@@ -1,0 +1,165 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Count Duckula</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+</style>
+<style>.cd-img{image-rendering:pixelated;max-width:100%;height:auto}canvas{display:block;margin:12px 0;image-rendering:pixelated;max-width:100%;height:auto;background:#000}.cd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.cd-world{display:grid;grid-template-columns:repeat(13,1fr);gap:2px}.cd-world button{font-size:11px;padding:4px 0}.cd-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}table{border-collapse:collapse;width:100%}td,th{padding:8px;text-align:left;border-bottom:1px solid #ccc;vertical-align:top}.cd-pyramid{width:100%;cursor:pointer}.cd-cast{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}.cd-cast figure{margin:0}.cd-cast canvas{width:100%;margin:0 0 6px}.cd-cast figcaption{font-size:14px;color:var(--ink-soft);line-height:1.4}.cd-big{font-family:var(--fm);font-size:15px}@media(max-width:650px){.wrap,.hero{padding-left:20px;padding-right:20px}}</style><!-- tabs --><header class="hero"><p class="eyebrow">1989 · Alternative Software · Commodore 64</p><h1>Count Duckula</h1><p class="sub">Everyone in the pyramid, moving at the game’s own speed, and every sprite shape the game stores.</p></header><main class="wrap"><section id="cast"><p class="fig">01 · Count Duckula</p><h2 class="t">The cast, at the game’s own speed</h2><div class="cd-cast"><figure><canvas id="cd-g-right" width="96" height="72"></canvas><figcaption>Duckula walking right: four poses, a new one every six frames.</figcaption></figure><figure><canvas id="cd-g-left" width="96" height="72"></canvas><figcaption>Walking left, with four poses of its own.</figcaption></figure><figure><canvas id="cd-g-stand" width="96" height="72"></canvas><figcaption>Standing still, and falling.</figcaption></figure><figure><canvas id="cd-g-mummy" width="96" height="72"></canvas><figcaption>A mummy: two pixels a frame, a new pose every four.</figcaption></figure><figure><canvas id="cd-g-bat" width="96" height="72"></canvas><figcaption>A bat: four wingbeats, with a set for each direction.</figcaption></figure><figure><canvas id="cd-g-crow" width="96" height="72"></canvas><figcaption>A crow climbing, a new pose every seven frames, and dropping back down.</figcaption></figure><figure><canvas id="cd-g-rock" width="96" height="72"></canvas><figcaption>A rock, rising fifty pixels and falling fifty, one a frame.</figcaption></figure><figure><canvas id="cd-g-igor" width="96" height="72"></canvas><figcaption>Igor walking in, a pixel a frame, his legs changing every six.</figcaption></figure></div><canvas id="cd-g-objects" width="240" height="34" style="width:100%" aria-label="The objects, bobbing"></canvas><p class="cap">Every moving thing in the game, drawn from its sprites in the game’s colours. The objects bob a step every two frames; the pedestal stays still.</p><p>Every sprite is 24 pixels wide and 21 high. Duckula is three at once: one for his top half, one for his legs, and a third, stretched to twice the height and drawn behind the other two, for the green of his hair and his waist. Mummies and crows are two sprites each, and Igor is six. The machine has eight hardware sprites. Duckula keeps three, and the game reuses the other five further down the screen as it draws each frame, so many more can share a room.</p></section><section id="shapes"><p class="fig">02 · Count Duckula</p><h2 class="t">Every shape the game stores</h2><div class="pick"><button class="step" id="cd-shape-prev" aria-label="Previous shape">←</button><select id="cd-shape" aria-label="Sprite shape"></select><button class="step" id="cd-shape-next" aria-label="Next shape">→</button></div><canvas id="cd-sprite" width="240" height="210" aria-label="The chosen sprite shape"></canvas><p id="cd-shape-caption" class="cap"></p><p>The game stores 104 shapes, each in the colour the game gives it here. Each pixel is see-through, white, black, or the sprite’s own colour; white and black are shared by every sprite in the game. Nine of the shapes, stored after the doors, are Duckula turning round, and the game never shows them. The <a href="discoveries.html#turn">Discoveries tab</a> has them.</p></section></main><footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script><script>
+/* duckula-drawing */
+function roomData(m,id){
+ const bitmap=new Uint8Array(8192),screen=new Uint8Array(1024),colour=new Uint8Array(1024),collision=new Uint8Array(1024);
+ const page=m[0xff40+id]; if(page===255)throw Error('Outside the pyramid');
+ for(let row=0;row<10;row++)for(let col=0;col<20;col++){
+  const t=m[0x7000+page*256+row*20+col],lo=m[0x30a1+t%40];
+  const top=(m[0x30c9+t]<<8)|lo,bottom=(m[0x31b9+t]<<8)|((lo+64)&255),attr=(m[0x32a5+t]<<8)|m[0x33b5+t];
+  const dst=row*640+col*16,cell=row*80+col*2;
+  bitmap.set(m.slice(top,top+16),dst);bitmap.set(m.slice(bottom,bottom+16),dst+320);
+  for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++){
+   const src=attr+dy*40+dx,d=cell+dy*40+dx;
+   collision[d]=m[src];screen[d]=m[src+1024];colour[d]=m[src+2048]&15;
+  }
+ }
+ return {bitmap,screen,colour,collision};
+}
+function bitmapPixels(bitmap,screen,colour,background=0,height=160){
+ const out=new Uint8Array(320*height);
+ for(let y=0;y<height;y++)for(let x=0;x<320;x+=2){
+  const cell=(y>>3)*40+(x>>3),b=bitmap[cell*8+(y&7)],pair=(b>>(6-(x&6)))&3;
+  const c=[background,screen[cell]>>4,screen[cell]&15,colour[cell]&15][pair];out[y*320+x]=out[y*320+x+1]=c;
+ }
+ return out;
+}
+function paint(canvas,pixels,w,h,palette){
+ canvas.width=w;canvas.height=h;const c=canvas.getContext('2d'),im=c.createImageData(w,h);
+ for(let i=0;i<pixels.length;i++){const hex=palette[pixels[i]&15];im.data[i*4]=parseInt(hex.slice(1,3),16);im.data[i*4+1]=parseInt(hex.slice(3,5),16);im.data[i*4+2]=parseInt(hex.slice(5,7),16);im.data[i*4+3]=255;}c.putImageData(im,0,0);
+}
+// The status panel under the room: the game copies its picture from $69C0 and its colours from
+// $6830 and $68F8, then writes each clock digit from the font at $BE50 into row 2, columns 29,
+// 31 and 32, as $5801 does. clock is [hours, tens, units].
+function panelPixels(m,clock){
+ const bitmap=m.slice(0x69c0,0x69c0+1600),screen=m.slice(0x6830,0x6830+200),colour=m.slice(0x68f8,0x68f8+200);
+ if(clock)[[0,29],[1,31],[2,32]].forEach(([i,col])=>{const d=clock[i],cell=80+col;bitmap.set(m.slice(0xbe50+d*8,0xbe58+d*8),cell*8);screen[cell]=m[0xbe00+d];colour[cell]=m[0xbe28+d];});
+ return bitmapPixels(bitmap,screen,colour,0,40);
+}
+// A hardware sprite in multicolour, 24 by 21 pixels: each pair of bits is see-through, the first
+// shared colour ($D025, white in this game), the sprite's own colour, or the second shared colour
+// ($D026, black).
+function spritePixels(m,p){
+ const out=new Uint8Array(24*21);
+ for(let y=0;y<21;y++)for(let x=0;x<24;x+=2){const b=m[0xc000+p*64+y*3+(x>>3)],v=(b>>(6-(x&6)))&3;out[y*24+x]=out[y*24+x+1]=v;}
+ return out;
+}
+// Sprites over a picture of w by h pixels held as colour indices. Each is {p, x, y, c} in the
+// game's own coordinates, where X 24 and Y 50 are the top left of the screen, with tall set for a
+// sprite stretched to double height; later ones are drawn over earlier ones. shared is
+// [$D025, $D026].
+function drawSprites(px,w,h,m,list,shared=[1,0]){
+ for(const s of list){const sp=spritePixels(m,s.p),k=s.tall?2:1;for(let y=0;y<21*k;y++)for(let x=0;x<24;x++){const v=sp[Math.floor(y/k)*24+x];if(!v)continue;const X=s.x-24+x,Y=s.y-50+y;if(X>=0&&Y>=0&&X<w&&Y<h)px[Y*w+X]=[0,shared[0],s.c,shared[1]][v];}}
+ return px;
+}
+// Duckula is three sprites: the shape base and base+2 at his Y, in yellow and green, and base+1
+// twenty-one lines below, in yellow (setup at $2B85, walking frames at $3B56). The green one,
+// sprite 2, is stretched to double height ($D017 = 4 at $2CE9 and $58C3), so it reaches down
+// behind his legs. Sprites 0 and 1 are drawn over sprite 2, as the video chip does.
+function duckula(base,x,y,colours=[7,7,5]){
+ return [{p:base+2,x,y,c:colours[2],tall:1},{p:base+1,x,y:y+21,c:colours[1]},{p:base,x,y,c:colours[0]}];
+}
+// end of duckula-drawing
+/* duckula-cast */
+// The poses and rates the cast is drawn with, as the game holds them: the walking poses in the
+// order $3AED plays them ($3B56 and $3B5A read backwards), the divider each routine reloads, the
+// mummies' facing bases ($4A3A), the bat's two banks ($4EC4, $4ECD), the crows' climbing poses
+// ($4B73) and drop ($4B98), Igor's legs ($5010), the rock ($4BC8) and its half cycle ($4C0D).
+const CAST={walkRight:[0x10,0x13,0x16,0x19],walkLeft:[0x1c,0x1f,0x22,0x25],walkEvery:6,
+ mummyLeft:0x4a,mummyRight:0x44,mummyEvery:4,batLeft:0x50,batRight:0x54,batEvery:4,
+ crowClimb:[0x58,0x5a,0x5c,0x5e],crowDrop:0x60,crowEvery:7,igorLegs:0x67,igorEvery:6,
+ rock:0x71,rockHalf:50,bobEvery:2};
+// end of duckula-cast
+C64.load('listing.json').then(L=>{
+ const m=L.ram,W=96,H=72,tiles=[];
+ const tile=(id,step)=>tiles.push({cv:document.getElementById(id),step});
+ const at=(x,y)=>({x:24+x,y:50+y});
+ // Duckula's walking poses ($3B56 and $3B5A), a new one every six frames as $3AED reloads them
+ tile('cd-g-right',f=>duckula(CAST.walkRight[Math.floor(f/CAST.walkEvery)%4],24+36,50+15));
+ tile('cd-g-left',f=>duckula(CAST.walkLeft[Math.floor(f/CAST.walkEvery)%4],24+36,50+15));
+ tile('cd-g-stand',()=>[...duckula(0x28,24+14,50+15),...duckula(0x2b,24+58,50+15)]);
+ // a mummy walking along a floor ($489F): two pixels a frame, turning at the ends, where the
+ // frame divider is set to one so the next frame changes pose; poses every four frames ($49D3)
+ let mx=0,right=1,mdiv=CAST.mummyEvery,moff=0;
+ tile('cd-g-mummy',()=>{
+  if(right?mx>=72:mx<=0){right^=1;mdiv=1;}else mx+=right?2:-2;
+  if(--mdiv===0){mdiv=CAST.mummyEvery;moff-=2;if(moff<0)moff=4;}
+  const p=(right?CAST.mummyRight:CAST.mummyLeft)+moff;return [{p,...at(mx,15),c:12},{p:p+1,...at(mx,36),c:12}];
+ });
+ // the bat: shapes $50-$53 flying left and $54-$57 flying right, a new one every four frames ($4EB0)
+ let bx=72,bdir=-1,bphase=0;
+ tile('cd-g-bat',f=>{bx+=bdir;if(bx<=0||bx>=72)bdir=-bdir;if(f%CAST.batEvery===0)bphase++;return [{p:(bdir<0?CAST.batLeft:CAST.batRight)+(bphase&3),...at(bx,26),c:5}];});
+ // a crow climbing ($4B6A): pairs $58 to $5E every seven frames, the second sprite ten lines
+ // below the first ($4ABC); the pair $60 and $61 when it drops
+ tile('cd-g-crow',f=>{const p=CAST.crowClimb[Math.floor(f/CAST.crowEvery)&3];return [{p:p+1,...at(12,30),c:2},{p,...at(12,20),c:7},{p:CAST.crowDrop+1,...at(60,30),c:2},{p:CAST.crowDrop,...at(60,20),c:7}];});
+ // a rock ($4BDD): a counter runs to a hundred; below fifty the rock rises a pixel a frame
+ let rph=CAST.rockHalf,ry=0;
+ tile('cd-g-rock',()=>{rph=(rph+1)%(2*CAST.rockHalf);ry+=rph<CAST.rockHalf?-1:1;return [{p:CAST.rock,...at(36,ry),c:12}];});
+ // Igor ($4F13): six sprites, moving a pixel a frame ($4FAB); the last steps through
+ // $67-$6A every six frames ($4FF3)
+ const xs=[0,0x18,0x14,0x18,0,0],ys=m.slice(0x4f0d,0x4f13),cs=[6,6,8,8,10,6];let ix=-48;
+ tile('cd-g-igor',f=>{if(++ix>W)ix=-48;const list=[];for(let i=5;i>=0;i--)list.push({p:i===5?CAST.igorLegs+(Math.floor(f/CAST.igorEvery)&3):0x62+i,...at(ix+xs[i],ys[i]-0x9c+15),c:cs[i]});return list;});
+ // the objects, in their actors' colours ($29A6), bobbing through the fourteen steps at $3F96
+ const ob=document.getElementById('cd-g-objects'),things=[[0x6b,12],[0x6f,12],[0x6e,10],[0x70,9],[0x6d,7],[0x73,7],[0x6c,12],[0x6b,7],[0x72,10]];
+ const deltas=Array.from(m.slice(0x3f96,0x3f96+14),d=>d<128?d:d-256);let bob=0,bphase2=0;
+ function frame(f){
+  for(const t of tiles){const px=new Uint8Array(W*H).fill(11);drawSprites(px,W,H,m,t.step(f));paint(t.cv,px,W,H,C64.PAL);}
+  if(f%CAST.bobEvery===0){bphase2=(bphase2+1)%14;bob+=deltas[bphase2];}
+  const px=new Uint8Array(240*34).fill(11);drawSprites(px,240,34,m,things.map(([p,c],i)=>({p,x:24+3+i*26,y:50+6+(p===0x72?0:bob),c})));paint(ob,px,240,34,C64.PAL);
+ }
+ let f=0,last=0;
+ (function run(t){if(t-last>=20){last=t-Math.min(t-last-20,20);frame(f++);}requestAnimationFrame(run);})(0);
+ // every stored shape, named for what the game uses it for, in the colour it is drawn in
+ const uses=[[0x10,0x1b,'Duckula walking right'],[0x1c,0x27,'Duckula walking left'],[0x28,0x2a,'Duckula standing'],[0x2b,0x2d,'Duckula falling'],[0x2e,0x30,'Duckula on the picture that opens a game'],[0x31,0x3a,'A door'],[0x3b,0x43,'Duckula turning round, never shown'],[0x44,0x49,'A mummy walking right'],[0x4a,0x4f,'A mummy walking left'],[0x50,0x53,'The bat flying left'],[0x54,0x57,'The bat flying right'],[0x58,0x5f,'A crow climbing'],[0x60,0x61,'A crow dropping'],[0x62,0x6a,'Igor'],[0x6b,0x6b,'A key'],[0x6c,0x6c,'The hammer'],[0x6d,0x6d,'The canopic jar'],[0x6e,0x6e,'The death mask'],[0x6f,0x6f,'The ankh'],[0x70,0x70,'The sandbag'],[0x71,0x71,'A rock'],[0x72,0x72,'The pedestal'],[0x73,0x73,'The broken jar'],[0x74,0x77,'Filler bytes, never shown']];
+ const colourOf=p=>{
+  if(p<0x31||(p>=0x3b&&p<=0x43)){const b=p<0x31?0x10:0x3b;return (p-b)%3===2?5:7;}
+  if(p<=0x3a)return 2;if(p<=0x4f)return 12;if(p<=0x57)return 5;if(p<=0x61)return p&1?2:7;
+  if(p<=0x6a)return [6,6,8,8,10][p-0x62]??6;
+  return {0x6b:12,0x6c:12,0x6d:7,0x6e:10,0x6f:12,0x70:9,0x71:12,0x72:10,0x73:7}[p]??7;
+ };
+ const s=document.getElementById('cd-shape'),cv=document.getElementById('cd-sprite'),use=p=>uses.find(([a,b])=>p>=a&&p<=b);
+ for(let p=16;p<120;p++){const o=document.createElement('option'),[a,b,n]=use(p);o.value=p;o.textContent=(p-15)+' · '+n+(b>a?', '+(p-a+1)+' of '+(b-a+1):'');s.append(o);}
+ function draw(){const p=Number(s.value),px=new Uint8Array(24*21).fill(11);drawSprites(px,24,21,m,[{p,x:24,y:50,c:colourOf(p)}]);paint(cv,px,24,21,C64.PAL);cv.style.width='240px';document.getElementById('cd-shape-caption').textContent='Shape '+(p-15)+' of 104: '+use(p)[2]+'. The grey is see-through.';}
+ s.onchange=draw;
+ document.getElementById('cd-shape-prev').onclick=()=>{s.value=Number(s.value)===16?119:Number(s.value)-1;draw();};
+ document.getElementById('cd-shape-next').onclick=()=>{s.value=Number(s.value)===119?16:Number(s.value)+1;draw();};
+ s.value=0x28;draw();
+});
+</script>

@@ -204,9 +204,18 @@ in-game input hook below does the same job.
   `hold_frames` holds it for a count of frames. Prefer `pressed: true` and
   a release of your own once the game has taken the key: an automatic
   release (`hold_ms`, `hold_frames`) has been seen to miss a game that
-  scans the matrix itself (`workarounds.md`, Keys). A key the tool has no name
-  for, such as `:`, takes its `row` and `col` from the matrix in
-  `c64-reference`. In a script, `with key(rpc, "u"):` in `vice.py` holds
+  scans the matrix itself (`workarounds.md`, Keys). The matrix tool takes a
+  letter or digit, `SPACE`, `RETURN`, `STOP` (RUN/STOP; also `RUNSTOP`,
+  but `RUN/STOP` is refused), `F1` `F3` `F5` `F7`, `DOWN` and `RIGHT`
+  (the two cursor keys), `UP` and `LEFT`, `LSHIFT` `RSHIFT` `SHIFT`,
+  `CTRL`, `CBM` (or `C=`), `HOME`, `DEL`, `POUND`, `ARROWUP`,
+  `ARROWLEFT`, and the symbols spelt out: `PLUS` `MINUS` `ASTERISK` `AT`
+  `COLON` `SEMICOLON` `EQUALS` `COMMA` `PERIOD` `SLASH`. Any other name
+  fails with "Unknown key name". In v3.14.0 `UP` and `LEFT` press the
+  bare cursor key, so they move down and right; hold `SHIFT` with `DOWN`
+  or `RIGHT` instead (v4.0.0's source adds the SHIFT). A row and column
+  from the matrix in `c64-reference` reaches any key. In a script,
+  `with key(rpc, "u"):` in `vice.py` holds
   keys (a name in any case, or a row and column) and releases them however
   the block ends.
 - **Typing into a game.** A game that scans the keyboard from its main

@@ -47,9 +47,7 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-over[hidden]{display:none}
 .pl-over button{font-size:16px}
 .pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
-.pl-bar button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
-.pl-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
-.pl-bar button:hover{border-color:var(--ink-mute)}
+.pl-bar button,.pl-over button{font-size:14px;padding:7px 12px}
 .pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
@@ -62,8 +60,8 @@ section table{margin:6px 0 18px}
 .pl-list li{margin:0 0 6px}
 .pl-tape{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;font-size:14px;color:var(--ink-soft)}
 .pl-tape[hidden]{display:none}
-.pl-tape a,.pl-tape button{font-family:var(--fb);font-size:14px;font-weight:700}
-.pl-tape button{background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer}
+.pl-tape a{font-family:var(--fb);font-size:14px;font-weight:700}.pl-tape button{font-size:14px}
+.pl-tape button{padding:5px 10px}
 .pl-watch{margin-top:14px}
 .pl-watch[hidden]{display:none}
 .pl-watch canvas{display:block;width:100%;height:auto;background:#000;border-radius:6px;image-rendering:pixelated}
@@ -113,17 +111,9 @@ section table{margin:6px 0 18px}
 </section>
 <section id="port">
   <p class="fig">01 · The port</p>
-  <h2 class="t">Every routine of the game, checked against the original</h2>
-<p class="lede">The game is a Z80 program of 22,521 bytes, the engine, and five scenarios of 18,911 bytes each, loaded from tape over the top of memory, each with routines of its own and its own copy of the computer player. The port is the same program written again in JavaScript: one function for each of the engine's 289 routines and for the 40 routines the scenarios carry, in 144 copies, each reading and writing the game's variables at the game's own addresses. The page runs only the port. The game's code is in the tests, as the original the port is held to.</p>
-<table>
-  <tr><th>Check</th><th>What it showed</th></tr>
-  <tr><td>Each routine alone</td><td>The 201 routines that run to their end without waiting for a key, a delay or the tape are each taken at the moments the game itself calls them, from moments of play saved from the emulator, up to 60 moments a routine: 8,476 in all. The port's routine and the game's own, on the kit's Z80, start from the same machine, and all of memory, the writes to the screen's border and the beeper, and the registers the routine hands back must come out the same. All 8,476 did.</td></tr>
-  <tr><td>The whole program in lockstep</td><td>The port's program runs beside the game's, from the engine's first instruction through the menus, the tape, the shop and the placing of the units into the turns, with a player at random answering every read of the keys: two-player games in all five scenarios, games against the computer at each of its seven levels, and games with each of the four kinds of controls. Over 108,500 passes of the main loop in 25 games, every byte of memory was the same at every read of the controls, but for the stack. The routines that wait, and the few the saved moments never reach, such as the blasts, are held to the game here.</td></tr>
-  <tr><td>The random numbers</td><td>The game's dice add the Z80's refresh register, which no port can keep, a byte read from a pointer that walks the whole of memory, and the time spent waiting for keys. In the tests both sides read the same made-up values for the register, in the order they read them, so a port that read it once too often or too seldom would be out of step at once; on the page it is noise.</td></tr>
-  <tr><td>The page's memory</td><td>The page carries the game's memory as the tape leaves it with every byte of an instruction set to zero: 17,288 bytes of the engine and from 2,766 to 3,276 of each scenario. It keeps the hooks at the head of each scenario, which the port follows, and the few bytes of code the port reads. The page's machine on that memory played a two-player game of Moonbase Assault and a game of Paradise Valley against the computer beside the port on the whole memory, and the two were the same at every read of the controls. A game the page saved there loads again from the first menu and goes on.</td></tr>
-  <tr><td>The pace</td><td>The game runs with the interrupts off and paces itself with delay loops, so the page runs the port's delays, sounds and tape for the T-states the game spends on them, and charges every other stretch of the program, each routine and each piece of work counted inside them the T-states they cost the game. Those costs are fitted on 89,480 passes timed on the kit's model of the 48K, the many short stretches of the menus and the cursor weighted as heavily as the long ones of the computer's turns. On five games it was not fitted on, of 18,995 passes in all, each whole game takes within 0.8 % of the game's time and the middle pass within 0.5 %. On the page's own machine, the two-player game above took 0.3 % less than the game's time and the game against the computer 0.5 % more, with half their passes within 3.1 % and 2.0 % of the game's.</td></tr>
-  <tr><td>The listing</td><td>The port was written before the listing's comments on the code, and they were written from it, so porting found none of them wrong.</td></tr>
-</table>
+  <h2 class="t">Every routine of the game, written again in JavaScript</h2>
+<p class="lede">The game is a Z80 program of 22,521 bytes, the engine, and five scenarios of 18,911 bytes each, loaded from tape over the top of memory, each with routines of its own and its own copy of the computer player. The port is the same program written again in JavaScript: one function for each of the engine's 289 routines and for the 40 routines the scenarios carry, in 144 copies, each reading and writing the game's variables at the game's own addresses. The page runs only the port.</p>
+<p>The game's dice add the Z80's refresh register, a byte read from a pointer that walks the whole of memory, and the time spent waiting for keys. A port cannot keep the refresh register, so on this page it is noise.</p>
 </section>
 <section id="differences">
   <p class="fig">02 · Differences</p>
@@ -132,7 +122,7 @@ section table{margin:6px 0 18px}
 <table>
   <tr><th>On a Spectrum</th><th>On this page</th></tr>
   <tr><td>Each instruction takes its T-states, and a turn of the computer's takes as long as its thinking does.</td><td>The port executes no instructions. Each stretch of the program between two reads of the controls, each routine it calls and each piece of work inside them (a view drawn, a line of sight walked, a word printed) costs what it cost the game, fitted on the game's own timings (The pace, under How the port was checked), so a turn takes about as long as on the Spectrum.</td></tr>
-  <tr><td>The random numbers add the refresh register, which counts every instruction the processor fetches, to a byte from a pointer that walks through the whole of memory: the ROM, the game's code, the stack.</td><td>No port can keep the refresh register, so it is noise, between 0 and 127. The page does not carry the ROM or the game's code, so a byte the walk reads there is noise too. The shots, the morale tests and the computer's choices are drawn the way the game draws them, from numbers just as unpredictable.</td></tr>
+  <tr><td>The random numbers add the refresh register, which counts every instruction the processor fetches, to a byte from a pointer that walks through the whole of memory: the ROM, the game's code, the stack.</td><td>A port cannot keep the refresh register, so it is noise, between 0 and 127. The page does not carry the ROM or the game's code, so a byte the walk reads there is noise too. The shots, the morale tests and the computer's choices are drawn the way the game draws them, from numbers just as unpredictable.</td></tr>
   <tr><td>The menus read the keyboard through the ROM's KEY-SCAN routine.</td><td>The port reads the keys the way KEY-SCAN does, and charges the time it took the game.</td></tr>
   <tr><td>The ULA draws the screen a line at a time as the beam crosses it.</td><td>The page takes the screen whole at the moment the beam would reach its first line, so a change made while the beam is drawing shows a frame later, all at once.</td></tr>
   <tr><td>The beeper is toggled from the effects' timing loops, with the game stopped while each plays.</td><td>The site's model of the beeper plays the port's writes to it, each at the T-state the game's loops give it, and the game waits for the effect as it does on the Spectrum.</td></tr>

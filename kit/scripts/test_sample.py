@@ -2,7 +2,10 @@
 """sample.py draws the listing sample the same way for the same seed, keeps a stratum's
 comments apart, and counts the checker's verdicts only when each was given the text drawn and
 every finding has been settled (#657): on one run two drawn comments were corrected before the
-checker read them, and the rate came out lower than the listing's."""
+checker read them, and the rate came out lower than the listing's. It reports the sure minimum,
+the wrong found over the whole listing, apart from the rates, which are estimates (#868). It draws
+the comments a script wrote from one template side by side, as a stratum of their own, so that a
+checker reads them together (#968)."""
 import json
 import os
 import sys
@@ -11,6 +14,11 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import sample   # noqa: E402
+
+
+def word(i):
+    """A word of its own for each i, so that hand-written comments share no template."""
+    return "".join(chr(97 + (i // 26 ** k) % 26) for k in range(3))
 
 
 def write_listing(path, comments):
@@ -26,10 +34,10 @@ class Sample(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.g = self.tmp.name
         write_listing(os.path.join(self.g, "listing.json"),
-                      [(0x1000 + i, f"hand comment {i}") for i in range(100)]
+                      [(0x1000 + i, f"{word(i)} hand comment") for i in range(100)]
                       + [(0x2000 + i, f"Record {i}: a template's sentence") for i in range(300)])
         write_listing(os.path.join(self.g, "parts", "level", "listing.json"),
-                      [(0x1000 + i, f"level comment {i}") for i in range(50)])
+                      [(0x1000 + i, f"{word(100 + i)} level comment") for i in range(50)])
         self.strata = [sample.parse_stratum(r"generated=^Record \d+:")]
 
     def tearDown(self):
@@ -46,6 +54,32 @@ class Sample(unittest.TestCase):
         gen = [c for c in a["comments"] if c["stratum"] == "generated"]
         self.assertTrue(all(c["text"].startswith("Record ") for c in gen))
         self.assertTrue(any(c["folder"] == "parts/level" for c in a["comments"]))
+
+    def test_a_template_is_drawn_side_by_side(self):
+        write_listing(os.path.join(self.g, "parts", "load-3", "listing.json"),
+                      [(0x9000 + 8 * i, f"Load 3, visual selector 1, character ${i:02X}: eight rows. Uses remain open.")
+                       for i in range(120)])
+        s = sample.draw(self.g, 7, 60, self.strata)
+        self.assertEqual([(r["name"], r["population"], r["drawn"], r.get("template")) for r in s["strata"]],
+                         [("generated", 300, 20, None),
+                          ("family 1", 120, 5, "load # visual selector #"),
+                          ("written", 150, 60, None)])
+        names = [c["stratum"] for c in s["comments"]]
+        self.assertEqual(names[20:25], ["family 1"] * 5)          # together, after the stratum before them
+        fam = s["comments"][20:25]
+        self.assertEqual([c["address"] for c in fam], sorted(c["address"] for c in fam))
+        # a --stratum takes its comments first, and --families 0 draws none
+        mine = sample.draw(self.g, 7, 60, self.strata + [sample.parse_stratum(r"chars=^Load \d+, visual:10")])
+        self.assertEqual([r["name"] for r in mine["strata"]], ["generated", "chars", "written"])
+        self.assertEqual([r["name"] for r in sample.draw(self.g, 7, 60, self.strata, families=0)["strata"]],
+                         ["generated", "written"])
+        # the weighted rate gives the family its share of the listing: 2 of 5 wrong stand for 48 of 120
+        v = self.verdicts(s, [(c["folder"], c["address"]) for c in fam[:2]])
+        for x in v:
+            if x["verdict"] != "right":
+                x["held"] = True
+        r = sample.count(s, v)[1]
+        self.assertAlmostEqual(r["weighted"], 120 / 570 * 2 / 5)
 
     def verdicts(self, s, wrong=()):
         return [{"folder": c["folder"], "address": c["address"], "text": c["text"],
@@ -65,6 +99,8 @@ class Sample(unittest.TestCase):
         lo, hi = r["interval"]
         self.assertTrue(lo < 6 / 80 < hi)
         self.assertAlmostEqual(r["weighted"], 150 / 450 * 6 / 60)
+        # an estimate either way; the wrong found over the whole listing is the one sure minimum (#868)
+        self.assertAlmostEqual(r["floor"], 6 / 450)
 
     def test_text_changed_before_the_check_is_refused(self):
         s = sample.draw(self.g, 7, 60, self.strata)

@@ -36,3 +36,8 @@ ported or decoded (see Ideas).
 - A stepper for a fighter's path (`fighter_paths`, `$C648`), drawn over
   the map.
 - The giant message as a scroller at the game's speed.
+
+## Loading picture and tune
+
+- A new section awaits the steward's pass: the cassette's loading screen, its colours
+  cycling and its bar filling at the tape's pace, on the Graphics tab (section 05).

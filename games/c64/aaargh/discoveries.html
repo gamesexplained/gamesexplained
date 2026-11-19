@@ -46,7 +46,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1989 · Melbourne House</p>
   <h1>Aaargh!</h1>
-  <p class="sub">A list of Manchester bands and clubs hidden on the title screen, a message nobody was meant to read, and a game that never ends.</p>
+  <p class="sub">A list of Manchester bands and clubs hidden on the title screen, a message that was never meant to be read, and a game that never ends.</p>
 </header>
 <main class="wrap">
 
@@ -55,7 +55,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Secret: hold 1, ←, CTRL, and 2 on the title to read a hidden list of names</h2>
   <p class="lede">The title writes a list of names at its top left all the time, in black on black. Four keys held together turn it white, and rename the monsters Myrtle and Dill.</p>
   <div class="plate"><img class="ag-shot" src="reference/title-easter-egg.png" alt="The title with the hidden names showing" width="384" height="272">
-  <p class="cap">The title with the four keys held: THE VENUE at the top left, and MYRTLE and DILL over LIZARD and OGRE. Taken in the emulator.</p></div>
+  <p class="cap">The title with the four keys held: THE VENUE at the top left, and MYRTLE and DILL over LIZARD and OGRE.</p></div>
   <p>Numbers written with a $ are addresses in the computer's memory, in hexadecimal; each one links to the game's code on the Source code tab. Every 32 passes of the title loop (each waits two frames), the routine at <code>$B13E</code> copies the next eleven characters of a list at <code>$9D9F</code> to the top left of the screen, with colour 0, black, on the black background. Then <code>$B161</code> reads the keyboard. The keyboard is read a row of keys at a time. The game never chooses a row, so it reads the one the machine's built-in program, the KERNAL, left chosen: row 7. When the four keys of that row's first columns are down together, 1, the left arrow, CTRL, and 2, it colours those cells white, and writes the names at <code>$B347</code> and <code>$B34D</code> over the monsters'.</p>
   <ul class="ag-names" id="ag-names"></ul>
   <p class="cap">The list, read from the listing's bytes at <code>$9D9F</code>, eleven characters at a time as the title shows it.</p>
@@ -64,8 +64,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="message">
   <p class="fig">02 · A message</p>
-  <h2 class="t">Secret: a message in the program that nothing reads</h2>
-  <p class="lede">Next to the title's text is a sentence that no instruction in the game reads.</p>
+  <h2 class="t">Secret: a message in the program that the game never reads</h2>
+  <p class="lede">Next to the title's text is a sentence that the game never reads.</p>
   <p class="ag-quote">I'M AT PAINS TO SEE...SEE THROUGH THOSE WINDOWPAINS...SEE RENTBOYS AND GOTO 16384.</p>
   <p>The 82 bytes at <code>$B37D</code> are plain ASCII. Windowpains and Rentboys are in the hidden list too. A BASIC programmer would read GOTO 16384 as a jump to address 16384, <code>$4000</code>, but there is nothing there to find: that address is inside the characters of the city in the cave.</p>
 </section>
@@ -73,10 +73,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="forever">
   <p class="fig">03 · The volcano</p>
   <h2 class="t">Secret: the volcano is every fourth city, eggs or not, and the game never ends</h2>
-  <p class="lede">The manual says five eggs take a monster to the volcano and its golden egg, the end of the game. On the C64 nothing counts the eggs.</p>
+  <p class="lede">The manual says five eggs take a monster to the volcano and its golden egg, the end of the game. On the C64 the game does not count the eggs.</p>
   <div class="plate"><img class="ag-shot" src="reference/play-volcano.png" alt="The volcano" width="384" height="272">
-  <p class="cap">The volcano, the fourth city of a round, reached in the emulator by ending three cities without taking an egg.</p></div>
-  <p>The only count the main loop keeps is the city's place in the round, at <code>$803E</code>: it goes 1, 2, 3, 4 and back to 1, and the picker at <code>$8444</code> always makes the fourth city the volcano (<a href="index.html#cities">The cities</a>). The volcano's golden egg is drawn on its screen from the start (<code>$87A1</code>), and taking it leads to the cave like any other egg. Then the next round starts with a jungle village or a temple. There is no ending screen in the program, and nothing ends a game but both monsters dying.</p>
+  <p class="cap">The volcano, the fourth city of a round, reached by ending three cities without taking an egg.</p></div>
+  <p>The only count the main loop keeps is the city's place in the round, at <code>$803E</code>: it goes 1, 2, 3, 4 and back to 1, and the picker at <code>$8444</code> always makes the fourth city the volcano (<a href="index.html#cities">The cities</a>). The volcano's golden egg is drawn on its screen from the start (<code>$87A1</code>), and taking it leads to the cave like any other egg. Then the next round starts with a jungle village or a temple. There is no ending screen in the program, and a game ends only when both monsters die.</p>
 </section>
 
 <section id="two">
@@ -84,7 +84,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Secret: a second player can join with the other joystick</h2>
   <p class="lede">The manual gives the C64 version one joystick. Fire on the other port brings the other monster into a game that is already on.</p>
   <div class="plate"><img class="ag-shot" src="reference/play-two-players.png" alt="Both monsters in one city" width="384" height="272">
-  <p class="cap">Fire on port 1 during a game of the lizard's, in the emulator: the ogre walks in from the right.</p></div>
+  <p class="cap">Fire on port 1 during a game of the lizard's: the ogre walks in from the right.</p></div>
   <p>The lizard reads port 2 and the ogre port 1, with one instruction for both (<code>lda $DC00,x</code> at <code>$8A43</code>). A monster that is out of the game joins on its fire (<code>$8A94</code>), once a game. Wikipedia says the arcade original took one or two players at once and the home versions one; this version kept the second. With only one player, the cave fight's other monster is played by the computer (<a href="index.html#cave">The cave</a>).</p>
 </section>
 
@@ -102,22 +102,22 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Bug: one frame in four of an animation comes from the wrong table</h2>
   <p class="lede">Three animated characters show bytes from another table on one pass in every four.</p>
   <p>Each pass, <code>$B463</code> animates three groups of characters. For characters <code>$93</code> to <code>$95</code> it keeps a phase from 0 to 3 and copies 24 bytes from the table at <code>$B4BF</code>, reading backwards from 24 times the phase. For phases 1 to 3 that reads the table's frames. For phase 0 the index starts at 0 and wraps round below the table, so the three characters get <code>$B4BF</code> and the bytes at <code>$B5A8</code>-<code>$B5BE</code>, which belong to another table. The table has room for a fourth frame where a phase of 4 would read it, so the counter was probably meant to run from 1 to 4.</p>
-  <p class="cap">Measured in the emulator: the characters' bytes took the table at <code>$B4BF</code> + 1, + 25 and + 49 in phases 1 to 3, and in phase 0 the wrapped bytes, exactly. Where those characters appear on the screen, and so whether a player can see the wrong frame, has not been checked.</p>
+  <p class="cap">The characters' bytes take the table at <code>$B4BF</code> + 1, + 25 and + 49 in phases 1 to 3, and in phase 0 the wrapped bytes. Where those characters appear on the screen, and so whether a player can see the wrong frame, is not known.</p>
 </section>
 
 <section id="stray">
   <p class="fig">07 · A stray write</p>
   <h2 class="t">Bug: every pass writes a number into a city's characters</h2>
-  <p class="lede">A variable that nothing reads sits in the middle of the city in the cave's characters.</p>
-  <p>The work of each pass (<code>$8065</code>) stores 0, 1 and 2 in turn at <code>$3E7F</code>, and no instruction reads it. That byte is row 2 of character <code>$3E</code> of the city in the cave's own character set. The set is copied to the screen's characters only when the city is built, so the harm is small: when the city in the cave comes, that row of its character <code>$3E</code> holds whatever number the last pass left.</p>
+  <p class="lede">A variable that the game never reads sits in the middle of the city in the cave's characters.</p>
+  <p>The work of each pass (<code>$8065</code>) stores 0, 1 and 2 in turn at <code>$3E7F</code>, and the game never reads it. That byte is row 2 of character <code>$3E</code> of the city in the cave's own character set. The set is copied to the screen's characters only when the city is built, so the harm is small: when the city in the cave comes, that row of its character <code>$3E</code> holds whatever number the last pass left.</p>
 </section>
 
 <section id="leftovers">
   <p class="fig">08 · Leftovers</p>
   <h2 class="t">The program carries pieces of its earlier versions</h2>
   <p class="lede">The program carries pieces of earlier versions of itself.</p>
-  <p>A building burning down calls <code>$9594</code> (at <code>$9541</code>). That address holds only an <code>rts</code>, the instruction that returns, and the routine right after it, at <code>$9595</code>, draws a row of roof characters over the building, as the fall does elsewhere. Nothing else reaches it. Pointing the call one byte short is a quick way to switch a routine off.</p>
-  <p>Further up, <code>$B7B4</code>-<code>$BD5E</code> holds an older build of the character animation, its tables, the city tables, and the interrupt helpers, assembled about <code>$350</code> bytes higher than the ones the game runs. Nothing calls it or reads it. <code>$2581</code>-<code>$2E77</code> holds an older set of the monsters' leg frames, on a grid of its own that no table reaches. Two short fragments of code (at <code>$AD6B</code>, a punch in the cave, and at <code>$89D2</code>) are reached by nothing too.</p>
+  <p>A building burning down calls <code>$9594</code> (at <code>$9541</code>). That address holds only an <code>rts</code>, the instruction that returns, and the routine right after it, at <code>$9595</code>, draws a row of roof characters over the building, as the fall does elsewhere. The game never reaches it any other way. Pointing the call one byte short is a quick way to switch a routine off.</p>
+  <p>Further up, <code>$B7B4</code>-<code>$BD5E</code> holds an older build of the character animation, its tables, the city tables, and the interrupt helpers, assembled about <code>$350</code> bytes higher than the ones the game runs. The game never calls it or reads it. <code>$2581</code>-<code>$2E77</code> holds an older set of the monsters' leg frames, on a grid of its own that is not reached by any table. Two short fragments of code (at <code>$AD6B</code>, a punch in the cave, and at <code>$89D2</code>) are never reached either.</p>
 </section>
 
 <section id="tape">

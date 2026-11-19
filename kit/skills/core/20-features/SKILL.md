@@ -24,6 +24,13 @@ ways it goes wrong:
 The game's own instruction text is itself a feature list. Find it early
 (the string sweep in `40-sweep` does this in seconds).
 
+Record the player's experience as well as the controls: the objective,
+what success and failure do, what carries into a retry, and how the game
+communicates changes through its panel, messages, pictures, and sounds.
+Keep questions those observations raise in `features.md` for the code
+to answer. They give `70-minisite` the reader's questions to explain;
+update them as the analysis resolves them.
+
 The web half of this rests on the contributor's answer at the start
 (`kit/START.md`). With a yes, the platform skill says where to look
 first; for the C64 that is the game's C64-Wiki page, read as a form. With
@@ -91,6 +98,14 @@ decoration, a banner nobody knew existed. Before annotating:
   reach. Name them by state in `reference/`.
 - Poke your way into states that are hard to reach by playing (set the
   level counter, empty the collectables) and screenshot those too.
+- **See every level running.** Reach each level, stage or area (setting
+  its counter or calling the game's own level change is fine), then let
+  it run for a few seconds with input, the stick held and fire pressed,
+  and screenshot it as it moves. A still or a direct call shows the
+  level's data, not what the player meets there, and How it works is
+  written from what the player meets. It is a few seconds a level, not a
+  playthrough. A counter found only later, in the code, sends you back
+  here before `70-minisite`.
 - **Look at them together.** `python3 kit/scripts/sheet.py
   work/sheet.png 4 reference/*.png` tiles a set into one image and prints
   which tile is which file, so forty states are one read; `--half` fits

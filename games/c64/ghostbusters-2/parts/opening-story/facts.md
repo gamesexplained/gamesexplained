@@ -1,0 +1,42 @@
+# Opening story facts
+
+The snapshot `work/story.vsf` shows the first story at its fire prompt. Its route from power-on is in the game's `orientation.md`.
+
+The hardware IRQ vector in the saved RAM points to `$17D7`. That handler calls `$1916`, sets the border and background to black, configures VIC memory and display registers, increments `$0E`, and passes `$05`, `$18` and `$7A` in X, Y and A to `$1907` before jumping to `$191D`. `$1916` saves A, X and Y in `$02–$04`; `$191D` restores them and returns from the interrupt.
+
+A captured PAL frame at the story prompt writes the hardware IRQ vector to select `$1805`, `$1858`, `$188C`, `$18B4` and `$17D7` in that order. Those writes select the next handler; their raster positions do not by themselves say where the next handler runs. The frame capture is `work/frame.json`.
+
+`$1907` writes the next hardware IRQ vector from X and Y, writes A to the raster compare register and acknowledges the interrupt. `$188C` can select `$18B4` or `$18DC` according to `$1903`; both paths optionally call the shared sound update at `$E13A` and schedule `$17D7`. The captured frame used `$18B4`.
+
+An executed-address capture at the fire prompt recorded 547 instruction starts. It covers the waiting state, not the complete story sequence.
+
+The snapshot contains space-padded story text at `$C200–$C4CF`, `$C4D1–$C660` and `$C662–$C819`, each followed by a zero byte. Read as 40-byte rows, the blocks have 18, 10 and 11 rows and describe the baby carriage incident, the investigation and the roadworks respectively. The shared renderer at `$1924/$1928` reads forty-byte rows and stops when the first byte of the next row is zero; `$1A12` converts each row to two rows of font codes.
+
+## Register census
+
+The partial code map names these groups; it cannot establish that other registers are unused.
+
+| Registers | Observed access | Evidence |
+|---|---|---|
+| `$D011`, `$D012`, `$D016`, `$D018`, `$D019` | Display controls, raster scheduling and interrupt acknowledgement | `$17D7`, `$1858`, `$1907` |
+| `$D015`, `$D01C` | Sprite enable and multicolour settings in a conditional display path | `$183C`, `$1841` |
+| `$D020–$D023` | Border and background colours | `$17DC`, `$17DF`, `$182C`, `$1831` |
+| `$D400–$D414`, `$D418` | Writes to the three SID voices and volume | shared update at `$E141–$E225` |
+| `$DC00`, `$DC01` | Port reads and writes | `$16F2–$1701`; joystick fire and keyboard scanning |
+| `$DD00` | Video bank selection | `$17E4`, `$181D`, `$1873` |
+
+The captured opening-story picture uses multicolour bitmap mode in VIC bank 1. In that frame, `$4000–$52BF` supplies 15 rows of bitmap cells and `$6000–$6257` supplies their screen-matrix colours; colour RAM and `$D021` supply the other colours. A frame reconstructed from the capture differs from VICE in two of 104,448 pixels, at raster lines 32 and 122. The state before the story load has not been captured, so the hand-over audit remains open.
+
+The input scanner at `$16F2` checks CIA1 port A bit 4 and otherwise compares thirty row and column pattern pairs at `$1724–$175F`. The wait at `$19A4` repeats the scan after `$0E` changes. Setup `$1777` is called by the story/loader setup paths `$117F/$11BB`; it installs the KERNAL-vector interrupt used before disk loading. The display setup uses the separate raster path. These bytes match the second-story, third-story and ending snapshots.
+
+In the opening-story snapshot, the first 4,800 bitmap bytes at `$7B00–$8DBF` match `$4000–$52BF`, and the first 600 matrix bytes at `$8F00–$9157` match `$6000–$6257`. The copied story routine at `$1593` performs the corresponding picture and matrix copies. The listing counts the loaded sources and excludes the copied display output.
+
+The decoded `2.FIRST STORY` load writes `$3000–$37FF`, `$6400–$91FF` and `$C200–$C87F`; its 15,488 stable output bytes match this snapshot. It does not replace the sound driver loaded by the title, so this part lies over the title and owns only those decoded ranges. Runtime display copies are excluded.
+
+This story load contains two picture sources: bitmaps at `$6400–$77FF` and `$7B00–$8EFF`, matrices at `$7800–$7A7F` and `$8F00–$917F`, and colour bytes at `$7A80/$9180`. The shared story copies at `$1538/$1593` use these ranges. In the captured story snapshot, `$4000–$53FF` and `$6000–$627F` match the second bitmap and matrix. The Graphics page shows the first 15 rows of both sources.
+
+The opening story’s second picture bitmap, matrix and colour byte match the second story’s first picture sources byte for byte, despite their different load addresses.
+
+The text tail `$C81B–$C87F` is zero in both decompressor-fill runs and the story snapshot; it is padding after the terminating zero and is outside the text renderer’s row reads. The font at `$3000–$37FF` matches the title snapshot and is listed with the title. All remaining stable output bytes have records in this part’s listing.
+
+The 127 bytes after each loaded picture colour byte are described in the listing. The picture format ends with the single colour byte; these following bytes are retained to the load segment’s boundary and are outside the picture-copy reads.

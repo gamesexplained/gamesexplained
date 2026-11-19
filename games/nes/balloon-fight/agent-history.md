@@ -217,3 +217,32 @@ powers on with the RAM clear, agreed to the end with no change. The
 milestone for `balloons_popped` is kept only for a rise, since its
 reset at the round's start shows only where the RAM held something
 else.
+
+## 10 and 11 November 2026 — seven recorded games, a perfect bonus in each
+
+Zihe Jia found the Watch button's player idle in the bonus round, and
+asked for it to take the balloons, to play a different game each time,
+and to play as well as it could. The recording had popped 5 of the 20
+balloons: the search scored by the score, and the bonus round pays its
+balloons into the score only on the results screen, so through the
+round only the distance to a balloon counted. Scored by
+`balloons_popped` instead, from a snapshot at the round's start, the
+same search popped 17, and with six frames a step and 36 of lookahead,
+20.
+
+`route/find_route.js` now takes seeds. A seed sets the wait on the
+title, the order the nine ways are tried in and a small random amount
+on each ending, so each plays its own game. Each phase is played twice
+and the better kept, and the bonus round up to six ways until one pops
+all 20. Ten seeds, one process each, took about 2 hours 40 minutes
+side by side; all ten kept every life, seven popped all 20, and those
+seven are the recordings. `test_route.js` checks each, and the page
+picks one at random, never the one just watched.
+
+The first count of popped balloons in the test counted milestones, and
+showed 19 for two games that popped 20: two balloons popped between
+two reads make one milestone. It reads the count itself now.
+
+The replay of the seven on MesenCE and jsnes was started and stopped
+by Claude Code when the Mac ran short of memory, before it printed
+anything; it is in `TODO.md`.

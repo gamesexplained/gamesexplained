@@ -40,13 +40,13 @@
   </table>
   <p>The line the game never plays is the shortest of the eight, a single "Ah" a fifth of a second long.</p>
   <h3>How a line is played</h3>
-  <p>No voice of the SID sounds while a line plays. The driver at <code>$0880</code> writes each sample to the chip's master volume register, from a timer interrupt every 101 cycles: 9,755 times a second on a PAL machine and 10,126 on an NTSC one, so the same line is 3.8% faster in America (<code>$0C71</code>). While a line plays, the game swaps its raster interrupt for one that only counts frames, so the samples are not disturbed.</p>
+  <p>None of the SID's voices sounds while a line plays. The driver at <code>$0880</code> writes each sample to the chip's master volume register, from a timer interrupt every 101 cycles: 9,755 times a second on a PAL machine and 10,126 on an NTSC one, so the same line is 3.8% faster in America (<code>$0C71</code>). While a line plays, the game swaps its raster interrupt for one that only counts frames, so the samples are not disturbed.</p>
   <p>The samples are not stored as a recording. The driver builds each pitch period of the voice from a short window of decoded samples: it plays the window forwards, then backwards from where it stopped, then holds the volume at the middle level for a gap. The length of the gap sets the pitch, and a separate list of pitch commands for each line moves it up and down, a step every period (<code>$0B1D</code>). The lower strip of the player is a close-up of 600 interrupts that follows the playback: each period is a shape and its mirror image, then a flat stretch.</p>
   <table class="d">
     <tr><th>Frame encoding</th><th>Used for</th><th>Decoder</th></tr>
     <tr><td>Four bits a sample, two samples a byte</td><td>Most frames of every line, and every frame of the fall</td><td><code>$0AE5</code></td></tr>
     <tr><td>One bit a sample: a step up or down around the middle level</td><td>Some frames of every line except the fall and the line over Elvin's face; the window slides along the samples a little every period (<code>$0951</code>)</td><td><code>$0B73</code></td></tr>
-    <tr><td>Two bits a sample, from one of three level tables</td><td>Nothing: the driver has it, and no frame of the eight lines uses it</td><td><code>$0A68</code></td></tr>
+    <tr><td>Two bits a sample, from one of three level tables</td><td>Nothing: the driver has it, and none of the frames of the eight lines uses it</td><td><code>$0A68</code></td></tr>
   </table>
   <p>Each frame header (<code>$09B6</code>) says how many periods the frame lasts, how it is encoded and where its samples are. Between two voiced frames the driver blends the old window into the new one, averaging the two (<code>$0BFD</code>), unless the header asks for a clean cut. A frame can also be a silence with no samples, and a flag marks the last one.</p>
 </section>

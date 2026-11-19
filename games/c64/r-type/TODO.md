@@ -11,3 +11,8 @@ Tier: Gold (Silver, then curated page by page with Euan on 10 November 2026). Wh
   it is not used on any page.
 - **Character colours.** The shots image on the Graphics tab is drawn in
   greys; the colour each shot takes from colour memory was not traced.
+
+## Loading picture and tune
+
+- A new section awaits the steward's pass: the disk's loading picture on the Graphics tab
+  (the last section).

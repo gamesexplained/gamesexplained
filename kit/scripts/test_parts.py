@@ -396,12 +396,35 @@ class Parts(unittest.TestCase):
             self.assertNotIn(0x4010, [a for lo, hi, _ in P.elsewhere(ps, by['park']) for a in (lo, hi)])
             names = P.names_under(str(g / 'parts' / 'room'))
             self.assertEqual((names[0x4000], names[0x1003]), ('park_entry', 'engine_get'))
+            # an address the park's load wrote takes no name from the engine beneath it, even where
+            # the park has none there: the bytes are the park's, not what the engine named
+            symbols(g, 'engine', [(0x1000, 0x1006, 'Code'), (0x1010, 0x1010, 'Byte')],
+                    [sym(0x1000, 'engine_main'), sym(0x1003, 'engine_get'), sym(0x1010, 'engine_var', 'AbsoluteAddress'),
+                     sym(0x4005, 'engine_level_hook', 'AbsoluteAddress')],
+                    [line(0x1000, 'Calls the level, then reads the variable.'), line(0x1003, 'Reads the variable.'),
+                     line(0x1010, 'The variable.')])
+            names = P.names_under(str(g / 'parts' / 'room'))
+            self.assertNotIn(0x4005, names)
+            self.assertEqual(names[0x1010], 'engine_var')
             # what the room does not own is named after the part whose load wrote it, not the nearest
             away = {(lo, hi): who for lo, hi, who in P.elsewhere(ps, by['room'])}
             self.assertEqual(away[(0x0000, 0x3FFF)], 'The engine')
             self.assertEqual(away[(0x4000, 0x400F)], 'Park')
             self.assertEqual(away[(0x4012, 0x40FF)], 'Park')
             self.assertEqual(away[(0x4100, 0xFFFF)], 'The engine')
+
+    def test_the_bottom_part_keeps_its_ranges(self):
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            f = g / 'parts' / 'engine' / 'part.json'
+            f.write_text(json.dumps(dict(json.loads(f.read_text()), ranges=[['$4000', '$407F']])))
+            ps = P.parts(str(g))
+            by = {p['id']: p for p in ps}
+            away = {(lo, hi) for lo, hi, _ in P.elsewhere(ps, by['engine'])}
+            # the levels write $4000-$40FF; the engine's own bytes at $4000-$407F stay its own
+            self.assertEqual(away, {(0x4080, 0x40FF)})
+            # and a level over it still owns all of its own load
+            self.assertNotIn((0x4000, 0x40FF), {(lo, hi) for lo, hi, _ in P.elsewhere(ps, by['park'])})
 
     def test_the_layout_is_checked(self):
         with tempfile.TemporaryDirectory() as d:

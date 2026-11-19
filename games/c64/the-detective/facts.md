@@ -491,3 +491,25 @@ recommended.
   scripts, so a room effect and a script effect could not be told apart.
 - *live*: fire on port 2 starts the game; the stick walks Snide in four
   directions; fire opens the menu (`features.md`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Measured in the emulator, in the hall: 60 presses of fire, each held for six frames and started at a random moment, opened the menu 37 times. In each of the other 23, the game read the press and set the latch once, and the menu's test never found it set.
+- The emulator showed both halves of the corridor trap: walking into either corridor before searching the body, and the accusation answering "YOU DO NOT HAVE THE EVIDENCE TO PROVE IT." afterwards.
+
+### index.html
+
+- Every write to the sound chip, frame by frame, matches the game's code run on the kit's 6502 (`test_music.js`).
+- Each instruction's length and handler were checked against the game's own fetch code (`$A460`) run on the kit's 6502 (`test_scripts.js`).
+- Each of these outcomes was played in the emulator through the game's own menus, with the stick: the accusation refused without the evidence; and, with the evidence put in the envelopes by hand, the blanks clicking, Dingle escaping when Snide waits, the arrest when Snide uses the gun from his inventory, and the game ending when Dingle has the real bullets.
+- The whole game was also won in the emulator from the game's first instruction, with nothing but stick and keyboard input. A script steered Snide and the menu pointer by reading the game's own memory, and logged every input it gave.
+- The stepper runs a port of the game's own pointer code once every fiftieth of a second, as the game does on a European machine, and a test holds it against the game's code over 120,000 frames of random stick movements (`test_pointer.js`).
+- The port runs the game's three routines in the order the interrupt runs them, at 50 frames a second, and a test holds it against the game's own code for 5,200 frames, all ten characters (`test_title.js`).
+
+### levels.html
+
+- In the emulator, in the hall, Snide stopped at depth 58 against the back value of 59 and at 7 against the front value of 8, and under the stairs, whose front edge is 26, the back limit the game keeps (`$1DEF`) became 26.

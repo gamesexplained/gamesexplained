@@ -38,9 +38,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .wg-stack{position:relative}
 .wg-stack canvas+canvas{position:absolute;left:0;top:0;width:100%;height:100%;background:transparent;pointer-events:none}
 .wg-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
-.wg-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
-.wg-btn:hover{border-color:var(--ink-mute)}
-.wg-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.wg-btn{font-size:12.5px;padding:5px 11px;line-height:1.3}
 .wg-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
 .wg-out b{font-weight:700}
 .wg-intro{display:grid;grid-template-columns:minmax(0,1fr) 288px;gap:10px 28px;align-items:start;margin:0 0 30px}
@@ -62,7 +60,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .wg-wrapx{overflow-x:auto}
 .wg-field{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:14px;margin:0 0 12px}
 .wg-field label{color:var(--ink-soft)}
-.wg-range{width:100%;max-width:360px;accent-color:var(--accent)}
+.wg-range{width:100%;max-width:360px}
 .wg-mono{font-family:var(--fm);font-size:13px}
 .wg-sub{font-size:14px;font-weight:700;color:var(--ink-soft);margin:16px 0 6px}
 .wg-wl-meta{display:flex;justify-content:space-between;gap:12px;font-family:var(--fm);font-size:12px;color:var(--ink-soft);margin:12px 0 4px;min-height:1.4em}
@@ -73,7 +71,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .wg-wl-meter.hold{background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,var(--line) 6px 12px)}
 .wg-wl-pad{margin-top:12px}
 .wg-wl-pad .wg-btn{touch-action:none;user-select:none;-webkit-user-select:none;padding:8px 16px;font-size:14px}
-.wg-wl-pad .wg-btn.held{background:var(--ink);border-color:var(--ink);color:#fff}
+.wg-wl-pad .wg-btn.held{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .wg-win{display:flex;gap:10px;margin:4px 0;align-items:center}
 .wg-win em{font-style:normal;font-family:var(--fm);font-size:12px;color:var(--ink-soft);width:210px;flex:none}
 .wg-win span{flex:1;min-width:0;height:16px}
@@ -87,8 +85,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .wg-bars div.on i{background:var(--amber)}
 .wg-bars div.over i{background:var(--coral)}
 .wg-strip{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
-.wg-strip button{font:inherit;font-family:var(--fm);font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:4px 0;cursor:pointer;color:var(--ink)}
-.wg-strip button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.wg-strip button{font-size:12px;padding:4px 0}
 .wg-mem{position:relative;height:34px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;margin:6px 0 4px;overflow:hidden}
 .wg-mem i{position:absolute;top:0;bottom:0;border-right:1px solid rgba(255,255,255,.7)}
 .wg-memx{display:flex;justify-content:space-between;font-family:var(--fm);font-size:11px;color:var(--ink-mute)}
@@ -128,7 +125,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="pick"><button type="button" class="step" data-d="-1" aria-label="The part before">‹</button><select id="wg-music-pick" aria-label="Part of the game"></select><button type="button" class="step" data-d="1" aria-label="The part after">›</button></div>
     <div id="wg-music"></div>
     <p class="cap" id="wg-music-cap"></p>
-    <p class="cap">The game's own driver, running on the page over the part's bytes in its listing and called as the part calls it: once at the start, to build the note table and silence the chip, then with the tune's number in the A register to start it, then once a frame from the part's raster interrupt, the routine the video chip calls as it reaches a given line of the screen. The page starts each tune at volume 15, as the part's other tunes leave it, since a few never set the volume themselves. <code>test_music.js</code> holds every button to the game's code over the part's whole listing, every write to the sound chip in order, for a minute of each tune or until it ends.</p>
+    <p class="cap">The game's own driver, running on the page over the part's bytes in its listing and called as the part calls it: once at the start, to build the note table and silence the chip, then with the tune's number in the A register to start it, then once a frame from the part's raster interrupt, the routine the video chip calls as it reaches a given line of the screen. The page starts each tune at volume 15, as the part's other tunes leave it, since a few never set the volume themselves.</p>
   </div>
   <p>A tune gives each of the three voices a track, and a track is a list of notes and commands: a byte below <code>$C0</code> is a note, <code>$60</code> a rest, the byte after it the note's length, <code>$C0</code> to <code>$E0</code> commands that change the sound, and <code>$FF</code> the end (<code>play_music</code>, <code data-part="title">$18B7</code> in the title). The same driver plays the title's music, a skater's crash and the wind on the cliff. In the events most tunes are sound effects, a few frames long.</p>
   <p>Each copy builds its note table when its part starts, and every copy builds the same one. Its top C, <code>$861E</code>, sounds at 2,093 Hz on an American NTSC machine, whose clock runs at 1,022,727 Hz. A European PAL machine runs at 985,248 Hz, so it plays every note about 65 cents flat, two thirds of a semitone. The player above plays it as a PAL machine does.</p>
@@ -141,7 +138,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The menu has a player of its own for the anthems the medal ceremonies play. Epyx is one of the eighteen countries, with a flag and an anthem of its own.</p>
   <div class="plate">
     <div id="wg-anthems"></div>
-    <p class="cap">The menu's own player, running on the page over the menu's listing: <code>init_sound</code> (<code>$1E34</code>), then <code>start_tune</code> (<code>$1E71</code>) with the country's number in Y, then <code>anthem_step</code> (<code>$1EA2</code>) twice a frame, as the menu's interrupts call it. <code>test_music.js</code> holds every button to the menu's code, write for write, to each tune's end.</p>
+    <p class="cap">The menu's own player, running on the page over the menu's listing: <code>init_sound</code> (<code>$1E34</code>), then <code>start_tune</code> (<code>$1E71</code>) with the country's number in Y, then <code>anthem_step</code> (<code>$1EA2</code>) twice a frame, as the menu's interrupts call it.</p>
   </div>
   <p>This player is far simpler than the driver in the events. A tune is a list of rows of four bytes: a note for each voice and a length (<code>tune_list</code>, <code>$32C0</code>). Each voice plays a note from a table of semitones (<code>note_freq_lo</code>, <code>$1DC4</code>), with the same attack, decay, sustain and release for every note, set once by <code>init_sound</code>. Every voice lets go of its note five steps before the row's end, so the notes are separated by a short gap.</p>
   <p>A country's tune comes from <code>country_tunes</code> (<code>$1E8A</code>), which holds two times the tune's number for each country in the order of the flags. Tunes 18 and 19 play under the final standings and the world records. On the screen where a player picks a country, the S key plays the anthem of the flag under the frame without choosing it.</p>
@@ -155,7 +152,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="wg-bar" id="wg-frame-bar"></div>
     <div class="wg-stack"><canvas id="wg-frame" class="wg-cv" width="384" height="272" aria-label="The caber toss screen, rebuilt"></canvas><canvas id="wg-frame-hi" width="384" height="272"></canvas></div>
     <p class="wg-out" id="wg-frame-out"></p>
-    <p class="cap">Recorded in VICE as the thrower runs up with the caber, and drawn by the site's C64 library line by line, with each register as it was when the beam reached it. 0 of the 104,448 pixels differ from VICE's own picture of the same frame.</p>
+    <p class="cap">A frame of the thrower running up with the caber, drawn by the site's C64 library line by line, with each register as it was when the beam reached it.</p>
   </div>
   <p>The picture is made of characters, the C64's 8 by 8 tiles, in multicolour mode, where each tile has four colours. Three of them are the same for every tile on the screen, and the interrupt at line 98, a routine the video chip sets off as it reaches that line, changes all three, from sky to field: light blue, light grey and grey above, green, dark grey and light grey below. The scenery is a map 128 columns wide (<code>$8170</code>), and the event draws the 40 columns in view into the screen not shown, then swaps the two (<code>ct_draw_scenery</code>, <code>$197A</code>; <code>ct_swap_screens</code>, <code>$19DB</code>).</p>
   <p>The thrower and the caber are sprites, the chip's eight movable pictures. The caber is too tall for one, so it is a column of them, with the thrower beside it. The same eight sprites are used again below the picture, where the interrupt at line 251 moves them for the text row of names. Every pose of the thrower and the caber, and of every other event, is on the <a href="graphics.html">Graphics</a> tab.</p>
@@ -192,12 +189,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="wg-bar wg-wl-pad"><button type="button" class="wg-btn" id="wg-wl-go">Start</button><button type="button" class="wg-btn" data-stick="1" aria-label="Joystick up">Up ▲</button><button type="button" class="wg-btn" data-stick="2" aria-label="Joystick down">Down ▼</button></div>
     <p class="wg-out" id="wg-wl-say" aria-live="polite"></p>
     <div id="wg-wl-wins"></div>
-    <p class="cap">The arena, the lifter's poses and the plates are drawn by the page from the event's bitmap (<code>$6000</code>), its sprites (<code>wl_shapes</code>, <code>$9000</code>) and the plates' routine (<code>wl_draw_plates</code>, <code>$1A14</code>). The lift runs the game's scripts (<code>wl_script_data</code>, <code>$2010</code>) 50 times a second, as a PAL machine does, and the judges vote as <code>wl_judges</code> (<code>$14ED</code>) does, with the page's random numbers in place of the 256 the game reads from the sound chip's noise. <code>test_widgets.js</code> holds the page's lift, judges and plates to the game's routines, frame by frame. The bar above the buttons is the page's own: the game shows no timer. Below it, every window of both lifts at the weight, each bar as long as its window; the good part's size is the window's length times the weight's factor, over 256, at least one frame (<code>wl_multiply</code>, <code>$1DCB</code>). The last window of each lift is striped: the script gives it a good part, but a push there still has the stick down in the frame the judges first look at it.</p>
+    <p class="cap">The arena, the lifter's poses and the plates are drawn by the page from the event's bitmap (<code>$6000</code>), its sprites (<code>wl_shapes</code>, <code>$9000</code>) and the plates' routine (<code>wl_draw_plates</code>, <code>$1A14</code>). The lift runs the game's scripts (<code>wl_script_data</code>, <code>$2010</code>) 50 times a second, as a PAL machine does, and the judges vote as <code>wl_judges</code> (<code>$14ED</code>) does, with the page's random numbers in place of the 256 the game reads from the sound chip's noise. The bar above the buttons is the page's own: the game shows no timer. Below it, every window of both lifts at the weight, each bar as long as its window; the good part's size is the window's length times the weight's factor, over 256, at least one frame (<code>wl_multiply</code>, <code>$1DCB</code>). The last window of each lift is striped: the script gives it a good part, but a push there still has the stick down in the frame the judges first look at it.</p>
   </div>
   <p>The weight is chosen with left and right, 75 kg to 225 kg in steps of 5 (<code>wl_choose_weight</code>, <code>$13B7</code>). Once fire confirms it, the weight's factor comes from <code>wl_timing</code> (<code>$1493</code>), 31 bytes from <code>$FF</code> at 75 kg down to 1 at 225 kg. A push in the good part counts, and one before it sends the script to its failed lift.</p>
   <p>The table ends at 225 kg, but the weight does not. After a round with a good lift, the next round starts 5 kg above it, so a good lift at 225 kg is followed by 230 kg, and the game reads the 32nd factor from the next routine's code (<a href="discoveries.html#weights">Discoveries</a>). At 865 kg the plates stop the machine (<a href="discoveries.html#crash">Discoveries</a>).</p>
   <p>Held overhead, the lift goes to three judges. Each votes white while the hold is under 48 frames and red after, and two white lamps make a good lift (<code>wl_vote</code>, <code>$1577</code>). The first votes at once and each of the others up to 31 frames after the one before, so a lifter who holds still gets at least two white lamps. Down on the stick puts the weight down, and any judge who has not voted votes red.</p>
-  <p>The judges first look at the stick in the frame the lift ends (<code>$1502</code>). The last window of both lifts asks for down, and a good push there ends the lift at once, with the stick still down: the weight goes straight down before anyone votes, and all three lamps are red. Left to run out, that window ends the lift just the same, and the judges vote. Checked in VICE on 31 October 2026 in a snatch at 75 kg, both ways.</p>
+  <p>The judges first look at the stick in the frame the lift ends (<code>$1502</code>). The last window of both lifts asks for down, and a good push there ends the lift at once, with the stick still down: the weight goes straight down before anyone votes, and all three lamps are red. Left to run out, that window ends the lift just the same, and the judges vote.</p>
 </section>
 
 <section id="barrels" data-part="barrel-jumping">
@@ -266,13 +263,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <figure><img src="reference/log-rolling-lean-23.png" alt="The same scene, the left meter with seven cells filled to the right" width="320" height="146"><figcaption>Lean 23: seven cells, one step from a fall.</figcaption></figure>
       <figure><img src="reference/log-rolling-lean-24.png" alt="The left lumberjack with arms thrown up, falling, the meter full to the right" width="320" height="146"><figcaption>Lean 24: the fall begins.</figcaption></figure>
     </div>
-    <p class="cap" style="margin:8px 0 18px">The lean is how far the lumberjack's feet have got ahead of the log or behind it. Each lumberjack has a meter under the river, the player's on the left: from the middle out it fills a cell for every 3 of lean, towards the side of the lean (<code>lr_meters</code>, <code>$1CB2</code>). Seen in VICE on 31 October 2026, in a bout played with the stick, the lean read from <code>$0F70</code>.</p>
+    <p class="cap" style="margin:8px 0 18px">The lean is how far the lumberjack's feet have got ahead of the log or behind it. Each lumberjack has a meter under the river, the player's on the left: from the middle out it fills a cell for every 3 of lean, towards the side of the lean (<code>lr_meters</code>, <code>$1CB2</code>). The lean is read from <code>$0F70</code>.</p>
     <div class="wg-field"><label for="wg-lr-log">Log's speed</label><input type="range" class="wg-range" id="wg-lr-log" min="0" max="31" value="20"><span class="wg-mono" id="wg-lr-log-out"></span></div>
     <div class="wg-field"><label for="wg-lr-lean">Lean</label><input type="range" class="wg-range" id="wg-lr-lean" min="0" max="23" value="6"><span class="wg-mono" id="wg-lr-lean-out"></span></div>
     <div class="wg-bar" id="wg-lr-time"></div>
     <div class="wg-bars" id="wg-lr-bars"></div>
     <p class="wg-out" id="wg-lr-out"></p>
-    <p class="cap">The difference d chooses an entry of <code>lr_points_gain</code> (<code>$3490</code>) before 0:30 on the clock and of <code>lr_points_loss</code> (<code>$34B0</code>) after (<code>lr_points</code>, <code>$33D0</code>). <code>test_widgets.js</code> holds the page's sum to the game's routine for every speed and lean, either side of 0:30.</p>
+    <p class="cap">The difference d chooses an entry of <code>lr_points_gain</code> (<code>$3490</code>) before 0:30 on the clock and of <code>lr_points_loss</code> (<code>$34B0</code>) after (<code>lr_points</code>, <code>$33D0</code>).</p>
   </div>
   <p>Each change of the stick between left, right and both is a step, which speeds up the lumberjack's feet the way they run (<code>lr_step</code>, <code>$2183</code>). The stick held still pushes the log, and fire turns the lumberjack round. The lean is the feet's speed less the log's, and a lean of 24 either way is a fall (<code>lr_lean</code>, <code>$2297</code>).</p>
   <p>The gain table climbs from 0 to 9 as the difference grows. The loss table runs the other way, 9 down to 0, so after 30 seconds a lumberjack who keeps the log turning fast loses least. The clock itself runs slow: it counts a second every 65 or 66 frames, 1.3 seconds on a PAL machine (<code>lr_clock</code>, <code>$3323</code>). At a fall the loser's points are quartered and kept below the winner's (<code>lr_fall_points</code>, <code>$34D0</code>).</p>
@@ -294,15 +291,15 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <figure><img src="reference/bull-riding-tornado.png" alt="The same rider and bull; BULL: TORNADO" width="160" height="112"><figcaption>Tornado</figcaption></figure>
       <figure><img src="reference/bull-riding-earthquake.png" alt="The same rider and bull; BULL: EARTHQUAKE" width="160" height="112"><figcaption>Earthquake</figcaption></figure>
     </div>
-    <p class="cap" style="margin:8px 0 18px">All five bulls look the same: only the name under the picture changes. The bull is drawn from one set of poses and shapes (<code>br_draw_bull</code>, <code>$1E16</code>), and the bull's number, <code>$24</code>, is read only for its name (<code>$1951</code>) and its odds (<code>$2235</code>, <code>$2241</code>). Seen in VICE on 31 October 2026: each bull chosen in practice and caught at the same frame in the chute, the pictures the same pixel for pixel above the text row.</p>
+    <p class="cap" style="margin:8px 0 18px">All five bulls look the same: only the name under the picture changes. The bull is drawn from one set of poses and shapes (<code>br_draw_bull</code>, <code>$1E16</code>), and the bull's number, <code>$24</code>, is read only for its name (<code>$1951</code>) and its odds (<code>$2235</code>, <code>$2241</code>). Each bull, chosen in practice and caught at the same frame in the chute, looks the same above the text row.</p>
     <div class="wg-bar" id="wg-br-bar"></div>
     <div class="wg-wrapx"><table class="wg-tbl" id="wg-br-tbl"></table></div>
     <div class="wg-bar" style="margin-top:12px"><button type="button" class="wg-btn" id="wg-br-roll">Roll a move</button></div>
     <p class="wg-out" id="wg-br-out"></p>
-    <p class="cap">The thresholds are the bull's five bytes in <code>br_bull_odds</code> (<code>$2332</code>), against a random number from 0 to 255 (<code>br_choose_move</code>, <code>$222C</code>). <code>test_widgets.js</code> holds the page's rule to the game's routine for every bull, every move and every pair of random numbers.</p>
+    <p class="cap">The thresholds are the bull's five bytes in <code>br_bull_odds</code> (<code>$2332</code>), against a random number from 0 to 255 (<code>br_choose_move</code>, <code>$222C</code>).</p>
   </div>
-  <p>A move is a buck, a run or a spin. To stay on, the rider must hold the stick the right way at one frame of each move: towards the head during a run, towards the tail during a buck, and down during a spin (<code>br_stick_left</code>, <code>$17A1</code>; <code>br_stick_right</code>, <code>$17C8</code>). The wrong way, or nothing, throws the rider off, and the ride scores nothing.</p>
-  <p>A move's points depend on the move before it, so the score depends on the bull: Ferdinand mostly runs, and Earthquake bucks. The ride ends at 8 on the clock, which takes 24 seconds (<a href="discoveries.html#eight-seconds">Discoveries</a>). The bull's moves come from the frame counter and a generator called only by the bull and the pennants, so nothing the rider does changes them (<code>br_random</code>, <code>$2351</code>).</p>
+  <p>A move is a buck, a run or a spin. To stay on, the rider must hold the stick the right way at one frame of each move: towards the head during a run, towards the tail during a buck, and down during a spin (<code>br_stick_left</code>, <code>$17A1</code>; <code>br_stick_right</code>, <code>$17C8</code>). Pushing the wrong way, or not pushing at all, throws the rider off, and the ride scores nothing.</p>
+  <p>A move's points depend on the move before it, so the score depends on the bull: Ferdinand mostly runs, and Earthquake bucks. The ride ends at 8 on the clock, which takes 24 seconds (<a href="discoveries.html#eight-seconds">Discoveries</a>). The bull's moves come from the frame counter and a generator called only by the bull and the pennants, so the rider can do nothing to change them (<code>br_random</code>, <code>$2351</code>).</p>
 </section>
 
 <section id="caber" data-part="caber-toss">
@@ -313,7 +310,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <figure><img src="reference/caber-toss.png" alt="A man in a kilt holds a long caber upright on a green field with tents and a stand behind" width="384" height="272"><figcaption>Caber toss, Scotland</figcaption></figure>
   </div>
   <div class="plate">
-    <figure style="margin:0 0 16px"><img src="reference/caber-toss-gap.png" alt="The thrower stands at the left of the field and the caber leans on the ground in front of him, its foot to the right. A white box marks sprite 3 over the thrower's legs and a yellow box sprite 7 over the caber's foot; an arrow joins the left edges of the two boxes. The text row reads 12 feet 5 inches." width="640" height="260" style="display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px"><figcaption class="cap">The measure: from the left edge of sprite 3, the thrower's legs (white), to the left edge of sprite 7, the foot of the caber (yellow). Here the gap is 18 pixels: 2 feet over the 10, and 2 pixels over, 5 inches. A throw in VICE on 31 October 2026, its landing set to a good one by hand (the caber's pose, <code>$3C</code>, made <code>$10</code> as it touched the ground), then measured by the game; the sprites' places read from the video chip as <code>ct_show_result</code> ran.</figcaption></figure>
+    <figure style="margin:0 0 16px"><img src="reference/caber-toss-gap.png" alt="The thrower stands at the left of the field and the caber leans on the ground in front of him, its foot to the right. A white box marks sprite 3 over the thrower's legs and a yellow box sprite 7 over the caber's foot; an arrow joins the left edges of the two boxes. The text row reads 12 feet 5 inches." width="640" height="260" style="display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px"><figcaption class="cap">The measure: from the left edge of sprite 3, the thrower's legs (white), to the left edge of sprite 7, the foot of the caber (yellow). Here the gap is 18 pixels: 2 feet over the 10, and 2 pixels over, 5 inches. A throw with its landing set to a good one by hand (the caber's pose, <code>$3C</code>, made <code>$10</code> as it touches the ground), then measured by the game.</figcaption></figure>
     <div class="wg-field"><label for="wg-ct-gap">Gap</label><input type="range" class="wg-range" id="wg-ct-gap" min="0" max="255" value="18"><span class="wg-mono" id="wg-ct-gap-out"></span></div>
     <p class="wg-out" id="wg-ct-out"></p>
     <p class="cap">The gap between sprites 7 and 3, and the inches from <code>ct_inches</code> (<code>$2297</code>), indexed by twice the pixels left over plus one bit read from colour RAM (<code>ct_show_result</code>, <code>$2170</code>).</p>
@@ -333,7 +330,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="wg-field"><label for="wg-su-f">Force each frame</label><input type="range" class="wg-range" id="wg-su-f" min="16" max="1024" step="16" value="512"><span class="wg-mono" id="wg-su-f-out"></span></div>
     <canvas id="wg-su" class="wg-chart" width="640" height="220" aria-label="The winner's score against the bout's length"></canvas>
     <p class="wg-out" id="wg-su-out"></p>
-    <p class="cap">The winner's score for a bout of steady pushing, for each length from 1 to 60 seconds: the total doubled, its upper 16 bits divided by the length in units of 256 frames plus one, and the loser's halved (<code>su_final_scores</code>, <code>$26DF</code>). <code>test_widgets.js</code> holds the page's sum to the game's routine on thousands of totals and lengths.</p>
+    <p class="cap">The winner's score for a bout of steady pushing, for each length from 1 to 60 seconds: the total doubled, its upper 16 bits divided by the length in units of 256 frames plus one, and the loser's halved (<code>su_final_scores</code>, <code>$26DF</code>).</p>
   </div>
   <p>The wrestlers push by moving the stick, and each push costs strength, so pushing tires a wrestler (<code>su_push</code>, <code>$2495</code>). Each frame they touch, the force between them is added to both totals and again to the one winning the push; during a throw it counts double (<code>su_score_frame</code>, <code>$2615</code>). A wrestler who goes down, or puts a foot out of the ring, loses (<code>su_ring</code>, <code>$1F1F</code>).</p>
   <p>Dividing by whole steps of 256 frames makes a sawtooth. A bout of 5.1 seconds divides by 1 and one of 5.2 seconds by 2, so the same steady push scores about half as much in the longer bout.</p>

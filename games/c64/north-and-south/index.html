@@ -38,8 +38,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ns-shots img,.ns-cv{width:100%;height:auto;image-rendering:pixelated;display:block;border-radius:4px;background:#000}
 .ns-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
 .ns-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
-.ns-bar button{font:500 13px var(--fm);padding:6px 12px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}
-.ns-bar button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.ns-bar button{font-size:13px;padding:6px 12px}
 .ns-bar label{font-size:14px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
 .ns-tab{width:100%;border-collapse:collapse;font-size:15px;margin:14px 0}
 .ns-tab th,.ns-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
@@ -79,7 +78,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Music: Jeroen Tel's three tunes, played by the game's own player</h2>
   <p class="lede">The title has one tune, and the ending has two: one for the winner's screen and one for the loser's.</p>
   <div class="plate"><div id="ns-music"></div>
-    <p class="cap">The buttons run the game's own music players on a simulator of the C64's processor, the 6502, and play what they write through the site's model of the C64's sound chip, the SID. They run once a frame, 50 times a second, as the game's screen interrupt (code the video chip sets off at a line of the screen) calls them: the title's player (<code>$9000</code> starts, <code>$9003</code> plays a frame, title part) and the ending's (<code>$3000</code> and <code>$3003</code>, tune 0 for the victory and 1 for the defeat, ending part). <code>test_music.js</code> checks every write to the chip, frame by frame, against the same code run over each part's whole memory.</p></div>
+    <p class="cap">The buttons run the game's own music players and play what they write through the site's model of the C64's sound chip, the SID. They run once a frame, 50 times a second, as the game's screen interrupt (code the video chip sets off at a line of the screen) calls them: the title's player (<code>$9000</code> starts, <code>$9003</code> plays a frame, title part) and the ending's (<code>$3000</code> and <code>$3003</code>, tune 0 for the victory and 1 for the defeat, ending part).</p></div>
   <p>Each of the SID's three voices plays an order list, a list of patterns, and each pattern is a short run of notes. The ending's player is a later build of the title's. It keeps the same variables and adds three things. A glide slides from one note to the next (pattern byte <code>$FD</code>). An arpeggio, a fast run of notes that sounds like a chord, can take its base note from the order list. And a small detune from the instrument is added to every frequency (<span data-part="ending"><code>$3107</code></span>). The two ending tunes share 22 of their patterns, and the defeat's is played a semitone higher (its transpose is 1).</p>
 </section>
 
@@ -88,7 +87,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Sound: 31 effects from one player</h2>
   <p class="lede">The menu loads a sound player that stays in memory for the rest of the game. The map, the battle, the fort and the train all start their sounds through it by number.</p>
   <div class="plate"><div id="ns-sfx"></div>
-    <p class="cap">The game's own sound player, run on the kit's 6502 from the map part's listing: <code>$F128</code> sets it up, <code>$F12B</code> starts sound A, <code>$F12E</code> plays a frame. Each button is named for where the game asks for that number. Five numbers, 9, 10, 14, 21 and 25, are asked for nowhere, and a few sounds go on until something else stops them. Sound 17 is silence: for 14 frames it writes 0 to every voice's registers, which stops whatever was playing. <code>test_music.js</code> checks these against the player as well.</p></div>
+    <p class="cap">The game's own sound player, run from the map part's listing: <code>$F128</code> sets it up, <code>$F12B</code> starts sound A, <code>$F12E</code> plays a frame. Each button is named for where the game asks for that number. Five numbers, 9, 10, 14, 21 and 25, are asked for nowhere, and a few sounds go on until something else stops them. Sound 17 is silence: for 14 frames it writes 0 to every voice's registers, which stops whatever was playing.</p></div>
   <p>The battle, the fort and the train load over the map but stop short of <code>$F128</code>, so the player is still there when they run. The menu has its own copy of the player with a table of 16 sounds (<span data-part="menu"><code>$FC0E</code></span>), and its sound numbers mean other sounds.</p>
 </section>
 
@@ -100,7 +99,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="ns-bar" id="ns-years"></div>
     <canvas id="ns-map" class="ns-cv" width="320" height="200"></canvas>
     <table class="ns-tab" id="ns-map-tab"></table>
-    <p class="cap">Drawn by the map's own code, run on the kit's 6502 over the map part's listing: the places' backgrounds (<code>$23DC</code>, <code>$23E7</code>), the year's set-up (<code>year_setup</code>, <code>$28D3</code>) and the drawing of owners and armies (<code>$3B97</code>). The month band is drawn too, as the first turn has it (<code>$39B3</code>, <code>$3B0D</code>, <code>$1E84</code>). For 1861 the result differs from the emulator's picture of the game only in the 184 pixels the cursor covers (<code>test_map.js</code>).</p>
+    <p class="cap">Drawn by the map's own code, run over the map part's listing: the places' backgrounds (<code>$23DC</code>, <code>$23E7</code>), the year's set-up (<code>year_setup</code>, <code>$28D3</code>) and the drawing of owners and armies (<code>$3B97</code>). The month band is drawn too, as the first turn has it (<code>$39B3</code>, <code>$3B0D</code>, <code>$1E84</code>). The game's cursor is not drawn.</p>
   </div>
   <p>The year's set-up copies four tables into the war's variables: who owns each territory (<code>$0DAB</code>), whose army stands on it (<code>$0DE0</code>) and how many infantry, cavalry and cannon it has (<code>$0E2E</code>, <code>$0E14</code>, <code>$0E48</code>). The 1861 table starts at <code>$28EC</code>, 1862 at <code>$293F</code>, 1863 at <code>$29C0</code> and 1864 at <code>$2A54</code>. Every army on the map is drawn with one of two soldiers, one for each side (<code>draw_army</code>, <code>$3BE7</code>). The manual says the cannon balls at the soldier's feet show the army's size. The drawing reads only the army's side, so every army looks the same.</p>
 </section>
@@ -165,10 +164,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="ns-bar"><span id="ns-fields"></span><label><input type="checkbox" id="ns-hz"> Show where soldiers fall in</label></div>
     <canvas id="ns-field" class="ns-cv" width="320" height="200"></canvas>
-    <p class="cap">Each field unpacked from the battle file by the page's port of the game's unpacker (<code>unpack</code>, <code>$8E1E</code>): the bitmap from <code>$826E</code>'s pointers, the screen from <code>$8274</code>'s and the colours from <code>$827A</code>'s, or green everywhere on the open field. <code>test_fields.js</code> checks the port against the game's own <code>$90C5</code> on all three. The overlay marks, for each character row, the four columns where an object's position counts as in the river or the canyon (<code>hazards</code>, <code>$A113</code>; the river's table <code>$8752</code>, the canyon's <code>$876C</code>). The houses and trees the game adds at the edges are not drawn here.</p>
+    <p class="cap">Each field unpacked from the battle file by the page's port of the game's unpacker (<code>unpack</code>, <code>$8E1E</code>): the bitmap from <code>$826E</code>'s pointers, the screen from <code>$8274</code>'s and the colours from <code>$827A</code>'s, or green everywhere on the open field. The overlay marks, for each character row, the four columns where an object's position counts as in the river or the canyon (<code>hazards</code>, <code>$A113</code>; the river's table <code>$8752</code>, the canyon's <code>$876C</code>). The houses and trees the game adds at the edges are not drawn here.</p>
   </div>
   <p>Twenty objects fight: six soldiers, three riders and a cannon for each side. The field is a bitmap, a picture held in memory that the video chip shows, and the objects are cut into it as black shapes. The background under each is kept and put back before the next draw (<code>save_under</code>, <code>$9247</code>; <code>restore_under</code>, <code>$92BF</code>). Only the shots are sprites, the small pictures the video chip lays over the screen by itself. A cannonball that lands on a bridge row three times breaks the bridge, and its rows become river or canyon too (<code>ball_crater</code>, <code>$A6A5</code>; <code>bridge_break</code>, <code>$A794</code>).</p>
-  <p>On the canyon the table's bottom five rows hold <code>$FF</code>, the value the bridge rows have. Nothing falls in there, though the picture shows the canyon running to the bottom edge.</p>
+  <p>On the canyon the table's bottom five rows hold <code>$FF</code>, the value the bridge rows have. Units never fall in there, though the picture shows the canyon running to the bottom edge.</p>
 </section>
 
 <section data-part="battle">

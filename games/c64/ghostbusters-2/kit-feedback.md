@@ -1,0 +1,56 @@
+# Ghostbusters II — kit feedback
+
+## Skill text that changed what I did
+
+- `60-verify`: "Both the sample and the audit are done by checkers": a fresh checker found a source-array error in the random sample and 26 additional errors in the new state descriptions.
+- `50-coverage`: "Runtime state is excluded": traced entry initialization before excluding generated state, while retaining authored sources and the image bytes needed by the graphics inspector.
+- `60-verify`: "A control reading zero means the instrument is dead": paired the museum collision trials and the self-copy return test with entry counters.
+- `60-verify`: "An `unused` answer in `media.json` is a negative result as well": read the filename dispatcher and named-load paths before resolving the decorative entries and stray disk sectors.
+
+## What was changed in the kit
+
+- `kit/skills/core/10-orient`, step 1, now says that a crack's patch to the game's own code is a lead for `70-minisite`, to be played on the original. Here the museum's only such patch hid a bug that only the original disk has. `games/c64/bubble-bobble` has the same shape: two trainer hooks written over the game's own instructions at `$7EBB` and `$7FA1`, where the original instructions were never seen (its `facts.md`, "What the cracker changed"). Lesson: `kit/lessons/2026-11-17-crack-patch-hid-a-bug.md`.
+- `kit/skills/core/70-minisite`, "The sound", now says to write about what is unusual in a game's sound and leave out what nearly every game does, such as one driver for all its music. Aaron asked for it after this game's Music heading said the episodes share one sound player. `games/c64/world-games` makes the same call-out ("the same music driver" in the title and each event).
+
+## Candidates
+
+Setting a data type in the running disassembler retraced the whole image and recreated automatic labels inside instruction operands and known data records. Those labels fragmented coverage. Comparing each boundary with the decoded instruction or the established data allocation exposed the problem. A future diagnostic could report such interior automatic boundaries; a second affected game is needed before adding a general skill rule.
+
+The first state-table descriptions assigned plausible coordinate and pointer roles without following every consumer. The independent targeted review exposed these errors. The existing checker rules already require this verification, so another rule would duplicate them.
+
+## Maintainer asks
+
+None. The required model review is recorded in TODO.md and the pull request.
+
+## What cost the most time
+
+A diagnostic that distinguishes automatic operand boundaries from real data and routine entries would have saved the most time in this run.
+
+The host was Linux x86_64. VICE release v3.13.1 and the installed regenerator2000 servers were reused; this continuation installed no software.
+
+
+The uncertainty pass benefited from `60-verify`’s instruction to check every reader and writer before making a claim about the whole game. Two hit flags looked like a simultaneous-beam requirement until the independent checker followed the off toggle and the skipped update branch. The prescribed second reading caught it. The input-recording guidance also exposed a banked-memory mistake in the VICE replay helper: writing the recording below I/O needed the CPU port set to RAM first. The positive-control breakpoint showed zero hits in the failed attempt, so it was discarded as an instrument failure. Both failures were covered by existing guidance; no additional kit rule was needed.
+
+
+`tool-vice-mcp`’s warning about an undrained monitor connection applied to scoped tracepoints too: closing a one-command connection while trace output was pending wedged this build with broken-pipe errors. The sustained trace used one connection with a reader that drained it to a private file; watchpoints were removed before closing it. The existing warning identified the failure, so no broader tracing rule was added. Headless runs unset display variables only for the kit launcher’s child environment, preserving the contributor’s desktop settings.
+
+`tool-vice-mcp` says to inspect the drive when a loader hangs, and gives the `DRIVECPU0` snapshot layout. That instruction exposed a filename-prefix search in the Jondi drive code and resolved the black-screen boot: the requested `00` prefix is absent from the directory. A later failed request filled memory with `$FF`, so a long wait at a BASIC ROM address alone had hidden the actual cause. The existing drive-inspection instruction covered the problem; another rule would repeat it.
+
+## Silver review continuation
+
+The 60-verify rule “For each wrong comment” prompted a search across every part for the same gate/control wording, finding 21 occurrences. The rule about comments written from templates prompted a separate 20-comment generated supplement. The installed emulator was reused headlessly with dummy audio as requested. No kit change was needed.
+
+## Silver pass, 17 November 2026
+
+What changed what the run did:
+
+- `70-minisite`, "Plan the explanation", made the run list every lead before touching a page. The list put the six sound effects that the game never asks for, the airshaft's own outcome lines and the crack's changes to them on the pages; before it, they sat in the listing only.
+- `70-minisite`, "Discoveries", says a `Bug:` is shown happening from the start of its level with input. The doorway trap had first been seen from a captured floor state; the rule sent the run back to the start of the museum, and the trap reproduced from the rope with joystick and Space alone (`museum-trap-route.json`).
+- `75-review/reader.md`'s table of weak treatments ("A sound picker lists numbered effects") shaped the effect table: each effect named by what sets it off, with the request's address.
+- `kit/CHECKING.md` made the maintainer's sample quick to run and to record; `models.py check` confirmed the row.
+
+Where the kit fell short, and the change made: `10-orient` did not say that a crack's patch to the game's own code is worth playing on the original. The change is listed under "What was changed in the kit", above.
+
+For a maintainer (not changed):
+
+- None.

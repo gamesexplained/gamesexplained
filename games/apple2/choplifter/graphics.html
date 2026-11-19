@@ -37,8 +37,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ch-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
 .ch-pair img,.ch-screen{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
 .ch-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
-.ch-bar button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}
-.ch-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ch-bar button{font-size:13px;padding:5px 11px}
+.ch-bar button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .ch-bar label{font-size:13px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
 .ch-bar input[type=range]{width:200px}
 .ch-stat{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
@@ -50,8 +50,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ch-scroll{overflow-x:auto}
 .ch-note{font-size:14px;color:var(--ink-soft)}
 .ch-tilts{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin:10px 0 0}
-.ch-tilts button{padding:0 0 3px;border:2px solid transparent;background:#000;border-radius:5px;cursor:pointer;overflow:hidden}
-.ch-tilts button.on{border-color:var(--amber)}
+.ch-tilts[data-own-look] button{padding:0 0 3px;border:2px solid transparent;background:#000;border-radius:5px;cursor:pointer;overflow:hidden}
+.ch-tilts[data-own-look] button.on{border-color:var(--amber)}
 .ch-tilts canvas{width:100%;display:block;image-rendering:pixelated}
 .ch-tilts span{display:block;font-family:var(--fm);font-size:11px;color:#ccc;text-align:center}
 .ch-sound{background:#111;border-radius:6px;padding:8px 10px;color:#ddd}
@@ -65,8 +65,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gx-group{margin:0 0 18px}
 .gx-group h3{font-size:14px;font-weight:700;color:var(--ink-soft);margin:0 0 8px}
 .gx-tiles{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
-.gx-tiles button{background:#000;border:2px solid transparent;border-radius:4px;padding:4px 4px 2px;cursor:pointer;max-width:100%}
-.gx-tiles button.on{border-color:var(--amber)}
+.gx-tiles[data-own-look] button{background:#000;border:2px solid transparent;border-radius:4px;padding:4px 4px 2px;cursor:pointer;max-width:100%}
+.gx-tiles[data-own-look] button.on{border-color:var(--amber)}
 .gx-tiles canvas{display:block;image-rendering:pixelated;max-width:100%}
 .gx-tiles span{display:block;font-family:var(--fm);font-size:10px;color:#aaa;text-align:center}
 .gx-info{font-size:14px;color:var(--ink);min-height:3em;margin:12px 0 0}
@@ -77,7 +77,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1982 · Broderbund Software · Apple II</p>
   <h1>Choplifter</h1>
-  <p class="sub">The Apple II has no sprites. The helicopter, the hostages, the tanks and the jets are pictures from one table of 128 shapes, drawn dot by dot onto the hi-res screen by a graphics library of the game's own at <code>$1000</code>. Every picture on this page is drawn by that library, from the listing, on the kit's 6502.</p>
+  <p class="sub">The Apple II has no sprites. The helicopter, the hostages, the tanks and the jets are pictures from one table of 128 shapes, drawn dot by dot onto the hi-res screen by a graphics library of the game's own at <code>$1000</code>. Every picture on this page is drawn by that library, from the listing.</p>
 </header>
 <main class="wrap">
 
@@ -95,7 +95,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="gx-cast" id="gx-cast"></div>
     <p class="cap">The helicopter is drawn whole by its object's routine (<code>heli_object</code>, <code>$8276</code>), which draws the body, the main rotor and the tail rotor and steps each rotor's picture on. Everything else is drawn by calling the graphics library as the game calls it: <code>gfx_colour</code>, <code>gfx_place</code>, <code>gfx_shape</code>, <code>gfx_clip_to_window</code>, then the drawing routine the game uses for that shape, at the offsets and in the order the game's own routine for it uses (<code>tank_impl</code>, <code>drone</code>, <code>draw_hostage</code>, <code>barracks</code>, the flag and the jets' scripts). Each is drawn on the column the game would draw it on where the game fixes that column's evenness, because the hi-res screen colours a lone dot by its column.</p>
   </div>
-  <p>Nothing on the screen has a colour of its own. A hi-res byte holds seven dots and one bit that picks a pair of colours: violet and green, or blue and orange. A dot lit alone shows the colour of its column, odd or even, in that pair; dots lit side by side show white. The library's whole and opaque drawing routines put one colour bit, <code>g_colour</code> (<code>$8C</code>), into every byte they write. The jets, the explosions, the muzzle flash, the drones' bodies, the flag and the fire are drawn that way with it set, in blue and orange; the tanks and the drones' spinning parts with it clear, in violet and green. The helicopter, its rotors, the hostages and the shots are drawn by OR, which leaves each byte's bit as the screen had it. The sky is black bytes with the bit set, <code>$80</code>, so over the sky they come out in blue and orange too, and where a hostage's feet reach the ground band, whose bytes have it clear, they turn violet and green.</p>
+  <p>The things on the screen have no colours of their own. A hi-res byte holds seven dots and one bit that picks a pair of colours: violet and green, or blue and orange. A dot lit alone shows the colour of its column, odd or even, in that pair; dots lit side by side show white. The library's whole and opaque drawing routines put one colour bit, <code>g_colour</code> (<code>$8C</code>), into every byte they write. The jets, the explosions, the muzzle flash, the drones' bodies, the flag and the fire are drawn that way with it set, in blue and orange; the tanks and the drones' spinning parts with it clear, in violet and green. The helicopter, its rotors, the hostages and the shots are drawn by OR, which leaves each byte's bit as the screen had it. The sky is black bytes with the bit set, <code>$80</code>, so over the sky they come out in blue and orange too, and where a hostage's feet reach the ground band, whose bytes have it clear, they turn violet and green.</p>
   <p>Where a shape lands matters for the same reason. A shape one dot along shows its lone dots in the other colour of the pair, so the routine that places a jet, a drone, a tank or an explosion (<code>object_place</code>, <code>$7B59</code>) can push it one dot right to keep it on even columns or on odd ones, whatever the scrolling does. The hostages are placed so each keeps its own colours as the view scrolls.</p>
   <p>The helicopter turning to face the viewer is drawn sheared, a row up or down every few dots (<code>gfx_draw_slant</code>), so five turning pictures and eleven side-on ones cover every pose at every tilt. How the tilt rocks it on its skids is on <a href="index.html#flight">How it works</a>.</p>
 </section>
@@ -115,7 +115,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="frame">
   <p class="fig">03 · How the screen is built</p>
-  <h2 class="t">Each frame is erased box by box and drawn again on the page nobody sees</h2>
+  <h2 class="t">Each frame is erased box by box and drawn again on the hidden page</h2>
   <p class="lede">One frame of the demonstration flight, stopped before each thing the game draws. Step through it to watch the hidden page being built.</p>
   <div class="plate">
     <div class="ch-bar">
@@ -127,10 +127,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <canvas id="fr-cv" class="gx-frame" width="560" height="384" aria-label="The hidden hi-res page as one frame is drawn"></canvas>
     <p class="gx-info" id="fr-stat"></p>
-    <p class="cap">The demonstration flight is the game's own code run from <code>start</code> on the kit's 6502 (<code>reference/demo.js</code>), to its 268th frame. That frame is then run again stopped at each call to the library's drawing routines, at <code>erase_old</code> (<code>$9B4C</code>), <code>twinkle_stars</code> (<code>$96AE</code>) and <code>draw_planet</code> (<code>$9411</code>), and at <code>gfx_show_page</code>, which ends it. Each step shows the page after it, with the bytes it changed in yellow.</p>
+    <p class="cap">The demonstration flight is the game's own code run from <code>start</code>, to its 268th frame. That frame is then run again stopped at each call to the library's drawing routines, at <code>erase_old</code> (<code>$9B4C</code>), <code>twinkle_stars</code> (<code>$96AE</code>) and <code>draw_planet</code> (<code>$9411</code>), and at <code>gfx_show_page</code>, which ends it. Each step shows the page after it, with the bytes it changed in yellow.</p>
   </div>
   <p>There are two hi-res pages, and the game draws on the one that is not being shown, then shows it and starts on the other (<code>gfx_flip_page</code>). The library EORs <code>$60</code> into the high byte of every line address on page 2, which turns <code>$20</code>-<code>$3F</code> into <code>$40</code>-<code>$5F</code>, so every drawing routine serves both pages.</p>
-  <p>Nothing is cleared. Every shape drawn records a box in its page's erase list: a kind, its X and its row (<code>add_erase</code>, <code>$7BF8</code>). At the start of the next frame on that page, two frames later, <code>erase_old</code> fills each of those boxes, black above the ground line and the ground's pattern below it, so only what moved is touched. The ground band itself is never drawn: it is in the picture the disk loads onto both pages, and the erase boxes refill it with the same pattern, <code>$55 $2A</code>.</p>
+  <p>The game never clears a whole page. Every shape drawn records a box in its page's erase list: a kind, its X and its row (<code>add_erase</code>, <code>$7BF8</code>). At the start of the next frame on that page, two frames later, <code>erase_old</code> fills each of those boxes, black above the ground line and the ground's pattern below it, so only what moved is touched. The ground band itself is never drawn: it is in the picture the disk loads onto both pages, and the erase boxes refill it with the same pattern, <code>$55 $2A</code>.</p>
   <p>Two things are not shapes at all. The planet is <code>draw_planet</code> (<code>$9411</code>), 66 <code>LDA #</code> and <code>STA</code> pairs that store its bytes straight into screen memory, so the picture is in the code. The stars are fourteen bytes stored at 77 fixed places (<code>store_stars1</code>, <code>$972D</code>), two of them the same byte, and each frame <code>twinkle_stars</code> makes the bytes from two random numbers with each bit kept one time in four, so the sky twinkles.</p>
 </section>
 
@@ -361,7 +361,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   const tiles = $('gx-table');
   for (const [title, a, b] of GROUPS) {
     const g = document.createElement('div'); g.className = 'gx-group';
-    g.innerHTML = '<h3>' + title + '</h3><div class="gx-tiles"></div>';
+    g.innerHTML = '<h3>' + title + '</h3><div class="gx-tiles" data-own-look></div>';
     const row = g.lastChild;
     for (let i = a; i <= b; i++) {
       if (MOVING.has(i)) continue;

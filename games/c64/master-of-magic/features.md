@@ -91,6 +91,7 @@ Sources:
 | **Music by Rob Hubbard**, three tunes (HVSC: "Main Theme", "Game Over (You're dead)", "Game beaten"); the main theme is an arrangement of Synergy's "Shibolet" (HVSC, Wikipedia) | live | tune 0 on the title and in play (`$03D1`), tune 1 at the death live, tune 2 at the win (`$0861`); driver `$C000` |
 | **No sound effects, only music** (Addict) | differs | with the music off (M), footsteps sound: every third step of the player sets `$03CF` (`$0D51`-`$0D5D`), and creatures' steps set it too (`$2242`-`$2254`); the play interrupt's band 1 then plays a noise burst on voice 1 (`$2782`). Live: ten bursts in 2.5 s of walking, none standing still. With the music on, band 1 plays the music instead and the steps are silent |
 | **Credits** (inlay): programmed by Richard Darling, graphics by James Wilson, music by Rob Hubbard | confirmed | the title scroller ends with "PROGRAMMED BY RICHARD DARLING, ART BY JAMES WILSON, MUSIC BY ROB HUBBARD." (`$831D`) |
+| **The loading picture** (tape) | live | the 1985 cassette's own: the Ultimate Tape Archive's `Master_of_Magic.tap` puts it up whole about 95 seconds in and leaves it up, in silence, for 3 minutes 54 seconds; its 64,000 pixels match this disk's picture (`reference/loading-picture.png`) one for one. The Graphics tab draws it, section 03 |
 
 ## Beyond the documentation
 
@@ -126,7 +127,3 @@ Found in the code, not in the manual.
 - **Overlapping tables** (traced): the two vampires share a noun and a
   picture but not a defence: the second's is read from the player's
   to-hit, 25, where the first has 60.
-
-## Open questions
-
-- Is the loading picture the tape's own loading screen, or the crackers'?

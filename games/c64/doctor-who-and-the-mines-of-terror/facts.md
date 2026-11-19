@@ -363,3 +363,17 @@ stop. `STA $D400,Y` at `$755D` reaches the SID through an index.
 | CIRCUITs `$44` and `$45` put at x `$0208` and `$0228`, y `$0390` | slots read S T O P T; `$4F` = `$FF`; `$42`/`$43` put back: `$4F` = 0 |
 | Restart beside the madrag | head and body drawn above the legs, as on Gameplay |
 | Title screen, after N | SID voice 2 plays the title tune; stops when space is pressed |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- Show the raster bands A reconstruction, not a screenshot: one frame recorded in the emulator, with every write to the video chip and the line it happened on, drawn line by line.
+- It matches the emulator's own picture in all 104,448 pixels.
+- The disk's own screen, recorded in VICE and drawn as the video chip draws it.
+
+### music.html
+
+- The port matches the player itself, run in a 6502 simulator on the game's bytes, in all 25 sound registers after each of 30,000 frames of every tune.

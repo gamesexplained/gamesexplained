@@ -92,6 +92,28 @@ glyphs of its characters there are those bytes.
   from 0) in
   extended colour mode, its letters $00-$1D drawn as $80-$9D (`bar_text`
   $41E6, `irq_bar`).
+- The bar's letters are cut out of solid characters: each box is colour 11
+  (`bar_reset` $09DC) and the letters show the background colour that codes
+  $80-$BF take in extended colour mode, $D023, which phase 1 of the
+  interrupt sets from the stage's second shared colour (`stage_colour2`
+  $5FC1). The letters are light grey on stages 1, 2, 4, 5, 6 and 8, grey
+  on stage 3 and white on stage 7; the reference screenshots of stages 1,
+  3, 6, 7 and 8 show the same. A blanked box is character $23, a solid
+  block (`bar_blank` $5309).
+- Sprite slot 7 is shared (`draw_options` $6F7E): on even frames it shows
+  the first Option, 8 places back along the ship's trail; on odd frames
+  the second, 15 back, or with fewer than two the exhaust flame. So with
+  two Options the flame never shows. The flame is shape $CC at speeds 2
+  and 3 and $CD at 4, 24 pixels left of the ship, only on a frame it moved
+  right, never at speed 1; its colour steps through `flame_colours`. The
+  Options' shape steps through `option_shades` ($81, $89, $88) every frame.
+- The Options fire from one trail place ahead of where they are drawn:
+  `fire_shot` ($5407) fires from 7 and 14 places back, `draw_options` draws
+  them 8 and 15 back.
+- The shield is shape $82, the level ship with two pods at its nose.
+  `shield_shape` ($7809) swaps it in only for shape $80, so while the ship
+  is tilted ($84-$87, `ship_shape` $502B) the pods are not drawn, though
+  the shield still holds. Shape $83 holds the same bytes as $82.
 - Scrolling: one column a character at a time from the map
   (`map_column` $4EA9), a stream of character codes ($7F up) and counts of
   empty rows, 19 rows a column. Stage 4 draws stage 1's map from the
@@ -185,3 +207,32 @@ ball's shapes). The listing has not had a full audit.
   the NMI writes at lines 82/242, then 1/161/272, then 80/191/226.
 - Screenshots of all eight stages taken on VICE switched to an NTSC C64,
   where the splits land in place (`reference/`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- Each group is drawn from the listing's bytes in the colour, mode and size the game gives it, recorded from the sprite table while every stage was played through in VICE.6 All of them are multicolour, with the two shared colours grey (`$D025` = 12) and white (`$D026` = 1).
+
+### index.html
+
+- The loading screen, the title and stage 1, in VICE.
+- The Big Core at the end of stage 6, in VICE.
+- The power-up pictures (section 02) play the game's rules from the
+  `gr-powerups` block, and `test_powerups.js` holds that block against the
+  game's own routines run on the kit's 6502 over the listing:
+  `ship_control`, `draw_options` and `shield_shape` frame by frame along a
+  script of moves, at every speed, with none to two Options and the shield
+  on and off; `start_shot`, `start_missile` and `start_laser` for firing
+  points across the screen; and `move_shots`, `move_missiles` and
+  `move_lasers` step by step over every stage's scenery. The firing
+  pattern (every 17 frames while fire is held, two ordinary shots, one
+  DOUBLE shot, one missile and one laser at a time with no Options) is
+  from `fire_button`, `start_shot`, `start_missile` and `start_laser`, read
+  in the code; the pace the pictures move at is the page's own.
+
+### levels.html
+
+- Pictures taken in VICE on an NTSC C64.

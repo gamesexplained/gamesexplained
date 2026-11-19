@@ -26,3 +26,13 @@ Gold: a human's section-by-section pass over the copy.
 - The map with the four items, the hut and the landing sites marked, and
   the seven entry zones of the soldiers.
 - A Play tab: the scroll and the spawn budget are small enough to port.
+
+## Loading picture and tune
+
+- Three new sections await the steward's pass: the cassette's loading picture on the
+  Graphics tab (section 07), its loading tune with the Morse read out on How it works
+  (section 04; the three sections after it are renumbered, their text unchanged), and why
+  the Morse turns every I into an E on Discoveries (section 06).
+- Why the Morse's tone drops twice (voice 1 goes from `$224B` to `$1B38` and then `$19B1`,
+  which the High Voltage SID Collection's notes mark before GALWAY's A and inside STEVE's S)
+  is not traced.

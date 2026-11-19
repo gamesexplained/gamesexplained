@@ -43,8 +43,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pp-frame{grid-template-columns:3fr 2fr;align-items:start}
 @media (max-width:760px){.pp-two,.pp-frame{grid-template-columns:1fr}:root{--gx:16px}}
 .pp-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
-.pp-bar button{font:inherit;font-size:14px;padding:5px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-.pp-bar button:hover{background:var(--hl)}
+.pp-bar button{font-size:14px;padding:5px 12px}
 .pp-bar input[type=range]{flex:1;min-width:140px}
 .pp-mono{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
 .pp-read,.pp-tab,.pp-cells{border-collapse:collapse;margin-top:12px;font-size:14px}
@@ -75,7 +74,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Catch what Olive Oyl throws</h2>
   <p class="lede">Popeye stands in a boat at the bottom of the screen. Olive Oyl, at the top left, throws bottles, pineapples and cans down three paths, and Popeye moves left and right under them to catch each one.</p>
   <div class="plate"><div class="pp-two"><div id="pic-game"></div><div id="pic-clock"></div></div>
-    <p class="cap"><b>Left:</b> Game A, 13 seconds in, two items falling. <b>Right:</b> the clock, which shows the time while the game plays itself. Both are drawn from the segments the chip lit on the kit's model of the unit, on MAME's outlines of the segments.</p></div>
+    <p class="cap"><b>Left:</b> Game A, 13 seconds in, two items falling. <b>Right:</b> the clock, which shows the time while the game plays itself. Both are drawn from the segments the chip lit, on MAME's outlines of the segments.</p></div>
   <p>Each catch is a point. An item that falls past Popeye drops into the sea with a splash. Bluto sits in a boat at the side and swings a mallet from the left or a fist from the right: Popeye standing under the blow is knocked into the sea. Three miss marks end the game. Game A and Game B differ in how fast Olive throws and in whether Bluto changes boats.</p>
   <p>There is no picture in the usual sense. The screen is 72 fixed shapes printed on the LCD, each one on or off. Popeye in the middle is one shape, the third can down its path is another. Animation is lighting one shape and putting out the one before.</p>
 </section>
@@ -83,12 +82,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">02 · A replay</p>
   <h2 class="t">The game moves one path at a time</h2>
-  <p class="lede">Step through 45 seconds of Game A, recorded on the kit's model of the chip. Each frame is one change of the screen.</p>
+  <p class="lede">Step through 45 seconds of Game A, played by the game's own program. Each frame is one change of the screen.</p>
   <div class="plate">
     <div id="replay"></div>
     <div class="pp-bar"><button id="rp-prev">◀ step</button><button id="rp-play">play</button><button id="rp-next">step ▶</button><input id="rp-pos" type="range" min="0" value="0"><span id="rp-time" class="pp-mono"></span></div>
     <table class="pp-read"><tr><th>Moves this step</th><td id="rp-lane"></td><th>Falling</th><td id="rp-flight"></td><th>Waiting at the bottom</th><td id="rp-landed"></td><th>Score</th><td id="rp-score"></td></tr></table>
-    <p class="cap">Recorded on the kit's Sharp SM5A (<code>kit/gnw/sm5a.js</code>, held to MAME 0.289 instruction for instruction) with a player that moves under the lowest item. A frame is kept each time <code>$0640</code> draws a screen that differs from the last. The readout is the chip's own cells: <code>$100A</code>, <code>$1009</code>, <code>$1029</code> and <code>$1015</code>. At 18.4 s the player walks into Bluto's mallet.</p>
+    <p class="cap">The player here moves under the lowest item. A frame is kept each time <code>$0640</code> draws a screen that differs from the last. The readout is the chip's own cells: <code>$100A</code>, <code>$1009</code>, <code>$1029</code> and <code>$1015</code>. At 18.4 s the player walks into Bluto's mallet.</p>
   </div>
   <p>The game runs in steps, and each step moves only one of the three paths: bottles on the first, pineapples on the second, cans on the third (<code>$012B</code>). So an item moves one place every third step, and the three paths move in turn, never together. The step itself is short. Most of the time between steps is a delay loop that counts down and does nothing else (<code>$03AA</code>), and it reads the controls between counts, so Popeye moves as soon as a button is pressed, not on the next step.</p>
 </section>
@@ -99,7 +98,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Click a bit to light its segment, or a segment to find its bit. The picture is drawn from these cells alone.</p>
   <div class="plate">
     <div class="pp-two pp-frame"><div id="frame"></div><div id="cells"></div></div>
-    <p class="cap">The cells are the chip's memory as it drew a screen just after the replay above ends. The page turns them into segments with a port of <code>$0640</code>, the game's drawing routine; <code>test_frame.js</code> holds the port to the chip's own picture on every screen of three minutes of play, and on this one. <span id="frame-check"></span></p>
+    <p class="cap">The cells are the chip's memory as it drew a screen just after the replay above ends. The page turns them into segments with a port of <code>$0640</code>, the game's drawing routine.</p>
   </div>
   <p>The LCD has nine 4-bit latches for each of its two sets of segments. To draw, the game shifts a cell into the latches nine times, copies them, and shifts nine more for the second set (<code>$0640</code>). Rows 0 and 1 of memory are the picture, a cell for each latch, and the three digits come from the chip's own table of digit shapes. Bit 0 of <code>$1005</code>, <code>$1006</code> and <code>$1007</code> light a spare segment beside each digit, which this unit wires to the colon, the first miss mark and Bluto's raised fist.</p>
   <p>Since an object is a bit, moving it is moving a bit. The chip has an instruction to test a bit, but none to move one, so the game exchanges the carry flag with one bit at a time (<code>$043B</code> to <code>$043E</code>). A call puts the carry into a place and takes out what was there. A chain of calls down a path moves every item on it one place in a single pass, and a new item thrown at the top is just the carry going in first.</p>
@@ -125,7 +124,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Two items in the sea make one miss</h2>
   <p class="lede">An item at the bottom of its path waits there, over Popeye's head on that side, for two steps.</p>
   <div class="plate"><div class="pp-two"><div id="pic-wait"></div><div id="pic-splash"></div></div>
-    <p class="cap"><b>Left:</b> a can waits at the bottom on the right while Popeye stands in the middle. <b>Right:</b> two steps later it has fallen in, and its splash stays lit. Game A on the kit's model, with Popeye left standing still.</p></div>
+    <p class="cap"><b>Left:</b> a can waits at the bottom on the right while Popeye stands in the middle. <b>Right:</b> two steps later it has fallen in, and its splash stays lit. Game A, with Popeye left standing still.</p></div>
   <p>A bit for each path in <code>$1029</code> says an item is waiting. After each step of a path and each move, the game checks the path in front of Popeye: a waiting item there is caught, scores a point and recomputes the difficulty (<code>$030C</code>). One still waiting two steps later falls into the sea (<code>$0140</code>, <code>$018B</code>, <code>$01E1</code>).</p>
   <p>The first item to fall in counts nothing. It sets a flag and leaves its splash on the screen. The second one counts a miss mark and clears the splashes (<code>$0192</code>). Bluto is less forgiving: every time he knocks Popeye into the sea it is a whole miss. The marks light from the right, and the third ends the game.</p>
 </section>
@@ -138,7 +137,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="pp-bar"><label for="sc">Score</label><input id="sc" type="range" min="0" max="999" value="94"><span id="sc-v" class="pp-mono"></span></div>
     <table class="pp-read"><tr><th>Level</th><td id="sc-level"></td><th>Most items falling at once</th><td id="sc-max"></td><th>Delay before a step</th><td id="sc-delay"></td><th>A step takes</th><td id="sc-step"></td></tr></table>
     <canvas id="curve" width="900" height="160"></canvas>
-    <p class="cap">The level for every score from 0 to 999, from a port of <code>$0080</code>; <code>test_difficulty.js</code> runs the game's own routine on the kit's model for all 1,000 scores and compares. The step's length was measured on the model on 9 November 2026 with no sound playing: about 770 cycles plus 210 for each pass of the delay, at 16,384 cycles a second.</p>
+    <p class="cap">The level for every score from 0 to 999, from the game's own rule at <code>$0080</code>. With no sound playing, a step takes about 770 cycles plus 210 for each pass of the delay, at 16,384 cycles a second.</p>
   </div>
   <p>After every catch the game works out the level from the score (<code>$0080</code>): the hundreds and tens digits added, mapped to 1 to 9 through a run of <code>LAX</code> instructions it jumps into part way, and one more when the units digit is 4 to 7. The level is also the most items that may be falling before Olive stops throwing extra ones, and it picks the delay before each step, from 10 passes of the delay loop at level 4 or below down to 3 at level 10, the highest the score can reach.</p>
   <p>A game starts with a delay of 11 and a limit of 0, which lets only one item fall at a time until the first catch sets both.</p>
@@ -159,7 +158,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Sound: one pin, toggled by the program</h2>
   <p class="lede">Press a button to hear the game's own sound routine, recorded at the buzzer's pin.</p>
   <div class="plate"><div class="pp-bar" id="sounds"></div>
-    <p class="cap">Each sound is the list of moments the chip's R1 pin changed while its routine ran on the kit's model (<code>$02AE</code>, <code>$02A7</code>), played here as a square wave. <code>test_sound.js</code> runs the routines again on the listing's bytes and compares every edge.</p></div>
+    <p class="cap">Each sound is the list of moments the chip's R1 pin changes while its routine runs (<code>$02AE</code>, <code>$02A7</code>), played here as a square wave.</p></div>
   <p>The piezo buzzer is wired straight to one output pin, so a tone is the program flipping that pin in a loop and its pitch is a count of instructions. The tone loop flips it every 3 instructions, about 2.7 kHz (<code>$02B5</code>). All the sounds are that one pitch and differ only in length: the routine takes a code and runs a pass for each value from the code up to 15, each pass a little longer than the one before, so a larger code is a shorter sound.</p>
   <table class="pp-tab"><tr><th>Sound</th><th>Code</th><th>Length</th></tr>
     <tr><td>a catch</td><td>14</td><td>0.10 s</td></tr><tr><td>the bonus's beep</td><td>11</td><td>0.22 s</td></tr><tr><td>an item into the sea</td><td>9</td><td>0.29 s</td></tr><tr><td>a miss counted</td><td>8</td><td>0.31 s</td></tr><tr><td>Popeye knocked in</td><td>5</td><td>0.38 s</td></tr></table>
@@ -179,8 +178,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">The clock plays the game by itself</h2>
   <p class="lede">Out of a game the unit is a clock, and the game runs in it at about a step a second.</p>
   <div class="plate"><div id="demo"></div><div class="pp-bar"><button id="dm-play">play</button><span id="dm-time" class="pp-mono"></span></div>
-    <p class="cap">Twenty seconds of the clock, recorded on the kit's model: each frame is one redraw, once a second.</p></div>
-  <p>The clock keeps time on the chip's 1 Hz flag, set by a 15-bit counter of the 32,768 Hz crystal (<code>$0200</code>). Each second it runs one step of the game with a limit of 3 items. Popeye walks one place toward each item as it passes a point on its path, at most once a second (<code>$0340</code>), and no miss is ever counted. Between seconds the chip stops its own clock with <code>CEND</code> and waits for the next second or a button (<code>$0030</code>).</p>
+    <p class="cap">Twenty seconds of the clock: each frame is one redraw, once a second.</p></div>
+  <p>The clock keeps time on the chip's 1 Hz flag, set by a 15-bit counter of the 32,768 Hz crystal (<code>$0200</code>). Each second it runs one step of the game with a limit of 3 items. Popeye walks one place toward each item as it passes a point on its path, at most once a second (<code>$0340</code>), and the game never counts a miss. Between seconds the chip stops its own clock with <code>CEND</code> and waits for the next second or a button (<code>$0030</code>).</p>
   <p>Alarm switches to the alarm's time, and each press turns the alarm on or off; the bell beside Olive is lit while it is on. Left and right then set the alarm's hours and minutes. Holding Time in the clock shows the alarm's time too (<code>$06C0</code>). After ACL, the reset button, every segment is lit and left and right set the time. In both settings a held button repeats about four times a second (<code>$03D6</code>).</p>
 </section>
 </main>
@@ -351,10 +350,6 @@ function drawFrame() {
   };
 }
 drawFrame();
-{
-  const a = litFromCells(REC.cells).sort().join(), b = REC.frameLit.slice().sort().join();
-  document.getElementById('frame-check').textContent = a === b ? 'On this page the port lights the same ' + REC.frameLit.length + ' segments as the chip did.' : 'The port and the chip differ on this picture.';
-}
 
 // 05: waiting and splash, Popeye standing still in the middle
 gnwScreen(document.getElementById('pic-wait'), SEG).show(REC.wait, ['0.0.0']);

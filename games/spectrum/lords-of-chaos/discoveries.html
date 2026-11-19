@@ -38,8 +38,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .loc-row>div{min-width:0}
 .loc-cv{image-rendering:pixelated;display:block;max-width:100%;height:auto;background:#000;border-radius:4px}
 .loc-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-family:var(--fm);font-size:13px}
-.loc-bar button,.loc-bar select{font:inherit;padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-.loc-bar button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.loc-bar button{padding:5px 10px}
 .loc-info{font-family:var(--fm);font-size:13px;line-height:1.55;min-width:260px;flex:1}
 .loc-info table,.loc-tab{border-collapse:collapse;font-family:var(--fm);font-size:13px}
 .loc-info td,.loc-tab td,.loc-tab th{padding:3px 8px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top}
@@ -47,8 +46,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .loc-tab td.n,.loc-tab th.n{text-align:right}
 .loc-scroll{overflow-x:auto;max-width:100%}
 .loc-pads{display:grid;grid-template-columns:repeat(4,auto);gap:8px;justify-content:start}
-.loc-pads button{font-family:var(--fm);font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer;text-align:left}
-.loc-pads button:hover{background:var(--hl)}
+.loc-pads button{font-size:13px;padding:8px 10px;text-align:left}
 .loc-shots{display:flex;flex-wrap:wrap;gap:14px}
 .loc-shots figure{margin:0;flex:1;min-width:220px}
 .loc-shots img{width:100%;image-rendering:pixelated;border-radius:4px;display:block}
@@ -74,7 +72,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <figure><img src="reference/load-loading-mordred.png" width="288" height="224" alt="The file panel showing LOADING: MORDRED2.WIZ"><figcaption>The first file on the tape is MORDRED2.WIZ, and the game loads it.</figcaption></figure>
       <figure><img src="reference/load-mordred-loaded.png" width="288" height="224" alt="The file panel's wizard list with MORDRED at level 2 in the first slot"><figcaption>MORDRED, level 2, takes the slot meant for MERLIN.</figcaption></figure>
     </div>
-    <p class="cap">In the emulator, with a tape holding four copies of MORDRED2.WIZ and then MERLIN1.WIZ. A loader that compared the whole name would have passed all four MORDREDs.</p>
+    <p class="cap">A tape holding four copies of MORDRED2.WIZ and then MERLIN1.WIZ. A loader that compared the whole name would have passed all four MORDREDs.</p>
   </div>
   <div class="plate" style="margin-top:20px">
     <div class="loc-bar">
@@ -90,7 +88,7 @@ MERLIN1.WIZ
 1.GAM</textarea></div>
       <div class="loc-info" id="tp-out"></div>
     </div>
-    <p class="cap">Each line is a file's header as the game saves it. The page follows find_file (<code>$C675</code>), held to the game's code by <b>test_discoveries.js</b> on every pairing of six names.</p>
+    <p class="cap">Each line is a file's header as the game saves it. The page follows find_file (<code>$C675</code>).</p>
   </div>
   <p>The name you type becomes twelve characters, eight for the name, a dot and the extension, and find_file reads the twelve-character header of each file on the tape into found_name (<code>$C6B2</code>). It loads B with 12 to count the characters, then compares the first pair and never counts or moves on. So the comparison passes on the first letter alone, whatever the rest of the name and whatever the extension.</p>
   <p>A tape with one file to a letter loads as it should, which is how a player would usually keep one. Save MERLIN at level 1 and again at level 2 on the same tape, and asking for the second one loads the first.</p>
@@ -100,7 +98,7 @@ MERLIN1.WIZ
   <p class="fig">02 · Slayer's Dungeon</p>
   <h2 class="t">Secret: everything the computer moves is immune to lava</h2>
   <p class="lede">The river of molten lava in scenario 2 costs no more to cross than a floor. A creature you move into it loses 7 points of constitution; the dungeon's own monsters and the computer's walk through unharmed.</p>
-  <p>The scenario hooks a routine of its own into every step (<code>$E1F0</code>, called through <code>$D021</code> by select_ground for a player's step and by computer_step_move for the computer's). Its first test is computer_moving (<code>$D063</code>): while the computer moves, it returns before it looks at the terrain. The six lava terrains, <code>$18</code> to <code>$1D</code>, have a step cost of 4 and nothing else in the scenario hurts a creature standing in them, so the independent creatures and the computer's wizard's take the lava as a road. <b>test_discoveries.js</b> runs the hook on the game's code for a SPECTRE on each terrain from <code>$16</code> to <code>$1F</code>: moved by a player it loses 7 points in the lava, moved by the computer none.</p>
+  <p>The scenario hooks a routine of its own into every step (<code>$E1F0</code>, called through <code>$D021</code> by select_ground for a player's step and by computer_step_move for the computer's). Its first test is computer_moving (<code>$D063</code>): while the computer moves, it returns before it looks at the terrain. The six lava terrains, <code>$18</code> to <code>$1D</code>, have a step cost of 4 and in this scenario do no other harm to a creature standing in them, so the independent creatures and the computer's wizard's take the lava as a road. A SPECTRE moved by a player loses 7 points in the lava, and one moved by the computer loses none.</p>
 </section>
 
 <section id="rock">
@@ -115,7 +113,7 @@ MERLIN1.WIZ
     <p class="cap">Scenario 2's map round row 8, column 7, drawn the way the game draws its map window. The red square is where waypoint 28 lands. <a href="levels.html#dungeon">Maps</a> draws the routes whole.</p>
   </div>
   <p>In a game against the computer, ELBO SMOGG's creatures each take one of the scenario's first seven routes, chosen at random until one suits the creature (add_to_wizard_list, <code>$A4FA</code>). Routes 0, 2 and 6 all pass through waypoint 28. The table of waypoints (<code>$D4AD</code>) holds 28 of them, numbered 0 to 27, and the independent creatures' orders come straight after it. waypoint_square (<code>$9971</code>) finds a waypoint by adding twice its number to the start of the table, with no check, so waypoint 28 is the first two bytes of those orders, 8 and 7: row 8, column 7.</p>
-  <p>That square is ROCK WALL, which costs 255 action points to enter, the mark of a square no creature may walk into. Only a ghost, which pays 4 for any square (classify_step, <code>$CA2B</code>), could stand there. computer_choose_target (<code>$9992</code>) moves a creature on to its next waypoint only once it stands on the one it is heading for, so a creature on one of these routes never gets past the rock: whenever it follows its route, it heads for row 8, column 7, until the portal opens and it makes for that instead. <b>test_discoveries.js</b> runs computer_choose_target on the game's own code. Beside the rock, the creature's target stays row 8, column 7; standing on it, the creature would move on.</p>
+  <p>That square is ROCK WALL, which costs 255 action points to enter, the mark of a square no creature may walk into. Only a ghost, which pays 4 for any square (classify_step, <code>$CA2B</code>), could stand there. computer_choose_target (<code>$9992</code>) moves a creature on to its next waypoint only once it stands on the one it is heading for, so a creature on one of these routes never gets past the rock: whenever it follows its route, it heads for row 8, column 7, until the portal opens and it makes for that instead. Beside the rock, the creature's target stays row 8, column 7; standing on it, the creature would move on.</p>
 </section>
 
 <section id="vials">
@@ -125,7 +123,7 @@ MERLIN1.WIZ
   <div class="plate">
     <div class="loc-bar"><label>Drunk by <select id="vl-who"></select></label></div>
     <div class="loc-scroll"><table class="loc-tab" id="vl-tab"></table></div>
-    <p class="cap">The turns a potion from a vial lasts, by the vial's strength, for each potion consumption the creatures of scenario 1 have. <b>test_discoveries.js</b> runs the game's drink (<code>$73D0</code>) on every strength from 0 to 255 for consumptions 1 to 12. In a game of scenario 2 started in the emulator, the two strength vials on the map held 255 and the other vials 4 to 7.</p>
+    <p class="cap">The turns a potion from a vial lasts, by the vial's strength, for each potion consumption the creatures of scenario 1 have. The page works them out as the game's drink (<code>$73D0</code>) does. In a game of scenario 2, the two strength vials on the map held 255 and the other vials 4 to 7.</p>
   </div>
   <p>The start-up routine that scatters objects (<code>$FE03</code>) gives byte 5 of each object from <code>$74</code> to <code>$7B</code> a random number below 8, which is a vial's strength. That range takes in the two chests at the top and leaves out <code>$73</code>, the strength vial at the bottom. Its byte 5 keeps the 255 the scenario's first hook filled the whole table with.</p>
   <p>Drinking works out the potion's length as the strength times 3 plus 10, divided by the creature's potion consumption. For strengths 0 to 7 that is 10 to 31 before the division, which just fits the five bits the creature record keeps it in. For 255 the sum is 775, and in eight bits it is 7. A wizard, consumption 2, gets 3 turns of strength from a vial found on the floor and 5 to 15 from any other. A dragon, consumption 10, gets 0 turns. Strength vials filled from a cauldron (FILL) carry the cauldron's strength and are not affected.</p>
@@ -143,7 +141,7 @@ MERLIN1.WIZ
     </div>
     <div class="loc-bar" style="margin-top:16px"><label>Experience points left at EXIT <input id="dx-x" type="number" min="0" max="1020" value="597" style="font:inherit;width:6em;padding:5px 8px;border:1px solid var(--line);border-radius:6px"></label></div>
     <div class="loc-info" id="dx-out"></div>
-    <p class="cap">In the emulator, MERLIN at level 1. <b>test_discoveries.js</b> runs the game's division on every total from 0 to 1023.</p>
+    <p class="cap">MERLIN at level 1.</p>
   </div>
   <p>Opening a wizard in the designer sets its experience points to four times its score (<code>$E0C0</code>). EXIT stores the points left divided by four, rounded down, as the score (<code>$E17E</code>). Every visit to the designer that ends on a total that is not a multiple of four loses the difference. A new wizard's mana, action points, stamina and magic resistance cost 8, 8, 4 and 4 a point, but constitution costs 3 and combat and defence 2, and a spell such as GOLD DRAGON 47 plus 23 a level, so it is easy to leave on 597.</p>
 </section>
@@ -158,7 +156,7 @@ MERLIN1.WIZ
       <figure><img src="reference/hang-menu.png" width="288" height="224" alt="The menu CONTINUE, SAVE GAME, ABANDON GAME on a black screen"><figcaption>The end of the turn: CONTINUE.</figcaption></figure>
       <figure><img src="reference/hang-blank.png" width="288" height="224" alt="A black screen"><figcaption>Then a black screen, for good.</figcaption></figure>
     </div>
-    <p class="cap">In the emulator, a game of scenario 1 against the computer, 52 minutes in. In the 600 frames after CONTINUE the game went round its turn loop 32 times, and SPACE, ENTER, 0, 5 to 8, Q, A, O, P and M changed nothing.</p>
+    <p class="cap">A game of scenario 1 against the computer, 52 minutes in. In the 600 frames after CONTINUE the game went round its turn loop 32 times, and SPACE, ENTER, 0, 5 to 8, Q, A, O, P and M changed nothing.</p>
   </div>
   <div class="plate" style="margin-top:20px">
     <div class="loc-scroll"><table class="loc-tab">
@@ -179,12 +177,12 @@ MERLIN1.WIZ
       <tr><td class="n">14</td><td>FAIRY WING</td><td><code>$49</code></td><td>no</td></tr>
       <tr><td class="n">15</td><td>MISTLETOE</td><td><code>$4C</code></td><td>no</td></tr>
     </table></div>
-    <p class="cap">The objects lying on TORQUEMADA's square, row 24, column 17, in the order of the table of things on the map, read from the game's memory in the emulator at the moment of the screenshot above.</p>
+    <p class="cap">The objects lying on TORQUEMADA's square, row 24, column 17, in the order of the table of things on the map, read from the game's memory at the moment of the screenshot above.</p>
   </div>
   <p>list_objects_at (<code>$67A7</code>) goes through the table of things on the map (<code>$5B5A</code>, six bytes each) and writes each object lying on the square into a list at <code>$D1D4</code>, its entry number and then its type, and stops when the list holds ten (<code>$6819</code>). When a computer creature reaches the object it is after, computer_pick_up (<code>$A0F0</code>) looks for the object's type in that list, every second byte from <code>$D1D5</code>, with nothing to count how far it has gone. If the object is not among the first ten, the search runs on through memory, still every second byte, to the first that holds the type, and takes the byte before as the entry number. It marks that entry as the object in use (bit 7 of its byte 3) and writes the creature's number into its byte 4, which says who carries it.</p>
   <p>A magic mushroom is type <code>$82</code>, 130. Past the list, the first byte the search reads that holds 130 was at <code>$E8F1</code>, and the byte before it held 3, so in turn 22 each of TORQUEMADA's four tries marked entry 3, the fourth wizard's, empty in a game of two, and the mushroom stayed on the floor. Between tries the wizard tried spells. The computer chooses its spells by priorities, one byte a spell at <code>$D3DC</code>, and raises a spell's priority by one each time it tries the spell. In turn 23, between one try and the next, the FLYING POTION's priority went from 128 to 130. The next search stopped there, at <code>$D3F9</code>, and the byte before was the SPEED POTION's priority, 255.</p>
-  <p>Entry 255 would start at <code>$6154</code>, so its bytes 3 and 4 are <code>$6157</code> and <code>$6158</code>: the operand of <code>LD HL,$5B11</code> at <code>$6156</code>, which points at the number of the player whose turn it is. It became <code>LD HL,$0191</code>, and the <code>INC (HL)</code> after it now adds one to a byte of the ROM, which cannot change. The computer finished its turn and the game showed the end-of-turn menu. A new game turn sets the player number to 0, for the creatures that belong to no one, and from then on it stays 0: it never reaches the number of players, so the turn loop goes round for ever, clearing the screen each time and never coming to a wizard's turn.</p>
-  <p><b>test_discoveries.js</b> runs computer_pick_up on the game's own code with fifteen objects on a square: the list holds the first ten, the search for the twelfth runs past it and marks the entry named by the byte before the first match, and with 255 there the turn loop's operand becomes <code>$0191</code>.</p>
+  <p>Entry 255 would start at <code>$6154</code>, so its bytes 3 and 4 are <code>$6157</code> and <code>$6158</code>: the operand of <code>LD HL,$5B11</code> at <code>$6156</code>, which points at the number of the player whose turn it is. It became <code>LD HL,$0191</code>, and the <code>INC (HL)</code> after it now adds one to a byte of the ROM, which cannot change. The computer finished its turn and the game showed the end-of-turn menu. A new game turn sets the player number to 0, for the creatures that have no owner, and from then on it stays 0: it never reaches the number of players, so the turn loop goes round for ever, clearing the screen each time and never coming to a wizard's turn.</p>
+  <p>With fifteen objects on a square, computer_pick_up's list holds the first ten: the search for the twelfth runs past it and marks the entry named by the byte before the first match, and with 255 there the turn loop's operand becomes <code>$0191</code>.</p>
 </section>
 
 <section id="draws">
@@ -197,7 +195,7 @@ MERLIN1.WIZ
 <section id="breakpoint">
   <p class="fig">08 · The authors' tools</p>
   <h2 class="t">Secret: the authors' breakpoint is still in the game</h2>
-  <p class="lede">A routine at <code>$96BA</code> that nothing calls counts up, prints the count at the bottom left and waits for fire, keeping every register. Dropped into any routine with a CALL, it stopped the game there.</p>
+  <p class="lede">A routine at <code>$96BA</code> that the game never calls counts up, prints the count at the bottom left and waits for fire, keeping every register. Dropped into any routine with a CALL, it stopped the game there.</p>
   <div class="plate"><div class="loc-row">
     <div><img src="reference/debug-probe.png" width="288" height="224" alt="The play screen with a small 1 in yellow on red at the left end of the row above the message line" style="image-rendering:pixelated;width:288px;max-width:100%;border-radius:4px"></div>
     <div class="loc-info"><table class="loc-tab" id="bp-tab">
@@ -209,7 +207,7 @@ MERLIN1.WIZ
       <tr><td>yellow</td><td>the computer wizard's list of 35 creatures is full</td><td><code>$A50B</code></td></tr>
     </table></div>
   </div>
-  <p class="cap">The routine called in the emulator from a game of scenario 1: the 1 is the count, in the Spectrum ROM's own font. The table is every write to the border that is not the tape's or the start of a turn's.</p></div>
+  <p class="cap">The routine called from a game of scenario 1: the 1 is the count, in the Spectrum ROM's own font. The table is every write to the border that is not the tape's or the start of a turn's.</p></div>
   <p>It prints through the game's own number routine with the font pointer set to the ROM's character set (<code>$3C00</code>), so it needed nothing but the count. The five border colours are the same kind of tool: each marks a state the authors expected never to reach, and each lets the game carry on, so a tester could report the colour.</p>
 </section>
 

@@ -854,3 +854,14 @@ Two checks by agents that wrote none of it, on a second proven model
   reproduce, which has been taken out of the comment, and one was the
   numbering of a routine's parts. With none wrong in 60, the share of
   descriptions with a wrong clause is under 5 % at 95 % confidence.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- The port was held against the game's code in a Z80 simulator for 102,656 values of the multiply and 3,000 outlines, with no difference.
+- The count of flips was checked against the game's loop in a simulator for all 256 values of n.
+- The tune as the game's own player produced it in a Z80 simulator: 75,491 flips of the speaker in 193,970,724 T-states.
+- The routine at `$77A0`, ported and held against the game's code in a simulator for 556 arrangements of bugs, with no difference.

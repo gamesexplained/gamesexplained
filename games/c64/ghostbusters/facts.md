@@ -631,3 +631,36 @@ scripts are in `work/verify/` unless another folder is named.
 | `POKE 38454,96` and the Marshmallow Man | `t20-poke-mm.js` | $10,000 kept through a stomp; control $10,000 → $6,000 |
 | Ghost vacuum | `t13-vacuum.js` | owned: captured, 32 frames, sent home, no money or PK; not owned: nothing |
 | Earlier agents' runs | `work/reports/agent2.md` … `agent8.md`, `work/sim/agent5-*.js` | the bust, crossed streams, a miss, GHQ, the Zuul street, the win (+$5,000), GOOD TRY, the climb, speech phrases, account numbers |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In eight simulator runs from 5,000 PK energy it never did: Roamers reaching Zuul pushed the meter past each thousand first.
+
+### graphics.html
+
+- All 104,448 pixels match the emulator.
+
+### levels.html
+
+- All 104,448 pixels match the emulator's picture of the same frame.
+
+### music.html
+
+- The lyric window follows the game's cue table (`$68F0`) and the ball's script (`$92BC`): each line and landing is at the frame the game shows it, measured in the simulator.
+- The port writes the same 311,368 values to the volume register, at the same interrupts, as the game does in the simulator.
+
+### play.html
+
+- The original code runs in a 6502 simulator beside the port, from the same saved moment and with the same keys and joystick.
+- At the start of every pass all 64 KB are compared, with colour RAM.
+- Only the stack page is left out.
+- The frame, the input, the text engine, money, the interview and the car page: 68 routines, 204,000 cases: 17 sessions, about 21,000 passes: every interview answer, both F3 cases, every car, the map and the drive with their keys: identical at every pass but two, both the random-number race below.
+- The shop and the city map: 35 routines, 70,000 cases: 23 sessions, 57,252 passes: every shop page, full cars, walks, bait, every refusal of fire, PK 5,000 and PK 9,500: identical at every pass but 17, all the race.
+- The drive, the bust and GHQ: 44 routines, 132,000 cases: 18 sessions, 10,639 passes: steering, the vacuum, catches, misses, crossed streams, the laser system, bait, GHQ: identical at every pass but the race.
+- The Marshmallow Man, Zuul and the endings: 33 routines, 165,000 cases: 10 sessions, about 13,700 passes: bait in time and too late, the win, GOOD TRY, a catch, foreclosure, the wait for F1: identical at every pass but one: on the pass after F1 restarts the game from the end pages, the sprites' X registers differ, because the check replays the interrupt that sets them after `init_game_vars` clears them, where the game ran it before.
+- The interrupt, the music, the effects, the speech, the start-up and the title: 20 routines, 3,000 cases each; 35 phrases: the cold start, the title with SPACE, F1 and F3, RUN/STOP + RESTORE, and all 57 sessions above again with this group in: 88,550 passes: identical at every pass but the two races below.
+- Each pass costs the median time the original's pass took in the same game state, measured on the simulator over 78,000 passes of the lockstep sessions, and the interrupts, the speech and the raster waits take their own time.

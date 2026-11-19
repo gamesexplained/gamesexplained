@@ -327,3 +327,31 @@ differ.
   still down when the next pass read the keys; a tap of 4 frames resumed
   it (15 passes in the next 150 frames) (`work/keys.py`, `work/keys2.py`,
   29 October 2026, VICE v3.13.2).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Every pose a list names twice Screenshots from VICE, side 1, with the two moves started on the pass before.
+- The table comes from a port of `hit_test` (`$8662`), which `test_rules.js` holds to the game's routine on the page's 6502 for all twelve blows, every pose and every distance.
+- In VICE a flying neck chop against a fighter guarding his body four columns away landed: a point of strength gone and his move `$FE`.
+- Side 1 in VICE, CTRL and V held.
+
+### graphics.html
+
+- The frames are drawn by the game's own routines on the kit's 6502, over side 1's memory as the listing holds it: `clear_compose` (`$88D3`), `compose_frame` (`$88E3`), `draw_fighter` (`$8A10`), `place_overlays` (`$8E83`), `show_strip` (`$8B64`) and `sprite_registers` (`$97AD`), and the screen by the site's C64 library from the memory and the video chip's registers.
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+
+### index.html
+
+- `test_music.js` holds each button to the game's code over the listing's whole memory, every write to the sound chip in order, for 60 seconds of each.
+- One frame of side 1's demo, drawn by the page from the memory and the video chip's registers that VICE held for it, with the changes the game made during it.
+- It matches VICE's own picture of the same frame in all 104,448 pixels.
+- `test_rules.js` holds it to the game's routine, run on the page's 6502 over the listing, for every level, pose and distance at one count and every level and count at a spread of poses and distances, 43,456 cases.
+- Screenshots from VICE, side 2, after a win at level 7.
+
+### levels.html
+
+- Apart from the fighters, each picture matches the screen VICE shows in that arena, pixel for pixel (`test_levels.js`).

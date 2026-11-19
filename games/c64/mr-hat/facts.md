@@ -555,3 +555,23 @@ STAGE are bitmap graphics, not text; the end message is at `$B7D8`.
 - `kit/c64/frame.py capture` and `compare` on all eleven rooms, the dark
   and the lit rooms 6 and 9 and room 9 as designed: 0 pixels differ in
   each. Room 10 needed the recorder's beam phase fixed (kit-feedback.md).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- Checked against the game's own code run in a 6502 simulator: every SID write of 6,000 interrupts, in order, across two ends of the song, with no difference.
+- Checked against the game's own code in a 6502 simulator, 3,000 calls of each, every SID write in order: no difference.
+- The player runs at the end of the interrupt that every room's handler finishes with (`$8215`, `$BF30`, `$B530`, `$8C00`), so the tune plays in all eleven rooms; recorded in the emulator, its pointer moved on in rooms 1, 2, 3, 5, 8, 9 and 11.
+- The death is the game's own routine, `$A877`, run in a 6502 simulator: `$1DDD` copies the death shape from `$ACD8`, `$A92D` steps the colour 256 times, and `$A8F0` ANDs each byte of the shape once with the raster line, four bytes a pass, 16 passes of about 84 ms.
+- In the simulator the raster comes from the cycle count with no interrupts, so a real death's mask differs.
+- Each adder run in a 6502 simulator on a snapshot of room 1, with the score's digits read back from the bitmap (the 20,000 and 50,000 adders were read from the code).
+- Set up in the emulator, the dark room holds `$00` there and the lit one `$CC`; taking the bonus was not tried.
+- Both frames match the emulator's picture in every pixel.
+- The end screen in VICE, reached with Mr Hat carrying nothing (`$F5` = $81).
+- In the emulator, a store checkpoint on the font page caught nothing through a whole game, and the next title showed the broken letters.
+- One frame of the game, drawn by the site’s renderer from the memory and video-chip writes recorded in VICE.
+- It matches the emulator’s own picture of the same frame in all 104,448 pixels.
+- Rooms other than room 1 were reached by starting their set-up routine directly, not by playing there.

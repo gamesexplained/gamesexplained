@@ -36,10 +36,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 p{max-width:64ch}
 .hero .eyebrow{max-width:none}   /* the eyebrow is a <p>; the measure cap would box it left of centre */
 .ctl{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
-button,.tog{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink-soft);
- border:1px solid var(--line);border-radius:7px;padding:7px 12px;cursor:pointer;user-select:none}
-button:hover,.tog:hover{border-color:var(--violet);color:var(--ink)}
-button.on,.tog.on{background:var(--violet);border-color:var(--violet);color:#0a0b18;font-weight:500}
+.tog{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink-soft);
+ border:1px solid var(--line);border-radius:7px;padding:7px 12px;cursor:pointer;user-select:none}button{font-size:12.5px;padding:7px 12px;user-select:none}
+.tog:hover{border-color:var(--violet);color:var(--ink)}
+.tog.on{background:var(--violet);border-color:var(--violet);color:#0a0b18;font-weight:500}button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 canvas{display:block;image-rendering:pixelated;max-width:100%;border-radius:6px}
 table{border-collapse:collapse;font-family:var(--fm);font-size:13px;margin:6px 0 0;width:100%}
 th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line-soft)}
@@ -61,8 +61,7 @@ ul{color:var(--ink-soft);max-width:64ch;font-size:15.5px}
 li{margin:0 0 10px}
 .q{border-left:2px solid var(--violet);padding:2px 0 2px 16px;margin:18px 0;color:var(--ink-soft);font-style:normal}
 .gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
-.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
-.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button{padding:5px 11px}
 .gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
 .gx-group{margin:0 0 22px}
 .gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
@@ -99,7 +98,7 @@ li{margin:0 0 10px}
   <p>The player's jet stays in the middle of the screen while the world moves round it, so the jet's whole repertoire is about facing. Frames <code>$80</code> to <code>$86</code> run from nose-left through head-on to nose-right, and <code>animate_bank_attitude</code> (<code>$5600</code>) steps the sprite pointer one frame every fourth tick towards the way the jet is moving. At full speed, <code>animate_player_bank</code> (<code>$5A20</code>) copies one of five pictures from the bank at <code>$2B00</code> over the end frame, <code>$80</code> or <code>$86</code>, a picture every eighth tick, so the side view rolls its wings as the jet climbs or dives. The bank is never pointed at; its frames reach the screen only by being copied.</p>
   <p>An enemy jet has the same idea in five frames a side: <code>enemy_update_slot</code> (<code>$4340</code>) moves its pointer one step every eighth tick, towards level flight at <code>$96</code> or <code>$9B</code> or away from it as its manoeuvre wants. Shot down, it turns white and multicolour and shows one of the first four debris frames, chosen afresh every tick from the sound chip's noise (<code>$43BC</code>). The player's own wreck falls with smoke over it, then flickers through all eight debris frames the same way and thins out to nothing (<code>crash_sequence</code>, <code>$5690</code>).</p>
   <p>The video chip looks at the bottom 16K of memory (<code>$DD00</code> = <code>$C7</code>): the screen at <code>$0400</code>, the 256 characters at <code>$3000</code> (<code>$D018</code> = <code>$1C</code>), and these sprite blocks between them. The scenery, the radar and the panel are all characters, in three bands of colour that a raster interrupt sets three times a frame; the <a href="index.html">How it works</a> tab draws the screen and every character. The player's missiles are characters too, glyphs <code>$12</code> and <code>$13</code>, which is why hitting anything with them depends on the video chip's sprite-to-background collision rather than on two sprites meeting.</p>
-  <p>Block <code>$87</code> is a scatter of dots like the debris frames, but nothing points a sprite at it: the turn stops at <code>$86</code> and the debris starts at <code>$88</code>. Block <code>$9F</code> holds a single stray byte. Block <code>$90</code>, the first of the smoke's four, is blank, and the game also uses it as a signal: the player's life ends once the wreck's pointer has counted up to it (<code>$5640</code>).</p>
+  <p>Block <code>$87</code> is a scatter of dots like the debris frames, but the game never points a sprite at it: the turn stops at <code>$86</code> and the debris starts at <code>$88</code>. Block <code>$9F</code> holds a single stray byte. Block <code>$90</code>, the first of the smoke's four, is blank, and the game also uses it as a signal: the player's life ends once the wreck's pointer has counted up to it (<code>$5640</code>).</p>
 </section>
 
 </main>

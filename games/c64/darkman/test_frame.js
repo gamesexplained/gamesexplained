@@ -208,7 +208,8 @@ const sameCount = N - count.differ;
 console.log(`${comma(count.differ)} of ${comma(N)} pixels differ from the screenshot: ${comma(count.sprites)} on lines ${spriteFirst} to ${spriteLast} (the sprites), `
   + `${comma(count.bar)} in the energy bar (lines ${bar.y0}-${bar.y1}, x ${bar.x0}-${bar.x1}), ${count.dot} grey dot, ${count.other} unexplained`);
 if (count.other) fail('pixels that differ for no cause the caption gives:', others.slice(0, 8).join('; '));
-const stated = (k) => { const m = new RegExp('data-count="' + k + '">([^<]*)<').exec(html); return m ? m[1] : null; };
+// the counts the check found are stated in facts.md, under "Checks behind the pages"
+const facts = fs.readFileSync(path.join(gameDir, 'facts.md'), 'utf8');
 // the energy bar's eight cells: pixels that are not black, ours and the screenshot's
 let barNow = 0, barShot = 0;
 for (let y = bar.y0; y <= bar.y1; y++) for (let x = bar.x0; x <= bar.x1; x++) {
@@ -228,8 +229,17 @@ for (let i = 0; i < N; i++) {
 }
 const want = { barnow: String(barNow), barshot: String(barShot), dotdx: String(dotDx), pixels: comma(N), differ: comma(count.differ), sprites: comma(count.sprites), bar: comma(count.bar), same: comma(sameCount),
   first: String(spriteFirst), last: String(spriteLast), bytes: comma(embedded), energy: String(L.ram[0x43E3]) };
-for (const k of Object.keys(want)) if (stated(k) !== want[k]) fail('the caption counts', k, 'as', stated(k), 'but the test measures', want[k]);
-if (!/the right end of line 198/.test(html) || count.dot !== 1) fail('the caption speaks of one grey dot at the right end of line 198');
+const sentences = [
+  `are the play snapshot's bytes, ${want.bytes} of them`,
+  `${want.differ} of ${want.pixels} pixels differ`,
+  `Darkman holds ${want.energy} of 33 energy points`,
+  `have ${want.barnow} pixels that are not black where the screenshot's have ${want.barshot}`,
+  `So ${want.sprites} of the differing pixels lie on lines ${want.first} to ${want.last}, where the sprites are, and ${want.bar} lie in the energy bar`,
+  `puts it ${want.dotdx} pixels to the right of its own write to the border colour`,
+  `The other ${want.same} match`,
+];
+for (const t of sentences) if (!facts.includes(t)) fail('facts.md does not say what the test measures:', t);
+if (!/the right end of line 198/.test(facts) || count.dot !== 1) fail('facts.md speaks of one grey dot at the right end of line 198');
 if (colourWrites.filter(([l]) => l === 198).length === 0) fail('no colour register is written on line 198');
 // the snapshot is of Darkman just hit: energy 4 of 33, stun timer 2 (white)
 if (L.ram[0x43E3] !== 4 || L.ram[0x29F3] < 2) fail('the snapshot is not of a stunned Darkman with 4 energy');

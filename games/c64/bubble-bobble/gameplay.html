@@ -52,7 +52,7 @@
     <tr><td>A block in a secret room</td><td class="bb-num">12,000</td></tr>
     <tr><td>Round 100</td><td class="bb-num">1,000,000</td></tr>
   </table>
-  <p>A score is three bytes of packed decimal, and the screen prints a fixed zero after them, so nothing in the game can score fewer than ten points. Extra lives come at 30,000, 100,000, 400,000, 1,000,000, and each million after that (<code>$F1AC</code>).</p>
+  <p>A score is three bytes of packed decimal, and the screen prints a fixed zero after them, so the game can never award fewer than ten points. Extra lives come at 30,000, 100,000, 400,000, 1,000,000, and each million after that (<code>$F1AC</code>).</p>
   <p>The manual's figures differ from the code's. The manual promises 500 points for a boxed-up enemy and food up to a 32,000-point diamond. The code pays 1,000 for the burst, and its best food is worth 9,000.</p>
   <p>On rounds 1, 5, 10, 16, 23, 31, 40, 50, 61, 73, 86, and 100, every full-size plain bubble still floating when the round is cleared turns into food worth 700 points and falls (<code>$0EC5</code>). The gap between such rounds grows by one each time (<code>$59BF</code>).</p>
 </section>
@@ -66,7 +66,7 @@
     <div class="plate"><img class="bb-shot" src="reference/baron.png" alt="Round 1 with a Baron"><p class="cap">Ten seconds later a Baron arrives for each player, here at the top left.</p></div>
   </div>
   <p>The bottom raster interrupt takes one from the timer every 50 frames (<code>$06AB</code>). Most rounds start it at 30. Round 56 starts at 10, and every round from 57 on at 20 (<code>$392A</code>). In the running game the banner came 1,500 frames after play began and the Barons 500 frames after that.</p>
-  <p>When the timer runs out, every enemy turns angry: its routine gets an extra run on every second turn, which makes the enemy half as fast again. When the timer runs out again, each player gets a Baron of their own, and the round tune comes back a step faster (<code>$1473</code>). A Baron moves through walls in straight runs towards its player, first along one axis and then the other, pausing 30 passes of the main loop, nearly two seconds, between runs. Each run is one cell longer than the last, up to 15. No routine removes a Baron except the death of its player or the end of the round.</p>
+  <p>When the timer runs out, every enemy turns angry: its routine gets an extra run on every second turn, which makes the enemy half as fast again. When the timer runs out again, each player gets a Baron of their own, and the round tune comes back a step faster (<code>$1473</code>). A Baron moves through walls in straight runs towards its player, first along one axis and then the other, pausing 30 passes of the main loop, nearly two seconds, between runs. Each run is one cell longer than the last, up to 15. Only the death of its player or the end of the round removes a Baron.</p>
   <p>A cleared round also uses the timer. When the last enemy is beaten the timer is set to nine seconds, and the seconds that were left decide how good the next round's points item will be (<code>$16F7</code>).</p>
 </section>
 
@@ -111,7 +111,7 @@
     <div class="plate"><img class="bb-shot" src="reference/round-100-boss.png" alt="Round 100"><p class="cap">Round 100. The boss is nine sprites, drawn with six: a third raster interrupt moves three of them down for the bottom row (<code>$0795</code>).</p></div>
     <div class="plate"><img class="bb-shot" src="reference/ending.png" alt="The ending"><p class="cap">The ending, reached in the running game by forcing the boss's beaten state.</p></div>
   </div>
-  <p>Round 100's potion turns every bubble the player blows into a thunder bubble. The boss starts with a count of 50, each bolt takes one off, and the bolt that takes the count below zero, the 51st, puts the boss into a beaten state that lasts 130 passes of the main loop, a little under eight seconds (<code>$1134</code>). A player who touches the boss in that time ends the game with a million points (<code>$A5B7</code>). If nobody does, the boss gets up with a count of 40 and moves at twice the speed.</p>
+  <p>Round 100's potion turns every bubble the player blows into a thunder bubble. The boss starts with a count of 50, each bolt takes one off, and the bolt that takes the count below zero, the 51st, puts the boss into a beaten state that lasts 130 passes of the main loop, a little under eight seconds (<code>$1134</code>). A player who touches the boss in that time ends the game with a million points (<code>$A5B7</code>). Otherwise the boss gets up with a count of 40 and moves at twice the speed.</p>
   <p>The ending prints its three lines over a star field and walks the top two rows of the boss to and fro beneath them. It is the same whether one or two played.</p>
 </section>
 </main>

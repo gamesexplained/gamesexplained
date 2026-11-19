@@ -76,28 +76,28 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">01 · The timer</p>
   <h2 class="t">Bug: the more aliens on the screen, the slower the timer runs</h2>
   <p>The timer at the top of the screen starts each level at 50, and Iball loses a life when it reaches 0. But <code>timer_tick</code> takes a second off every 50 passes of the game's logic, and the logic does not run every frame. Its interrupt, <code>irq_logic</code>, skips a frame whenever the last pass has not finished, and a pass takes longer the more there is on the screen. So the busier the level, the slower the timer.</p>
-  <p>With only Iball on the screen the logic runs every frame and the timer keeps time. With seven aliens about, the emulator counted 695 passes in 1,350 frames, so the level's 50 seconds last about 97 real ones: a busy level gives the player nearly twice the time the timer shows. The How it works page has <a href="index.html#time">the interrupts and the measurement</a>.</p>
+  <p>With only Iball on the screen the logic runs every frame and the timer keeps time. With seven aliens about, the logic makes 695 passes in 1,350 frames, so the level's 50 seconds last about 97 real ones: a busy level gives the player nearly twice the time the timer shows. The How it works page has <a href="index.html#time">the interrupts and the measurement</a>.</p>
 </section>
 
 <section>
   <p class="fig">02 · The Smart Missile</p>
   <h2 class="t">Bug: the Smart Missile pays 10 points for every alien that is not there</h2>
   <p>Pressing SPACE with the Smart Missile fires it once: every alien explodes and scores 10 points. <code>smart_missile</code> goes through sprites 1 to 7 and sets each one exploding, skipping the discs and those already exploding. It never tests whether the sprite is in use, so an empty slot explodes too, out of sight, and scores the same 10 points.</p>
-  <p>Seen in the emulator: fired on a screen with no alien on it, the missile gave 70 points, and the disc countdown, which counts aliens killed, went from 20 to 13. Seven kills that never happened bring the next disc nearer too.</p>
+  <p>Fired on a screen with no alien on it, the missile gives 70 points, and the disc countdown, which counts aliens killed, goes from 20 to 13. Seven kills that never happened bring the next disc nearer too.</p>
 </section>
 
 <section>
   <p class="fig">03 · The title screen</p>
   <h2 class="t">Secret: the title's speech keys are X, Z and SPACE, not I, O and G</h2>
   <p>C64-Wiki says that on the title screen I, O and G say the three samples, "IBALL!", "OH NO!" and "GAME OVER!". In this image, I starts a game and O and G do nothing. <code>title_irq</code> tests the same key groups that steer and fire in play: the right keys (X and its group) say "IBALL!", the left keys (Z and its group) say "OH NO!", and the Smart Missile's keys (SPACE and its group) say "GAME OVER!". Pushing the joystick forward or back while on the title screen raises or lowers their pitch.</p>
-  <p>Seen in the emulator, each key pressed on the title screen in turn. The How it works page has <a href="index.html#controls">every key and what it does</a>, and the samples at any pitch.</p>
+  <p>The How it works page has <a href="index.html#controls">every key and what it does</a>, and the samples at any pitch.</p>
 </section>
 
 <section>
   <p class="fig">04 · The keyboard</p>
   <h2 class="t">Secret: five other keys pause the game as well as RUN/STOP</h2>
   <p>The game tests a key by driving several rows of the keyboard at once and reading one column, so every key in that column on those rows answers. The pause test drives every row but one and reads the column of RUN/STOP, so V, N, comma, / and left SHIFT pause the game too. The movement keys come in groups the same way: O is the up key, and so are E, T, U, @, the up-arrow and Q.</p>
-  <p>Seen in the emulator: RUN/STOP and V each paused the game and resumed it.</p>
+  <p>RUN/STOP and V each pause the game and resume it.</p>
 </section>
 
 <section>
@@ -118,17 +118,17 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>These are in the listing. Each was followed through the code; none shows itself on the screen in a way a player would notice.</p>
   <ul>
     <li><b>A laser hit frees the wrong shot.</b> In <code>alien_shot</code>, for a laser or ripple character the X register holds the character's place in the probe (0 to 3), not a shot's slot, so <code>clear_shot</code> frees one of shot slots 0 to 3.</li>
-    <li><b>The interrupts of CIA 1 are switched off with a byte from zero page.</b> <code>init_game_irq</code> and <code>init_title_irq</code> load <code>$7F</code>, the byte at address <code>$7F</code>, where <code>#$7F</code> was surely meant. Nothing in the game writes that byte, so it holds whatever the loader left there.</li>
+    <li><b>The interrupts of CIA 1 are switched off with a byte from zero page.</b> <code>init_game_irq</code> and <code>init_title_irq</code> load <code>$7F</code>, the byte at address <code>$7F</code>, where <code>#$7F</code> was surely meant. The game never writes that byte, so it holds whatever the loader left there.</li>
     <li><b><code>death_explode</code>'s loop runs once.</b> It ends with <code>DEX</code> and <code>BEQ</code>, so only sprite 7 gets its colour and pointer there; <code>death_flash</code> sets all the pointers afterwards, which hides the slip.</li>
-    <li><b>Three flags nothing uses.</b> <code>disc_rollback</code> clears Fuel Injection's flag, but the extra never sets it: it only raises the vertical speed limit. Turbo Boost and Extended Play set flags that nothing reads.</li>
+    <li><b>Three flags the game never uses.</b> <code>disc_rollback</code> clears Fuel Injection's flag, but the extra never sets it: it only raises the vertical speed limit. Turbo Boost and Extended Play set flags that the game never reads.</li>
   </ul>
 </section>
 
 <section>
   <p class="fig">08 · Leftovers</p>
   <h2 class="t">Secret: earlier versions of the game are still in memory</h2>
-  <p>The image holds code the game never runs. There are older versions of the two panel routines at <code>$41E5</code>-<code>$426A</code> and an older dot scroller at <code>$4CEE</code>; six fragments of code that nothing reaches; a stale copy of <code>$4246</code>-<code>$42FF</code> at <code>$C246</code>; and the remains of a loader at <code>$8CD0</code>-<code>$8DFF</code>, with the text "SEARCHING LOADING BLOCK? REWIND TO" elsewhere in memory and "LOADING 12" near the top.</p>
-  <p>Beside the speech player sits a small test program, <code>sample_test</code> at <code>$C209</code>. It flashes the border and background while a sample plays and says a sample when one of its keys is pressed: what a programmer would use to try the speech out on its own. Nothing in the game calls it. The Source code tab has all of these, each marked.</p>
+  <p>The image holds code the game never runs. There are older versions of the two panel routines at <code>$41E5</code>-<code>$426A</code> and an older dot scroller at <code>$4CEE</code>; six fragments of code that the game never reaches; a stale copy of <code>$4246</code>-<code>$42FF</code> at <code>$C246</code>; and the remains of a loader at <code>$8CD0</code>-<code>$8DFF</code>, with the text "SEARCHING LOADING BLOCK? REWIND TO" elsewhere in memory and "LOADING 12" near the top.</p>
+  <p>Beside the speech player sits a small test program, <code>sample_test</code> at <code>$C209</code>. It flashes the border and background while a sample plays and says a sample when one of its keys is pressed: what a programmer would use to try the speech out on its own. The game never calls it. The Source code tab has all of these, each marked.</p>
 </section>
 
 </main>

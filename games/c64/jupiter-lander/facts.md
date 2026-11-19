@@ -445,3 +445,16 @@ Not tested live: the joystick path. `vice_joystick_set` and
 `vice_joystick_tap` change nothing at `$DC00`/`$DC01` in this build, so the
 joystick reading in `read_controls` is traced in the code but has not been
 observed working. See `kit-feedback.md`.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Every pass shown here was replayed in the emulator with the game's control read redirected to this list of inputs; the positions matched to the byte, and the screen printed what the last step shows.
+
+### index.html
+
+- Run in this page against the decoded terrain and the sprite bitmap, not measured in the emulator.
+- The sideways landing of section 07, as the emulator printed it: a base of 127 whose tens digit is glyph `$3C`, because the printer expects one tens digit, times 2 in eight bits, 2540 on screen.

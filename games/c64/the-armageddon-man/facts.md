@@ -33,7 +33,7 @@ from reading the code in the snapshot named in `orientation.md`.
 
 | Thing | Where |
 |---|---|
-| Title picture, never shown: colours, bitmap | `$0C00`-`$0FE7`, `$2000`-`$3F3F` |
+| Title picture, never shown on disk (the cassette's loading picture): colours, bitmap | `$0C00`-`$0FE7`, `$2000`-`$3F3F` |
 | Developer's loader, then the RAMSAVE copy of the state | `$1000`-`$1320` |
 | Window save area (what open windows cover) | from `$2000` up (`window_init`) |
 | Music driver, four tunes, 17 sound effects, alarm | `$4000`-`$4DCE` |
@@ -321,7 +321,17 @@ unless named, in VICE 3.10 (the vice-mcp release v3.14.0) with the kit's client.
   stripes in the border; no instruction left in memory but the
   developer's loader at `$1000` writes `$D018`, and at the hand-over the
   video chip is in text mode with `$D018` = `$14`. The title picture is
-  never shown.
+  never shown on the disk.
+- The cassette: Martech's 1987 tape, the Ultimate Tape Archive's
+  `Armageddon_Man,_The.tap` (495,162 bytes, SHA-256
+  `43305cb92680af7d5a5a4ada624811f54bda28e16f105d244392934e6ebb4f78`), in the
+  same VICE on 12 November 2026. Its loader turns on a high-resolution
+  bitmap at `$2000` with colours at `$0C00` (`$D018` = `$3D`, bank 0)
+  between 80.5 and 81.0 seconds in, and the game's screen replaces it
+  between 232.5 and 233.0; the sound chip is silent until then. Memory read
+  at 90, 160 and 230 seconds matches the listing at `$0C00`-`$0FE7` and
+  `$2000`-`$3F3F` in every byte, so the disk's unshown title picture is the
+  cassette's loading picture.
 - Clock: non-stopping checkpoints on `irq`, the main loop, `game_clock`
   and `country_events` for 100 and 400 frames (Timing, above).
 - Hostility 0: `$5D34` (China's hostility to Israel) poked to 0, 1 and
@@ -334,3 +344,31 @@ unless named, in VICE 3.10 (the vice-mcp release v3.14.0) with the kit's client.
 - Rating: every byte 9 of the country records poked to 255.
 - Recalled for incompetence: `$5D34` = 117, China's level for event 18;
   Neutral chosen.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The hostility table's column of events on the next tick was recorded in VICE.
+- A game in VICE, left to start on its own after the last one ended and played only by closing each window.
+- China's hostility to Israel set to 117, China's level for event 18, in VICE; Neutral chosen.
+- The strike table's column "China on Israel" was recorded in VICE.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+
+### index.html
+
+- The video chip's registers are those of a frame recorded in VICE, where the cursor stood.
+- Compared with VICE's picture of that frame, none of its 104,448 pixels differ.
+- Every write it makes to the chip, frame by frame for 3,000 frames of each button, is checked against the same calls made on the listing in the kit's simulator.
+- Every write to the chip is checked against the same calls on the listing in the kit's simulator.
+- In VICE the main loop made 100 passes in 100 frames of the main screen, and 136 passes in 400 frames with a memo open for most of them.
+- The choice is `country_events` (`$AE77`) written again in JavaScript and checked against the game's own code in the kit's simulator: every hostility for every country, and 3,000 random tables of relationships, destroyed countries and random numbers, in which the page and the game picked the same pair and the same event every time.
+- The test is `in_cover` (`$C0AC`) written again in JavaScript, with the carries of its byte arithmetic, and checked against the game's own code in the kit's simulator: every x and every y from 0 to 255 for each country, and 20,000 random positions and reaches, all the same.
+- The scrambling is `scramble_char` (`$7B51`) and the game's random numbers, `random` (`$7BAE`), written again in JavaScript and checked against the game's own code in the kit's simulator: 65,536 pairs of key and setting, and 100 seeds run for 1,000 numbers each.
+- A message from the U.S.A, picked up in VICE with the radio stopped, so it came through clear.
+- In VICE, every country's confidence set to 255 gave "rated as Excellent", and radiation set to 255 ended the game at the week's end.

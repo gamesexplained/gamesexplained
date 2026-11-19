@@ -157,10 +157,14 @@ That is the one wait in the run, and the contributor chose it by naming
 the model. Settle its verdicts against the code as for any checker.
 With no model named, use the strongest model the session has.
 
-The rate is what the checker found, and a checker misses some: in one
-run, a full audit that re-read the first sample's 60 comments found six
-more wrong among the 53 the checker had passed. Report it as a lower
-bound on the true rate.
+A sample's rate is an estimate of the listing's, not a bound on it.
+Chance alone can draw more wrong comments than the listing's share, or
+fewer, which is what the interval measures; and a checker misses some,
+which pulls the estimate down. Report the rate as an estimate, with its
+interval and, when the sample has strata, the weighted rate, and say
+that the checker may have missed errors. The only sure minimum is the
+wrong comments found over every comment in the listing, which
+`sample.py count` prints too (`kit/lessons/2026-11-11-sample-rate-estimate.md`).
 
 A wrong comment is usually one belief written down more than once: one
 run's "runs every frame" was in 16 comments, and another's wrong unit
@@ -171,11 +175,15 @@ In a game of several parts search every part's listing: a routine carried
 from one part to another carries its wrong comments with it.
 
 Comments a program wrote, a decoder describing every record of a format
-from templates, are a few claims each made hundreds of times. Give them
-a stratum of their own (`sample.py draw --stratum`, by a pattern their
-text matches), draw about 20 from it, and beside the plain rate give the
-rate weighted by each stratum's size, as `sample.py count` does: three drawn from a
-stratum of thousands would stand for all of it. When they are bad,
+from templates, are a few claims each made hundreds of times.
+`sample.py draw` finds each large template by the first words its
+comments share once numbers are set aside, and draws five of them side
+by side as a stratum of their own, so that the checker reads them
+together and sees what one gets wrong in the rest. Give a decoder's
+comments a stratum of your own as well (`sample.py draw --stratum`, by a
+pattern their text matches), and draw about 20 from it. Beside the plain
+rate give the rate weighted by each stratum's size, as `sample.py count`
+does: three drawn from a stratum of thousands would stand for all of it. When they are bad,
 correct them by template in this run, as one claim made many times, and
 not one by one: test every sentence a template writes
 against the code on every path (a reader cited for a field it reads only

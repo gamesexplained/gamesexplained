@@ -40,11 +40,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gg-stack{position:relative}
 .gg-stack canvas+canvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 .gg-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
-.gg-bar button,.gg-btn{font:inherit;font-size:14px;padding:5px 12px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}
-.gg-bar button:hover,.gg-btn:hover{border-color:var(--ink-mute)}
-.gg-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gg-btn{font:inherit;font-size:14px;padding:5px 12px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}.gg-bar button{font-size:14px;padding:5px 12px}
+.gg-btn:hover{border-color:var(--ink-mute)}
+.gg-bar button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .gg-bar label{font-size:14px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
-.gg-bar select{font:inherit;font-size:14px;padding:4px 6px;border-radius:6px;border:1px solid var(--line);background:var(--surface)}
+.gg-bar select{font-size:14px}
 .gg-bar label{flex-wrap:wrap;max-width:100%}.gg-bar select{max-width:100%;min-width:0}
 .gg-table code{white-space:normal}
 .gg-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-top:10px;min-height:1.6em;white-space:pre-wrap}
@@ -135,10 +135,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="plate"><div class="gg-stack"><canvas id="city" class="gg-tv"></canvas><canvas id="cityover"></canvas></div>
       <div class="gg-bar"><label><input type="checkbox" id="citycodes"> Show the control codes</label></div>
       <div id="cityinfo" class="gg-inspect">Point at a cell to see its byte.</div></div>
-    <div class="plate"><img src="reference/p2-05-the-city-of-the-dragons.png" alt="The emulator's picture of the City of the Dragons"><p class="cap">The emulator's picture of the same moment.</p></div>
+    <div class="plate"><img src="reference/p2-05-the-city-of-the-dragons.png" alt="The game's screen at the City of the Dragons"><p class="cap">The game's screen at the same moment.</p></div>
   </div>
-  <p class="cap">Left, the page's own drawing of the 1,000 bytes jsbeeb showed at this moment, with <code>BBC.drawTeletext</code> from the site's library. The screen had scrolled two rows when this was taken, so its first byte is at &amp;7C50.</p>
-  <p>Nothing on this screen was drawn with a graphics command. Each row is a PRINT of a string, and starts with two codes: a colour, then 157, New Background, which makes that colour the background for the rest of the row, cyan for the sky's three rows and white for the snow below them. The rest of the row is characters from 160 to 255, each drawn as six blocks, two across and three down, in the graphics colour last set. Each change of colour takes a cell of its own, which shows as the background, so the castle, the river and the pagoda are drawn around the cells their colours need. The black stripe down the left is the first code of every row. Ticking the box shows each control code where it sits. The teacher's booklet set children the same exercise on paper: <q>Each computer picture is made up of tiny squares. Use squared paper to produce some computer graphics.</q></p>
+  <p class="cap">Left, the page's own drawing of the screen's 1,000 bytes at this moment. The screen had scrolled two rows when this was taken, so its first byte is at &amp;7C50.</p>
+  <p>None of this screen was drawn with a graphics command. Each row is a PRINT of a string, and starts with two codes: a colour, then 157, New Background, which makes that colour the background for the rest of the row, cyan for the sky's three rows and white for the snow below them. The rest of the row is characters from 160 to 255, each drawn as six blocks, two across and three down, in the graphics colour last set. Each change of colour takes a cell of its own, which shows as the background, so the castle, the river and the pagoda are drawn around the cells their colours need. The black stripe down the left is the first code of every row. Ticking the box shows each control code where it sits. The teacher's booklet set children the same exercise on paper: <q>Each computer picture is made up of tiny squares. Use squared paper to produce some computer graphics.</q></p>
 </section>
 
 <section data-part="part-1">
@@ -154,7 +154,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <div id="treedata" class="gg-steps"></div>
       <div id="treeinfo" class="gg-out"></div></div>
   </div>
-  <p class="cap">Left, the trees as jsbeeb showed them, redrawn by the page; the six that can be magic are outlined. Right, one tree printed from the 59 numbers of the DATA at <code>$4C26</code>, read from the listing.</p>
+  <p class="cap">Left, the trees as the game shows them, redrawn by the page; the six that can be magic are outlined. Right, one tree printed from the 59 numbers of the DATA at <code>$4C26</code>, read from the listing.</p>
   <p>Line 290 picks the magic tree's column as RND(3)×9+4 and its row as RND(2)×6. RND(3) is 1, 2 or 3, which gives the columns b, c and d; RND(2) is 1 or 2, the middle and bottom rows. Column a and the top row are never picked.</p>
   <p>A teacher can fix the tree. The booklet says: <q>If 'T' is entered the magic tree is set to be A1.</q> Line 230 sets a flag, <var>t%</var>, when the answer to <code>Ready to start?</code> begins with T, and the question comes back with nothing said; then Y starts the game. Line 290 picks the tree as usual and, with <var>t%</var> set, moves it to column 4, row 12: a1, a tree the game never picks otherwise. The second button picks it that way. The flag is cleared each time the program starts again, so it lasts one game, and Part 2, which has no trees, has no T.</p>
   <p>The trees were a lesson in grid references. The booklet's list of classroom topics puts <q>the twelve trees</q> beside <q>grids, co-ordinates, 'battleships'</q>, and the answer is a reference as battleships writes one, the column's letter and then the row's number. An answer that starts with the number gets <code>Please put the letter first.</code> (line 370). This is the only question in Part 1 asked with <code>INPUT</code>, because the game's own input routine takes letters only (<a href="#typing-an-answer">typing an answer</a>).</p>
@@ -170,7 +170,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div id="ansfield" class="gg-field" tabindex="0"></div>
     <dl id="ansstate" class="gg-kv"></dl>
     <div id="ansout" class="gg-out"></div>
-    <p class="cap">Click the black box and type. This is PROCi, the game's own input routine (Part 1 line 1020, <code>$24EC</code>), ported to the page key for key; the box is as wide as the field on the screen. Checked against the game in jsbeeb on 35 sequences of letters, DELETEs and other keys, 236 keys in all: after every key the port's answer, count and cursor matched the game's own <var>in$</var>, <var>l</var> and <var>x</var>, and its field matched the screen.</p>
+    <p class="cap">Click the black box and type. This is PROCi, the game's own input routine (Part 1 line 1020, <code>$24EC</code>), ported to the page key for key; the box is as wide as the field on the screen.</p>
   </div>
   <p>Every answer goes through PROCi. PROCi takes letters, DELETE and RETURN and ignores any other key, shows the first letter as a capital and the rest in lower case, and builds the answer the same way. Then the program looks for pieces of words in the answer with INSTR: <code>no</code>, <code>ky</code> and <code>iv</code> for snow, sky and river, <code>itch</code>, <code>ack</code>, <code>upb</code> and <code>rs</code> for the four doors of the hallway. The pieces never include a first letter, so the capital never gets in their way.</p>
   <p>The teacher's booklet lists these rules under <q>User-friendliness</q>, and the code keeps each one for every question but the trees'.</p>
@@ -196,7 +196,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="gg-bar"><button data-f="B">Buns</button><button data-f="L">Lollies</button><button data-f="O">Oranges</button><button data-f="C">Chips</button><button id="dragreset">Start again</button></div>
     <div id="dragsay" class="gg-sentences"></div>
     <div id="dragout" class="gg-out"></div>
-    <p class="cap">The game's own rule (Part 2 lines 1110-1230, <code>$2E44</code>) and its own words: the foods' effects come from the DATA at <code>$32F8</code> and the sentences from <code>$3334</code>, read from the listing. The dragons are cut from the game's picture of all four, and a dragon in the cave is drawn faint. Checked against the game in jsbeeb on 30 games of random throws, 208 in all: before every throw the port's counters and its <var>c()</var> and <var>e()</var> matched the game's, and each game ended the same way, in the Witch, four collars or neither.</p>
+    <p class="cap">The game's own rule (Part 2 lines 1110-1230, <code>$2E44</code>) and its own words: the foods' effects come from the DATA at <code>$32F8</code> and the sentences from <code>$3334</code>, read from the listing. The dragons are cut from the game's picture of all four, and a dragon in the cave is drawn faint.</p>
   </div>
   <p>A throw adds the food's effect to each dragon, and keeps each dragon between in (0) and out (1). The table is in line 1270: buns bring the red dragon out and send the yellow one in, lollies the green out and the red in, oranges the blue out and the green in, chips the yellow out and the blue in. When exactly one dragon is out and has no collar, it gets one. A fourth throw of any food brings the Witch, so every food can be thrown three times.</p>
   <p>Buns, lollies, oranges and chips, in that order, collar all four in four throws, and so does any order that keeps that round, such as chips, buns, lollies and oranges. The sentences come from a table of their own, in which each dragon <q>loves</q>, <q>hates</q> or <q>sometimes eats</q> each food, and they match the effects.</p>
@@ -213,8 +213,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="plate"><table class="gg-table" id="maptable"><tr><th>Sum</th><th>Roads</th><th>On the road</th></tr></table>
       <p class="cap">PROCw, Part 2 lines 1640-1750 (<code>$3F11</code>). The places are numbered forest 1, cottage 2, lake 3, castle 4 and hill 5.</p></div>
   </div>
-  <p>PROCw adds the number of the place the player is at to the number of the place they ask for. A sum of 6 is a road that does not exist, and 5 brings the Witch; 4, 8 and 9 meet the dwarf, the troll and the beast. The player starts at 10, which no place is, and the program allows only the forest and the cottage from there. The map's buttons make journeys by the same rule.</p>
-  <p>Each journey is an <code>ON np GOSUB</code> to the place, and no place ever returns from it: it calls PROCw again for the next journey. That is the second of the ways the game starts itself again (<a href="#starting-again">starting again</a>). Some choices on the way leave the land impossible to finish (<a href="discoveries.html#lost-without-being-told">lost without being told</a>).</p>
+  <p>PROCw adds the number of the place the player is at to the number of the place they ask for. A sum of 6 is a road that does not exist, and 5 brings the Witch; 4, 8 and 9 meet the dwarf, the troll and the beast. The player starts at 10, which is not the number of any place, and the program allows only the forest and the cottage from there. The map's buttons make journeys by the same rule.</p>
+  <p>Each journey is an <code>ON np GOSUB</code> to the place, and a place never returns from it: it calls PROCw again for the next journey. That is the second of the ways the game starts itself again (<a href="#starting-again">starting again</a>). Some choices on the way leave the land impossible to finish (<a href="discoveries.html#lost-without-being-told">lost without being told</a>).</p>
 </section>
 
 <section data-part="">
@@ -226,7 +226,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="gg-meter"><span>REPEATs open</span><div class="track"><div class="fill" id="rep"></div></div><span id="repv"></span></div>
     <div class="gg-bar"><label>Journeys on the map <input type="range" id="jour" min="1" max="27" value="1"></label><span id="jourv" class="gg-out"></span></div>
     <div class="gg-meter"><span>GOSUBs open</span><div class="track"><div class="fill" id="gos"></div></div><span id="gosv"></span></div>
-    <p class="cap">The counts at each visit and each journey, read from BASIC's own counters (&amp;24 for REPEATs, &amp;25 for GOSUBs) in jsbeeb, on routes that go in and out of the backroom and back and forth across the map.</p>
+    <p class="cap">The counts at each visit and each journey, read from BASIC's own counters (&amp;24 for REPEATs, &amp;25 for GOSUBs), on routes that go in and out of the backroom and back and forth across the map.</p>
   </div>
   <p>The hallway is a REPEAT loop that asks <q>Where do you wish to go?</q>, and every room ends by calling the hallway again, so a REPEAT is left open each time. BBC BASIC allows 20 at once. At the 20th visit the hallway's twenty are open, and the REPEAT in the input routine is one too many. On the map each journey is a GOSUB that never returns, and BASIC allows 26. Both programs start with <code>ON ERROR RUN</code>, so the 20th visit to the hallway and the 27th journey stop with Too many REPEATs or Too many GOSUBs, and RUN starts the program from the top, back at <code>Ready to start?</code>, with no message. Hearing the lake's name leaves one GOSUB more open, so after it the 26th journey is the last. The stairs leave two GOSUBs open each trip once the snake is dead, so a player who keeps climbing them meets the GOSUB limit first, at the 15th visit to the hallway. A guess at the trees that the game rejects for its form, a letter alone say, leaves the trees' own REPEAT open for the rest of the game, because lines 440-450 run on into the kingdom, and then the 19th visit is the last.</p>
 </section>

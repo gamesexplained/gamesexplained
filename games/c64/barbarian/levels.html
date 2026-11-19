@@ -56,9 +56,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .bb-sticks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:16px 0 0}
 .bb-sticks h3{font-size:14px;font-weight:700;color:var(--ink-soft);margin:0 0 6px}
 .bb-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
-.bb-grid button{font:inherit;font-size:12.5px;line-height:1.25;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 4px;cursor:pointer;color:var(--ink);min-height:52px}
+.bb-grid button{font-size:12.5px;line-height:1.25;padding:6px 4px;min-height:52px}
 .bb-grid button i{display:block;font-style:normal;font-family:var(--fm);font-size:15px;color:var(--ink-mute)}
-.bb-grid button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
 .bb-grid button[aria-pressed="true"] i{color:#fff}
 .bb-replies{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin:10px 0 0}
 .bb-replies span{font-size:12px;text-align:center;background:var(--surface-2);border:1px solid var(--line-soft);border-radius:5px;padding:4px 2px;line-height:1.25}
@@ -75,7 +74,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .bb-range{width:100%;max-width:340px;accent-color:var(--accent)}
 .bb-field{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:14px;margin:0 0 12px}
 .bb-field label{color:var(--ink-soft)}
-.bb-field select{font:inherit;font-size:14px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);max-width:100%}
+.bb-field select{font-size:14px;max-width:100%}
 .bb-mono{font-family:var(--fm);font-size:13px}
 .bb-sub{font-size:14px;font-weight:700;color:var(--ink-soft);margin:16px 0 0}
 @media (max-width:720px){:root{--gx:16px;--h1:34px;--pp:16px}.bb-pics,.bb-sticks{grid-template-columns:1fr}.bb-picks{grid-template-columns:repeat(8,minmax(0,1fr))}.bb-replies{grid-template-columns:repeat(4,minmax(0,1fr))}}
@@ -96,7 +95,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="pick"><a class="step" id="bb-arena-prev" aria-label="The arena before">‹</a><select id="bb-arena-pick" aria-label="Arena"></select><a class="step" id="bb-arena-next" aria-label="The arena after">›</a></div>
     <canvas id="bb-arena" class="bb-cv" width="320" height="128"></canvas>
     <div class="bb-wrapx"><table class="bb-tbl" id="bb-arena-tbl"></table></div>
-    <p class="cap">Drawn by the game's own code, running on the page over each side's listing: first what <code>restart</code> (<code>$800E</code>) runs to colour the screen, then, for the second arena of a side, <code>swap_backdrop</code> (<code>$8D2A</code> on side 1, <code data-part="tournament">$8E98</code> on side 2). Apart from the fighters, each picture matches the screen VICE shows in that arena, pixel for pixel (<code>test_levels.js</code>).</p>
+    <p class="cap">Drawn by the game's own code, running on the page over each side's listing: first what <code>restart</code> (<code>$800E</code>) runs to colour the screen, then, for the second arena of a side, <code>swap_backdrop</code> (<code>$8D2A</code> on side 1, <code data-part="tournament">$8E98</code> on side 2). The fighters are left out.</p>
   </div>
   <p>The arena is the middle of the bitmap: 32 characters across and 16 down, between the two pillars and under the panel. The pillars and the panel are the same in both arenas of a side, so only the arena moves. Side 2's pillars carry skulls where side 1's have none.</p>
   <p>The arena that is not on screen waits in the memory under the input and output chips, where the processor sees only the chips unless the game switches them out: its 4,096 bytes of bitmap at <code>$D000</code> to <code>$DFFF</code>, and its screen colours and colour memory a little higher (<code>$E11C</code> and <code>$E51C</code>). To change arenas the game fades the sound out and turns the screen black. It lifts the arena out of the bitmap into a buffer (<code>lift_arena</code>, <code>$8D5F</code>), swaps the colours (<code>swap_arena_colours</code>, <code>$8E29</code>), swaps the buffer with the stored arena and copies the result into the bitmap (<code>drop_arena</code>, <code>$8D92</code>). The arena that was on screen is now the one put away.</p>

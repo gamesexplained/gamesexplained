@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 """Draw the listing sample a checker marks, and count its verdicts (kit/skills/core/60-verify).
 
-  sample.py draw <game dir> --seed <n> [--size 60] [--stratum <name>=<pattern>[:<size>]]... [--name <s>]
+  sample.py draw <game dir> --seed <n> [--size 60] [--stratum <name>=<pattern>[:<size>]]...
+                 [--families 5] [--name <s>]
   sample.py count <sample.json> <verdicts.json>
 
 draw takes the comments of the game's listing.json, and of every part's in a game of several
 parts, and draws --size of them at random with the seed. A --stratum is the comments whose text
 matches the pattern (a Python regular expression, searched), such as the ones a decoder wrote from
 templates: --stratum generated='^Record \\d+:' draws 20 of those (or :<size>) apart from the rest,
-which are the stratum "written". A comment goes to the first stratum it matches. It writes
+which are the stratum "written". A comment goes to the first stratum it matches. Of the rest, the
+comments one script wrote from one template are found by their first words, with numbers and
+quotations set aside (template()): a template at least FAMILY_SHARE of the listing and FAMILY_MIN
+comments is a family, and the FAMILY_MAX largest are each a stratum ("family 1", ...) with
+--families of them drawn (0 for none), listed side by side, so that a checker reads a template's
+comments together and sees what one of them gets wrong in the rest. It writes
 <game dir>/work/reports/<name>/sample.json (name sample-<seed> by default): the seed, each
 stratum's size and pattern, the SHA-256 of every listing.json it read, and each drawn comment's
 folder, address, label and exact text, which is the list the checker is given.
@@ -21,6 +27,9 @@ better than it was. Every entry marked wrong, wrong-detail or doubtful is read a
 the run, which adds "held": true where the finding holds and false where it does not; count asks
 for each one missing. It then prints the plain rate, its 95 % interval (Wilson), each stratum's
 count, the rate weighted by the strata's sizes, and the sample's row for game.json's accuracy.
+The rates are estimates: chance can put a sample's above the listing's or below it, and a checker
+misses some. The one sure minimum is the wrong comments found over every comment in the listing,
+which it prints last.
 In a game of several parts, an entry names its part as the draw does ("folder").
 """
 import hashlib, json, os, random, re, sys
@@ -28,6 +37,7 @@ import hashlib, json, os, random, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from accuracy import wilson   # noqa: E402
 
+FAMILY_SHARE, FAMILY_MIN, FAMILY_MAX, FAMILY_SIZE = 0.02, 50, 8, 5
 FINDINGS = ("wrong", "wrong-detail", "doubtful")
 VERDICTS = FINDINGS + ("right", "unverifiable")
 
@@ -69,7 +79,15 @@ def parse_stratum(spec):
     return name, m.group(1), int(m.group(2) or 20)
 
 
-def draw(gdir, seed, size=60, strata=(), name=None):
+def template(text):
+    """A comment's first five words, its numbers and quotations made alike: comments a script wrote
+    from one template share it ("load # visual selector # character")."""
+    t = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', "Q", text)
+    t = re.sub(r"\$[0-9A-Fa-f]+|%[01]+|\b\d+(?:[.,]\d+)*\b", "#", t)
+    return " ".join(re.findall(r"[A-Za-z_#Q'-]+", t)[:5]).lower()
+
+
+def draw(gdir, seed, size=60, strata=(), name=None, families=FAMILY_SIZE):
     """The sample, as written to sample.json."""
     hashes, comments = population(gdir)
     if not comments:
@@ -79,12 +97,30 @@ def draw(gdir, seed, size=60, strata=(), name=None):
     for c in comments:
         n = next((n for n, p, _ in strata if re.search(p, c["text"])), "written")
         groups[n].append(dict(c, stratum=n))
+    fams = []
+    if families:
+        rest = groups.pop("written")
+        counts = {}
+        for c in rest:
+            counts[template(c["text"])] = counts.get(template(c["text"]), 0) + 1
+        floor = max(FAMILY_MIN, FAMILY_SHARE * len(comments))
+        big = sorted((t for t, k in counts.items() if k >= floor), key=lambda t: (-counts[t], t))[:FAMILY_MAX]
+        fams = [(f"family {i}", t) for i, t in enumerate(big, 1)]
+        of = {t: n for n, t in fams}
+        for n, _ in fams:
+            groups[n] = []
+        groups["written"] = []
+        for c in rest:
+            n = of.get(template(c["text"]), "written")
+            groups[n].append(dict(c, stratum=n))
     rng, drawn, rows = random.Random(seed), [], []
-    for n, p, k in list(strata) + [("written", None, size)]:
+    plan = [(n, p, k, None) for n, p, k in strata] + [(n, None, families, t) for n, t in fams] + [("written", None, size, None)]
+    for n, p, k, t in plan:
         pool = groups[n]
         take = rng.sample(pool, min(k, len(pool)))
         drawn += sorted(take, key=lambda c: (c["folder"], c["address"]))
-        rows.append({"name": n, "pattern": p, "population": len(pool), "drawn": len(take)})
+        rows.append(dict({"name": n, "pattern": p, "population": len(pool), "drawn": len(take)},
+                         **({"template": t} if t else {})))
     return {"seed": seed, "name": name or f"sample-{seed}", "population": len(comments),
             "strata": rows, "listings": hashes, "comments": drawn}
 
@@ -126,7 +162,7 @@ def count(sample, verdicts):
         if mine:
             weighted += s["population"] / sample["population"] * k / len(mine)
     return [], {"size": size, "wrong": wrong, "interval": wilson(wrong, size), "strata": rows,
-                "weighted": weighted, "wrong_at": [key(c) for c in sample["comments"] if c["wrong"]]}
+                "weighted": weighted, "floor": wrong / sample["population"], "wrong_at": [key(c) for c in sample["comments"] if c["wrong"]]}
 
 
 def pct(x):
@@ -143,7 +179,8 @@ def main(argv):
         if "--seed" not in opts:
             sys.exit("draw needs --seed: the same seed draws the same sample")
         strata = [parse_stratum(opts[i + 1]) for i, o in enumerate(opts) if o == "--stratum"]
-        s = draw(gdir, int(opt("--seed")), int(opt("--size", 60)), strata, opt("--name"))
+        s = draw(gdir, int(opt("--seed")), int(opt("--size", 60)), strata, opt("--name"),
+                 int(opt("--families", FAMILY_SIZE)))
         out = os.path.join(gdir, "work", "reports", s["name"], "sample.json")
         if os.path.exists(out):
             sys.exit(f"{out} exists: a sample is drawn once. Give a new seed, or --name, for another")
@@ -153,8 +190,10 @@ def main(argv):
                 print(f"stratum {r['name']}: no comment matches {r['pattern']!r}")
         with open(out, "w") as f:
             json.dump(s, f, indent=1)
-        print(f"wrote {out}: " + "; ".join(f"{r['name']} {r['drawn']} of {r['population']}" for r in s["strata"])
-              + f". Give the checker its comments as they are, and ask for each verdict with its text")
+        print(f"wrote {out}: " + "; ".join(f"{r['name']} {r['drawn']} of {r['population']}"
+                                           + (f" (\"{r['template']}\")" if r.get("template") else "") for r in s["strata"])
+              + f". Give the checker its comments as they are, in this order with their strata, "
+                "and ask for each verdict with its text")
         return 0
     if argv[0] == "count" and len(argv) == 3:
         with open(argv[1]) as f, open(argv[2]) as g:
@@ -171,6 +210,8 @@ def main(argv):
         if len(r["strata"]) > 1:
             print("by stratum: " + "; ".join(f"{n} {k} of {m} drawn from {p}" for n, k, m, p in r["strata"])
                   + f"; weighted by the strata's sizes {pct(r['weighted'])}")
+        print(f"these are estimates, and the checker may have missed some; at least {r['wrong']} of the listing's "
+              f"{sample['population']} comments are wrong ({pct(r['floor'])})")
         if r["wrong_at"]:
             print("wrong: " + " ".join((f"{f} " if f != "." else "") + f"${a:04X}" for f, a in r["wrong_at"]))
         print("accuracy row, with fixed and models to fill in: "

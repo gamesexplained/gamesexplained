@@ -28,6 +28,10 @@ Sources:
 - C64-Wiki has no page for the game (https://www.c64-wiki.com/wiki/Storm
   was empty on 14 October 2026), and Lemon64 answered every fetch with a
   browser check (HTTP 403).
+- Mastertronic's 1986 cassette, the Ultimate Tape Archive's `Storm.tap`
+  (413,938 bytes, SHA-256
+  `353b958158fdcba8149f99b8eea11cffbc27c8708591f7090adb9e4021e553ba`),
+  loaded in VICE 3.10 on 12 November 2026: its loading picture.
 
 ## Features
 
@@ -80,6 +84,7 @@ Found in the code, not in the manual. Details in `facts.md`.
 | The room's border takes the style of its last wall record | traced | `draw_border` |
 | The file was saved after play: room 0's walls and objects are marked gone until the first game resets them | traced | `reset_walls`, `reset_objects` |
 | Sound effect 5 is never played | traced | `sfx_start`'s 24 calls |
+| The cassette's loading picture names M. Talbot, K. Shrapnell and S. Martin under ARTHORS, and RAY signs it; the game names none of them, and the disk shows no picture | live | the cassette, `graphics.html#loading` |
 
 ## Open questions
 

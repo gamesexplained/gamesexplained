@@ -35,9 +35,7 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
 .gdo-cv{display:block;max-width:100%;image-rendering:pixelated;background:#000}
 .gdo-ctl{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;align-items:center}
-.gdo-ctl button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer}
-.gdo-ctl button:hover{border-color:var(--accent)}
-.gdo-ctl button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.gdo-ctl button{font-size:12.5px;padding:6px 12px}
 .gdo-ctl label{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
 .gdo-tbl{border-collapse:collapse;font-size:14px;margin:6px 0 18px;width:100%}
 @media (max-width:640px){.gdo-tbl{display:block;overflow-x:auto;max-width:100%}}
@@ -52,9 +50,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gdo-grid .sel{outline:2px solid var(--ink)}
 .gdo-out{font-size:15px;margin:12px 0 0;min-height:3em}
 .gdo-done{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:3px;margin:10px 0 4px}
-.gdo-done button{font-family:var(--fm);font-size:12px;padding:6px 0;border:1px solid var(--line);border-radius:5px;background:var(--surface);cursor:pointer;color:var(--ink)}
-.gdo-done button.on{background:var(--green);border-color:var(--green);color:#fff}
-.gdo-done button.cur{outline:2px solid var(--amber);outline-offset:1px}
+.gdo-done button{font-size:12px;padding:6px 0}
+.gdo-done button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .gdo-log{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin:10px 0 0;max-height:170px;overflow:auto}
 .gdo-msg{font-size:13px;color:var(--coral)}
 ul.gdo-list li{margin:0 0 .5em}
@@ -81,7 +78,7 @@ ul.gdo-list li{margin:0 0 .5em}
       <img src="reference/title-scenario.png" width="384" height="272" alt="The title page: Hewson Consultants presents Gribbly's Day Out, featuring Gribbly Grobbly, brought to life by Andrew Braybrook">
       <img src="reference/level1-play.png" width="384" height="272" alt="The first level just after Gribbly appears: Gribbly on the ground under a ledge, the psi and bank bars, score and clocks in the panel below">
     </div>
-    <p class="cap">The Scenario page, one of the two title pages, and level 0 a moment after Gribbly appears beneath the cave, with the status panel under the play view. Both from the emulator.</p>
+    <p class="cap">The Scenario page, one of the two title pages, and level 0 a moment after Gribbly appears beneath the cave, with the status panel under the play view.</p>
   </div>
   <p>On the ground Gribbly bounces, and pushing up lifts him into the air, where he can float in any direction. Fire picks up or puts down a Gribblet, blows a bubble at a creature, or switches part of the web: the glowing triangles strung across each map. A lit line of the web knocks Gribbly back and costs him psi, his energy, and a level whose psi runs out is played again.</p>
   <p>Creatures hatch and breed while he works, and Seon, the guardian, waits a while before he comes after Gribbly. A level is over when each of its Gribblets is saved or lost. Save six or more and the game moves on to another of the sixteen maps, chosen partly by how well you played.</p>
@@ -93,7 +90,7 @@ ul.gdo-list li{margin:0 0 .5em}
   <p class="lede">The tune plays only on the title pages. Its note table holds equal-tempered pitches for the American machine's clock, so a European (PAL) machine, whose clock is 3.7 % slower, plays every note about two thirds of a semitone flat.</p>
   <div class="plate">
     <div id="gdo-tune"><p class="gdo-msg">The player needs the site's sound script, which loads when the page is served with the rest of the site.</p></div>
-    <p class="cap">The game's own driver (<code>sound</code> <code>$7554</code>), ported and played through the site's model of the SID with the filter of a 6581, the original chip. The player stops where the game loops back to the first note. The port was run against the driver in a 6502 simulator on the game's bytes: 38,796 calls of the driver, tune and effects together, gave the same 300,119 register writes in the same order.</p>
+    <p class="cap">The game's own driver (<code>sound</code> <code>$7554</code>), ported and played through the site's model of the SID with the filter of a 6581, the original chip. The player stops where the game loops back to the first note.</p>
   </div>
   <p>The driver runs from a timer interrupt on CIA 1, every 47,288 cycles, 20.8 times a second (<code>irq_title</code> <code>$7413</code>). Every fourth call the driver reads the next byte of three note lists at <code>$FE00</code>, <code>$FE80</code> and <code>$FF00</code>. A byte's high four bits are the octave and the low four the semitone, so <code>$40</code> is C4 and <code>$49</code> is A4; 1 holds the note and 0 silences the voice. The three voices use a sawtooth, a triangle and a pulse wave, and the third, the bass, runs through the low-pass filter.</p>
   <table class="gdo-tbl">
@@ -127,7 +124,7 @@ ul.gdo-list li{margin:0 0 .5em}
       <button type="button" data-ov="lines" aria-pressed="true">Interrupt lines</button>
       <button type="button" data-ov="grid" aria-pressed="false">Tile grid</button>
     </div>
-    <p class="cap">Drawn by the site's renderer from one frame of level 0 recorded in the emulator: memory as the frame began and every write to the video chip during it. 104,442 of the 104,448 pixels match the emulator's own picture. The 6 that differ are on line 197, where <code>irq_panel</code> turns the display back on partway along the line.</p>
+    <p class="cap">Drawn by the site's renderer from one frame of level 0: memory as the frame began and every write to the video chip during it. Six pixels on line 197 come out differently from the game's own picture: there <code>irq_panel</code> turns the display back on partway along the line.</p>
   </div>
   <table class="gdo-tbl">
     <tr><th>Line</th><th>Handler</th><th>What it does</th></tr>
@@ -184,7 +181,7 @@ ul.gdo-list li{margin:0 0 .5em}
     <div class="gdo-done" id="gdo-done"></div>
     <p class="gdo-out" id="gdo-lvl-out">&nbsp;</p>
     <div class="gdo-log" id="gdo-log"></div>
-    <p class="cap">The routine, ported, with the random number drawn here in its place. Green levels are done; the outlined one is being played; press a level to mark it done or undone. The port was run against <code>level_result</code> in a 6502 simulator on the game's bytes over every performance, saved count, level and 37 random values, on 45 sets of levels done: 674,325 cases, all the same.</p>
+    <p class="cap">The routine, ported, with the random number drawn here in its place. Green levels are done; the outlined one is being played; press a level to mark it done or undone.</p>
   </div>
   <p>The performance starts at 0 and rises by the number saved beyond five, to at most 14. The routine takes a random number from 0 to 15, keeps the smaller of it and the performance, and picks the highest level not yet done at or below that. If every level there is done, the routine takes the first undone level counting up from 1. Level 0 always comes first, and since the performance never reaches 15, level 15 always comes last.</p>
   <p>A player who saves exactly six every time raises the performance by one a level and meets the levels in order, 0 to 15. Saving all eight raises it by three, so later levels can come early. Finishing all sixteen adds 6,809 points and ends the game. The number turns up twice more: as the best score the game starts with, which <code>start_game</code> (<code>$42C0</code>) sets to 6809, and in the name of level 7, "Seon is the 6809 beast!".</p>
@@ -197,7 +194,7 @@ ul.gdo-list li{margin:0 0 .5em}
   <table class="gdo-tbl" id="gdo-seon"></table>
   <p>Touching Seon ends the wait at once, at a cost of 3 psi and 10 points. So does the web's power-down, which starts when seven of the eight Gribblets are saved, lost, or inside a Flyer (<code>web_power_down</code> <code>$4E6D</code>).</p>
   <p>Once the wait is over, however it ends, Seon's aggression rises by one every 256 frames, to 14. Whenever a random number from 0 to 15 is below the aggression, Seon steers towards Gribbly (<code>seon_move</code> <code>$49AF</code>). A bubble stops him and lowers the aggression by 2 (<code>seon_stunned</code> <code>$57A7</code>).</p>
-  <p>The web is five bands of 14 triangles laid across the map at every level start (<code>web_band_a</code> <code>$684D</code>), each trimmed by one byte of the level's layout. A lit line bounces Gribbly off it and costs him psi. A line switched off is drawn with the same character codes plus <code>$80</code>, whose shapes are blank, so it vanishes and nothing collides with it. The power-down kills the controls first, one row of them every other frame, then puts out every line. Seon bounces off lit lines at four times his speed, and when he crosses a live control he switches it with a chance of your performance in 32 (<code>seon_web</code> <code>$4B10</code>).</p>
+  <p>The web is five bands of 14 triangles laid across the map at every level start (<code>web_band_a</code> <code>$684D</code>), each trimmed by one byte of the level's layout. A lit line bounces Gribbly off it and costs him psi. A line switched off is drawn with the same character codes plus <code>$80</code>, whose shapes are blank, so it vanishes and no longer blocks anything. The power-down kills the controls first, one row of them every other frame, then puts out every line. Seon bounces off lit lines at four times his speed, and when he crosses a live control he switches it with a chance of your performance in 32 (<code>seon_web</code> <code>$4B10</code>).</p>
 </section>
 
 </main>

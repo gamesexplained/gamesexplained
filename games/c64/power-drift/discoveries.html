@@ -40,9 +40,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pd-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
 .pd-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
 .pd-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
-.pd-btn{font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer;color:var(--ink)}
-.pd-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
-.pd-sel{font-family:var(--fm);font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.pd-btn{font-size:13px;padding:6px 11px}
+.pd-sel{font-size:13px;padding:5px 8px}
 .pd-bar label{font-family:var(--fm);font-size:13px;color:var(--ink-soft);display:flex;gap:8px;align-items:center}
 .pd-bar input[type=range]{width:200px;max-width:50vw}
 .pd-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
@@ -70,10 +69,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The eleven rival karts have no driving in them. Each one goes round at its own fixed speed, in its own fixed lane, and nothing that happens in the race changes either.</p>
   <div class="plate">
     <canvas class="pd-pic" id="pd-lines" width="624" height="330" aria-label="Eleven straight lines, one for each rival's distance against the race clock, none of them crossing"></canvas>
-    <p class="cap">Each rival's distance from the start line, in laps, against the race clock, from <code>rival_start_coarse</code>, <code>rival_start_fine</code> and <code>rival_top_speeds</code>, moved as <code>move_rivals</code> moves them. The darker the line, the faster the kart. The race runs until the third rival crosses the line, which ends the game for a player who has not finished. <code>test_rivals.js</code> checks every point against a race run by the game's own code.</p>
+    <p class="cap">Each rival's distance from the start line, in laps, against the race clock, from <code>rival_start_coarse</code>, <code>rival_start_fine</code> and <code>rival_top_speeds</code>, moved as <code>move_rivals</code> moves them. The darker the line, the faster the kart. The race runs until the third rival crosses the line, which ends the game for a player who has not finished.</p>
   </div>
-  <p>A rival is four numbers: a lap count, a position along the lap, a speed and a lane. Once a race frame <code>move_rivals</code> (<code>$1950</code>) adds the speed to the position, and every other race frame, until the speed reaches the top speed of the rival's place on the starting grid, it adds one to the speed. That is all a rival does. Nothing about the track goes in: a rival keeps the same speed through every bend, over every hill and across every jump, on all 25 stages, and it never changes lane. The karts only seem to follow the bends and ride the hills because <code>place_rivals</code> draws each one where its lane falls on the road at its distance.</p>
-  <p>Nor can a rival crash. Karts drive straight through one another, and the game has a spin, a fall and a slowdown for the player's kart only. And no rival ever overtakes another. The faster karts start in front, and all eleven speed up at the same rate until each reaches its top speed, so none is ever slower than the one behind it, and the lines above never cross. The order the rivals finish in is settled before the lights change; the player's kart is the only one that changes places. <a href="index.html#rivals">How it works</a> has the race to drive.</p>
+  <p>A rival is four numbers: a lap count, a position along the lap, a speed and a lane. Once a race frame <code>move_rivals</code> (<code>$1950</code>) adds the speed to the position, and every other race frame, until the speed reaches the top speed of the rival's place on the starting grid, it adds one to the speed. That is all a rival does. The track plays no part in it: a rival keeps the same speed through every bend, over every hill and across every jump, on all 25 stages, and it never changes lane. The karts only seem to follow the bends and ride the hills because <code>place_rivals</code> draws each one where its lane falls on the road at its distance.</p>
+  <p>Nor can a rival crash. Karts drive straight through one another, and the game has a spin, a fall and a slowdown for the player's kart only. And a rival never overtakes another. The faster karts start in front, and all eleven speed up at the same rate until each reaches its top speed, so none is ever slower than the one behind it, and the lines above never cross. The order the rivals finish in is settled before the lights change; the player's kart is the only one that changes places. <a href="index.html#rivals">How it works</a> has the race to drive.</p>
 </section>
 
 <section id="middle">
@@ -82,7 +81,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Nothing in the game can touch a kart in the middle of the road: no rival and no roadside object, on any stage, at any speed.</p>
   <div class="plate">
     <canvas class="pd-pic" id="pd-road" width="624" height="190" aria-label="The road across, from its left edge to its right: a band in each lane where a rival is solid, the clear middle between them, and the last unit on the right where roadside objects reach"></canvas>
-    <p class="cap">The road across, as the kart sees it, in units of <code>$2F</code>, the road's offset against the kart: 64 of them, from <code>$FF</code> at the left edge to <code>$C0</code> at the right. <b>Red</b>: the band of each lane where <code>place_rivals</code> spins the kart out on a slower rival just in front of it. <b>Amber</b>: the one unit on the road where <code>draw_scenery</code> spins it on a roadside object. <b>Green</b>: the middle, which neither reaches. <code>test_rivals.js</code> runs the game's own sums for every unit of the road at every meeting with a rival or a roadside object on all 25 stages.</p>
+    <p class="cap">The road across, as the kart sees it, in units of <code>$2F</code>, the road's offset against the kart: 64 of them, from <code>$FF</code> at the left edge to <code>$C0</code> at the right. <b>Red</b>: the band of each lane where <code>place_rivals</code> spins the kart out on a slower rival just in front of it. <b>Amber</b>: the one unit on the road where <code>draw_scenery</code> spins it on a roadside object. <b>Green</b>: the middle, which neither reaches.</p>
   </div>
   <p>The rivals keep to two lanes, one each side of the middle, five karts in the left and six in the right. A rival is solid only to a kart in a band around its own lane, and only when it is slower than the kart and just in front of it, 8 to 15 units of position ahead out of 12,800 in a lap. The 18 units of road between the two bands are in neither. The objects by the road can spin the kart too, but one on the left reaches only a kart already off the road, one on the right reaches only the road's last unit, and nothing over the road is solid at all.</p>
   <p>So a kart held in the middle can pass the whole field without a touch. Driven there flat out, it wins every one of the 25 stages at 2'14 on the race clock, eight clock seconds ahead of the fastest rival. Staying in the middle still takes steering, because each bend pushes the kart sideways (<code>bend_drift</code>), and a jump taken below 70 km/h still drops the kart into the gap (<code>piece_jump</code>). But nothing will ever run into it. The game even starts the kart in the left lane's band, at <code>$F4</code>.</p>
@@ -91,7 +90,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="note">
   <p class="fig">03 · Text</p>
   <h2 class="t">Secret: a note in front of the first instruction</h2>
-  <p class="lede">The game's code starts at <code>$0834</code>. The 52 bytes before it are text that nothing reads.</p>
+  <p class="lede">The game's code starts at <code>$0834</code>. The 52 bytes before it are text that the game never reads.</p>
   <div class="plate"><pre class="pd-pre" id="pd-sig"></pre>
   <p class="cap">The bytes at <code>$0800</code>-<code>$0833</code> (<code>signature_text</code>), as text: a return is a new line, and <code>$05</code>, the code for white text, is left out.</p></div>
   <p>The loader's last instruction jumps to <code>$0834</code>, just past the text. The copyright line on the select screen names Activision, Sega and Chris Butler. What "pbj gma89" stands for is not known.</p>
@@ -111,9 +110,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <canvas class="pd-cv" id="pd-panel" width="104" height="8" style="max-width:520px"></canvas>
     <p class="pd-out" id="pd-pay"></p>
     <p class="pd-out" id="pd-seq"></p>
-    <p class="cap">The line is drawn with the panel's own characters and colours, from <code>str_bonus</code> (<code>$10CD</code>) with the two bonus digits in its 9th and 10th places, as <code>draw_bonus_digits</code> writes them. What it shows, and what it pays, come from a port of <code>show_bonus</code> and <code>count_bonus</code> written for this page. <code>test_bonus.js</code> runs the game's own routines on the kit's simulator for every second from 0 to 59, with three values of the minutes, and checks that the port shows the same digits at every count and pays the same points. In the emulator, with the seconds set to 20, the bonus showed 25, counted 37 times and left 37,000 points.</p>
+    <p class="cap">The line is drawn with the panel's own characters and colours, from <code>str_bonus</code> (<code>$10CD</code>) with the two bonus digits in its 9th and 10th places, as <code>draw_bonus_digits</code> writes them. What it shows, and what it pays, come from a port of <code>show_bonus</code> and <code>count_bonus</code> written for this page. With the seconds at 20, the bonus shows 25, counts 37 times and leaves 37,000 points.</p>
   </div>
-  <div class="pd-shots" style="margin-top:18px;max-width:520px"><figure><img src="reference/bonus-hex.png" alt="The panel showing BONUS 1B000" width="384" height="272"><figcaption>The count partway through in the emulator: BONUS 1B000. The bonus started at 25 and has counted down past 20 into 1F, 1E, 1D, 1C and 1B.</figcaption></figure></div>
+  <div class="pd-shots" style="margin-top:18px;max-width:520px"><figure><img src="reference/bonus-hex.png" alt="The panel showing BONUS 1B000" width="384" height="272"><figcaption>The count partway through: BONUS 1B000. The bonus started at 25 and has counted down past 20 into 1F, 1E, 1D, 1C and 1B.</figcaption></figure></div>
   <p>The clock keeps its seconds as two decimal digits in one byte, a form called binary-coded decimal: 20 seconds is the byte <code>$20</code>. The processor has a decimal mode in which adding and subtracting work on such bytes. <code>show_bonus</code> (<code>$10B4</code>) turns it on and subtracts the seconds from <code>$45</code>, so 20 seconds leaves <code>$25</code>, which the panel shows as 25. It never looks at the minutes, so a race of 2 minutes 20 seconds earns the same bonus as one of 20 seconds. A race of more than 45 seconds into its minute wraps round below 0: 46 seconds shows 99 and 59 shows 86.</p>
   <p><code>count_bonus</code> (<code>$10DA</code>) then repeats, once a frame: turn decimal mode on, add 1,000 points, draw the score, take 1 off the bonus, draw the bonus. But <code>draw_score</code> ends by turning decimal mode off (<code>CLD</code> at <code>$34AE</code>), so every subtraction is plain binary. Counted down in binary, the byte <code>$25</code> takes 37 steps to reach 0, not 25, and on the way the panel shows 1F, 1E and so on down to 1A, then 0F to 0A: the digits 10 to 15, which the panel's alphabet draws as the letters A to F. The bonus pays its two digits read as a hexadecimal number, counting in sixteens with A to F as the digits after 9, in thousands of points.</p>
   <p>So a slow race pays best. Seconds of 46 to 59 show 99 to 86 and pay 153,000 to 134,000 points. Exactly 45 seconds shows 00; the count takes 1 off before it checks for 0, so the byte goes round through FF and the bonus pays 256,000 points, more than any other time. A race of 44 seconds shows 01 and pays 1,000.</p>
@@ -125,10 +124,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The clock on the panel counts the game's own pictures, not time. Ten seconds of play put about fourteen and a half seconds on it.</p>
   <div class="plate">
     <table class="pd-tab">
-      <tr><th>Run in the emulator</th><th>Video frames</th><th>Race frames</th><th>Clock moved</th></tr>
+      <tr><th>Ten seconds of play</th><th>Video frames</th><th>Race frames</th><th>Clock moved</th></tr>
       <tr><td>Standing, and with up held, in several runs</td><td class="n">500</td><td class="n">166 to 177</td><td class="n">14 to 15 s</td></tr>
     </table>
-    <p class="cap">500 PAL video frames are ten seconds. Race frames counted with a checkpoint on <code>race_frame_loop</code>; the clock read from <code>$53DF</code>-<code>$53E1</code> before and after.</p>
+    <p class="cap">500 PAL video frames are ten seconds. A race frame is one pass of <code>race_frame_loop</code>, and the clock is kept at <code>$53DF</code>-<code>$53E1</code>.</p>
   </div>
   <p><code>race_clock</code> adds 1 to a hidden digit after the seconds every other race frame. The digit runs from 0 to 5, so a second on the clock is 12 race frames. A race frame is one whole picture of the view, drawn while the other screen is shown, and it takes about three of the video chip's 50 frames a second, so the race makes about 17 a second. Twelve race frames take about 0.7 seconds.</p>
   <p>The fast clock does not change the order of the race, since every kart moves on the same race frames. It does change <a href="#bonus">the time bonus</a>, which reads the seconds on the clock.</p>
@@ -138,7 +137,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">06 · Sound effects</p>
   <h2 class="t">Secret: an engine sound the game never plays</h2>
   <p class="lede">The sound driver holds four effects. The game starts only two of them, and the fourth is an engine's hum that keeps itself going.</p>
-  <p>A search of the code for every write to <code>sound_effect</code> (<code>$B805</code>) finds the value 2, when the place changes or a rival comes alongside, and 3, for a spin, and otherwise only the driver itself. Effect 4 is a steady tone with a pulse that sweeps up and down, and its last command jumps back to repeat it. Starting it sets <code>$B808</code>, and while that is set, the end of any other effect starts effect 4 again (<code>sound_end_effect</code>). The only routine that clears it, <code>sound_engine_off</code> (<code>$C01C</code>), is called by nothing. It sounds like an engine.</p>
+  <p>A search of the code for every write to <code>sound_effect</code> (<code>$B805</code>) finds the value 2, when the place changes or a rival comes alongside, and 3, for a spin, and otherwise only the driver itself. Effect 4 is a steady tone with a pulse that sweeps up and down, and its last command jumps back to repeat it. Starting it sets <code>$B808</code>, and while that is set, the end of any other effect starts effect 4 again (<code>sound_end_effect</code>). The only routine that clears it, <code>sound_engine_off</code> (<code>$C01C</code>), is never called. It sounds like an engine.</p>
   <p>Effect 1 has no writer either. It is the only pattern that uses command 36, which reads the keyboard's port at <code>$DC01</code> and then ignores what it read (<code>cmd_effect_release</code>). Both can be heard on the <a href="index.html#effects">How it works</a> tab.</p>
 </section>
 
@@ -151,10 +150,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="stripes">
   <p class="fig">08 · Unused pictures</p>
-  <h2 class="t">Two sprites of stripes that nothing shows</h2>
+  <h2 class="t">Two sprites of stripes that the game never shows</h2>
   <p class="lede">Sprites <code>$A1</code> and <code>$A2</code> sit in the part of a view screen that is never shown, and no table or routine points a sprite at them.</p>
   <div class="plate"><canvas class="pd-cv" id="pd-stripes" width="96" height="42" style="max-width:384px"></canvas>
-  <p class="cap">Sprites <code>$A1</code> and <code>$A2</code> from <code>$E840</code> and <code>$E880</code>, drawn in multicolour, as the race draws every sprite, with the race's two shared sprite colours, black and light grey, and white for their own colour, which nothing gives them.</p></div>
+  <p class="cap">Sprites <code>$A1</code> and <code>$A2</code> from <code>$E840</code> and <code>$E880</code>, drawn in multicolour, as the race draws every sprite, with the race's two shared sprite colours, black and light grey, and white for their own colour, which the game never gives them.</p></div>
   <p>The video chip finds a sprite's picture at 64 times its pointer in the video bank at <code>$C000</code>. Pointers <code>$A0</code> to <code>$A2</code> land in rows 0 to 4 of the view screen at <code>$E800</code>, which is never shown, since the panel takes those rows from another screen; so the game keeps three sprites there. <code>$A0</code> is the last driver's head looking back. The other two hold only bands of stripes.</p>
 </section>
 

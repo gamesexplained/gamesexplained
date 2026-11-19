@@ -13,7 +13,7 @@ Sources:
 
 | Feature | Status | Where |
 |---|---|---|
-| Two parts on one disk: an adventure (part one) and a countryside run (part two) | live | part one at `$0400`, part two at `$2624`; F1 and F3 on the attract screen start them |
+| Two parts in one load from the cassette: an adventure (part one) and a countryside run (part two) | live | part one at `$0400`, part two at `$2624`; F1 and F3 on the attract screen start them |
 | Part one: about 36 screens of the Nova laboratory, a side-scrolling map explored with the stick | confirmed | map rows `$4000`/`$4100`/`$4200`, 256 columns each, scrolled by `$087B` |
 | Space bar cycles the actions JUMP, LASER, SEARCH, UTILISE | live | `action_select_poll` (`$067D`), labels at `$06E1` |
 | Fire performs the selected action; menus are driven by stick and fire | live | `main_loop_frame` (`$04E8`), mode table `$43E8` |
@@ -38,11 +38,13 @@ Sources:
 
 - F1 and F3 on the attract screen start part one and part two directly; fire plays the intro first. The C64-Wiki page says only that cracked copies with a menu can skip to part two (`orientation.md`).
 - The game uses undocumented 6502 opcodes (`LAX (zp),y`) in its colour-fill loops at `$0BCF`, `$0BDD`, `$1EC8`, `$1ED6`, `$2AD6`, `$2AF4` and `$2B02`.
-- `$3DE0`-`$3FFF` holds an older build of part two's ending sequence that is never run (`facts.md`).
+- `$3DE0`-`$3FFF` holds an older build of the code at `$39C4`-`$3BE3`, moved up by `$41C`, that is never run (`facts.md`).
+- A lighted cigarette dropped in the bin at map column `$F8` sets the bin on fire and the alarm off; with the sprinklers on it adds a fault in the circuitry, and in any case a guard is sent when the clock's minutes have changed four times, three to four minutes later (`$1FD8`, `check_countdown`).
+- The credits screen is text in video bank 2 at `$8000`, its chrome stripes 24 writes a frame to `$D023` (`$9637`; Graphics tab).
+- Part two has fourteen creatures, events 1 to 15 without 10: a bird, a rabbit, a squirrel, a mouse, a fin in the water, a log, a snake, a grey robot, a soldier, a flying elephant, a rolling ball, a small cyan machine, a duck and a frog (shapes and colours seen on the kit's machine model; names of 3, 4 and 11 from the contributor).
 - Part two uses a CIA2 timer NMI as a second scroll driver.
 
 ## Open questions
 
-- What each of part two's fifteen events is, by name, and which of the soldiers' behaviours the wiki describes the code implements.
+- Which of the soldiers' behaviours the wiki describes the code implements, and what the five sprite shapes no table names (`$EB`, `$EE`, `$EF`, `$FA`, `$FB`) were for.
 - Whether the Spectrum version's "two independent parts" corresponds to the F1 and F3 starts here.
-- What the 1,192 bytes after the title picture's bitmap hold.

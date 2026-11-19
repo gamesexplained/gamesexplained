@@ -39,9 +39,7 @@ a{color:var(--link)}
 .pd-stack{position:relative;line-height:0}
 .pd-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent}
 .pd-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
-.pd-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
-.pd-btn:hover{border-color:var(--ink-mute)}
-.pd-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.pd-btn{font-size:12.5px;padding:5px 11px;line-height:1.3}
 .pd-mono{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
 .pd-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
 .pd-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
@@ -112,10 +110,10 @@ a{color:var(--link)}
   <p class="lede">There is no music in this game. The title's sound is put together at random, frame by frame, and play has 31 effects on two voices. Press any of them.</p>
   <div class="plate">
     <div id="pd-sid"></div>
-    <p class="cap">The page runs the game's own sound driver, <code>sound_frame</code> (<code>$0500</code>-<code>$0767</code>, with the effects at <code>$C610</code> and the instruments at <code>$EAA0</code>), on the kit's 6502 once a frame, as the deck's raster interrupt calls it, and plays what it writes through the site's model of the SID. Every register write of every button matches the driver run in the kit's simulator for 3,000 frames. Each button starts its effect as the game asks for one, by its number in channel 0's request.</p>
+    <p class="cap">The page runs the game's own sound driver, <code>sound_frame</code> (<code>$0500</code>-<code>$0767</code>, with the effects at <code>$C610</code> and the instruments at <code>$EAA0</code>), once a frame, as the deck's raster interrupt calls it, and plays what it writes through the site's model of the SID. Each button starts its effect as the game asks for one, by its number in channel 0's request.</p>
   </div>
   <p>An effect is 16 bytes (<code>effects</code>, <code>$C610</code>): an instrument, which gives the waveform, the envelope, a pulse width and how long to hold the note, then a starting frequency, a slide added every few frames, how many times to add it, a pulse width with a slide of its own, and an effect to chain to when it ends. The driver keeps two channels on the SID's first two voices. The third voice runs noise at its highest frequency with its output switched off, and every random number in the game is a read of its waveform (<code>$D41B</code>).</p>
-  <p>The title's sound (<code>title_sound</code>, <code>$054A</code>) uses that noise to choose. Every 128 frames it starts one of the three title effects, <code>$1D</code>-<code>$1F</code>, at random; twice in every 64 frames it plays the lift's effect, <code>$10</code>, on the second channel; and every 16 frames it pushes the first channel's slide up or down by a random amount. No two visits to the title sound the same, and neither do two presses of its button here. The decks hum with one effect, <code>$18</code>, whose three slide bytes <code>deck_start</code> sets for each deck from <code>$6E60</code>, <code>$6E70</code> and <code>$6E80</code>.</p>
+  <p>The title's sound (<code>title_sound</code>, <code>$054A</code>) uses that noise to choose. Every 128 frames it starts one of the three title effects, <code>$1D</code>-<code>$1F</code>, at random; twice in every 64 frames it plays the lift's effect, <code>$10</code>, on the second channel; and every 16 frames it pushes the first channel's slide up or down by a random amount. Every visit to the title sounds different, and so does every press of its button here. The decks hum with one effect, <code>$18</code>, whose three slide bytes <code>deck_start</code> sets for each deck from <code>$6E60</code>, <code>$6E70</code> and <code>$6E80</code>.</p>
 </section>
 
 <section id="frame">
@@ -126,7 +124,7 @@ a{color:var(--link)}
     <div class="pd-bar" id="pd-bands"></div>
     <div class="pd-stack"><canvas id="pd-frame" class="pd-cv pd-wide" width="384" height="272"></canvas><canvas id="pd-frame-hi" class="pd-cv pd-wide" width="384" height="272"></canvas></div>
     <p class="pd-out" id="pd-band-out">The whole frame, as the video chip drew it.</p>
-    <p class="cap">Drawn by the page from one frame of play recorded in VICE: every write to the video chip with the line and cycle it landed on, and the memory the drawing reads, rebuilt with the site's renderer. 0 of the 104,448 pixels differ from VICE's own picture of the same frame.</p>
+    <p class="cap">Drawn by the page from one frame of play: every write to the video chip with the line and cycle it landed on, and the memory the drawing reads, rebuilt with the site's renderer.</p>
   </div>
   <p>The chain starts at line 254 with <code>irq_bottom</code>, which sets up the top of the next frame: the text font at <code>$7000</code> for the status bar, and every robot sprite pointed at a blank shape so none shows over it. At line 91 <code>irq_top</code> sets the deck's colours and fine scroll, and a blank character set for the strip above the deck. At line 118 <code>irq_deck</code> switches to the deck's own character set at <code>$7800</code>, copies the frame's sprite shapes into place and runs the sound driver. The last, <code>irq_collide</code>, comes at line 246, or earlier, at the moment two sprites first touch.</p>
   <p>The main loop counts frames by those interrupts: <code>irq_bottom</code> sets a flag and <code>irq_deck</code> clears it, and one pass of the game waits on it five times, so a pass takes at least two frames (<code>main_loop</code>, <code>$13DA</code>). In a recording of play the game managed 66 passes in 200 frames, a little over 16 a second, and every timer in play counts passes.</p>
@@ -144,7 +142,7 @@ a{color:var(--link)}
     </div>
     <div class="pd-stack"><canvas id="pd-deck" class="pd-cv pd-wide"></canvas><canvas id="pd-deck-hi" class="pd-cv pd-wide"></canvas></div>
     <p class="pd-out" id="pd-cell-out">Press a cell of the deck.</p>
-    <p class="cap">Drawn by the page from the listing: the plan found through <code>plan_ptrs</code> (<code>$F100</code>), unpacked into the map as <code>build_deck</code> (<code>$3590</code>) does, each character in its own colour from the colour table (<code>$0800</code>) and the deck's scheme (<code>$6A44</code>). The map matches <code>build_deck</code> run in the kit's simulator for all 16 decks. Every deck is drawn on the <a href="levels.html">Maps tab</a>.</p>
+    <p class="cap">Drawn by the page from the listing: the plan found through <code>plan_ptrs</code> (<code>$F100</code>), unpacked into the map as <code>build_deck</code> (<code>$3590</code>) does, each character in its own colour from the colour table (<code>$0800</code>) and the deck's scheme (<code>$6A44</code>). Every deck is drawn on the <a href="levels.html">Maps tab</a>.</p>
   </div>
   <p>The plan is run-length packed: a byte with bit 7 set is a cell repeated as many times as the next byte says, and any other byte is one cell. The long corridors and empty space around a deck cost two bytes each, and the sixteen plans take 3,500 bytes for maps that unpack to 16 KB at <code>$8000</code>. Characters with bit 7 set are walls, which stop the player, the robots and line of sight alike.</p>
   <p>Colour is a second table. Every character of the deck's set belongs to one of 16 groups (the high four bits of its entry at <code>$0800</code>), and a deck's scheme, one of eight at <code>$6A44</code>, gives each group a colour. When the last robot on a deck is destroyed, the deck changes to scheme 7, the lights go out, and 500 points are paid (<code>update_droids</code>, <code>$174B</code>).</p>
@@ -174,7 +172,7 @@ a{color:var(--link)}
       <span class="pd-mono" id="pd-ship-count"></span>
     </div>
     <div class="pd-scroll"><table class="pd-tbl" id="pd-ship"></table></div>
-    <p class="cap"><code>build_ship</code> (<code>$15E8</code>) ported, with the page's own random numbers in place of the noise voice. It gives the same table and the same count as the game's routine run in the kit's simulator on 645 ships, each fed the same random numbers, and on ships where every random number is 0, 3, 12, 15 or 255.</p>
+    <p class="cap"><code>build_ship</code> (<code>$15E8</code>) ported, with the page's own random numbers in place of the noise voice.</p>
   </div>
   <p>Each deck has a base type (<code>deck_lowest</code>, <code>$C830</code>), and the ship's number is added to it, up to type 19, the 821. The deck then fills one fewer places than <code>deck_places</code> (<code>$F170</code>) says, twelve at most. The first seven places it fills get the base type plus a random 0 to 3; the rest get half a random 0 to 15, halved again until it is below the base plus 3, which makes small robots, types 1 to 7 on most decks, or an empty place. Place 13 of the bridge always holds the 999.</p>
   <p>So the ships do get harder: on the eighth ship each deck's base is up to seven types higher than on the first. The ship's number stops at 8, and so does the difficulty, since the same number sets how often robots fire (<code>robot_shoot</code>, <code>$3450</code>).</p>
@@ -191,7 +189,7 @@ a{color:var(--link)}
       <span class="pd-mono" id="pd-en-out"></span>
     </div>
     <div class="pd-scroll"><table class="pd-tbl" id="pd-classes"></table></div>
-    <p class="cap">From <code>burn_masks</code> (<code>$6DDE</code>), <code>kill_points</code> (<code>$6DEC</code>) and <code>ram_points</code> (<code>$6DF6</code>), by class. Seconds assume 16.5 passes a second, the pace of play recorded in VICE; a busy deck runs slower.</p>
+    <p class="cap">From <code>burn_masks</code> (<code>$6DDE</code>), <code>kill_points</code> (<code>$6DEC</code>) and <code>ram_points</code> (<code>$6DF6</code>), by class. Seconds assume 16.5 passes a second, the pace of ordinary play; a busy deck runs slower.</p>
   </div>
   <p>Every 16 passes the alert routine (<code>alert</code>, <code>$3E32</code>) checks the pass count against the host's mask, and when it matches, the energy limit drops by one and the host's energy is held under it. A host whose energy reaches 0 burns out and leaves the 001 on its own with 7 points of energy (<code>burnt_out</code>, <code>$1573</code>). Taking a new host is the only way to stop the clock. The briefing says as much: "change the host robot often to prevent the device from burning out".</p>
   <p>The same 16-pass tick runs the alert. Each robot destroyed adds its type to an alert count, which falls by one each tick, and its top two bits light the deck's alert panels green, yellow, amber or red. Each tick pays 0, 5, 10 or 25 points by that colour (<code>alert_points</code>, <code>$6DE8</code>), so a player who destroys big robots quickly is paid for keeping the alert up. Standing on an energiser gives a point of energy every fourth pass, up to the host's limit, and takes 5 points of score for each (<code>floor_cell</code>, <code>$2E7B</code>).</p>
@@ -415,25 +413,25 @@ function createDriver(D, C64Cpu) {
   const base = new Uint8Array(0x10000);
   for (const [ad, bytes] of D.mem) base.set(bytes, ad);
   const sid = new Uint8Array(25);
-  let m, cpu, tune, writes = [], bus = 0, env3 = 0, osc3 = 0;
+  let m, cpu, tune, writes = [], times = [], t0 = 0, bus = 0, env3 = 0, osc3 = 0;
   const io = {                                                  // the chips at $D000-$DFFF
     read(ad) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; } return m[ad]; },
-    write(ad, val) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; } m[ad] = val; },
+    write(ad, val) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); times.push(cpu.cycles - t0); } bus = val; return; } m[ad] = val; },
   };
   const call = () => cpu.call(0x0500, { a: 0, x: 0, y: 0, n: 0, v: 0, d: 0, z: 0, c: 0 }, { maxSteps: 200000 });
   return {
     sid,
-    get writes() { return writes; },
+    get writes() { return writes; }, get times() { return times; },
     readback(e3, o3, b) { env3 = e3; osc3 = o3; bus = b; },
     init(t) {
       tune = D.tunes[t];
       m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x35, io });
-      sid.fill(0); writes = []; bus = 0;
+      sid.fill(0); writes = []; times = []; t0 = cpu ? cpu.cycles : 0; bus = 0;
       m[0x47] = 5;
       if (tune.title) { m[0x90] = 0; call(); m[0x90] = 0x11; call(); } else { m[0x90] = 0x12; call(); m[0x91] = tune.effect; }
     },
-    stop() { writes = []; m[0x90] = 0; },
-    play() { writes = []; call(); },
+    stop() { writes = []; times = []; t0 = cpu ? cpu.cycles : 0; m[0x90] = 0; },
+    play() { writes = []; times = []; t0 = cpu ? cpu.cycles : 0; call(); },
     playing() { return m[0x90] !== 0 && (tune.title || (m[0x9D] | m[0x9E] | m[0x91] | m[0x92]) !== 0); },
     voice(x) { return x === 0 ? { effect: m[0x9D] } : x === 1 ? { effect: m[0x9E] } : { effect: 0 }; },
   };

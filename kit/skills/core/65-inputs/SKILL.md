@@ -62,6 +62,19 @@ machine of another pace still passes, and one recording drives every
 test that needs play. `games/c64/the-sacred-armour-of-antiriad/test_route.js`
 keeps both, and fails on any difference.
 
+## Score what the game counts, where it counts it
+
+A search for a route scores each try by what the game keeps. Score the
+counter the game adds to as it plays, not only the score on the screen:
+a round that pays out at its end, such as a bonus counted into the
+score on its results screen, leaves the score still for the whole
+round, and a search that reads only the score plays it idly. When a
+Play tab's Watch button plays a route, record several, each from a
+seed that changes the search's tie breaks and when it presses Start,
+and let the page pick one at random, so Watch is not the same game
+every time. Keep each section's best of a few plays, so every route is
+one of the search's best.
+
 ## Replay it on a second machine
 
 A route found on one machine carries that machine's blind spots: a

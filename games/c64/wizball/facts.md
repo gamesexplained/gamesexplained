@@ -684,3 +684,28 @@ in `work/`; checkpoints are non-stopping counters unless said.
 | Wiz-lab list | nine non-spray weapons poked, spray chosen in the lab | the lab's icons 1-4 showed 9; the CPU stayed at `$B0D2` |
 | Level variable | `$B128` poked on the get-ready screen | only the glyphs change: the view is built from the map before the poke |
 | No input on level 1 | play-start, 150 s | three Wizballs lost, 50 points each time |
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, with CIA 2's interrupts switched off, the check failed on the next frame and the processor ran into screen memory and stopped on a JAM opcode at $EA7D, in the landscape screen.
+- Left: the emulator's screen on level 5, enlarged.
+- In the emulator: 38 units at the quit, 36 when the new game began, and a collision in the new game cost 8 units and no life.
+- In the emulator, with nine other weapons put in the list by hand, choosing the spray froze the game there.
+
+### graphics.html
+
+- Each picture here is chosen, coloured and placed by the game's own routines, run on the kit's 6502 in this page over the listing's memory, a frame of play at a time: a fiftieth of a second.
+
+### index.html
+
+- It matches the emulator's picture of the same frame in all but 13 of its 104,448 pixels.
+- It was checked against the game's own code run in a 6502 simulator: all 25 registers after every frame, and the order of the writes within each frame, for 3,000 to 22,000 frames of each tune, past every loop point, and for 400 random tunes that use every command of every voice.
+- It was checked against the game in the emulator: over 370 passes of the frame loop, with the stick moved left and right, spin, rotation, speed, height and vertical speed agree on every pass.
+- Gravity adds 1/16 of a pixel a frame to the falling speed (`$B27C`), and the bounce at line 200 sends the ball up at the speed it came down at, so it bounces for ever at the same height: in the emulator, once every 128 frames, rising 126 lines.
+- Checked against the game's own code run in a 6502 simulator on 6,400 random cauldron states across the 16 colours: they agree on every one.
+- In the emulator, with the red cauldron set to 20 on level 1, that took 22 frames.
+- In the emulator, on level 1, the tune started at frame 2,200 and the ship at 2,250.

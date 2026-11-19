@@ -38,9 +38,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ex-pair img,.ex-pair canvas{width:100%;image-rendering:pixelated;display:block;border-radius:4px;background:#000}
 .ex-pair figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
 .ex-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 0;font-family:var(--fm);font-size:13px}
-.ex-bar button,.ex-bar select,.ex-bar input{font-family:var(--fm);font-size:13px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-.ex-bar input{cursor:text;width:16em}
-.ex-bar button:hover{background:#e6e3dc}
+.ex-bar button,.ex-bar input{font-size:13px;padding:6px 10px}.ex-bar select{font-size:13px}
+.ex-bar input{width:16em}
 .ex-read{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-top:10px;min-height:3em;white-space:pre-wrap}
 .ex-tab{border-collapse:collapse;font-size:14px;width:100%}
 .ex-tab th,.ex-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
@@ -86,7 +85,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" id="ex-try">how close does it land?</button>
     </div>
     <div class="ex-read" id="ex-name-read">Loading the listing…</div>
-    <p class="cap"><b>How it was checked.</b> In the emulator, a doorway trip to CSBBII arrived at 57,921 east and 7,081 north, and one step north found fragment 9. RMOYFV arrived at 12,352 east and 56,806 north, and one step south found fragment 2. The rest of the table comes from the page's copy of the game's sums, which gives the game's own answer for 20,007 names (<code>test_names.js</code>). The fragment positions are the table <code>fragments</code> at <code>$2213</code>, the same in three new games started in the emulator.</p>
+    <p class="cap">A doorway trip to CSBBII arrives at 57,921 east and 7,081 north, and one step north finds fragment 9. RMOYFV arrives at 12,352 east and 56,806 north, and one step south finds fragment 2. The rest of the table comes from the page's copy of the game's sums. The fragment positions are the table <code>fragments</code> at <code>$2213</code>.</p>
   </div>
   <p>Each fragment's position is two 16-bit numbers in the table <code>fragments</code> at <code>$2213</code>. Fragments 2 to 9 are written into the program, and only a drone moves them. Fragment 1 is the only one whose place changes from game to game. The game puts it 160 units east and 144 north of a place it picks at random, then flies the opening pass north from there. If you leave the keys alone during the pass, you land 1,296 units north of fragment 1 and 144 or 160 west of it, so it is a little east of due south, just beyond the sonar's range.</p>
   <p>A doorway turns any name into a place with two sums over its letters (<a href="index.html#doorways">How it works</a> shows them). There is no name of one to six letters that lands on a fixed fragment's own cell. For each of the eight, though, one name lands in the cell next to it, and one step finishes the trip. A doorway is not the only way in: a crash and running out of energy both ask for a name too. You still need the drones and a beacon to bring the fragments together, but you no longer need the sonar to find them.</p>
@@ -102,7 +101,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" id="ex-refill-go">work it out</button>
     </div>
     <div class="ex-read" id="ex-refill-read"></div>
-    <p class="cap"><b>How it was checked.</b> A JavaScript copy of the sum at <code>$0ED0</code>-<code>$0F31</code>, from "the landing place" on the How it works page (65,376 east, 144 north), checked against the game's own code for 20,007 names (<code>test_names.js</code>). In the emulator, a trip to HOME left the energy where it was, apart from the 15 that drawing every view costs.</p>
+    <p class="cap">A JavaScript copy of the sum at <code>$0ED0</code>-<code>$0F31</code>, from "the landing place" on the How it works page (65,376 east, 144 north). A trip to HOME leaves the energy where it was, apart from the 15 that drawing every view costs.</p>
   </div>
   <p>After a doorway has moved you, the game works out a change to your energy (<code>name_destination</code> at <code>$0E23</code>). It takes the number of letters in the name, less 8, times 512, and from that it takes a quarter of the distance travelled, east plus north. A long name for a nearby place gives energy, and a short name for a place further off takes it. The game halves the distance twice with an instruction that treats a number over 32,767 as negative, so a trip longer than that counts as a negative distance and gives energy too. HOME, from the landing place, would give 5,814. Then the game adds the change to your energy and branches on the carry, the 6502's flag for a sum that overflowed.</p>
   <p>Both ways out of that branch go back to the walk at <code>ground_loop</code>. With the carry set, the branch goes to <code>$0F4A</code>, which is <code>JMP ground_loop</code>. Without it, the processor runs on to <code>$0F3F</code>, which is also <code>JMP ground_loop</code>. The four instructions after that jump, at <code>$0F42</code>, would store the new energy, and the processor never reaches them. So doorway trips are free, and the only energy the game ever gives back is the 2,000 you get when you run out, with a doorway's prompt (<a href="index.html#instruments">How it works</a>).</p>
@@ -118,7 +117,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <canvas id="ex-plot" width="390" height="316" aria-label="The bearing the game gives against the true bearing"></canvas>
     </div>
     <div class="ex-read" id="ex-rose-read">Click the compass to place a fragment.</div>
-    <p class="cap"><b>How it was checked.</b> The left picture places a fragment around you: green is its true bearing, red is the one the game gives. The right picture plots the game's bearing against the true one all the way round. Both use a JavaScript copy of <code>bearing_of</code> at <code>$383F</code> and its tables, which gives the game's own answer for 100,196 pairs of distances (<code>test_bearing.js</code>). In the emulator, the sonar said 249 degrees for a fragment whose true bearing was 201, and "Fix 3 nearest" said 252 for a beacon at 197.</p>
+    <p class="cap">The left picture places a fragment around you: green is its true bearing, red is the one the game gives. The right picture plots the game's bearing against the true one all the way round. Both use a JavaScript copy of <code>bearing_of</code> at <code>$383F</code> and its tables. In one game, the sonar said 249 degrees for a fragment whose true bearing was 201, and "Fix 3 nearest" said 252 for a beacon at 197.</p>
   </div>
   <div class="ex-pair" style="margin-top:18px">
     <figure><img src="reference/sonar-south-west.png" alt="The sonar's window: 249 degrees"><figcaption>The sonar, for a fragment 304 units west and 800 south: true bearing 201.</figcaption></figure>

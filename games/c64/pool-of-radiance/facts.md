@@ -743,3 +743,36 @@ effect kinds (resident `has_item_type`, `$4027`, and `$6BAD`; gen
   2,000, then RAISE DEAD and YES, with a checkpoint on `show_msg`
   (resident `$197E`). X was `$32` (CURED ...) and then `$1F` (FAILED);
   the platinum read 900 and the condition `$82`, GONE.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### combat.html
+
+- Each change runs COMBAT's `morale` (`$20C1`) and `hurt_check` (`$211C`) on the kit's 6502 over the listing's bytes.
+- Each cell runs `turn_roll` (`$252B`) on the kit's 6502 for every roll of the d20, over the tables at `$7AD7`, `$7AE4` and `$7AF1`, with the turning figure GEN gives each level of cleric (`cleric_figures`, `$239A`).
+
+### graphics.html
+
+- Each figure is laid out by the editor's own lines for a choice (`save_head`, `$B26F`, then `pick_piece` from `$B14C`), run on the kit's 6502 in the page over the bytes of the icons part, starting from the editor's own icon with the size's first weapon and first head.
+- The view is `draw_view` (`$C183`) run on the kit's 6502 in the page over the view part, the map's GEO file at `$0400` and the walls as the map's script loads them (`install_wall_def`, `$1485`), coloured for the square by `set_wall_colour` (`$1157`).
+
+### index.html
+
+- The play screen at New Phlan's gateway, drawn by this page from the game's own memory: the screen, the character shapes and the video chip's settings, recorded over one frame in the emulator.
+- All 104,448 pixels match the emulator's picture of the same frame.
+
+### items.html
+
+- Each change runs the game's own routines on the kit's 6502 over the listing's bytes: `compute_combat_stats` (`$3729`) for the armour class, THAC0, damage and weight, `max_load` (`$472E`) for the most PENDRAGON can carry, and COMBAT's `can_strike` (`$1648`) for whether a bow or crossbow has what it shoots.
+
+### rules.html
+
+- Each change runs GEN's routines on the kit's 6502 over the listing's bytes: `roll_ability` (`$0D1F`) and `adjust_ability` (`$0D4A`) for the scores, the code from `$0B26` for the hit points, gold and age, `best_to_hit` (`$1EF3`), `saving_throws` (`$1F44`), `set_thief_skills` (`$1FEC`), `con_hp_bonus` (`$2471`), `race_level_limit` (`$24A0`) with the training hall's `class_max_level` (`$1E5C`), and `cap_experience` (`$23D4`).
+
+### spells.html
+
+- Each press runs SPELLE02's own routine on the kit's 6502 over the listing's bytes: `energy_drain` (`$A7A3`) for a wight's hit, `drain_twice` (`$A9E4`) for a vampire's.
+- Each cure runs the temple's own routine on the kit's 6502 over the listing's bytes, as post-com's HEAL calls it (`heal`, `$209C`), with the party's money, the screen and the store of the character stood in for.
+- The temple at the Temple of Tempus in VICE: nine cures and EXIT.

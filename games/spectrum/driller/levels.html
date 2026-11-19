@@ -43,7 +43,7 @@ th{font-weight:700;color:var(--ink-soft)}
 .mp-cell{font-family:var(--fb);font-size:13px;font-weight:700;text-align:left;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 8px;cursor:pointer;line-height:1.25;min-height:46px}
 .mp-cell span{display:block;font-family:var(--fm);font-size:11px;font-weight:400;color:var(--ink-mute)}
 .mp-cell:hover{border-color:var(--ink-mute)}
-.mp-cell.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.mp-cell.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .mp-cell.on span{color:#c9c9c9}
 .mp-none{background:none;border:none;cursor:default}
 .mp-two{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
@@ -52,8 +52,7 @@ th{font-weight:700;color:var(--ink-soft)}
 .mp-screen canvas,.mp-plan canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
 .mp-plan canvas{border-radius:6px;border:1px solid var(--line)}
 .mp-ents{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
-.mp-ents button{font-family:var(--fm);font-size:12px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 9px;cursor:pointer}
-.mp-ents button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.mp-ents button{font-size:12px;padding:4px 9px}
 .mp-key{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--ink-soft);margin:8px 0 0}
 .mp-key i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:5px}
 .mp-do{margin:8px 0 0;padding-left:20px;font-size:15px}
@@ -105,7 +104,7 @@ th{font-weight:700;color:var(--ink-soft)}
   <p>The game's data starts at <code>$CF3E</code> with the count of areas, 29, and the table at <code>$D006</code> holds where each record is. <code>load_area</code> searches the records for the area's number, so they need not be in order, and they are not: the sectors come in the order 1, 2, 3, 8, 14 to 18, then the Stores and the complexes, then 5, 4, 6 and the rest.</p>
   <table>
     <tr><th>Byte</th><th>What it holds</th></tr>
-    <tr><td><code>+0</code></td><td>whether the view is cleared before it is drawn: with 0, what no face covers keeps the last picture</td></tr>
+    <tr><td><code>+0</code></td><td>whether the view is cleared before it is drawn: with 0, any part of the view that is not covered by a face keeps the last picture</td></tr>
     <tr><td><code>+1</code></td><td>the count of objects</td></tr>
     <tr><td><code>+2</code></td><td>the area's number, which scripts and doors use</td></tr>
     <tr><td><code>+3</code></td><td>where the area's own scripts are, from the record's start</td></tr>
@@ -123,7 +122,7 @@ th{font-weight:700;color:var(--ink-soft)}
   <h2 class="t">The scripts that join the areas</h2>
   <p>Five scripts at <code>$D04C</code> run after every pass that moved anything, wherever the probe is. They hold three of the game's surprises, and two areas' own scripts hold the way to the last sector.</p>
   <ul class="pl-list">
-    <li><b>The visitor.</b> Variable 31 counts the minutes since the area was loaded. At eight, three of the player's own objects appear high over the middle of the area (numbers 248 to 250, at <code>$87FE</code>): two pyramids round a sensor, which fires. At nine they go, and the count starts again. Nothing in the game moves an object, so this is as close as it comes to a ship flying over.</li>
+    <li><b>The visitor.</b> Variable 31 counts the minutes since the area was loaded. At eight, three of the player's own objects appear high over the middle of the area (numbers 248 to 250, at <code>$87FE</code>): two pyramids round a sensor, which fires. At nine they go, and the count starts again. The game never moves an object, so this is as close as it comes to a ship flying over.</li>
     <li><b>Off the moon.</b> An edge with no neighbour sets flag 21, and the third script then sends the vehicle to Mitral, area 32: the jet to entrance 6, high in the air, and the probe on to entrance 7, on the floor. Mitral is a floor, a tower and a sensor on top of it, with no way out, and its floor takes 2 of energy and 2 of shield at every step (<a href="discoveries.html#mitral">Discoveries</a>).</li>
     <li><b>Two puzzles across areas.</b> One waits, after a shot anywhere, until object 15 in Niccolite, 28 in Alabaster, 36 in Opal and 28 in Quartz are all shown, then takes down the wall along Opal's south edge, the way into Diamond. The other waits until object 41 in Obsidian, 11 in the area named UNKNOWN AREA, 16 in Ochre and 15 in Graphite are all shown, then takes down Obsidian's north wall and shows the edge behind it, the way into Trachyte.</li>
   <li><b>The number on the wall.</b> Obsidian's north wall carries a 17, drawn as two rectangles and a four-cornered shape (objects 36 to 38). Its own script waits until 17 sectors are safe (variable 32 is the count, <code>$889E</code>), then hides the number and shows a panel with a switch (objects 39, 40 and 42); shooting the switch flips it to object 41, one of the four the second puzzle waits for. Trachyte's script waits for 18 and then shows the probe seven areas in turn.</li>

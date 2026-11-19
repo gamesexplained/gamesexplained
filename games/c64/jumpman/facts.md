@@ -56,3 +56,16 @@ These comparisons deliberately omit the preceding private callbacks, score handl
 ## Part-specific findings
 
 The [resident reference](parts/resident/facts.md) covers controls, scoring, display, sound, startup and shared code anomalies. Each level has its own reference under the Source part picker. Detailed follow-ups include [Hot Foot](parts/plf10/facts.md), [Runaway](parts/plf11/facts.md), [Invasion](parts/plf06/facts.md), [Dragon Slayer](parts/plf14/facts.md), [Grand Puzzle II](parts/plf15/facts.md), [Freeze](parts/plf22/facts.md), [Follow the Leader](parts/plf23/facts.md), [Gunfighter](parts/plf26/facts.md), [Robots III](parts/plf27/facts.md) and [Grand Puzzle III](parts/plf30/facts.md).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### index.html
+
+- Checked against the original routine in a 6502 simulator: 264 movement updates and 396 controlled contact tests.
+- 104,448 / 104,448 pixels match VICE; zero differences.
+
+### levels.html
+
+- Each first update matches native VICE.

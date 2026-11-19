@@ -17,7 +17,7 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Every lemming the game draws, frame by frame, the intro's larger lemmings, and the character sets of the play screen, with the frames no animation ever shows.</p>
+  <p class="sub">Every lemming the game draws, frame by frame, the intro's larger lemmings, and the character sets of the play screen, with the frames that never appear in an animation.</p>
 </header>
 <main class="wrap">
 
@@ -28,14 +28,14 @@
   <div class="plate">
     <div class="lm-controls"><button type="button" class="lm-btn" id="gx-play" aria-pressed="true">Playing</button><span class="lm-small">ten steps a second, the fastest the play screen swaps</span></div>
     <div class="gx-grid" id="gx-actions"></div>
-    <p class="cap"><b>Decoded by this page from the game part's listing.</b> Each action's frames are the ones the game shows, worked out by a port of the frame step at <code>$1FB1</code>-<code>$1FF2</code>: the action's first frame (<code>frame_base_lo</code>, <code>$12C9</code>), a counter that moves on by one or two frames a pass (<code>action_frame_step</code>, <code>$1308</code>) and starts again at <code>action_frame_restart</code> (<code>$131D</code>) when it reaches <code>action_frame_wrap</code> (<code>$12F3</code>), starting from the 0 that <code>restart_animation</code> (<code>$2160</code>) leaves. <code>test_graphics.js</code> runs the game's own step for every action and compares. A frame is two bytes a line, from the addresses in <code>frame_lo</code>/<code>frame_hi</code> (<code>$3C00</code>/<code>$3D2C</code>) and <code>frame2_lo</code>/<code>frame_ptr_hi</code> (<code>$3E58</code>/<code>$2EA0</code>) plus 16, as <code>or_frame_rows</code> (<code>$1D48</code>) reads them. Colours: light blue, green and white, the play screen's <code>$D022</code>, <code>$D023</code> and colour RAM.</p>
+    <p class="cap"><b>Decoded by this page from the game part's listing.</b> Each action's frames are the ones the game shows, worked out by a port of the frame step at <code>$1FB1</code>-<code>$1FF2</code>: the action's first frame (<code>frame_base_lo</code>, <code>$12C9</code>), a counter that moves on by one or two frames a pass (<code>action_frame_step</code>, <code>$1308</code>) and starts again at <code>action_frame_restart</code> (<code>$131D</code>) when it reaches <code>action_frame_wrap</code> (<code>$12F3</code>), starting from the 0 that <code>restart_animation</code> (<code>$2160</code>) leaves. A frame is two bytes a line, from the addresses in <code>frame_lo</code>/<code>frame_hi</code> (<code>$3C00</code>/<code>$3D2C</code>) and <code>frame2_lo</code>/<code>frame_ptr_hi</code> (<code>$3E58</code>/<code>$2EA0</code>) plus 16, as <code>or_frame_rows</code> (<code>$1D48</code>) reads them. Colours: light blue, green and white, the play screen's <code>$D022</code>, <code>$D023</code> and colour RAM.</p>
   </div>
   <p>The names are the labels of the action handlers in the Source tab. Pairs like 8 and 9, the walker, are one action in its two directions, each with frames of its own. The splat, the exit and the two deaths play once: their handlers end the lemming when the counter reaches a set value. The floater's counter starts its loop again at 32, its fifth frame, so the frames before it, the umbrella opening, play once.</p>
 </section>
 
 <section data-part="game">
   <p class="fig">02 · Never shown</p>
-  <h2 class="t">Frames no animation reaches</h2>
+  <h2 class="t">Frames that are not in any animation</h2>
   <p class="lede">The frame table has 300 entries. Stepped as the game steps them, the animations show some of them and never the rest.</p>
   <div class="plate">
     <div class="gx-strip" id="gx-unused"></div>
@@ -51,7 +51,7 @@
   <p class="lede">The intro draws its lemmings with sprites: a black hires outline over a multicolour body, 24 pixels wide and 21 lines high.</p>
   <div class="plate">
     <div class="gx-strip" id="gx-intro"></div>
-    <p class="cap"><b>Unpacked by this page</b> from the intro part's listing: 148 packed streams from <code>$5B40</code>, with their offsets (<code>image_offset_lo</code>, <code>$4F6A</code>) and starting literal counts (<code>image_literals</code>, <code>$5094</code>), by a port of the intro's unpacker (<code>intro_unpack</code>, <code>$4E13</code>). <code>test_graphics.js</code> unpacks all 148 with the game's own code on the kit's 6502 and compares them byte for byte. The body's colour is the image's 128th byte; the two shared colours are the intro's light red and blue (<code>sprites_init</code>, <code>$497F</code>).</p>
+    <p class="cap"><b>Unpacked by this page</b> from the intro part's listing: 148 packed streams from <code>$5B40</code>, with their offsets (<code>image_offset_lo</code>, <code>$4F6A</code>) and starting literal counts (<code>image_literals</code>, <code>$5094</code>), by a port of the intro's unpacker (<code>intro_unpack</code>, <code>$4E13</code>). The body's colour is the image's 128th byte; the two shared colours are the intro's light red and blue (<code>sprites_init</code>, <code>$497F</code>).</p>
   </div>
   <p>All 148 images are named in the intro's frame list (<code>frame_list</code>, <code>$4B0E</code>), so none of them is spare.</p>
 </section>
@@ -63,7 +63,7 @@
   <div class="plate gx-sets">
     <div class="pick"><a class="step" id="gx-prev" aria-label="previous set">‹</a><select id="gx-set" aria-label="character set"></select><a class="step" id="gx-next" aria-label="next set">›</a></div>
     <canvas id="gx-chars"></canvas>
-    <p class="cap"><b>Drawn by this page from the game's memory 30 seconds into level 1</b> (<code>reference/lem-gfx.js</code>, made by <code>work/mkgfx.py</code> from a snapshot of play), in multicolour with the play screen's colours. Outlined: the codes the screen showed at that moment. The listing's snapshot is the briefing, when <code data-part="">$5000</code>-<code data-part="">$5FFF</code> hold the briefing's code, so these come from play.</p>
+    <p class="cap"><b>Drawn by this page from the game's memory 30 seconds into level 1</b>, in multicolour with the play screen's colours. Outlined: the codes the screen showed at that moment. The listing's snapshot is the briefing, when <code data-part="">$5000</code>-<code data-part="">$5FFF</code> hold the briefing's code, so these come from play.</p>
   </div>
   <p>The screen at <code data-part="">$4000</code> uses the set at <code data-part="">$5000</code>, and the screen at <code data-part="">$4400</code> the set at <code data-part="">$5800</code> (<code>screen_d018</code>, <code>$1349</code>). Character 0 is empty and character 1 fills the screen around the play area. From character 2 up the set is rewritten every pass, one character at a time as the lemmings need them (<code>next_char</code>, resident <a href="source-resident.html#0422"><code>$0422</code></a>), and the rest of the 2 KB keeps whatever was there: the briefing's code, which the loader puts back at <code data-part="">$5000</code>-<code data-part="">$64AF</code> before every level. The cursor takes <code>$FC</code>-<code>$FF</code> and water <code>$F4</code>-<code>$FB</code>.</p>
   <p>The panel's set at <code>$7000</code> holds the skill icons, the digits and the letters of the line above them. Its last 256 bytes, <code>$73C0</code>-<code>$74BF</code>, are not characters the panel shows: they are the panel's four sprite shapes, <code>$CF</code>-<code>$D2</code> (<code>panel_sprite_ptr</code>, <code>$3F90</code>), one of them the highlight on the chosen skill.</p>

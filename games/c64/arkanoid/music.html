@@ -36,9 +36,8 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
 canvas{image-rendering:pixelated;max-width:100%;display:block}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
-button{font-family:var(--fm);font-size:13px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer}
-button:hover{border-color:var(--ink-mute)}
-button.on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+button{font-size:13px;padding:6px 11px}
+button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 input[type=range]{width:220px}
 .lab{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
 table{border-collapse:collapse;width:100%;font-size:15px;margin:8px 0 0}
@@ -52,7 +51,6 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
 .out{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin:12px 0 0;min-height:3.2em}
 .stages{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;margin:12px 0 0}
 .stages button{padding:5px 0;font-size:12px}
-.stages button.hz{border-bottom:3px solid var(--amber)}
 .msg{font-size:14px;color:var(--coral)}
 @media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.two{grid-template-columns:1fr}.stages{grid-template-columns:repeat(8,1fr)}}
 </style>
@@ -68,11 +66,11 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
 <section>
   <p class="fig">01 · Music</p>
   <h2 class="t">Music: Martin Galway's tunes, played by the game's driver</h2>
-  <p class="lede">The player below runs the game's own sound driver, <code>$2615</code>-<code>$3429</code>, on the kit's 6502 simulator, frame by frame, and plays what it writes to the SID.</p>
+  <p class="lede">The player below runs the game's own sound driver, <code>$2615</code>-<code>$3429</code>, frame by frame, and plays what it writes to the SID.</p>
   <div class="plate"><div id="sidRoot"></div>
-    <p class="cap">The driver's bytes come from this game's Source tab. Every tune was checked against the same code run in the kit's 6502 simulator: every write to the sound chip, in order, on every frame, with no difference. The title and ending tunes advance once a frame and the others twice, as measured in the emulator (the game calls the driver from its NMI once on the title and twice in play). The tunes set the filter through voice 2, so the player models one, a 6581's: real chips differ from each other in cutoff by large factors. The drums on the title screen are not here: they are samples written to the volume register by other code, which this model of the chip does not play.</p></div>
+    <p class="cap">The driver's bytes come from this game's Source tab. The title and ending tunes advance once a frame and the others twice (the game calls the driver from its NMI once on the title and twice in play). The tunes set the filter through voice 2, so the player models one, a 6581's: real chips differ from each other in cutoff by large factors. The drums on the title screen are not here: they are samples written to the volume register by other code, which this model of the chip does not play.</p></div>
   <p>A tune is started with <code>music_start_tune</code> (<code>$262B</code>), Y = 7 × tune + 5, which picks a 7-byte record in the table at <code>$342A</code>: three voice pointers and a tempo byte. Each voice reads its own sequence of two-byte notes and commands <code>$C0</code>-<code>$F0</code>, dispatched through three vector tables at <code>$3F00</code>, <code>$3F32</code> and <code>$3F64</code>, one per voice. A tick is seven calls: the filter (<code>$2B5D</code>), a sequencer per voice and an effects routine per voice. Only voice 2 drives the filter, and only voice 2 can call 6502 code from inside a tune, which the title tune uses to set filter bits that another routine ORs into the volume register.</p>
-  <p>Tune 7 is complete and nothing in the game starts it: a search for its start value finds no caller. Tune 3's record is empty.</p>
+  <p>Tune 7 is complete and the game never starts it: a search for its start value finds no caller. Tune 3's record is empty.</p>
 </section>
 
 <section id="loading-tune">
@@ -80,7 +78,7 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
   <h2 class="t">Music: the Ocean loading tune, by Martin Galway</h2>
   <p class="lede">The 1987 cassette brings its own music: Martin Galway's second loading tune for Ocean, from 1985. About a minute into the tape it starts, and it plays for three and a half minutes while the title picture fills in on the screen (<a href="graphics.html#loading">Graphics</a>) and the rest of the game loads. The game never plays it.</p>
   <div class="plate"><div id="loadRoot"></div>
-    <p class="cap">The player runs the tune's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette calls it. It was checked against the cassette loading in VICE: the sound chip's registers after each of the first 9,000 calls, three minutes of music, are the player's. The High Voltage SID Collection holds the same code and notes as Galway's <i>Ocean Loader 2</i>, and it plays the same.</p>
+    <p class="cap">The player runs the tune's own code and notes, as the cassette leaves them in memory, once a frame as the cassette calls it. The High Voltage SID Collection holds the same code and notes as Galway's <i>Ocean Loader 2</i>.</p>
   </div>
   <p>The tune plays at full volume and never uses the filter. After its first 46 seconds it repeats every 4 minutes 13 seconds, so on the tape, which stops it after 3 minutes 38 seconds, when the last of the game has loaded, it never comes round.</p>
 </section>

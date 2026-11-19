@@ -35,7 +35,7 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
 
 .wt-btns{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
-.wt-btns button{font:inherit;font-size:14px;padding:4px 10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}
+.wt-btns button{font-size:14px;padding:4px 10px}
 .wt-read{font-family:var(--fm);font-size:13px;color:var(--ink-soft);min-height:1.5em;margin-top:8px}
 .wt-cal{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
 .wt-page{width:110px;height:120px;border:2px solid var(--ink);border-radius:6px;background:#fff;text-align:center;font-family:var(--fm);flex:none}
@@ -61,7 +61,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="wt-cal"><div class="wt-page" id="wt-cal-page"></div>
     <div><div class="wt-btns"><button id="wt-cal-night">Midnight</button><button id="wt-cal-month">Midnight × 31</button><button id="wt-cal-cap">A capture starts a ceremony</button><button id="wt-cal-tick">The ceremony counts on</button><button id="wt-cal-end">The ceremony ends</button><button id="wt-cal-new">New game</button></div>
     <p class="wt-read" id="wt-cal-read">&nbsp;</p></div></div>
-    <p class="cap">The page turn is bank 0's <code>$F465</code>, written again here and held to the game's own code by <code>test_calendar.js</code>. In ZEsarUX, from the start of play with the day set to 31 and the clock to just before midnight, the panel turned to MAY 1 and the month byte <code>$8D15</code> was 0.</p></div>
+    <p class="cap">The page turn is bank 0's <code>$F465</code>, written again here. From the start of play with the day set to 31 and the clock to just before midnight, the panel turned to MAY 1 and the month byte <code>$8D15</code> was 0.</p></div>
   <p>The calendar keeps the day of the month at <code>$8D14</code> and the month at <code>$8D15</code>, and its names are MAY, JUN, JUL and AUG for months 0 to 3 (<code>$F57E</code>). At midnight the day goes up, and after the month's last day it goes back to 1 and the month to one more, kept to 0 to 3 (<code>$F465</code>). New game sets the month to <code>$FF</code> (<code>$865E</code>), and the panel starts with MAY drawn on it. So the first month is May, and the month after it is <code>$FF</code> plus one, which is month 0: May again.</p>
   <p>The month byte has a second job. Bank 3's altar ceremony counts in the same byte: a capture sets it to 0 (<code data-part="bank-03">$FEB0</code>), the altar counts it up to the sacrifice at <code>$E8</code> (<code data-part="bank-03">$FEC8</code>), and the end of a ceremony sets it back to <code>$FF</code> (<code data-part="bank-03">$FF7F</code>). The altar counts only while the byte is not <code>$FF</code>, and the calendar shows whatever month the count happens to make.</p>
   <p>Two things follow. A ceremony that ends puts the calendar back to the start of its cycle, so the next month is May. A month's end with no ceremony running leaves the byte at 0 to 3, and the altar's routine then runs as if a ceremony had started, with character 0, Jarret, as the captive, because the byte that names the captive is 0 from new game (<code>$8D0C</code>). That second consequence is traced in the code and has not been seen in play.</p>
@@ -84,17 +84,17 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 <section>
   <p class="fig">04 · Unused input</p>
-  <h2 class="t">Secret: a fifth joystick that no option offers</h2>
+  <h2 class="t">Secret: a fifth joystick that none of the options offers</h2>
   <p class="lede">The control selection screen offers four ways to play. The code has a fifth input routine, for a joystick on port <code>$7F</code>.</p>
   <div class="plate"><p class="cap" style="margin-top:0">The routine is at <code>$B622</code>, the same shape as the four that are offered: up, down, left and right in bits 0 to 3 of the port, and fire in bit 7.</p></div>
-  <p>The title's four options lead to the four other routines, and nothing leads to this one. A player with a joystick on that port has no way to choose it.</p>
+  <p>The title's four options lead to the four other routines, and none of them leads to this one. A player with a joystick on that port has no way to choose it.</p>
 </section>
 <section>
   <p class="fig">05 · An unused reset</p>
   <h2 class="t">Secret: holding CAPS SHIFT would reset the machine</h2>
-  <p class="lede">A routine at <code>$BEE0</code> resets the machine when CAPS SHIFT is held. Nothing calls it.</p>
+  <p class="lede">A routine at <code>$BEE0</code> resets the machine when CAPS SHIFT is held. The game never calls it.</p>
   <div class="plate"><p class="cap" style="margin-top:0">The routine sets the stack to <code>$5B00</code> and jumps to address 0 when CAPS SHIFT is down. It sits just before the game's clock (<code>$BEEF</code>), and no instruction in the code maps calls or jumps to it.</p></div>
-  <p>Since nothing reaches the routine, holding CAPS SHIFT in play does nothing.</p>
+  <p>Since the game never reaches the routine, holding CAPS SHIFT in play does nothing.</p>
 </section>
 <section>
   <p class="fig">06 · A test that always passes</p>

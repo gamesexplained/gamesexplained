@@ -40,8 +40,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .tt-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
 .tt-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
 .tt-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
-.tt-bar button{font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer;color:var(--ink)}
-.tt-bar button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.tt-bar button{font-size:13px;padding:6px 11px}
 .tt-tab{border-collapse:collapse;width:100%;font-size:14px;margin-top:14px}
 .tt-tab th,.tt-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
 .tt-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
@@ -49,7 +48,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .tt-wrapx{overflow-x:auto}
 .tt-pad{margin:14px 0 10px}
 .tt-pad button{touch-action:none;user-select:none;-webkit-user-select:none}
-.tt-pad button.on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.tt-pad button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .tt-now{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-left:auto}
 #tt-trace{display:block;width:100%;height:auto;background:var(--surface-2);border-radius:4px}
 #tt-broom:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -79,7 +78,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Music: each era's tune keeps its own speed</h2>
   <p class="lede">Each era has a tune, and the mansion, the Black Hole and the throne room share one. The flute in Persia has two more.</p>
   <div class="plate"><div id="tt-sid"></div>
-  <p class="cap">The game's own music code, taken from its listing (the program as the Source code tab shows it, here addresses <code>$BB11</code>-<code>$C5A7</code>) and run on the site's 6502, a copy of the C64's processor written for this page. It runs once a frame, a fiftieth of a second, as the game's raster interrupt runs it: a call the video chip makes at the same point of every picture it draws. A button starts its tune as the game does, with <code>tune_start</code> and the era's tempo. <code>test_music.js</code> runs the game's own starts (<code>era_enter</code>'s and the flute's) on the kit's simulator and checks that both write the same values to the sound chip, frame by frame, for 3,000 frames a tune.</p></div>
+  <p class="cap">The game's own music code, taken from its listing (the program as the Source code tab shows it, here addresses <code>$BB11</code>-<code>$C5A7</code>) and run on the site's 6502, a copy of the C64's processor written for this page. It runs once a frame, a fiftieth of a second, as the game's raster interrupt runs it: a call the video chip makes at the same point of every picture it draws. A button starts its tune as the game does, with <code>tune_start</code> and the era's tempo.</p></div>
   <p>The C64's sound chip, the SID, has three voices, and each plays one note at a time. The music uses the second and third, both with a triangle wave, a soft tone like a flute's, and leaves the first to the sound effects. A tune is a list of pairs for each voice, a note and a length (<code>tune_table</code>, <code>$BCCE</code>; a <code>$</code> marks a number in hexadecimal, base 16, the usual way to write memory addresses). Every note starts at volume 7 of 15 (the chip's sustain level) and drops a level on every fourth step until the next note (<code>music_play</code>, <code>$BCEE</code>), so each note dies away. A voice skips its first pair when the tune starts and plays it when the tune comes round again: in most tunes that pair is a rest, so the pause falls between repeats.</p>
   <p>The speed comes from the era. <code>music_play</code> runs every frame, but the tune moves on a step only on some frames. The game counts frames, and the era's record holds a mask: a number whose binary digits pick which counts let the tune step. The mask 1 lets it step on every other frame, 3 on three in four, 7 on seven in eight, and the spaceship's <code>$FF</code> on all but one frame in 256.</p>
   <table class="tt-tab">
@@ -100,7 +99,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Sound: a second effect is dropped while one plays</h2>
   <p class="lede">The effects play on the sound chip's first voice, one at a time.</p>
   <div class="plate"><div id="tt-sfx"></div>
-  <p class="cap">The same sound code as the music, from the listing, on the site's copy of the C64's processor. A button calls <code>sfx_start</code> (<code>$BB32</code>) as the game does, then <code>sfx_play</code> (<code>$BB51</code>) once a frame, as the main loop does. Effects 2, 3, 4 and 6 repeat until the game stops them, so here they play until their button is pressed again. <code>test_music.js</code> checks these against the game's own code as it does the tunes.</p></div>
+  <p class="cap">The same sound code as the music, from the listing, on the site's copy of the C64's processor. A button calls <code>sfx_start</code> (<code>$BB32</code>) as the game does, then <code>sfx_play</code> (<code>$BB51</code>) once a frame, as the main loop does. Effects 2, 3, 4 and 6 repeat until the game stops them, so here they play until their button is pressed again.</p></div>
   <p>An effect is a script of one-byte commands (<code>sfx_script</code>, <code>$BC6E</code>): set a pitch, set a waveform, fade, wait, slide up or down, loop, and warble. The code keeps track of one effect at a time, so <code>sfx_start</code> ignores a new effect while another plays. Seventeen places in the game start an effect.</p>
   <table class="tt-tab">
     <tr><th>Effect</th><th>Started by</th></tr>
@@ -126,9 +125,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="frame">
   <p class="fig">05 · The screen</p>
   <h2 class="t">One frame of play, rebuilt</h2>
-  <p class="lede">The living room, drawn on this page from the memory and the video chip's registers (the settings it draws the screen by) that the emulator recorded over one frame of play.</p>
+  <p class="lede">The living room, drawn on this page from the memory and the video chip's registers (the settings it draws the screen by) over one frame of play.</p>
   <div class="plate"><canvas id="tt-frame" class="tt-cv" width="384" height="272" aria-label="The living room with the gnome, rebuilt from memory"></canvas>
-  <p class="cap">All 104,448 pixels match the emulator's picture of the same frame. The game changes no video register while the frame is drawn, so one set of registers draws the whole screen.</p></div>
+  <p class="cap">The game changes no video register while the frame is drawn, so one set of registers draws the whole screen.</p></div>
   <p>The screen is a grid of cells, 40 across, and each cell shows a character: a small picture, 8 by 8 pixels, from a character set of up to 256 of them. The game draws its rooms with characters in multicolour mode, where each character is four double-width pixels across, in three colours shared by the whole screen and one of the cell's own. The game keeps one character set for each era, packed (squeezed into fewer bytes; a byte is one number from 0 to 255), and unpacks it into memory at <code>$F000</code> on arrival (<code>era_load_charset</code>, <code>$3456</code>). The gold rush and Salem have two sets each, one for the street and one for the caves or houses. The screen sits in 24-row mode, so the 25th row is hidden under the border.</p>
 </section>
 
@@ -181,7 +180,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Holding the button takes the gnome to a closet, from any era, with whatever he carries. Holding it again takes him back.</p>
   <div class="plate"><canvas id="tt-closet" class="tt-cv" width="384" height="272" aria-label="The closet, with the torch where the game starts it"></canvas>
   <p class="cap">The closet, as the game's own <code>room_enter</code> draws it, with the torch lying where the game starts it.</p></div>
-  <p>The closet is room 9 of the gold rush era, a room no door leads to. <code>play_state</code> keeps the era, room and position he left in <code>$B0</code>-<code>$B3</code>, and the closet's own code (<code>closet_pass</code>) puts him back there. So the closet is a store for objects that are needed in other eras, and the torch starts there.</p>
+  <p>The closet is room 9 of the gold rush era, a room that has no door leading to it. <code>play_state</code> keeps the era, room and position he left in <code>$B0</code>-<code>$B3</code>, and the closet's own code (<code>closet_pass</code>) puts him back there. So the closet is a store for objects that are needed in other eras, and the torch starts there.</p>
   <p>The closet keeps him in when it is too full. Before he leaves, <code>closet_pass</code> counts the objects lying in it. Five or more, and he stays, with a sound. A piece of the scripture puts the count at five by itself, so he cannot leave while a piece lies there. The game's description in the LaunchBox database says the closet holds eight objects; the code lets him leave with four at most. <a href="discoveries.html#closet">Discoveries</a> has the details.</p>
 </section>
 
@@ -261,30 +260,30 @@ function createDriver(D, C64Cpu) {
   for (const [ad, bytes] of D.mem) base.set(bytes, ad);
   base[0xAF] = 0xFF;
   const sid = new Uint8Array(25);
-  let m, cpu, c, writes = [], over = false;
+  let m, cpu, c, writes = [], times = [], t0 = 0, over = false;
   const io = {
     read(ad) { throw new Error('read $' + ad.toString(16)); },
     write(ad, val) {
-      if (ad >= 0xD400 && ad < 0xD419) { sid[ad - 0xD400] = val; writes.push(ad - 0xD400, val); return; }
+      if (ad >= 0xD400 && ad < 0xD419) { sid[ad - 0xD400] = val; writes.push(ad - 0xD400, val); times.push(cpu.cycles - t0); return; }
       throw new Error('write $' + ad.toString(16));
     },
   };
   const run = (ad, regs) => cpu.call(ad, regs || {}, { maxSteps: 100000 });
   return {
     sid,
-    get writes() { return writes; },
+    get writes() { return writes; }, get times() { return times; },
     get mem() { return m; },
     init(t) {
       c = D.list[t];
       m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x35, io });
-      sid.fill(0); over = false; writes = [];
+      sid.fill(0); over = false; writes = []; times = []; t0 = cpu ? cpu.cycles : 0;
       cpu.pc = 0x0EA4; cpu.run({ until: 0x0EA9, maxSteps: 10 });
       if (c.sfx === undefined) { run(0xBCAA, { x: c.tune * 4 }); m[0xA0] = c.mask; }
       else run(0xBB32, { x: c.sfx });
     },
-    stop() { over = true; writes = []; },
+    stop() { over = true; writes = []; times = []; t0 = cpu ? cpu.cycles : 0; },
     play() {
-      writes = [];
+      writes = []; times = []; t0 = cpu ? cpu.cycles : 0;
       if (over) return;
       if (c.sfx === undefined) run(0xBCEE);
       else { run(0xBB51); if (!m[0x7A]) over = true; }

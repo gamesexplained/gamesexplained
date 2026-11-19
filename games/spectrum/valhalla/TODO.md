@@ -13,6 +13,7 @@ the page is built and checked in a browser. The copy is `agent-draft`.
 
 ## Open
 
+- The Graphics tab holds only the loading picture. A Graphics tab should draw every shape the game's moving things are drawn with (`kit/skills/core/70-minisite`): for Valhalla, the figures its characters and objects are drawn with.
 - The quest order rests on a search that takes every condition but a
   quest object as met (`features.md`, "Open questions"). A search that
   tracks who carries what, and where the key and the ring are, would say

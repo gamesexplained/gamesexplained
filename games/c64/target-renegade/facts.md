@@ -60,3 +60,17 @@ The committed page tests compare nine music cues over 150,497 calls, thirteen ef
 ## The listing after the audit
 
 On 28 October 2026 independent checkers on `claude-opus-5-5` audited all 1,622 comments in the four parts: each of the 458 handwritten comments was read against the code, and the 1,164 generated comments (33 template families) were checked by script for every instance and by hand for at least eight each. All 88 claims in this file and in features.md were checked too. 15 of those claims rest on the live emulator or on snapshots and could not be checked from the listing. A sample of 60 comments drawn afterwards with seed 2026102801 found all 60 right.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- A recording of 38 video writes rebuilt all 104,448 pixels with zero differences from the emulator capture. The page linked a native comparison picture, `reference/frame-native.png`.
+- The cassette's own bytes, recorded in VICE once the picture was in and drawn as the video chip draws them, with a black border in place of the loader's stripes.
+
+### music.html
+
+- The player runs the tune's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette calls it.
+- It was checked against the cassette loading in VICE: the sound chip's registers after each of the 11,579 calls the cassette makes are the player's.

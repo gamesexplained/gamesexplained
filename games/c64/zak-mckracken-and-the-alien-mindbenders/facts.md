@@ -113,3 +113,21 @@ Script and room numbers are the game's resource numbers.
   Victor Cross (the manual's credits); scans at the Internet Archive,
   `zak-mckracken-newspaper` and `game_manual_Zak_McKracken_Manual`. The
   manual's code book section: "Travel key is: Section 4 (C 22)".
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Measured in VICE through the opening. Before tune 95 starts, the frame interrupt (`$117C`) ran 6,354 times in 7,780 frames. In the 3,000 frames after it, the room changed three times, `video_off` (`$13F3`) was called three times, and the interrupt ran in all 3,000 frames, with the picture on at every check.
+- Checked in VICE: the count fell by 300 in 300 frames while keys were typed, and at 0 the game paused with this line.
+
+### graphics.html
+
+- One frame of Zak's bedroom, recorded in the emulator and drawn again here from the bytes the video chip read.
+- The drawing matches the emulator's own picture of the frame: 0 of its 104,448 pixels differ.
+
+### index.html
+
+- Both from the game running in the emulator.

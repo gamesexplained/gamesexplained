@@ -186,5 +186,79 @@ class Corrections(unittest.TestCase):
         self.assertEqual(len(logged), 2)
 
 
+
+class SplitTables(unittest.TestCase):
+    """A table of side-by-side pointers typed lo_hi_address, which is for split tables, invents an
+    address for each pointer and mints a symbol there; --apply warns and names the range (#870)."""
+    PAIRS = bytes([0x20, 0x10, 0x30, 0x10, 0x40, 0x10, 0x50, 0x10])     # $1020 $1030 $1040 $1050
+    SPLIT = bytes([0x20, 0x30, 0x40, 0x50, 0x10, 0x10, 0x10, 0x10])     # the same four, low bytes first
+
+    @staticmethod
+    def inside(a):
+        return 0x1000 <= a < 0x1200
+
+    def test_the_two_readings(self):
+        self.assertEqual(r2000.pointer_readings(self.PAIRS), ([0x1020, 0x1030, 0x1040, 0x1050],
+                                                              [0x4020, 0x1010, 0x5030, 0x1010]))   # as regenerator2000 reads it
+        self.assertTrue(r2000.reads_as_pairs(self.PAIRS, self.inside))
+        self.assertFalse(r2000.reads_as_pairs(self.SPLIT, self.inside))
+        self.assertFalse(r2000.reads_as_pairs(self.PAIRS[:6] + b'\x00\x00', lambda a: True))   # both plausible
+        self.assertTrue(r2000.reads_as_pairs(self.PAIRS[:6] + b'\x00\x00', self.inside))      # a null ends it
+        self.assertFalse(r2000.reads_as_pairs(self.PAIRS[:7], self.inside))                    # odd: neither
+
+    def test_hexdump(self):
+        text = '$1100: 20 10 30 10 40 10 50 10 28 4D 72 97 BC E1 06 2B \n$1110: 50 75 \n'
+        self.assertEqual(r2000.hexdump_bytes(text, 0x1100, 0x1107), self.PAIRS)
+        self.assertEqual(r2000.hexdump_bytes(text, 0x110E, 0x1111), bytes([0x06, 0x2B, 0x50, 0x75]))
+        self.assertIsNone(r2000.hexdump_bytes(text, 0x1110, 0x1112))
+
+    def apply(self, table, lines):
+        sent = []
+        memory = {0x1100: table, 0x1200: self.SPLIT}
+        answers = {'r2000_get_symbols': [{'address': 0x1000, 'name': 'start'}],
+                   'r2000_get_blocks': [{'start_address': 0x1000, 'end_address': 0x100E, 'type': 'Code'},
+                                        {'start_address': 0x100F, 'end_address': 0x11FF, 'type': 'Undefined'}],
+                   'r2000_get_binary_info': {'origin': 0x1000, 'size': 0x300}}
+
+        def make_client(gdir=None):
+            def rpc(method, params=None, notif=False):
+                name, args = params['name'], params['arguments']
+                if name == 'r2000_batch_execute':
+                    sent.extend(args['calls'])
+                    return {'result': text([{'status': 'success', 'result': text('ok')} for _ in args['calls']])}
+                if name == 'r2000_read_region':
+                    self.assertEqual(args['view'], 'hexdump')
+                    data = memory[args['start_address']]
+                    return {'result': {'content': [{'type': 'text', 'text':
+                            f"${args['start_address']:04X}: " + ' '.join(f'{b:02X}' for b in data) + ' \n'}]}}
+                return {'result': text(answers[name])}
+            return rpc
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, 'game.json').write_text('{}', encoding='utf-8')
+            f = Path(d, 'work', 'notes.txt')
+            os.makedirs(f.parent)
+            f.write_text(lines, encoding='utf-8')
+            keep, r2000.make_client = r2000.make_client, make_client
+            out = io.StringIO()
+            try:
+                with contextlib.redirect_stdout(out):
+                    bad = r2000.apply(str(f), d, 'agent1.jsonl')
+            finally:
+                r2000.make_client = keep
+        return bad, sent, out.getvalue()
+
+    def test_apply_warns_on_pairs_typed_as_a_split_table(self):
+        bad, sent, out = self.apply(self.PAIRS, '$1100-$1107 lo_hi_address\n$1200-$1207 lo_hi_address\n')
+        self.assertEqual((bad, len(sent)), (0, 2))          # a warning, and both are still sent
+        self.assertIn('notes.txt:1: warning: $1100-$1107 reads as side-by-side pointers ($1020, $1030, $1040, $1050)',
+                      out)
+        self.assertNotIn('notes.txt:2: warning', out)         # a real split table
+        self.assertIn('1 warning(s) above', out)
+
+    def test_no_warning_for_a_split_table(self):
+        _, _, out = self.apply(self.SPLIT, '$1100-$1107 lo_hi_address\n')
+        self.assertNotIn('warning', out)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -122,7 +122,7 @@ all hexadecimal. A `path` is made absolute by the client.
 | Snapshots | `save` (`path`), `load` (`path`), `keep` and `back` (`name`) | below |
 | Screen | `screenshot` (`path`) | a PNG of TED's picture, below |
 | Sound | `sound` (`action` start or stop, `path`, `audio`) | every write to TED's sound registers, each with its cycle; with `audio`, plus4emu's own output too |
-| What ran | `codemap` (`action` start, read, zap or stop) | `[address, length, count]` for each address an instruction started at |
+| What ran | `codemap` (`action` start, read, zap or stop) | `[address, length, count]` for each address an instruction started at, and `under_roms`, those at $8000 up whose opcode came from the RAM beneath the ROMs |
 | Quit | `quit` | the server exits |
 
 ## Running, and where a run stops
@@ -405,7 +405,11 @@ kit's build of the library counts in plus4emu itself (`kit/c16/codemap.patch`),
 which cost nothing measurable; `hello` says so as `codemap`. The address
 is the CPU's: code run from the RAM under a ROM and the ROM's own code at
 the same address are counted together, and on a C16 the same RAM run at
-$1000 and at $5000 is counted at each. Measured on 19 October 2026: 67
+$1000 and at $5000 is counted at each. So the reply names apart, as
+`under_roms`, every address at $8000-$FFFF whose opcode was fetched from
+RAM at least once, with the ROMs paged out; a library built before the
+patch counted those gives no `under_roms`, and `hello` says to rebuild
+it with `tools.py get-plus4emu`. Measured on 19 October 2026: 67
 addresses read in 0.32 s (`code-map`). Clear and restart it after a
 `load`, since a load changes what ran.
 
@@ -414,7 +418,10 @@ play the game through, then `dump` writes the game's `codemap.json`, the
 file `check_listing.py` holds `symbols.json` to (`--merge` adds a
 session's record to the map already there, so it can be built from
 several snapshots). The dump folds a C16's repeats of its 16 KB onto
-$0000-$3FFF and leaves out $8000-$FFFF, where the ROMs are paged in.
+$0000-$3FFF. Of $8000-$FFFF, where the ROMs are paged in, it keeps the
+code that ran from the RAM beneath them (`under_roms`) and leaves out the
+ROMs' own, the KERNAL's interrupt entry among them, saying how many of
+each.
 
 ## Traps
 

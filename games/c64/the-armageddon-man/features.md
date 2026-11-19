@@ -63,7 +63,7 @@ Found in the code, not in the manual.
 | Answering Neutral to an assassination, a mobbed embassy, a car bomb or aid to an opposition ends the game half the time, "recalled to earth immediately. Due to your incompetence." | live | `ev15_18_neutral`, `ev15_18_1` |
 | A war fires more missiles than the countries hold: the last of each type can fly two or three times | live | `launcher_a`, `missile_done`: 108 landings from 101 missiles |
 | A country already destroyed still adds radiation when hit | traced | `war_damage` |
-| The title picture is loaded with the game and never shown | live | `$2000`, `$0C00`; only the leftover `dev_loader` points the video chip at it; it is the Spectrum version's loading screen, 762 of 768 cells bit for bit |
+| The title picture is loaded with the disk's game and never shown there; the cassette shows it as its loading picture | live | `$2000`, `$0C00`; on the disk only the leftover `dev_loader` points the video chip at it; it is the Spectrum version's loading screen, 762 of 768 cells bit for bit; Martech's 1987 cassette (the Ultimate Tape Archive's `Armageddon_Man,_The.tap`) shows the same bytes from about 81 to 233 seconds in (`graphics.html`) |
 | A developer's loader is left at `$1000`, naming the files TITCOL, TITLES, SWMA and PAIN | traced | `dev_loader` |
 | A sound effect player with 17 effects, an alarm and three short tunes that the game never plays | traced | `sfx_start`, `alarm_start`, `tune_table` |
 | After talks a coin is tossed and never looked at, so the branch that raises both countries' hostility is never reached | traced | `after_talks`, `$9FE0` |

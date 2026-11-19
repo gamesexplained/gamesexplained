@@ -37,10 +37,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 .sb-cv{max-width:100%;height:auto;image-rendering:pixelated;display:block;border-radius:4px}
 .sb-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
-.sb-bar button{font-family:var(--fm);font-size:12.5px;line-height:1.3;padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);cursor:pointer}
-.sb-bar button:hover{border-color:var(--accent)}
-.sb-bar button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-.sb-type{font-family:var(--fm);font-size:16px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;width:100%;max-width:420px;text-transform:uppercase}
+.sb-bar button{font-size:12.5px;line-height:1.3;padding:5px 10px}
+.sb-type{font-size:16px;padding:8px 10px;width:100%;max-width:420px}
 .sb-codes{display:grid;gap:10px;margin:14px 0 0}
 .sb-code{font-family:var(--fm);font-size:15px;display:flex;flex-wrap:wrap;gap:3px;align-items:center}
 .sb-code b{font-family:var(--fb);font-size:13px;color:var(--ink-mute);min-width:84px;font-weight:700}
@@ -78,8 +76,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="sb-out" id="sb-type-out" aria-live="polite"></p>
     <p class="cap">The two codes are stored at <code>$C1A0</code> and <code>$C1B1</code> as key numbers, each ending with a zero. The C64 wires its keys in a grid of eight rows and eight columns, and a key's number is eight times its row plus its column. The page decodes them and matches keys as the title does (<code>title</code>, <code>$C0C4</code>).</p>
   </div>
-  <p>The title keeps a place in each code. A key that matches the next letter moves the place on; any other key puts it back to the start, and that key does not count as the code's first letter, so BBRADFORD-ON-AVON does nothing. When the place reaches the end of BRADFORD-ON-AVON, the cheat's on/off switch in memory, <code data-part="">$0C10</code>, flips, with one sound for on and another for off. Typing the code three times in VICE set the flag to 1, 0 and 1.</p>
-  <p>The cheat keys. All but the match's + were tested in VICE; that one is read from the code.</p>
+  <p>The title keeps a place in each code. A key that matches the next letter moves the place on; any other key puts it back to the start, and that key does not count as the code's first letter, so BBRADFORD-ON-AVON does nothing. When the place reaches the end of BRADFORD-ON-AVON, the cheat's on/off switch in memory, <code data-part="">$0C10</code>, flips, with one sound for on and another for off. Typing the code three times sets the flag to 1, 0 and 1.</p>
+  <p>The cheat keys.</p>
   <div class="sb-scroll"><table class="sb-tbl"><thead><tr><th>Where</th><th>Key</th><th>What it does</th></tr></thead><tbody>
     <tr><td>Menus, gym, manager</td><td>+</td><td>Adds 100 to the bank (<code>menu_frame</code>, <code>$6189</code>). Three presses in the gym took it from 1100 to 1400.</td></tr>
     <tr><td>A match</td><td>T</td><td>Knocks down every one of team 2's players on the pitch, as the zap team token does (<code>token_zap_team</code>, <code>$32AD</code>).</td></tr>
@@ -99,7 +97,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <canvas id="sb-martin" class="sb-cv" width="640" height="400"></canvas>
     <p class="cap">Drawn from the game's bytes: the list at <code>$C4F9</code> names three packed blocks, the screen colours at <code>$C8C5</code>, the bitmap at <code>$C506</code> and colour RAM at <code>$C994</code>. The page unpacks them with the game's own rules (<code>unpack</code>, <code>$498E</code>) and draws it as the chip shows it, a multicolour bitmap, a picture stored pixel by pixel, on black, as <code>screen_on</code> (<code>$5039</code>) sets the chip.</p>
   </div>
-  <p>The picture is a grey photograph of a face on a cyan ground (<code>show_picture</code>, <code>$4FF3</code>, called from <code>$C135</code>). Typing MARTIN in VICE showed it, and fire went back to the title. The game does not say whose face it is, but it is almost certainly Martin Walker's: he wrote the C64 version's music and sound effects, and the intro's credits name him.</p>
+  <p>The picture is a grey photograph of a face on a cyan ground (<code>show_picture</code>, <code>$4FF3</code>, called from <code>$C135</code>). Typing MARTIN shows it, and fire goes back to the title. The game does not say whose face it is, but it is almost certainly Martin Walker's: he wrote the C64 version's music and sound effects, and the intro's credits name him.</p>
 </section>
 
 <section id="star">
@@ -110,13 +108,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <canvas id="sb-starcv" class="sb-cv" width="960" height="120"></canvas>
     <p class="cap">The eight sprites at the X positions in <code data-part="intro">letters_xs</code> (<code data-part="intro">$0F6D</code>, stored halved), drawn from frames <code>$60</code>-<code>$67</code> of the intro (<code data-part="intro">$D800</code>-<code data-part="intro">$D9FF</code>). The blue band is what a monitor shows, the border darker and the paper lighter; the grey beyond it is past the edge.</p>
   </div>
-  <p>The letters object places its eight sprites from a table of X positions, each stored as half its value so that it fits in a byte. The last entry is <code>$C8</code>, 200, so the star sits at X 400. The visible picture, border and all, ends near X 375. In VICE, with the letters shown, sprite 7 was switched on at X 400 and Y 60, showing frame <code>$67</code>, the star. Nothing in the intro moves it, so it is never seen.</p>
+  <p>The letters object places its eight sprites from a table of X positions, each stored as half its value so that it fits in a byte. The last entry is <code>$C8</code>, 200, so the star sits at X 400. The visible picture, border and all, ends near X 375. With the letters shown, sprite 7 is on at X 400 and Y 60, showing frame <code>$67</code>, the star. The intro never moves it, so it is never seen.</p>
 </section>
 
 <section id="message">
   <p class="fig">04 · A message</p>
   <h2 class="t">Secret: the game's code starts with a message for anyone reading it</h2>
-  <p class="lede">The first instructions of the game jump over 60 bytes of text that nothing prints.</p>
+  <p class="lede">The first instructions of the game jump over 60 bytes of text that the game never prints.</p>
   <div class="plate">
     <pre class="sb-hexd" id="sb-msg">The bytes are read from the game's listing in the built site.</pre>
     <p class="cap">The game's entry, <code>$C000</code>-<code>$C047</code>. Five instructions, then the jump to <code>start_init</code> (<code>$C044</code>) over the text at <code>$C008</code>.</p>

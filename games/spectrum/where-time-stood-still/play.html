@@ -47,9 +47,7 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-over[hidden]{display:none}
 .pl-over button{font-size:16px}
 .pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
-.pl-bar button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
-.pl-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
-.pl-bar button:hover{border-color:var(--ink-mute)}
+.pl-bar button,.pl-over button{font-size:14px;padding:7px 12px}
 .pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
@@ -75,8 +73,8 @@ html.pl-wide-page section{content-visibility:visible!important;contain:none!impo
 .pl-wide .pl-keys,.pl-wide .pc,.pl-wide [data-fullscreen],.pl-wide #pl-cap,.pl-wide #pl-cv + .crt-screen{display:none!important}
 .pl-wide .pl-wide-only{display:inline-block}
 .pl-wide .pl-bar,.pl-wide .pc-above{margin:0;padding:8px 12px;background:#17191d}
-.pl-wide .pl-bar button,.pl-wide .pc-above button{background:#2a2d33;color:#e9e7e1;border-color:#3d4047}
-.pl-wide .pl-bar button[aria-pressed="true"],.pl-wide .pc-above button[aria-pressed="true"]{background:#e9e7e1;color:#17191d;border-color:#e9e7e1}
+.pl-wide .pl-bar[data-own-look] button,.pl-wide .pc-above[data-own-look] button{background:#2a2d33;color:#e9e7e1;border-color:#3d4047}
+.pl-wide .pl-bar[data-own-look] button[aria-pressed="true"],.pl-wide .pc-above[data-own-look] button[aria-pressed="true"]{background:#e9e7e1;color:#17191d;border-color:#e9e7e1}
 .pl-wide .pl-bar .pl-sep{background:#3d4047}
 .pl-wide .pl-status,.pl-wide .pl-hint{font-family:var(--fm);font-size:12px;color:#9a9da4}
 .pl-zoom{font-family:var(--fm);font-size:13px;color:#e9e7e1;min-width:2.6em;text-align:center}
@@ -102,7 +100,7 @@ section table{margin:6px 0 18px}
       </div>
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's data…</span></div>
     </div>
-    <div class="pl-bar" id="pl-bar">
+    <div class="pl-bar" id="pl-bar" data-own-look>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <button type="button" data-act="wide" aria-pressed="false" title="Fill the window with the plateau round the view, drawn by the game's own routines">🔭 Wide view</button>
@@ -124,17 +122,8 @@ section table{margin:6px 0 18px}
 </section>
 <section id="port">
   <p class="fig">01 · The port</p>
-  <h2 class="t">Every routine of the game, checked against the original</h2>
-  <p class="lede">The game is a Z80 program of 25,132 bytes of code, about half in the 128's main memory and half in its bank 3. The port is the same program written again in JavaScript, one function for each routine the game calls and each place its tables jump to, 452 in all, reading and writing the game's variables at the game's own addresses in the 128's own banks. The page runs only the port: the game's code is in the tests, as the original the port is held to.</p>
-<table>
-  <tr><th>Check</th><th>What it showed</th></tr>
-  <tr><td>Each routine alone</td><td>Sixteen test files take each routine at the moments the game itself calls it, in 148 saved moments of play, some with registers and variables changed at random. The port's routine and the game's own, on the kit's Z80, run from the same machine, and every byte of the eight banks, the paging, the AY's registers and the writes to the chips must come out the same.</td></tr>
-  <tr><td>The whole program in lockstep</td><td>The port's program runs beside the game's, pass by pass: from the loader's hand-over through the control selection and 1,500 passes of play, and from each of the 148 moments for 400 passes, with the stick, fire and the menus played at random. Every byte of the eight banks, the paging, the border and the AY was the same at every stop, but for the stack and the two bytes where the sound driver keeps the stack pointer.</td></tr>
-  <tr><td>Area 14 and the ROM</td><td>Area 14's map and the mask of one frame of the arm that reaches out of a rock run on past the end of memory into the 128's ROM. The page carries those 171 bytes of ROM 0 and nothing else of it, and the port reads them where the game does. The lockstep runs through area 14.</td></tr>
-  <tr><td>The page's memory</td><td>The page carries the game's memory as the loader leaves it. Of the main memory's 12,863 bytes of instructions, all but 1,068 are set to zero: 858 the game rewrites and reads as variables, and 210 it reads as data, the start-up code that becomes the sprites' visibility mask and tune 18's code, which tune 17 plays as notes. Bank 3 is carried whole, its code included, because the game's random numbers are bank 3's bytes read one after another. The page's machine on that memory and on the whole memory ran the same, frame for frame, from the hand-over for 2,100 frames and from 37 of the moments for 600 frames each, with input at random.</td></tr>
-  <tr><td>The pace</td><td>The port executes no instructions, so the page charges each stretch of the main loop, each routine, and each byte, row and character it copies or draws the T-states they cost the game, fitted on 22,798 passes timed on the kit's model of the 128: from the hand-over and from the moments, with walks and runs that drag the windows and scroll the view. On 14,799 passes it was not fitted on, four in five come within 1.1 % of the game's time. From 25 other moments, with the same walks, runs and shots on both for 30 seconds, the page takes within 4 % of the game's time for the same passes, 1.6 % less on average, and from the hand-over it reaches play within 2.2 % of the game's time.</td></tr>
-  <tr><td>The listing</td><td>Porting a routine means reading every instruction of it. Eleven of the listing's comments disagreed with what the game was shown to do, and are corrected in the Source code tab; four more are completed.</td></tr>
-</table>
+  <h2 class="t">Every routine of the game, written again in JavaScript</h2>
+  <p class="lede">The game is a Z80 program of 25,132 bytes of code, about half in the 128's main memory and half in its bank 3. The port is the same program written again in JavaScript, one function for each routine the game calls and each place its tables jump to, 452 in all, reading and writing the game's variables at the game's own addresses in the 128's own banks. The page runs only the port.</p>
 </section>
 <section id="differences">
   <p class="fig">02 · Differences</p>
@@ -143,7 +132,7 @@ section table{margin:6px 0 18px}
 <table>
   <tr><th>On a Spectrum 128</th><th>On this page</th></tr>
   <tr><td>The interrupt can fall between any two instructions of the main program.</td><td>The interrupt runs between two of the port's routines, at the clock's time for it. The bytes the interrupt changes and the main program reads in the middle of a routine (the clock's count to midnight, the light and its count) are read after the interrupts due by then have run.</td></tr>
-  <tr><td>Each instruction takes its T-states, and a pass takes as long as its drawing does.</td><td>The port executes no instructions. Each stretch of the main loop, each routine and each byte, row and character it draws costs what it cost the game, fitted on the game's own timings (01, The pace), so a pass takes about as long as on the 128.</td></tr>
+  <tr><td>Each instruction takes its T-states, and a pass takes as long as its drawing does.</td><td>The port executes no instructions. Each stretch of the main loop, each routine and each byte, row and character it draws costs what it cost the game, fitted on the game's own timings, so a pass takes about as long as on the 128.</td></tr>
   <tr><td>Copying the view to the screen takes longer than a frame, with the interrupts off, so in play the 128 misses about one interrupt in five, and the game's clock, which counts them, loses a fifth of its time.</td><td>The page's copy takes the game's time with its interrupts off too, and loses the same interrupts.</td></tr>
   <tr><td>The AY chip plays the music and the effects, and the beeper clicks with the drum.</td><td>The site's models of the AY and the beeper play the port's writes to them, each at the time in the frame it was made, as the frame is shown.</td></tr>
   <tr><td>The ULA draws the screen a line at a time as the beam crosses it.</td><td>The page takes the screen whole at the moment the beam would reach its first line, so a change made while the beam is drawing shows a frame later, all at once.</td></tr>

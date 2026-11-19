@@ -75,6 +75,7 @@ SHOT = os.path.join(SNAPDIR, f"emutest_screen-{PORT}.png")
 FRAME = FRAME_CYCLES
 
 ORG = 0x2000
+UNDER_CALL, UNDER_RAM = 0x2200, 0x9000     # the code-map-under-roms check's caller and its routine
 SRC = r'''
 passes = $2100
 frames = $2102
@@ -784,6 +785,30 @@ def p3(m):
           f"{['$%04X' % a for a in outside[:5]] or 'none'}; off an instruction's first byte: {['$%04X' % a for a in odd[:5]] or 'none'}")
     check("code-map-counts", abs(cm.get(L["top"], 0) - dp) <= 1, "how often each instruction ran",
           f"top {cm.get(L['top'])} against {dp} passes")
+    # A routine in the RAM under the ROMs, called with the ROMs paged out: the record names it apart
+    # from the KERNAL's interrupt code at $8000 up, which runs from the ROMs (#874).
+    m.write(UNDER_RAM, bytes([0xA9, 0x5A, 0x8D, 0x10, 0x21, 0x60]), space="ram")   # LDA #$5A, STA $2110, RTS
+    m.write(0x2110, b"\x00")
+    side, _ = assemble(f"""
+        sei
+        sta $ff3f           ; the ROMs out: $8000-$FFFF reads RAM
+        jsr ${UNDER_RAM:04x}
+        sta $ff3e           ; the ROMs back in
+        cli
+        jmp ${L['loop']:04x}
+    """, org=UNDER_CALL)
+    m.write(UNDER_CALL, side)
+    m.set_registers(pc=UNDER_CALL)
+    m.codemap("start")
+    m.frames(10)
+    rec = m.codemap("stop")
+    under = rec.get("under_roms")
+    high = sorted(a for a, _, _ in rec["instructions"] if a >= 0x8000)
+    want = [UNDER_RAM, UNDER_RAM + 2, UNDER_RAM + 5]
+    check("code-map-under-roms", under == want and m.read(0x2110, 1)[0] == 0x5A and len(high) > len(want),
+          "the instructions run from the RAM under the ROMs are named apart from the ROMs' own",
+          f"from RAM: {['$%04X' % a for a in under] if under is not None else 'not named (rebuild: tools.py get-plus4emu)'}; "
+          f"{len(high)} addresses at $8000 up ran in all")
     other = connect(port=PORT, timeout=60)
     cp = m.checkpoint(L["top"], stop=False)
     t, box = background(m, frames=100000)

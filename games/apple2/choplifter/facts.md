@@ -424,3 +424,33 @@ snapshots in `work/`, with the scripts in `work/verify/`.
   same code from the listing on the kit's 6502 (`reference/sound.js`,
   `test_sound.js`). The two count an access's cycle at different points of
   the instruction, 4 cycles apart, which moves every click alike.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- For every one of those 3,376 positions, the arithmetic here gives the same X and the same verdict as the game's own code run on the listing's bytes (`test_tank.js`).
+- In Apple2TS, with the helicopter held at $0702 for 3,000 frames, one tank came, on the left, and two meant for the right never entered the tank list.
+- The two effects run the game's code for them on the kit's 6502, as on the How it works page, and the clicks match the game's in Apple2TS click for click (`test_sound.js`).
+- In Apple2TS, CTRL-L then 3 set the level byte (`$731D`) to 3.
+- The title and the first sortie, Apple2TS.
+- The demonstration reads no clock, and while no key is pressed it unfolds the same way on every boot: the How it works page runs it from the listing and its frames match Apple2TS's byte for byte.
+- In Apple2TS as an enhanced IIe the disk stopped there; as a II Plus it played.
+
+### graphics.html
+
+- Every picture on this page is drawn by that library, from the listing, on the kit's 6502.
+- The demonstration flight is the game's own code run from `start` on the kit's 6502 (`reference/demo.js`), to its 268th frame.
+
+### index.html
+
+- Apple2TS 3.7.0 as an Apple II Plus, from the original disk (`reference/`).
+- The game's code runs from `start` (`$0800`) on the kit's 6502 over the listing's bytes, and stops at each call of `gfx_show_page` (`$12E3`); the page it is about to show is drawn by the site's Apple II library (`reference/demo.js`).
+- At frames 1, 2, 40, 200, 400 and 800, both pages hold the same 16,384 bytes as in Apple2TS at the same call, run from the loader's hand-over (`test_demo.js`).
+- Each button runs the code that makes that effect in the game, from the listing, on the kit's 6502, and plays the clicks it makes through the site's model of the speaker (`site/lib/apple2-speaker.js`); the drawing shows each note's pitch and, along the foot, every click.
+- The same code run in Apple2TS clicks at the same spacings, click for click, for all nine effects (`test_sound.js`).
+- Every picture here is drawn by the game's own routines from the listing, on the kit's 6502 (`reference/tilt.js`).
+- Eighteen frames of helicopters landing with a lean in Apple2TS, facing either way, hold the same bytes as these routines draw from the same state (`test_tilt.js`); there, a helicopter that landed at a tilt of 4 was level two frames later.
+- In Apple2TS the most of each kind seen at each level matched the table (`facts.md`, "Live tests").

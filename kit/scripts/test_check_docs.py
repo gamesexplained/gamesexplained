@@ -9,7 +9,8 @@ a skill names no game in the lines a branch adds, whatever it said before the ga
 core skill gains no dated record, kit-feedback.md's placeholder fails only once the
 retrospective is reached or on a pull request, and a game.json whose tools.host the status page
 cannot count, such as a WSL2 run that leaves out its processor, fails before the pull request
-rather than in its CI."""
+rather than in its CI, and a page that colours, borders, rounds or sets the typeface of its
+own buttons, menus or sliders fails, since site.css draws them alike on every page."""
 import contextlib
 import io
 import os
@@ -159,6 +160,52 @@ TABLE = """| Build | Machine | Measured | Checks passed |
 | v3.13.1, from source (`get-vice build`) | Linux x86_64 | 24 September 2026 | 56 of 56 |
 | v3.13.1 release, `v3.13.1-macos-arm64-gui.dmg` | macOS arm64 | 28 September 2026 | 56 of 57 |
 """
+
+
+def looks(style, body='', sheet=None):
+    """What check_docs.py reports for one page with this <style>, markup and linked stylesheet."""
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        link = ''
+        if sheet is not None:
+            (d / 'reference').mkdir()
+            (d / 'reference' / 'page.css').write_text(sheet, encoding='utf-8')
+            link = '<link rel="stylesheet" href="reference/page.css">'
+        (d / 'index.html').write_text(f'{link}<style>{style}</style>{body}', encoding='utf-8')
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            n = check_docs.button_looks([str(d / 'index.html')])
+        return n, out.getvalue()
+
+
+BAR = '<div class="bar"><button type="button" class="go">Run</button><select id="speed"></select></div>'
+
+
+class ButtonLooks(unittest.TestCase):
+    def test_a_page_that_draws_its_own_controls_fails(self):
+        for style, body, sheet in (
+                ('.bar button{background:var(--surface-2);border-radius:6px}', BAR, None),
+                ('button[aria-pressed=true]{background:#1f5fa8;color:#fff}', BAR, None),   # its own on colour
+                ('.go{font-family:var(--fm)}', BAR, None),                    # a class only buttons carry
+                ('#speed:focus-visible{outline:3px solid #c25a00}', BAR, None),
+                ('.k{border:0}', "<script>const b = document.createElement('button'); b.className = 'k';</script>", None),
+                ('.k.on{background:var(--ink)}', "<script>keys.append(el('button', 'k'))</script>", None),
+                ('@media (max-width:600px){.bar select{font:13px var(--fm)}}', BAR, None),
+                ('', BAR, '.bar button{color:var(--violet)}')):           # in the page's own stylesheet
+            n, out = looks(style, body, sheet)
+            self.assertEqual(n, 1, (style, out))
+        self.assertIn('background, border-radius', looks('.bar button{background:#fff;border-radius:6px}', BAR)[1])
+
+    def test_what_a_page_may_say_about_its_controls(self):
+        for style in ('.bar button{padding:4px 10px;font-size:13px;min-width:5em}',       # size and place
+                      '.bar button.held{background:var(--btn-on-bg);color:var(--btn-on-ink)}',   # a state of its own
+                      '.bar[data-own-look] button{background:#000;border:2px solid transparent}',  # buttons that are pictures
+                      '.zk-swatch[data-own-look]{border-radius:4px}',
+                      'button::after{content:"";background:red}',                        # not the control itself
+                      '.bar span{color:red}', '.cap{color:var(--ink-mute)}',
+                      '.chip{background:var(--chip)}'):                                    # on a span and a button
+            n, out = looks(style, BAR + '<span class="chip"></span><button class="chip"></button>')
+            self.assertEqual(n, 0, (style, out))
 
 
 def notes(text):

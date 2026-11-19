@@ -35,9 +35,7 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .sb-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
 .sb-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
-.sb-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
-.sb-btn:hover{border-color:var(--ink-mute)}
-.sb-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.sb-btn{font-size:12.5px;padding:5px 11px}
 .sb-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
 .sb-pics{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
 .sb-pics figure{margin:0}
@@ -70,14 +68,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Five a side in steel armour</h2>
   <p class="lede">Two teams of five, a keeper and four outfield players each, fight over a steel ball in a walled arena. There are no fouls.</p>
   <div class="plate sb-pics">
-    <figure><img src="reference/loading-screen.png" alt="The loading picture: an armoured player"><figcaption>The loading picture, on screen while the game loads.</figcaption></figure>
+    <figure><img src="reference/loading-screen.png" alt="The loading picture: SPEEDBALL in chrome and gold letters over a grey wall, and a steel fist in a round frame"><figcaption>The loading picture, on screen while the game loads.</figcaption></figure>
     <figure><img src="reference/match-play.png" alt="A match: green and red players on the pitch, the score panel below"><figcaption>A match. Green plays up the pitch, red down; the panel below holds the clock, the scores and the stamina meters.</figcaption></figure>
   </div>
   <p>You steer whichever of your outfield players is nearest the ball, and the rest of the team runs itself. Fire throws the ball, or, without it, jumps or slides into a tackle. The pitch scrolls up and down; the ball goes into a goal only along the ground, and a warp tunnel in each side wall sends it out of the other wall. Tokens and power-up tiles appear on the floor, and after each match the tokens buy bribes and better figures in a shop.</p>
   <p>The menu offers a knockout cup of ten rounds, a league of eleven teams, and a league for two players. You choose one of three teams, Verna, Lacata or Draco, each with its own stamina, power and skill.</p>
 </section>
 
-<section>
+<section id="music">
   <p class="fig">02 · The music</p>
   <h2 class="t">Music: a goal plays the scoring side's own tune</h2>
   <p class="lede">The menu's credits name Dave Whittaker for the music and the sound effects. Of his seven tunes, two are short jingles for a goal, one for each side, and green's plays again at full time.</p>
@@ -86,6 +84,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">The game's own sound driver, the code that plays its music, run on the site's 6502, a model of the C64's processor, on the bytes in the Source tab, and heard through the site's model of the SID, the C64's sound chip. Names in code type are the routines and variables the Source tab names, and numbers that start with $ are their addresses in memory, in hexadecimal. Each tune starts as the game starts it (<code>tune_play</code>, <code>$8B2F</code>) and plays one call a frame, fifty times a second, as the game's interrupt makes it (<code>music_frame</code>, <code>$8B5F</code>). A test holds the page to the driver, every write of every frame.</p>
   </div>
   <p>The driver is the disk's file <code>FILE0</code>, which loads into memory at <code>$0810</code>. The SID has three voices, each playing one note at a time. Each tune has seven bytes in <code>tune_table</code> (<code>$131E</code>): its tempo, then where each voice finds its list of patterns, the short runs of notes the tune is built from. Once a frame the driver adds the tempo to a running total (<code>music_frame_voices</code>, <code>$094E</code>). Each time the total goes past 255 and starts again, every voice moves on a step in its pattern, so a larger tempo plays faster. Tunes 5 and 6, the goal jingles, end on their own; the others loop.</p>
+  <p>The cassette plays the menu tune while it loads. It starts it as the SPEEDBALL picture comes up, a little over two minutes into the tape, and keeps it going for two and a half minutes, until the game itself takes over (<a href="graphics.html#loading">Graphics</a>).</p>
 </section>
 
 <section>
@@ -94,7 +93,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The driver holds 26 sound effects and the launcher's hum. The game asks for twelve of the effects and never for the other fourteen.</p>
   <div class="plate">
     <div id="sb-sfx"></div>
-    <p class="cap">The game's own driver again, each effect started as the game starts it (<code>sound_play</code>, <code>$8B80</code>) after the kick-off's launcher has set the volume. The ones marked unused are records in <code>effect_table</code> (<code>$0F16</code>) that no call in the game asks for.</p>
+    <p class="cap">The game's own driver again, each effect started as the game starts it (<code>sound_play</code>, <code>$8B80</code>) after the kick-off's launcher has set the volume. The ones marked unused are records in <code>effect_table</code> (<code>$0F16</code>) that the game never asks for.</p>
   </div>
   <p>An effect is a record of 20 bytes: its length in frames, and for voices 1 and 3 a starting pitch, an envelope (how the volume rises and falls), a waveform (the shape of the tone) and a slide (how the pitch moves). Starting one takes those voices from the music (<code>effect_start</code>, <code>$0E7A</code>). The launcher's hum is voice 2 alone (<code>hum_start</code>, <code>$1155</code>), held while the launcher spins and stopped when it shoots the ball out (<code>launcher_sequence</code>, <code>$3739</code>).</p>
 </section>
@@ -107,7 +106,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="sb-bar" id="sb-frame-bar"></div>
     <canvas id="sb-frame" class="sb-cv" width="384" height="272"></canvas>
     <p class="sb-out" id="sb-frame-out"></p>
-    <p class="cap">Drawn by the site's C64 library from one frame recorded in the emulator: the video chip's registers at the top of the frame, every change the game makes to them during it, at lines of the screen it chooses, and the memory the chip reads. All 104,448 pixels match the emulator's own picture of the same frame, for both screens.</p>
+    <p class="cap">Drawn by the site's C64 library from one frame: the video chip's registers at the top of the frame, every change the game makes to them during it, at lines of the screen it chooses, and the memory the chip reads.</p>
   </div>
   <p>The video chip can interrupt the processor when it reaches a chosen line of the screen as it draws it (a raster line). The processor then stops what it was doing and runs a routine. The game has one such routine (<code>irq_handler</code>, <code>$86D3</code>), and it works through a chain of slots, one each time it runs. A slot holds the line for the next interrupt, the video chip's settings (its registers) for that line, and a routine to run (<code>irq_slot_run</code>, <code>$8704</code>).</p>
   <p>In a match the slots place the sprites. The game moves everything once a pass, every second frame. Each pass the ten players, the ball and the four parts of the ball launcher are sorted by height (<code>sprites_sort</code>, <code>$8ADD</code>) and handed out to the chip's eight sprites from the top of the screen down, so one sprite draws several of them. The pitch is a map of 40 columns by 74 rows at <code>$F300</code>, built before each match (<code>pitch_map_build</code>, <code>$917D</code>). The game keeps two screens, shows one and copies the next view into the other when the camera moves a row (<code>scroll_update</code>, <code>$9292</code>).</p>
@@ -122,7 +121,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <canvas id="sb-domes" class="sb-cv" width="300" height="600" style="max-width:300px;margin:0 auto;background:#1b1d22"></canvas>
     <p class="cap">The arena in the game's own coordinates, from the bounds the code tests: the side walls at x <code>$1C</code> and <code>$108</code>, the goals between x <code>$64</code> and <code>$C7</code>, the warp tunnels between y <code>$108</code> and <code>$127</code>. The domes come from the layout tables <code>dome_x</code> (<code>$2E73</code>) and <code>dome_y</code> (<code>$2E9B</code>, <code>$2EC3</code>), four entries a layout, each the corner of a dome four characters square.</p>
   </div>
-  <p>The layout number <code>$1ED0</code> moves on after every match, from 0 to 9 and round again (<code>match_over</code>, <code>$3320</code>), and <code>domes_place</code> (<code>$9241</code>) turns its four entries into places in the map. A dome turns the ball only while it rolls along the ground (<code>dome_bounce</code>), and the players run straight through it. The ball launcher stands in the middle, where no tile is ever placed (<code>tile_place</code>, <code>$A94C</code>).</p>
+  <p>The layout number <code>$1ED0</code> moves on after every match, from 0 to 9 and round again (<code>match_over</code>, <code>$3320</code>), and <code>domes_place</code> (<code>$9241</code>) turns its four entries into places in the map. A dome turns the ball only while it rolls along the ground (<code>dome_bounce</code>), and the players run straight through it. The ball launcher stands in the middle, where the game never places a tile (<code>tile_place</code>, <code>$A94C</code>).</p>
 </section>
 
 <section>
@@ -175,7 +174,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>At start-up the game sets timers A and B of CIA 2 (the C64's second interface chip) to the same period, <code>$231F</code> (8,991) cycles of the processor's clock, and starts them four cycles apart (<code>game_start</code>, <code>$201A</code>). It never uses them for timing. Three checks read them instead:</p>
   <p>The interrupt handler reads timer B's control register on every interrupt, with an instruction the processor's makers never documented, and when the timer has stopped it sets the match clock's target to 255, so the match never ends (<code>irq_handler</code>, <code>$86D3</code>). The keyboard reader makes the same test and sends the interrupt chain to a slot that does not exist (<code>keys_read</code>, <code>$8891</code>). At the top of the match screen, <code>irq_slot_play_top</code> (<code>$8745</code>) reads timer A and then timer B four cycles later. Started four cycles apart, the two read the same. The game combines them with EOR, which gives 0 when two numbers are equal, and adds the result to <code>$2DD0</code>, which so stays 0. The game merges that byte into what it reads from the joystick, uses it as the flag that waits for the next frame, and uses it to pick the league's save file. On a copy whose timers drift apart, the stick jams and the game hangs.</p>
   <p>The timers' registers answer at several addresses, called mirrors, and these reads use a different one each frame (<code>irq_slot_shop_row</code>, <code>$881D</code>). That hides them from a search for the registers' usual addresses.</p>
-  <p>Nothing in the game says what the check is for, so what follows is our reading of it. A copy of the game's files that starts it the usual way runs <code>game_start</code>, sets the timers going and passes. What fails is a copy made with a freezer cartridge, such as the Action Replay, which stops a running game, saves the whole of memory to an ordinary disk and later starts it again from where it stopped. Copies made that way were a common answer to disks that could not be copied directly. When the game is restarted from such a copy, <code>game_start</code> does not run again, so the cartridge has to restart the timers itself. The chip lets a program read where a timer's count has reached, but not the period it was set to, so the cartridge cannot know to set both to <code>$231F</code>, four cycles apart. The timers then stay stopped, or run out of step, and the game breaks partway through a match in a way that looks like a bug rather than a copy check.</p>
+  <p>The game never says what the check is for, so what follows is our reading of it. A copy of the game's files that starts it the usual way runs <code>game_start</code>, sets the timers going and passes. What fails is a copy made with a freezer cartridge, such as the Action Replay, which stops a running game, saves the whole of memory to an ordinary disk and later starts it again from where it stopped. Copies made that way were a common answer to disks that could not be copied directly. When the game is restarted from such a copy, <code>game_start</code> does not run again, so the cartridge has to restart the timers itself. The chip lets a program read where a timer's count has reached, but not the period it was set to, so the cartridge cannot know to set both to <code>$231F</code>, four cycles apart. The timers then stay stopped, or run out of step, and the game breaks partway through a match in a way that looks like a bug rather than a copy check.</p>
 </section>
 
 </main>

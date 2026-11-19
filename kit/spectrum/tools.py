@@ -8,8 +8,10 @@ Everything the kit installs lives under tools/ (gitignored):
   tools/zesarux/       the emulator, unpacked from the project's own release (`tools.py
                        get-zesarux download`); zesarux.app on macOS, zesarux elsewhere
   tools/zesarux-home/  everything the emulator would write in a home directory: its
-                       .zesaruxrc (HOME is pointed here), any XDG folder it uses, and
-                       the snapshots the kit saves
+                       .zesaruxrc (HOME is pointed here), any XDG folder it uses, the
+                       snapshots the kit saves, and in tmp/<port>/ its temporary files
+                       (`--tempdir`), such as the sound file it makes of a tape it plays
+                       at real speed, emptied at each start and removed at `stop`
   tools/logs/          terminal logs
   tools/skoolkit/      SkoolKit, the Z80 disassembler and control-file tool (`tools.py
                        get-skoolkit`): a virtual environment with SkoolKit 10.1 from PyPI
@@ -65,7 +67,7 @@ checked: it starts the emulator, has it write a snapshot, reads memory through Z
 stops it, and then lists every file outside the repository that changed meanwhile and
 looks like it belongs to ZEsarUX. An empty list is the pass.
 """
-import glob, json, os, re, subprocess, sys, time
+import glob, json, os, re, shutil, subprocess, sys, time
 
 # What this launcher serves, read by the dispatcher (kit/scripts/tools.py) when several
 # platforms have a launcher. Keep in step with main() below.
@@ -178,6 +180,25 @@ def emulator_env():
     return env
 
 
+def tempdir(port=None):
+    """The folder the emulator on `port` keeps its temporary files in (`--tempdir`).
+
+    ZEsarUX's own is one folder for every emulator, /tmp/zesarux-<user id>, and it names
+    the sound file it makes of a tape played at real speed (`--realtape`, `realtape-open`)
+    after the tape's file alone: two emulators given tapes of the same name shared one
+    file, so both played the same game (#883). One folder to a port keeps them apart."""
+    return os.path.join(ZESARUX_HOME, "tmp", str(port or PORT))
+
+
+def clear_tempdirs(port=None):
+    """Remove the temporary folders of every port no emulator answers on, or of `port`."""
+    root = os.path.join(ZESARUX_HOME, "tmp")
+    names = [str(port)] if port else (os.listdir(root) if os.path.isdir(root) else [])
+    for name in names:
+        if not (name.isdigit() and up(int(name))):
+            shutil.rmtree(os.path.join(root, name), ignore_errors=True)
+
+
 CONFIG = os.path.join(ZESARUX_HOME, ".zesaruxrc")
 STATS_ON = "--stats-send-enabled"
 
@@ -242,8 +263,12 @@ def zesarux(extra=()):
                  "stop it there (its own `tools.py stop`) before starting this clone's")
     os.makedirs(ZESARUX_HOME, exist_ok=True)
     os.makedirs(SNAPSHOTS, exist_ok=True)
+    tmp = tempdir()
+    shutil.rmtree(tmp, ignore_errors=True)      # nothing from an earlier start is played again
+    os.makedirs(tmp)                            # ZEsarUX needs it to exist
     cmd = [os.path.abspath(exe), "--enable-remoteprotocol", "--remoteprotocol-port", str(PORT),
-           "--configfile", os.path.join(ZESARUX_HOME, "zesaruxrc"), "--quickexit", "--nosplash",
+           "--configfile", os.path.join(ZESARUX_HOME, "zesaruxrc"), "--tempdir", tmp,
+           "--quickexit", "--nosplash",
            "--stats-disable-check-updates", "--stats-disable-check-yesterday-users",
            "--stats-send-already-asked", "--disable-all-first-aid",
            "--snap-no-change-machine"]
@@ -283,6 +308,7 @@ def stop(quiet=False, port=None):
         left = port_owner(p) if up(p) else None
         if left:  # not ours: the pattern is this clone's absolute path, and a launcher is not the only way in
             print(f"something still answers on :{p} and it is not this clone's emulator, so it was left alone:\n  {left}")
+    clear_tempdirs(port)
     if not quiet:
         status()
 

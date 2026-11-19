@@ -540,3 +540,32 @@ every pass.
 - `who`, typed 15 times from the start: each answer as the port of lines
   6210–6235 in `reference/valhalla-page.js` prints it
   (`test_characters.py`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### characters.html
+
+- The figures and the places are the game's own drawing: each figure is graphics command 2 and each place the commands line 5105 sends on arrival, run through `$F7AF` in SkoolKit's Z80 simulator, and `test_cast.py` holds the pictures against that code.
+- The names under the picture are what `who` prints (lines 6210 to 6235), from a port that `test_characters.py` holds against fifteen answers the game gave in the emulator.
+- `test_characters.py` holds the page's rules against each pair seen.
+- The first six minutes of play from the start, in the emulator, with nobody typing, and the rule behind each line.
+
+### discoveries.html
+
+- You, at 175 strength, against Idun at 215 in the emulator.
+- The route walked in the emulator from the start, with a ring poked into your pack: two steps west, a ringway, one step west, a ringway, north-east, north into Rankle's hall and its ringway to the cave.
+- In the emulator, picking up a pile of 50 printed "You get 50 crowns." and then "You have 151 crowns."
+- B Integer out of range, 1356:8 In the emulator, from the tape's own start with nothing poked: Thor,
+
+### index.html
+
+- The loading screen, from the tape in the emulator (the Graphics tab shows it loading), and Valheim, where the game starts, from Spectrum Computing.
+- The five buttons are fights tried in the emulator, with Idun's strength poked and two lines of the program changed so that nobody walked off before the blow: each ended as the port says.
+- `test_parser.py` runs it and the game's own code in SkoolKit's Z80 simulator on 746 words: every word in the dictionary that can be typed, each with an "s", three misspellings of each and 100 random strings.
+
+### levels.html
+
+- The pictures are the game's own drawing: the commands each place sends run through the graphics code at `$F7AF` in a Z80 simulator, and 13 of them, read from the emulator's screen, were the same to the byte.
+- `test_pictures.py` draws all 81 pictures from these commands with the game's code in SkoolKit's simulator and holds the sheet the map shows against them.

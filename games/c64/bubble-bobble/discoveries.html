@@ -31,7 +31,7 @@
   <h3>The credit counter is one ahead of you</h3>
   <p>A one-player game starts with eight continues and a two-player game with seven (<code>$08E4</code>, the LDX #7 at <code>$0961</code> and the INC for one player). The panel prints one more than are left, so a new game shows CREDITS 9.</p>
   <h3>Once the credits are gone, the game patches itself shut</h3>
-  <p>The rejoin check hangs off a JMP at <code>$049D</code>. When the last credit is used, the check writes an RTS over that JMP, and nobody can rejoin for the rest of the game (<code>$052A</code>). The JMP is put back at the start of the next game (<code>$0997</code>).</p>
+  <p>The rejoin check hangs off a JMP at <code>$049D</code>. When the last credit is used, the check writes an RTS over that JMP, and a player can no longer rejoin for the rest of the game (<code>$052A</code>). The JMP is put back at the start of the next game (<code>$0997</code>).</p>
   <h3>Enemies think 25 times a second, bubbles 16</h3>
   <p>The players and the enemies run inside the raster interrupt at line 50, on every other frame (<code>$072E</code>). The bubbles, shots and items run in the main loop, and a pass of the main loop waits for the frame counter to move twice, so a pass is three frames (<code>$0A5A</code>). Counted in the running game over 300 frames: 150 runs of the actors, 100 passes.</p>
   <h3>When the bubble table is full, two bubbles burst to make room</h3>
@@ -39,11 +39,11 @@
   <h3>How far two bubbles may overlap is set from the wrong register</h3>
   <p>The round set-up loads <code>$1E</code> into Y (or <code>$E6</code> on rounds 35 and 97) as the distance at which two overlapping bubbles push apart, then stores A instead, and A holds the round number (<code>$F217</code>). So the distance is 0 on round 1 and grows by one a round, read as 0 and <code>$63</code> from the running game on rounds 1 and 100. The two values in Y are never used.</p>
   <h3>Round 100's tune is reached through an opcode the 6502 never had</h3>
-  <p>The same set-up skips an instruction with a BIT and lands on <code>$5C</code> at <code>$05E7</code>, an undocumented three-byte no-op, before the JSR that starts the boss round's tune (<code>$05C5</code>). It works on every 6510 made, and on the emulator.</p>
-  <h3>Nothing takes a Baron away</h3>
-  <p>A Baron is an object with a routine that only moves it (<code>$1473</code>). No bubble, shot or item tests for it, so a Baron leaves the screen only with the round, or with the player it was sent for.</p>
+  <p>The same set-up skips an instruction with a BIT and lands on <code>$5C</code> at <code>$05E7</code>, an undocumented three-byte no-op, before the JSR that starts the boss round's tune (<code>$05C5</code>). It works on every 6510 made.</p>
+  <h3>The game never takes a Baron away</h3>
+  <p>A Baron is an object with a routine that only moves it (<code>$1473</code>). None of the bubbles, shots or items tests for it, so a Baron leaves the screen only with the round, or with the player it was sent for.</p>
   <h3>The EXTEND letters are not a reward</h3>
-  <p>The manual says the letters appear when several enemies are burst at once. In this version a letter bubble comes out of the vents like any other special bubble, in the rounds whose data allows it, chosen at random (<code>$0C9C</code>). Nothing counts chains towards them.</p>
+  <p>The manual says the letters appear when several enemies are burst at once. In this version a letter bubble comes out of the vents like any other special bubble, in the rounds whose data allows it, chosen at random (<code>$0C9C</code>). The game never counts chains towards them.</p>
   <h3>The random numbers are stirred by a timer the game never sets</h3>
   <p>Every draw mixes the generator's two bytes with the low byte of CIA 1's timer B (<code>$E9EA</code>), and the start-up seeds it from the raster line and timer A (<code>$4461</code>). The game sets neither timer; it reads whatever the KERNAL and the loader left running.</p>
 </section>

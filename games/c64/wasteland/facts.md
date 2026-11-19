@@ -187,6 +187,87 @@ lines into view for a moment, and the programs load from `$7E00`.
   map change (engine `$2600`), by modules 1 and 3, by the Ranger
   Center's Start and by the utilities.
 
+## Leftovers and the ending
+
+Run on the committed listings by `test_leftovers.js` unless a line says
+live.
+
+- The countdown (game `$82B5-$82DF`) is tested on every pass of the main
+  loop: armed flag `$F4F9`, the 24-bit count `$04-$06` less its value at
+  arming `$F4FA-$F4FC`, at least 240. Then save_map and action `$84`,
+  which loads module 4. No map is tested. A step is worth the units in
+  byte `$36` of the map record and puts bytes `$34/$35` on the clock: 1
+  unit and 15 seconds on 28 indoor maps, 2 and 30 seconds on ten, 16 and
+  four minutes on the world map; maps 38 and 39 count 4 units for two
+  minutes, map 40 counts 4 for 30 seconds.
+- Module 4 (`$CA00`): sets bit 0 of byte `$4B` in every record
+  (`$CA00-$CA1C`), which the radio pays out (radio `$7EBC-$7EFD`).
+  Picture 0, the base, with channel 1 held (`$CA27`); the shake; channel
+  0 off and channel 1 on (`$CA54`); message 1 in four screens. The kill
+  loop (`$CA69-$CB16`) takes every party whose table byte `+$0A` is 16
+  to 20: picture 1 for each member, CON 0, "*name* was killed in the
+  blast.", remove_member, which closes the gap in the records. With
+  survivors: the hilltop (`$CB19`), picture 2, messages 6, 4, 5, and 3
+  only when `blast_victims` (`$CB9D`) is not 0. With nobody left:
+  messages 6 and 3 in the text window, then the death program. Either
+  way the world map's column 2, row 3 becomes class 4, number 2
+  (`$CBBA-$CBE2`), message 26. The party being led keeps the lead if it
+  lived; otherwise party 0 of the survivors takes it.
+- Live, 14 November 2026, from a saved game with `$F4FA-$F4FC` set to the
+  count less 240 and `$F4F9` to 1: everyone off the base (hilltop, no
+  deaths, play goes on under the picture until a key); three on map 17
+  and one in Quartz (three named, hilltop with message 3, play goes on);
+  everyone on map 17 (messages 6 and 3, then the Grim Reaper).
+- The ending's three pictures are unpacked at `$3400` (module-4 `$CCE5`),
+  not through the picture directory. `reference/wasteland-pictures.js`
+  carries the bytes found there at `$CCE2`: 3,309, 4,168, and 4,038 bytes.
+  The hilltop's header byte 2 is `$20` by then (`$CCD7`).
+- Map 17 holds check records 0 (`$3AB7`), 2 (`$3AD1`), and 7 (`$3B1A`),
+  and exit 11 (`$3C79`, two squares west of its square), which name each
+  other: check 2 passes a party of exactly 2 to check 7 (Acrobat at 3 or
+  AGL at 4, used; a fail is 4d6), and sends any other to check 0 (item
+  54, the rope, used). No square holds them and no record a square leads
+  to names them. Check 0's failure line, message 15 "That is not long
+  enough. You need another plan...", was not printed by a Use of another
+  item, which printed the game's "That doesn't seem to work."
+- Map 17's plain squares of rows 8 to 14, 154 of them, all carry the
+  number 255. Map 17's remote change 3 (`$3CE6`) is on column 31, row 0:
+  "A rope from above hangs down here.", through exit 7 to column 15, row
+  18. Whether a party can walk to it is not known. Exit 12 (`$3C7E`,
+  to map 20) and map 16's exit 9 (`$3D05`) are on no square.
+- Map 9's exit 5 (`$3D7C`): message 37, the Old Man's walk, to column
+  25, row 29 of the same map; on no square and named by no record.
+- Map 1: exits 21 to 84 enter map 5 as numbers `$80-$BF`; 30 are on
+  squares. Exits 2, 9, 12, and 15 lead to map 1 at columns 57 to 62, on a
+  map 32 across, and are on no square.
+- Messages that no record a square leads to names, and no `LDA #` in the
+  map's code loads: map 13's 20 and 45; 16's 4 and 28; 17's 10, 11, and
+  12; 20's 52; 29's 1; 49's 16, 39, 49, 50, and 59.
+- Map 23's check 25 (`$3CAD`), on columns 25 to 28 of row 11: flags
+  `$C0`, tests AGL at 5, cash below 16, Acrobat at 4, effect CON −8, for
+  the party's first member. A cash test passes or ends the member's
+  tests (game `$8E73-$8E83`), so Acrobat is never tried.
+- A fight's keys (game `$B4BD`): space, H, A, W, R, E, L, U, S. Space
+  shows the map view until a key (`$B489`); S is Attack with the group
+  list always shown (`$B4A0`). The prompt names neither.
+- The utilities' print_report (`$844A`) is the target of no instruction
+  or table word. Run with send_report (`$8602`) stopped, it builds 33
+  lines a character from `$9000`. An item's name stops at the plural
+  mark `$0A` (`$8704`), so "Knife" prints as "Kni"; a character with no
+  armour prints "Armor Equipped: Fists". Messages 9 and 42, about a
+  printer card's slot, are printed by nothing.
+- Map 26's number layer holds what its editor's memory held, wherever a
+  square is class 0: 2,200 non-zero bytes on the 2,345 such squares of
+  rows 1 to 47, columns 1 to 62. Row 1 from column 2 is the routine the
+  C64 game has at `$9A65` (Disband's question about an NPC), with its
+  absolute addresses `$2223` lower, its messages 4 higher, and other
+  entry points (`$6159` for game `$7F50`, `$0825` for `$022F`, `$089A`
+  for `$02C6`). From row 32 the code uses Apple II addresses: `$C000`,
+  `$C010`, `$C008`, `$C009`, `$C083`, `$C016`, and `JSR $FDED`.
+- Apple II leftovers in the C64 programs: `BIT $C010` at game `$88FF`
+  and `$8A31` and utils `$82B3`; game `$C5B3-$C5FF`, 77 bytes of Disk II
+  code that nothing reads or calls.
+
 ## The maps
 
 - A map in memory is two areas. From `$3400`: the class layer, a nibble
@@ -317,6 +398,54 @@ lines into view for a moment, and the programs load from `$7E00`.
   line, `$05` and `$06` wait for RETURN, space or back-arrow (wait_return,
   engine `$2501`).
 
+## The paragraphs
+
+Run on the game's code by `test_paragraphs.js` (the engine's, the game's
+and a map's listing on the kit's 6502), not in the emulator. What the
+booklet's paragraphs say was read from the scan of the paragraph book at
+archive.org (`vgmuseum_ea_wasteland-paragraphbook`); the booklet's text
+is in no listing and is not committed.
+
+- 83 messages on 21 maps name a paragraph by number, 82 different ones:
+  map 27 names paragraph 124 in messages 6 and 70. Map 15's terminal
+  cites seven more without the number in the sentence: its message 61 is
+  "Read paragraph" and messages 22 to 28 are the numbers 52, 40, 100,
+  63, 70, 91 and 101. So the game cites 89 of the booklet's 162
+  paragraphs, and 73 are named by no message.
+- A question square (class 8, game `$88E3`) of the typed kind holds a
+  list of words, and the square takes the pair of the first word the
+  typed line equals (`$8944-$8985`). The line holds 16 characters
+  (input_line, engine `$1D06`). The maps hold 67 such question records
+  with 186 words between them. Map 23's question 4 lists IRWIN JOHN
+  FINSTER, 18 characters: the line stops at IRWIN JOHN FINST and the
+  game takes it as a wrong answer.
+- Ten words on those lists come from paragraphs the game never cites.
+  Map 4 (21,2): AZRAEL (paragraph 5) and MORS (161) make the square
+  action square 7, which runs `swap_everyones_sex` (`$4206`: bit 0 of
+  `+$18` of every character record in use is flipped) and then does what
+  KAPUT (49) does. Map 39 (16,31): PHOENIX (33) and CLOVER (149) run
+  `infect_every_character` (`$3C58`: bit 1 of `+$28`, Wasteland Herpes)
+  and then open the door as KESTREL (71) does. Map 27 (14,3): MORTAR
+  (50) and ATOM (154) lead to check square 13, which prints "You've
+  entered the self destruct code by mistake." and takes 20d6 of CON from
+  every member; MOTEKIM (124) frees the prisoner. Map 8 (7,5): LADYBUG
+  (75) and LIZARD (92) show "Read paragraph 42." and no more;
+  CATERPILLAR (57) shows "Read paragraph 39." and leaves a bag with a
+  Shovel. Map 34, question 8: BUZZARD (18) and PASTEL (73) leave loot
+  bag 6, item 63; DIPSTICK (129) leaves loot bag 5, item 62.
+- Items 62 and 63 are both printed as "Bloodstaff" and their eight
+  bytes are the same. Three check squares tell them apart when one is
+  used on them: map 33's check 10 (the verification table), map 34's
+  check 1 (the bishop) and map 38's check 22 (Charmaine). Item 62 is in
+  loot bags 28:0, 33:8 and 34:5; item 63 in 27:2, 28:8, 28:13, 31:5,
+  32:7, 33:2 and 34:6. Map 33's bag 7 also holds item 62, and is only
+  the template `refill_bar_bag` (`$3E03`) copies into bag 8.
+- Three messages that name a paragraph were not traced to a square: map
+  4's 96 ("Read paragraph 35.", the success message of check square 41),
+  map 36's 67 ("Read paragraph 162.") and map 25's 85 (shown by the
+  map's own code, as the map's facts say). Whether a party can reach the
+  first two is open.
+
 ## Screen and controls
 
 - The screen is a multicolour bitmap at `$6000` with its colours at
@@ -381,6 +510,238 @@ lines into view for a moment, and the programs load from `$7E00`.
 - In a fight an NPC chooses its own line and fire mode (game
   `$B50B-$B589`, as above), the automatic-fire chance growing with the
   characters who are not conscious: `$B4F8` = `$FF 9 7 5 3 0 0 0`.
+
+## The rules
+
+Run on the game's code by `test_rules.js` (the engine's, the game's and
+a map's listing on the kit's 6502, with module 0's or the Ranger
+Center's laid over them where a routine of theirs runs), not in the
+emulator.
+
+- Tests in the check records that a square of the 42 maps leads to,
+  following every class and number a record's change names: Perception
+  122 on 33 maps; Picklock 69; Climb 32; Acrobat 25; Swim and Gamble 21;
+  Pugilism 18; Brawling 15, all on map 20; Electronics 13; Silent move
+  and Safecrack 11. Clip pistol, Knife fight, Rifle, Assault rifle, SMG,
+  Combat shooting and Energy weapon have none. Knife throw (map 2), AT
+  weapon (map 33), Forgery (map 23), Clone tech (map 13) and Cyborg tech
+  (map 22) have one each. Attributes: ST 138, LK 128, AGL 51, IQ 35, DEX
+  30, CHR 8, SP 5. Also 1,054 tests for an item, 30 for cash and 25 for
+  the party's size. Three records' lists have no end mark and are
+  counted up to the first pair that means nothing: map 3's check 5, map
+  18's check 15 and map 41's check 22.
+- A skill pair fails without a throw when the member's level is 0
+  (game `$8EA2-$8EA7`).
+- Skill 17, Combat shooting: `$FF` in both tables (ranger `$8513`,
+  module-2 `$CC7D`), IQ 31 and base cost 7; in no library's list, the
+  skill of no item (item record byte 5), in no check pair and in no NPC
+  record. It is the only skill whose attribute is SP (engine `$0DD8`).
+- The sex byte `+$18` is tested by map 2's checks 9 and 10 (map-02
+  `$3C35`, `$3C42`) and map 32's check 13 (map-32 `$3C2D`), each at
+  difficulty 1, which passes a woman (engine `$0D0A`). Map 35's check 12
+  (map-35 `$3BC0`) tests the rank `+$24` at 10. Run: the men's door of
+  map 2 at (19,24) prints its second message when any conscious member
+  is a woman; the women's door at (23,25) refuses the step for all 15
+  parties with a man in them; map 32's question at (12,9) answers a
+  party of four, a woman alone, a man alone with $30 and a man alone
+  with $200 with messages 21, 64, 22 and 20, the last taking $50 and
+  setting bit 1 of `+$28`.
+- The disease bits are set by game `$8318` (radiation, bit 0) and by one
+  routine in each of maps 5, 11, 24, 25, 32, 39 and 49, found as the
+  bytes `A0 28 11 66 91 66`. The action records that run them hold the
+  numbers 1 (maps 32, 39), 2 (5, 11), 3 (24, 25), 4 (5, 11, 49) and 5
+  (5, 11): nothing sets bits 6 and 7, which module 0 names "D6" and
+  "D7" (run: `$CC04` with A = `$FF` prints all eight).
+- The health clock, run on map 1 (2 units and half a minute a step) for
+  four members at MAXCON 30: a healthy member at 20 has 21 after 120
+  steps; bits 0 to 3 leave 20 at 20 after 1,440 steps and −5 at −5 after
+  2,400; bits 4 to 7 each take 4 in 128 steps; with bit 4, a member at
+  20 is below 0 after 640 steps and dead after 1,440, and CON goes from
+  1 to −1. A member at −15 is dead after 288 steps with no bit or bit 3,
+  and after 576 with bit 5 or bit 7: the branch for bits 4 to 7
+  (`$B7A8`) comes before the test for a CON below −10 (`$B7B3`) and
+  takes two points on every fourth tick (`$B834`), where the code it
+  skips takes one on every tick (`$B83C`).
+- The doctor, run on map 1's record (map-01 `$3BC1`, $5, $30, $70) with
+  bits 3 and 4 set and $500: C before the exam does nothing; E leaves
+  $470; C and 4 leave $400 and bit 4; back to "Who wants treatment?" and
+  the same member again, C does nothing until a second E. One Y on the
+  heal screen at CON −1 leaves CON 1 for $5.
+- The Ranger Center's skill list sets the list's extra key `$BE` to
+  `$92` (ranger `$83FE`); the skills page in play sets it to `$D2`, R
+  (engine `$1090`). The key table `$C953-$C992` has `$D2` and no `$92`.
+  Run: `$80B5` on a member with IQ 14 and 30 skill pairs leaves no pair
+  and 14 skill points.
+
+## The monsters
+
+Run on the game's code by `test_bestiary.js` (the engine's, the game's
+and a map's listing on the kit's 6502), not in the emulator.
+
+- A map's record lists its monsters: 398 records with a number in them
+  on 39 of the 42 maps, 371 when records with the same name and the same
+  eight bytes are counted once. Bytes 0/1 are a 16-bit number that sets
+  the hit points, the mark for running and the experience; byte 2 the
+  skill (attacks a round in melee, added to the two dice of a shot);
+  byte 3 the d6 of damage; byte 4 the most in a wandering group (high
+  nibble) and the armour (low); byte 5 the damage bonus (high nibble)
+  and the weapon class (low, 1 hand to hand, 2-13 guns); byte 6 the kind
+  1-5; byte 7 the portrait and pronoun (game `$9EA4`).
+- Hit points are number / 4 + a roll of 1 to its low byte + 256 x a roll
+  of 1 to its high byte, a roll of "1 to 0" being 0 (game `$9483-$94B9`,
+  engine `$24C4`). Experience for a kill is the number x (armour + 1)
+  (game `$A9E8`).
+- A wandering group: after each step a group appears on 1 roll in the
+  header's byte `+$2F`, of a kind from 1 to byte `+$31`, in one of the
+  first `+$32` entries of the class-15 list (game `$B015`). 23 maps have
+  a chance above 0.
+- Three maps change those bytes from their own code. Map 43 (mine):
+  `$3E39` adds 1 to the kinds, from 13 up to 16, after silver is taken
+  from the vein at (2,3), and `$3E2A` takes 2 off the 70, down to 2,
+  after the vein at (26,21); `$3E48` refills either bag. Kinds 14-16,
+  the Gecko, the Skink and the Shell Cougar, are in no meeting of any
+  map. Map 20 (reactor): the panel at (21,24) runs `$405C` on a pass
+  (one kind fewer, down to 1) and `$404D` on a failure (one more, from 6
+  up to 11); the screen at (28,22) runs `$403C` on a pass (2 added to
+  the 70, up to 98, with "Interval Reduced.") and `$402B` on a failure
+  (2 off, down to 2, with "Interval Increased."). Map 19 (assembly): 22
+  security monitor panels in three sorts, 8 adding a group (`$3CEE`), 9
+  taking 2 off the 60 (`$3CFD`) and 5 adding a kind (`$3D0C`, from 5 up
+  to 10); 12 command consoles behind cage doors, 4 each undoing one step
+  of each (`$3D1B`, `$3D2A`, `$3D37`). The engine writes the map back
+  when the party leaves (engine `$2856`).
+- Hit points are not kept with the map. The scan before a round drops a
+  group the party can no longer reach (game `$94CC`), and the next scan
+  that finds it rolls hit points for every monster the map counts as
+  alive (game `$936E`); the counts are written back after each round
+  (game `$B9F2`).
+- A hostile, moving line of hand-to-hand monsters that are not animals
+  plans to run when its average hit points are below half the number
+  (game `$8448-$8461`). A lone monster rolls below that on a roll under
+  a quarter of its number: 63 of the Pit Ghoul's 255 rolls. The line's
+  sum goes through engine `$079D`, which reads its addend as signed and
+  holds the sum at 0, so hit points of 32,768 or more count as 0. Only
+  the Night Terror (map 23, number 32,000, 8,256 to 40,000 hit points)
+  can roll so high: 31 of its 125 rolls are under 16,000 and 29 are
+  32,768 or more.
+- The Night Terror's meeting is peaceful (record byte 9, bit 1), and a
+  peaceful group gets no plan and makes no attack; a Ranger's attack
+  clears the bit.
+- Eleven meetings are in a map's list with no square, change or routine
+  that names them (maps 12, 18, 25, 34, 35, 41 and 49), and 18 monster
+  records are used by no meeting of their map and cannot wander there;
+  the Bestiary tab lists both.
+
+## The items
+
+Run on the game's code by `test_items.js` (the engine's, the game's, a
+map's and module 1's listing on the kit's 6502), not in the emulator.
+The stock counts of item-table files 1, 2 and 4 were read from the
+master disks on 14 November 2026 (side 1 T26/L2, side 2 T33/L16, side 4
+T33/L16, three sectors each); file 0 is the table in the game's listing
+(`$3100-$33FF`), and the four differ only in each record's byte 2 and
+in record 94.
+
+- 95 records of eight bytes at `$3108`; the bytes are in
+  `parts/game/facts.md`. Kinds (byte 3 >> 3): 1 hand weapons, 2 pistols
+  and thrown weapons, 3 the Flamethrower and M17 carbine, 4 rifles, 6
+  submachine guns, 7 assault rifles, 8 and 9 rockets, 10-12 energy
+  weapons, 13 explosives, 14 ammunition, 15 armour, 16 gear, 17 Clay
+  pot, Fruit and Jewelry, 18 the quest items 58-90. No item is of kind
+  5, which three shops deal in and the fight code lets fire bursts
+  (game `$AC04`). Items 70-72 have prices and no names; item 70 holds 5,
+  rolls 3 dice and is loaded with Power packs.
+- Seven shop records on six maps (module 1, `$CA00`): map 1 `$3BD4`
+  Q. Emporium (file 2), map 8 `$3CE0` Trading car (0), map 9 `$3D12`
+  AG. store (0), map 10 `$3F6F` Store (1), map 21 `$3C17` Market and
+  `$3C2D` Blackmarket (4), map 32 `$3DF0` Thrift shop (2). All sell at
+  the price; maps 8, 9 and 10 pay three quarters and the rest half. A
+  shop offers to buy only the kinds in its record. Only maps 1 and 32
+  share both a file and kinds, so an item sold to one is listed by the
+  other.
+- A sale adds 1 to the item's count up to 255 (`$CB2C`), a purchase
+  takes 1 off with no floor (`$CC12`), and the buy list shows every
+  count that is not 0 (`$CC5D`). The shop writes the file when a member
+  leaves the buy or sell list (`$CB51`, `$CC38`, engine `$26D6`) and
+  saves the party only at "Who wants to enter?" (`$CA85`, engine
+  `$18EA`). Between the two the disk has the sale and the saved party
+  still has the item. A party of one leaves by `$CA98`, past the save.
+- Never stocked in any file: Proton ax, RPG-7, Red Ryder, the five
+  energy weapons, Power pack, Power armor and Pseudo-chitin armor.
+- item_reorder (engine `$1005`) counts a line for every key, RETURN,
+  space, R and back-arrow included (`$1015`), so the slots it notes for
+  the held weapon (`$1026`) and the worn armour (`$102C`) are one too
+  high for each such key pressed before the item is picked. It never
+  clears the two notes: a member with no weapon or no armour gets the
+  slot noted in the last sort that moved one. The armour class `+$1A`
+  is not touched, and unequip_slot (`$10D8`) clears it only when the
+  slot that leaves is the noted one. A suit of Power armor sorted with
+  a RETURN before its pick can be traded on while its armour class 14
+  stays; four members end at 14 from one suit. A fight reads only
+  `+$1A` (game `$A8B2`).
+- Anything that is not kind 15 can be held as the weapon (engine
+  `$10A2`). Crowbar, Pick ax, Shovel and Sledge hammer roll 3 dice with
+  no skill; with all skills at 0 four members with Crowbars fought as
+  four with Axes did, for the same dice.
+- Bags: 469 on the 42 maps. Eleven hold a class in place of an item,
+  all class 14: map 28's bags 1-10 (1-7 of the item) and map 24's bag 2
+  (1-10). loot_square (game `$9194`) picks the item evenly from the
+  class and writes it into the bag. A bag's money is two bytes, each
+  rolled from 1 to its value.
+- No check square, map code or shop asks for Book, Hand mirror, Map,
+  Toaster, Clay pot or Jewelry. Bloodstaffs 62 and 63 are the same
+  eight bytes; 4 bags hold one and 7 the other, and the same three
+  squares take either.
+
+## The walk to the ending
+
+What `solution.html` says, held by `test_solution.js`. The walk runs on
+the kit's 6502: the game's move, Use, Disband and countdown routines,
+with fights taken as won, throws of the dice taken as passed and noted,
+and no wandering monsters.
+
+- The ending is module 4, loaded by countdown_check (game `$82B5`) on
+  the main loop's pass when `$F4F9` is set and the clock has gone on 240
+  since the self-destruct was armed, whatever map the party is on. A
+  step on the reactor level is 1 count and a step on the world map 16.
+- Base Cochise's square on the world map, column 2, row 3, is class 4
+  number 1 (`tile_01`, map-00 `$4D4D`) as the map is stored, and so is
+  the Sleeper Base's, column 59, row 7. Two class 12 squares change
+  them: `remote_01` at (0,63) (`$4F21`), where map 25's exit lands a
+  party once Max is complete, makes them exits 33 and 32; `remote_03`
+  at (1,63) (`$4F35`) is where the Guardian Citadel's helicopter lands.
+  Both squares are walled in by class 11 squares.
+- The helicopter asks for skill 29, Helicopter pilot, twice (map 42
+  check_13 and check_14). One library of the eight teaches it, the
+  "Chopper Sim" on map 15, at IQ 19 (module 2 `$CC6C`), and none of the
+  14 NPC records holds it. So Max is on every road to Base Cochise.
+- The walk: 66 legs, 1,748 moves (1,732 steps and 16 turns on a
+  square), 21 fights, 12 of the 42 maps (0, 12, 38, 24, 25, 35, 36, 16,
+  17, 19, 18, 20), 12 charges of explosive, four ropes, and the same
+  moves on every run of random bytes tried. With every die at its
+  lowest the walk's bags hold 8 charges, and it stops at the glass wall
+  round the reactor's core.
+- The Temple of the Mushroom Cloud's inner doors open to EINSTEIN or
+  OPPENHEIMER. A deadfall trap (map 24 check_28, 4d6 of CON; map 25
+  check_10, 4 CON) asks for skill 37 and is sprung once. The river
+  squares of map 24 run sewage_infects_party (`$3DD4`): Sewer rot,
+  `+$28` = 8.
+- The dying Guardian's bed (map 36, column 1, row 8) gives a Nova key
+  whether its throw passes or fails.
+- Base Cochise's inner door (map 16 check_11, `$3B2F`) takes Secpass B
+  and nothing else. Two bags hold one, map 23 loot_03 and map 42
+  loot_11. The dome wall takes Climb at 4 or a Rope (6d6 of CON on a
+  slip), a weapons pod's cover takes five explosives (no Mangler), and
+  a Rope lowers the party into map 17 and stays hanging there.
+- The reactor: pressing a station's button with all four keys in shuts
+  four panels, and a party shut in has no path to another station or
+  to the escape pod. Four parties of one, made with Disband (game
+  `$99EE`), press red, yellow, green, blue and arm it. Two parties do
+  it too: the Cylinder Closing System (map 20 check_65, `$3E97`:
+  Electronics at 4, Luck at 7, IQ at 8) opens the panels again without
+  undoing a button.
+- Map 19 loot_00 (`$3CB9`) holds 2 Power armor, 10 LAW rockets, 10
+  RPG-7 and 20 Power packs, none of them thrown.
 
 ## Live tests
 
@@ -574,3 +935,70 @@ lines into view for a moment, and the programs load from `$7E00`.
   (engine `$C993`). All three were rewritten, and so were five
   neighbouring comments of the death screen that left out the game's
   instructions in the same way.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### combat.html
+
+- In the emulator, two Mutants on the world map fought twelve rounds against a party with one Ranger unconscious, and all 25 of their blows went to Rangers on their feet.
+- In the emulator, 64 steps on the world map took a party left behind from 6 CON to 22 and the walkers from 5 to 13.
+- Roll runs the game's own check, ported from the engine (`$0C29`, `$0D0A`) and tested against the original code on a 6502 simulator: 27,324 skill checks over every skill, levels 0 to 10 and difficulties 0 to 31, and 3,072 attribute checks, with the same random bytes, gave the same results and used the same bytes.
+- Fire runs the game's routines, ported and tested on the simulator against the original code with the same random bytes: the hit roll with every item in the table (15,360 cases), the damage with every item against armour 0 to 15 and beyond (10,368), the hits of bursts and automatic fire (5,436), and the range targets for every distance (606).
+- The second comes from the pairs the engine's own code threw on the simulator (`$24E3`), taking each repeat to fall the way a first pair does.
+- The kill is worth 40 here, as each Shambler Ghoul was in the emulator.
+
+### discoveries.html
+
+- Screens from the emulator, in order.
+- Both screens are from the emulator.
+- In the emulator, Hell Razor with an LK of 3 and a Throwing knife, against the Shambler Ghouls in map 1's graveyard.
+- The dice widget's two measured sets were labelled "In the emulator" and "On the simulator", and its text called them "in the emulator, 4,096 throws" and "on the simulator, 2,000,000 throws".
+- In the emulator, a stub in play threw 4,096 pairs with the game's own routines and the same instructions between the two dice as the throw itself (`$084A-$0850`), each pair after the seed had been stirred 1 to 256 times, as waiting for a key stirs it.
+- On the simulator, the engine's code threw 2,000,000 pairs on the kit's 6502 simulator from random moments: a random raster line, cycle, timer value, and seed for each.
+- The game's dice do it 13.1% of the time on the simulator and 12.9% in the emulator.
+- In 5,000 dice from the Ranger Center's attribute rolls, watched in the emulator, ones came up 1,043 times, fours 727, and sixes 826, where fair dice give 833 of each.
+- In the emulator, booted from the original side 1, the engine's own check ran 256 times with a byte of 10 and a CHR of 20: the target it computed was 15 on every call, where 15 + 5 × 10 is 65.
+- On the kit's 6502 simulator the port and the original code were given the same random bytes for 38,528 checks, trades, and hires, and gave the same answers, left the same bytes in the record, and used the same random bytes.
+- The port was run against the original code on a 6502 simulator for every one of the 7,776 ways five dice can fall, comparison by comparison, and again for 3,000 throws with the game's own dice routine; every slot and every sum matched.
+- Watched in the emulator, 32 rolls at the Ranger Center ended slot for slot as the loop predicts, and 21 of them came out below the best three of their dice.
+- In the emulator, the party stepped onto the world map's 5d6 square with every member's armour class set to 30.
+- Every step onto the square was run in the 6502 simulator with the game's own code (`$AD5B`): each is refused, and message 53 is shown.
+- The game does the same in the emulator.
+- The pictures are from the game in the emulator, and How it works animates them.
+- The ending was run in the emulator three ways, from a saved game with the countdown set to its last step.
+- The page runs the routine on the kit's 6502 for the four Rangers the game starts with, and shows the text it builds, stopped where the routine would send it to the printer.
+
+### disks.html
+
+- The order is the engine’s own arithmetic (`$FFAC`, `$FD0B`), ported and run against the original on a 6502 simulator for every pair of track and sector bytes, 131,072 cases, and for every file through the game’s own read and write calls, with no difference.
+- The port matched a save the game made in the emulator, byte for byte (cash 12,345, sum $6B).
+- The sum, the scramble, the save and the start-up’s check were each run against the game’s own code on a 6502 simulator, 1,549 cases, with no difference.
+- The game’s check ran on a 6502 simulator over 6,912 combinations of the three bytes, `$ED` and the side asked for, then from the start-up’s Utils and in play on all four sides of the masters and the copies.
+
+### index.html
+
+- Two frames of play, recorded in the emulator a moment apart, and drawn here by the site's model of the video chip from the 9,001 bytes it reads: the colours at `$5C00`, the bitmap at `$6000`, and one byte at `$7FFF`, with the colour memory.
+- Drawn the same way, every one of the 104,448 pixels of each frame, border included, matches the emulator's own picture.
+
+### levels.html
+
+- The port was checked against the game's own code, run in a 6502 simulator on each map as the game loaded it: every square of all 42 maps, and a ring of squares off each map, at seven hours of the day.
+- That is 455,952 squares, with no difference.
+- The tile drawing was checked against every tile of the nine sets, and the view against a frame recorded in play, pixel for pixel.
+
+### party.html
+
+- On map 1's cactus every member is tested, and on the kit's 6502 simulator the game's check code (`$8E14`) ran it 1,000 times for a party of a Ranger and Dan.
+
+### pictures.html
+
+- The port was run beside the engine's own code on the kit's 6502 simulator, the bitmap compared after every tick or every step: 1,088 cases and 5,649,956 ticks on the title and portraits 0, 1, 3, 6 and 8, and 400 steps of every one of the 75 portraits and of the ending's three pictures, with no difference.
+- The emulator's screenshots of the title and the Ranger Center show the same pictures.
+- The decoder and the printer are ports of the engine's own routines, checked against the game's code on a 6502 simulator for all 4,920 messages in the 52 blocks: 0 differences.
+
+### sound.html
+
+- Each port keeps the routine's timing to the cycle: a test ran the game's own code on the kit's 6502 simulator beside the port, 1,789 runs and 172,557 SID writes, and every write came in the same frame, at the same cycle, with the same value.
+- The loop goes round about a thousand times a second, 20 times a frame by a count in the emulator, so the clicks come at random, faster as the radiation gets nearer.

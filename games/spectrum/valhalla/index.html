@@ -21,7 +21,7 @@
   <div class="plate"><div class="vh-row">
     <div class="vh-col"><img class="vh-shot" src="reference/loading-screen.png" width="352" height="296" alt="The loading screen: a Viking helmet, the Legend and Movisoft logos and the word VALHALLA"></div>
     <div class="vh-col"><img class="vh-shot" src="reference/in-game-spectrumcomputing.png" width="256" height="192" alt="Valheim, a castle on a green plain, with Leer, Loki, Skadi, you and Idun named below the figures" style="width:352px"></div>
-  </div><p class="cap">The loading screen, from the tape in the emulator, and Valheim, where the game starts, from Spectrum Computing. The names under the figures are the characters standing there.</p></div>
+  </div><p class="cap">The loading screen (the <a href="graphics.html">Graphics</a> tab shows it loading), and Valheim, where the game starts, from Spectrum Computing. The names under the figures are the characters standing there.</p></div>
   <p>The top of the screen shows where you are: a picture of the place, with you and everyone else there drawn as figures in a row along the ground. Below it, you type what to do: <code>go north</code>, <code>get the axe</code>, <code>Thor, give me the food</code>, <code>attack Loki with the sword</code>. The game answers in a few lines of text.</p>
   <p>Thirty-six characters share the world with you, most of them from the myths, and two animals, Snake and Raven. Each has its own goodness, charisma, strength and brains. Those where you are walk off, eat and drink, pick things up, give them away and fight one another without being told, and they can be asked to do things for you. Six quest objects lie locked in chests and cupboards around the 81 places of Midgard, Asgard and Hell: Ofnir, Drapnir, Skornir, Skalir, Felstrong and Grimnir. Grimnir opens the way to the hall of Valhalla, and when you reach it the characters come one by one to congratulate you.</p>
   <p><a href="levels.html">Maps</a> has the 81 places, how each picture is drawn from its place's number, and the way to the six quest objects. <a href="characters.html">Characters</a> has everyone in the game, what goodness does between them, and how the characters seem to lead lives of their own when the game only ever runs the place you are at.</p>
@@ -52,10 +52,10 @@
       </div></div>
     </div>
     <div id="vh-fout" class="vh-out"></div>
-    <p class="cap">A port of lines 1362 to 1376. Choosing a character fills in its full strength and what it carries on the tape; change any of it. The five buttons are fights tried in the emulator, with Idun's strength poked and two lines of the program changed so that nobody walked off before the blow: each ended as the port says.</p>
+    <p class="cap">A port of lines 1362 to 1376. Choosing a character fills in its full strength and what it carries on the tape; change any of it. The five buttons set up five fights.</p>
   </div>
   <p>The attacker's weapon is the object named after "with", so <code>attack Thor</code> is bare hands even with a sword in your pack. The defender always uses whatever is in its first slot. The side behind then adds 32 for a shield and 64 for a helmet, but only if it has something in its first slot (line 1365).</p>
-  <p>Scores within 20 of each other are a draw, and both lose 32 strength. A win by less than 64 sends the loser off to a random place with 64 less, and costs the winner 32. A win by 64 or more kills the loser, and so does any loss of 20 or more by you: you are never merely defeated (line 1374). Nothing random enters the result.</p>
+  <p>Scores within 20 of each other are a draw, and both lose 32 strength. A win by less than 64 sends the loser off to a random place with 64 less, and costs the winner 32. A win by 64 or more kills the loser, and so does any loss of 20 or more by you: you are never merely defeated (line 1374). Random numbers play no part in the result.</p>
   <p>An attack you order also moves the attacker's goodness, which is how characters come to like or loathe you: the <a href="characters.html">Characters</a> tab has the rule and the two ways it goes wrong.</p>
 </section>
 
@@ -66,7 +66,7 @@
   <div class="plate">
     <input id="vh-type" class="vh-in" value="Thor, giv me the swords" aria-label="A command to look up" spellcheck="false" autocomplete="off">
     <div id="vh-words" class="vh-words"></div>
-    <p class="cap vh-need">Each word goes through <code>VH.findWord</code>, a port of <code>$D937</code> and <code>$DA11</code>, on the dictionary at <code>$AFE0</code>. <code>test_parser.py</code> runs it and the game's own code in SkoolKit's Z80 simulator on 746 words: every word in the dictionary that can be typed, each with an "s", three misspellings of each and 100 random strings. They agree on every one.</p>
+    <p class="cap vh-need">Each word goes through <code>VH.findWord</code>, a port of <code>$D937</code> and <code>$DA11</code>, on the dictionary at <code>$AFE0</code>.</p>
   </div>
   <p>The editor collects letters into a word, lower-cased, and digits into a number; any other character ends the word (<code>$D7CD</code>). The matcher walks the dictionary from row 1. A row that matches with no allowance used wins at once; otherwise it keeps the row that matched the most letters, and at the end takes it if the letters matched are within two of the word's length. The first word it cannot place is turned red and the line stays for editing (<code>$D8C8</code>), so BASIC never sees a word it does not know.</p>
   <p>The last byte of each row is its class: 1 a name or object, 2 a verb, 3 a preposition, 5 a word passed over ("the", "please" and the place names), 6 a swear word and 7 a game command. A swear word is not an error to the editor. The parser sends it to line 120, where Mary appears and slaps you: "Mary is not amused...".</p>

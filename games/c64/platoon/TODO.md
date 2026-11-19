@@ -15,3 +15,11 @@ Discoveries.
   themselves.
 - What opens the CHOOSE YOUR MAN panel when no man is lost.
 - A Play tab.
+
+## Loading picture and tune
+
+- Two new sections await the steward's pass: the cassette's loading picture, drawn as it
+  fills in, on a new Graphics tab (section 01), and the cassette's tune, the jungle and
+  village title tune, at the foot of the Music tab (section 02).
+- The Graphics tab holds only the loading picture. It should also draw every shape the
+  game's moving things are drawn with.

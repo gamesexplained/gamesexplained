@@ -143,3 +143,18 @@ All 46 emulator self-checks passed. The full-audit run repeated the launch/use/e
 `test_frame.py` compares the published reconstruction with the frozen plus4emu reference: zero of 64,000 display pixels differ. `test_sound.js` checks three audible original-code excerpts and replays the legal bomb route on a second machine model. Game-code execution is confined to tests; the published widgets use JavaScript ports and extracted data.
 
 `test_animation.js` checks the Graphics timing against the original bomb state machine: fire frames last 3,3,3,1 game updates. It checks retained elapsed time at 30,60,120,144 Hz, irregular display intervals, and every fire-frame boundary. The browser check also exercises the actual animation callback with controlled display timestamps.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- The 800 + 300 case also produces 1000 in plus4emu.
+- The five deaths occur at polls 8–12 in plus4emu, an emulator, and in a replay of the original code on a second C16 model.
+- The final boundary is also verified in plus4emu by setting the preceding value to `$FF`.
+
+### index.html
+
+- The held-fire excerpt matches the input checks recorded in plus4emu, the emulator used for the reference screenshots.
+- With the grid off, 0 of 64,000 display pixels differ from the frozen plus4emu reference.

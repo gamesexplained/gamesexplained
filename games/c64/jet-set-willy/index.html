@@ -39,9 +39,7 @@ table.jw-t th{font-weight:700;color:var(--ink-soft)}
 table.jw-t td.jw-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
 .jw-scroll{overflow-x:auto}
 .jw-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
-button.jw-b{font-family:var(--fm);font-size:13px;padding:6px 11px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-button.jw-b[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
-button.jw-b:hover{border-color:var(--ink-mute)}
+button.jw-b{font-size:13px;padding:6px 11px}
 .jw-pics{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
 .jw-pics img{width:100%;height:auto;display:block;image-rendering:pixelated;border-radius:4px}
 .jw-scr{width:100%;height:auto;display:block;image-rendering:pixelated;border-radius:4px;background:#000}
@@ -52,8 +50,8 @@ button.jw-b:hover{border-color:var(--ink-mute)}
 .jw-hex span[data-f]{cursor:pointer}
 .jw-hex span.jw-on{outline:2px solid var(--ink);outline-offset:-1px}
 .jw-fields{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
-.jw-fields button{font-family:var(--fm);font-size:12.5px;padding:4px 9px;border-radius:5px;border:1px solid var(--line);cursor:pointer;color:var(--ink)}
-.jw-fields button[aria-pressed="true"]{outline:2px solid var(--ink)}
+.jw-fields[data-own-look] button{font-family:var(--fm);font-size:12.5px;padding:4px 9px;border-radius:5px;border:1px solid var(--line);cursor:pointer;color:var(--ink)}
+.jw-fields[data-own-look] button[aria-pressed="true"]{outline:2px solid var(--ink)}
 .jw-say{min-height:3.2em;font-size:15px;margin:6px 0 0}
 .jw-kb{display:flex;flex-direction:column;gap:4px;font-family:var(--fm);font-size:11px;overflow-x:auto;padding-bottom:4px}
 .jw-kr{display:flex;gap:4px}
@@ -92,7 +90,7 @@ input.jw-range{width:100%;max-width:480px}
   <div class="plate">
     <div class="jw-row"><span class="jw-out">Machine</span><button class="jw-b" type="button" data-clock="pal" aria-pressed="true">PAL, 985,248 Hz</button><button class="jw-b" type="button" data-clock="ntsc" aria-pressed="false">NTSC, 1,022,727 Hz</button></div>
     <div id="jw-sid"></div>
-    <p class="cap"><b>The page runs a port of the game's two music players</b>, the title's (<code>$A139</code>) and the one in play (<code>$2066</code>), through the site's model of the SID, three ticks every second frame as the game's interrupts call them (<code>$A821</code>, <code>$3435</code>). <code>test_music.js</code> holds the port against the game's own code on the kit's 6502 simulator: 11,652 frames of both tunes, every write to the chip the same. The game plays the in-game tune round and round; the player stops once it starts again. The filter is on, with one 8580's cutoff, because the in-game tune's first voice depends on it: the model lets nothing of that voice through, where VICE's 8580 let it through about 19 dB down.</p>
+    <p class="cap"><b>The page runs a port of the game's two music players</b>, the title's (<code>$A139</code>) and the one in play (<code>$2066</code>), through the site's model of the SID, three ticks every second frame as the game's interrupts call them (<code>$A821</code>, <code>$3435</code>). The game plays the in-game tune round and round; the player stops once it starts again. The filter is on, with one 8580's cutoff, because the in-game tune's first voice depends on it: the model lets nothing of that voice through, where VICE's 8580 lets it through about 19 dB down.</p>
   </div>
   <p>Both players read the same table of 96 SID frequencies, once at <code>$20EC</code> and again at <code>$A207</code>. A SID's frequency word counts in cycles of the machine's clock, so one word gives a lower note on a PAL machine, whose clock is slower. By the NTSC clock the table's index 58 is A#4 at 466.2 Hz, and the notes fall a semitone apart, close to concert pitch. By the PAL clock the same word gives 449.1 Hz, and every note is 65 cents lower, nearer the semitone below than the note it was written as. The tempo moves too, since the players count frames: 50 a second in Europe, 60 in America.</p>
   <p>The in-game tune starts at <code>$2005</code> by storing 1 in every SID register from <code>$D401</code> to <code>$D418</code> before setting the ones it uses. That leaves the filter's cutoff at almost nothing and voice 1 routed into the filter (<code>$D417</code> = 1), with none of the filter's three outputs switched on. Voice 1 goes in and very little comes out, so the upper voice plays almost silent all game. With the filter switched off above, voice 1 plays as it does in another crack of the game, which has 0 at <code>$2020</code> and clears the registers instead.</p>
@@ -105,7 +103,7 @@ input.jw-range{width:100%;max-width:480px}
   <div class="plate">
     <div class="jw-row"><button class="jw-b" type="button" id="jw-fs" aria-pressed="true">Sprites</button><button class="jw-b" type="button" id="jw-fb" aria-pressed="false">Backgrounds</button></div>
     <canvas id="jw-fr" class="jw-scr" width="768" height="544"></canvas>
-    <p class="cap"><b>Drawn by the site's renderer from one frame recorded in the emulator</b>, its registers, screen, colour memory and the bytes the drawing reads: all 104,448 pixels match the emulator's picture of the same frame. The screen is in extended colour mode: the top two bits of a cell's code pick one of four background colours, <code>$D021</code> to <code>$D024</code>, and the low six bits its glyph. Willy is sprite 0, the guardian sprite 1 and the toilet sprite 7.</p>
+    <p class="cap"><b>Drawn by the site's renderer from one frame of the game</b>, its registers, screen, colour memory and the bytes the drawing reads. The screen is in extended colour mode: the top two bits of a cell's code pick one of four background colours, <code>$D021</code> to <code>$D024</code>, and the low six bits its glyph. Willy is sprite 0, the guardian sprite 1 and the toilet sprite 7.</p>
   </div>
   <p>Extended colour mode costs the game three quarters of its character set: only 64 glyphs can be drawn, each in any of four backgrounds. The rooms need seven of them, <code>$20</code> to <code>$26</code>, all on <code>$D021</code>, the room's background. The room's name sits on <code>$D023</code>, and the cells round the room are code <code>$C0</code> on <code>$D024</code>, the border's colour, so the border seems to reach in to the edge of the room (<code>$2E9C</code>).</p>
 </section>
@@ -116,10 +114,10 @@ input.jw-range{width:100%;max-width:480px}
   <p class="lede">The Bathroom's record, as it sits at <code>$E300</code>. Press a field, or any byte, to see what the game makes of it.</p>
   <div class="plate">
     <canvas id="jw-rm" class="jw-scr jw-mid" width="768" height="432"></canvas>
-    <div class="jw-fields" id="jw-fl"></div>
+    <div class="jw-fields" id="jw-fl" data-own-look></div>
     <p class="jw-say" id="jw-say"></p>
     <div class="jw-scroll"><div class="jw-hex" id="jw-hex"></div></div>
-    <p class="cap"><b>The picture is drawn by a port of the game's room builder</b> (<code>$2E55</code> to <code>$30E1</code>) from these bytes, in <code>reference/jsw-rooms.js</code>; <code>test_rooms.js</code> holds it against the game's own code for all sixty rooms. The <a href="levels.html">Map</a> tab draws every room with it.</p>
+    <p class="cap"><b>The picture is drawn by a port of the game's room builder</b> (<code>$2E55</code> to <code>$30E1</code>) from these bytes, in <code>reference/jsw-rooms.js</code>. The <a href="levels.html">Map</a> tab draws every room with it.</p>
   </div>
   <p>Rooms 0 to 29 sit at <code>$B000</code> and rooms 30 to 59 at <code>$E000</code>, under the KERNAL ROM, so the copy that brings a room to <code>$0840</code> runs with every bank switched to RAM (<code>$2E55</code>). The map is 32 by 16 cells at four to a byte, so a room's whole layout takes 128 bytes, and each cell is one of four kinds: air, floor, wall or hazard. The conveyor, the ramp and the items are drawn over the map afterwards. Six glyphs come with every room, so the same kind of cell looks different from room to room.</p>
 </section>
@@ -152,7 +150,7 @@ input.jw-range{width:100%;max-width:480px}
   <p class="fig">06 · Guardians</p>
   <h2 class="t">Eight bytes decide everything a guardian does</h2>
   <p class="lede">A guardian is a sprite that moves up and down or across its room, through frames of its own. The <a href="graphics.html">Graphics</a> tab shows every guardian's frames as the game steps them.</p>
-  <p>A room names its first guardian in the table at <code>$2443</code> and how many there are (offsets <code>$E0</code> and <code>$E1</code>), up to seven. Each guardian is eight bytes: which way it moves and which way it starts, its column and row, its first sprite, its far bound, a mask for its frames, its speed and its near bound. Guardians that move across step a column at a time between their bounds, and going right add 4 to their frame when their mask byte is 4 or more (<code>$369E</code>); guardians that move up and down climb and drop between theirs (<code>$3614</code>). Nothing else decides where they go: a guardian never looks at Willy. The <a href="levels.html#room">Map</a> tab runs every room's guardians with a port of both routines.</p>
+  <p>A room names its first guardian in the table at <code>$2443</code> and how many there are (offsets <code>$E0</code> and <code>$E1</code>), up to seven. Each guardian is eight bytes: which way it moves and which way it starts, its column and row, its first sprite, its far bound, a mask for its frames, its speed and its near bound. Guardians that move across step a column at a time between their bounds, and going right add 4 to their frame when their mask byte is 4 or more (<code>$369E</code>); guardians that move up and down climb and drop between theirs (<code>$3614</code>). Those two routines alone decide where they go: a guardian never looks at Willy. The <a href="levels.html#room">Map</a> tab runs every room's guardians with a port of both routines.</p>
   <p>Arrows are separate, 16 records of four bytes at <code>$2403</code>: the room, a countdown, a column and a row. One flies across its room on sprite 6 when its countdown runs out, and a burst of noise on voice 3 warns of it ten counts before. The loop at <code>$314D</code> runs only 15 of them, so the arrow in The Beach never flies, and three records name room 99, which does not exist (<a href="discoveries.html#arrows">Discoveries</a>).</p>
 </section>
 
@@ -185,7 +183,7 @@ input.jw-range{width:100%;max-width:480px}
     <canvas id="jw-mb" class="jw-scr jw-mid" width="768" height="432"></canvas>
     <p class="cap"><b>Drawn by the port of the room builder</b>, with Maria placed as <code>$3284</code> places her: sprite 7 at x <code>$A8</code>, every other sprite switched off, until the flag at <code>$0400</code> is set.</p>
   </div>
-  <p>Taking an item adds one to a decimal count at <code>$0401</code>, which the status line shows, and when the count reaches 50 the pick-up at <code>$164A</code> sets <code>$0400</code>. That flag does one thing: <code>$3284</code> stops drawing Maria, and the Master Bedroom, which has no guardians, is left empty. There are 80 items, and the count goes on past 50, but nothing else reads <code>$0400</code>. Willy can walk to the bed, and nothing happens there.</p>
+  <p>Taking an item adds one to a decimal count at <code>$0401</code>, which the status line shows, and when the count reaches 50 the pick-up at <code>$164A</code> sets <code>$0400</code>. That flag does one thing: <code>$3284</code> stops drawing Maria, and the Master Bedroom, which has no guardians, is left empty. There are 80 items, and the count goes on past 50, but the rest of the game never reads <code>$0400</code>. Willy can walk to the bed, and nothing happens there.</p>
   <p>So the game ends one of three ways: the last of nine lives, RUN/STOP, or the clock. It starts at 07:00:00 and the game is over when the hours read 12 (<code>$33BB</code>). The play interrupt adds a second every 50 frames (<code>$3446</code>), which is a real second on a European machine: five hours, whatever Willy has collected.</p>
 </section>
 </main>

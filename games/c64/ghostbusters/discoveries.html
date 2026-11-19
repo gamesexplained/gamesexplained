@@ -19,7 +19,7 @@
     <tr><th>The claim</th><th>What the code does</th></tr>
     <tr><td>The manual: the game ends when PK energy reaches 9,999.<sup class="fn"><a href="about.html#src-1" title="The Commodore 64 manual">1</a></sup></td><td>Nothing happens at 9,999. The game ends when the Keymaster and the Gatekeeper meet at Zuul, which in test runs happened <a href="levels.html#pk">anywhere from 8,495 to 9,999</a>.</td></tr>
     <tr><td>Online guides: GOOD TRY is the ending for having enough money but not reaching Zuul.</td><td>GOOD TRY is shown when the Marshmallow Man catches two men on <a href="gameplay.html#zuul">Zuul's street</a> (<code>$8B10</code>).</td></tr>
-    <tr><td>Cheat lists: <code>POKE 22014,9</code> gives unlimited lives.</td><td>22014 (<code>$55FE</code>) is a character on the screen that the start-up clears and nothing reads.</td></tr>
+    <tr><td>Cheat lists: <code>POKE 22014,9</code> gives unlimited lives.</td><td>22014 (<code>$55FE</code>) is a character on the screen that the start-up clears and the game never reads.</td></tr>
     <tr><td>Cheat lists: <code>POKE 38454,96</code> makes everything free.</td><td>True: it puts an <code>RTS</code> at the start of <code>money_subtract</code> (<code>$9636</code>), so cars, equipment and the Marshmallow Man's damage all cost nothing. The <a href="play.html#cheats">Play tab</a> has it as a switch.</td></tr>
   </table>
 </section>
@@ -33,17 +33,17 @@
   <h3>Bug: a blank name and 458 give a fortune that always loses</h3>
   <p>A blank name with account number 458 decodes to a top byte of hexadecimal <code>$A0</code>, which the game prints as ":" and calculates with as 100 (YOU HAVE $:00000). Spending money works, because the processor's decimal subtraction treats <code>$A0</code> as 100. Earning it does not reach that far: <code>money_add</code> (<code>$9664</code>) stops at 99. At the meeting at Zuul the balance can never equal <code>$A0</code>, so the bank forecloses every time.</p>
   <h3>Bug: every drive leaves two bytes on the stack</h3>
-  <p>State <code>$14</code> reaches <code>next_state</code> with <code>JSR</code> (<code>$8070</code>) where every other handler jumps, and nothing takes the return address off again. The stack pointer sinks by two per drive. The stack wraps inside its page, and nothing the game keeps there is overwritten, so no player sees it.</p>
+  <p>State <code>$14</code> reaches <code>next_state</code> with <code>JSR</code> (<code>$8070</code>) where every other handler jumps, and the game never takes the return address off again. The stack pointer sinks by two per drive. The stack wraps inside its page, and none of what the game keeps there is overwritten, so a player never sees it.</p>
   <h3>Bug: ten traps read ":"</h3>
   <p>The status report (space in play) prints the number of empty traps as one character: the count plus the code for 0. The station wagon carries 11 items, so with at least $12,000 to spend it can hold 10 or 11 traps, and the report then says ":" or ";".</p>
 </section>
 
 <section id="secrets">
   <p class="fig">03 · Left in the code</p>
-  <h2 class="t">An item nobody can buy, and a building nobody visits</h2>
+  <h2 class="t">An item that cannot be bought, and a building the game can leave out</h2>
   <p class="lede">Some of the game's data and code can never be reached in play, and one rule can leave a building out of the game for good.</p>
   <h3>Secret: an eighth item with a price and no shelf</h3>
-  <p>The price table (<code>item_price</code>, <code>$A1DC</code>) has eight entries. Item 4, sprite shape <code>$37</code>, costs $600 and sets no equipment flag. No shelf holds it (<code>shelf_shapes</code>, <code>$AAB3</code>), so it cannot be bought. Its picture is still among the game's sprites, between the bait and the trap.</p>
+  <p>The price table (<code>item_price</code>, <code>$A1DC</code>) has eight entries. Item 4, sprite shape <code>$37</code>, costs $600 and sets no equipment flag. None of the shelves holds it (<code>shelf_shapes</code>, <code>$AAB3</code>), so it cannot be bought. Its picture is still among the game's sprites, between the bait and the trap.</p>
   <div class="plate">
     <canvas id="item4" width="272" height="100" style="image-rendering:pixelated;max-width:100%;border-radius:4px;display:block" role="img" aria-label="The ghost trap's sprite beside item 4's"></canvas>
     <p class="cap">The ghost trap (left) and item 4 (right), unpacked from the game's sprite data and drawn in the shop's colours at four times the C64's pixels.</p>
@@ -65,10 +65,10 @@
 <section id="open">
   <p class="fig">04 · Open questions</p>
   <h2 class="t">What we have not settled</h2>
-  <p class="lede">Everything above was traced in the code or seen when the game ran. These are the questions the code leaves open, or that nobody has checked yet.</p>
+  <p class="lede">Everything above was traced in the code or seen when the game ran. These are the questions the code leaves open, or that have not been checked.</p>
   <ul>
     <li><b>Whether item 4 was a second trap.</b> Only its price and its sprite are left.</li>
-    <li><b>How often the Marshmallow alert comes in real play.</b> In eight simulator runs from 5,000 PK energy it never did: Roamers reaching Zuul pushed the meter past each thousand first.</li>
+    <li><b>How often the Marshmallow alert comes in real play.</b> Started eight times from 5,000 PK energy, it never came: Roamers reaching Zuul pushed the meter past each thousand first.</li>
     <li><b>Whether the original releases match.</b> <a href="about.html#copy">Two copies have been compared</a> and share every byte of the game's code. Neither is a publisher's original disk or tape.</li>
   </ul>
 </section>

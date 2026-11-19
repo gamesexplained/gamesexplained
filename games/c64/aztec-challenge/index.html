@@ -28,9 +28,8 @@ h3{font-size:18px;margin:26px 0 10px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
 canvas.az-px{display:block;image-rendering:pixelated;max-width:100%;height:auto;border-radius:4px}
 .az-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0}
-.az-ctl button,.az-ctl select,.az-ctl label{font:inherit;font-size:14px}
-.az-ctl button{border:1px solid var(--line);background:var(--surface-2);border-radius:6px;padding:4px 10px;cursor:pointer}
-.az-ctl button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink)}
+.az-ctl label{font:inherit;font-size:14px}.az-ctl button,.az-ctl select{font-size:14px}
+.az-ctl button{padding:4px 10px}
 .az-ctl input[type=range]{width:220px}
 .az-out{font-family:var(--fm);font-size:14px;margin-top:12px;line-height:1.6;color:var(--ink-soft)}
 .az-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
@@ -60,7 +59,7 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
   <p>The player is chosen as a sacrifice and runs for freedom: through a gauntlet of spear throwers, up the temple stairs under rolling blocks, through the temple's trapped rooms, past its creatures, across a floor of booby-trapped tiles, through a lake of piranhas and over a bridge with holes in it. Each level is a short dash with five lives; losing all five sends the player back to the scorecard to try the same level again. Win all seven and they start again, faster, for four phases, the last at night.</p>
   <p>Paul Norman wrote it for the Commodore 64 in 1983, after Robert T. Bonifacio's Atari game of the same name; Cosmi published it, and U.S. Gold sold the cassette in Britain. The game is one file of 28,671 bytes, read from tape by the computer's own slow loader in about six minutes.</p>
   <div class="plate"><div class="az-row"><img src="reference/title.png" alt="The title screen: AZTEC above and CHALLENGE below the sun stone" class="az-shot"><img src="reference/level1-gauntlet.png" alt="The Gauntlet: the runner seen from behind between two rows of spear throwers, the temple on the horizon" class="az-shot"></div>
-  <p class="cap">The title, and the first level, the Gauntlet, in VICE.</p></div>
+  <p class="cap">The title, and the first level, the Gauntlet.</p></div>
 </section>
 
 <section id="music">
@@ -69,7 +68,7 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
   <p>Every level counts its progress in stages, 0 to 9 (the byte <code>$45</code>), and calls one routine each time the count goes up (<code>$6530</code>). That routine changes the music: at stage 1 the three voices switch from soft triangle waves to sawtooth; at stage 2 the melody comes in; at 3 the title tune returns, faster; at 4 a tune heard nowhere else takes over and a voice drops out; at 5 that voice comes back, and at 6 it turns to a sawtooth too. A player who hears the melody start knows they are a fifth of the way through, which is what the manual means when it says the music will "indicate the extent of your progress". Hopaztec is the one level that never calls it, so its music never builds.</p>
   <div class="plate">
     <div id="az-sid"></div>
-    <p class="cap">Each button runs the game's own code on the kit's 6502: the start-up's sound set-up (<code>$1000</code>), the menu's (<code>$1121</code>), a level's start (<code>$1CA0</code>) and the stage routine once for each stage, then the interrupt at <code>$1C00</code> 60 times a second, as the computer's own timer calls it. <code>test_music.js</code> holds every button against the same code run along the game's own path. The menu's pulse is very low, about 15 to 55 hertz: laptop and phone speakers barely play it, and headphones do.</p>
+    <p class="cap">Each button runs the game's own code: the start-up's sound set-up (<code>$1000</code>), the menu's (<code>$1121</code>), a level's start (<code>$1CA0</code>) and the stage routine once for each stage, then the interrupt at <code>$1C00</code> 60 times a second, as the computer's own timer calls it. The menu's pulse is very low, about 15 to 55 hertz: laptop and phone speakers barely play it, and headphones do.</p>
   </div>
   <p>The music player itself is 155 bytes (<code>$1C00</code>-<code>$1C9A</code>). It steps through a tune six bytes at a time, the high and low byte of each voice's pitch, one step every few interrupts (<code>$36</code>), and starts again at the address in <code>$30</code>/<code>$31</code> when it reads a byte <code>$FF</code>. It never touches a voice's waveform or volume: those are set once by the start-up from the table at <code>$41C0</code> and changed only by the levels and the stage routine. That is why the same tune sounds different at different stages.</p>
   <p>The game keeps three tunes. The first, at <code>$5F00</code>, opens with seven steps of a low pulse that the menu and every level start with, and goes on at <code>$5F30</code> with the melody that stage 2 switches to. The title tune, at <code>$5700</code>, plays under the logo and comes back at stage 3. The level tune, at <code>$4900</code>, is the longest, 127 steps, and plays only from stage 4 on, so a player hears it only deep into a level.</p>
@@ -81,7 +80,7 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
   <p>There is no sound-effects driver. A level makes its noises itself, by writing voice 1's waveform and pitch in the middle of its own code, and the noise lasts as long as that code takes to run. The spears' whoosh is noise whose pitch drops one step each time the spear moves (<code>$63D0</code>); the fall through the Bridge lowers the pitch a step for each line the runner sinks, with the delay between steps growing (<code>$7E1B</code>); the swimmer eaten by the piranhas sets all three voices to noise and changes their pitch from voice 3's own noise at every row of water it redraws (<code>$1B80</code>).</p>
   <div class="plate">
     <div id="az-sfx"></div>
-    <p class="cap">Each button runs the stretch of the game's code that makes the effect on the kit's 6502, a video frame's worth of cycles at a time, so the effect keeps the pace its delay loops give it in the game. The music is left out: in the game the tune's interrupt goes on writing the same voices, so an effect on voice 1 is heard against the tune. The Gauntlet's fall is noise at the lowest pitch, a dull thud that small speakers barely play. <code>test_sounds.js</code> holds each button against the same code run along the game's path.</p>
+    <p class="cap">Each button runs the stretch of the game's code that makes the effect, a video frame's worth of cycles at a time, so the effect keeps the pace its delay loops give it in the game. The music is left out: in the game the tune's interrupt goes on writing the same voices, so an effect on voice 1 is heard against the tune. The Gauntlet's fall is noise at the lowest pitch, a dull thud that small speakers barely play.</p>
   </div>
 </section>
 
@@ -92,14 +91,14 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
   <div class="plate">
     <canvas id="az-frame" class="az-px"></canvas>
     <div class="az-ctl" id="az-frame-bar"><button type="button" data-v="all" aria-pressed="true">Everything</button><button type="button" data-v="chars" aria-pressed="false">Characters only</button></div>
-    <p class="cap">One frame recorded with <code>kit/c64/frame.py</code> in VICE on 8 November 2026 and drawn by the site's <code>C64.drawFrame</code>: all 104,448 pixels match the emulator's picture of the same frame. The other six levels are on the <a href="levels.html">Levels</a> tab.</p>
+    <p class="cap">One frame of the Gauntlet, drawn from every write the game made to the video chip. The other six levels are on the <a href="levels.html">Levels</a> tab.</p>
   </div>
 </section>
 
 <section id="levels">
   <p class="fig">05 · Seven programs</p>
   <h2 class="t">Each level is its own program, run from the scorecard</h2>
-  <p>The scorecard (<code>$1195</code>) shows both players' level, phase and score and the level's four lines of instructions (from <code>$1600</code>), and waits for the stick. Then <code>$122E</code> copies the phase's settings into zero page and jumps to the level's own code by the level's number. The level sets up its own screen, sprites and controls and runs its own loop until the runner wins or loses five lives, and then jumps to <code>$1300</code>, which scores the attempt and goes back to the scorecard. Nothing is shared between the levels but a few routines and the music.</p>
+  <p>The scorecard (<code>$1195</code>) shows both players' level, phase and score and the level's four lines of instructions (from <code>$1600</code>), and waits for the stick. Then <code>$122E</code> copies the phase's settings into zero page and jumps to the level's own code by the level's number. The level sets up its own screen, sprites and controls and runs its own loop until the runner wins or loses five lives, and then jumps to <code>$1300</code>, which scores the attempt and goes back to the scorecard. The levels share only a few routines and the music.</p>
   <div class="plate"><table class="az-tab" id="az-lv"></table>
   <p class="cap">The dispatch at <code>$12A2</code> and the size of each level's code in the listing. The level and the phase are kept as the digit characters themselves, '1' to '7' (<code>$31</code>-<code>$37</code>), so the scorecard prints them straight from memory.</p></div>
 </section>
@@ -136,7 +135,7 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
   <div class="plate">
     <div class="az-ctl"><label>Lives lost <select id="az-sc-lost"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label><label>Achievements <input type="number" id="az-sc-ach" min="0" max="255" value="12" style="width:5em"></label></div>
     <div class="az-out" id="az-sc-out"></div>
-    <p class="cap">The arithmetic of <code>$1400</code> and <code>$1456</code>, in binary-coded decimal as the game keeps its eight-digit scores (<code>$60</code>-<code>$67</code>). Checked in VICE: the Gauntlet won with no life lost and no achievements added 1,010; five lives lost with none added 10.</p>
+    <p class="cap">The arithmetic of <code>$1400</code> and <code>$1456</code>, in binary-coded decimal as the game keeps its eight-digit scores (<code>$60</code>-<code>$67</code>). The Gauntlet won with no life lost and no achievements adds 1,010; five lives lost with none adds 10.</p>
   </div>
   <p>With two players the turn passes after every attempt, won or lost (<code>$1360</code>), not only after five lives as the manual says.</p>
 </section>

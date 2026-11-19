@@ -39,9 +39,7 @@ a{color:var(--link)}
 .a2-stack{position:relative;line-height:0}
 .a2-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent}
 .a2-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
-.a2-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
-.a2-btn:hover{border-color:var(--ink-mute)}
-.a2-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.a2-btn{font-size:12.5px;padding:5px 11px;line-height:1.3}
 .a2-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
 .a2-shots{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
 .a2-shots figure{margin:0}
@@ -71,7 +69,7 @@ a{color:var(--link)}
 <header class="hero">
   <p class="eyebrow">1987 · Cascade Games</p>
   <h1>ACE 2</h1>
-  <p class="sub">A hamster's name that makes plane one immortal, a cockpit message nobody ever sees, and what the code does when a pilot runs out of chaff.</p>
+  <p class="sub">A hamster's name that makes plane one immortal, a cockpit message that never appears on screen, and what the code does when a pilot runs out of chaff.</p>
 </header>
 <main class="wrap">
 
@@ -85,19 +83,19 @@ a{color:var(--link)}
     <p class="cap">The nine bytes at <code>$6A30</code>, from the listing, each looked up in the game's letter table at <code>$6F7F</code> as <code>$56DA</code> and the other text printers do: the stored byte plus <code>$6F7F</code> gives the real letter. The text COMMENCE CONFLICT follows at once, with no end mark between.</p>
   </div>
   <p>The message, in plain ASCII (the usual codes for letters) at <code>$51B4</code>-<code>$53D3</code>, is never printed. It ends: "IF YOU ENTER THE NAME OF MY HAMSTER ON THE HIGH SCORE TABLE, PLAYER ONE WILL BE IMMORTAL. A REAL HACKER WILL FIND HER NAME FROM THE CODE". The hamster is DUSTY BUG.</p>
-  <p>After every game, <code>$5634</code> compares the first eight letters of the name buffer (<code>$6933</code>) with the hamster's name, so DUSTY BU is enough. It makes the comparison whether or not anyone qualified for the table, and whichever pilot typed the name, so a name entered by pilot two makes plane one immortal. A match sets the flag at <code>$0975</code>, and nothing in the game ever clears it. The flag is the last byte of the high-score table, so it is written to the disk with the scores (<code>$1F30</code>) and read back the next time the game loads (<code>$09E5</code>).</p>
-  <p>With the flag set, plane one burns no fuel (<code>$43FC</code>) and the side panel shows IMMORTAL where it counted the planes left (<code>$1C44</code>). In the kit's machine, from a recorded flight, plane one's fuel stayed at 247 for 300 frames with the flag set and fell to 245 without it. A crash or a kill still marks the plane as lost, but the check that would take it away passes over plane one while the flag is set (<code>$0D93</code>). The other pilot still scores 200 points for each kill (<code>$282F</code>), so an immortal plane one can be shot down again and again for points.</p>
+  <p>After every game, <code>$5634</code> compares the first eight letters of the name buffer (<code>$6933</code>) with the hamster's name, so DUSTY BU is enough. It makes the comparison whether or not anyone qualified for the table, and whichever pilot typed the name, so a name entered by pilot two makes plane one immortal. A match sets the flag at <code>$0975</code>, and the game never clears it. The flag is the last byte of the high-score table, so it is written to the disk with the scores (<code>$1F30</code>) and read back the next time the game loads (<code>$09E5</code>).</p>
+  <p>With the flag set, plane one burns no fuel (<code>$43FC</code>) and the side panel shows IMMORTAL where it counted the planes left (<code>$1C44</code>). Over 300 frames of a flight, plane one's fuel stays at 247 with the flag set and falls to 245 without it. A crash or a kill still marks the plane as lost, but the check that would take it away passes over plane one while the flag is set (<code>$0D93</code>). The other pilot still scores 200 points for each kill (<code>$282F</code>), so an immortal plane one can be shot down again and again for points.</p>
 </section>
 
 <section id="traitor">
   <p class="fig">02 · YOU TRAITOR</p>
   <h2 class="t">Secret: the game has a YOU TRAITOR message that it never shows</h2>
-  <p class="lede">Message 12 in each pilot's list reads YOU TRAITOR. No instruction in the game raises it.</p>
+  <p class="lede">Message 12 in each pilot's list reads YOU TRAITOR. The game never raises it.</p>
   <div class="plate a2-scroll">
     <table class="a2-tbl" id="a2-calls"></table>
-    <p class="cap">Every call of the message routine <code>$34F8</code> in the game, 31 of them, with the message number each one loads into X just before it. Numbers 12 and 19 never appear, and nothing else writes their timers at <code>$0350</code> and <code>$0370</code>. The texts are from the listing, through pilot one's list at <code>$7432</code>.</p>
+    <p class="cap">Every call of the message routine <code>$34F8</code> in the game, 31 of them, with the message number each one loads into X just before it. Numbers 12 and 19 never appear, and the game writes their timers at <code>$0350</code> and <code>$0370</code> nowhere else. The texts are from the listing, through pilot one's list at <code>$7432</code>.</p>
   </div>
-  <p>The message routine takes the message's number in the processor's X register and a time in its Y register. Every caller loads X with a number written into the instruction itself, so the list above is the whole of what the cockpits can show. Message 19 is a first copy of TARGET LOCKED, pointing at the same text as message 20, which the lock uses. Message 12 has its own text, YOU TRAITOR, at <code>$6CEC</code>. It is also in the older copy of the game's text that the game loads at <code>$C000</code> and never reads (<a href="#leftovers">below</a>), so it was in the game's message list in an earlier build too, and nothing in this build says what it was for.</p>
+  <p>The message routine takes the message's number in the processor's X register and a time in its Y register. Every caller loads X with a number written into the instruction itself, so the list above is the whole of what the cockpits can show. Message 19 is a first copy of TARGET LOCKED, pointing at the same text as message 20, which the lock uses. Message 12 has its own text, YOU TRAITOR, at <code>$6CEC</code>. It is also in the older copy of the game's text that the game loads at <code>$C000</code> and never reads (<a href="#leftovers">below</a>), so it was in the game's message list in an earlier build too, and this build never says what it was for.</p>
 </section>
 
 <section id="chaff">
@@ -112,7 +110,7 @@ a{color:var(--link)}
       <tr><td><code>$0288</code></td><td>pilot one's chaff left</td><td class="a2-n">0</td><td class="a2-n">0</td></tr>
       <tr><td><code>$028C</code></td><td>pilot one's chaff timer</td><td class="a2-n">0</td><td class="a2-n">0</td></tr>
     </table>
-    <p class="cap">The decoy routine <code>$2531</code> run in the kit's simulator from a recorded flight, for pilot one with no chaff and a radar missile in flight: it reached <code>$25EF</code> with X = 11, the message number of NO CHAFF.</p>
+    <p class="cap">The decoy routine <code>$2531</code> in flight, for pilot one with no chaff and a radar missile in flight: it reached <code>$25EF</code> with X = 11, the message number of NO CHAFF.</p>
   </div>
   <p>The decoy routine shows NO CHAFF through the message routine with X = 11, the message's number. There is no jump past the next lines, which take a chaff from this pilot's count and start its timer, both indexed by X. With 11 in X they hit the object table instead: one is taken from <code>$0293</code>, and 8 is written into <code>$0297</code>, the middle byte of plane two's position across. Plane two moves by less than an eighth of a square of the map, whichever pilot pressed the key, every pass the key is held.</p>
 </section>
@@ -144,7 +142,7 @@ a{color:var(--link)}
       <tr><td><code>$43FC</code></td><td class="a2-n">$85 (STA)</td><td class="a2-n">$86 (STX)</td><td>the first instruction of the play interrupt</td></tr>
       <tr><td><code>$16E9</code></td><td class="a2-n">$EA (NOP)</td><td class="a2-n">$60 (RTS)</td><td>inside the routine that draws objects into the view</td></tr>
     </table>
-    <p class="cap">In the kit's machine, from a recorded flight: 600 NMIs in 300 frames, two a frame, with both bytes correct afterwards. With the NMI vector pointed at an RTI instead, both bytes stayed broken.</p>
+    <p class="cap">In flight: 600 NMIs in 300 frames, two a frame, with both bytes correct afterwards. With the NMI vector pointed at an RTI instead, both bytes stayed broken.</p>
   </div>
   <p><code>$6066</code> starts timer A of the second CIA chip with a count of 5 and its interrupt on, reaching the chip's registers through an index (<code>$DCF0</code> + X) so that the CIA 2 addresses never appear in the code. The NMI handler, <code>$2AA6</code>, acknowledges the chip and writes the two correct bytes back. The game sets the NMI vector itself, and the reset vector too, through a pointer built at run time (<code>$0A07</code>). Anything that points the NMI vector elsewhere leaves the play interrupt starting with the wrong instruction and the object drawer returning early.</p>
 </section>
@@ -163,7 +161,7 @@ a{color:var(--link)}
 <section id="leftovers">
   <p class="fig">07 · Leftovers</p>
   <h2 class="t">A plain copy of the scrambled text loads beside it</h2>
-  <p class="lede">The loader brings in 2,560 bytes from track 17 to <code>$C000</code> that no instruction reads: an older build's copy of the game's text and tables, with the text in plain letters.</p>
+  <p class="lede">The loader brings in 2,560 bytes from track 17 to <code>$C000</code> that the game never reads: an older build's copy of the game's text and tables, with the text in plain letters.</p>
   <div class="plate a2-scroll">
     <table class="a2-tbl">
       <tr><th>Where</th><th>What</th><th>Read by</th></tr>
@@ -172,7 +170,7 @@ a{color:var(--link)}
       <tr><td><code>$51B4</code>-<code>$53D3</code></td><td>the programmer's message, in plain ASCII</td><td>nothing</td></tr>
       <tr><td><code>$7556</code></td><td>"S0:QZ", a disk drive's command to delete a file called QZ, then "QZ"</td><td>nothing</td></tr>
     </table>
-    <p class="cap">Each found with the references search over the whole game and the access records of runs in the kit's machine: no instruction names these bytes, by address, by pointer or through an index.</p>
+    <p class="cap">The game never names these bytes, by address, by pointer or through an index.</p>
   </div>
   <p>The game goes to the trouble of scrambling every word it prints, then loads a plain copy of most of them into memory, where any memory dump shows them. The programmer's message, with its dedication "TO THE VERY WONDERFUL TERESA" and its hint about the hamster, is plain ASCII too, among the code.</p>
 </section>

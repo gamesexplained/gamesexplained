@@ -255,6 +255,33 @@ class ProcessIsolationTests(unittest.TestCase):
             self.assertIsNone(re.search(pattern, command.replace(root, root + "-other")))
         self.assertIsNone(re.search(launcher.STOP_PATTERNS["r2000"], "python3 " + root + "/kit/c64/stdio_bridge.py.other"))
 
+    def test_stop_recognizes_symlink_executable_and_scopes_shared_build_by_port(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "clone"
+            tools = root / "tools"
+            tools.mkdir(parents=True)
+            install = tools / "vice-mcp"
+            local_build = tools / "headless" / "usr" / "local"
+            local_build.mkdir(parents=True)
+            install.symlink_to(local_build, target_is_directory=True)
+            with patch.object(launcher, "TOOLS", str(tools)):
+                pattern = launcher.vice_stop_pattern(str(install), 6510)
+                command = os.path.realpath(local_build / "bin" / "x64sc.real") + " -sounddev dummy -mcpserver -mcpserverport 6510"
+                self.assertIsNotNone(re.search(pattern, command))
+                self.assertNotIn("(?:", pattern)
+                install.unlink()
+                shared = Path(tmp) / "shared-build"
+                shared.mkdir()
+                install.symlink_to(shared, target_is_directory=True)
+                pattern = launcher.vice_stop_pattern(str(install), 6510)
+                command = os.path.realpath(shared / "bin" / "x64sc") + " -mcpserver -mcpserverport 6510"
+                self.assertIsNotNone(re.search(pattern, command))
+                self.assertIsNone(re.search(pattern, command.replace("6510", "16510")))
+                self.assertIsNone(re.search(pattern, command.replace("6510", "65100")))
+                alias = str(install / "bin" / "x64sc") + " -mcpserver -mcpserverport 6510"
+                self.assertIsNotNone(re.search(pattern, alias))
+                self.assertIsNone(re.search(pattern, alias.replace(str(root), str(root) + "-other")))
+
 
 class SeededStartTests(unittest.TestCase):
     """#273: a restarted disassembler comes back with the last export's annotations."""

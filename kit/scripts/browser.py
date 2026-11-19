@@ -1,14 +1,17 @@
-"""Installed Firefox or explicitly selected Chromium for page checks.
+"""A Chromium or an installed Firefox for page checks, with a profile of its own.
 
 Reached through kit/scripts/tools.py; no download or personal profile access.
-KIT_BROWSER_CHROMIUM may name an existing chrome-headless-shell or Chromium
-executable. KIT_BROWSER_PORT selects an unused debugging port (default 9222).
+The browser, in this order: the chrome-headless-shell or Chromium executable
+KIT_BROWSER_CHROMIUM names, the headless Chromium `tools.py get-chromium` put in
+tools/playwright/ (kit/scripts/node.py), then an installed Firefox. Chromium is
+driven over CDP, Firefox over WebDriver BiDi.
+KIT_BROWSER_PORT selects an unused debugging port (default 9222).
 Keep that port setting for status/stop. Profile and XDG state stay in tools/.
 Deep paths can exceed full Chromium's Unix socket limit; headless-shell avoids
 that profile-singleton socket.
 
-With no Firefox (on macOS, the one in /Applications counts), start() names any
-Chrome, Chromium or Edge it finds and stops: picking one is the contributor's
+With none of those (on macOS, a Firefox in /Applications counts), start() names
+any Chrome, Chromium or Edge it finds and stops: picking one is the contributor's
 call, since Google Chrome can start its own updater outside the folder (#331).
 """
 import os
@@ -19,6 +22,8 @@ import socket
 import subprocess
 import sys
 import time
+
+import node
 
 ROOT = Path(__file__).resolve().parents[2]
 STATE = ROOT / "tools/firefox"
@@ -57,19 +62,22 @@ def installed_chromium():
 
 def no_firefox():
     found = installed_chromium()
+    get = ("With the contributor's yes, python3 kit/scripts/tools.py get-chromium puts a headless Chromium in tools/, "
+           "which this then starts (kit/INSTALL.md, \"Browser checks\").")
     if not found:
-        return "no installed Firefox, Chrome, Chromium or Edge; use the session's browser tool or ask before installing one"
-    return ("no installed Firefox. Found " + ", ".join(found) + ". To check pages with one, ask the contributor first "
-            "(Google Chrome can start its own updater, which runs outside this folder), then:\n"
-            f"  KIT_BROWSER_CHROMIUM='{found[0]}' python3 kit/scripts/tools.py browser\n"
-            "kit/INSTALL.md, \"Browser checks\", says what that leaves outside the folder")
+        return "no Chromium in tools/ and no installed Firefox, Chrome, Chromium or Edge. " + get
+    return ("no Chromium in tools/ and no installed Firefox. " + get + " Found " + ", ".join(found)
+            + ": to use one instead, ask the contributor first (Google Chrome can start its own updater, "
+            "which runs outside this folder), then:\n"
+            f"  KIT_BROWSER_CHROMIUM='{found[0]}' python3 kit/scripts/tools.py browser")
 
 
 def start():
     chromium = os.environ.get("KIT_BROWSER_CHROMIUM")
-    exe = chromium or firefox()
     if chromium and not Path(chromium).is_file():
         sys.exit("KIT_BROWSER_CHROMIUM must name an existing Chromium executable; nothing is downloaded")
+    chromium = chromium or node.chromium()
+    exe = chromium or firefox()
     if not exe:
         sys.exit(no_firefox())
     if up():

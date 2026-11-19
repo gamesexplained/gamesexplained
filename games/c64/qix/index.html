@@ -37,9 +37,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .qx-pair figure{margin:0;flex:1 1 300px}
 .qx-pair img,.qx-cv{width:100%;image-rendering:pixelated;border-radius:4px;display:block}
 .qx-ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 14px;font-size:15px}
-.qx-ctl button,.qx-ctl select{font:inherit;font-size:14px;padding:5px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
-.qx-ctl button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
-.qx-ctl input[type=number]{font:inherit;width:7em;padding:4px 8px;border:1px solid var(--line);border-radius:6px}
+.qx-ctl button{font-size:14px;padding:5px 12px}.qx-ctl select{font-size:14px}
+.qx-ctl input[type=number]{width:7em;padding:4px 8px}
 .qx-key{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--ink-soft);margin-top:10px}
 .qx-key i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .qx-tab{border-collapse:collapse;width:100%;font-size:14px}
@@ -89,7 +88,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="qx-ctl"><button type="button" id="qx-v0" aria-pressed="true">The screen</button><button type="button" id="qx-v1" aria-pressed="false">What each pixel means</button></div>
     <canvas id="qx-frame" class="qx-cv" width="384" height="272"></canvas>
     <div class="qx-key" id="qx-key" hidden><span><i style="background:#2a8a4a"></i>colour 3: the edge, walls and the border</span><span><i style="background:#1f5fa8"></i>colour 1</span><span><i style="background:#d04a3a"></i>colour 2</span><span><i style="background:#e9e7e1"></i>colour 0: open field</span></div>
-    <p class="cap">One frame of level 1 drawn by the site's renderer from the memory and register writes recorded in the emulator. 94,822 of its 94,848 pixels match the emulator's own picture; the 26 that differ are on the Qix's newest line, which the game draws while the beam is passing.</p>
+    <p class="cap">One frame of level 1 drawn by the site's renderer from its memory and register writes. 26 pixels on the Qix's newest line come out differently from the game's own picture: the game draws that line while the beam is passing.</p>
   </div>
   <p>The game keeps three copies of the field. The one on screen is at <code>$2000</code>; two more at <code>$6000</code> and <code>$E000</code> hold the same picture for the game to read. Every routine that asks "what is here?" looks up one pixel in the <code>$E000</code> copy (<code>$8D10</code>) and compares it with the four masks at <code>$150B</code>: colour 3 is the edge the marker may walk, colour 1 the line being drawn, and colour 2 a line that kills.</p>
   <p>A slow draw and a fast draw differ only in that check. The marker moves one pixel a step; with fire held, the step is skipped on every other pass (<code>$991C</code>). Moving onto colour 2 is a death. Reaching colour 3 closes the line, which <code>$B243</code> then repaints as edge.</p>
@@ -100,10 +99,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Music: eleven tunes, one frame in six skipped</h2>
   <p class="lede">The game stores eleven three-voice tunes. The title plays the longest; the others are shuffled and one plays at the end of each level.</p>
   <div class="plate"><div id="qx-sid"></div>
-    <p class="cap">The tunes played by the game's own music player: its bytes from <code>$E000</code>, run once a frame on the kit's 6502 simulator inside the page and heard through the site's model of the SID. Checked against the original code in a 6502 simulator: every register write of every frame of all eleven tunes, 14,159 frames, matches. The player reads three zero-page bytes before it writes them, so the first frame of a tune depends on what the game left there; the page starts from the title's values.</p></div>
+    <p class="cap">The tunes played by the game's own music player: its bytes from <code>$E000</code>, run once a frame inside the page and heard through the site's model of the SID. The player reads three zero-page bytes before it writes them, so the first frame of a tune depends on what the game left there; the page starts from the title's values.</p></div>
   <p>The player is a copy: the game loads it at <code>$4000</code> and copies the 8,000 bytes to <code>$E000</code> before the title and before each level's end tune (<code>$884C</code>). Play reuses <code>$E000</code> as one of its three planes, so the music has to be put back each time.</p>
   <p>The interrupt calls the player 60 times a second on an American NTSC machine and 50 times on a European PAL one. To keep the tempo the same, the start-up checks which machine it is on and patches two bytes of the player before the copy (<code>$8030</code>). On NTSC they make the player count six frames and skip one; on PAL the count never skips. Each voice reads a stream of notes and 21 commands (repeats, calls, jumps, transposition, waveform, filter, vibrato and sweeps), dispatched through a table per voice (<code>$ED2B</code>).</p>
-  <p>The Internet Archive's recording of this music credits Tim Follin. Nothing in the program names a composer.</p>
+  <p>The Internet Archive's recording of this music credits Tim Follin. The program never names a composer.</p>
 </section>
 
 <section>
@@ -115,7 +114,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" id="qx-slow" aria-pressed="true">Slow</button><button type="button" id="qx-fast" aria-pressed="false">Fast</button>
       <label>Splits so far <select id="qx-splits"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label></div>
     <p class="qx-out" id="qx-score"></p>
-    <p class="cap">The arithmetic of <code>$8E60</code>, ported and checked against the game's own routine in a 6502 simulator over 3,150 cases (areas from 0 to 65,535, slow and fast, 0 to 4 splits): every result matches.</p>
+    <p class="cap">The arithmetic of <code>$8E60</code>, written again in JavaScript.</p>
   </div>
   <p>A fill is worth half its area in pixels, doubled for a slow line (<code>$8E60</code>). A line counts as fast when it ends with fire released. Each time a player splits the Qix, a counter goes up, and it stays up for the rest of the game. The score routine doubles the points once for each split, with a loop that adds the low byte to itself and carries into the high byte without doubling it. Below 256 points the doubling is right; above, most of the bonus is lost. A 4,000-pixel slow fill after one split scores 4,160 where it should score 8,000, and after two splits 4,224 where it should score 16,000.</p>
   <p>When a level ends, the claim over the requirement earns 1,000 points a percent (<code>$8E13</code>). The claimed percentage is the high byte of the player's claimed pixel count, so one percent is 256 pixels of a field about 25,000 pixels inside.</p>
@@ -164,7 +163,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>The new line itself still crosses a claimed edge</td><td>Puts the Qix back on the oldest line of its trail and clears the timer (section 09).</td><td><code>$9774</code></td></tr>
     <tr><td>After every step</td><td>Chooses the pull for the next bounce on each axis: towards the marker, from where the first end now is.</td><td><code>$954F</code></td></tr>
   </table></div>
-  <p class="cap">A bounce also draws a new turn time, but stores it at <code>$0273</code>, which nothing reads. In 1,600 steps watched in the emulator, nothing did. A bounce leaves the turn timer running as it was.</p>
+  <p class="cap">A bounce also draws a new turn time, but stores it at <code>$0273</code>, which the game never reads. A bounce leaves the turn timer running as it was.</p>
   <p class="cap"><b>Bug:</b> Qix 2 has its own copy of the edge test, and one line of the copy reads Qix 1's height (<code>$982F</code>). When the game tests Qix 2's second end moving across on its own, it tests a line to that end's new position across but at Qix 1's height. So Qix 2 can bounce off an edge its move would not have crossed, or miss one it would. A replay of a two-Qix recording with the line read correctly drifts from the game after 288 steps; with the slip kept, all 400 steps match.</p>
   <p>The turn timer is what changes most between levels. The game draws a random byte and keeps it when it falls between <code>$20</code> and <code>$3E</code>, about one draw in eight; any other value is cut to 0-3. The level's mask (<code>$6F</code>) then caps the result. On level 1 the mask is 3, so the Qix turns every one to four steps and shivers about the middle of the field. From level 2 the one draw in eight lets the Qix run straight across the field.</p>
   <div class="qx-scroll"><table class="qx-tab">
@@ -186,7 +185,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <div class="qm-wrap"><canvas id="qm-cv" class="qx-cv qm-cv" width="280" height="200" aria-label="The Qix moving in the field"></canvas>
       <div class="qm-side"><pre class="qm-read" id="qm-read"></pre><ul class="qm-log" id="qm-log" aria-live="off"></ul></div></div>
-    <p class="cap"><b>The viewer runs the game's own rules.</b> It is a port of the Qix's step and the line routine it uses for every test and every pixel, down to the order of the random draws. Given the random numbers the game drew, it repeats 1,000 steps of one Qix and 400 of two, recorded in the emulator, exactly, in an open field and in fields with claimed corners. Levels 3, 4, 6, 8, 9 and 11 bring a second Qix, as in the game. Click the field to move the marker; the pull points at it. <b>Your line</b> lays a line being drawn up from the marker. The Qix colours are those of the frame in section 02.</p>
+    <p class="cap"><b>The viewer runs the game's own rules.</b> It is a port of the Qix's step and the line routine it uses for every test and every pixel, down to the order of the random draws. Given the same random numbers, it moves the Qix step for step as the game does, in an open field and in fields with claimed corners. Levels 3, 4, 6, 8, 9 and 11 bring a second Qix, as in the game. Click the field to move the marker; the pull points at it. <b>Your line</b> lays a line being drawn up from the marker. The Qix colours are those of the frame in section 02.</p>
   </div>
 </section>
 
@@ -194,7 +193,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">08 · The trail</p>
   <h2 class="t">Secret: the Qix's whole trail can kill you, up to eight steps late</h2>
   <p>The Qix on screen is eight lines, the newest and the seven before it, kept in tables of ten slots, of which the game uses eight (<code>$021E</code>). The game draws a new line and erases the oldest with one pixel routine (<code>$AD64</code>). That routine checks every pixel against the line you are drawing, whether it is drawing or erasing. So the newest line kills when it is drawn across your line, and the oldest kills when it is erased from under it.</p>
-  <p>A line you draw across the middle of the trail is safe for a moment. The old Qix line it crossed is still on screen, and nothing checks it again until it becomes the oldest. Then the step that erases that line takes your life, up to seven steps, half a second, after you crossed it. In the emulator, a pixel of a line being drawn was placed under trail lines of different ages, six times. Five of the six kills came from the erase.</p>
+  <p>A line you draw across the middle of the trail is safe for a moment. The old Qix line it crossed is still on screen, and the game does not check it again until it becomes the oldest. Then the step that erases that line takes your life, up to seven steps, half a second, after you crossed it. With a pixel of a line being drawn placed under trail lines of different ages, five kills in six come from the erase.</p>
   <p>The erase clears every pixel of the old line, including the pixels where newer lines cross it, so the trail on screen has small gaps. Drawing a line over a Qix pixel flips the pixel's colour bits instead of setting them, so crossings change colour.</p>
 </section>
 
@@ -202,7 +201,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">09 · The fallback</p>
   <h2 class="t">Secret: a cornered Qix jumps back to where it was eight steps ago</h2>
   <p>The edge tests check each end's move. They cannot see the line between the two new ends, which can cross a claimed corner when the open field is not a rectangle. The game tests that line last (<code>$9774</code>). When it crosses, the game gives up on the step and puts the Qix on the line in the trail slot it is about to overwrite: the oldest line, the one it erased at the start of this step. The timer is cleared, so the Qix turns on the next step.</p>
-  <p>On screen the Qix jumps back to where it was eight steps before. In the emulator, a peninsula of claimed edge was added to the field; in 500 steps the Qix fell back five times, and each time it landed on its line from exactly eight steps earlier. Choose <b>A peninsula</b> or <b>A claimed corner</b> in the viewer above and watch the log for it.</p>
+  <p>On screen the Qix jumps back to where it was eight steps before. With a peninsula of claimed edge in the field, in 500 steps the Qix falls back five times, and each time it lands on its line from exactly eight steps earlier. Choose <b>A peninsula</b> or <b>A claimed corner</b> in the viewer above and watch the log for it.</p>
 </section>
 
 <section>
@@ -214,7 +213,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">11 · Loading</p>
   <h2 class="t">Secret: the game reloads itself after every game</h2>
-  <p>Play uses almost all of memory: the three copies of the field, the music's space at <code>$E000</code> and the title's code. So when a game ends, the C64 loads the whole program again from disk (<code>$1B97</code>). The attract demonstration, which plays a game by itself after the title tune, loads the title picture back (<code>$C2E0</code>), and every level end loads a 134-byte file called TAITO that nothing then runs (<code>$1A8D</code>). Each load comes with three tries and a "DRIVE ERROR / CHECK THE DISK" screen.</p>
+  <p>Play uses almost all of memory: the three copies of the field, the music's space at <code>$E000</code> and the title's code. So when a game ends, the C64 loads the whole program again from disk (<code>$1B97</code>). The attract demonstration, which plays a game by itself after the title tune, loads the title picture back (<code>$C2E0</code>), and every level end loads a 134-byte file called TAITO that the game never runs (<code>$1A8D</code>). Each load comes with three tries and a "DRIVE ERROR / CHECK THE DISK" screen.</p>
   <div class="qx-pair">
     <figure><img src="reference/attract-demo.png" alt="The attract demonstration naming the enemies"><p class="cap">The attract demonstration, driving the real game engine with scripted input and naming each enemy as it appears.</p></figure>
     <figure><img src="reference/game-over.png" alt="Game over"><p class="cap">Game over: next comes a load of the whole game.</p></figure>
@@ -315,7 +314,7 @@ class QixMover {
     if (!(old & 0x80)) { let [a, c] = QixMover.sbc(r, this.K, 1); [a] = QixMover.sbc(a, 1, c); return a; }
     let [a, c] = QixMover.adc(r, this.K, 0); [a] = QixMover.adc(a, 1, c); return a;
   }
-  newTurnTime() {                                                    // new_turn_time ($98DB): $0273, which nothing reads
+  newTurnTime() {                                                    // new_turn_time ($98DB): $0273, which the game never reads
     let r = this.random(); if (r >= 0x3F || r < 0x20) r &= 3; this.t73 = r; this.qixColour();
   }
   qixColour() { this.b1 = this.random() & 3; }                      // qix_colour ($98EB)

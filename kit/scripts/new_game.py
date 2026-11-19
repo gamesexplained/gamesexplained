@@ -14,6 +14,14 @@ import datetime, json, os, re, shutil, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
+def default_title(slug):
+    """Title-case the slug's words, keeping a sequel's Roman numeral in
+    capitals: str.title() gives "Summer Games Ii" for summer-games-ii."""
+    roman = re.compile(r"(?=[ivx]+$)x{0,3}(ix|iv|v?i{0,3})")
+    return " ".join(w.upper() if roman.fullmatch(w) and w != "x" else w.capitalize()
+                    for w in slug.split("-"))
+
+
 def main():
     argv = sys.argv[1:]
     if len(argv) < 2 or argv[0] in ("-h", "--help"):
@@ -21,7 +29,7 @@ def main():
     platform, slug = argv[0], argv[1]
     if not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", slug):
         sys.exit("slug must be lowercase letters, digits and hyphens")
-    title = argv[argv.index("--title") + 1] if "--title" in argv else slug.replace("-", " ").title()
+    title = argv[argv.index("--title") + 1] if "--title" in argv else default_title(slug)
     dest = os.path.join(ROOT, "games", platform, slug)
     if os.path.exists(dest):
         sys.exit(f"{dest} already exists")

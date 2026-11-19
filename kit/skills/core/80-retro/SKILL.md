@@ -165,7 +165,9 @@ unnoticed.
    is merged; put `[kit-bump]` in its description. A fix to a script, a
    path, the site or the prose style goes in `kit-feedback.md` and the
    pull request instead.
-7. **Complete `game.json`**: tier reached (only if every requirement is
+7. **Complete `game.json`**: when delivering a full minisite, first check
+   its reader review is settled (`75-review`).
+   Then record the tier reached (only if every requirement is
    met; an unattended run stops at Silver, since Gold is human curation;
    a run whose coverage or verify step ran on a model that is not proven
    stops at `bronze`, and `TODO.md` and the pull request say it waits on

@@ -39,13 +39,12 @@ canvas{image-rendering:pixelated;display:block;max-width:100%}
 .screenwrap{background:#000;border-radius:6px;display:inline-block;line-height:0;max-width:100%}
 .row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
 .col{flex:1 1 280px;min-width:0}
-button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 13px;cursor:pointer}
-button:hover{border-color:var(--violet)}
-button.on{background:var(--violet);border-color:var(--violet);color:#fff;font-weight:500}
+button{font-size:12.5px;padding:7px 13px}
+button.on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
 .ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0}
 label.inline{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);display:flex;gap:7px;align-items:center;cursor:pointer}
-input[type=text]{font-family:var(--fm);font-size:15px;padding:9px 12px;border:1px solid var(--line);border-radius:7px;width:100%;background:#fff;color:var(--ink)}
-select{font-family:var(--fm);font-size:12.5px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--surface-2)}
+input[type=text]{font-size:15px;padding:9px 12px;width:100%}
+select{font-size:12.5px}
 table{border-collapse:collapse;font-family:var(--fm);font-size:12.5px;width:100%}
 th,td{border-bottom:1px solid var(--line-soft);padding:6px 9px;text-align:left;vertical-align:top}
 th{color:var(--ink-mute);font-weight:500;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
@@ -103,8 +102,8 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
   <p>Every image, and the man and the dog moving through the house on the game’s own code, are on the <a href="graphics.html">Graphics</a> tab.</p>
   <p>The person on screen is four hardware sprites: his body, his head, and a black outline behind each. The dog is two and anything he carries is one. The main loop shares the eight sprites out once a pass, nearest figure first (<code>$0FD2</code>), and writes them at raster line <code>$FA</code>. There is no raster multiplexing.</p>
   <p>His head comes in three sets of fifteen images, one set for each mood (<code>$0D65</code>): happy, content and sad.</p>
-  <img class="ref" src="reference/moods.png" alt="His face in the three moods, captured in the emulator" style="max-width:620px">
-  <p class="cap">The three moods, captured in the emulator with the mood byte <code>$035F</code> set to 0, 1 and 2.</p>
+  <img class="ref" src="reference/moods.png" alt="His face in the three moods" style="max-width:620px">
+  <p class="cap">The three moods, with the mood byte <code>$035F</code> set to 0, 1 and 2.</p>
 </section>
 
 <section id="parser">
@@ -122,7 +121,7 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
     <div class="verdict" id="pVerdict"></div>
     <p class="cap">A copy of the parser at <code>$C040</code>: words are split at anything that is not a letter, looked up in list 1 (<code>$C234</code>, verbs, feelings and manners) and then list 2 (<code>$C5E0</code>, things, rooms and games), and tested against the rules at <code>$C96A</code> after every word (<code>$C1C5</code>). The score adds 3, 1 or 0 for his mood and 0 to 3 at random.</p>
   </div>
-  <p>At 8 or more the main loop empties the queue of waiting requests and he does this one at once; at 12 or more he turns to face you first (activity 46). Below 8 the request waits in a 16-entry queue at <code>$E12A</code>: from 4 to 7 the activity chooser takes it later, and below 4 it stays there until a request that scores 8 or more empties the queue. In the emulator, with his mood set to sad, "light a fire" scored 4 and was still waiting 25 seconds later, and "please light a fire" scored 8 and started at once.</p>
+  <p>At 8 or more the main loop empties the queue of waiting requests and he does this one at once; at 12 or more he turns to face you first (activity 46). Below 8 the request waits in a 16-entry queue at <code>$E12A</code>: from 4 to 7 the activity chooser takes it later, and below 4 it stays there until a request that scores 8 or more empties the queue. With his mood set to sad, "light a fire" scores 4 and is still waiting 25 seconds later, and "please light a fire" scores 8 and starts at once.</p>
   <h3>All 34 rules</h3>
   <p class="cap">Struck-out words can never be found: WHAT'S because the apostrophe splits it, and the second entries of START, LIKE, APATHETIC and IS because the lookup stops at the first. A rule that needs one of them can never fire.</p>
   <div class="tablewrap" id="pRules"></div>
@@ -135,13 +134,13 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
   <div class="plate">
     <div class="timeline" id="tl"></div>
     <div class="legend" id="tlLegend"></div>
-    <p class="cap">Nine minutes left alone, from the snapshot, with the activity number sampled four times a second in the emulator. Activity 0, the chooser, appears only for a moment between the others.</p>
+    <p class="cap">Nine minutes left alone, with the activity number sampled four times a second. Activity 0, the chooser, appears only for a moment between the others.</p>
   </div>
   <p>When an activity ends, the chooser (<code>$E13F</code>) decides what comes next, in this order: a request from a CTRL key, a typed request, food and water, bed, the activities fixed to the time of day, the morning and evening lists, and then a random pick from lists that depend on the time of day, the weekday and his routine setting.</p>
   <h3>The house clock</h3>
-  <p>Every 256 frames a counter steps down from 9, and at 0 the house clock ticks (<code>$09EB</code>): 2,304 frames. Twelve ticks make an hour, so a day in the house is 12 × 24 × 2,304 frames. Timed in the emulator, one tick is 45,287,427 cycles, exactly 2,304 PAL frames or 45.97 seconds, which makes his day 3 hours 41 minutes long. The time you type at the start sets only the wall clock in the study.</p>
+  <p>Every 256 frames a counter steps down from 9, and at 0 the house clock ticks (<code>$09EB</code>): 2,304 frames. Twelve ticks make an hour, so a day in the house is 12 × 24 × 2,304 frames. One tick is 45,287,427 cycles, exactly 2,304 PAL frames or 45.97 seconds, which makes his day 3 hours 41 minutes long. The time you type at the start sets only the wall clock in the study.</p>
   <h3>Food, water and illness</h3>
-  <p>Hunger and thirst each rise from 0 to 3 on their own timers, every 20 ticks and every 15. A need that rises from 2 makes him ill: his skin turns green (sprite multicolour <code>$D026</code> = 5). The illness gets a level worse every twelve ticks and ends once both needs are below 3 (<code>$392F</code>). He looks after his needs before anything else, so with food and water in the house he eats, drinks and recovers. With the cupboard and the tank empty, in the emulator the illness rose one level each house hour, and at level 3 he went to bed.</p>
+  <p>Hunger and thirst each rise from 0 to 3 on their own timers, every 20 ticks and every 15. A need that rises from 2 makes him ill: his skin turns green (sprite multicolour <code>$D026</code> = 5). The illness gets a level worse every twelve ticks and ends once both needs are below 3 (<code>$392F</code>). He looks after his needs before anything else, so with food and water in the house he eats, drinks and recovers. With the cupboard and the tank empty, the illness rises one level each house hour, and at level 3 he goes to bed.</p>
   <div class="row">
     <div class="col"><img class="ref" src="reference/sick-in-bed.png" alt="Ill and in bed"><p class="cap">Ill, in bed on the middle floor: the green is his skin colour.</p></div>
     <div class="col"><img class="ref" src="reference/phone-call.png" alt="On the phone in the easy chair"><p class="cap">Answering the phone, which also rings by itself every 32 to 63 ticks.</p></div>
@@ -153,7 +152,7 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
   <h2 class="t">Eight CTRL keys</h2>
   <p class="lede">The game reads the keyboard matrix itself, from the main loop, not the interrupt (<code>$05C7</code>): a key has to stay down until a pass of the loop comes round. CTRL with a letter gives its control code, and <code>$2B54</code> turns each code into a delivery, a ring or a request.</p>
   <div class="tablewrap"><table>
-    <tr><th>Key</th><th>The manual</th><th>The code</th><th>In the emulator</th></tr>
+    <tr><th>Key</th><th>The manual</th><th>The code</th><th>In play</th></tr>
     <tr><td>CTRL F</td><td>food at the front door</td><td>activity 44 fills the kitchen cupboard (<code>$3028</code>); ignored while the cupboard is full (<code>$30B4</code> = <code>$0F</code>)</td><td>nothing at first; activity 44 at once with the cupboard part empty</td></tr>
     <tr><td>CTRL W</td><td>fills the water tank</td><td>one line a press, up to 11 of the tank's 12 (<code>$2B51</code>)</td><td>5 to 11, then no further</td></tr>
     <tr><td>CTRL A</td><td>rings the alarm clock</td><td>the bell rings (<code>$2B4E</code>); ignored while a record plays</td><td>bell and sound; he carries on</td></tr>
@@ -181,9 +180,9 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
   <h2 class="t">Music: four piano pieces, and a record played upside down</h2>
   <p class="lede">Two sound drivers share the SID. One plays the records on the attic stereo, clocked by a CIA timer. The other plays the piano and all the effects, ticked by the raster interrupt. Both drivers' note tables are exact for an NTSC machine, so on PAL everything plays about two-thirds of a semitone flat.</p>
   <div class="plate"><div id="sidPlayer"></div>
-    <p class="cap">The piano and effects driver (<code>$B000</code>–<code>$B63F</code>, and its interpreter in the RAM under the I/O chips, <code>$D000</code>–<code>$D586</code>), ported to JavaScript and played through the site's model of the SID. Each sound starts as the game starts it. A piece is installed as sound 12 (activity 78, <code>$AB1A</code>) and started on the driver's second set of channels (<code>$364A</code>); when the piece raises its end flag (<code>$B012</code>), sound <code>$10</code> silences it (<code>$36B4</code>). The port was checked against the game's own code running in a 6502 simulator on the game's memory: every sound-chip write, in order, of every frame of the four pieces to their ends and of 12,000 talking calls, is the same. The model runs a PAL machine's clock at 50 frames a second, so the pieces play at a PAL C64's speed and pitch, two-thirds of a semitone below the NTSC tuning of the note table.</p>
+    <p class="cap">The piano and effects driver (<code>$B000</code>–<code>$B63F</code>, and its interpreter in the RAM under the I/O chips, <code>$D000</code>–<code>$D586</code>), ported to JavaScript and played through the site's model of the SID. Each sound starts as the game starts it. A piece is installed as sound 12 (activity 78, <code>$AB1A</code>) and started on the driver's second set of channels (<code>$364A</code>); when the piece raises its end flag (<code>$B012</code>), sound <code>$10</code> silences it (<code>$36B4</code>). The model runs a PAL machine's clock at 50 frames a second, so the pieces play at a PAL C64's speed and pitch, two-thirds of a semitone below the NTSC tuning of the note table.</p>
     <p class="cap"><b>Talking</b> is twelve calls of sound <code>$15</code>, each started the way the mouth routine's request starts it (slot 18, <code>$35E4</code>). A call picks its syllable and its phrase with the driver's own random byte (<code>$B0D3</code>), which the driver stirs every frame from three counters (<code>$B52A</code>). The port does the same from the driver's state in the listing's snapshot, so each call is the one the game would play on that frame. The ten frames between calls are a stand-in: in the game, the next call comes when his mouth next opens wide. The driver never reads the SID's noise or envelope output. Its one read of the chip is <code>LDA $D7AC</code> at <code>$B4FB</code>, a write-only register, and there the port takes 0, the value the reSID emulator gives once the chip's data bus has faded.</p>
-    <p class="cap">The pieces never route a voice through the filter. Each piece's start loads filter preset 0 (<code>$B6A1</code>: no voice routed, volume 15), and no piece loads another, so the player shows a note in place of the Filter switch. The talking uses it all the time. Each syllable is noise on voices 1 and 2 through a band-pass filter at resonance 15, with one of four cutoffs, <code>$40</code>, <code>$60</code>, <code>$80</code> or <code>$A0</code> in <code>$D416</code> (presets at <code>$B6CD</code>–<code>$B6DC</code>, loaded by command <code>$0D</code>). The phrase on voice 1 then loads a preset of its own, band-pass on voices 1 and 2 or low-pass on voice 1 alone, and moves the cutoff every frame (commands <code>$1D</code>, <code>$18</code> and <code>$19</code>): in the twelve calls here it runs from 0 to 1,952 of 2,047. The Filter switch plays the sounds three ways, and changes them while they play. <b>Off</b> leaves the filter out. <b>6581</b> is the original C64's chip, on the cutoff curve the reSID emulator (version 0.16) measured from one such chip. <b>8580</b> is the chip of later C64s. Real 6581s differ from one another in where each setting puts the cutoff, and they distort, which this model does not (<code>site/lib/sid.js</code>).</p>
+    <p class="cap">The pieces never route a voice through the filter. Each piece's start loads filter preset 0 (<code>$B6A1</code>: no voice routed, volume 15), and none of the pieces loads another, so the player shows a note in place of the Filter switch. The talking uses it all the time. Each syllable is noise on voices 1 and 2 through a band-pass filter at resonance 15, with one of four cutoffs, <code>$40</code>, <code>$60</code>, <code>$80</code> or <code>$A0</code> in <code>$D416</code> (presets at <code>$B6CD</code>–<code>$B6DC</code>, loaded by command <code>$0D</code>). The phrase on voice 1 then loads a preset of its own, band-pass on voices 1 and 2 or low-pass on voice 1 alone, and moves the cutoff every frame (commands <code>$1D</code>, <code>$18</code> and <code>$19</code>): in the twelve calls here it runs from 0 to 1,952 of 2,047. The Filter switch plays the sounds three ways, and changes them while they play. <b>Off</b> leaves the filter out. <b>6581</b> is the original C64's chip, on the cutoff curve the reSID emulator (version 0.16) measured from one such chip. <b>8580</b> is the chip of later C64s. Real 6581s differ from one another in where each setting puts the cutoff, and they distort, which this model does not (<code>site/lib/sid.js</code>).</p>
   </div>
   <p>The piano pieces are Mozart's Sonata in C, K. 545, Beethoven's Für Elise, the fugue in C minor from the first book of Bach's Well-Tempered Clavier, and a fourth piece that has not been identified. Activity 78 picks one at random, and while he plays, the game builds his image from three part images chosen by which keys the driver is holding down (<code>$1585</code>).</p>
   <h3>The record tunes</h3>
@@ -191,13 +190,13 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
     <div class="ctl" id="mButtons"></div>
     <div class="ctl"><label class="inline"><input type="checkbox" id="mPal"> PAL pitch</label><button id="mStop">Stop</button></div>
     <div class="screenwrap" style="margin-top:14px"><canvas id="mRoll" width="880" height="220"></canvas></div>
-    <p class="cap" id="mCap">The record player's driver is not ported. These are recordings: the SID's registers read in the emulator, one frame at a time for 20 seconds, with each tune forced where the game picks it at random (<code>$AB14</code>). Played back here with plain waveforms and no envelopes; the timing is the machine's own.</p>
+    <p class="cap" id="mCap">The record player's driver is not ported. These are recordings of the SID's registers, one frame at a time for 20 seconds, with each tune forced where the game picks it at random (<code>$AB14</code>). Played back here with plain waveforms and no envelopes; the timing is the machine's own.</p>
   </div>
   <h3>Record tune 2 is tune 0 upside down</h3>
   <div class="plate"><canvas id="mInv" width="880" height="200"></canvas>
     <p class="cap">The steps between the first notes of the melody, in semitones, as the SID played them: record tune 0 in the upper row and tune 2 in the lower, up for a step up. Every step of tune 2 is the step of tune 0 with its sign turned over, and in tune 2 all three voices play that melody in octaves.</p></div>
   <h3>The squawks</h3>
-  <p>Whenever his mouth opens wide, the mouth routine (<code>$24C8</code>) asks for sound <code>$15</code>, Talking in the player above. Each call starts with a random syllable of noise through one of four band-pass filters and goes on with a random phrase of gliding notes. During one phone call in the emulator that happened 24 times.</p>
+  <p>Whenever his mouth opens wide, the mouth routine (<code>$24C8</code>) asks for sound <code>$15</code>, Talking in the player above. Each call starts with a random syllable of noise through one of four band-pass filters and goes on with a random phrase of gliding notes. During one phone call that happened 24 times.</p>
 </section>
 
 <section id="where">

@@ -38,8 +38,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .loc-row>div{min-width:0}
 .loc-cv{image-rendering:pixelated;display:block;max-width:100%;height:auto;background:#000;border-radius:4px}
 .loc-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-family:var(--fm);font-size:13px}
-.loc-bar button,.loc-bar select{font:inherit;padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-.loc-bar button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.loc-bar button{padding:5px 10px}
 .loc-info{font-family:var(--fm);font-size:13px;line-height:1.55;min-width:260px;flex:1}
 .loc-info table,.loc-tab{border-collapse:collapse;font-family:var(--fm);font-size:13px}
 .loc-info td,.loc-tab td,.loc-tab th{padding:3px 8px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top}
@@ -47,8 +46,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .loc-tab td.n,.loc-tab th.n{text-align:right}
 .loc-scroll{overflow-x:auto;max-width:100%}
 .loc-pads{display:grid;grid-template-columns:repeat(4,auto);gap:8px;justify-content:start}
-.loc-pads button{font-family:var(--fm);font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer;text-align:left}
-.loc-pads button:hover{background:var(--hl)}
+.loc-pads button{font-size:13px;padding:8px 10px;text-align:left}
 .loc-shots{display:flex;flex-wrap:wrap;gap:14px}
 .loc-shots figure{margin:0;flex:1;min-width:220px}
 .loc-shots img{width:100%;image-rendering:pixelated;border-radius:4px;display:block}
@@ -99,11 +97,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <div><canvas id="mw-cv" class="loc-cv" width="168" height="168" style="width:336px"></canvas></div>
       <div class="loc-info" id="mw-info">Loading the listings…</div>
     </div>
-    <p class="cap">Drawn by the page from the engine's character sets and the scenario's things, graphics and colour sets (<code>$A94C</code> draw_map, <code>$A7B6</code> draw_block). <b>test_map.js</b> runs the game's own draw_map on the kit's Z80 for 864 windows, every byte of the screen they cover. Drawn from three play snapshots taken in ZEsarUX, with the creatures and objects in them, the window matches the emulator's screen with 0 pixels different. The squares here are as the scenario file has them, before the start of a game scatters objects and places the wizards.</p>
+    <p class="cap">Drawn by the page from the engine's character sets and the scenario's things, graphics and colour sets (<code>$A94C</code> draw_map, <code>$A7B6</code> draw_block). The squares here are as the scenario file has them, before the start of a game scatters objects and places the wizards.</p>
   </div>
   <p>The map is 36 rows of 36 bytes (the pointer at <code>$D030</code>). A byte below <code>$50</code> is a terrain, <code>$50</code> to <code>$83</code> an object lying there, and <code>$8C</code> and up a creature. Each value has a five-byte entry in the scenario's table of things: which of four character sets to draw from, which graphic (nine character numbers), which colour set (nine attributes), and two bytes for animation that the interrupt counts down every other frame (<code>$A891</code>). Water ripples and fire flickers because the interrupt swaps their graphics, and the main program never has to think about it. The <a href="graphics.html">Graphics</a> tab draws every thing in each scenario, moving as the game moves it, with the cursor, the bursts, a wizard's death and the missiles.</p>
   <p>The map wraps round: walking off the right edge brings a creature in on the left. The window scrolls a row or column at a time when the cursor reaches its edge (<code>$629B</code>).</p>
-  <p>With <b>Line of sight</b> on, the chosen square is a creature on the ground, and every square it could see is lit. The game traces a line square by square from the viewer to each square within 18 half squares, a straight step counting 2 and a diagonal 3, and a square whose terrain has bit 0 set in its flags (<code>$D38E</code>) blocks it (<code>$B41B</code>). The squares next to the viewer are always seen. <b>test_sight.js</b> holds the page's line to the game's code on 20,000 pairs of squares in each scenario.</p>
+  <p>With <b>Line of sight</b> on, the chosen square is a creature on the ground, and every square it could see is lit. The game traces a line square by square from the viewer to each square within 18 half squares, a straight step counting 2 and a diagonal 3, and a square whose terrain has bit 0 set in its flags (<code>$D38E</code>) blocks it (<code>$B41B</code>). The squares next to the viewer are always seen.</p>
 </section>
 
 <section>
@@ -132,7 +130,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <div id="cb-out" class="loc-info"></div>
     <div class="loc-scroll" style="margin-top:14px"><table class="loc-tab pics" id="cb-tab"></table></div>
-    <p class="cap">The table is each scenario's creature types (the pointer at <code>$D003</code>, twelve bytes a type from <code>$90</code>), each drawn as it stands on the map when the scenario starts. The blow follows <code>$8645</code>; <b>test_combat.js</b> runs the game's code for every combat and defence from 0 to 255 with the random number fixed at each value it can take, and compares the damage with the page's.</p>
+    <p class="cap">The table is each scenario's creature types (the pointer at <code>$D003</code>, twelve bytes a type from <code>$90</code>), each drawn as it stands on the map when the scenario starts. The blow follows <code>$8645</code>.</p>
   </div>
   <p>An attack costs 8 action points and 8 stamina (<code>$84EC</code>). The blow is a random number below twice the attacker's combat plus 2, less the defender's defence. Anything left comes off the defender's constitution. If the defender survives with 4 action points and 4 stamina it strikes back at once.</p>
   <p>The figures in the table are the type's own. In play they move: a strength potion adds 20 to combat, a protection potion 25 to defence, a weapon in use adds its combat, and the best defence among the weapons carried counts. Then both are divided by the number of times the creature's constitution goes into its most (<code>$9342</code>): nothing changes until it is down to half, when they halve, and at a third they are a third.</p>
@@ -146,7 +144,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="loc-bar"><select id="sp-scen" aria-label="Scenario"><option value="1">Scenario 1</option><option value="2">Scenario 2</option><option value="3">Scenario 3</option></select><label>Level <input type="range" id="sp-lv" min="1" max="8" value="3"> <b id="sp-lvn">3</b></label></div>
     <div class="loc-scroll" style="max-height:560px;overflow-y:auto"><table class="loc-tab pics" id="sp-tab"></table></div>
-    <p class="cap">Base costs from <code>$B4BE</code>, names from the scenario's messages through spell_name (<code>$80A0</code>). The cost is worked out by <code>$81D4</code>. The picture is what the spell leaves on the map: the creature it summons, the potion it brews, the ground it spreads (magic fire and gooey blob in the first wizard's own). A spell with nothing to leave shows its flight, the missile drawn in its colour. <b>test_spells.js</b> runs every spell's routine in the game's own code, in all three scenarios, and checks that it puts on the screen what this table says.</p>
+    <p class="cap">Base costs from <code>$B4BE</code>, names from the scenario's messages through spell_name (<code>$80A0</code>). The cost is worked out by <code>$81D4</code>. The picture is what the spell leaves on the map: the creature it summons, the potion it brews, the ground it spreads (magic fire and gooey blob in the first wizard's own). A spell with nothing to leave shows its flight, the missile drawn in its colour.</p>
   </div>
   <p>A wizard's record holds a byte for each of the 45 spells: the level it was designed with in the high four bits and the level left in the low four (<code>$CEEA</code>). Casting needs 8 action points and the mana, and takes one level off (<code>$82A2</code>). A summon spell brings as many creatures as its level, on free squares round the wizard (<code>$8342</code>). Mana comes back by a 25th of the starting mana each turn (<code>$7560</code>).</p>
   <p>A spell cast at a square or a creature flies there first, as a cross or a star of pixels in its own colour, and ends in the burst a blow makes (<code>$AEBE</code>): magic fire, gooey blob, tangle vine and flood on their way to the ground they spread, ENCHANT, SUBVERSION and CURSE in one colour, MAGIC BOLT and MAGIC LIGHTNING in colours of their own. MAGIC ATTACK bursts again on every creature it kills. A summons shows the sparkle where the creatures appear, a brew where the potion is, and MAGIC SHIELD on the wizard. TELEPORT and MAGIC EYE draw nothing of their own: one moves the wizard, the other shows the map as a creature on the target square would see it.</p>
@@ -159,7 +157,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Every sound in the game comes from the same eight-byte recipe and the same routine. Press one to hear it.</p>
   <div class="plate">
     <div class="loc-pads" id="sd-pads"></div>
-    <p class="cap">Played from the edges of the speaker that the page works out from each sound's eight bytes at <code>$C7B0</code>, timed as the game's loop at <code>$C856</code> takes them. <b>test_sound.js</b> runs the game's routine on the kit's Z80 for all sixteen and compares the time of every click. The Spectrum's speaker plays a square wave; low clicks below about 100 Hz are hard to hear on laptop and phone speakers.</p>
+    <p class="cap">Played from the edges of the speaker that the page works out from each sound's eight bytes at <code>$C7B0</code>, timed as the game's loop at <code>$C856</code> takes them. The Spectrum's speaker plays a square wave; low clicks below about 100 Hz are hard to hear on laptop and phone speakers.</p>
   </div>
   <p>A sound is a number of groups, a number of repeats, and three notes. Each note is an empty loop of its delay followed by one click of the speaker (<code>$C856</code>). After each group every delay moves on by its own step, which turns three clicks into a rising or falling sweep. The game plays nothing during a turn the computer plays out of sight, and a sound started while the map is being drawn gets a step after each row, so the drawing and the sound share the time.</p>
 </section>

@@ -541,3 +541,34 @@ port 2 through the emulator's own control.
   throws (`$3903` ran four times) and a box left the count at 5; the same
   run without the patch went 5 to 1, and the box added 3
   (`work/scripts/live.py grenades`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- In the emulator, a rifle soldier held at x 232 with the player held level with him at x 100 turned to face right and fired every bullet to the right, two pixels a frame away from the player.
+- The port was run beside the game's routines in a 6502 simulator on the listing's bytes: every BCD score with each amount the game adds, every grenade count from 0 to 255 with a box and with a throw, a box picked up in each of the eleven enemy slots at 300 scores, and every lives count: 54,067 cases.
+- The emulator showed MEN 0 and the block with the count set to eleven and one life then lost.
+- Both were seen in the emulator.
+- The test runs the game's own loop in the simulator with the box in each of the eleven slots, among rifle soldiers, with and without the carry.
+- In the emulator, a box in slot 2 at 9,500 points left 11,500 points, eleven grenades from five and six lives from five, and the rifle soldier who had been in slot 0, up the screen, was gone.
+- In the emulator, a game of 2,500 in the 1985 release left DILK 002500 in eighth place, a game of 0 left DILK 000000, and neither asked for a name.
+- In the emulator the restarted game cycled through its title and attract views and ignored fire.
+- The same view after a reset, with the display put back on The 1985 release in the emulator, at area 3's row 169.
+- The top-left corner of the screen when area 1's gate comes into view, from the emulator, five times the size. gamesexplained · Commando for the Commodore 64, explained from its code /* commando-hud */ /* The score line's arithmetic and digits, ported from the game: the score add and its extra life ($134F), the grenade box ($2A8E, and its second payout from the enemy loop) and the throw ($3903), one pass of the enemy loop with a box in it ($2495), and the four prints ($136F, $13A3, $13D7, $13F1).
+
+### graphics.html
+
+- Load it againSkip The cassette's own screen, recorded in VICE and drawn as the video chip draws it, with the counters as they stood in each frame of the load: the blocks go at the tape's own pace, and the clock gains two hundredths of a second a frame.
+
+### index.html
+
+- The title screen and the first seconds of play, from the emulator.
+- The port was run beside the game's own code in a 6502 simulator, on the bytes of this page's listing: every write it makes to the SID matched the game's, in order, frame by frame, over 25,000 frames of the title tune, all of the other two, each of the sixteen sound effects alone, and the effects asked for over the title tune as the game asks for them.
+- The player runs the cassette's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette does.
+- It was checked against the cassette loading in VICE: after each of the tune's first 6,100 frames, two minutes of it, the sound chip's registers are the player's, from the second frame on.
+- Show where the raster interrupts change the chip One frame recorded in VICE with every write to the video chip during it, and drawn here line by line with the state in force when the beam got there: 104,448 of 104,448 pixels match the emulator's own picture of the same frame.
+- Held down for 40 frames at a time, four presses made eight bullets in the emulator.
+- Both copies were stopped in the emulator as they hand over to the game at `$0850` and compared byte for byte.

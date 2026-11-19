@@ -38,9 +38,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .sf-stack{position:relative}
 .sf-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent;pointer-events:none}
 .sf-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
-.sf-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
-.sf-btn:hover{border-color:var(--ink-mute)}
-.sf-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.sf-btn{font-size:12.5px;padding:5px 11px;line-height:1.3}
 .sf-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
 .sf-out b{font-weight:700}
 .sf-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
@@ -55,12 +53,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .sf-picks figure{margin:0;text-align:center;font-size:13px;line-height:1.35}
 .sf-picks .sf-n{font-family:var(--fm)}
 .sf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
-.sf-grid button{background:#000;border:2px solid transparent;border-radius:5px;padding:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:52px}
-.sf-grid button[aria-pressed="true"]{border-color:var(--amber)}
+.sf-grid[data-own-look] button{background:#000;border:2px solid transparent;border-radius:5px;padding:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:52px}
+.sf-grid[data-own-look] button[aria-pressed="true"]{border-color:var(--amber)}
 .sf-grid canvas{image-rendering:pixelated;max-width:100%}
 .sf-strip{display:grid;grid-template-columns:repeat(25,minmax(0,1fr));gap:3px;margin:0 0 6px}
-.sf-strip button{font-family:var(--fm);font-size:10px;padding:5px 0;border:1px solid var(--line);border-radius:4px;cursor:pointer;color:#fff}
-.sf-strip button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.sf-strip[data-own-look] button{font-family:var(--fm);font-size:10px;padding:5px 0;border:1px solid var(--line);border-radius:4px;cursor:pointer;color:#fff}
+.sf-strip[data-own-look] button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
 .sf-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin:8px 0 0}
 .sf-key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .sf-code{font-family:var(--fm);font-size:12px;line-height:1.5;background:#1d1f24;color:#e9e7e1;padding:14px;border-radius:6px;overflow-x:auto;margin:0 0 14px;white-space:pre}
@@ -86,7 +84,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="sf-bar" id="sf-areas"></div>
     <div class="sf-stack"><canvas id="sf-frame" class="sf-cv" width="384" height="272"></canvas><canvas id="sf-frame-hi" class="sf-cv" width="384" height="272"></canvas></div>
     <p class="sf-out" id="sf-area-out"></p>
-    <p class="cap">One frame of the status screen with Syylk chosen, recorded in the emulator and drawn here from the bitmap at <code>$2000</code>, the colours at <code>$0C00</code>, colour RAM and the sprites, by the site's renderer. All 104,448 pixels of the drawing match the emulator's own picture of the frame.</p>
+    <p class="cap">One frame of the status screen with Syylk chosen, drawn here from the bitmap at <code>$2000</code>, the colours at <code>$0C00</code>, colour RAM and the sprites, by the site's renderer.</p>
   </div>
   <p>The panel's frame and its lamps are never drawn by the program: they arrive in the bitmap as the tape loads it. In play the game changes only the status icons' colours, the clock, the ticker, the view screen and the portrait monitor.</p>
   <p>The lower twelve rows are cleared for each of the nine screens and drawn again from a list of icons (<code>draw_screen</code>, <code>$4A63</code>). An icon in the list is a picture, a place on the screen, and the routine that runs when the player presses fire with the cursor on it.</p>
@@ -99,9 +97,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div id="sf-sid"></div>
     <div class="sf-bar sf-ring" id="sf-ring"></div>
-    <p class="cap">The page runs the game's own music driver, its bytes <code>$1600</code>-<code>$1FC5</code> from the listing, on the kit's 6502, and plays what it writes through a model of the SID. Title music starts as the game starts it and runs the ring for as long as it plays; the tune lit under the player is the one playing, and a click on another moves the music there. <code>test_music.js</code> checks every write of each button against the same driver run on the simulator, two rounds of the ring for the title music.</p>
+    <p class="cap">The page runs the game's own music driver, its bytes <code>$1600</code>-<code>$1FC5</code> from the listing, and plays what it writes through a model of the SID. Title music starts as the game starts it and runs the ring for as long as it plays; the tune lit under the player is the one playing, and a click on another moves the music there.</p>
   </div>
-  <p>Tune 7 sets voices 2 and 3 to a sawtooth and asks for tune 4 on its first frame. From there the ring runs 4, 5, 6, 2, 3, 8 and back to 4, 4,368 frames round, about 87 seconds. Tunes 2 and 3 play from the same three note tables, 3 for 144 steps where 2 stops at 96, and tune 5 is the first 72 steps of tune 4 again. Tune 9 sits in the driver with its own notes and effect, and nothing in the game asks for it.</p>
+  <p>Tune 7 sets voices 2 and 3 to a sawtooth and asks for tune 4 on its first frame. From there the ring runs 4, 5, 6, 2, 3, 8 and back to 4, 4,368 frames round, about 87 seconds. Tunes 2 and 3 play from the same three note tables, 3 for 144 steps where 2 stops at 96, and tune 5 is the first 72 steps of tune 4 again. Tune 9 sits in the driver with its own notes and effect, and the game never asks for it.</p>
   <p>Tune 1 is the music in play. Its voices 2 and 3 are pulse waves whose width is the byte at <code>$1603</code> times eight, and a new game finds it at 0, a pulse of no width, which is silence. Holding fire on the team screen's up arrow raises it a step at a time to <code>$40</code>, so the music fades in; the down arrow fades it out. The player's "In play" button has it turned all the way up.</p>
   <p>The driver turns each note on by storing the waveform in the voice's control register and then incrementing the register, which adds the gate bit (<code>$1662</code>). The SID's registers cannot be read back: a read returns whatever is still on the data bus, which here is the waveform just written, so the increment works. A SID that read back 0 would turn every note into a gate with no waveform, so the player above keeps the bus's last value too.</p>
 </section>
@@ -112,7 +110,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Voice 1 plays the sound effects, and the in-game tune starts each one on its beat, every eighth frame. Some effects repeat on every beat until the game changes them; one plays once.</p>
   <div class="plate">
     <div id="sf-sfx"></div>
-    <p class="cap">The same driver on the same 6502, playing tune 1 with its pulse width at 0 as a new game sets it, so that only voice 1 sounds. Each button sets the byte the game sets for that moment (<code>$1602</code>, or <code>$1601</code> for the icon). <code>test_music.js</code> checks these four as well.</p>
+    <p class="cap">The same driver on the same 6502, playing tune 1 with its pulse width at 0 as a new game sets it, so that only voice 1 sounds. Each button sets the byte the game sets for that moment (<code>$1602</code>, or <code>$1601</code> for the icon).</p>
   </div>
   <p>On every beat the driver takes the byte at <code>$1602</code> and starts it as an effect. The game keeps it at <code>$30</code>, changes it to <code>$3E</code> while a message scrolls through the ticker, and to <code>$0F</code> while a character is weak: a heartbeat, whose low bit makes the driver flip another bit on every beat, so it alternates between two sounds. Choosing an icon puts <code>$DE</code> in <code>$1601</code>, played once at the next beat.</p>
   <p>One byte describes a whole effect. Its bits choose the waveform, the envelope, the starting pitch, and how fast the pitch climbs (<code>voice1_effect</code>, <code>$1F6B</code>).</p>
@@ -128,7 +126,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <canvas id="sf-view" class="sf-cv" width="240" height="240"></canvas>
       <div><p class="sf-out" id="sf-loc-out"></p><table class="sf-tbl" id="sf-exits"></table></div>
     </div>
-    <p class="cap">Drawn by a port of <code>draw_view_map</code> (<code>$6A50</code>) from the tile map at <code>$84CB</code>, the colour map at <code>$88CB</code>, the tile set at <code>$BF96</code> and the map's 235 characters at <code>$C288</code>. <code>test_map.js</code> checks every cell of all 164 windows against the routine itself run on the simulator. The outline marks the cell where the character's own icon goes. The <a href="levels.html">Maps</a> tab draws the whole ship, and the <a href="graphics.html">Graphics</a> tab opens the iris and shows every picture.</p>
+    <p class="cap">Drawn by a port of <code>draw_view_map</code> (<code>$6A50</code>) from the tile map at <code>$84CB</code>, the colour map at <code>$88CB</code>, the tile set at <code>$BF96</code> and the map's 235 characters at <code>$C288</code>. The outline marks the cell where the character's own icon goes. The <a href="levels.html">Maps</a> tab draws the whole ship, and the <a href="graphics.html">Graphics</a> tab opens the iris and shows every picture.</p>
   </div>
   <p>A tile is two cells by two, each cell one of the map's own 235 multicolour characters, and a tile's four cells share one colour byte from the colour map. The routine copies the characters straight into the bitmap: the map is 1 KB of tile numbers and 1 KB of colours, and the tiles and characters add 2.6 KB.</p>
   <p>A location is a record of a map position, its exits and its name. Each exit is two bytes: the location it leads to, and a byte holding the distance in its low three bits and a door in the other five, 0 for none. A character walks a unit of distance in a time set by its agility (section 05), and a locked door stops it until a key card of the door's colour opens it, or Sevrina picks the lock.</p>
@@ -144,7 +142,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <canvas id="sf-portrait" class="sf-cv" width="240" height="192"></canvas>
       <table class="sf-tbl" id="sf-stats"></table>
     </div>
-    <p class="cap">Portraits from the table at <code>$4A21</code> and the team screen's pictures from <code>$818F</code>, drawn from the listing by a port of <code>draw_picture</code> (<code>$42D9</code>). <code>test_pictures.js</code> checks it against the routine on every one of the 83 pictures these pages draw. The numbers are the records as a new game starts them: <code>$CA0E</code> onwards, <code>agility_base</code> at <code>$CFB7</code> and <code>strength_factor</code> at <code>$CF85</code>.</p>
+    <p class="cap">Portraits from the table at <code>$4A21</code> and the team screen's pictures from <code>$818F</code>, drawn from the listing by a port of <code>draw_picture</code> (<code>$42D9</code>). The numbers are the records as a new game starts them: <code>$CA0E</code> onwards, <code>agility_base</code> at <code>$CFB7</code> and <code>strength_factor</code> at <code>$CF85</code>.</p>
   </div>
   <p>Strength and the factor decide what a character can carry and how hard it hits. Strength times factor over 256 is both the most weight a character can carry and the damage it deals before its weapon's strength scales it. Above that weight, agility drains by a sixteenth of the excess every second. Maul's factor is the largest, <code>$FF</code>.</p>
   <p>Agility and the base decide how fast a character walks. The game takes a quarter of the two added together, subtracts that from 127, divides by 8 and makes the answer odd: the seconds each unit of an exit's distance takes, from 15 at the lowest agility to 1 at the highest. Torik, with a base of <code>$FF</code>, walks fastest, and Maul, with <code>$40</code>, slowest.</p>
@@ -156,7 +154,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Weapons that look alike hit differently</h2>
   <p class="lede">The ship holds 54 objects: eighteen tools, keys and devices, and 36 weapons drawn with eighteen pictures between them.</p>
   <div class="plate">
-    <div class="sf-grid" id="sf-objs"></div>
+    <div class="sf-grid" id="sf-objs" data-own-look></div>
     <p class="sf-out" id="sf-obj-out"></p>
     <p class="cap">Every object's picture and record as a new game starts them (<code>$CD98</code>, seven bytes each), with its strength from <code>weapon_strength</code> (<code>$CF15</code>). The game names none of them.</p>
   </div>
@@ -169,7 +167,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Everyone aboard gets one turn a second</h2>
   <p class="lede">Each time the screen is redrawn, fifty times a second, the game moves one of the fifty people aboard, always in the same order. Each of them gets one turn a second and does nothing in between.</p>
   <div class="plate">
-    <div class="sf-strip" id="sf-ents"></div>
+    <div class="sf-strip" id="sf-ents" data-own-look></div>
     <div class="sf-key" id="sf-ent-key"></div>
     <p class="sf-out" id="sf-ent-out"></p>
     <p class="cap">The fifty records as a new game starts them, eighteen bytes each from <code>$CA0E</code>, in the order the interrupt runs them.</p>

@@ -23,6 +23,11 @@ parts above each listing, and a control beside it, step from one to the next.
 parts/<id>/ carries each part's listing and symbols. About draws one footprint,
 as for any game: the part the others are loaded over, with what they load
 marked as varying with the part.
+A game with "hidden": true in game.json is left off the site: the kill switch,
+one line in a pull request. The build writes no page of it, no page lists it,
+the activity page leaves out the changes made to it alone, and a link to it
+from another game's page becomes plain text. Its folder stays, and the checks
+and tests still read it; delete the line and it is back.
 A game whose maintainers withhold its annotated listing sets "publish_source":
 false in game.json. Its Source tab is one page with the line on the comments
 and a sentence saying the annotations are not published; no tab links an
@@ -69,6 +74,9 @@ The authored pages have {{title}}, {{platform}}, {{year}} and {{publisher}}
 filled from game.json. A game page's eyebrow leaves out the platform, which its
 breadcrumb names: the build drops a platform name at the eyebrow's start. The build fails on a src or href that points at no
 file it published: a page's own .js beside it would otherwise 404 on the site.
+It fails too on a file a page's script loads by name that it did not publish
+(unpublished_loads): C64.load('listing.json') in a game whose listings are its
+parts' draws nothing, and the page still builds.
 It lists pages with blocks hidden by the page editor (kit/scripts/edit.py), and
 fails on a Gold page that still has one. It stops on a Platinum game without a
 Play tab and the test_play.js beside it that holds the published page. It counts the links into a
@@ -553,6 +561,38 @@ def original_source(gdir, addr=True):
         return ""
     return ('<section class="origsrc" id="original-source">'
             + markdown(text, drop_h1=False, addr=addr, shift=1) + "</section>")
+
+
+_hidden = set()   # "<platform>/<slug>" of each game main() left off the site
+
+
+def hidden(game):
+    """True for a game the maintainers have taken off the site, game.json's "hidden": true."""
+    return game.get("hidden") is True
+
+
+def unlink_hidden(out_root, keys):
+    """Turn each link on a built page that leads into a hidden game's folder into its own text,
+    so hiding a game another game's page links never breaks the build or leaves a dead link.
+    Returns how many links it took out."""
+    gone = [os.path.join(out_root, *k.split("/")) for k in keys]
+    n = 0
+    for page in sorted(glob.glob(os.path.join(out_root, "**", "*.html"), recursive=True)) if gone else []:
+        text = open(page, encoding="utf-8").read()
+
+        def one(m):
+            url = m.group(2)
+            if re.match(r"[a-z][a-z0-9+.-]*:|//|#", url, re.I):
+                return m.group(0)
+            path = url.split("#")[0].split("?")[0]
+            target = os.path.normpath(os.path.join(out_root, path.lstrip("/")) if path.startswith("/")
+                                      else os.path.join(os.path.dirname(page), path))
+            return m.group(3) if any(target == g or target.startswith(g + os.sep) for g in gone) else m.group(0)
+        new, k = re.subn(r'<a\b[^>]*?\bhref\s*=\s*(["\'])(.*?)\1[^>]*>(.*?)</a>', one, text, flags=re.S)
+        if new != text:
+            n += len(re.findall(r"<a\b", text)) - len(re.findall(r"<a\b", new))
+            open(page, "w", encoding="utf-8").write(new)
+    return n
 
 
 def withheld(game):
@@ -2164,6 +2204,9 @@ def landed(games):
             if k and status == "A":
                 new_kits.append(k.group(1))
         touched = sorted({"/".join(p.split("/")[1:3]) for p in paths if p.startswith("games/") and p.count("/") >= 3})
+        if touched and all(k in _hidden for k in touched) and all(p.startswith("games/") for p in paths):
+            continue   # a change to hidden games alone: the page does not name them
+        touched, added, removed = ([k for k in ks if k not in _hidden] for ks in (touched, added, removed))
         pr, title = None, subject
         m = SQUASHED.search(subject) or MERGED.match(subject)
         if m:
@@ -2468,6 +2511,72 @@ def broken_links(out_root):
     return bad
 
 
+def loaders():
+    """The names of the site's loaders that fetch listing.json when a page gives them no URL:
+    C64, BBC and the rest, each from the site/lib/ script that defines it."""
+    names = []
+    for f in sorted(glob.glob(os.path.join(SITE, "lib", "*.js"))):
+        text = read(f)
+        m = re.search(r"^globalThis\.(\w+) = \(function", text, re.M)
+        if m and "url = url || 'listing.json'" in text:
+            names.append(m.group(1))
+    return names
+
+
+SCRIPT = re.compile(r"<script\b([^>]*)>(.*?)</script>", re.S | re.I)
+LOADS = re.compile(r"""\b([\w$]+)\.load\(\s*(?:(["'])([^"'\n]*)\2\s*)?\)|\bfetch\(\s*(["'])([^"'\n]+)\4\s*[,)]""")
+
+
+def unpublished_loads(out_root):
+    """(file, URL) for each file that a script of a built page loads by name and the build did
+    not write: a whole string given to a loader (C64.load('listing.json')) or to fetch, and a
+    loader called with nothing, which fetches listing.json. A URL a script puts together at run
+    time is not read, nor is one the page carries in a data-listing tag, which the loaders take
+    from the page. A script under reference/ is read as its pages run it, from the folder above.
+
+    A game of several parts has no listing.json of its own, and a page left loading one builds
+    cleanly and then draws nothing in the reader's browser (the --adopt of a game's first load,
+    kit/scripts/parts.py, moves the listing its pages were written against)."""
+    named, bad = set(loaders()), []
+
+    def loads(text):
+        for m in LOADS.finditer(text):
+            if "//" in text[text.rfind("\n", 0, m.start()) + 1:m.start()].replace("://", ""):
+                continue   # in a comment
+            if m.group(5) is not None:
+                url = m.group(5)
+            elif m.group(3) is not None:
+                url = m.group(3)
+                if m.group(1) not in named and not url.endswith(".json"):
+                    continue   # some other object's load, of something that is no file
+            elif m.group(1) in named:
+                url = "listing.json"
+            else:
+                continue
+            if url and not re.match(r"[a-z][a-z0-9+.-]*:|//|#", url, re.I) and "${" not in url:
+                yield url
+
+    def missing(folder, url):
+        path = url.split("#")[0].split("?")[0]
+        return bool(path) and not os.path.exists(os.path.normpath(
+            os.path.join(out_root, path.lstrip("/")) if path.startswith("/") else os.path.join(folder, path)))
+
+    carried = {}   # folder: the listings its pages carry
+    for page in sorted(glob.glob(os.path.join(out_root, "**", "*.html"), recursive=True)):
+        text, folder = read(page), os.path.dirname(page)
+        own = set(re.findall(r'data-listing="([^"]+)"', text))
+        carried.setdefault(folder, set()).update(own)
+        for attrs, body in SCRIPT.findall(text):
+            if re.search(r"\bsrc\s*=|application/json", attrs):
+                continue
+            bad += [(os.path.relpath(page, out_root), url) for url in loads(body) if url not in own and missing(folder, url)]
+    for js in sorted(glob.glob(os.path.join(out_root, "**", "reference", "**", "*.js"), recursive=True)):
+        folder = js[:js.rindex(os.sep + "reference" + os.sep)]
+        bad += [(os.path.relpath(js, out_root), url) for url in loads(read(js))
+                if url not in carried.get(folder, ()) and missing(folder, url)]
+    return sorted(set(bad))
+
+
 class AddressLinks(html.parser.HTMLParser):
     """The links into a Source page that a built page carries, as (page, address): each
     <a href="source….html#XXXX">, and each bare <code>$XXXX</code> that site.js makes one of
@@ -2608,6 +2717,9 @@ def main():
         shutil.copy(os.path.join(ROOT, *src.split("/")), os.path.join(out_root, "lib", f))
     games = []
     for gj in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "game.json"))):
+        if hidden(json.load(open(gj, encoding="utf-8"))):
+            _hidden.add("/".join(gj.replace(os.sep, "/").split("/")[-3:-1]))
+            continue
         games.append(build_game(os.path.dirname(gj), out_root))
     feat = featured_game(games)
     home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib",
@@ -2631,6 +2743,7 @@ def main():
     version_lib(out_root)
     add_pwa(out_root)
     tagged = add_analytics(out_root)
+    unlinked = unlink_hidden(out_root, _hidden)
     bad = broken_links(out_root)
     for page, url in bad:
         print(f"broken link: {page} -> {url}", file=sys.stderr)
@@ -2638,6 +2751,14 @@ def main():
         sys.exit(f"{len(bad)} link(s) to nothing the build published. A game folder publishes its authored pages, "
                  "listing.json, symbols.json and reference/ (and for each of its parts, parts/<id>/listing.json and "
                  "symbols.json, and source-<id>.html), nothing else; site/lib/ is at ../../lib/")
+    unloaded = unpublished_loads(out_root)
+    for src, url in unloaded:
+        print(f"nothing to load: {src} loads {url}", file=sys.stderr)
+    if unloaded:
+        sys.exit(f"{len(unloaded)} file(s) that a page's script loads and the build did not publish. A game of several "
+                 "parts has no listing.json of its own: its pages load a part's, as in "
+                 "C64.load('parts/<id>/listing.json'). A game folder publishes its authored pages, listing.json, "
+                 "symbols.json and reference/, and for each of its parts parts/<id>/listing.json and symbols.json")
     total, lost, inside = unrecorded(out_root)
     if "--addresses" in argv:
         pages = {}
@@ -2664,6 +2785,10 @@ def main():
     if _unasked:
         print(f"{len(_unasked)} contributor(s) are unlinked in this build: GitHub says whose address a commit "
               "is under, and the build asks it only when GITHUB_TOKEN is set, as it is in CI")
+    for k in sorted(_hidden):
+        print(f"hidden: games/{k} is left off the site (\"hidden\": true in its game.json)")
+    if unlinked:
+        print(f"{unlinked} link(s) to a hidden game became plain text")
     print(f"built {len(games)} game(s) into {os.path.relpath(out_root, ROOT)}/" + (f"; analytics on {tagged} pages" if tagged else "; analytics off (no id in site/config.json)"))
 
 

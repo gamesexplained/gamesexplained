@@ -163,5 +163,67 @@ class Ledger(unittest.TestCase):
         self.assertIn("not listed", r.stdout)
 
 
+SCORES = bytes((i * 29 + 3) & 255 for i in range(256))
+
+
+class Traced(unittest.TestCase):
+    """A high-score table the game writes with the drive's block commands to a sector the disk's
+    map marks free is in no item a scan lists. `trace` adds it, a scan keeps it while its bytes
+    are the same and opens it when they are not, and a sector a scan lists already is refused
+    (#902)."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.g = self.tmp / 'game'
+        self.g.mkdir()
+        self.game = {"platform": "c64", "tier": "silver", "created": "2099-01-01"}
+        (self.g / 'game.json').write_text(json.dumps(self.game))
+        (self.g / 'listing.json').write_text(json.dumps({"records": [{"a": 0x1000, "b": list(ENGINE)}]}))
+        self.d64 = self.tmp / 'side.d64'
+        write_d64(self.d64, [(b"ENGINE", 0x1000, ENGINE)], (20, 5, STRAY))
+        self.put(SCORES)
+        run('scan', self.g, f'side1={self.d64}')
+        run('answer', self.g, 'track 20*', 'unused', '--why', 'nothing reads it')
+
+    def put(self, data):
+        """The scores at track 18, sector 18, which the disk's map leaves free."""
+        blob = bytearray(self.d64.read_bytes())
+        at = (sum(disk.SPT[1:18]) + 18) * 256
+        blob[at:at + 256] = data
+        self.d64.write_bytes(bytes(blob))
+
+    def items(self):
+        return {i["label"]: i for i in json.loads((self.g / 'media.json').read_text())["items"]}
+
+    def test_trace_scan_keeps_it_and_a_change_opens_it(self):
+        self.assertNotIn("track 18, sector 18", self.items())
+        why = 'the title writes one block from $67FF at $900C and the intro reads it back at $90A2'
+        run('trace', self.g, f'side1={self.d64}', 18, 18, 'saved', '--why', why)
+        t = self.items()["track 18, sector 18"]
+        self.assertEqual((t["answer"], t["why"], t["traced"], t["bytes"], t["place"]),
+                         ("saved", why, True, 256, {"track": 18, "sectors": [18, 18]}))
+        self.assertEqual(M.problems(str(self.g), self.game), [])
+
+        before = (self.g / 'media.json').read_text()
+        run('scan', self.g, f'side1={self.d64}')
+        self.assertEqual((self.g / 'media.json').read_text(), before)      # kept as it was
+
+        self.put(SCORES[::-1])                                              # a new high score
+        r = run('scan', self.g, f'side1={self.d64}')
+        t = self.items()["track 18, sector 18"]
+        self.assertEqual(t["answer"], "open")
+        self.assertIn("bytes changed", t["why"])
+        self.assertIn("is open again", r.stdout)
+
+    def test_what_trace_refuses(self):
+        self.assertIn("lists those sectors already",
+                      run('trace', self.g, f'side1={self.d64}', 20, 5, 'saved', '--why', 'x', ok=False).stderr)
+        self.assertIn("--why", run('trace', self.g, f'side1={self.d64}', 18, 18, 'saved', ok=False).stderr)
+        other = self.tmp / 'other.d64'
+        other.write_bytes(self.d64.read_bytes()[:-1] + b"\x01")
+        self.assertIn("none of the images",
+                      run('trace', self.g, other, 18, 18, 'saved', '--why', 'x', ok=False).stderr)
+
+
 if __name__ == '__main__':
     unittest.main()

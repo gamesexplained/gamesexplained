@@ -11,6 +11,7 @@ Sources:
 - Wikipedia, "Big Trouble in Little China (video game)", read 10 November 2026: designer Mev Dinc, publisher Electric Dreams Software; Amstrad CPC, Commodore 64 and ZX Spectrum. Its lead says 1986 for all three and its infobox says 1987 for the Commodore 64.
 - Commodore User, issue 44 (reviewer Bill Scolding), text on everygamegoing.com, read 10 November 2026.
 - Games Database, "Big Trouble in Little China" (Commodore 64), read 10 November 2026: developer Focus Creative Enterprises; the levels.
+- Electric Dreams' 1987 cassette, the Ultimate Tape Archive's `Big_Trouble_in_Little_China.tap` (571,243 bytes, SHA-256 `4498a483eaa0cd754285f5f4f38b653b7ef1c1c14e160ab9729f69d64baffb71`), loaded in VICE 3.10 on 12 November 2026: the credits and copyright lines on its loading screen.
 
 ## Features
 
@@ -37,8 +38,5 @@ Sources:
 - The disk image is a freezer-style crack, so the game's own loader and any copy protection are not in it (`orientation.md`).
 - An enemy that walks off the right takes its points off the score (`score_lost`, `$1C0A`): traced.
 - Two sound effects, a thirteenth spawn list of four Lo Pans and a 2,500-point table entry are never used: traced.
+- The cassette's loading screen credits game and graphic design to Focus, and code and effects to M D Software and Edwin Rayner, calls the game a Software Studios production, and gives the program's copyright as 1987 Electric Dreams Software; under its last line, black on black, is an unfinished copy of `Electric Dreams S`: live, on the cassette (`graphics.html#loading`). Its title picture is the game's title screen, the same in all 64,000 pixels.
 
-## Open questions
-
-- The year: 1986 or 1987 for the C64 version (the two Wikipedia statements disagree); the site uses 1987.
-- Whether the developer was Focus Creative Enterprises: only the Games Database says so.

@@ -17,7 +17,8 @@ def compute(blocks, syms, comments, regions):
     code (bytearray), owner {addr: (name, sym_addr)}, commented (set),
     dups [(addr, first_addr)], excluded(fn), and stops {sym_addr: (name, end, why, reach)}:
     where each span ends and what ended it ("next" symbol, its "reach", its "block" or a
-    fixed "edge" of the memory map)."""
+    fixed "edge" of the memory map); quiet, the automatic symbols passed over in the RAM
+    beneath the chips (below)."""
     exclude = regions.get("exclude", [])
     extra = regions.get("extra", [])
     size = regions.get("size", 0x10000)     # 64 KB, or a virtual address space's own (a story's)
@@ -63,7 +64,19 @@ def compute(blocks, syms, comments, regions):
         return edges[i] if i < len(edges) else size
 
     syms = sorted(syms, key=lambda s: s["address"])
-    bounds = [s for s in syms if s["type"] in BOUNDARY_TYPES or s["address"] in commented]
+    # The RAM beneath the chips that the game counts ("beneath": on the C64, the RAM under the
+    # I/O area in a game that keeps data there) is also where every access to a chip's register
+    # lands, and the disassembler mints an automatic symbol for each: STA $D803 writes colour
+    # RAM, never the sprite image beneath it. Such a symbol, outside code and with no comment,
+    # starts no span and labels no record, so it cannot cut the description of the data (#869).
+    beneath = regions.get("beneath", [])
+    named = {s["address"] for s in syms if s.get("kind") != "auto"}
+    quiet = {s["address"] for s in syms
+             if s.get("kind") == "auto" and s["address"] < size and not code[s["address"]]
+             and s["address"] not in commented and s["address"] not in named
+             and any(lo <= s["address"] <= hi for lo, hi, *_ in beneath)}
+    bounds = [s for s in syms if (s["type"] in BOUNDARY_TYPES or s["address"] in commented)
+              and s["address"] not in quiet]
     baddrs = [s["address"] for s in bounds]
     state = bytearray(size)
     owner, stops = {}, {}
@@ -116,4 +129,4 @@ def compute(blocks, syms, comments, regions):
         elif state[a] == 0 and (code[a] or typed[a] or any(lo <= a <= hi for lo, hi, _ in extra)):
             state[a] = 1
     return {"state": state, "code": code, "owner": owner, "commented": commented,
-            "dups": dups, "excluded": excluded, "stops": stops}
+            "dups": dups, "excluded": excluded, "stops": stops, "quiet": quiet}

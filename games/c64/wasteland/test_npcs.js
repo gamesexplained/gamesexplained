@@ -98,7 +98,7 @@ function hooks(bytes, extra) {
     if (mk !== null) {
       if (hidden.has(mk)) fail('hidden skill', mk, 'held twice');
       hidden.set(mk, name);
-      if ((text(cells[4]) === 'nothing in the 42 maps') !== (asking(mk).length === 0)) fail('cast: what asks for', name, asking(mk).length);
+      if ((text(cells[4]) === 'none of the 42 maps') !== (asking(mk).length === 0)) fail('cast: what asks for', name, asking(mk).length);
     } else if (text(cells[4]) !== '') fail('cast: no hidden skill, but', name, text(cells[4]));
     cases++;
   }
@@ -224,9 +224,9 @@ function hooks(bytes, extra) {
     cases++;
   }
 
-  // the number the widget's caption gives
-  const sim = cases - simFrom, sc = disc.match(/were given the same random bytes for ([\d,]+) checks, trades, and hires/);
-  if (!sc || +sc[1].replace(/,/g, '') !== sim) fail('the caption says', sc && sc[1], 'checks, trades, and hires; the test ran', sim);
+  // the number facts.md gives, in its record of the checks behind the widget
+  const sim = cases - simFrom, sc = g.read('facts.md').match(/were given the same random bytes for ([\d,]+) checks, trades, and hires/);
+  if (!sc || +sc[1].replace(/,/g, '') !== sim) fail('facts.md says', sc && sc[1], 'checks, trades, and hires; the test ran', sim);
 
   // ---- square_checks ($8E14, game) for a party with Dan Citrine in it ------------------------
   // The map's bytes over the engine's and the game's, with what loading the map leaves in zero page:
@@ -266,7 +266,7 @@ function hooks(bytes, extra) {
   }
   // map 1's cactus, class 2 number 5: CON - 1d6 for every member who fails skill 37
   const cactus = squareRuns(1, 2, 5, [ranger, danRec], 1000);
-  const dh = html.match(/The Ranger was hurt every time: <q>[^<]*<\/q> Dan was hurt (\d+) times, each time on a throw under 5\./);
+  const dh = html.match(/the Ranger is hurt every time: <q>[^<]*<\/q> Dan is hurt (\d+) times, each time on a throw under 5\./);
   if (!cactus.at) fail('map 1 has no square of class 2 number 5');
   if (cactus.hurt[0] !== 1000 || cactus.throws[0] !== 0) fail('cactus: the Ranger hurt', cactus.hurt[0], 'threw', cactus.throws[0]);
   if (cactus.hurt[1] !== cactus.under5[1] || cactus.throws[1] !== 1000) fail('cactus: Dan hurt', cactus.hurt[1], 'under 5', cactus.under5[1], 'of', cactus.throws[1]);

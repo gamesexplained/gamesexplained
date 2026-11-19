@@ -44,6 +44,9 @@ address space of its own. A part that lies over another keeps its own
 ranges even where a load over it writes some of them again: a program
 that replaces the first pages of the game for a while holds other bytes
 than the game does there, so each counts its own, in its own snapshot.
+The part at the bottom, which names none, may list "ranges" for the same
+reason: addresses where its snapshot holds its own bytes (sprites, say)
+that a load over it swaps out for a while; it keeps them.
 
 A bank that the machine switches into a window of the CPU's addresses,
 such as one bank of a cartridge's ROM or of a 128K machine's RAM, is a part
@@ -228,7 +231,8 @@ def _gaps(lo, hi, taken):
 def elsewhere(P, p):
     """[[first, last, whose]] for every address p does not own: all but its own ranges when it
     lies over another part, and the ranges of the parts that lie over it, except where they
-    fall in p's own ranges (p's load wrote those bytes; a load over it writes others there)."""
+    fall in p's own ranges (for the bottom part, the bytes its own snapshot holds there, which a
+    load over it swaps out for a while)."""
     out, lower = [], under(P, p)
     own = ranges(p) if lower else []
     if lower:
@@ -252,8 +256,11 @@ def elsewhere(P, p):
                 a = end + 1
     # a bank above shows other bytes than RAM at its addresses: the RAM there stays this part's
     lent = sorted((lo, hi, q["title"]) for q in above(P, p) if q.get("bank") is None for lo, hi in ranges(q))
-    if own:
-        lent = [(a, b, who) for lo, hi, who in lent for a, b in _gaps(lo, hi, own)]
+    # the part at the bottom may list "ranges" too: addresses its own snapshot holds bytes of its own
+    # at, which a load over it swaps out for a while (sprites while a shop's code is in), so it keeps them
+    kept = own or ([] if lower else ranges(p))
+    if kept:
+        lent = [(a, b, who) for lo, hi, who in lent for a, b in _gaps(lo, hi, kept)]
     merged = []
     for lo, hi, who in lent:    # several parts at the same addresses (one level after another) are one range
         if merged and lo <= merged[-1][1] + 1:
@@ -424,8 +431,9 @@ def say_left(P, me, left):
 
 
 def names_under(gdir, game=None):
-    """{address: name} from the parts gdir's part lies over, nearest first, for the addresses
-    it does not own: how an operand that points out of the part is named. {} for a game
+    """{address: name} from the parts gdir's part lies over, for the addresses it does not own,
+    each from the part whose load wrote it there: how an operand that points out of the part is
+    named. A deeper part's name for bytes a nearer load replaced would describe other bytes. {} for a game
     folder, or a part that lies over none. An address in the part's "names" rows is its own
     even where it has no name for it, so it takes none from beneath."""
     top, pid = home(gdir)
@@ -435,12 +443,19 @@ def names_under(gdir, game=None):
     game = game or load_game(gdir)
     away, mine = game.get("elsewhere") or [], game.get("names") or []
     P = parts(top)
+
+    def whose(a):       # the first row is the part beneath whose load wrote the address
+        return next((w for lo, hi, w in away if lo <= a <= hi), None)
     for q in under(P, next(p for p in P if p["id"] == pid)):
         f = os.path.join(q["dir"], "symbols.json")
         if os.path.isfile(f):
             for s in json.load(open(f))["symbols"]:
                 a = s["address"]
-                if not owned(a, away) and not any(lo <= a <= hi for lo, hi, _ in mine):
+                # a deeper part's name stays out where a nearer one's load replaced its bytes,
+                # unless that part's "names" rows make the address its own
+                w = whose(a)
+                theirs = w == q["title"] or (w is not None and any(lo <= a <= hi for lo, hi, _ in named(q)))
+                if theirs and not any(lo <= a <= hi for lo, hi, _ in mine):
                     out.setdefault(a, s["name"])
     return out
 

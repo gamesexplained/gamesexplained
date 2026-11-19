@@ -35,13 +35,18 @@ contributor can trust it with their computer.** In practice:
 
 1. Everything installed lives inside this repository, under `tools/`.
 2. Everything the tools write while running (settings, logs, snapshots,
-   caches) lives there too, by pointing each tool's paths inside.
+   caches) lives there too, by pointing each tool's paths inside. The one
+   exception is throwaway files in the system's temporary folder (`/tmp`
+   on macOS and Linux, `%TEMP%` on Windows): it is made for files nobody
+   needs after the run, and the system clears it, so a tool may use it
+   the normal way. Anything that must outlast the tool that wrote it,
+   such as a snapshot or a setting, stays in `tools/`.
 3. Uninstalling is deleting the folder. Whatever cannot be contained is
    listed, completely, in the platform's notes under "Uninstall", and the
    contributor is told before anything is installed.
 4. It is verified, not assumed: `python3 kit/scripts/tools.py --platform <platform> verify-footprint`
    runs a whole launch, use and exit and lists anything written outside the
-   repository. An empty list is the pass.
+   repository and the temporary folder. An empty list is the pass.
 5. Nothing outside the repository is changed without asking first: no
    shell profiles, no system settings, no global package installs.
 6. Everything installed is open source and comes from the project's own
@@ -145,8 +150,8 @@ contributor all of this before running it:
   a broken download and does not prove who published it. npm comes in it.
 - **playwright-core** (Microsoft's, open source, Apache-2.0), into
   `tools/npm/node_modules/`, from the npm registry, its publisher's own
-  channel. It is the client alone: no browser is downloaded, and the
-  browser is chosen as "Browser checks" says.
+  channel. It is the client alone: no browser is downloaded. A Chromium
+  for it is a separate step, `get-chromium`, under "Browser checks".
 
 On 11 November 2026, on Linux x86_64, that was Node v26.13.0 at 230 MB and
 playwright-core 1.65.0 at 35 MB with npm's cache. A run on macOS arm64
@@ -167,6 +172,44 @@ status` names the versions. Deleting `tools/node/` and `tools/npm/` removes
 all of it.
 
 ## Browser checks
+
+The scripted checks (`kit/c64/sid_check.js`, `kit/scripts/shoot.js` and
+every game's `-browser.js` check) drive Chromium through Playwright, never
+Firefox, and find both as `kit/scripts/chromium.js` says. CI runs them
+with the runner's own Chrome. A machine with no Chromium that Playwright
+can launch gets one inside the clone, after `get-node`:
+
+```
+python3 kit/scripts/tools.py get-chromium
+```
+
+It installs two things. Tell the contributor all of this, and wait for
+their yes, before running it:
+
+- **Chrome Headless Shell**, into `tools/playwright/`: Google's Chrome for
+  Testing build of the Chromium project's headless shell, whose code is
+  Chromium's, open source under the BSD licence and the licences its
+  `LICENSE.headless_shell` lists. It is the version the playwright-core in
+  `tools/npm/` is made for, the same build the hosted containers carry,
+  and it has no updater. Playwright's own installer fetches it from
+  Playwright's download site, `cdn.playwright.dev`, which serves Google's
+  Chrome for Testing files.
+- **FFmpeg**, Playwright's build, which its installer puts beside it.
+
+On 16 November 2026, on Linux x86_64, that was Chrome Headless Shell
+159.0.8154.6 (Playwright's revision 1255) at 282 MB and FFmpeg at 5 MB,
+in 12 seconds. The installer runs with npm's home and XDG folders under
+`tools/npm/`, and nothing outside the clone was created or changed (a
+search of the whole disk, `/tmp` included, for files newer than the
+start). Up to that day `get-chromium` had run on Linux only. On Linux
+the shell needs the system libraries Playwright's `install-deps` lists:
+`get-chromium` checks that it starts and says so when it does not, and
+installing them needs root, so ask first.
+
+Once it is there, every scripted check launches it when given no other
+(`--chromium <path>` comes first; with neither, Playwright's own, as in
+the hosted containers), `tools.py browser` starts it before any Firefox,
+and `tools.py status` names it. Deleting `tools/playwright/` removes it.
 
 The shared launcher works for every game platform; neither `browser` nor
 `stop browser` needs `--platform`. It uses `kit/scripts/browser.py`.
@@ -204,21 +247,20 @@ was downloaded in that run. This establishes the tested configuration;
 `verify-footprint` still does not scan browser state.
 
 `kit/scripts/shoot.js`, which takes a picture of each section of a page,
-drives Chromium through Playwright, and installs neither: `tools.py
-get-node` ("Node for a machine without it") installs the Playwright
-client, and never a browser. With `--cdp
+drives Chromium through Playwright. With `--cdp
 http://127.0.0.1:9222` it uses the Chromium started above; without it, it
-starts Playwright's own, with its profile, temporary files and XDG state
-under `tools/shoot/`.
+starts the kit's, else Playwright's own, with its profile, temporary
+files and XDG state under `tools/shoot/`.
 
 A game's browser check (a file in its folder whose name ends in
 `-browser.js`) drives Chromium through Playwright too, by
-`kit/scripts/play_browser.js`, and installs neither. With `--chromium
-<path>` it launches that Chromium; without it, Playwright's own, with a
-temporary profile that Playwright deletes when the check closes it.
+`kit/scripts/play_browser.js`. With `--chromium <path>` it launches that
+Chromium; without it, the kit's, else Playwright's own, with a temporary
+profile that Playwright deletes when the check closes it.
 
 On a Mac, a Firefox in `/Applications` is found without being on `PATH`.
-With no Firefox at all, `tools.py browser` names the Chrome, Chromium or
+With no Firefox at all and no Chromium in `tools/`, `tools.py browser`
+suggests `get-chromium`, names the Chrome, Chromium or
 Edge it finds there and starts nothing, because using one is the
 contributor's call: ask first. With their yes, point
 `KIT_BROWSER_CHROMIUM` at the executable inside the app, as in

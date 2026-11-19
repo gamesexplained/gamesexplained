@@ -28,9 +28,8 @@ h3{font-size:18px;margin:26px 0 10px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
 canvas.az-px{display:block;image-rendering:pixelated;max-width:100%;height:auto;border-radius:4px}
 .az-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0}
-.az-ctl button,.az-ctl select,.az-ctl label{font:inherit;font-size:14px}
-.az-ctl button{border:1px solid var(--line);background:var(--surface-2);border-radius:6px;padding:4px 10px;cursor:pointer}
-.az-ctl button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink)}
+.az-ctl label{font:inherit;font-size:14px}.az-ctl button,.az-ctl select{font-size:14px}
+.az-ctl button{padding:4px 10px}
 .az-ctl input[type=range]{width:220px}
 .az-out{font-family:var(--fm);font-size:14px;margin-top:12px;line-height:1.6;color:var(--ink-soft)}
 .az-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
@@ -56,11 +55,11 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
 <section id="sprites">
   <p class="fig">01 · Sprites</p>
   <h2 class="t">Every moving thing, as the game animates it</h2>
-  <p>The program keeps 64 sprite shapes at <code>$2000</code>-<code>$2FFF</code>, 64 bytes each. A sprite on the Commodore 64 is a 24 by 21 pixel picture that the video chip draws over the screen wherever it is told, and a byte at the end of the screen, the sprite pointer, picks its shape: shape <code>$80</code> is the 64 bytes at <code>$2000</code>, <code>$81</code> the next, up to <code>$BF</code>. Each level animates by writing new numbers into those pointers. The game has no tables of animation: each sequence is a few instructions in the level's code that add 2 to the pointer and wrap it round, so the pictures below play the sequences those instructions make, at the speed they ran in the emulator.</p>
+  <p>The program keeps 64 sprite shapes at <code>$2000</code>-<code>$2FFF</code>, 64 bytes each. A sprite on the Commodore 64 is a 24 by 21 pixel picture that the video chip draws over the screen wherever it is told, and a byte at the end of the screen, the sprite pointer, picks its shape: shape <code>$80</code> is the 64 bytes at <code>$2000</code>, <code>$81</code> the next, up to <code>$BF</code>. Each level animates by writing new numbers into those pointers. The game has no tables of animation: each sequence is a few instructions in the level's code that add 2 to the pointer and wrap it round, so the pictures below play the sequences those instructions make, at the speed they run in the game.</p>
   <div class="plate">
     <div class="az-gal" id="az-anims"></div>
     <div class="az-ctl"><button type="button" id="az-anim-pause" aria-pressed="false">Pause</button><label><input type="checkbox" id="az-anim-big"> Twice the size</label></div>
-    <p class="cap">Drawn from the listing's bytes in each level's own colours (the sprite colour registers <code>$D027</code>-<code>$D02E</code> and the two shared colours <code>$D025</code>/<code>$D026</code> as the level's set-up writes them). Speeds are what the game ran at in VICE on 8 November 2026, counted in video frames: a runner's pose lasts about 5 frames, the climber's 8, the swimmer's stroke 15. The game paces itself with delay loops, not the frame, so these are measurements, not constants of the code.</p>
+    <p class="cap">Drawn from the listing's bytes in each level's own colours (the sprite colour registers <code>$D027</code>-<code>$D02E</code> and the two shared colours <code>$D025</code>/<code>$D026</code> as the level's set-up writes them). Speeds are counted in video frames: a runner's pose lasts about 5 frames, the climber's 8, the swimmer's stroke 15. The game paces itself with delay loops, not the frame, so these are measurements, not constants of the code.</p>
   </div>
 </section>
 
@@ -78,7 +77,7 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
 <section id="every">
   <p class="fig">03 · Every shape by number</p>
   <h2 class="t">All 64 shapes, two of them never used</h2>
-  <p>Shapes <code>$B2</code> (a fish turning) and <code>$BA</code> (a spear on the slant) are drawn in the data, but no instruction in the program writes either number into a sprite pointer. The Vermin's green snake, <code>$9C</code> in sprite 6, is used and still never seen: <a href="discoveries.html#snake">Discoveries</a> says why.</p>
+  <p>Shapes <code>$B2</code> (a fish turning) and <code>$BA</code> (a spear on the slant) are drawn in the data, but there is no instruction in the program that writes either number into a sprite pointer. The Vermin's green snake, <code>$9C</code> in sprite 6, is used and still never seen: <a href="discoveries.html#snake">Discoveries</a> says why.</p>
   <div class="plate">
     <div class="az-row"><canvas id="az-one" class="az-px"></canvas><div class="az-out" id="az-one-out"></div></div>
     <div class="pick"><button type="button" class="step" id="az-one-prev" aria-label="Previous shape">◀</button><select id="az-one-sel" aria-label="Shape"></select><button type="button" class="step" id="az-one-next" aria-label="Next shape">▶</button></div>
@@ -119,7 +118,7 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
   <div class="plate">
     <canvas id="az-gt" class="az-px"></canvas>
     <div class="az-ctl"><button type="button" id="az-gt-play" aria-pressed="true">Throwers moving</button><label>Temple stage <input type="range" id="az-gt-stage" min="0" max="8" value="0"></label><span class="az-out" id="az-gt-out"></span></div>
-    <p class="cap">The throwers' frames and the temple drawn from the listing's bytes by a port of <code>$62E0</code>, which <code>test_temple.js</code> holds against the game's own routine run on the kit's 6502, stage by stage, screen and colour byte for byte. The sand below the throwers is the game's three sand characters in a fixed pattern; the game picks each at random as it scrolls.</p>
+    <p class="cap">The throwers' frames and the temple drawn from the listing's bytes by a port of <code>$62E0</code>. The sand below the throwers is the game's three sand characters in a fixed pattern; the game picks each at random as it scrolls.</p>
   </div>
 </section>
 
@@ -128,7 +127,7 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
   <h2 class="t">One screen mode a level, with no split in the frame</h2>
   <p>The game never changes the video chip in the middle of a frame: it has no raster interrupt at all, only the KERNAL's timer for the music. Each level writes its registers once at its start, and a frame recorded in play is drawn exactly by reading them once (the <a href="levels.html">Levels</a> tab shows each). The table is what each level's start writes.</p>
   <div class="plate"><table class="az-tab" id="az-modes"></table>
-    <p class="cap">From each level's set-up code and the registers read back in VICE in play. In phase 4 the levels that use the phase's two colours (<code>$5E</code>/<code>$5F</code>) darken: the Gauntlet, the Piranha, the Bridge and Hopaztec's doorway.</p></div>
+    <p class="cap">From each level's set-up code. In phase 4 the levels that use the phase's two colours (<code>$5E</code>/<code>$5F</code>) darken: the Gauntlet, the Piranha, the Bridge and Hopaztec's doorway.</p></div>
 </section>
 
 </main>

@@ -17,7 +17,10 @@ NUMERATOR: a byte is explained when the symbol whose span owns it carries a
 non-blank line comment. A description belongs to a routine, not to every
 branch target inside it, so only real boundaries (subroutines, data
 symbols, commented symbols) start a span. A line comment on bytes no span
-reaches starts one too, as a label there would. An identical description pasted
+reaches starts one too, as a label there would. In RAM beneath chip registers
+that a game counts (the C64's I/O area, under "include"), an automatic symbol
+outside code with no comment starts none: it names a register an instruction
+touched, not the data beneath. An identical description pasted
 onto several symbols counts once, at its first address: thirty-two copies
 of "character set" explain nothing about glyphs 32 to 63. Say which glyphs
 a block holds and what they draw, and each description is its own.

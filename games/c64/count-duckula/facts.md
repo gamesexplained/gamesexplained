@@ -1,0 +1,61 @@
+# Count Duckula — facts
+
+## Memory and display
+
+The engine runs under port $35. The hardware IRQ vector alternates between gameplay ($24F1) and sprite scheduling ($29BE), with title/start/end handlers described in orientation.md. The VIC uses bank $C000 and D018=$08: a multicolour bitmap at $E000 with colour pairs at $C000 and third colours in colour RAM. Hardware sprite shapes $10-$77 occupy $C400-$DDFF, including physical RAM under I/O. Duckula uses three sprite components. Actors have parallel Y, low-X, high-X, pointer and colour arrays at $2946, $295E, $2976, $298E and $29A6.
+
+The title logo is 320 bitmap cells at $1A80 with colour planes $1800 and $1940. The status panel uses colour templates $6830/$68F8 and bitmap $69C0. The bitmap font is $BE50: ten digits followed by letters; stored text uses standard screen-code A=1 through Z=26, space=$20. The cheat phrase uses PETSCII capitals. No private letter substitution was needed.
+
+## World and movement
+
+$FF40 holds six rows of thirteen world positions. Values 0-47 select 48 room pages at $7000-$9FFF; $FF means outside. $2E53 expands twenty by ten tile ids per room into 16-by-16-pixel tiles. The source-address tables at $30A1/$30C9/$31B9 select bitmap fragments; $32A5/$33B5 select two-by-two attributes from collision, packed-colour and third-colour planes at $5C00,$6000,$6400. Across all map pages the tile ids range from 0 to 217 and use 181 distinct values. Map tile attributes reach $5F6B, $636B and $676B. Extra fixed patches draw Nanny damage, floor changes and transitions.
+
+$362A reads port-2 joystick bits. Left/right move the three player components, fire plus a direction selects a long jump, and terrain tests gate a vertical jump. $388D applies the signed 35-entry long-jump table; $39C7 accelerates falls to four pixels per update. Room exits change the world position by one horizontally and thirteen vertically. $F0 bypasses the normal left/right closed-door tests.
+
+The listing lacks the byte at $35C4, which the up-exit code reads as Duckula's Y on arrival. On the kit's machine model (kit/c64/machine.js), run from the listing, it reads zero, and leaving a room by the top carried Duckula up through three rooms at once. Side exits and drops are unaffected. The byte needs the game image to fill.
+
+## Inventory, clock and hazards
+
+$3FAB compares position against item actors 2-8. Keys have their own counter and nine initial records. Other objects enter slots $41D4-$41D6; overflow drops the oldest at Duckula and gives 150 updates of pickup immunity. The use handler $42D2 reads keys 1-3. Two puzzle actions are spatially restricted to rooms $06 and $22; combining item 7 with carried item 6 produces item 8, which activates the completion condition in room $06 at low-X $9C-$B0, high-X zero and Y below $50. The walkthrough and C64-Wiki identify the special items as a death mask (actor 4), sandbag (5), canopic jar (6), hammer (7), and large key (8); the two room tests and combination path distinguish their roles. The saxophone is the destination object (9).
+
+The displayed clock begins at 9:59: hours at $587F, tens at $5881, units at $5882. Its divider resets to seventy in $5801, so a minute lasts seventy frames and the night about fourteen minutes. The ankh's pickup path $41DA adds two to the hours digit once, or caps to 9:59 when the sum reaches ten, and recolours the ankh brown (9). This differs from the manual's three-hour use description; the item's use key does nothing with it.
+
+Igor's contact bonus $BD43 adds three to the tens digit; at six or more it subtracts six and increments the hours only when they are below nine. From 9:30 to 9:59 the clock therefore goes back thirty minutes. Reproduced in normal play on the kit's machine model: typing BURN THE WITCH for the room-71 door, walking the bottom floor and entering room 72 ($48) for the fourth time, the clock read 9:36 at contact and 9:06 after. The visit counter $4F00 counts down on each entry to rooms $2F, $39, $3B and $48 made while the cooldown $4EFE is zero, and Igor is spawned when its low two bits are zero and Duckula's Y is $52 or more ($4F13); new-game setup $2B69 does not reset it, so it carries into the next game. The cooldown $4EFE is fifteen room entries. Igor is six sprites, actors 15 to 20, shapes $62-$66 and legs $67-$6A.
+
+Ordinary actor contacts call $5801 directly through $BD63, without waiting for the divider, and each call reloads the divider with seventy ($5803); the colour flash counter does not prevent that clock call. $BCC0 returns after the first contact, so contact costs at most one minute a frame; the divider's own minute can fall in the same frame, since $57F7 runs just before ($2577, $257A). Duckula turns red (yellow EOR 5, read back from $D027) for fourteen frames. In normal play on the kit's machine model, the first mummy of room 66 ($42) cost nine minutes walking through a standing Duckula and five when he walked into it; test_clock.js holds the page's model to $57F7 and $BCC0 frame by frame.
+
+Mummies walk on floor value three and reverse at edges ($489F). The second mummy's shape computation at $4A2B reads the first mummy's frame phase $4A38. Crows have four persistent routes crossing room rows by thirteen ($4A61). Two rocks in rooms $4D,$37,$2A follow phase counters modulo one hundred ($4BDD). Bats use bounded oscillation and one-pixel pursuit ($4CBC). Nanny can replace door artwork in four named rooms ($5019). Igor's moving group is started in four rooms ($4ED2).
+
+## Sprite shapes
+
+Duckula's walk uses $10-$27 (left $1C-$27, right $10-$1B, each pose three sprites: top, legs at Y+21, and a green layer at the top's Y that the game stretches to double height, $D017 = 4 at $2CE9 and $58C3, so that it spans both, drawn behind them), standing $28-$2A, falling $2B-$2D, and $2E-$30 on the picture that opens a game ($5903, in title_to_play_irq at $5884). Doors use $31-$3A, mummies $44-$4F (facing bases $4A left, $44 right), the bat $50-$57, crows $58-$61 (second sprite ten lines below the first), Igor $62-$6A, objects $6B-$70 and $72, rocks $71 and the broken jar $73.
+
+Shapes $3B-$43 are three more three-sprite poses of Duckula: facing the player wrapped in his cape ($3B), three-quarters ($3E) and side on facing right ($41). Shapes $74-$77 are filler: 144 of their 256 bytes are $77, alternating columns as multicolour pixels, the bytes that also fill $5B8E-$5BFF and $6800-$682F. No code selects any of them: the program has 31 stores to the actor shapes at $298E-$29A5 and 23 to the sprite pointers at $C3F8-$C3FF, each with a constant, a table or a computed value outside these ranges; it has no indirect stores; and none of its self-modified stores, nor the block copies at $2C43, $2E53 and $592C, reach either area.
+
+## The winning screen
+
+$26CD draws the five lines of $2880. The second loop ($2749) draws 34 letters with the bitmap offset X*8 held in one byte, so letters 33 and 34 (the N and D of AND) land on letters 1 and 2 and the line reads NDOR IS DELIGHTED BECAUSE EVIL A. The screen colours use X directly and are right. Shown on the kit's machine model by setting $2DF7 to 1 in play, the flag the large key sets at the keyhole; the drawing does not depend on how the flag was set.
+
+## Music and hardware census
+
+$0E00 is the three-voice music player. The game writes request $87 at $24B7, selecting the first start and all voices; the driver reduces this to $07. The first start supplies sequence pointers $159E,$15AF,$15CB. Pattern ids index split pointers $14D1/$14F1, and instruments are eleven ten-byte records at $1530. The retained start-offset table accepts seven indices; only the first is requested by the decoded game's writes to $142F. Other start-table interpretations require checking before being called additional tunes.
+
+The register census attributes VIC position, enable, shape/colour and raster writes to setup, gameplay and multiplexer routines. D011/D016/D018 and CIA2 port A select the multicolour bitmap. CIA1 port A/B and DDR select joystick/keyboard in $362A/$420F. Music writes SID frequency, pulse width, waveform, envelopes, filter cutoff/routing and volume from $0E00-$130B. CIA1 interrupt/timer writes at $24A8-$24B0 disable the system timer. A complete census was generated from every typed instruction, rather than a text-search result limit.
+
+## Live checks
+
+Stopping store watchpoints, with an execute checkpoint on each tested routine as control, observed the ankh bonus for starting hours 0,4,7,8,9; the clock's ordinary decrement, hour borrow and zero clamp; inventory shifting; and both writes of the second mummy's shape pair. The ankh stops were $4205 on the ordinary addition and $41EF/$41F2/$41F7 on the cap. Clock borrow stores stopped at $5809,$5816,$5819,$5826,$5829 and zero-clamp stores through $5841. The second mummy stopped at $4A31/$4A37 with shape values $4E/$4F when the first phase was four and its own phase wrapped independently. These are controlled routine fixtures, not claims of player reachability.
+
+## Open data interpretation
+
+Small retained tails at $2DA7,$5B7A,$6800 and $BF90 are shown and described as retained bytes. The decoded readers' bounds separate them from their neighbouring counted tables. No instruction reads $2DA7-$2DBC, $5B7A-$5BFF, $6800-$682F or $BF90-$BFBF: the crow routes' index into the Y table at $2D83 goes back to zero at $22 ($4B0E), so their reads stop at $2DA5. $5B8E-$5BFF and $6800-$682F are mostly $77 and $F7, like the last bytes of the three tile planes ($5FC0, $63E8, $67E8). No claim that a player can never reach an item is made.
+
+## The listing's error rate
+
+The independent sample (seed 20261114) drew 80 of 626 comments: 60 from 363 written comments and 20 from 263 generated descriptions. A fresh gpt-6.1-sol checker found one wrong detail in the written group and none in the generated group. The plain observed rate is 1.2% (95% Wilson interval 0.2%-6.7%); the population-weighted observed rate is 1.0%. The mummy animation description omitted the reversal path that reloads its divider with one. That wording was corrected; the shared-phase finding held. The sample measures a lower bound, and a later full audit is recommended. On 18 November 2026 a maintainer's sample on a Claude model (seed 51121: 60 written comments and five of the sprite shape notes, 65 in all) found 6 wrong, a weighted rate of 10.3%. Duckula's shapes $10-$30 were said to take the actor colour, which the game never gives them; the title's two colour planes $1800 and $1940 were named the wrong way round; and shapes $2E-$30 were placed on the winning screen instead of the picture that opens a game. The six were corrected with every note that said the same thing. Then all 626 comments and every claim in this file were audited on the same model, in three address ranges: 101 comments and six claims here were corrected. The largest groups were the object records at $2DE3-$2DFE, where each byte's note described the whole record without saying which field it was; one-byte music patterns described as full patterns; the actor tables, whose notes named only their first slot; and the room table at $3BF0, whose notes said Nanny's routine at $5019 writes $80 to entries it never reaches. The audit also found that BURN THE WITCH needs no space after it and that the door bypass applies only to walking, and that the green sprite is stretched to double height. A new sample after the audit (seed 51124, 65 comments drawn the same way) found none wrong, with a 95% Wilson interval of 0% to 5.6%.
+
+## Page checks
+
+test_viewers.js: the room decoder matches the native $2E53 routine byte for byte for all 48 maps, including bitmap and all three attribute planes; all 104 sprite shapes are in the listing; the Graphics tab's poses, dividers and shapes are the game's bytes. test_sound.js: the isolated music wrapper matches 9,000 native driver ticks, every SID write in order, with nonzero volume during gated notes. test_clock.js: Igor's and the ankh's additions for all 600 clock times, the contact widget frame by frame, and the panel digits against $5841.
+
+The pictures of room 66 before and after BURN THE WITCH and of the winning screen are frames recorded on the kit's machine model, from the listing, with C64.renderFrame.

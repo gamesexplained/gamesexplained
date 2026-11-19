@@ -108,6 +108,11 @@ the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 | `$D020`/`$D021` | border / background colour; `$D022`–`$D024` extra backgrounds |
 | `$D025`–`$D026` | sprite multicolours; `$D027`–`$D02E` sprite colours |
 
+The VIC's registers repeat every 64 bytes from `$D000` to `$D3FF`, so a
+write to `$D208` lands in `$D008`, sprite 4's X. A store into that range
+outside `$D000`-`$D03F` is a VIC write, not a mistyped SID or colour RAM
+address that does nothing: name the register it reaches.
+
 Read back, the VIC's unused bits are 1: the top two of `$D016`, bit 0
 of `$D018`, bits 4-6 of `$D019`, the top four of `$D01A` and of every
 colour register `$D020`-`$D02E`. A register dump and a snapshot give
@@ -770,6 +775,13 @@ One game restarted with its display off and a title that ignored fire.
 Press fire after the reset, and read `$D011` and `$DC02`, before calling
 a restart clean.
 
+The reset routine looks for the signature (`$FCE7`) before RAMTAS
+(`$FD50`) and the rest of the KERNAL's start-up, so a cartridge started at
+reset finds zero page as it was, not as the KERNAL leaves it: RAMTAS is
+what sets the tape buffer pointer `$B2`/`$B3` to `$033C`. A game that
+tests such a value can tell a cartridge start from a copy started after
+the KERNAL's own.
+
 ## Screen codes and PETSCII
 
 Screen codes: `@`=0, A–Z=1–26, space=32, digits `0`–`9`=48–57, symbols
@@ -844,15 +856,19 @@ a block's layout garbled.
   given to each `run`, `irq` and `nmi`) and set them as the emulator
   holds them at the game's start
   (`kit/lessons/2026-10-24-antiriad-route.md`).
-- The RAM image in a VICE `.vsf` saved **without ROMs** starts at file
-  offset 209; confirm by reading two known bytes before relying on it.
+- The RAM image in a VICE `.vsf` is in the `C64MEM` module, after its
+  four bytes of port and cartridge lines; read it with
+  `kit/c64/snapshot.py`, which finds the module by name, because its
+  offset moves with the modules before it (209 in vice-mcp v3.x, 232 in
+  v4.0.0, which adds `C64MEMHACKS`). Confirm by reading two known bytes
+  before relying on it.
   Choose those two bytes carefully. `$0000` and `$0001` are the worst
   possible choice: they are the processor port, stored separately in the
   `C64MEM` module header, and the RAM underneath them holds unrelated
   values. Screen memory is the second worst, because a running game has
   moved on since the save. Pick two bytes of the game's own code.
   `readSnapshot` in `kit/cpu/cpu6502.js` reads the modules by name: the
-  port (data at offset 205, direction at 206), the RAM, x64sc's
+  port (the first two bytes of `C64MEM`), the RAM, x64sc's
   registers and cycle count from its `MAINC64CPU` module, and the video
   chip's registers and interrupt latch from `VIC-IISC`.
 - **A string found in a snapshot file is not necessarily the screen.** A

@@ -308,3 +308,11 @@ size, 4.3 %. The listing states each of these as it is now: the
 ten flier paths' comments, the 58 entries that template wrote (each with
 its own role), and the tables they hang from. The rocks' rectangle set in
 scene 4 (`$1B34`) has 23 rectangles.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Tested in the emulator with `$2F` poked into `$00`, the second move ran four times in 200 frames and then the screen was corrupted.

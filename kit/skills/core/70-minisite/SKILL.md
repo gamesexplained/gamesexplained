@@ -8,7 +8,10 @@ description: Build the game's minisite. The "How it works" page (index.html) fro
 The minisite is the deliverable: a small site that explains the game, where
 the writing is the spine but anything that explains the game can live
 (widgets, level browsers, tune players, even a full JavaScript port of the
-game itself). If you can build it, build it.
+game itself). Build what helps the reader understand it. The pages
+start from what the analysis found ("Plan the explanation"), and the
+finished site goes on to a reader who wrote none of it
+(`kit/skills/core/75-review`).
 
 Every game is a small site with the same tabs in the same order: **How it
 works** (`index.html`, authored), **Play** (`play.html`, authored, only
@@ -56,10 +59,77 @@ Audience: technical gamers who love game design and want to know how the
 game works, and who do not read assembly. Assembly is evidence, shown
 beside the claim; the explanation is in terms of what the player sees.
 
-**Interactivity is the point.** A page you can play with beats a page you
-read. Every section should have something to press: step a mechanic,
-scrub a tune, flip through the level data or the sprites, turn a 3D
-model, toggle an overlay on a reconstructed screen.
+**Interactivity should explain something.** Let the reader step a
+mechanic, compare outcomes, explore a map, or hear a sound in context.
+For each widget, name what the reader changes and what they will learn
+from the result. A picture, an animation, or prose can serve a section
+on its own; add a control when it gives the reader a useful experiment.
+
+## Plan the explanation
+
+Start with the leads, because a run's best findings can sit in its
+notes and never reach a page (`kit/lessons/2026-11-16-leads-left-in-notes.md`).
+Read `features.md`, `facts.md`, `cheats.md`, `orientation.md` and
+`media.json`, and list in `work/minisite-plan.md` every finding a player
+who finished the game would not know:
+
+- a bug, or a state the code accepts that its programmer never meant
+  anyone to reach;
+- cut content: shapes, rooms, tunes, text or code that nothing reaches,
+  including whatever the notes call retained, spare or unreferenced;
+- a place where the code differs from the instructions, the manual or
+  another version of the game;
+- one case handled differently from the rest: an enemy with its own
+  counter, a room drawn another way, a combination of keys the
+  instructions leave out.
+
+Give each lead its outcome: the Discoveries or How it works section that
+shows it, or a line on why it stays a lead (not yet verified, or not
+reached in normal play: "Discoveries", below). A note that reads like
+housekeeping, a "retained" table or a counter with a different value,
+is often the best thing in the game, so none is dropped without its
+line. The list, each lead with its outcome, goes in the pull request's
+description, and the leads that stay go in `TODO.md`.
+
+Then outline the pages in the same file. For each proposed section, name
+the reader's question, the verified finding that answers it, its
+consequence during play, and the example or demonstration that will
+make it clear, with the supporting fact or routine. An implication not
+yet checked is a question to verify, not a finding to publish. Place the
+strongest findings as high as their context allows, and explain the
+ordinary behaviour well even when the game yields no secrets.
+
+The outline is a working aid, not a quota of sections. Select detail for
+what it teaches, and leave research process in the notes. A finished
+page with a fitting explanation or interaction (the worked examples in
+[`75-review/reader.md`](../75-review/reader.md)) lends its pattern, not its
+structure. Write the final prose after the demonstrations work.
+
+## Design the demonstrations
+
+- **Use actions the reader understands.** Let them move a character,
+  place a target, throw an object, or step a decision when those actions
+  explain the rule. Sliders suit quantities such as time or score. A
+  rule about movement shows the figures moving on a piece of the map,
+  not their distances as numbers.
+- **Start with an informative case.** Show the relevant objects and an
+  outcome on arrival or after one obvious action. Make the controls and
+  the meaning of colours clear. Provide a contrasting case or boundary
+  that shows why the rule matters, without requiring a lucky combination
+  of settings. Keep mobile and keyboard use practical.
+- **Show cause and consequence together.** A decision shows the
+  situation, the choice the code makes and why. A formula shows a worked
+  result. A sound can sit beside the event or message it
+  accompanies. Label the inputs, result, and units in the reader's terms.
+- **Choose a useful view of a collection.** Show related moving figures
+  together when comparison is the point. Use a picker for a large set
+  that needs exploration. Explain what a pose, picture, or sound does
+  in the game, and make animation visible without a search for settings.
+- **Keep the demonstration faithful.** Verify its rules as described
+  under "Building it". When it leaves out something that changes what a
+  reader would conclude (the walls, the real speed), its caption says
+  what. A mechanic demo can be small; it need not become a full Play
+  port.
 
 ## Sections
 
@@ -68,10 +138,11 @@ rest, and they are in no order: each page chooses its own ("The order",
 below). The sound is the exception: a game with music gets its player,
 at every tier above Bronze.
 It is a starting set, not a form: the page is open to any structure that
-works for this game, any number of sections at any depth, and the human
-who takes it to Gold will cut what is dull, expand what is interesting and
-add what the agent did not think of. What stays fixed is the tab bar, the
-address links into the Source tab, and the house style in `kit/style.md`.
+works for this game, any number of sections at any depth. The agent
+develops what is interesting and cuts what does not serve the explanation
+before Silver. Human curation can refine it further. What stays fixed is
+the tab bar, the address links into the Source tab, and the house style
+in `kit/style.md`.
 
 - **The game.** What the game is, for a reader who has never played it:
    who you play, what you do and what ends a level, in two or three
@@ -79,7 +150,7 @@ address links into the Source tab, and the house style in `kit/style.md`.
    with a picture or two that introduce it: the title screen and the main
    character in play, from the emulator (the screenshots `20-features`
    saved in `reference/` usually serve). Keep it short, and keep the code
-   out of it. It is the one section with nothing to press.
+   out of it. Explain the stakes, including what happens after failure.
 - **One frame, rebuilt from memory.** Draw the play screen from memory
    with the page's own code, not a screenshot. It proves the data is
    understood and it is the base for overlays. A screen whose video
@@ -89,7 +160,11 @@ address links into the Source tab, and the house style in `kit/style.md`.
    with the site's library for the machine
    (`kit/skills/<platform>/steps`, "frame"). The comparison that counts
    the pixels that differ from the emulator's picture of the same frame
-   is the drawing's test: say in the caption how many differ and why. If the renderer lacks something the game does,
+   is the drawing's test, and its count goes in `facts.md`. The caption
+   says what the frame shows. Where the drawing differs from the game in
+   a way the reader would notice, it says what differs and why: a row the
+   game draws from the machine's ROM, a picture the game changes while the
+   screen is being drawn. If the renderer lacks something the game does,
    extend it in the site's library and in its test, so that the next game
    has it too.
 - **The player and the enemies.** What they are drawn with (character
@@ -122,11 +197,15 @@ address links into the Source tab, and the house style in `kit/style.md`.
    machine's own ROM plays for the game, from a queue the game fills, is
    recorded at the chip in the emulator. The platform's steps skill names
    the model and how its pages drive it (`kit/skills/<platform>/steps`,
-   "sound"). Say in the caption which it is and how it was checked
-   against the game. Say beside a sound below about 100 Hz that laptop
+   "sound"). Say in the caption what the reader hears: the game's own
+   tune, from its own driver. How it was checked against the game goes
+   in the test's header and `facts.md`. Say beside a sound below about 100 Hz that laptop
    and phone speakers barely play it: a reader who hears nothing reports
    it missing. Before believing such a report, render the writes through
-   the model in node and measure the output.
+   the model in node and measure the output. In the text, say what is
+   unusual about the game's sound, such as two drivers or a tune timed
+   apart from the frame, and leave out what nearly every game does, such
+   as one driver for all its music: a reader learns nothing from it.
 - **Secrets, quirks and bugs.** These have a tab of their own,
    Discoveries (below). A section here whose mechanic leads to one links
    to it.
@@ -141,9 +220,10 @@ order is its own, chosen for this game: no two games have the same best
 thing, and no two pages need the same shape.
 
 The page opens with the game (above), so the reader knows what they are
-looking at before the first interrupt or table. Then, once the widgets
-work and before the copy, choose the one or two things a reader would
-most regret missing. They are usually things that move or make a sound:
+looking at before the first interrupt or table. In the outline, choose
+the one or two things a reader would most regret missing; once the
+widgets work, check that they deliver that promise. They are often
+things that move or make a sound:
 a tune player, a map to scrub through, a replay of the game playing.
 Sound effects are among them: their player goes straight after the
 music's, not at the foot of the page, where few readers reach it
@@ -211,6 +291,16 @@ its music or its maps can put that first instead.
   `<style>` or its own stylesheet) share with `site.css`, unless the rule
   is the site's copied word for word or one of the template's. Prefix the
   page's own classes and it never comes up.
+- Buttons, menus, fields and sliders take their look from `site.css`, so
+  a reader meets the same controls on every game. A page's rules for them
+  give size and place only (padding, widths, gaps, font size); a state of
+  the page's own, a key held or a tune playing, is drawn with
+  `var(--btn-on-bg)`, `var(--btn-on-ink)` and `var(--btn-on-line)`. Where
+  the buttons are the picture (a keyboard, a joystick, swatches, a map
+  grid), mark the widget's container `data-own-look` and put
+  `[data-own-look]` in its rules' selectors. `check_docs.py` fails any
+  other rule that colours, borders, rounds or sets the typeface of a
+  control.
 - Start from `kit/template/index.html` for the design tokens and layout.
   Keep its `<!-- tabs -->` marker; the build puts the tab bar there.
   A finished example to borrow patterns from is any Gold game in `games/`:
@@ -254,6 +344,12 @@ its music or its maps can put that first instead.
   for a number, a dot on the map for a place. Put it in the row beside
   the text, as the terrain, creature and spell tables of
   `games/spectrum/lords-of-chaos/index.html` do (pull request #751).
+- A map or screen a page draws from the game's data takes its character
+  set, colour mode and shared colours from the registers the game sets for
+  that band of the screen, read off a recorded frame, not from the
+  comments: a test that matches only the screen codes passes with the
+  wrong font or mode. Hold the drawing's sources to the frame's registers
+  in its test, or compare its pixels with the emulator's picture.
 - A widget that runs a mechanic is a claim too. Port the routine, then
   test the port against the game itself before it goes on the page:
   against a pass-by-pass trace of the game's own variables recorded in
@@ -262,8 +358,9 @@ its music or its maps can put that first instead.
   between waves passes any port (`60-verify`, "A test must contain cases
   that have to succeed"); or, for a routine that
   only computes, against the original code run in the kit's simulator
-  for the machine's processor on the snapshot's memory. Write node tests that do the comparison and say in
-  the caption how it was checked. A test that needs only the committed
+  for the machine's processor on the snapshot's memory. Write node tests that do the comparison, and say
+  in `facts.md` how it was checked; the caption says what the widget
+  shows, since the reader came for the game. A test that needs only the committed
   listing goes beside the page as `test_<what>.js`, where CI runs it, and
   takes the port from the page itself, so the two cannot drift apart:
   `kit/scripts/port_check.js` cuts the block out, runs it and gives the
@@ -286,8 +383,8 @@ its music or its maps can put that first instead.
   **Sweep the whole input space, not a few plausible values.** A port that
   is right on the game's own numbers can still be wrong at the edges of the
   arithmetic. Run the routine and the port over every boundary value of each
-  input register, plus a few hundred random ones, and say in the caption how
-  many cases there were. One port of a shift-and-add masked its accumulator
+  input register, plus a few hundred random ones, and record in `facts.md`
+  how many cases there were. One port of a shift-and-add masked its accumulator
   to 16 bits *before* taking the carry out of the top for the routine's
   final fold, so the carry was always zero: it agreed with the game on the
   page's own inputs and returned 29 where the routine returns 285. A sweep
@@ -344,49 +441,81 @@ its music or its maps can put that first instead.
 
 ## Copy
 
-Write the copy **last**, as a separate pass, under `kit/style.md`. Then do
-a **rewrite pass** as its own step, with the draft in front of you. An
-agent reads a rule list once and then reverts to its default voice; the
-rewrite pass is where the house style actually lands. Work through this
-checklist mechanically, paragraph by paragraph:
+Write the copy **last**, under `kit/style.md`, from the outline and the
+working demonstrations. It takes three steps: a draft, the lint, and one
+edit. An agent reads a rule list once and drifts back to its own voice
+while it drafts, so the lint and the edit are where the house style
+lands.
 
-1. Search the draft for em-dashes. Every one that joins two clauses becomes
-   two sentences, a colon, or parentheses. Parenthetical asides may stay if
-   they are rare.
-2. Delete any sentence that only announces the next sentence ("Here is the
-   odd part", "And here's the kicker"). The next sentence does the work.
-3. Cut imperatives addressed to the reader ("Listen to the last note",
-   "Notice how") unless the thing is interactive, in which case point at
-   the control ("Press a direction").
-4. Headings name the thing, never a tautology ("Every character is a
-   character") and never a claim the section still has to prove. Prefer the
-   thing over the claim about the thing. Read each heading for a list: two
-   or more things joined by commas or "and", with no verb saying what they
-   do, is an inventory of the section ("Five digits, one key and one
-   column: how the bomb is defused"). Rewrite it as the one finding, or as
-   the plain name of the subject. Then read each heading alone, as the
-   section list shows it, and wherever it needs the section to make sense
-   ("Secret: the dungeon's hawk can be killed, the palace's only driven
-   off"), put back the words it squeezed out: who acts, on what, with a
-   plain verb (`kit/style.md`, "Section headings").
-5. Collapse triplets written for rhythm into a plain list or two sentences.
-   Three genuine items are fine; three arranged for a drumbeat are not.
-6. State it positively. A one-beat correction is fine when the reader would
-   genuinely expect the wrong thing ("A reconstruction, not a screenshot"),
-   but never "it's not X, it's Y" as the sentence's whole move. Search
-   for "no " as well: where "no X" is the one acting ("no gate leads to
-   it"), rewrite the sentence so a real thing acts, or say "there is no
-   X" (`kit/style.md`, the section on "no X" as the subject).
-7. Give every paragraph its purpose, in a line written to yourself
+**Draft** each page for its reader from the start. Each section answers
+the question the outline gave it with the finding, its consequence
+during play and the example, so the depth is written in rather than
+added later (`kit/style.md`, "Depth and clarity"). Write to the sentence
+rules (`kit/style.md`, "Sentences"). Check any claim the outline did not
+have before keeping it. Then commit the pages, so that `git diff` puts
+each sentence the edit changes beside the one it replaced.
+
+**Lint** the pages:
+
+```
+python3 kit/scripts/copy_lint.py games/<platform>/<slug>
+```
+
+It prints each sentence that breaks a rule a pattern can catch: a dash
+joining two clauses, a sentence that announces the next one, an
+instruction to the reader, "it's not X, it's Y", "no X" or "nothing"
+in place of a thing ("nothing reads it", "found by no player"), and a
+hype word. Fix each line it prints, or keep it for a reason you can
+state. It skips the game's own words in a
+`<blockquote>` or `<q>`, in quotation marks or in capitals; mark any
+other quotation with `data-copy-lint="off"`. It cannot see the strings a
+widget writes from script, so the edit reads those. Run it again after
+the edit.
+
+**Edit** each authored page once, paragraph by paragraph, for what a
+pattern cannot catch. The Source tab stays as it is, since its reader
+came for the code.
+
+1. Give every paragraph its purpose, in a line written to yourself
    (`kit/style.md`, "Paragraphs"). First check that purpose against the
-   page's subtitle and the section's heading, and move the paragraph to the
-   tab or section it serves if it serves another. Then read each sentence
-   against it. Move or
-   cut any sentence that serves another point, however interesting; split
-   a paragraph whose purpose needs an "and"; put the point first or last;
-   reorder sentences until each opens with something the last one gave the
-   reader; and replace any "it" that could mean more than one thing. Do
-   this before the other steps polish sentences that are about to move.
+   page's subtitle and the section's heading, and move the paragraph to
+   the tab or section it serves if it serves another. Then read each
+   sentence against it. Move or cut any sentence that serves another
+   point, however interesting; split a paragraph whose purpose needs an
+   "and"; put the point first or last; reorder sentences until each
+   opens with something the last one gave the reader; and replace any
+   "it" that could mean more than one thing. Do this first, before
+   polishing sentences that are about to move.
+2. Read each heading for a list: two or more things joined by commas or
+   "and", with no verb saying what they do, is an inventory of the
+   section ("Five digits, one key and one column: how the bomb is
+   defused"). Rewrite it as the one finding, or as the plain name of
+   the subject, never a tautology ("Every character is a character").
+   Then read each heading alone, as the section list shows it, and
+   wherever it needs the section to make sense ("Secret: the dungeon's
+   hawk can be killed, the palace's only driven off"), put back the
+   words it squeezed out: who acts, on what, with a plain verb
+   (`kit/style.md`, "Section headings").
+3. Collapse triplets written for rhythm into a plain list or two
+   sentences. Three genuine items are fine; three arranged for a
+   drumbeat are not.
+4. Read each sentence for compression, which a pattern cannot catch
+   (`kit/style.md`, "Sentences"): a phrase made up for the page; a
+   thing given a person's verb; a noun used as a verb; a subject held
+   apart from its verb; a "that" left out; a term used before the page
+   explains it, since a reader can open any tab first; two names for one
+   thing; a passive that hides who acts; a stack of nouns. Length is not
+   the test: rewrite the sentence a reader would have to read twice,
+   long or short. Keep the code, the addresses and the numbers, which
+   are the evidence.
+5. Read the standfirst, the captions, the table cells and the text the
+   widgets write. They are copy too, and follow `kit/style.md` like the
+   rest.
+6. Check the diff sentence by sentence against the draft. Every fact the
+   draft gave (a number, a name, an address, a condition, a cause) is
+   still on the page, and every explanation added is true. Put back what
+   was lost, and check what was added against `facts.md` and the
+   platform reference.
 
 Before/after, from real drafts:
 
@@ -409,29 +538,6 @@ Before/after, from real drafts:
   next: what was stolen, why the villain needs the place, what the hero is
   sent to do. The second is who else is there, ending on that enemy and
   why it looks the way it does.
-
-Last, do an **ELI15 pass** ("explain it like I'm fifteen"): rewrite every
-authored page so that a reader of fifteen who has never programmed can
-follow each sentence. The Source tab stays as it is, since its reader came
-for the code. Commit the pages first, so that `git diff` puts each changed
-sentence beside the one it replaced. Then:
-
-1. Explain each term where it first appears on a page, in a few words,
-   since a reader can open any tab first: a keyword of the game's
-   language, a chip or its register, a hexadecimal address, a kind of
-   variable. Keep the code, the addresses and the numbers, which are the
-   evidence.
-2. Split every sentence that holds more than one idea, and put plain words
-   in place of shorthand ("turns down" for "declines").
-3. Check the diff sentence by sentence against the original. Every fact
-   the original gave (a number, a name, an address, a condition, a cause)
-   is still on the page, and every explanation added is true. Put back
-   what was lost, and check what was added against `facts.md` and the
-   platform reference.
-
-The standfirst, the headings, the captions, the table cells and the text
-the widgets write are copy too, and the rewrite follows `kit/style.md`
-like the draft.
 
 Set `copy` in `game.json` honestly: `agent-draft` when the agent wrote it
 and no human has read it yet, `agent` once a human has read it and left it
@@ -458,6 +564,13 @@ evidence beside it, one section each. Head each one `Secret:` or `Bug:`
 with the finding in the heading, so the section list tags it, and put the
 best first. Where a discovery rests on a mechanic the How it works page
 explains, link to that section rather than explaining it again.
+
+A `Bug:` is shown happening in a state normal play reaches: spend a few
+minutes reproducing it from the start of its level with input, as
+`60-verify` proves reachability. A bug only a forced setup has shown (a
+poked variable, a routine called directly) is a lead: it stays in
+`facts.md` with the setup that showed it and gets no section, so the
+page never hedges about whether ordinary play meets it.
 
 One kind deserves a special look: a state the code accepts but the
 programmer never meant anyone to reach (the open questions `50-coverage`
@@ -651,11 +764,11 @@ at 60 frames a second: `fast-cpu.md` beside it says how.
 
 ## Check it in a browser
 
-The page is a visual, interactive artefact and none of the kit's checks
-render one. `check_docs.py` and `check_listing.py` read files; `build.py`
-assembles the site and checks its links without opening a page. A canvas that draws nothing, a
-widget that throws on load and a layout that collapses all pass every
-check there is.
+The page is a visual, interactive artefact. `check_docs.py` and
+`check_listing.py` read files; `build.py` assembles the site and checks
+its links without opening a page. These checks cannot catch a blank
+canvas, a widget that throws on load, or a collapsed layout. Browser
+tests catch only the outcomes they assert.
 
 So load it and look at it before calling this step done:
 
@@ -674,7 +787,9 @@ is already installed, the shared launcher offers `python3 kit/scripts/tools.py
 browser`. It starts an isolated headless profile under `tools/firefox/`,
 with the WebDriver BiDi endpoint at `ws://127.0.0.1:9222/session`.
 Use a BiDi client to navigate, exercise controls and capture screenshots,
-and record its name/version and Firefox package origin.
+and record its name/version and Firefox package origin. With the kit's
+Chromium in `tools/` (below) it starts that instead, with the DevTools
+protocol at `http://127.0.0.1:9222`, which `shoot.js --cdp` drives.
 `tools.py stop browser` stops only this clone's test browser. It downloads
 nothing and does not use the contributor's personal browser session. See
 `kit/INSTALL.md`, "Browser checks", for the tested host and containment.
@@ -684,16 +799,31 @@ button and steps every select, then saves one picture of each section,
 scrolled into view first: a full-page screenshot is blank below the first
 screen, because the page skips drawing a section off the screen. It prints
 the console, exits 1 on an error, and with `?listing-reads` prints
-`ListingReads.report()`. It needs Playwright, which the kit does not
-install; `-h` says how it uses the browser above instead.
+`ListingReads.report()`. It needs Playwright and a Chromium:
+`tools.py get-node` installs the client, and `tools.py get-chromium`,
+with the contributor's yes, a headless Chromium in `tools/`
+(`kit/INSTALL.md`, "Browser checks").
 
-Check, at least: every canvas has drawn something; the console has no
-errors, and for a withheld game none with `?listing-reads` after the
-address either; every control does
-something when clicked; and the rebuilt screen
-matches a reference screenshot from `reference/`. The reconstruction is
-the one section that is either right or obviously wrong the moment you
-see it, which makes it the best test that the data is understood.
+Check every canvas has drawn the intended scene, the console has no
+errors (including withheld listing reads), and the rebuilt screen
+matches a reference screenshot from `reference/`. Exercise every widget
+from its initial state, including on a narrow screen, and check the
+result its label and explanation promise.
+
+Keep those outcomes in a browser check beside the page (a file whose
+name ends in `-browser.js`, run through `kit/scripts/play_browser.js`).
+A click or a changed button label alone does not establish that a
+demonstration works. Assert the relevant
+visible result: a different rendered state, an object reaching the
+expected place, or the displayed calculation. For sound, check the page's
+actual selected input produces non-silent output as well as exercising
+playback in the browser. A switch needs a scene its effect shows on,
+or nothing changes for the check to see. For a repeating animation, sample over enough time to
+observe distinct states; two samples can land on the same phase.
+Pair the visible check with the rule's expected result, since changing
+pixels alone does not show that it is right.
+
+Then the finished site goes to `75-review`.
 
 ## Outputs
 
@@ -704,4 +834,6 @@ every level, map or room drawn, or the line in `agent-history.md` saying
 why the game has none; `graphics.html` with every shape the moving
 things are drawn with, or the line saying why it has none; `listing.json` built and passing
 `check_listing.py`; `game.json` with `copy` set; `build.py` producing the
-minisite without errors.
+minisite without errors; browser checks asserting the widgets' promised
+results; the leads list, each lead with its outcome, for `75-review`
+and the pull request.

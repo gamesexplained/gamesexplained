@@ -40,9 +40,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ag-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
 .ag-cv{display:block;width:100%;max-width:768px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
 .ag-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
-.ag-btn{font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer;color:var(--ink)}
-.ag-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
-.ag-sel{font-family:var(--fm);font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.ag-btn{font-size:13px;padding:6px 11px}
+.ag-sel{font-size:13px;padding:5px 8px}
 .ag-tab{border-collapse:collapse;width:100%;font-size:14px;margin-top:14px}
 .ag-tab th,.ag-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
 .ag-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
@@ -104,7 +103,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="chars">
   <p class="fig">04 · In the city</p>
   <h2 class="t">Fire, falling buildings and the things on the ground are characters</h2>
-  <p class="lede">These are tiles of the screen, not sprites. Thirteen of them are redrawn on every pass by the game's own <code>animate_chars</code> (<code>$B463</code>), run here on the kit's 6502. Pick a place for its colours.</p>
+  <p class="lede">These are tiles of the screen, not sprites. Thirteen of them are redrawn on every pass by the game's own <code>animate_chars</code> (<code>$B463</code>). Pick a place for its colours.</p>
   <div class="plate">
     <div class="ag-bar"><select class="ag-sel" id="ag-place" aria-label="Place"></select></div>
     <div class="ag-tiles" id="ag-chars"></div>
@@ -114,13 +113,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="still">
   <p class="fig">05 · The rest</p>
-  <h2 class="t">The title's logo, and the pictures nothing shows</h2>
-  <p class="lede">The logo is seven sprites that never change. Below it are the pictures in the sprite memory that no table or routine points at.</p>
+  <h2 class="t">The title's logo, and the pictures the game never shows</h2>
+  <p class="lede">The logo is seven sprites that never change. Below it are the pictures in the sprite memory that are not named by any table or routine.</p>
   <div class="plate">
     <canvas id="ag-logo" class="ag-cv" width="672" height="112" aria-label="The AAARGH! logo"></canvas>
     <p class="cap">The title's interrupt on line 0 (<code>$B1CE</code>) puts eight sprites at the places at <code>$B353</code> with the pointers at <code>$B375</code>, doubled in width and height, light blue with purple and blue. The eighth, <code>$C3</code>, goes to the corner, under the border, where it cannot be seen.</p>
     <div class="ag-tiles" id="ag-unused" style="margin-top:18px"></div>
-    <p class="cap">Two bodies with their legs (<code>$4F</code> over leg shape 24, and <code>$8F</code> over 87), a lump of legs (48), the cannon's sixth frame and the logo's hidden eighth sprite. No frame table holds those bodies or legs, and the title and the fight in the cave read the same tables.</p>
+    <p class="cap">Two bodies with their legs (<code>$4F</code> over leg shape 24, and <code>$8F</code> over 87), a lump of legs (48), the cannon's sixth frame and the logo's hidden eighth sprite. Those bodies and legs are not in any frame table, and the title and the fight in the cave read the same tables.</p>
   </div>
 </section>
 
@@ -321,7 +320,7 @@ function agMark(mem, under) {
     function pickPlace() { place = agPlace(r, PLACES[+psel.value][0], C64Cpu); place.step(); drawChars(); }
     psel.onchange = pickPlace; pickPlace();
     clocks.push(() => { place.step(); drawChars(); });
-    // 05 the logo and the pictures nothing shows
+    // 05 the logo and the pictures the game never shows
     const logo = C64.canvas($('ag-logo'), 672, 112);
     logo.fillStyle = P[0]; logo.fillRect(0, 0, 672, 112);
     for (let i = 0; i < 7; i++) {

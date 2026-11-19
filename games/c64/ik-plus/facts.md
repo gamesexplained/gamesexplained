@@ -615,3 +615,29 @@ round 1) unless named; scripts `work/scripts/live1.py` to `live8.py`.
   added 200 with `$FD8A` = 0 (100) and 400 with 1 (200); attacks 1, 2,
   4, 5 and 8 added what they painted. `work/live-points-6-04-25.png` shows
   200 over the fallen fighter as the score reads 400.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- Checked in the emulator, the score went up by 800 for every punch that painted 400, and by 400 and 200 for low kicks that painted 200 and 100.
+- In the emulator, half a second after a low kick from a crouch felled the blue fighter: 200 hangs over him, and the red fighter's score has gone from 0 to 400.
+
+### fighters.html
+
+- Rebuilt this way, the two sprite fighters of a game in progress match the bytes in the emulator's sprite memory.
+
+### index.html
+
+- Left: the first round of a one-player game, in the emulator.
+- A frame of a one-player fight, recorded in the emulator with every write to the video chip and the line it happened on, then drawn by `site/lib/c64.js`.
+- All 104,448 pixels match the emulator's own picture of the same frame.
+- Run against the original in the kit's 6502 simulator, the port wrote the same bytes over 4,000 steps, through every drift pattern.
+- In the emulator R, T and X stepped it, and so did P, O and N.
+- In the emulator, with that byte poked, the CPU returned into the stack page and stopped on an illegal opcode at `$01C5`.
+
+### sound.html
+
+- The port matched the original code, run in a 6502 simulator on the game's memory, register write for register write over 82,400 frames, with effects started at 119 random moments over the tune.

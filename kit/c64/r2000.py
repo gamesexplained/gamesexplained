@@ -23,7 +23,9 @@ Usage:
     sent as batches of r2000_batch_execute in the file's order; the calls that succeed are logged
     one by one, and each that fails is printed with its line number (its entry, for .json). A file
     that names one label at two addresses, or leaves a comment's type to an address that has both
-    kinds, sends nothing: the disassembler would refuse the second label and go on with the rest
+    kinds, sends nothing: the disassembler would refuse the second label and go on with the rest.
+    A range typed lo_hi_address whose bytes read as side-by-side pointers, the `address` type,
+    is sent with a warning that names it (#870)
   r2000.py --seed <codemap.json>              disassemble from every start the code map records
       (kit/c64/codemap.py), 60 a round, until each is inside a code block: regenerator2000 stops
       at an RTS, an RTI or an indirect JMP, and a routine that starts on the next byte is in the
@@ -154,7 +156,12 @@ def cross_references(addresses, gdir=None):
     return out
 
 
-def game_dir(explicit=None):
+def game_dir(explicit=None, strict=True):
+    if strict and explicit and not any(os.path.exists(os.path.join(explicit, f)) for f in ("game.json", "part.json")):
+        # A --game that names no folder (a part's id given from the wrong directory) must not fall
+        # back to the current directory: that sends the call to whichever session answers there.
+        sys.exit(f"r2000.py: --game {explicit}: no game.json or part.json there (run from the folder "
+                 f"that holds it, or give its path)")
     for cand in (explicit, os.environ.get("GAME_DIR"), os.getcwd()):
         if cand and any(os.path.exists(os.path.join(cand, f)) for f in ("game.json", "part.json")):
             return cand      # a game's folder, or the folder of one part of it (kit/scripts/parts.py)
@@ -180,7 +187,7 @@ def log_call(gdir, name, arguments, log=None):
 
 
 def replay(path):
-    rpc = make_client(game_dir(os.path.dirname(os.path.dirname(os.path.abspath(path)))))
+    rpc = make_client(game_dir(os.path.dirname(os.path.dirname(os.path.abspath(path))), strict=False))
     entries = [json.loads(l) for l in open(path) if l.strip()]
     calls = []
     for e in entries:
@@ -301,6 +308,85 @@ def same_label_twice(calls):
     return problems
 
 
+def hexdump_bytes(text, start, end):
+    """The bytes start..end from r2000_read_region's hexdump view ("$1100: 20 10 30 10 ..."), or
+    None when it does not hold them all."""
+    got = {}
+    for ln in text.splitlines():
+        m = re.match(r"\s*\$([0-9A-Fa-f]{4}):((?:\s+[0-9A-Fa-f]{2}\b)+)", ln)
+        if m:
+            a = int(m.group(1), 16)
+            for i, b in enumerate(m.group(2).split()):
+                got[a + i] = int(b, 16)
+    return bytes(got[a] for a in range(start, end + 1)) if all(a in got for a in range(start, end + 1)) else None
+
+
+def pointer_readings(data):
+    """(side by side, split): the addresses a table's bytes give when each pointer's low and high
+    bytes sit together (the `address` type) and when all the low bytes come first, then all the
+    high bytes (`lo_hi_address`)."""
+    n = len(data) // 2
+    return ([data[2 * i] | data[2 * i + 1] << 8 for i in range(n)],
+            [data[i] | data[n + i] << 8 for i in range(n)])
+
+
+def reads_as_pairs(data, plausible):
+    """True when a table typed lo_hi_address reads as side-by-side pairs instead: every pointer
+    of that reading lands somewhere plausible (a label, a typed or code block, the loaded file) and
+    some pointer of the split reading does not. Typing such a table lo_hi_address invents an
+    address for each of its pointers and mints an automatic symbol at each (#870). A null pointer,
+    a table's end marker, is left out of both readings."""
+    if len(data) < 4 or len(data) % 2:
+        return False
+    pairs, split = ([a for a in r if a] for r in pointer_readings(data))
+    return bool(pairs) and all(map(plausible, pairs)) and not all(map(plausible, split))
+
+
+def split_tables_misread(rpc, calls):
+    """[(number, warning)] for each lo_hi_address range among the calls whose bytes read as
+    side-by-side pointers (reads_as_pairs). The session says what is plausible: its labels, its
+    typed and code blocks, the loaded file when it is not a whole memory image, and the labels and
+    types the calls themselves give. A session that cannot answer is not checked."""
+    tables = [(n, c["arguments"]) for n, c in calls
+              if c["name"] == "r2000_set_data_type" and c["arguments"]["data_type"] == "lo_hi_address"]
+    if not tables:
+        return []
+    try:
+        labels = {x["address"] for x in json.loads(call(rpc, "r2000_get_symbols", {}))}
+        spans = [(b["start_address"], b["end_address"]) for b in json.loads(call(rpc, "r2000_get_blocks", {}))
+                 if b["type"] != "Undefined"]
+        info = json.loads(call(rpc, "r2000_get_binary_info", {}))
+        origin, size = info.get("origin", 0), info.get("size", 0x10000)
+    except (ValueError, TypeError, KeyError, AttributeError):
+        return []
+    for _, c in calls:
+        a = c["arguments"]
+        if c["name"] == "r2000_set_label_name":
+            labels.add(a["address"])
+        elif c["name"] == "r2000_set_data_type" and a["data_type"] not in ("undefined", "lo_hi_address"):
+            spans.append((a["start_address"], a["end_address"]))
+    whole = size >= 0x10000
+
+    def plausible(a):
+        return a in labels or any(lo <= a <= hi for lo, hi in spans) or (not whole and origin <= a < origin + size)
+
+    out = []
+    for n, a in tables:
+        lo, hi = a["start_address"], a["end_address"]
+        data = hexdump_bytes(call(rpc, "r2000_read_region", {"start_address": lo, "end_address": hi, "view": "hexdump"}),
+                             lo, hi)
+        if data is None or not reads_as_pairs(data, plausible):
+            continue
+        pairs, split = pointer_readings(data)
+        bad = [x for x in split if x and not plausible(x)]
+        out.append((n, f"${lo:04X}-${hi:04X} reads as side-by-side pointers ({', '.join(f'${x:04X}' for x in pairs[:4])}"
+                       f"{', ...' if len(pairs) > 4 else ''}), which is the `address` type. As lo_hi_address, all its "
+                       f"low bytes first, it points at {', '.join(f'${x:04X}' for x in bad[:4])}"
+                       f"{', ...' if len(bad) > 4 else ''}, where nothing is, and the disassembler makes a symbol at "
+                       f"each: retype it `address` unless its low bytes really do come first"))
+    return out
+
+
 def apply(path, explicit=None, log=None, batch=200):
     """Send the file's annotations in batches, log each call that succeeds, and return how many
     failed. Nothing is sent when a line does not parse."""
@@ -319,6 +405,9 @@ def apply(path, explicit=None, log=None, batch=200):
     if problems:
         sys.exit(f"nothing sent: {len(problems)} line(s) to fix first")
     rpc, done, bad = make_client(gdir), 0, 0
+    warned = split_tables_misread(rpc, calls)
+    for n, msg in warned:
+        print(f"{path}:{n}: warning: {msg}")
     for i in range(0, len(calls), batch):
         part = calls[i:i + batch]
         out = call(rpc, "r2000_batch_execute", {"calls": [c for _, c in part]})
@@ -336,7 +425,8 @@ def apply(path, explicit=None, log=None, batch=200):
             else:
                 bad += 1
                 print(f"{path}:{n}: {c['name']} failed: {json.dumps(r.get('error') or r.get('result'))[:200]}")
-    print(f"applied {done} of {len(calls)} call(s) from {path}" + (f"; {bad} failed" if bad else ""))
+    print(f"applied {done} of {len(calls)} call(s) from {path}" + (f"; {bad} failed" if bad else "")
+          + (f"; {len(warned)} warning(s) above" if warned else ""))
     return bad
 
 

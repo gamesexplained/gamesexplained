@@ -360,3 +360,43 @@ All on VICE vice-mcp v3.13.2 (Linux), 10 October 2026, from
   alone and once with the firing chance `$69` held at `$FC` so that mines
   came often, recording `$6C` and every enemy slot each frame
   (`t_mines.py`, `t_minefrac.py`, 16 October 2026).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- What the code does that a player would not see: each one read in the listing and then watched in the emulator.
+- Recorded frame by frame in the emulator on Zinc, from a landing to the start of level 2: the Manta's map position fell 7 a frame and the vaporising column `$89` one a frame, from frame 127.
+- In the emulator, from the play snapshot, the first three waves of Zinc each put all five fighters at X 418 or 420, on one frame.
+- In the emulator, on Zinc with the chance of a mine raised (the firing chance `$69` held at `$FC`, so that mines came often), the wait after the first wave's fighters had gone lasted from frame 116 to frame 755: at each of the ten checks in between, `$6C` still counted one to five mines.
+- In the emulator, placed over column 408 of Zinc with Land now! up, the Manta landed within two frames facing right and never facing left.
+
+### graphics.html
+
+- Each picture here is placed, coloured and stepped by the game's own routines, run on the kit's 6502 over the listing's memory a frame at a time, a fiftieth of a second, in the colours of the Dreadnought chosen below.
+- The fixed half from `$7800`; the level's half copied to `$7C00` by `copy_tile_set` (`$1A54`) from `$D400`, `$D800` or `$DC00`, by the table at `$E040`; the colours from `level_colours` (`$2F33`), both run on the kit's 6502.
+- `fuel_rod_chamber` (`$114E`) runs on the kit's 6502 after the wipe (`shift_rows_left`, `shift_rows_right`): it copies the screen from `$A600` and the characters from `$D200` to `$7C00`, then fades the three backgrounds in to white, light grey and dark grey (`chamber_fade`, `$38DE`).
+- The loop the tape runs while it loads, written again in JavaScript, recolours a frame recorded in VICE and fills its bar, frame by frame, as it did on the recorded load.
+
+### how-it-works.html
+
+- A frame of play drawn by this page from the memory and video registers recorded in the emulator.
+- Drawn by the site's renderer from a recorded frame: all 104,448 pixels match the emulator's picture.
+- The port matches the game's own builder, run in a 6502 simulator, byte for byte on all fifteen levels and the title message (`test_ports.py`).
+- Zinc's hull scrolling past the ten stars of the frame recorded in the emulator, drawn as `$2BEB` copies the map and `$2ED7` puts back the stars.
+- The star drawing was checked against the game's code in a 6502 simulator on 2,000 random screens.
+- The table above shows how many of the 16 each screen draws, the number at `$8D`, set to 10 in a game (`$0ADA`), all 16 for the giant message (`$0B8F`) and 8 in the demo (`$21CB`), measured in the emulator.
+- A stretch of Zinc's map around the chosen row, with the shot run by a port of `$2A17` and `$2AE9`, which matched the game's code in a 6502 simulator over 18,000 frames of random volleys on every Dreadnought.
+- The port matched the game's code in a 6502 simulator on all 57 wave records, both entry sides and two Manta heights: 157,298 fighter positions, frame by frame.
+- They wait there, one after another, until their path begins; the emulator shows every fighter launched at one of those two X positions.
+- The port matched the game's code in a 6502 simulator on 600 random mines, every frame from the port to the burst.
+- The Manta's flight is the one recorded in the emulator on Zinc, frame by frame, with no input from the player; the autopilot flies every Dreadnought the same way.
+- The vaporising is run by a port of `$173B` and `$16D2`, which matched the game's code in a 6502 simulator on every Dreadnought, given the same noise.
+
+### music.html
+
+- The port was checked against the game's code in a 6502 simulator: 99,762 calls, the tune to its end and every effect on every voice, with every SID write in the same order.
+- `test_ports.py` beside this page repeats the check.
+- Each effect, on each voice, with and without bit 7, was compared with the game's code to its end, and `test_ports.py` plays every button here through the SID model to check that it sounds.

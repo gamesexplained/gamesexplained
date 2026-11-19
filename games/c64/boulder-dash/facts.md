@@ -87,3 +87,16 @@ The run's sample of 60 of the 358 comments, seed 2611, checked on `claude-opus-5
 - The game boots from the image in VICE 3.14 and the demonstration runs at the title.
 - Fire on joystick port 1 starts cave A level 1; the map at `$0850` was read from the snapshot and compared with the recipe above.
 - On the First Star PAL disk, in VICE 3.14 as a PAL machine: the first title shows the logo, fire does nothing until F1, and 600 frames take ten off the cave's time.
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### graphics.html
+
+- The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+
+### levels.html
+
+- To check the recipe, the page's builder was run for cave A, level 1, and compared with the 880 map bytes in the emulator right after play began.
+- All but 33 cells matched, and the 33 differences are Rockford himself and boulders that had already fallen in the seconds of play before the snapshot.

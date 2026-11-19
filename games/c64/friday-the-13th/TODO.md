@@ -18,4 +18,6 @@ Tier: gold.
 
 ## Ideas
 
-- What colour Jason is drawn in once unmasked.
+- The jumpscare plays without the music that plays between rooms; the theme under the walk, then the scream, would be closer to the game.
+- Gold pass: the Gameplay tab's jumpscare and camp sections and the Discoveries entry on the stuck Jason are new agent copy, added 15 November 2026 at Aaron's request.
+- In one round of 40 on the camp from above, Jason also stood still for the rest of the round in room 38, at x 148, y 39, with his victim in the same room; why is not known.

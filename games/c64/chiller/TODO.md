@@ -96,3 +96,8 @@ Next: Review Painted scenery against the original collision surfaces before exte
   `check_reach_widget.js` (the Maps tab, headless Chrome).
 - Run shell commands one at a time and put anything longer than a line in
   a file: the terminal is the contributor's interactive zsh.
+
+## Loading picture and tune
+
+- A new section awaits the steward's pass: the cassette's loading picture, with the
+  loader's border stripes, on the Graphics tab (section 03).

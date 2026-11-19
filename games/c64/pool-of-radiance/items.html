@@ -37,15 +37,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .it-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
 .it-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px;align-items:start}
 .it-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px}
-.it-bar button{font-family:var(--fm);font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:4px 9px;cursor:pointer;text-align:left}
-.it-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.it-bar button{font-size:12px;padding:4px 9px;text-align:left}
 .it-bar .lab{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute);letter-spacing:.05em;text-transform:uppercase;margin-right:4px}
-.it-bar select{font-family:var(--fm);font-size:12.5px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--surface);color:var(--ink);max-width:100%}
+.it-bar select{font-size:12.5px;max-width:100%}
 .it-carry{list-style:none;margin:0 0 10px;padding:0;font-family:var(--fm);font-size:12.5px}
 .it-carry li{display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--line-soft);padding:4px 0}
 .it-carry li span{flex:1;min-width:0}
 .it-carry label{font-size:11.5px;color:var(--ink-mute);display:flex;gap:4px;align-items:center;cursor:pointer}
-.it-carry button{font-family:var(--fm);font-size:11px;border:1px solid var(--line);background:var(--surface);color:var(--ink-mute);border-radius:5px;padding:1px 6px;cursor:pointer}
+.it-carry button{font-size:11px;padding:1px 6px}
 .it-sheet{background:#1b1c20;color:#e8e6df;border-radius:8px;padding:14px 16px;font-family:var(--fm);font-size:13.5px;line-height:1.6}
 .it-sheet table{border-collapse:collapse;width:100%}
 .it-sheet td{padding:1px 0;vertical-align:top;color:#e8e6df}
@@ -94,7 +93,7 @@ details.it-fold summary{cursor:pointer;font-family:var(--fm);font-size:13px;colo
         <div class="it-sheet" id="it-sheet"><p class="it-miss">The sheet runs the game's own code, with the site's shared scripts that the built site serves.</p></div>
       </div>
     </div>
-    <p class="cap">Each change runs the game's own routines on the kit's 6502 over the listing's bytes: <code>compute_combat_stats</code> (<code>$3729</code>) for the armour class, THAC0, damage and weight, <code>max_load</code> (<code>$472E</code>) for the most PENDRAGON can carry, and COMBAT's <code>can_strike</code> (<span data-part="combat"><code>$1648</code></span>) for whether a bow or crossbow has what it shoots. The character is PENDRAGON, a level-1 fighter with strength 17 and dexterity 17, whom a player saved onto their copy of game disk 3 (<a href="rules.html#pendragon">Rules</a>).</p>
+    <p class="cap">Each change runs the game's own routines over the listing's bytes: <code>compute_combat_stats</code> (<code>$3729</code>) for the armour class, THAC0, damage and weight, <code>max_load</code> (<code>$472E</code>) for the most PENDRAGON can carry, and COMBAT's <code>can_strike</code> (<span data-part="combat"><code>$1648</code></span>) for whether a bow or crossbow has what it shoots. The character is PENDRAGON, a level-1 fighter with strength 17 and dexterity 17, whom a player saved onto their copy of game disk 3 (<a href="rules.html#pendragon">Rules</a>).</p>
   </div>
   <p>Whether an item protects is set by its type, not by its name. Each of the 128 item types has a byte whose top bit marks an item that protects, and whose other bits hold a base armour class (<code>armour_bonus</code>, <code>$37E3</code>). A ring of that kind adds its plus, and only the best ring counts. Every other RING OF PROTECTION in the game, on a THEURGIST, the LEVEL 6 MUs, an 8TH LVL FIGHTER and Tyranithraxus, or in a treasure in the slums, is type 93, which has the bit. The trolls' ring is type 69, the type of the plain RING and of the RING OF FIRE RESISTANCE, whose byte is 0, so its +2 is never added.</p>
   <p>The ring is in one troll file, MON1F on disk 3 side A, which the hedge maze loads; the trolls elsewhere carry nothing. Its worth is a real ring's, 15,000 gold, so a shop pays 7,500 for each one, like a working ring (<span data-part="post-com"><code>sale_price</code>, <code>$1A27</code></span>).</p>
@@ -121,11 +120,11 @@ details.it-fold summary{cursor:pointer;font-family:var(--fm);font-size:13px;colo
 <section id="crossbow" data-part="resident">
   <p class="fig">04 · The heavy crossbow</p>
   <h2 class="t">Bug: the HEAVY CROSSBOW shoots arrows, and the 25,000-gold bow is one</h2>
-  <p class="lede">The item type named HEAVY CROSSBOW behaves as a bow: it shoots arrows, twice a round, and adds the archer's strength to the roll to hit and to the damage. No other bow or crossbow that an item uses adds strength.</p>
+  <p class="lede">The item type named HEAVY CROSSBOW behaves as a bow: it shoots arrows, twice a round, and adds the archer's strength to the roll to hit and to the damage. Of the bows and crossbows that items use, it is the only one that adds strength.</p>
   <div class="it-tbl-wrap"><table class="it-tbl" id="it-bows"><thead><tr><th>Type</th><th>Shoots</th><th class="n">Shots a round</th><th>Strength adds</th><th class="n">Range</th></tr></thead><tbody></tbody></table></div>
   <p class="cap">From each type's bytes: its flags (bit 0 arrows, bit 7 quarrels, bit 2 strength), the shots it makes in two rounds and its range.</p>
   <p>A weapon's flags decide what it needs: with bit 7 set it needs quarrels readied, and otherwise with bit 0 set it needs arrows (<span data-part="combat"><code>can_strike</code>, <code>$1648</code></span>). The light crossbow has bit 7. Type 45, the heavy crossbow, has bit 0 and not bit 7, so it needs arrows, and it has bit 2, which adds strength's adjustments to the roll and to the damage (<code>weapon_bonuses</code>, <code>$368F</code>).</p>
-  <p>The FINE COMPOSITE LONG BOW in New Phlan's silver shop costs 25,000 gold, and its type is 45. The HEAVY CROSSBOW in Valjevo Castle's armoury, worth 20, is the same weapon. The 3RD LVL FIGHTER and 5TH LVL FIGHTER at the buccaneers' base each carry a HEAVY CROSSBOW and QUARREL(S), so the party that beats them takes a crossbow and the one thing it cannot shoot. Three item types that no item uses, 94 to 96, are bows with the heavy crossbow's flags.</p>
+  <p>The FINE COMPOSITE LONG BOW in New Phlan's silver shop costs 25,000 gold, and its type is 45. The HEAVY CROSSBOW in Valjevo Castle's armoury, worth 20, is the same weapon. The 3RD LVL FIGHTER and 5TH LVL FIGHTER at the buccaneers' base each carry a HEAVY CROSSBOW and QUARREL(S), so the party that beats them takes a crossbow and the one thing it cannot shoot. Three item types that are not used by any item, 94 to 96, are bows with the heavy crossbow's flags.</p>
 </section>
 
 <section id="restoration" data-part="camp">
@@ -151,7 +150,7 @@ details.it-fold summary{cursor:pointer;font-family:var(--fm);font-size:13px;colo
   <tr><td class="nm">LONG SWORD +2</td><td>Valhingen Graveyard</td><td>lawful good</td><td class="n">15</td></tr>
   <tr><td class="nm">LONG SWORD +3 (two)</td><td>Valjevo Castle, the bailey</td><td>lawful evil</td><td class="n">5</td></tr>
   </tbody></table></div>
-  <p>An item can carry a power that comes on when it is readied, in its last byte with the top bit set. These swords' power is kind 132, and the byte before it holds the rest: the low half is the alignment the sword accepts (0 lawful good, 2 lawful evil), and the high half is the damage. The routine is in the combat's effects file and again in the camp's spell file (<code>kind_item_aligned</code>, <code>$AE94</code>; <span data-part="camp-spells"><code>aligned_item</code>, <code>$AE5F</code></span>). No other item has the power.</p>
+  <p>An item can carry a power that comes on when it is readied, in its last byte with the top bit set. These swords' power is kind 132, and the byte before it holds the rest: the low half is the alignment the sword accepts (0 lawful good, 2 lawful evil), and the high half is the damage. The routine is in the combat's effects file and again in the camp's spell file (<code>kind_item_aligned</code>, <code>$AE94</code>; <span data-part="camp-spells"><code>aligned_item</code>, <code>$AE5F</code></span>). The sword is the only item with the power.</p>
   <p>The graveyard's sword is also in an earlier list left on disk 2 side A, with no power at all (section 10).</p>
 </section>
 
@@ -176,11 +175,11 @@ details.it-fold summary{cursor:pointer;font-family:var(--fm);font-size:13px;colo
 
 <section id="leftovers" data-part="tables">
   <p class="fig">10 · Left on the disks</p>
-  <h2 class="t">Item lists no script gives, item types no item uses, and names never given</h2>
+  <h2 class="t">Item lists and item types the game never uses, and names it never gives</h2>
   <p class="lede">Five item lists are on a disk side whose scripts never ask for them. Two are earlier forms of treasures in Valhingen Graveyard, left on the other side of the graveyard's disk.</p>
   <div class="it-tbl-wrap"><table class="it-tbl" id="it-unused"><thead><tr><th>File</th><th>Items</th><th>What it is</th></tr></thead><tbody></tbody></table></div>
   <p class="cap">A script's TREASURE loads the list of that number from the disk side in the drive, so a list is given only on a side whose scripts name its number. The scripts that choose a list from a variable are counted too.</p>
-  <p>The table of item types has entries that no item uses, in a list, on a monster or in the random table.</p>
+  <p>The table of item types has entries that are not used by any item, in a list, on a monster or in the random table.</p>
   <div class="it-tbl-wrap"><table class="it-tbl" id="it-types-unused"><thead><tr><th class="n">Type</th><th>What its bytes say</th></tr></thead><tbody></tbody></table></div>
   <p class="cap">Types 1 to 47 are named by the name word of the same number. A type above 47 has no name of its own.</p>
   <p>The table of name words has these words on no item, in a list, on a monster or in the random table, and the code never writes them into a name. Many name items of the AD&amp;D rule books that the game does not have.</p>

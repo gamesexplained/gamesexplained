@@ -409,3 +409,36 @@ kit's server, 27 October 2026.
 - With `title_dot_step`'s four operands at `$1C64`, `$1C6C`, `$1C72`
   and `$1C91` changed from `$340D` to `$1B77`, the title drew WIMPO.
 - Plus/4 World's cheats, each poked in play (`cheats.md`).
+
+## Checks behind the pages
+
+How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### discoveries.html
+
+- With the same change made in the plus4emu emulator, the title drew WIMPO.
+- Both rooms drawn by the game's `draw_room` on the kit's 6502.
+- In plus4emu, room 2's pit and room 24's corridor and ladder each took him to the room shown.
+- In plus4emu, in room 6, cells 30 to 33 at full, full, one step down and empty went to full, full, full and empty.
+
+### graphics.html
+
+- The spinning head, the conveyor belt, the force field, the lift and the vitamin are the game's `animate_chars` (`$1D13`) and `rotate_vitamin_chars` (`$2844`), run on the kit's 6502 over the listing's memory once a pass.
+- The block is the game's `copy_under_glyphs` and `merge_player` run on the kit's 6502, with the scenery chosen in `under_player` (`$0333`-`$0338`), then drawn as `draw_player` puts characters `$78`-`$7D` on the screen, in room 0's colours.
+- Room 0 at the first pass of a game started with F1, drawn from memory by the site's TED renderer: the screen at `$0C00`, its colours at `$0800` and the character set at `$3800`, all as the game's `start_turn` leaves them, run on the kit's 6502.
+- Against plus4emu's picture of the same moment, 0 of the 64,000 pixels differ; drawn with one set of colours, 38,408 do.
+
+### index.html
+
+- The title and room 14, in plus4emu.
+- Run that way, it makes the same 2,238 writes as the plus4emu emulator's sound log of the title's first 774 frames, with the same values in the same frames.
+- Each effect as the game makes it, recorded on the kit's model of the C16 (`kit/c16/machine.js`) running the game's code from the listing, in room 0 at the start of a game: the refill as the first turn starts, the fall that follows, a jump from the floor, and the D key. plus4emu's sound log of the same steps has the same writes with the same values, each within a fifth of a frame.
+- The last column is the game's `is_solid` (`$22E6`), run on the kit's 6502 on each character: the ones for which it sets the carry, a one-bit flag in the processor, stop him walking into them.
+- The figure is drawn by the game's `merge_player` on the kit's 6502.
+- That is about the speed of the loop in the rooms timed in plus4emu, 0.39 to 0.42 passes a frame.
+- `new_game` (`$31F5`), `read_input` (`$2543`), `player_pass` and `pause_check`; all tried in plus4emu.
+- The vitamin's four pictures, characters `$D7` to `$DA`, turned by the game's `rotate_vitamin_chars` (`$2844`) on the kit's 6502, once a pass at 20 passes a second, in room 0's vitamin colour.
+
+### play.html
+
+- The game's writes to TED's sound registers, the tune on the title and the notes of the jumps, falls and deaths, go to the site's model of TED's two voices, made from the plus4emu emulator's, each write at the place in the frame where the page's clock made it.

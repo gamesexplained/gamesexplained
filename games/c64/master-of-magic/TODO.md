@@ -25,8 +25,6 @@ pass, then becomes `diamond`.
 
 - **NTSC**: the music's one-tick-in-six skip and the scroller's slower
   pace are traced, not heard.
-- **The loading picture**: the tape's own loading screen, or the
-  crackers'? Needs the original tape.
 
 ## Article ideas
 

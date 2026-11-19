@@ -34,11 +34,9 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 .cap b{color:var(--ink);font-weight:700}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
 .pick{display:flex;align-items:stretch;gap:6px;margin:0 0 12px;font-family:var(--fm);font-size:12.5px}
-.pick select{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:6px 8px;border-radius:6px;font:inherit}
-.pick .step{flex:none;display:flex;align-items:center;justify-content:center;width:30px;border:1px solid var(--line);border-radius:6px;color:var(--ink-soft);background:var(--surface);text-decoration:none;font-size:16px;line-height:1;cursor:pointer}
-.pick .step:hover{color:var(--ink);border-color:var(--ink-mute);text-decoration:none}
-.pick .step.off{opacity:.35;cursor:default}
-.pick select:focus-visible,.pick .step:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.pick select{flex:1;min-width:0}
+.pick .step{flex:none;display:flex;align-items:center;justify-content:center;width:30px;font-size:16px;line-height:1}
+.pick .step.off{opacity:.35}
 a{color:var(--link)}
 a:hover{color:var(--link-hover)}
 p{margin:0 0 1em}
@@ -54,9 +52,7 @@ th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppe
 .sr-bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:0 0 12px;font-size:14px;color:var(--ink-soft)}
 .sr-bar label{display:flex;align-items:center;gap:8px}
 .sr-bar input[type=range]{width:240px;max-width:60vw}
-.sr-btn{font:inherit;font-size:12.5px;font-family:var(--fm);border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink-soft);padding:4px 9px;cursor:pointer}
-.sr-btn:hover{color:var(--ink);border-color:var(--ink-mute)}
-.sr-btn[aria-pressed=true]{color:var(--ink);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.sr-btn{font-size:12.5px;padding:4px 9px}
 .sr-mono{font-family:var(--fm);font-size:12.5px;color:var(--ink)}
 .sr-view{background:#000;border-radius:6px;overflow:hidden;line-height:0}
 .sr-view canvas{display:block;width:100%;margin:0 auto;image-rendering:pixelated;image-rendering:crisp-edges}
@@ -73,7 +69,7 @@ th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppe
 .sr-codes{columns:3 200px;column-gap:20px;font-family:var(--fm);font-size:12.5px;margin:12px 0 0}
 .sr-codes div{break-inside:avoid;display:flex;gap:10px;padding:1px 0}
 .sr-codes b{display:inline-block;min-width:3.6em;font-weight:500}
-.sr-input{width:100%;font:inherit;font-size:15px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);margin:0 0 10px}
+.sr-input{width:100%;font-size:15px;padding:7px 10px;margin:0 0 10px}
 .sr-q{font-size:18px;margin:6px 0 10px}
 .sr-q b{font-family:var(--fm);font-size:16px}
 details summary{cursor:pointer;color:var(--link);font-size:14px;margin:12px 0 6px}
@@ -92,7 +88,7 @@ details summary{cursor:pointer;color:var(--link);font-size:14px;margin:12px 0 6p
   <h2 class="t">A trader in the Far Arm</h2>
   <p class="lede">The story opens with the player's ship, the Princess Blue, answering a distress call from a derelict and being destroyed by the Manchi. The player is left with the derelict's scout ship, the Sunracer, and earns a living with it by trading and fighting while the plot comes out in conversation.</p>
   <div class="sr-shots">
-    <figure><img src="reference/title.png" alt="The title screen: the Space Rogue logo over a star field" width="384" height="272"><figcaption>The title, from a clean boot in VICE.</figcaption></figure>
+    <figure><img src="reference/title.png" alt="The title screen: the Space Rogue logo over a star field" width="384" height="272"><figcaption>The title, from a clean boot.</figcaption></figure>
     <figure><img src="reference/starbase.png" alt="The cockpit view with Hiathra Starbase drawn in filled polygons" width="384" height="272"><figcaption>Hiathra Starbase from the cockpit: flight is filled 3D.</figcaption></figure>
     <figure><img src="reference/navigation.png" alt="Navigation Control: the chart of Karonus with its menu" width="384" height="272"><figcaption>Navigation Control: the system as a chart of tiles.</figcaption></figure>
     <figure><img src="reference/hangar.png" alt="The hangar at Hiathra drawn from tiles, the player beside the Sunracer" width="384" height="272"><figcaption>Docked at Hiathra: the base is walked on foot, drawn from tiles too.</figcaption></figure>
@@ -115,7 +111,7 @@ details summary{cursor:pointer;color:var(--link);font-size:14px;margin:12px 0 6p
     <div class="sr-view"><canvas id="sr-scr-cv" width="768" height="544"></canvas></div>
     <p class="cap" id="sr-scr-cap"></p>
   </div>
-  <p>Each picture is a frame recorded in VICE, the memory and the video chip's registers at the start of a frame and every write to them during it, drawn by the site's renderer. All three are a bitmap at <code data-part="">$C000</code> with its screen matrix at <code data-part="">$E000</code>. The bitmap runs under the I/O chips, so the engine keeps the processor port at <code data-part="engine">$34</code>, all RAM, and banks the chips in only around the code that needs them (<code data-part="engine">bank_all_ram</code>, <code data-part="engine">$0E85</code>). The engine draws the next picture into a second buffer at <code data-part="">$4000</code> and flips the two (<code data-part="engine">flip_buffers</code>, <code data-part="engine">$8ED3</code>).</p>
+  <p>Each picture is one frame, the memory and the video chip's registers at the start of a frame and every write to them during it, drawn by the site's renderer. All three are a bitmap at <code data-part="">$C000</code> with its screen matrix at <code data-part="">$E000</code>. The bitmap runs under the I/O chips, so the engine keeps the processor port at <code data-part="engine">$34</code>, all RAM, and banks the chips in only around the code that needs them (<code data-part="engine">bank_all_ram</code>, <code data-part="engine">$0E85</code>). The engine draws the next picture into a second buffer at <code data-part="">$4000</code> and flips the two (<code data-part="engine">flip_buffers</code>, <code data-part="engine">$8ED3</code>).</p>
 </section>
 
 <section data-part="engine" id="tiles">
@@ -178,7 +174,7 @@ details summary{cursor:pointer;color:var(--link);font-size:14px;margin:12px 0 6p
   <div class="plate">
     <p class="sr-need" id="sr-snd-need" hidden></p>
     <div id="sr-snd"></div>
-    <p class="cap">The page runs a port of the engine's sound code, <code>sound_play</code> (<code>$1091</code>) and <code>sound_step</code> (<code>$10D2</code>), on the effect tables in the listing, through the site's model of the SID. A test, <code>test_sound.js</code>, runs every button on the engine's own code and compares every SID write of every frame. The hum is below 33 Hz, which laptop and phone speakers barely play: try headphones.</p>
+    <p class="cap">The page runs a port of the engine's sound code, <code>sound_play</code> (<code>$1091</code>) and <code>sound_step</code> (<code>$10D2</code>), on the effect tables in the listing, through the site's model of the SID. The hum is below 33 Hz, which laptop and phone speakers barely play: try headphones.</p>
   </div>
   <div class="sr-scroll"><table id="sr-fx"></table></div>
   <p>An effect is a voice, a starting frequency, a step added to it every frame, an envelope, a waveform, a length in frames, the frame on which the gate closes and a number of repeats (<code>$11AD</code>-<code>$1238</code>). Most effects use the third voice: the hits, the explosions, the alarm and the hazards, nearly all of them noise. The player's beam, the missiles and the beep use the second, and the door and HIVE!'s recall the first, which silences the hum while they play.</p>
@@ -198,7 +194,7 @@ details summary{cursor:pointer;color:var(--link);font-size:14px;margin:12px 0 6p
     </div>
     <p class="sr-need" id="sr-pic-need" hidden></p>
     <div class="sr-view" id="sr-pic-frame"><canvas id="sr-pic-cv" width="320" height="200"></canvas></div>
-    <p class="cap">Unpacked by the page's port of the intro's <code data-part="intro">unpack_picture</code> (<code data-part="intro">$712D</code>), which reads the same stream as the engine's (<code data-part="engine">$1C1D</code>). A test, <code>test_unpack.js</code>, runs both routines on every picture and on made-up streams and compares the 10 KB they write. The border is the colour the stream ends with.</p>
+    <p class="cap">Unpacked by the page's port of the intro's <code data-part="intro">unpack_picture</code> (<code data-part="intro">$712D</code>), which reads the same stream as the engine's (<code data-part="engine">$1C1D</code>). The border is the colour the stream ends with.</p>
   </div>
   <p>A byte n below <code>$80</code> repeats the byte after it n times; <code>$80</code> + n copies the n bytes after it; a zero ends the picture, and the byte after it is the border's colour. The output is a bitmap with its screen matrix after it, at +<code>$2000</code>, and for the story pictures a page of colours at +<code>$2400</code> that the intro and the ending copy into the colour RAM (<code data-part="intro">colours_to_ram</code>, <code data-part="intro">$718B</code>). The engine's frames have no colour page: the engine leaves the colour RAM white, which is why every frame's fourth colour is white.</p>
   <p>The packing is plain run-length, so a picture's size on disk follows its detail. A story picture is a smaller scene on a black screen, and the text fills the rest. <code data-part="title">SPACE</code> is the title's star field alone and <code data-part="title">ROGUE</code> the logo on black; the title draws its 3D ship over them.</p>
@@ -263,7 +259,7 @@ details summary{cursor:pointer;color:var(--link);font-size:14px;margin:12px 0 6p
     <div class="sr-bits" id="sr-huff-bits"></div>
     <p class="sr-info" id="sr-huff-stat"></p>
     <div class="sr-codes" id="sr-huff-codes"></div>
-    <p class="cap">The codes are read from <code>huffman_tree</code> (<code>$9D66</code>) by the page, walking it as <code>decode_char</code> (<code>$9CE0</code>) does. A test, <code>test_odds.js</code>, feeds each code to the engine's routine and checks the character it gives. A character the tree leaves out costs the escape and 7 bits more.</p>
+    <p class="cap">The codes are read from <code>huffman_tree</code> (<code>$9D66</code>) by the page, walking it as <code>decode_char</code> (<code>$9CE0</code>) does. A character the tree leaves out costs the escape and 7 bits more.</p>
   </div>
   <p>The tree is a list of pairs, a 0 bit taking the left of a pair and a 1 bit the right. An entry below <code>$80</code> is the distance on to the next pair, and an entry of <code>$80</code> and up is a character. Space takes 3 bits, e takes 4, and capitals mostly 9 or more, which suits text that is mostly lower case.</p>
   <p>A text is named by a number from <code data-part="">$C000</code>, where an address would be. <code>resolve_text</code> (<code>$9BB7</code>) takes a number from <code data-part="">$C000</code> to <code data-part="">$CFFF</code> as a disk text, subtracts the counts in <code>SPB</code>'s table at <code>$BD00</code> to find the block of 512 bytes that holds it, reads the block from disk block <code data-part="">$01AD</code> on, skips the texts before it and decodes it into <code data-part="">$BF00</code>.</p>

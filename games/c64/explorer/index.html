@@ -38,9 +38,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ex-pair img,.ex-pair canvas{width:100%;image-rendering:pixelated;display:block;border-radius:4px;background:#000}
 .ex-pair figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
 .ex-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 0;font-family:var(--fm);font-size:13px}
-.ex-bar button,.ex-bar select,.ex-bar input{font-family:var(--fm);font-size:13px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-.ex-bar input{cursor:text;width:16em}
-.ex-bar button:hover{background:#e6e3dc}
+.ex-bar button,.ex-bar input{font-size:13px;padding:6px 10px}.ex-bar select{font-size:13px}
+.ex-bar input{width:16em}
 .ex-read{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-top:10px;min-height:3em;white-space:pre-wrap}
 .ex-tab{border-collapse:collapse;font-size:14px;width:100%}
 .ex-tab th,.ex-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
@@ -122,7 +121,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       </select>
     </div>
     <div class="ex-read" id="ex-walk-read">Loading the listing…</div>
-    <p class="cap"><b>How it was checked.</b> The map is a JavaScript copy of the game's own map routine (<code>draw_map</code> at <code>$2B25</code>) and its ground routine (<code>terrain_at</code> at <code>$32D6</code>). The ground view is the game's own routine (<code>draw_ground_view</code> at <code>$1258</code>) run on a model of the 6502 processor, on the bytes in the listing. At "the landing place" in the jump list, facing north, both pictures match the emulator's screen exactly: 0 pixels of the map's 61,440 differ, and 0 of the ground view's 64,000. The JavaScript copy of the ground routine gives the game's answer at 200,072 points tested (<code>test_terrain.js</code>).</p>
+    <p class="cap">The map is a JavaScript copy of the game's own map routine (<code>draw_map</code> at <code>$2B25</code>) and its ground routine (<code>terrain_at</code> at <code>$32D6</code>). The ground view is the game's own routine (<code>draw_ground_view</code> at <code>$1258</code>), run on the bytes in the listing.</p>
   </div>
   <p>A step is 16 units along the compass bearing, and the planet is 65,536 units across in each direction, so it wraps round: walk far enough east and you come back from the west. The map from above shows one cell for every 16 units at the lower height and one for every 32 at the higher. On the ground, the game draws the 24 cells round you. It draws the 16 cells two steps away first, then the 8 next to you on top of them, each at its compass direction on a 64-column horizon of which 40 columns are on the screen.</p>
   <p>The game refuses a step when the top of a near tree trunk fills the middle of the view. It tests one character cell, row 3 and column 19 of the screen, for the colour of black on yellow (<code>step_forward</code> at <code>$162D</code>), and the step button here does the same.</p>
@@ -131,7 +130,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="terrain">
   <p class="fig">04 · A planet from forty bytes</p>
   <h2 class="t">Four layers of the same line of heights</h2>
-  <p class="lede">Nothing about the landscape is stored. Every time a cell is drawn, the game works out what grows there.</p>
+  <p class="lede">The game stores none of the landscape. Every time a cell is drawn, the game works out what grows there.</p>
   <div class="plate">
     <canvas id="ex-profile" width="768" height="140" style="width:100%;display:block"></canvas>
     <p class="cap">The terrain profile at <code>$4700</code>: 256 heights from 2 to 138.</p>
@@ -215,7 +214,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" id="ex-go">go there</button>
     </div>
     <div class="ex-read" id="ex-name-read"></div>
-    <p class="cap">A JavaScript copy of the game's sums (<code>name_destination</code> at <code>$0E23</code>), checked against the game's own code on 20,007 names (<code>test_names.js</code>). In the emulator, HOME arrived at 48,356 east and 48,609 north. "Go there" moves the walk above to the place.</p>
+    <p class="cap">A JavaScript copy of the game's sums (<code>name_destination</code> at <code>$0E23</code>). HOME arrives at 48,356 east and 48,609 north. "Go there" moves the walk above to the place.</p>
   </div>
   <p>A doorway is a cell whose last layer adds up to a number whose lowest byte is 12, about one cell in 260. Two in three are in jungle, and the rest on open ground. When a doorway is within two cells, the game draws its striped patch in front of you, at the middle of the bottom of the view (<code>scenery_doorway</code> at <code>$1183</code>). On your next step it checks the middle of the view for the doorway's colour, and if it is there, it asks "Enter doorway" (<code>after_step</code> at <code>$16B6</code>).</p>
   <p>Press E and the screen fills with stripes and asks you to name a place. The game turns the name into a position with two sums. The east position starts at 0, and for each letter it adds the letter's code and then turns the 16-bit number five places to the left, the bits that fall off the top coming back in at the bottom. The north position does the same over the name read backwards, from the end of the name to its second letter. The sums are the same in every game, so a name always leads to the same place, and a well-chosen name puts you one step from a fragment (<a href="discoveries.html#fragments">Discoveries</a>).</p>

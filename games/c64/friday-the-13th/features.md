@@ -45,8 +45,9 @@ Sources:
 - One visit to the safe room lets the player send friends to shelter from any room (live; Discoveries).
 - Tune 4's room entry is `$FF`, which no room has, so it plays only when Jason reveals himself (traced).
 - The footstep sound is switched off by an `RTS` (traced).
+- Jason, hunting a victim in the church, can stick at the fence in room 11 for the rest of the round (run on the kit's processor, then live; Discoveries).
+- Unmasked, Jason is drawn in black, colour 0, from a sprite set of his own at block `$C9` (`place_next_sprite` `$9C0F`; traced).
 
 ## Open questions
 
-- Which counsellor colour Jason is drawn in once unmasked.
 - What the disk's bad-checksum sector holds.
