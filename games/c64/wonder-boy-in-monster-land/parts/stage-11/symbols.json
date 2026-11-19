@@ -1858,7 +1858,7 @@
   },
   {
    "address": 40032,
-   "name": "charset_bytes_9c60",
+   "name": "voice1_list_after_marker_9c60",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1870,7 +1870,7 @@
   },
   {
    "address": 40040,
-   "name": "charset_bytes_9c68",
+   "name": "voice2_list_after_marker_9c68",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1882,7 +1882,7 @@
   },
   {
    "address": 40048,
-   "name": "charset_bytes_9c70",
+   "name": "voice3_list_after_marker_9c70",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3118,7 +3118,7 @@
   {
    "address": 38456,
    "type": "line",
-   "text": "Load 11 trigger record 1 of 1: initial bytes $01, $0C, $01, $FF, $60, $79. $7979 copies the fields to the column, row, remaining-count, argument and callback arrays; the initial callback address is $7960. $48BF compares the stored column and row with the view tile, checks and decrements the count, then dispatches through the callback. Other code can change the stored count."
+   "text": "Load 11 trigger record 1 of 1: initial bytes $01, $0C, $01, $FF, $60, $79. $7979 copies the fields to the column, row, remaining-count, argument and callback arrays; the initial callback address is $7960. $48BF compares the stored column and row with the view tile, checks and decrements the count, then dispatches through the callback. The callback $7960 ignores the argument. When the selected player's flag $40 ($4DE2,Y) is set, it clears that flag ($21E1 with A = $BF) and stores 0 in $5284, so the main loop goes to the tally; otherwise it adds one back to the count ($7975), so the record fires again. Apart from $7979 and the dispatcher, no other code writes the count."
   },
   {
    "address": 38462,
@@ -3238,7 +3238,7 @@
   {
    "address": 40032,
    "type": "line",
-   "text": "Load 11: byte 1469 of the eight-page character copy for visual selector 1, which starts at $96A3, in character $B7. $717C copies it to $D5BD."
+   "text": "Load 11: the byte after the zero low-byte marker at $9C5F that ends the voice 1 list at $9C59. The resident sequencer reads the list at $22E9, finds the zero low byte and restarts from the list's beginning, so it never reads this byte as a pointer high byte. $717C also copies it to $D5BD, as byte 5 of character $B7 of the eight-page character copy for visual selector 1, which starts at $96A3."
   },
   {
    "address": 40033,
@@ -3248,7 +3248,7 @@
   {
    "address": 40040,
    "type": "line",
-   "text": "Load 11: byte 1477 of the eight-page character copy for visual selector 1, which starts at $96A3, in character $B8. $717C copies it to $D5C5."
+   "text": "Load 11: the byte after the zero low-byte marker at $9C67 that ends the voice 2 list at $9C61. The resident sequencer reads the list at $22E9, finds the zero low byte and restarts from the list's beginning, so it never reads this byte as a pointer high byte. $717C also copies it to $D5C5, as byte 5 of character $B8 of the eight-page character copy for visual selector 1, which starts at $96A3."
   },
   {
    "address": 40041,
@@ -3258,7 +3258,7 @@
   {
    "address": 40048,
    "type": "line",
-   "text": "Load 11: byte 1485 of the eight-page character copy for visual selector 1, which starts at $96A3, in character $B9. $717C copies it to $D5CD."
+   "text": "Load 11: the byte after the zero low-byte marker at $9C6F that ends the voice 3 list at $9C69. The resident sequencer reads the list at $22E9, finds the zero low byte and restarts from the list's beginning, so it never reads this byte as a pointer high byte. $717C also copies it to $D5CD, as byte 5 of character $B9 of the eight-page character copy for visual selector 1, which starts at $96A3."
   },
   {
    "address": 40049,
@@ -3588,17 +3588,17 @@
   {
    "address": 41203,
    "type": "line",
-   "text": "Entity record 1 (within the initial slot limit): type byte $FF; $B7 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $02AA and the world-Y arrays $197F/$1990 receive $0100. The remaining bytes $07, $F4, $00 and $95 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy; later handlers decide how to use these fields."
+   "text": "Entity record 1 (within the initial slot limit): type byte $FF, a moving platform; $B7 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $02AA and the world-Y arrays $197F/$1990 receive $0100. The remaining bytes $07, $F4, $00 and $95 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy. The entity tick at $2042 runs type $FF through $68CB (table $2062/$2074), which patches $1A18,X and $1A6D,X into the JSR at $68E5 ($68D9, $68DF): bytes 7 and 9 name the platform's motion callback $95F4, and the value it returns in A moves the platform. Bit 7 of the flags $192A,X, clear here, sends that value to the vertical path at $68F1, and bit 0, clear, makes $6961 patch the overlap width at $6989 to 17 ($6954). The display builders use $19F6,X, $07, as the colour of the frame's multicolour sprite ($1CB4, $1EB4)."
   },
   {
    "address": 41213,
    "type": "line",
-   "text": "Entity record 2 (within the initial slot limit): type byte $FF; $B7 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $026E and the world-Y arrays $197F/$1990 receive $012A. The remaining bytes $07, $16, $00 and $96 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy; later handlers decide how to use these fields."
+   "text": "Entity record 2 (within the initial slot limit): type byte $FF, a moving platform; $B7 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $026E and the world-Y arrays $197F/$1990 receive $012A. The remaining bytes $07, $16, $00 and $96 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy. The entity tick at $2042 runs type $FF through $68CB (table $2062/$2074), which patches $1A18,X and $1A6D,X into the JSR at $68E5 ($68D9, $68DF): bytes 7 and 9 name the platform's motion callback $9616, and the value it returns in A moves the platform. Bit 7 of the flags $192A,X, clear here, sends that value to the vertical path at $68F1, and bit 0, clear, makes $6961 patch the overlap width at $6989 to 17 ($6954). The display builders use $19F6,X, $07, as the colour of the frame's multicolour sprite ($1CB4, $1EB4)."
   },
   {
    "address": 41223,
    "type": "line",
-   "text": "Entity record 3 (within the initial slot limit): type byte $0E; $B9 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $0170 and the world-Y arrays $197F/$1990 receive $0119. The remaining bytes $07, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy; later handlers decide how to use these fields."
+   "text": "Entity record 3 (within the initial slot limit): type byte $0E; $B9 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $0170 and the world-Y arrays $197F/$1990 receive $0119. The remaining bytes $07, $00, $00 and $06 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$0E handler at $9E47 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
   },
   {
    "address": 41233,

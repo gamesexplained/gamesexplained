@@ -13,7 +13,7 @@ for(let number=1;number<=31;number++){
   while(memory[p]!==0&&count<80){const target=memory[p]|memory[p+1]<<8;if(!patterns.has(target))patterns.set(target,[]);patterns.get(target).push(p);p+=2;count++;}
   assert(count<80,`load ${number}, voice ${voice+1}: terminator`);
   const block=symbols.blocks.find(b=>b.start===addr);assert(block&&block.type==='Byte'&&block.end===p,`load ${number}, voice ${voice+1}: block`);
-  const comment=symbols.comments.find(c=>c.address===addr&&c.type==='line');assert(comment&&comment.text.includes(`${count} little-endian pattern pointers`)&&comment.text.includes(`$${p.toString(16).toUpperCase()}`));
+  const comment=symbols.comments.find(c=>c.address===addr&&c.type==='line');assert(comment&&comment.text.includes(count===1?'one little-endian pattern pointer':`${count} little-endian pattern pointers`)&&comment.text.includes(`$${p.toString(16).toUpperCase()}`));
  }
  const expected=new Map();let index=0;
  for(const [addr,refs] of [...patterns].sort((a,b)=>a[0]-b[0])){

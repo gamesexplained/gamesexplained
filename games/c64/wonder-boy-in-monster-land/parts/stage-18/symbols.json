@@ -2667,7 +2667,7 @@
   },
   {
    "address": 38265,
-   "name": "charset_bytes_9579",
+   "name": "message_9574_tail",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2679,7 +2679,7 @@
   },
   {
    "address": 38281,
-   "name": "charset_bytes_9589",
+   "name": "message_9585_tail",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2691,7 +2691,7 @@
   },
   {
    "address": 38305,
-   "name": "charset_bytes_95a1",
+   "name": "message_959c_tail",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2703,7 +2703,7 @@
   },
   {
    "address": 38329,
-   "name": "charset_bytes_95b9",
+   "name": "message_95b6_tail",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3681,7 +3681,7 @@
   },
   {
    "address": 40915,
-   "name": "charset_bytes_9fd3",
+   "name": "voice1_list_after_marker_9fd3",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3693,7 +3693,7 @@
   },
   {
    "address": 40921,
-   "name": "charset_bytes_9fd9",
+   "name": "voice2_list_after_marker_9fd9",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3705,7 +3705,7 @@
   },
   {
    "address": 40927,
-   "name": "charset_bytes_9fdf",
+   "name": "voice3_list_after_marker_9fdf",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -4739,7 +4739,7 @@
   {
    "address": 37229,
    "type": "line",
-   "text": "Load 18 trigger record 1 of 1: initial bytes $16, $06, $01, $CB, $AB, $72. $7979 copies the fields to the column, row, remaining-count, argument and callback arrays; the initial callback address is $72AB. $48BF compares the stored column and row with the view tile, checks and decrements the count, then dispatches through the callback. Other code can change the stored count."
+   "text": "Load 18 trigger record 1 of 1: initial bytes $16, $06, $01, $CB, $AB, $72. $7979 copies the fields to the column, row, remaining-count, argument and callback arrays; the initial callback address is $72AB. $48BF compares the stored column and row with the view tile, checks and decrements the count, then dispatches through the callback. The callback $72AB adds one back to the count at once ($72AC), so the record never runs out. When the vertical sub-tile offset $527D is $0B or more it starts the player's recoil ($7298 with A = $10), first placing a type-$2B entity with frame $CB, the argument, in slot zero at the record's tile when that slot is free ($72CA)."
   },
   {
    "address": 37235,
@@ -5014,7 +5014,7 @@
   {
    "address": 38193,
    "type": "line",
-   "text": "Load 18: byte 1856 of the map's character set, the eight-page copy that starts at $8DF1 (the source address at $7F41/$7F42), in character $E8. $717C copies it to $D740."
+   "text": "Load 18: one byte, $7B, between the four price-display digit codes at $952D–$9530 and the shop's layout selector at $9532. The price formatters and the digit drawer all stop at four bytes, and no instruction in load 18 or the resident part names it. $717C also copies it to $D740, as byte 0 of character $E8 of the map's eight-page character copy, which starts at $8DF1 (the source address at $7F41/$7F42)."
   },
   {
    "address": 38194,
@@ -5049,7 +5049,7 @@
   {
    "address": 38202,
    "type": "line",
-   "text": "Load 18: bytes 1865–1869 of the map's character set, the eight-page copy that starts at $8DF1 (the source address at $7F41/$7F42), in character $E9. $717C copies them to $D749–$D74D."
+   "text": "Load 18: five item-index offsets, $00, $00, $0D, $00 and $06, at $953A–$953E. ADC $953A,Y at $92EB adds the selected offset to the player-state value and stores the first item ID at $9538; the following addition of one supplies the second ID at $9539. That path runs only when stage field $476B,X is zero. Load 18's only record, record 1 at $9173, has $15 and $16 in $476B,X and $4771,X, so the set-up takes those as the item IDs ($92C4, $92CD) and the load never reads these bytes. $717C also copies them to $D749–$D74D, as character $E9 of the map's eight-page character copy, which starts at $8DF1 (the source address at $7F41/$7F42)."
   },
   {
    "address": 38207,
@@ -5064,47 +5064,47 @@
   {
    "address": 38260,
    "type": "line",
-   "text": "Load 18, shop message 3: three zero-terminated fields \"\" / \"      Closed.\" / \"\", followed by control byte $18. Its bytes match the decoded first-load record at $A88C."
+   "text": "Load 18, shop message 3: three zero-terminated fields \"\" / \"      Closed.\" / \"\", followed by control byte $18. The shop timeout at $93A6, when the layout gate $9532 is zero, stores $FF in stage field $4753,X and loads this address in X/Y at $93B5, then jumps to the $77E0 call at $9473. $77E2 stores the control byte in the message countdown $4D6B ($7845), so the status panel shows the message for 24 of its updates ($3719, which runs on every second call of $370B, counts it down) and then redraws the status."
   },
   {
    "address": 38265,
    "type": "line",
-   "text": "Load 18: bytes 1928–1939 of the map's character set, the eight-page copy that starts at $8DF1 (the source address at $7F41/$7F42), in characters $F1–$F2. $717C copies them to $D788–$D793."
+   "text": "Load 18: $9579–$9584 are part of shop message 3 at $9574, three zero-terminated glyph lines “” / “      Closed.” / “” with its control byte $18 at $9584. These bytes hold “  Closed.” of the second line, the zero that ends the second line, the zero that ends the empty third line and the control byte $18. The shop timeout at $93A6, when the layout gate $9532 is zero, stores $FF in stage field $4753,X and loads this address in X/Y at $93B5, then jumps to the $77E0 call at $9473. $77E2 stores the control byte $18 in the message countdown $4D6B ($7845), so the status panel shows the message for 24 of its updates. $717C also copies them to $D788–$D793, as characters $F1–$F2 of the map's eight-page character copy, which starts at $8DF1 (the source address at $7F41/$7F42)."
   },
   {
    "address": 38277,
    "type": "line",
-   "text": "Load 18, shop message 4: three zero-terminated fields \"\" / \" Please come again.\" / \"\", followed by control byte $10. Its bytes match the decoded first-load record at $A89D."
+   "text": "Load 18, shop message 4: three zero-terminated fields \"\" / \" Please come again.\" / \"\", followed by control byte $10. The purchase gate at $93FA loads this address in X/Y at $941C when the selection byte is zero and stage field $4753,X is not negative and has bit 1 set, then jumps to the $77E0 call at $9473. $77E2 stores the control byte in the message countdown $4D6B ($7845), so the status panel shows the message for 16 of its updates ($3719, which runs on every second call of $370B, counts it down) and then redraws the status."
   },
   {
    "address": 38281,
    "type": "line",
-   "text": "Load 18: bytes 1944–1962 of the map's character set, the eight-page copy that starts at $8DF1 (the source address at $7F41/$7F42), in characters $F3–$F5. $717C copies them to $D798–$D7AA."
+   "text": "Load 18: $9589–$959B are part of shop message 4 at $9585, three zero-terminated glyph lines “” / “ Please come again.” / “” with its control byte $10 at $959B. These bytes hold “ease come again.” of the second line, the zero that ends the second line, the zero that ends the empty third line and the control byte $10. The purchase gate at $93FA loads this address in X/Y at $941C when the selection byte is zero and stage field $4753,X is not negative and has bit 1 set, then jumps to the $77E0 call at $9473. $77E2 stores the control byte $10 in the message countdown $4D6B ($7845), so the status panel shows the message for 16 of its updates. $717C also copies them to $D798–$D7AA, as characters $F3–$F5 of the map's eight-page character copy, which starts at $8DF1 (the source address at $7F41/$7F42)."
   },
   {
    "address": 38300,
    "type": "line",
-   "text": "Load 18, shop message 5: three zero-terminated fields \"Oh, he's\" / \"just browsing.\" / \"\", followed by control byte $10. Its bytes match the decoded first-load record at $A8B4."
+   "text": "Load 18, shop message 5: three zero-terminated fields \"Oh, he's\" / \"just browsing.\" / \"\", followed by control byte $10. The purchase gate at $93FA loads this address in X/Y at $9411 when the selection byte is zero and stage field $4753,X is negative or has bit 1 clear, then jumps to the $77E0 call at $9473. $77E2 stores the control byte in the message countdown $4D6B ($7845), so the status panel shows the message for 16 of its updates ($3719, which runs on every second call of $370B, counts it down) and then redraws the status."
   },
   {
    "address": 38305,
    "type": "line",
-   "text": "Load 18: bytes 1968–1988 of the map's character set, the eight-page copy that starts at $8DF1 (the source address at $7F41/$7F42), in characters $F6–$F8. $717C copies them to $D7B0–$D7C4."
+   "text": "Load 18: $95A1–$95B5 are part of shop message 5 at $959C, three zero-terminated glyph lines “Oh, he's” / “just browsing.” / “” with its control byte $10 at $95B5. These bytes hold “e's” of the first line, the zero that ends the first line, “just browsing.” of the second line, the zero that ends the second line, the zero that ends the empty third line and the control byte $10. The purchase gate at $93FA loads this address in X/Y at $9411 when the selection byte is zero and stage field $4753,X is negative or has bit 1 clear, then jumps to the $77E0 call at $9473. $77E2 stores the control byte $10 in the message countdown $4D6B ($7845), so the status panel shows the message for 16 of its updates. $717C also copies them to $D7B0–$D7C4, as characters $F6–$F8 of the map's eight-page character copy, which starts at $8DF1 (the source address at $7F41/$7F42)."
   },
   {
    "address": 38326,
    "type": "line",
-   "text": "Load 18, shop message 6: three zero-terminated fields \"\" / \"  Cocktail or Beer.\" / \"\", followed by control byte $10. Its bytes match the decoded first-load record at $A8CE."
+   "text": "Load 18, shop message 6: three zero-terminated fields \"\" / \"  Cocktail or Beer.\" / \"\", followed by control byte $10. The sufficient-gold branch at $91D7 loads this address in X/Y at $91E5 when bit 0 of stage field $4753,X is set, then jumps to $9366, which calls $77E0 and starts the choice loop. $77E2 stores the control byte in the message countdown $4D6B ($7845), so the status panel shows the message for 16 of its updates ($3719, which runs on every second call of $370B, counts it down) and then redraws the status."
   },
   {
    "address": 38329,
    "type": "line",
-   "text": "Load 18: bytes 1992–2011 of the map's character set, the eight-page copy that starts at $8DF1 (the source address at $7F41/$7F42), in characters $F9–$FB. $717C copies them to $D7C8–$D7DB."
+   "text": "Load 18: $95B9–$95CC are part of shop message 6 at $95B6, three zero-terminated glyph lines “” / “  Cocktail or Beer.” / “” with its control byte $10 at $95CC. These bytes hold “Cocktail or Beer.” of the second line, the zero that ends the second line, the zero that ends the empty third line and the control byte $10. The sufficient-gold branch at $91D7 loads this address in X/Y at $91E5 when bit 0 of stage field $4753,X is set, then jumps to $9366, which calls $77E0 and starts the choice loop. $77E2 stores the control byte $10 in the message countdown $4D6B ($7845), so the status panel shows the message for 16 of its updates. $717C also copies them to $D7C8–$D7DB, as characters $F9–$FB of the map's eight-page character copy, which starts at $8DF1 (the source address at $7F41/$7F42)."
   },
   {
    "address": 38349,
    "type": "line",
-   "text": "Load 18, shop message 7: three zero-terminated fields \"You're here again,\" / \"Beer or Cocktail.\" / \"\", followed by control byte $10. Its bytes match the decoded first-load record at $A8E5."
+   "text": "Load 18, shop message 7: three zero-terminated fields \"You're here again,\" / \"Beer or Cocktail.\" / \"\", followed by control byte $10. The sufficient-gold branch at $91D7 loads this address in X/Y at $91DE when bit 0 of stage field $4753,X is clear, then jumps to $9366, which calls $77E0 and starts the choice loop. $77E2 stores the control byte in the message countdown $4D6B ($7845), so the status panel shows the message for 16 of its updates ($3719, which runs on every second call of $370B, counts it down) and then redraws the status."
   },
   {
    "address": 38353,
@@ -5119,27 +5119,27 @@
   {
    "address": 38388,
    "type": "line",
-   "text": "Load 18, shop message 8: three zero-terminated fields \"\" / \" Please come again.\" / \"\", followed by control byte $10. Its bytes match the decoded first-load record at $A90C."
+   "text": "Load 18, shop message 8: three zero-terminated fields \"\" / \" Please come again.\" / \"\", followed by control byte $10. The code at $9296, which the purchase path enters when the selection byte is zero, loads this address in X/Y and jumps to the $77E0 call at $9473. $77E2 stores the control byte in the message countdown $4D6B ($7845), so the status panel shows the message for 16 of its updates ($3719, which runs on every second call of $370B, counts it down) and then redraws the status."
   },
   {
    "address": 38411,
    "type": "line",
-   "text": "Load 18, shop message 9: three zero-terminated fields \"\" / \"  Never come back!\" / \"\", followed by control byte $10. Its bytes match the decoded first-load record at $A923."
+   "text": "Load 18, shop message 9: three zero-terminated fields \"\" / \"  Never come back!\" / \"\", followed by control byte $10. The insufficient-gold branch at $91C9, when stage field $4753,X is not 3 and has bit 0 set, calls $94BA, which stores $FF in $4753,X, then loads this address in X/Y at $91D0 and jumps to the $77E0 call at $9473. $77E2 stores the control byte in the message countdown $4D6B ($7845), so the status panel shows the message for 16 of its updates ($3719, which runs on every second call of $370B, counts it down) and then redraws the status."
   },
   {
    "address": 38433,
    "type": "line",
-   "text": "Load 18, shop message 10: three zero-terminated fields \"Come back\" / \"with some money.\" / \"\", followed by control byte $10. Its bytes match the decoded first-load record at $A939."
+   "text": "Load 18, shop message 10: three zero-terminated fields \"Come back\" / \"with some money.\" / \"\", followed by control byte $10. The code at $91C2, reached when stage field $4753,X is 3 or has bit 0 clear, loads this address in X/Y and jumps to the $77E0 call at $9473. $77E2 stores the control byte in the message countdown $4D6B ($7845), so the status panel shows the message for 16 of its updates ($3719, which runs on every second call of $370B, counts it down) and then redraws the status."
   },
   {
    "address": 38462,
    "type": "line",
-   "text": "Load 18, shop message 11: three zero-terminated fields \"If you have no\" / \"business, Get out!\" / \"\", followed by control byte $10. Its bytes match the decoded first-load record at $A956."
+   "text": "Load 18, shop message 11: three zero-terminated fields \"If you have no\" / \"business, Get out!\" / \"\", followed by control byte $10. The shop timeout at $93A6, when the layout gate $9532 is nonzero, jumps to $929D, which decrements stage field $4753,X, loads this address in X/Y at $92A2 and jumps to the $77E0 call at $9473. $77E2 stores the control byte in the message countdown $4D6B ($7845), so the status panel shows the message for 16 of its updates ($3719, which runs on every second call of $370B, counts it down) and then redraws the status."
   },
   {
    "address": 38498,
    "type": "line",
-   "text": "Load 18, shop message 12: three zero-terminated fields \"Nice and cold,\" / \"is'nt it?\" / \"\", followed by control byte $10. Its bytes match the decoded first-load record at $A97A."
+   "text": "Load 18, shop message 12: three zero-terminated fields \"Nice and cold,\" / \"is'nt it?\" / \"\", followed by control byte $10. The second-price fallback at $923F loads this address in X/Y and A with 4 and jumps to $9286, which calls $77E0 and then $77A9 with A = 4. $77E2 stores the control byte in the message countdown $4D6B ($7845), so the status panel shows the message for 16 of its updates ($3719, which runs on every second call of $370B, counts it down) and then redraws the status."
   },
   {
    "address": 38525,
@@ -5844,7 +5844,7 @@
   {
    "address": 39431,
    "type": "line",
-   "text": "Load 18: character $0B of the eight-page character copy for visual selector 1, which starts at $99AF, 8 bytes. $717C copies them to $D058–$D05F. Character $0B is the selector's own shape, which end where its tile definitions start, at $9EAD."
+   "text": "Load 18: character $0B of the eight-page character copy for visual selector 1, which starts at $99AF, 8 bytes. $717C copies them to $D058–$D05F. Character $0B is one of the selector's own 142 shapes, $00–$8D, which end where its colour lookup table starts, at $9E1F; its tile definitions start at $9EAD."
   },
   {
    "address": 39439,
@@ -5864,7 +5864,7 @@
   {
    "address": 39663,
    "type": "line",
-   "text": "Load 18: character $28 of the eight-page character copy for visual selector 1, which starts at $99AF, 8 bytes. $717C copies them to $D140–$D147. Character $28 is the selector's own shape, which end where its tile definitions start, at $9EAD."
+   "text": "Load 18: character $28 of the eight-page character copy for visual selector 1, which starts at $99AF, 8 bytes. $717C copies them to $D140–$D147. Character $28 is one of the selector's own 142 shapes, $00–$8D, which end where its colour lookup table starts, at $9E1F; its tile definitions start at $9EAD."
   },
   {
    "address": 39671,
@@ -5874,7 +5874,7 @@
   {
    "address": 39735,
    "type": "line",
-   "text": "Load 18: character $31 of the eight-page character copy for visual selector 1, which starts at $99AF, 8 bytes. $717C copies them to $D188–$D18F. Character $31 is the selector's own shape, which end where its tile definitions start, at $9EAD."
+   "text": "Load 18: character $31 of the eight-page character copy for visual selector 1, which starts at $99AF, 8 bytes. $717C copies them to $D188–$D18F. Character $31 is one of the selector's own 142 shapes, $00–$8D, which end where its colour lookup table starts, at $9E1F; its tile definitions start at $9EAD."
   },
   {
    "address": 39743,
@@ -5914,7 +5914,7 @@
   {
    "address": 40915,
    "type": "line",
-   "text": "Load 18: byte 1572 of the eight-page character copy for visual selector 1, which starts at $99AF, in character $C4. $717C copies it to $D624."
+   "text": "Load 18: the byte after the zero low-byte marker at $9FD2 that ends the voice 1 list at $9FCE. The resident sequencer reads the list at $22E9, finds the zero low byte and restarts from the list's beginning, so it never reads this byte as a pointer high byte. $717C also copies it to $D624, as byte 4 of character $C4 of the eight-page character copy for visual selector 1, which starts at $99AF."
   },
   {
    "address": 40916,
@@ -5924,7 +5924,7 @@
   {
    "address": 40921,
    "type": "line",
-   "text": "Load 18: byte 1578 of the eight-page character copy for visual selector 1, which starts at $99AF, in character $C5. $717C copies it to $D62A."
+   "text": "Load 18: the byte after the zero low-byte marker at $9FD8 that ends the voice 2 list at $9FD4. The resident sequencer reads the list at $22E9, finds the zero low byte and restarts from the list's beginning, so it never reads this byte as a pointer high byte. $717C also copies it to $D62A, as byte 2 of character $C5 of the eight-page character copy for visual selector 1, which starts at $99AF."
   },
   {
    "address": 40922,
@@ -5934,7 +5934,7 @@
   {
    "address": 40927,
    "type": "line",
-   "text": "Load 18: byte 1584 of the eight-page character copy for visual selector 1, which starts at $99AF, in character $C6. $717C copies it to $D630."
+   "text": "Load 18: the byte after the zero low-byte marker at $9FDE that ends the voice 3 list at $9FDA. The resident sequencer reads the list at $22E9, finds the zero low byte and restarts from the list's beginning, so it never reads this byte as a pointer high byte. $717C also copies it to $D630, as byte 0 of character $C6 of the eight-page character copy for visual selector 1, which starts at $99AF."
   },
   {
    "address": 40928,
@@ -6219,42 +6219,42 @@
   {
    "address": 42243,
    "type": "line",
-   "text": "Entity record 1 (within the initial slot limit): type byte $03; $B7 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $027B and the world-Y arrays $197F/$1990 receive $0078. The remaining bytes $0C, $00, $01 and $04 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy; later handlers decide how to use these fields."
+   "text": "Entity record 1 (within the initial slot limit): type byte $03; $B7 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $027B and the world-Y arrays $197F/$1990 receive $0078. The remaining bytes $0C, $00, $01 and $04 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$03 handler at $A385 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
   },
   {
    "address": 42253,
    "type": "line",
-   "text": "Entity record 2 (within the initial slot limit): type byte $03; $B7 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $037B and the world-Y arrays $197F/$1990 receive $0078. The remaining bytes $0C, $00, $01 and $04 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy; later handlers decide how to use these fields."
+   "text": "Entity record 2 (within the initial slot limit): type byte $03; $B7 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $037B and the world-Y arrays $197F/$1990 receive $0078. The remaining bytes $0C, $00, $01 and $04 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy, and the entity tick at $2027 runs the type-$03 handler at $A385 (table $7EDF/$7F0F). The display builders use $19F6,X as the colour of the multicolour sprite of its frame $19C3,X ($1CB4, $1EB4) and $1A18,X as that of its lower frame $19D4,X ($1D5C, $1F52), and put bit 0 of $192A,X in the display slot's flag $4CEF ($1CC2, $1EC2), which $1732 and $1809 copy to the sprite's bit in $D01D, double width. The player's attack subtracts its damage from $1A6D,X, the entity's health ($74BE)."
   },
   {
    "address": 42263,
    "type": "line",
-   "text": "Entity record 3 (within the initial slot limit): type byte $FF; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $00E5 and the world-Y arrays $197F/$1990 receive $00E8. The remaining bytes $0C, $2F, $00 and $A3 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy; later handlers decide how to use these fields."
+   "text": "Entity record 3 (within the initial slot limit): type byte $FF, a moving platform; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $00E5 and the world-Y arrays $197F/$1990 receive $00E8. The remaining bytes $0C, $2F, $00 and $A3 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy. The entity tick at $2042 runs type $FF through $68CB (table $2062/$2074), which patches $1A18,X and $1A6D,X into the JSR at $68E5 ($68D9, $68DF): bytes 7 and 9 name the platform's motion callback $A32F, and the value it returns in A moves the platform. Bit 7 of the flags $192A,X, clear here, sends that value to the vertical path at $68F1, and bit 0, clear, makes $6961 patch the overlap width at $6989 to 17 ($6954). The display builders use $19F6,X, $0C, as the colour of the frame's multicolour sprite ($1CB4, $1EB4)."
   },
   {
    "address": 42273,
    "type": "line",
-   "text": "Entity record 4 (within the initial slot limit): type byte $FF; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $01E5 and the world-Y arrays $197F/$1990 receive $00A8. The remaining bytes $0C, $2F, $00 and $A3 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy; later handlers decide how to use these fields."
+   "text": "Entity record 4 (within the initial slot limit): type byte $FF, a moving platform; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $01E5 and the world-Y arrays $197F/$1990 receive $00A8. The remaining bytes $0C, $2F, $00 and $A3 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy. The entity tick at $2042 runs type $FF through $68CB (table $2062/$2074), which patches $1A18,X and $1A6D,X into the JSR at $68E5 ($68D9, $68DF): bytes 7 and 9 name the platform's motion callback $A32F, and the value it returns in A moves the platform. Bit 7 of the flags $192A,X, clear here, sends that value to the vertical path at $68F1, and bit 0, clear, makes $6961 patch the overlap width at $6989 to 17 ($6954). The display builders use $19F6,X, $0C, as the colour of the frame's multicolour sprite ($1CB4, $1EB4)."
   },
   {
    "address": 42283,
    "type": "line",
-   "text": "Entity record 5 (within the initial slot limit): type byte $FF; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $02ED and the world-Y arrays $197F/$1990 receive $00EE. The remaining bytes $0C, $E4, $00 and $A2 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy; later handlers decide how to use these fields."
+   "text": "Entity record 5 (within the initial slot limit): type byte $FF, a moving platform; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $02ED and the world-Y arrays $197F/$1990 receive $00EE. The remaining bytes $0C, $E4, $00 and $A2 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy. The entity tick at $2042 runs type $FF through $68CB (table $2062/$2074), which patches $1A18,X and $1A6D,X into the JSR at $68E5 ($68D9, $68DF): bytes 7 and 9 name the platform's motion callback $A2E4, and the value it returns in A moves the platform. Bit 7 of the flags $192A,X, clear here, sends that value to the vertical path at $68F1, and bit 0, clear, makes $6961 patch the overlap width at $6989 to 17 ($6954). The display builders use $19F6,X, $0C, as the colour of the frame's multicolour sprite ($1CB4, $1EB4)."
   },
   {
    "address": 42293,
    "type": "line",
-   "text": "Entity record 6 (within the initial slot limit): type byte $FF; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $03ED and the world-Y arrays $197F/$1990 receive $00DE. The remaining bytes $07, $E4, $01 and $A2 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy; later handlers decide how to use these fields."
+   "text": "Entity record 6 (within the initial slot limit): type byte $FF, a moving platform; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $03ED and the world-Y arrays $197F/$1990 receive $00DE. The remaining bytes $07, $E4, $01 and $A2 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy. The entity tick at $2042 runs type $FF through $68CB (table $2062/$2074), which patches $1A18,X and $1A6D,X into the JSR at $68E5 ($68D9, $68DF): bytes 7 and 9 name the platform's motion callback $A2E4, and the value it returns in A moves the platform. Bit 7 of the flags $192A,X, clear here, sends that value to the vertical path at $68F1, and bit 0, set, makes $6961 patch the overlap width at $6989 to 25 ($6954). The display builders use $19F6,X, $07, as the colour of the frame's multicolour sprite ($1CB4, $1EB4)."
   },
   {
    "address": 42303,
    "type": "line",
-   "text": "Entity record 7 (within the initial slot limit): type byte $FF; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $041D and the world-Y arrays $197F/$1990 receive $00BE. The remaining bytes $07, $E4, $01 and $A2 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy; later handlers decide how to use these fields."
+   "text": "Entity record 7 (within the initial slot limit): type byte $FF, a moving platform; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $041D and the world-Y arrays $197F/$1990 receive $00BE. The remaining bytes $07, $E4, $01 and $A2 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy. The entity tick at $2042 runs type $FF through $68CB (table $2062/$2074), which patches $1A18,X and $1A6D,X into the JSR at $68E5 ($68D9, $68DF): bytes 7 and 9 name the platform's motion callback $A2E4, and the value it returns in A moves the platform. Bit 7 of the flags $192A,X, clear here, sends that value to the vertical path at $68F1, and bit 0, set, makes $6961 patch the overlap width at $6989 to 25 ($6954). The display builders use $19F6,X, $07, as the colour of the frame's multicolour sprite ($1CB4, $1EB4)."
   },
   {
    "address": 42313,
    "type": "line",
-   "text": "Entity record 8 (within the initial slot limit): type byte $FF; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $04AD and the world-Y arrays $197F/$1990 receive $00AE. The remaining bytes $07, $E4, $01 and $A2 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy; later handlers decide how to use these fields."
+   "text": "Entity record 8 (within the initial slot limit): type byte $FF, a moving platform; $B5 is copied to the base-sprite array $19E5; the world-X arrays $193B/$194C receive $04AD and the world-Y arrays $197F/$1990 receive $00AE. The remaining bytes $07, $E4, $01 and $A2 go to $19F6, $1A18, $192A and $1A6D. $369E performs the copy. The entity tick at $2042 runs type $FF through $68CB (table $2062/$2074), which patches $1A18,X and $1A6D,X into the JSR at $68E5 ($68D9, $68DF): bytes 7 and 9 name the platform's motion callback $A2E4, and the value it returns in A moves the platform. Bit 7 of the flags $192A,X, clear here, sends that value to the vertical path at $68F1, and bit 0, set, makes $6961 patch the overlap width at $6989 to 25 ($6954). The display builders use $19F6,X, $07, as the colour of the frame's multicolour sprite ($1CB4, $1EB4)."
   },
   {
    "address": 42323,
