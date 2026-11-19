@@ -6912,7 +6912,7 @@
   {
    "address": 43324,
    "type": "line",
-   "text": "When the decremented timer equals $FC, attempt allocation only if $1A29,X is nonzero. Regardless of whether allocation is skipped, succeeds or fails, the path resets $1B28,X to 20 before returning; indices depend on $190B."
+   "text": "When the decremented timer $1B28,X equals $FC, spawn only if $1A29,X is nonzero: copy X to Y and call $190B, which returns a free slot in X with carry set, or carry clear with Y untouched. A failed call restores X from Y at $A948 and a successful one at $A987 after filling the new type-$2C slot, so whether the spawn is skipped, succeeds or fails, this entity’s $1B28,X is reset to 20 at $A989 before returning."
   },
   {
    "address": 43341,
@@ -6942,7 +6942,7 @@
   {
    "address": 43526,
    "type": "line",
-   "text": "Copy $1AC2,X/$1AD3,X to $35BD/$35BE. If $1A29,X is zero, return. Otherwise use that byte as Y to fill $35C0 from $4CCF,Y shifted right and $35BF from $4C4F,Y and $4C6F,Y combined by LSR/ROR. Call $34EA, OR its result with $A0, store it in $1B28,X and tail-jump to $35C1. The input index is not locally bounded."
+   "text": "Copy $1AC2,X/$1AD3,X to $35BD/$35BE. If $1A29,X is zero, return. Otherwise use that byte, the entity’s own display slot, as Y to fill $35C0 from $4CCF,Y shifted right and $35BF from $4C4F,Y and $4C6F,Y combined by LSR/ROR. Call $34EA, OR its result with $A0, store it in $1B28,X and tail-jump to $35C1."
   },
   {
    "address": 43574,
@@ -6987,7 +6987,7 @@
   {
    "address": 43582,
    "type": "line",
-   "text": "Load 28: type-$23 uses $1AB1,X as an index into split target tables at $AA50/$AA52 and patches the jump at $AA4D. Two captured target pairs follow; this dispatcher does not bound the index."
+   "text": "Load 28: handler for entity type $23; the vector at $7EDF/$7F0F points here. Read state $1AB1,X into Y, patch the jump at $AA4D from the split tables at $AA50/$AA52 and jump to state 0 at $AA54 or state 1 at $AACC. The type’s own code stores only 1 in that state, by the increment at $AA92; the type-$0F spawner calls $447A at $A814 before it stores type $23 at $A837, so the state starts at 0."
   },
   {
    "address": 43597,
@@ -7007,7 +7007,7 @@
   {
    "address": 43604,
    "type": "line",
-   "text": "Call $792C and $7227. Carry set from $7227 calls $5D7A with A=8 and enters the state transition. Otherwise examine $1AC2,X: positive values call $4342 and decrement it; zero writes $80 and calls $44DE with A=0; carry set there enters the transition."
+   "text": "Call $792C and $7227. Carry set from $7227 calls $5D7A with A=8 and enters the state transition at $AA80. Otherwise examine $1AC2,X: a positive value calls $4342 to move up by it, decrements it and continues at $AAA0; zero is replaced by $80, and a negative value is used as it is, and either way its low seven bits go to $44DE as the downward step. Carry set from $44DE enters the transition; carry clear continues at $AA96."
   },
   {
    "address": 43648,
@@ -7017,7 +7017,7 @@
   {
    "address": 43670,
    "type": "line",
-   "text": "If $1AC2,X is negative and less than $88, increment it. If $1AF5,X is nonzero, decrement $1B06,X; a negative result resets it to 2 and decrements $1AF5,X. Call $45BC when $1AE4,X is negative or $4574 otherwise; carry set complements $1AE4,X."
+   "text": "If $1AC2,X is below $88, increment it; the downward path arrives here with it at $80 or above. The upward path at $AA71 enters at $AAA0, after the increment. If $1AF5,X is zero, return at $AAA5. Otherwise decrement $1B06,X, and when the result is negative reset it to 2 and decrement $1AF5,X; then call $45BC when $1AE4,X is negative or $4574 otherwise, with A holding $1AF5,X as loaded or 2 after a reset, and on carry set complement $1AE4,X."
   },
   {
    "address": 43724,

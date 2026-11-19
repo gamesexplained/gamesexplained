@@ -47,7 +47,7 @@ The type-$0F entity dispatcher at $A7B6 returns when $1A8F,X is positive. Otherw
 
 For type-$0F state 0, after two helpers return, $1B28,X increments; reaching $14 changes it to 7 and increments $1AB1,X. State 3 sets $1AB1,X to zero. VICE checked timer boundaries and state 3 with the two state-0 helpers replaced by returns in loads 10, 28 and 29. Helper effects and ordinary-play reachability remain open.
 
-Type-$0F state 4 decrements $1AC2,X. A nonnegative result sets $19C3,X from $19E5,X plus 4 or 10 according to the sign of $1AE4,X; a negative result calls $4B0E with A=$40 and jumps to $5DB9. VICE checked both outcomes and both position offsets in loads 10, 28 and 29, stubbing $4B0E to record its argument. Ordinary-play reachability remains open.
+Type-$0F state 4 decrements $1AC2,X. A nonnegative result sets $19C3,X from $19E5,X plus 4 or 10 according to the sign of $1AE4,X; a negative result calls $4B0E with A=$40 and jumps to $5DB9. VICE checked both outcomes and both frame offsets in loads 10, 28 and 29, stubbing $4B0E to record its argument. Ordinary-play reachability remains open.
 
 Type-$0F helper $A8E0 calls $792C and $732A. Carry set from $732A with positive $1A6D,X discards the helper return address and returns from the calling state; with zero or negative $1A6D,X it sets $1AC2,X=10, $1A8F,X=$FF and $1AB1,X=4. Other returning paths call $7227 and tail-jump to $5D7A with A=8 if carry is set. VICE checked five forced cases with callbacks stubbed in loads 10, 28 and 29; ordinary-play reachability remains open.
 
@@ -55,13 +55,13 @@ Type-$0F state 2 calls its event and frame helpers. If both return and $1B28,X e
 
 Type-$0F state 1 calls its event and frame helpers. If they return and $1B28,X is nonzero, it calls $4342 and decrements the timer. Otherwise it advances the state after optionally calling $190B; when that call returns carry set, it calls $447A and initializes a type-$23 slot from the Y slot. VICE checked timer, skip, failure and successful allocation paths with callbacks stubbed in loads 10, 28 and 29. Callback effects and ordinary-play reachability remain open.
 
-The type-$23 entity dispatcher at $AA3E uses $1AB1,X without a local bounds check. Two captured table pairs select $AA54, $AACC; VICE checked both in loads 10, 28 and 29. The type-$0F state-1 allocation path initializes this entity type, but ordinary-play reachability and index bounds remain open.
+The type-$23 entity dispatcher at $AA3E uses $1AB1,X without a local bounds check. Two captured table pairs select $AA54, $AACC; VICE checked both in loads 10, 28 and 29. The type-$0F state-1 allocation path sets up this entity type after $447A has cleared the slot’s state at $A814, and the type’s own code stores only 1, by the increment at $AA92, so the state is 0 or 1. Ordinary-play reachability remains open.
 
 Type-$23 state 1 calls $792C and $7227, optionally calls $5D7A with A=8, and decrements $1AC2,X. A nonnegative result subtracts 2 from $19C3,X; a negative result decrements $1AC2 in the slot named by $1AD3,X, restores the original X through a patched immediate operand and jumps to $4454. VICE checked four forced cases in loads 10, 28 and 29 with callbacks stubbed. Ordinary-play reachability remains open.
 
 Type-$23 state 0 can transition to state 1 after carry from $7227 or a zero-countdown call to $44DE. Its other paths update $1AC2,X, a motion countdown and $1AE4,X according to callback results. VICE checked eight forced cases in loads 10, 28 and 29 with callbacks stubbed; callback effects and ordinary-play reachability remain open.
 
-The type-$0A entity dispatcher at $A62E uses $1AB1,X without a local bounds check. Five captured table pairs select $A64A, $A667, $A6B9, $A714, $A735; VICE checked all five in loads 6, 19 and 28. Ordinary-play reachability and index bounds remain open.
+The type-$0A entity dispatcher at $A62E uses $1AB1,X without a local bounds check. Five captured table pairs select $A64A, $A667, $A6B9, $A714, $A735; VICE checked all five in loads 6, 19 and 28. The handler’s own code keeps the state between 0 and 4: 1 at $A664, 2 or 0 at $A6B1, 0 at $A710, 3 or 4 at $A791, and at $A731 the state 0, 1 or 2 that the event helper saved in $1B28,X; the entity-record loader and $447A clear it to 0, and load 28’s entity records include two of type $0A. Ordinary-play reachability remains open.
 
 Type-$0A state 3 decrements $1B17,X and either tail-calls a direction-selected callback or toggles bit 7 of $1AD3,X and restores the state from $1B28,X. State 4 decrements $1AC2,X and on a negative result calls $4B0E with A=$50 and jumps to $5DB9. VICE checked seven forced cases in loads 6, 19 and 28 with callbacks stubbed. Ordinary-play reachability remains open.
 

@@ -14,7 +14,7 @@ The supplied side B file with index $1D supplies two compressed streams. Executi
 
 Controlled record-copy, frame-restore and display-routine simulations selected 4 additional bitmap pointers in this load. Slot assignment, position, effect state and one colour were forced. The bitmaps match the load-entry and play captures; no instruction entered their ranges during a 200-frame probe. These examples do not establish natural reachability.
 
-The load’s type-$0C entity vector selects a dispatcher at $A2E6. Its four captured state-table pairs point to $A300, $A324, $A33D, $A35B; the state byte is not locally bounded. Listing tests check all four dispatches in each load; seven controlled VICE calls check all four in load 8 and one each in the other loads. The state index and ordinary-play reachability remain open.
+The load’s type-$0C entity vector selects a dispatcher at $A2E6. Its four state-table pairs point to $A300, $A324, $A33D and $A35B; the type’s own code stores only 0, 1 and 2 (at $A320) and 3 (at $A3B3) in the state, and the entity-record loader starts each entity at 0, so the index stays within the table. Listing tests check all four dispatches in each load; seven controlled VICE calls check all four in load 8 and one each in the other loads. Load 29’s entity records at $A5E6 include five of type $0C. Ordinary-play reachability remains open.
 
 Type-$0C states 0, 1 and 2 at $A300, $A324 and $A33D call an event helper and, if it returns, increment a counter, count down a field or count it back up. State 0 selects state 1 at counter 10, state 1 selects state 2 when the field is negative, and state 2 returns to state 0 when the field equals its saved target. Listing tests and nine controlled VICE calls check these branches across four loads with callbacks stubbed and decimal mode clear; natural reachability remains open.
 
@@ -47,7 +47,7 @@ The type-$0F entity dispatcher at $A3C7 returns when $1A8F,X is positive. Otherw
 
 For type-$0F state 0, after two helpers return, $1B28,X increments; reaching $14 changes it to 7 and increments $1AB1,X. State 3 sets $1AB1,X to zero. VICE checked timer boundaries and state 3 with the two state-0 helpers replaced by returns in loads 10, 28 and 29. Helper effects and ordinary-play reachability remain open.
 
-Type-$0F state 4 decrements $1AC2,X. A nonnegative result sets $19C3,X from $19E5,X plus 4 or 10 according to the sign of $1AE4,X; a negative result calls $4B0E with A=$40 and jumps to $5DB9. VICE checked both outcomes and both position offsets in loads 10, 28 and 29, stubbing $4B0E to record its argument. Ordinary-play reachability remains open.
+Type-$0F state 4 decrements $1AC2,X. A nonnegative result sets $19C3,X from $19E5,X plus 4 or 10 according to the sign of $1AE4,X; a negative result calls $4B0E with A=$40 and jumps to $5DB9. VICE checked both outcomes and both frame offsets in loads 10, 28 and 29, stubbing $4B0E to record its argument. Ordinary-play reachability remains open.
 
 Type-$0F helper $A4F1 calls $792C and $732A. Carry set from $732A with positive $1A6D,X discards the helper return address and returns from the calling state; with zero or negative $1A6D,X it sets $1AC2,X=10, $1A8F,X=$FF and $1AB1,X=4. Other returning paths call $7227 and tail-jump to $5D7A with A=8 if carry is set. VICE checked five forced cases with callbacks stubbed in loads 10, 28 and 29; ordinary-play reachability remains open.
 
@@ -55,7 +55,7 @@ Type-$0F state 2 calls its event and frame helpers. If both return and $1B28,X e
 
 Type-$0F state 1 calls its event and frame helpers. If they return and $1B28,X is nonzero, it calls $4342 and decrements the timer. Otherwise it advances the state after optionally calling $190B; when that call returns carry set, it calls $447A and initializes a type-$23 slot from the Y slot. VICE checked timer, skip, failure and successful allocation paths with callbacks stubbed in loads 10, 28 and 29. Callback effects and ordinary-play reachability remain open.
 
-The type-$23 entity dispatcher at $A52A uses $1AB1,X without a local bounds check. Two captured table pairs select $A540, $A5B8; VICE checked both in loads 10, 28 and 29. The type-$0F state-1 allocation path initializes this entity type, but ordinary-play reachability and index bounds remain open.
+The type-$23 entity dispatcher at $A52A uses $1AB1,X without a local bounds check. Two captured table pairs select $A540, $A5B8; VICE checked both in loads 10, 28 and 29. The type-$0F state-1 allocation path sets up this entity type after $447A has cleared the slot’s state at $A425, and the type’s own code stores only 1, by the increment at $A57E, so the state is 0 or 1. Ordinary-play reachability remains open.
 
 Type-$23 state 1 calls $792C and $7227, optionally calls $5D7A with A=8, and decrements $1AC2,X. A nonnegative result subtracts 2 from $19C3,X; a negative result decrements $1AC2 in the slot named by $1AD3,X, restores the original X through a patched immediate operand and jumps to $4454. VICE checked four forced cases in loads 10, 28 and 29 with callbacks stubbed. Ordinary-play reachability remains open.
 
@@ -77,7 +77,7 @@ Controlled visual-resource selections copied 210 additional eight-byte character
 
 A forced call to the price formatter at $93F6 and digit writer at $93DB converts packed price bytes into four character and colour cells. VICE and a listing test check both calls in this load. Input bounds, other values and ordinary-play reachability remain open.
 
-Shop helpers at $939E and $93B1 test sampled input and choose a cursor position. Five forced VICE cases and a listing test checked both helpers in this load, with the sampler stubbed and display initialization stopped. The adjacent layout, selection, timeout and item bytes are read or written by the separately tested shop paths. Physical control mapping, other indexes and ordinary-play reachability remain open.
+Shop helpers at $939E and $93B1 test sampled input and choose a cursor position. Five forced VICE cases and a listing test checked both helpers in this load, with the sampler stubbed and display initialization stopped. The adjacent layout, selection, timeout and item bytes are read or written by the separately tested shop paths. The sampler at $3C4C reads joystick port 2 active-low into $73 (left), $74 (right) and $70 (fire), and the cursor index, the selection byte plus one, stays 0 to 2 because the selection stays among $FF, 0 and 1. Ordinary-play reachability remains open.
 
 The shop conditional-item resolver at $9389 changes item $13 to $14 when the selected player has flag $10; other inputs pass through. Three forced VICE cases and a listing test check it in this load. Other callers and ordinary-play reachability remain open.
 
