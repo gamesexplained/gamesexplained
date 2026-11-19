@@ -79,6 +79,25 @@ The machine runs with `$01` = `$35` (RAM at `$A000` and `$E000`, I/O at
   checking a second row (row 6 for SPACE, row 1 for the function keys).
 - Holding fire stops the player and shoots (scroll_decide sets the
   direction to none while fire is held; shot_fire).
+- The sticks and the keyboard are read every eighth frame with the screen
+  still (scroll_decide counts `$8263` down from 8), and after each step
+  of a scroll; each read moves each player one step (players_move).
+- Player one's stick is row 7 of the keyboard scan (`$8821` & `$1F`), so
+  the keys of row 7 on joystick 1's columns steer player one: 1 up, ←
+  down, CTRL left, 2 right, SPACE fire. SPACE therefore fires as well as
+  using a potion. Player two's stick is `$DC00` and no key reaches it.
+  Traced from the code and the C64's wiring (`kit/skills/c64/c64-reference`),
+  and held by `test_keys.js`; not tried in the emulator.
+- While player one holds fire, SPACE uses no potion (row 6 bit 4 is low
+  too); while player one holds fire or pushes right, none of player two's
+  F keys does (row 1 bits 4 and 3 are low). Traced, not tried live.
+- magic_debounce (`$BA66`) is 2 after a potion is used and health_tick
+  counts it down every 64 frames, so a held magic key uses another potion
+  65 to 128 frames later.
+- The game in play reads no other key: keys_state is read only at `$8785`
+  and in magic_keys, and `$DC00`/`$DC01` only at `$879B` and `$87E9`. No
+  pause; RESTORE's NMI goes to an `RTI` at `$827F`. Unused: `$87F3` ORs
+  the eight rows into stick_p2's byte; `$8CBD` waits for joystick 1's fire.
 - A player not in the game joins by pressing fire (players_join), beside
   the other player (join_beside); the first player of a game seeds the
   random generator from the raster line (wait_first_player).
@@ -102,6 +121,17 @@ The machine runs with `$01` = `$35` (RAM at `$A000` and `$E000`, I/O at
   edges (sprites_init_masks), re-used four times down the screen,
   covering the columns the scroll brings in. 2-5 are the shots (two for
   monsters, one per player) and the level digits; 6 and 7 are the players.
+- A hero walks a step every fourth frame while its stick is pushed
+  (panel_flash advances player_anim), through anim_frames (`$9128`): 0,
+  8, 0, 16, so the walking shapes go first, second, first, third.
+- The Warrior's axe turns every fourth frame by axe_spin (`$A87C`),
+  through all eight of its shapes. A lobber's rock is shape `$AD`, grows
+  to `$AF` while rising and shrinks to `$AD` as it falls (rock_fly);
+  `$AC` is drawn as a rock and nothing picks it. No code or table in the
+  listing was found choosing `$B0`-`$B7` (clouds and striped bars).
+- Tiles `$37` and `$38` are exits labelled "TO 4" and "TO 8" in the
+  fonts; exits_special (`$CC32`) turns them into plain exits after levels
+  1 and 4.
 - The character map doubles as the collision map: a player's four cells
   hold `$5B` (cell_mark), which the fonts draw as floor; anything above
   `$5A` blocks (cells_free).
@@ -531,6 +561,15 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 - In the emulator a level-three grunt was put beside a standing player: in 187 attacks the game read monster_damage 93 times, on alternate attacks, and the six armour values not once.
 - In the emulator, the two routines left exactly those counts for each player at each stage.
 
+### controls.html
+
+- `test_keys.js` runs the page's gx-keys block on the committed listing for 17 cases the page states (SPACE, the row-7 keys, the F keys, fire and right held on joystick 1, joystick 2), and the same routines on the simulator directly: every stick byte and every potion used is the same, and as the page says.
+
+### graphics.html
+
+- The heroes' shapes are the PLYRS.SPR and GAUNT CHR bytes the How it works page embeds; the monsters, tiles, fonts and the shapes `$A0`-`$BF` come from the listing.
+- The rebuilt frame: drawn by the site's renderer from the frame `kit/c64/frame.py` recorded: all 104,448 pixels match the emulator's own picture of the same frame.
+
 ### levels.html
 
 - The page puts the file at `$0A00`, as level_start (`$99CF`) loads it, and runs level_build (`$C625`), grid_draw (`$CBC2`) and monsters_draw_all (`$C00E`) on the kit's 6502 simulator over the game's bytes from the listing, then draws the 64 by 64 character map at `$3000` with the colour map at `$2000` and the first maze font, `$4800`, as maze_style (`$8CC5`) has just set it for this level.
@@ -540,8 +579,6 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 
 - In the emulator, with the Warrior and the Valkyrie playing, the Warrior's values matched his column.
 - In the emulator, a Wizard who joined on level 1 had shots of `$40`, magic of `$40` against monsters and 1 against generators, and could hurt generators by hand; the Wizard's own values come in only after a death.
-- The picture below is drawn by this page from the game's memory and the video chip's registers, as the emulator recorded them for one frame of level 2.
-- Drawn by the site's renderer from the frame `kit/c64/frame.py` recorded: all 104,448 pixels match the emulator's own picture of the same frame.
 - `test_chase.js` runs the same routines on the kit's 6502 simulator for 400 passes of each of these levels: the monster table, the maps and the hero's health come out the same, byte for byte, after every pass.
 - In the emulator, with 52 monsters on level 2, every working pass visited 26 slots, the even ones and the odd ones in turn, and one pass stopped after 10.
 - The monster still heads the right way, but it can pick the wrong player: in the emulator, with both players near the bottom of level 2 and monsters seen across the seam at the top, 13 of 60 aims went to the farther player.

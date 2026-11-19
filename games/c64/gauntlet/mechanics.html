@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gauntlet</title>
+<title>Gauntlet · How it works</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -46,19 +46,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gx-tab th{font-weight:700;color:var(--ink-soft)}
 .gx-scroll{overflow-x:auto}
 .gx-miss{font-size:14px;color:var(--coral)}
-.gx-mon{display:flex;gap:14px;flex-wrap:wrap}
-.gx-mon figure{margin:0;text-align:center;font-size:13px;color:var(--ink-soft)}
-.gx-mon canvas{width:96px;height:96px;image-rendering:pixelated;background:#000;border-radius:4px;display:block}
-.gx-fnow{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;margin-top:22px}
-.gx-fnow canvas{flex:2 1 300px;max-width:542px;width:100%}
-.gx-fnow .gx-fside{flex:1 1 200px;min-width:0;font-size:15px;color:var(--ink-soft)}
-.gx-fonts{display:flex;gap:16px;flex-wrap:wrap}
-.gx-fonts figure{margin:0;flex:1 1 220px;max-width:320px;font-size:14px;color:var(--ink-soft)}
-.gx-sheet{width:100%;image-rendering:pixelated;display:block;border-radius:4px;border:3px solid transparent;box-sizing:border-box;background:#2f3136}
-.gx-sheet.gx-on{border-color:#f2c94c}
-.gx-out{font-family:var(--fm);font-size:15px;line-height:1.8}
-.gx-out b{font-size:17px}
-.gx-panel{width:192px;height:32px;image-rendering:pixelated;background:#000;border-radius:4px;vertical-align:middle}
 .gx-time{display:flex;border-radius:6px;overflow:hidden;font-size:13px;margin:6px 0 4px}
 .gx-time div{padding:8px 10px;color:#fff}
 .gx-chase{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
@@ -94,7 +81,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <figure><img src="reference/play-level1.png" alt="Level 1 in play"><figcaption>Level 1: the Warrior at the top left, a key to the right, the status panel below.</figcaption></figure>
   </div>
   <p>The heroes are Thor the Warrior, Thyra the Valkyrie, Questor the Elf, and Merlin the Wizard. Each level is a maze of walls and doors, seen through a window that scrolls with the players. Generators pour out ghosts, grunts, demons, lobbers, and sorcerers, and Death walks among them. Health starts at 2000 and drains by one point every 64 frames whatever you do, so the food lying in the maze matters as much as the fighting.</p>
-  <p>Keys open doors, potions blow up every monster on screen, and treasure scores points. Each level ends at an exit, a whirlpool in the floor. A second player can join at any moment by pressing fire.</p>
+  <p>Keys open doors, potions blow up every monster on screen, and treasure scores points. Each level ends at an exit, a whirlpool in the floor. A second player can join at any moment by pressing fire; the <a href="controls.html">Controls</a> tab has the keys.</p>
   <h3 class="gx-h3">The four heroes</h3>
   <div class="gx-pair">
     <figure><img src="reference/select-hero.png" alt="The hero selection screen"><figcaption>Choosing a hero: Thor the Warrior, Questor the Elf, Thyra the Valkyrie and Merlin the Wizard.</figcaption></figure>
@@ -102,7 +89,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate" style="margin-top:18px">
     <div class="gx-ctl"><button type="button" id="gx-hwalk" aria-pressed="true">Walking</button><button type="button" id="gx-hturn">Turn</button></div>
     <div class="gx-heroes" id="gx-heroes"></div>
-    <p class="cap"><b>Each hero's own sprites</b>, drawn from the game's data: the walking shapes from the file PLYRS.SPR (eight facings in three steps, sprite shapes <code>$C0</code>-<code>$D7</code> once loaded) and the eight shots from GAUNT CHR (shapes <code>$D8</code>-<code>$DF</code>), as multicolour sprites in the hero's colour (hero_sprite_colours, <code>$9118</code>) with the shared light red and white. The selection screen copies the chosen heroes' blocks to <code>$7000</code> and <code>$7800</code> (heroes_load_shapes, <code>$9C0A</code>).</p>
+    <p class="cap"><b>Each hero's own sprites</b>, drawn from the game's data: the walking shapes from the file PLYRS.SPR (eight facings in three steps, sprite shapes <code>$C0</code>-<code>$D7</code> once loaded) and the eight shots from GAUNT CHR (shapes <code>$D8</code>-<code>$DF</code>), as multicolour sprites in the hero's colour (hero_sprite_colours, <code>$9118</code>) with the shared light red and white. The selection screen copies the chosen heroes' blocks to <code>$7000</code> and <code>$7800</code> (heroes_load_shapes, <code>$9C0A</code>). A hero takes a step of its walk every fourth frame while its stick is pushed, in the order first, second, first, third (anim_frames, <code>$9128</code>). Every facing and every shot of all four, and the rest of the game's shapes, are on the <a href="graphics.html">Graphics</a> tab.</p>
   </div>
   <div class="plate gx-scroll" style="margin-top:18px">
     <table class="gx-tab">
@@ -126,51 +113,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p><b>Bug: a player who joins late plays as a Valkyrie.</b> Only two places set all of a player's values from its hero: the start of the game, for the first player to press fire (wait_first_player, <code>$A520</code>), and the end of a dead player's wait to come back (leave_timers, <code>$A63C</code>). A second player who joins during play (players_join, <code>$A56A</code>) keeps whatever is in memory: on a fresh load, the program's own starting values, which are the Valkyrie's. In play, a Wizard who joined on level 1 had shots of <code>$40</code>, magic of <code>$40</code> against monsters and 1 against generators, and could hurt generators by hand; the Wizard's own values come in only after a death.</p>
 </section>
 
-<section>
-  <p class="fig">02 · One frame, rebuilt from memory</p>
-  <h2 class="t">Characters for the maze and its monsters, sprites for the heroes</h2>
-  <p class="lede">The picture below is drawn by this page from the game's memory and the video chip's registers, for one frame of level 2.</p>
-  <div class="plate">
-    <div class="gx-ctl"><button type="button" id="gx-spr" aria-pressed="true">Sprites on</button></div>
-    <canvas id="gx-frame" class="gx-cv"></canvas>
-    <p class="cap"><b>Level 2, both players in.</b> Drawn by the site's renderer from one frame of the game. Switch the sprites off and only the heroes and their two-sprite black masks at the play area's edges go: the walls, the generator, and the field of ghosts are all characters.</p>
-  </div>
-  <p>The maze is a grid of 32 by 32 tiles at <code>$0C00</code>, each tile 2 by 2 characters. The game draws the grid into a character map of 64 by 64 at <code>$3000</code> and a colour map at <code>$2000</code>, then copies the 33 by 20 window the players can see into whichever of its two screens is hidden, and swaps (maze_draw at <code>$8A0B</code>). Scrolling moves the window 2 pixels a step with the video chip's fine scroll and redraws on each whole character.</p>
-  <p>Monsters are drawn into the same maps as four characters each (monster_draw, <code>$CA7F</code>). The character map is also the collision map: a player's four cells hold <code>$5B</code>, a character that looks like floor, and anything above <code>$5A</code> blocks the way (cells_free). The only sprites are the two heroes, the shots, the level number's digits, and two black masks that cover the columns the scroll brings in at each side.</p>
-</section>
+
 
 <section>
-  <p class="fig">03 · The monsters</p>
-  <h2 class="t">Three fonts animate every monster at once</h2>
-  <p class="lede">The game has three copies of its maze font. They share the walls, the floor and most of the treasure, and differ in the monsters, the transporter, the trap and the treasure chest. Changing font is how all of them move.</p>
-  <div class="plate">
-    <div class="gx-ctl"><button type="button" id="gx-anim" aria-pressed="true">Animating</button><button type="button" id="gx-step">Step</button><label>Facing <select id="gx-face"></select></label><span id="gx-fnt" class="gx-out"></span></div>
-    <div class="gx-mon" id="gx-mon"></div>
-    <div class="gx-fnow">
-      <canvas id="gx-fnow" class="gx-sheet" width="271" height="271"></canvas>
-      <div class="gx-fside">
-        <p style="margin:0 0 10px"><b id="gx-fname">The font on show</b>, all 256 glyphs, sixteen to a row from <code>$00</code>, switching with the monsters above.</p>
-        <label><input type="checkbox" id="gx-fmark" checked> Mark the glyphs that change between the fonts</label>
-        <p id="gx-fhover" class="gx-out" style="margin:10px 0 0">Point at a glyph to see its number.</p>
-      </div>
-    </div>
-    <p class="cap"><b>The six monsters</b>, drawn from the tile table at <code>$F400</code> (four characters a tile), the tile colours at <code>$F600</code> and the three maze fonts at <code>$4800</code>, <code>$5000</code> and <code>$5800</code>, in the order panel_flash steps through them (<code>$8255</code>: font selects 2, 4, 2, 6), one step every eight frames.</p>
-  </div>
-  <p>A monster is a tile from <code>$40</code> to <code>$6F</code>: six kinds, each with a tile for every one of eight facings. The lobber has one picture for all eight. The three fonts at <code>$4800</code>, <code>$5000</code> and <code>$5800</code> hold the same walls and floor, and the monsters in three different poses. Once a frame panel_flash (<code>$8C7C</code>) counts, and every eighth frame it points the video chip at the next font in the cycle: one write to <code>$D018</code> animates every monster on screen.</p>
-  <p>The fonts differ in more than the monsters. Glyphs <code>$34</code>-<code>$37</code> make the transporter, <code>$38</code>-<code>$3B</code> the trap, and <code>$1A</code>-<code>$1B</code> are two of the treasure chest's four, and each has a different picture in each font, so the same switch that animates the monsters animates those too. Of the 256 glyphs, 137 differ between the first font and the second, 135 between the first and the third, and 149 between the second and the third. The cycle shows the first font twice as often as either of the others.</p>
-  <div class="plate">
-    <div class="gx-fonts">
-      <figure><canvas id="gx-f0" class="gx-sheet" width="271" height="271"></canvas><figcaption><code>$4800</code>, font select 2: shown at steps 1 and 3</figcaption></figure>
-      <figure><canvas id="gx-f1" class="gx-sheet" width="271" height="271"></canvas><figcaption><code>$5000</code>, font select 4: step 2</figcaption></figure>
-      <figure><canvas id="gx-f2" class="gx-sheet" width="271" height="271"></canvas><figcaption><code>$5800</code>, font select 6: step 4</figcaption></figure>
-    </div>
-    <p class="cap"><b>The three maze fonts in full</b>, from the listing, each glyph in the colour of the first tile that uses it (the tile table at <code>$F400</code>, its colours at <code>$F600</code>). The one framed in yellow is on show in the animation above. Glyphs <code>$01</code>-<code>$0C</code> are the walls as maze_style (<code>$8CC5</code>) set them for level 1: every level copies its own wall set into all three fonts. Glyph <code>$5B</code> looks like floor and is the mark that a player stands on a cell.</p>
-  </div>
-  <p>A monster's byte in the table at <code>$0580</code> holds its facing (bits 0-2), kind (bits 3-5) and level (bits 6-7). The same byte is its strength: a hand-to-hand blow takes <code>$40</code> off it, so a level-one monster dies at the first blow and a level-three one at the third. Death's byte starts at <code>$C0</code> or above, and shots do not hurt it.</p>
-</section>
-
-<section>
-  <p class="fig">04 · Moving the monsters</p>
+  <p class="fig">02 · Moving the monsters</p>
   <h2 class="t">Half the monsters a pass, and only those near the screen</h2>
   <p class="lede">A maze can hold 192 monsters. The game moves only the ones within a cell of the screen, and only half of those on any one pass.</p>
   <div class="plate">
@@ -207,7 +153,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">05 · Waiting</p>
+  <p class="fig">03 · Waiting</p>
   <h2 class="t">The idle timer turns walls into exits</h2>
   <p class="lede">Stop shooting for long enough and the game helps you out of the level.</p>
   <div class="plate">
@@ -218,7 +164,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">06 · Levels</p>
+  <p class="fig">04 · Levels</p>
   <h2 class="t">128 files, endlessly reshuffled</h2>
   <p class="lede">The box promises hundreds of levels. The disk holds 128 level files, and after level 7 the game draws them at random.</p>
   <div class="plate">
@@ -302,104 +248,10 @@ function makeChase(base) {
 const $ = (id) => document.getElementById(id);
 const HASC = typeof C64 !== 'undefined';
 function missing(el) { el.insertAdjacentHTML('afterend', '<p class="gx-miss">This is drawn by the site\'s shared script, which the built site serves.</p>'); }
-const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[31,172,56,172,0,0,0,0,0,0,0,0,100,131,100,147,2,20,0,33,3,255,212,3,5,120,241,0,252,0,255,255,240,240,251,241,243,250,241,240,240,242,242,242,243,242,243],"cia2":[198,63],"cpu":[47,53],"writes":[[43,8,53249,46],[43,12,53251,46],[86,2,53249,88],[86,6,53251,88],[127,14,53249,130],[127,18,53251,130],[161,27,53249,172],[161,31,53251,172],[207,12,53265,127],[208,4,53276,0],[208,8,53269,0],[208,14,53289,240],[208,18,53290,240],[208,22,53291,240],[208,26,53292,240],[208,30,53293,240],[208,34,53294,240],[208,40,53272,9],[214,55,53265,31],[214,61,53270,216],[311,14,53265,148],[311,24,53270,212],[311,50,53272,5]],"colour":"AAAACgoICAgICAgICAgICgoICAgICAgICAgICAgKCggICAgIAAAAAAAAAAoKCAgICAgICAgICAoKCAgICAgICAgICAgICgoICAgICAAAAAAAAAAKCggICAgICAgICAgKCggICAgICAgICAgICAoKCAgICAgAAAAAAAAACgoICAgICAgICAgICgoICAgICAgICAgICAgKCggICAgIAAAAAAAAAAoKCAgICAgICAgICAoKCAgICAgICAgICAgICgoICAgICgAAAAAAAAAKCggICAgICAgICAgKCggICAgICAgICAgICAoKCAgICAoAAAAAAAAACgoICAgICAgICAgICgoICAgICAgICAgICAgKCggICAgIAAAAAAAAAAoKCAgICAgICAgICAoKCAgICAgICAgICAgICgoICAgICAAAAAAAAAAKCggICAgICAgICAgKCggICAgICAgICAgICAoKCAgICAgAAAAAAAAACgoICAgICAgICAgICgoICAgICAgICAgICAgKCggICAgIAAAAAAAAAAoKCAgICAgICAgICAoKCwsLCwsLCwsLCwsLCAgICAgICAAAAAAAAAAKCggICAgICAgICAgKCgsLCwsLCwsLCwsLCwgICAgICAgAAAAAAAAACgoICAgICAgICAgICgoLCwsLCwsLCwsLCwsICAgICAgLAAAAAAAAAAoKCAgICAgICAgICAoKCwsLCwsLCwsLCwsLCAgICAgICwAAAAAAAAAKCggICAgICAgICAgKCgsLCwsLCwsLCwsLCwgICAgICAgAAAAAAAAACgoICAgICAgICAgICgoLCwsLCwsLCwsLCwsICAgICAgIAAAAAAAAAAoKCAgICAgICAgICAoKCAgICAgICAgICAgICgoICAgICAAAAAAAAAAKCggICAgICAgICAgKCggICAgICAgICAgICAoKCAgICAgAAAAAAAAACgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAAAAAAAAAAoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgAAAAACAgICAgICAgICAgICAgICAgICAgMDAwMDAwMDAwMDAwMDAwMDAwMDAgICAgICAgICAgICAgICAgICAgIDAwMDAwMDAwMDAwMDAwMDAwMDAwICAgICAgICAgICAgICAgICAgICAwMDAwMDAwMDAwMDAwMDAwMDAwMCAgICAgICAgICAgICAgICAgICAgMDAwMDAwMDAwMDAwMDAwMDAwMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","ram":[{"a":16384,"b":"AAAABAcAAAAAAAAAAAAABAcAAAAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAAABAcAAAAAAAAAAAAAAAAEBwAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAAABAcAAAAAAAAAAAAABAcAAAAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAAABAcAAAAAGQAAAAAAAAAEBwAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAAAQHAAAAABsAAAAAAAAABAcAAAAAAAAAAAAABAcAAAAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAAABAcAAAAAAAAAAAAAAAAEBwAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAAABAcAAAAAAAAAAAAABAcAAAAAAAAAAAAAAAAKDAAAAAAAAAAAAAAAAAQHAAAAAFtbAAAAAAQHeHl4eXh5eHl4eXh5AAAAAAAAAAAAAAAAAAAEBwAAAABbWwAAAAAEB3p7ent6e3p7ent6ewAAAAAAAAAAAAAAAAAABAcAAAAAW1sAAAAABAd4eVNUeHl4eVNUeHkAAAAAAABTAAAAAAAAAAQHAAAAAFtbAAAAAAQHentVVnp7entVVnp7AAAAAAAAVQAAAAAAAAAEBwAAAAAAAAAAAAAEB3x9fH18fXx9fH18fQAAAAAAAAAAAAAAAAAABAcAAAAAAAAAAAAABAd+f35/fn9+f35/fn8AAAAAAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAAAGRoAAAAAAAAAAAAAAAAEBwAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAABscAAAAAAAAAAAAAAAACQgCAgICAgICAgICCQgCAgICAgICAgICAgICAgICAgICAAAAAAAAAAYFCwsLCwsLCwsLCwYFCwsLCwsLCwsLCwsLBgULCwsLCwAAAAAAAAAAAAAAAHBxcnN0dXZ3AAAAAAAAAAA2ISwrOTIpJQAAAAAAAAAAAAAAAAAaGxwdHh8AACglISw0KAAAGhscHR4fAAAoJSEsNCgAAAAAAAAAAAAAEBAQEBAQAAAAERUVEQAAABAQEBAQEAAAABEVGBgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="},{"a":17400,"b":"oKCioqT/xuY="},{"a":20480,"b":"VVVVVVVVVVU="},{"a":20496,"b":"/7ruq+667qs="},{"a":20512,"b":"/v7+//7+/v/uu+8="},{"a":20528,"b":"7v7+"},{"a":20536,"b":"77vvqO+776jvuu6r7rruq/667qvuuu6r/v/z/PPPM/zuzzM="},{"a":20576,"b":"788z/DPPM/w="},{"a":20680,"b":"VVB///5AcXZVAfD8/QExcXF5cn9/ZVlVsXEx8fWVWVU="},{"a":21144,"b":"VbS66mNoflpVFMO+M7Hxznrsp7vdVVVV8SHseFldVVU="},{"a":21208,"b":"VVVVVVVVVVU="},{"a":21440,"b":"UWDse1tfXlpVVRUVFQXFxVpaW1ZW4mpbwPP///65ZVVVVVdXVcWGglUFsbFxsbGxsmpqVldVVVWxsfD8/L//9w=="},{"a":22464,"b":"VVU="},{"a":22472,"b":"dc0="},{"a":22480,"b":"V1U="},{"a":22488,"b":"M/M="},{"a":22496,"b":"VVc="},{"a":22504,"b":"1TA="},{"a":22512,"b":"XFw="},{"a":22520,"b":"8Mw="},{"a":22528,"b":"VVU="},{"a":22536,"b":"//4="},{"a":22544,"b":"/7o="},{"a":22552,"b":"/7s="},{"a":22560,"b":"/v4="},{"a":22568,"b":"7rs="},{"a":22576,"b":"7v4="},{"a":22584,"b":"77s="},{"a":22592,"b":"77o="},{"a":22600,"b":"/ro="},{"a":22608,"b":"/v8="},{"a":22616,"b":"7s8="},{"a":22624,"b":"788="},{"a":22632,"b":"VVU="},{"a":22640,"b":"VVE="},{"a":22648,"b":"V18="},{"a":22656,"b":"zDw="},{"a":22664,"b":"6w=="},{"a":22672,"b":"QQ=="},{"a":22680,"b":"Lw=="},{"a":22688,"b":"uw=="},{"a":22696,"b":"QA=="},{"a":22704,"b":"AA=="},{"a":22712,"b":"+g=="},{"a":22720,"b":"jA=="},{"a":22728,"b":"VQ=="},{"a":22736,"b":"VQ=="},{"a":22744,"b":"cQ=="},{"a":22752,"b":"sQ=="},{"a":22760,"b":"AA=="},{"a":22768,"b":"AA=="},{"a":22776,"b":"AA=="},{"a":24576,"b":"AAAAAAAAAAA="},{"a":24704,"b":"AHzGxsbG/nwAGDgYGBh+fg=="},{"a":24744,"b":"AH5gfAZmfjw="},{"a":24768,"b":"ADxmPGZmfjw="},{"a":24784,"b":"AAcMDAcADwcAh8wYmNzPhwCHzBgYHM+HAI/GZmfmz48Az2Zmx8ZvbwDgIICAIODg"},{"a":24840,"b":"ABg8Zn5mZmY="},{"a":24872,"b":"AP5iaHhi/v4="},{"a":24896,"b":"AGZmfmZmZmYAfhgYGBh+fg=="},{"a":24920,"b":"AOZmbHhs5uYA8GBgYGL+/g=="},{"a":24976,"b":"APxmZnxs9vY="},{"a":24992,"b":"AH5aGBgYPDw="},{"a":25008,"b":"AGZmZmZ+PBg="},{"a":25032,"b":"AGZmZjwYPDw="},{"a":25472,"b":"ABgYGh8fHRgAw8fMz8zMzAAPhsbHxs/PAMdjY8PDZ2cA4zAw4GCzswDxw8bGx/PxAMdjMzNz58cA4DAw4GCwsA=="},{"a":26624,"b":"////////////////////////////////////////////////////////////////////////////////////"},{"a":26752,"b":"D/AAOqwA6+sA7DsA7DsA7DsA7DsA7DsA7DsA7DsA7DsA7DsA7DsA6+sAOqwAD/AAAAAAAAAAAAAAAAAAAAAA"},{"a":26880,"b":"D8AAOrAA66wA7OwA/OwAAOwAAOwAA7AADrAAOsAAOwAA7AAA7DwA7+wA6qwA//wAAAAAAAAAAAAAAAAAAAAA"},{"a":29056,"b":"MKAAP6gAP2gAPGgABKgABlQADlQADJQABVgABVAAAKAAAJAAAJAAAJAAAFAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":30658,"b":"ACwAAGwA"},{"a":30666,"b":"AADkAADk"},{"a":30674,"b":"NQAAAQAA"},{"a":30682,"b":"AAAAAAAA"},{"a":30690,"b":"AAAAAAAA"},{"a":30698,"b":"AAAAAAAA"},{"a":30706,"b":"AAAAAAAA"},{"a":30714,"b":"AAAAAACC"},{"a":30722,"b":"AAtIAC/M"},{"a":30730,"b":"yACvyACf"},{"a":30738,"b":"F1gAF1QA"},{"a":30746,"b":"AAqQAAaA"},{"a":30754,"b":"QAAMwAAE"},{"a":30762,"b":"AAAAAAAA"},{"a":30770,"b":"AAAAAAAA"},{"a":30778,"b":"AAAAAAAA"},{"a":30786,"b":"AAPAAA/A"},{"a":30794,"b":"4AAP4AAP"},{"a":30802,"b":"DWgABaAA"},{"a":30810,"b":"AAmAAAaA"},{"a":30818,"b":"QAAEwAAA"},{"a":30826,"b":"AMAAAAAA"},{"a":30834,"b":"AAAAAAAA"},{"a":30842,"b":"AAAAAAAA"},{"a":30850,"b":"AAPAAA/g"},{"a":30857,"b":"D2AAD2AADw=="},{"a":30865,"b":"AAWgAAagAA=="},{"a":30873,"b":"gAAFqAAKAA=="},{"a":30881,"b":"BQAABwAAAQ=="},{"a":30889,"b":"AAPAAAAAAA=="},{"a":30897,"b":"AAAAAAAAAA=="},{"a":30905,"b":"AAAAAAAAAA=="},{"a":30913,"b":"AAAHQAAPwA=="},{"a":30921,"b":"DUAADUAADQ=="},{"a":30929,"b":"ABaYABqoAA=="},{"a":30937,"b":"oAAaoAAKQA=="},{"a":30945,"b":"BoAADKAABA=="},{"a":30953,"b":"AA8AAAAAAA=="},{"a":30961,"b":"AAAAAAAAAA=="},{"a":30969,"b":"AAAAAAAAAA=="},{"a":31104,"b":"AAAADwAAD8AAB8AAB8AAB8AAAtAAKdAAKZAACYAACoAACkAAC0AAAQAADwAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":32704,"b":"wAAAwAAAMAAAMgAACgAAKQAAJgAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjg=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19654,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":11,"colour_cells_changed_during_frame":0}};
 const PALC = ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171',
               '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
-
-// ---- 02 the frame
-const fcv = $('gx-frame');
-let sprites = true;
-function drawFrame() {
-  let F = FRAME;
-  if (!sprites) {
-    F = JSON.parse(JSON.stringify(FRAME));
-    F.vic[0x15] = 0;
-    F.writes = F.writes.filter(w => w[2] !== 0xD015);
-  }
-  C64.drawFrame(fcv, F, 2);
-}
-if (HASC) drawFrame(); else missing(fcv);
-$('gx-spr').onclick = () => { sprites = !sprites; $('gx-spr').setAttribute('aria-pressed', sprites); $('gx-spr').textContent = sprites ? 'Sprites on' : 'Sprites off'; if (HASC) drawFrame(); };
-
-// ---- 03 the monsters: drawn from the listing's bytes
-const KINDS = ['Ghost', 'Grunt', 'Demon', 'Lobber', 'Sorcerer', 'Death'];
-const FONTS = [0x4800, 0x5000, 0x4800, 0x5800];       // panel_flash's cycle: font selects 2 4 2 6
 const BG = [0, 11, 1];                                // $D021-$D023 as the maze has them
-const FACINGS = ['up', 'up-right', 'right', 'down-right', 'down', 'down-left', 'left', 'up-left'];
-FACINGS.forEach((f, i) => $('gx-face').insertAdjacentHTML('beforeend', `<option value="${i}">${i}</option>`));
-$('gx-face').value = 4;
-let G = null, phase = 0, anim = true, timer = null;
-const mons = KINDS.map((k) => {
-  const fig = document.createElement('figure');
-  const cv = document.createElement('canvas'); cv.width = 16; cv.height = 16;
-  fig.appendChild(cv); fig.appendChild(document.createTextNode(k));
-  $('gx-mon').appendChild(fig);
-  return cv;
-});
-function drawMonsters() {
-  const font = FONTS[phase], face = +$('gx-face').value;
-  $('gx-fnt').textContent = `font $${font.toString(16).toUpperCase()}`;
-  KINDS.forEach((k, i) => {
-    const tile = 0x40 + i * 8 + face, ctx = mons[i].getContext('2d');
-    ctx.fillStyle = PALC[BG[0]]; ctx.fillRect(0, 0, 16, 16);
-    for (let q = 0; q < 4; q++) {
-      const ch = G.ram[0xF400 + tile * 4 + q], col = G.ram[0xF600 + tile * 4 + q];
-      const cols = [PALC[BG[0]], PALC[BG[1]], PALC[BG[2]], PALC[col & 7]];
-      C64.drawGlyphMC(ctx, G.ram.subarray(font, font + 2048), ch, (q & 1) * 8, (q >> 1) * 8, 1, cols);
-    }
-  });
-}
-// ---- the fonts in full
-let GCOL = null, CHANGES = null;
-function fontSetup() {
-  GCOL = new Uint8Array(256).fill(1);
-  const seen = new Uint8Array(256);
-  for (let t = 0; t < 128; t++) for (let q = 0; q < 4; q++) {
-    const ch = G.ram[0xF400 + t * 4 + q];
-    if (!seen[ch]) { seen[ch] = 1; GCOL[ch] = G.ram[0xF600 + t * 4 + q]; }
-  }
-  CHANGES = new Set();
-  for (let i = 0; i < 256; i++) for (let r = 0; r < 8; r++) {
-    const a = G.ram[0x4800 + i * 8 + r], b = G.ram[0x5000 + i * 8 + r], c = G.ram[0x5800 + i * 8 + r];
-    if (a !== b || a !== c) { CHANGES.add(i); break; }
-  }
-}
-function drawSheet(cv, font) {
-  const ctx = C64.canvas(cv, 271, 271), f = G.ram.subarray(font, font + 2048), mark = $('gx-fmark').checked;
-  ctx.fillStyle = '#2f3136'; ctx.fillRect(0, 0, 271, 271);
-  for (let i = 0; i < 256; i++) {
-    const x = (i & 15) * 17, y = (i >> 4) * 17, c = GCOL[i];
-    ctx.fillStyle = PALC[BG[0]]; ctx.fillRect(x, y, 16, 16);
-    if (c & 8) C64.drawGlyphMC(ctx, f, i, x, y, 2, [PALC[BG[0]], PALC[BG[1]], PALC[BG[2]], PALC[c & 7]]);
-    else C64.drawGlyph(ctx, f, i, x, y, 2, PALC[c & 15]);
-    if (mark && CHANGES.has(i)) { ctx.strokeStyle = '#f2c94c'; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, 15, 15); }
-  }
-}
-function drawFonts() {
-  if (!G) return;
-  const font = FONTS[phase];
-  drawSheet($('gx-fnow'), font);
-  $('gx-fname').textContent = `$${font.toString(16).toUpperCase()}, step ${phase + 1} of 4`;
-  [0x4800, 0x5000, 0x5800].forEach((a, k) => $('gx-f' + k).classList.toggle('gx-on', a === font));
-}
-function drawAllFonts() { if (!G) return; [0x4800, 0x5000, 0x5800].forEach((a, k) => drawSheet($('gx-f' + k), a)); drawFonts(); }
-$('gx-fmark').onchange = drawAllFonts;
-$('gx-fnow').onmousemove = (e) => {
-  if (!G) return;
-  const r = e.currentTarget.getBoundingClientRect();
-  const i = Math.min(15, Math.floor((e.clientY - r.top) / r.height * 16)) * 16 + Math.min(15, Math.floor((e.clientX - r.left) / r.width * 16));
-  const tiles = [];
-  for (let t = 0; t < 128; t++) for (let q = 0; q < 4; q++) if (G.ram[0xF400 + t * 4 + q] === i && !tiles.includes(t)) tiles.push(t);
-  $('gx-fhover').textContent = `Glyph $${i.toString(16).toUpperCase().padStart(2, '0')}${CHANGES.has(i) ? ', different in each font' : ''}` +
-    (tiles.length ? `; in tile${tiles.length > 1 ? 's' : ''} ${tiles.slice(0, 6).map((t) => '$' + t.toString(16).toUpperCase().padStart(2, '0')).join(', ')}${tiles.length > 6 ? ' ...' : ''}` : '; in no tile');
-};
-function tick() { phase = (phase + 1) & 3; drawMonsters(); drawFonts(); }
-$('gx-step').onclick = () => { if (G) tick(); };
-$('gx-face').onchange = () => { if (G) drawMonsters(); };
-$('gx-anim').onclick = () => {
-  anim = !anim; $('gx-anim').setAttribute('aria-pressed', anim); $('gx-anim').textContent = anim ? 'Animating' : 'Stopped';
-  if (anim && G && !timer) timer = setInterval(tick, 160); else if (!anim && timer) { clearInterval(timer); timer = null; }
-};
+let G = null;
 
 // ---- 04 moving the monsters: the game's own monster code on a level (gx-chase)
 const CHASE_LEVELS = ["TwAGCun+CEMTjpVQSV+1IoMigjiCP4UTrBX8IoIigiKyFf/PQIFAgUCmQg2QQg2QQg2QQg2+H5ohmSG6E4sVhyCRIZkhwyGENoAfjCGMNwAe","TwgBD+bhne37GfPlmfn7GUZDgaATghaAQASAIYMVijaGQASKIY1ABIAhjSKGH4BABJlABIcTkEAE/////+ITyBOnP4MggSCDILsThyKFIgAe","gAAWPvTj++X75/Ln/er46/bu8O7m7sD38P3x7PHo8vv0+fXq9eX27/f99/b46vns+vf68/3o/v/8wv7/AFxdgZ+evh+kP4cTgSCEIMQhuhOCIbITgSD9FKMgkxO2IIkguRSHE4EhjSCVIY4g1hOSIbQhlCGDE8kTgCKRIZUfnDYAHg==","ixgpFf3jmdkZVpbTElCPzAxIh1NTgv7wQKohE4kTjSATiSKDFKkTkCKMJYgUhyKfIoYUE4QTkRMAiiW6JYElmCKLH4UWgCOPJZoTAIMUniSWIaEljD+tOJ0hlEieSJ5IgiKCI41Ig0iCSIIThROeIYkhjyOeE6kTJIcTJI4luxMAjCCMIoQ2giWPIQAe","agAGF+78yRhXmMn46Y7QEE/r8gdGYofH8OIAoCYBihOAE4omAY4VgBWxE5YTkyfVJo4Vv1CrUKonh1CzNo9QAYBQk1CBUAH/xyaNJqxQlFCIUJRQhSaBUJRQgSahUJxQgFCcUIBQjT+NUAAe","hwgWNvb/BUX//MT/9sP/6MT35QPo4YTl6cPh90Tp+oTt/AjI5O1ICPPkiEj888iI5eTj5uT65vz94qAWhBOAE4UshBOAE4QuFKMhvCHbE4ATvBOAE8kthi3rLI0/jSzrLYYtqROoFZQTgBO8IJohhiHAIZgTmyKBE4A2hROAE4QsgxOAFIYTAB4=","VwApEOHkSuHxWOX4WBT95Mn96tigFZw2gmiRIhOIE78hmRODE8IijhOAIqMWwxSIIYETwyGCE4khpxPgFIEgkCDJE4MUhSChE+Bojj+QIJwTnhOeE54TAB4="];
@@ -477,11 +329,10 @@ $('gx-ch-map').onclick = (e) => {
 
 if (HASC) {
   C64.load('listing.json').then((L) => {
-    G = L; fontSetup(); drawMonsters(); drawAllFonts();
+    G = L;
     if (typeof C64Cpu !== 'undefined') chaseStart(); else missing($('gx-ch-map'));
-    if (anim) timer = setInterval(tick, 160);
-  }).catch(() => { missing($('gx-mon')); missing($('gx-ch-map')); });
-} else { missing($('gx-mon')); missing($('gx-ch-map')); }
+  }).catch(() => missing($('gx-ch-map')));
+} else missing($('gx-ch-map'));
 </script>
 <script>
 // ---- 01 the heroes: each hero's sprites, from PLYRS.SPR (24 walking shapes) and GAUNT CHR (8 shots)
@@ -499,7 +350,7 @@ const heroCv = HERO_INFO.map(([n, t]) => {
 });
 function drawHeroes() {
   if (typeof C64 === 'undefined') return;
-  const frame = [0, 1, 2, 1][hStep];
+  const frame = [0, 1, 0, 2][hStep];      // anim_frames ($9128): 0, 8, 0, 16
   heroCv.forEach((cv, h) => {
     const ctx = C64.canvas(cv, 240, 206), g = heroGfx[h], col = PALC[HERO_INFO[h][2]];
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 240, 206);
@@ -515,10 +366,10 @@ function heroTick() {
   if (!hWalk) return;
   hStep = (hStep + 1) & 3;
   hTick++;
-  if (hTick === 16) { hTick = 0; hFacing = (hFacing + 1) & 7; }
+  if (hTick === 24) { hTick = 0; hFacing = (hFacing + 1) & 7; }
   drawHeroes();
 }
 $('gx-hwalk').onclick = () => { hWalk = !hWalk; $('gx-hwalk').setAttribute('aria-pressed', hWalk); $('gx-hwalk').textContent = hWalk ? 'Walking' : 'Stopped'; };
 $('gx-hturn').onclick = () => { hFacing = (hFacing + 1) & 7; drawHeroes(); };
-if (typeof C64 !== 'undefined') { drawHeroes(); setInterval(heroTick, 130); } else missing($('gx-heroes'));
+if (typeof C64 !== 'undefined') { drawHeroes(); setInterval(heroTick, 80); } else missing($('gx-heroes'));
 </script>

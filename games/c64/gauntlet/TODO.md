@@ -29,11 +29,16 @@ A person's pass over the page, section by section (`AGENTS.md`,
   wrong colour at its bottom edge was not tried.
 - The selection and title programs (`spic`, `moded option`) are not
   analysed: the play program only.
+- Try the Controls page's keyboard findings in the emulator: SPACE
+  firing for player one, the keys 1, ←, CTRL and 2 steering player one,
+  and player two's F keys ignored while player one holds fire. They are
+  traced from the code and the C64's wiring and held by `test_keys.js`.
+- The Graphics tab has no loading picture: the title picture files
+  (`spic`, `spic f gauntlet`) are not in play memory, and the run made
+  no `media.json` (`kit/skills/core/12-media`) to draw them from.
 
 ## Article ideas
 
 - A replay of a level's opening seconds: the generators filling the maze.
-- A sound-effects player for the 18 effects in OBJDIS (`$F000`), with the
-  voice 3 ending bug made audible.
 - A widget for the idle timer: seconds without firing, and the maze
   changing.
