@@ -9,6 +9,7 @@
 // - the Graphics page's port of the ending's explosions, step for step against $6D7D, and its broken
 //   top against the copy at $6C2C;
 // - the two recorded frames the pages draw, by the hash of their picture.
+// - How it works' hidden blocks: each level's count from its object lists, and the routine it cites.
 const fs = require('fs'), path = require('path'), assert = require('assert'), vm = require('vm');
 const crypto = require('crypto'), { execFileSync } = require('child_process');
 const { game } = require('../../../kit/scripts/port_check.js'), C64Cpu = require('../../../kit/cpu/cpu6502.js');
@@ -169,6 +170,41 @@ console.log('Sound:', calls, 'calls of the game\'s players,', matched, 'SID writ
 }
 
 // Every button through the exact AudioWorklet module, its own CPU scope included.
+// The hidden blocks table on How it works: each level's count is the records of its block's type in
+// the level's object lists, walked as the spawner walks them ($5923), and that type's entry in the
+// level's table of object routines jumps to the routine the page cites for the level.
+{
+  const TYPE = { '1-1': 11, '1-2': 6, '1-3': 6, '2-1': 7, '2-2': 5, '3-2': 3, '4-1': 7, '4-2': 5, '4-3': 5, '5-1': 5, '5-2': 3 };
+  const table = g.read('index.html').match(/<table class="tu-blocks">([\s\S]*?)<\/table>/)[1];
+  const shown = {}, cited = {};
+  for (const row of table.match(/<tr><td><a[\s\S]*?<\/tr>/g)) {
+    const lv = [...row.matchAll(/level=(\d-\d)/g)].map(x => x[1]), n = row.match(/<\/td><td>([\d, ]+)<\/td>/)[1].split(', ').map(Number);
+    assert.equal(lv.length, n.length, row);
+    lv.forEach((l, i) => { shown[l] = n[i]; });
+    for (const x of row.matchAll(/data-part="level-(\d-\d)"><code>\$([0-9A-F]{4})/g)) cited[x[1]] = parseInt(x[2], 16);
+  }
+  assert.deepStrictEqual(Object.keys(shown).sort(), Object.keys(TYPE).sort(), 'every level with blocks is in the table');
+  let total = 0;
+  for (const [lv, t] of Object.entries(TYPE)) {
+    const m = image('level-' + lv), W = m[0xADE0] | m[0xADE1] << 8, H = m[0xADE2] | m[0xADE3] << 8, seen = new Set();
+    let n = 0;
+    for (let r = 0; r <= m[0x8CA1]; r++) for (let c = 0; c <= m[0x8CA0]; c++) {
+      const k = (m[0x8CAA + r] + c) & 255, p = m[0x8CCF + k] | m[0x8D51 + k] << 8;
+      if (seen.has(p)) continue; seen.add(p);
+      for (let q = p, i = 0; m[q] !== 0xD3 && i < 64; q += 6, i++) if (m[q] === t && (m[q + 2] | m[q + 3] << 8) < W * 4 && (m[q + 4] | m[q + 5] << 8) < H * 4) n++;
+    }
+    assert.equal(n, shown[lv], 'level ' + lv + ' has ' + n + ' hidden blocks');
+    total += n;
+    if (cited[lv]) {
+      const tab = g.json('parts/level-' + lv + '/listing.json').records.find(r => typeof r.c === 'string' && r.c.includes('object routines by type')).a;
+      const e = tab + (t - 3) * 3;
+      assert.equal(m[e], 0x4C, lv + ': a JMP for type ' + t);
+      assert.equal(m[e + 1] | m[e + 2] << 8, cited[lv], lv + ': type ' + t + ' runs the routine the page cites');
+    }
+  }
+  assert.match(g.read('index.html'), new RegExp('The ' + total + ' blocks are objects'));
+  console.log('Hidden blocks:', total, 'in', Object.keys(TYPE).length, 'levels, each count and cited routine as the listings have them');
+}
 require('../../../site/lib/sid.js'); globalThis.C64Cpu = C64Cpu;
 const { CHECKER, verdict } = require('../../../kit/c64/sid_check.js');
 let sounded = 0;

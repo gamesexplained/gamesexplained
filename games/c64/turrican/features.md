@@ -36,7 +36,7 @@ Sources:
 | Diamonds: 300 give a continue | confirmed | engine `irq_bottom` ($0C65): 50 points a diamond, a continue for every 300 |
 | A time limit for each level | confirmed | engine `frame_logic` ($0B48), the time from the level's header ($AE07-$AE09), TIME OUT (`message_sprites`, $6006) |
 | Panel: lives, wheels, continues, time, diamonds, grenades, mines, energy lines, score, energy bar | live | engine `panel_layout` ($0748) |
-| Secret rooms with extras, extra lives and diamonds | confirmed | hidden blocks that show only when shot and give a stream of symbols: level 2-1's prize block ($7DCD), level 4-1's bonus block |
+| Secret rooms with extras, extra lives and diamonds | confirmed | 101 hidden blocks in eleven levels that show only when shot and give a stream of symbols, each level's with its own rules (`facts.md`, Mechanics; How it works, hidden blocks) |
 | End bosses and mid-level bosses | confirmed | the fish (2-1), the machine (2-2), the tower (3-1), the gunship (3-3), the falling block (4-1), the creature (4-3), the Machine (5-2), each in its level's listing |
 | A shoot'em-up stage (level 3-1) with music; the walking levels have no music | differs | level 3-1's flight and level 3-3's dive both play a tune with sound effects off; the other levels play effects only |
 | High-score list: enter a name with RETURN; fire saves it to the disk, S asks for side 1, RUN/STOP returns | live | title $7272, $7285, $729D: S shows INSERT SIDE 1 OF YOUR GAMEDISK, fire then saves and RUN/STOP goes back to the title; fire without S goes back to the title. A save that fails shows DANN EBEN NICHT !! (`title_save`, $74C3) |

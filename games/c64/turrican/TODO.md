@@ -29,8 +29,8 @@ The reader review (`agent-history.md`) added those it found in the notes.
 - The whip after the fish in 2-1: a whip shorter than 22 comes back as
   whatever `$BE9E` held (shown only with the length poked; what the
   byte holds in normal play is open).
-- The prize-block burst in 2-1 and 3-2 turns every enemy on the screen
-  into prizes.
+- The prize-block burst in 2-1, 2-2, 3-2 and 4-3 turns every enemy on
+  the screen into prizes (How it works states the rule; not seen live).
 - In 1-1, a drone removed on its first frame, a drone that never sets
   its vertical timer (`$BD69`), and a flier that jumps to the left edge.
 - In 2-1, the splash's loop, the fish entering from the left, and the
@@ -52,7 +52,6 @@ The reader review (`agent-history.md`) added those it found in the notes.
 - The rows after the maps of 2-2 and other levels: only 2-1's is drawn.
 - Figures of small light tiles in the maps of 4-1 and 4-2: not
   identified.
-- Hidden prize blocks: one rule, handled level by level.
 - The grenade's flash fades its third colour with the second colour's
   table, so the fade at `$301F` is never used.
 - 3-1's tune: the third voice's order list is never read (`$7401`,

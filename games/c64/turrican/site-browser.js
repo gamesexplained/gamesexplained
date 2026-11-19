@@ -2,7 +2,8 @@
 // Turrican's pages in Chromium: every widget from its first state, and what it must show.
 // How it works: the tune and effect players play, the frame's panel switch, the map's sliders and
 // grid, the damage table and the level pictures. Levels: every map draws, each differently, with
-// 2-1's extra row, the objects, and the buttons and links that find the places the notes name.
+// 2-1's extra row, the objects and hidden blocks, and the buttons and links that find the places
+// the notes name.
 // Graphics: the hero's six actions, both ways round; the shared shapes; every level's sprite sheet,
 // with the count of shapes its file brings; the title's sparkles; the ending's 50 explosions and the
 // broken top they leave; the loading picture. Discoveries: the hall of fame, the signature's two tunes and the
@@ -103,7 +104,7 @@ const { start } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
     for (const [lv, n] of Object.entries(spots)) {
       await page.selectOption('#map-choice', { label: lv });
       await page.waitForFunction(() => !/Loading/.test(document.getElementById('map-state').textContent), null, { timeout: 20000 });
-      const b = page.locator('#map-spots button');
+      const b = page.locator('#map-spots button:not(#map-next-block)');
       assert.equal(await b.count(), n, lv + ' has ' + n + ' place buttons');
       for (let i = 0; i < n; i++) {
         await page.locator('#map-scroll').evaluate(e => { e.scrollLeft = 0; e.scrollTop = 0; });
@@ -121,10 +122,22 @@ const { start } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
     assert.notEqual(await hash('#map-canvas'), marked, 'Objects takes the marks away');
     await page.locator('#map-objects').check();
     assert.equal(await hash('#map-canvas'), marked, 'and puts them back');
+    // the hidden blocks: marked, counted, and stepped through one at a time
+    assert.match(await page.locator('#map-facts').textContent(), /Hidden blocks3/, '1-1 has three hidden blocks');
+    const nb = page.locator('#map-next-block');
+    await nb.click();
+    assert.equal(await nb.textContent(), 'Next hidden block (1 of 3)');
+    assert.equal(await page.locator('#map-mark').isVisible(), true, 'the first block is outlined');
+    const first = await page.locator('#map-mark').evaluate(e => e.style.left + e.style.top);
+    await nb.click();
+    assert.notEqual(await page.locator('#map-mark').evaluate(e => e.style.left + e.style.top), first, 'the button moves to the next block');
+    await page.goto(url('levels.html?level=3-2&show=blocks'));
+    await page.waitForFunction(() => !document.getElementById('map-mark').hidden, null, { timeout: 20000 });
+    assert.equal(await page.locator('#map-next-block').textContent(), 'Next hidden block (1 of 21)', 'a link opens a level on its first block');
     await page.goto(url('levels.html?level=1-3&show=DTE'));
     await page.waitForFunction(() => !document.getElementById('map-mark').hidden, null, { timeout: 20000 });
     assert.equal(await page.locator('#map-choice').evaluate(s => s.options[s.selectedIndex].text), 'Level 1-3', 'a link opens its level');
-    console.log('OK - Levels: all 13 maps draw, each its own; 2-1\'s extra row; the objects; 7 place buttons and a link to one');
+    console.log('OK - Levels: all 13 maps draw, each its own; 2-1\'s extra row; the objects; the hidden blocks; 7 place buttons and two links');
 
     // Graphics
     await page.goto(url('graphics.html'));

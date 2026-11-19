@@ -201,6 +201,17 @@ which the title takes the low six bits (`title_fame_page`, $7384).
   each level's own. Level 1-1's lists hold six 1UPs: at character (58,
   23) among four other symbols, four in a row at (313-336, 18) near the
   top of the map, and one at (6, 78) (level 1-1, squares 1, 9 and 48).
+- Hidden blocks: 101 in eleven levels' object lists, each level's type
+  with its own routine: 1-1 3 (type 11, $85EC), 1-2 7 (type 6, $76B4,
+  seen before it is shot), 1-3 3 (type 6, $7CC7), 2-1 4 (type 7, $7C78),
+  2-2 3 (type 5, $7C57), 3-2 21 (type 3, $7460), 4-1 14 (type 7, $7ED9),
+  4-2 10 (type 5, $82AC), 4-3 10 (type 5, $7DAC), 5-1 22 (type 5, $790A),
+  5-2 4 (type 3, $A53C). The four-sprite blocks of 2-1, 2-2, 3-2 and 4-3
+  burst after twenty more hits and turn every object slot into a prize;
+  the others throw out a symbol every so many hits for 500 points and
+  break for 5,000 (4-1's for 200). 3-1 and 3-3 have prize drones (type 4,
+  $75CF and $7DDF) in their place. The counts are held by
+  `test_pages.js`.
 - Writing in the maps: level 1-1's blocks spell 1989 at block columns
   54-68, rows 44-48, inside the rock; level 1-3's spell DTE on its side,
   reading upwards, at block columns 89-93, rows 40-50, the map's last

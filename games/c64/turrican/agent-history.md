@@ -111,3 +111,11 @@ What was left, each for a reason:
 - The ending tune's paragraph and the panel switch's blue rows: read
   again and kept; the table under the player carries the detail.
 - The tile figures in 4-1 and 4-2: looked at, not identified; a lead.
+
+**Before the merge, 19 November 2026.** Merging `main` found that two
+other runs had made two of this run's kit changes first (the snapshot
+reader and the bottom part's ranges); the merge keeps theirs. Aaron
+asked whether the pages covered the hidden blocks, a strong memory of
+playing the game; they did not, though the reader had listed them. How
+it works gained a section with each level's rules, and the Levels tab
+marks all 101 blocks with a button that steps through them.
