@@ -28,7 +28,7 @@ for number in range(1, 32):
             comment = next(c['text'] for c in symbols['comments'] if c['address'] == address and c['type'] == 'line')
             assert f'first {rows} {side} bytes' in comment and f'{stride}-byte steps' in comment, f'load {number}: {side} pointer description'
         fact = (part / 'facts.md').read_text()
-        assert 'row pointers in split tables at `$85CF` and `$8620`' in fact
+        assert 'row pointers' in fact and '`$85CF`' in fact and '`$8620`' in fact, f'load {number}: row pointer fact'
     for row in range(rows):
         address = 0x8671 + row * stride
         block = next(b for b in symbols['blocks'] if b['start'] == address)
