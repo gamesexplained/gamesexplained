@@ -12,7 +12,7 @@ The resident jump at `$0450`, `JMP ($7F3F)`, enters `$8F95`, inside the eight-pa
 
 Load 3's handler at `$998C`, for entity types `$06` and `$14`, is a copy of load 16's handler at `$8EF0` moved up by `$A9C` bytes: its 212 instructions match once their internal addresses are moved, and so do its seven split-table targets and the eight animation offsets that follow. `test_entity_code_copies.py` checks this.
 
-The resident loader `$7A6E` unpacks the load's file as two compressed streams: 2,232 input bytes to `$EB40–$FEBF` and 4,191 to `$7EDF–$9F50`. The decoder stops at the second stream's end marker, before the file's last bytes.
+The resident loader `$7A6E` unpacks the load's file as two compressed streams: 2,232 input bytes to `$EB40–$FEBF` and 4,191 to `$7EDF–$9F50`. The decoder stops at the second stream's end marker, 181 bytes before the end of the file.
 
 Load 3 has seven LDX/LDY pairs that load a message record's address with a call or jump to `$77E0` a few bytes later; they name `$8FEB`, `$9071`, `$9155`, `$9183`, `$91B7`, `$91E3` and `$9211`. `$77E0` copies each of the record's three zero-terminated lines into the message buffers, turning spaces into glyph zero. Glyph `$60`, a downward-pointing triangle, is the marker that the resident routine at `$6DDE` blinks while it waits for Fire.
 

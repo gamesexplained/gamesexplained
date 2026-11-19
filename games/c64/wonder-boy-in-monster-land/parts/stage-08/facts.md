@@ -10,7 +10,7 @@ The load's descriptor names eight six-byte trigger records at `$94E5` (count at 
 
 The resident jump at `$0450`, `JMP ($7F3F)`, enters `$9487`, inside the eight-page character source at `$8D97`. The code there stores 4 in `$4DCB,X` for the selected player and jumps to `$0732` when `$6F3C` is 0 and `$6F3D` is 5 or more, otherwise to `$0200`.
 
-The resident loader `$7A6E` unpacks the load's file as two compressed streams: 862 input bytes to `$EB40–$F5BF` and 3,250 to `$7EDF–$9AA3`. The decoder stops at the second stream's end marker, before the file's last bytes.
+The resident loader `$7A6E` unpacks the load's file as two compressed streams: 862 input bytes to `$EB40–$F5BF` and 3,250 to `$7EDF–$9AA3`. The decoder stops at the second stream's end marker, 206 bytes before the end of the file.
 
 The load's type-$0C entity vector selects a dispatcher at `$9701`, whose four state-table pairs point to `$971B`, `$973F`, `$9758` and `$9776`. The type's own code stores only 0 to 3 in its state.
 
