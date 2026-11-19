@@ -6480,12 +6480,12 @@
   {
    "address": 42291,
    "type": "line",
-   "text": "Load 4: display the selected message using its X/Y pointer, then call the display-slot initializer with X=$46 and Y=$82. The message and display callback effects are separate."
+   "text": "Load 4: show the selected message through $77E0, then call $719E with X=$46 and Y=$82, which places display slots 4 and 5 at X=$46, Y=$82 with sprite pointers $97 and $98. The second polling loop comes back to that call at $A536 when $73 is zero."
   },
   {
    "address": 42301,
    "type": "line",
-   "text": "Load 4: call the frame wait, HUD update and input sampler. If sampled $74 is zero, enter the second cursor path; otherwise if $70 is zero, continue at $A58F; if both are nonzero, repeat. Physical control mapping is owned by the sampler."
+   "text": "Load 4: call the frame wait, HUD update and input sampler. If sampled $74 is zero, enter the second cursor path; otherwise if $70 is zero, continue at $A58F; if both are nonzero, repeat. The sampler at $3C4C reads joystick port 2 active-low, so $74 is zero while the stick is pushed right and $70 while fire is pressed."
   },
   {
    "address": 42320,
@@ -6510,7 +6510,7 @@
   {
    "address": 42383,
    "type": "line",
-   "text": "Load 4: pass the selected player’s $528C value in Y and the indexed byte at $A679 in A to $7889, then call $6097. Set $4B0D to $8C and $4DD4 to zero; call $4A90 and $370B. Increment the selected player’s $528C byte, set current stage-record field 3 to $FF, and pass message $A621 to the message-wait path. The called routines’ effects are separate."
+   "text": "Load 4: pass the selected player’s $528C value in Y and the indexed byte at $A679 in A to $7889, then call $6097. Set $4B0D to $8C and $4DD4 to zero; call $4A90 and $370B. Increment the selected player’s $528C byte, set current stage-record field 3 to $FF, and pass message $A621 to the message-wait path."
   },
   {
    "address": 42431,
@@ -6785,7 +6785,7 @@
   {
    "address": 43413,
    "type": "line",
-   "text": "Load 4: call the input sampler and return carry set if any of $73, $74 or $70 is zero; return carry clear if all are nonzero. Physical control mapping is owned by the sampler."
+   "text": "Load 4: call the input sampler at $3C4C and return carry set if any of $73, $74 or $70 is zero, carry clear if all are nonzero. The sampler reads joystick port 2 active-low, so carry is set while the stick is pushed left or right or fire is pressed."
   },
   {
    "address": 43432,
@@ -7885,7 +7885,7 @@
   {
    "address": 45759,
    "type": "line",
-   "text": "When the distance is below 20 and $1B28,X is zero, copy $1B17,X into $B4E7, call the frame helper with A=2, store 5 at $1AF5,X and 6 at $1B06,X, and select state 1. Otherwise return if $1A29,X is zero. If nonzero, store 10 in $1AD3,X and patch the immediate operand at $B3F3 used by state 2. Call $3020: if A is below $80, call $72FC and store $80 or 0 in $1B17,X according to carry; otherwise preserve that field. Clear $1AF5,X and select state 2."
+   "text": "Reached when the distance is below 20. Copy $1B17,X to the working byte at $B4E7; if $1B28,X is zero, call the frame helper at $B491 with A=2, store 5 at $1AF5,X and 6 at $1B06,X, and select state 1. Otherwise, as when the distance is 20 or more, continue at $B2DD: return if $1A29,X is zero; if nonzero, store 10 in $1AD3,X and in the immediate operand at $B3F3 used by state 2. Call $3020: if A is below $80, call $72FC and store $80 or 0 in $1B17,X according to carry; otherwise leave that field. Clear $1AF5,X and select state 2."
   },
   {
    "address": 45835,

@@ -5619,12 +5619,12 @@
   {
    "address": 38154,
    "type": "line",
-   "text": "Store the incoming trigger index X at $9514, which is the opcode of the captured LDX #$FF rather than its operand at $9515. Pass message $9517 to $77E0, then execute the modified bytes. The captured second trigger record at $9504 supplies this callback; the shared dispatcher passes its matched index in X. Forced VICE tests checked direct X=1 and a constructed dispatch of that record with the message callback stubbed."
+   "text": "Trigger record 2 at $9504 names this as its callback: $48BF jumps here with the record’s index, 1, in X when the view tile is column 7, row $0B. Store X at $9514, which is the opcode of the LDX #$FF there rather than its operand at $9515. Pass message $9517 (“DANGER! KEEP OUT”) to $77E0, then run the modified bytes at $9514."
   },
   {
    "address": 38164,
    "type": "line",
-   "text": "The captured bytes are LDX #$FF followed by RTS, but $950A overwrites this opcode with incoming X. With X=1, the modified instruction is ORA ($FF,X), using X returned by the message callback, and then returns without restoring X. In the forced test the callback returned A=1 and X=$55, and a pointer at $54/$55 addressed $0400=$40, producing A=$41. Other patched opcodes and ordinary-play effects are not established."
+   "text": "Opcode byte of the LDX #$FF here, followed by RTS at $9516. $950A overwrites it with the trigger index before the message call. Only trigger record 2, index 1, names $950A, so the byte becomes $01 and the two bytes run as ORA ($FF,X). $77E0 returns with A=$20, the message’s control byte, and X=0, the length of its empty third line, so the instruction ORs A with the byte that the zero-page pointer at $FF/$00 addresses, and the routine returns without restoring X. The record’s count of 1 lets it run once per load, and $4A43, the main loop’s next call at $0437, reads neither A nor X."
   },
   {
    "address": 38167,
@@ -5654,22 +5654,22 @@
   {
    "address": 38238,
    "type": "line",
-   "text": "Two jump entries: the first enters setup at $9564, and the second jumps to $9684. The second entry was not exercised in the setup tests. These bytes can also overlap captured character or graphics sources."
+   "text": "Two jump entries: $955E enters the price setup at $9564, and $9561 jumps to the item-pair setup at $9684. Load 23's stage object record 2 at $953D names $955E as its callback, and records 1 and 3 at $952D and $954D name $9561; no instruction in load 23 or in the resident part names either. No copy reads these bytes as graphics: the map's character copy from $8D01 ends at $9500, and the visual-selector copies start higher, at $9F55, $A468 and $A90E."
   },
   {
    "address": 38244,
    "type": "line",
-   "text": "Write $46 plus 1 modulo 256 to $98C3 and $990D, set sound state $2C15 to 2, and use stage index $7B to format fields $4783,X and $4789,X through $95C7 for destination selectors $9B and $AF. The formatter’s display callback was stubbed in the controlled checks."
+   "text": "Write $46 plus 1 modulo 256 to the high address byte at $98C3 of the digit store at $98C1 and to the layout gate at $990D, set sound state $2C15 to 2, and use stage index $7B to format fields $4783,X and $4789,X through $95C7 with Y=$9B and Y=$AF as the screen offsets of their last digits."
   },
   {
    "address": 38276,
    "type": "line",
-   "text": "Use selected-player index $4DBD. If $4DC7,Y is nonzero, or if $4DC9,Y is at least stage field $4789,X under an unsigned byte comparison, go to $95B2. Otherwise inspect stage field $4753,X. These tests do not establish which values occur in ordinary play."
+   "text": "Use selected-player index $4DBD. If $4DC7,Y is nonzero, or if $4DC9,Y is at least stage field $4789,X under an unsigned byte comparison, go to $95B2. Otherwise inspect stage field $4753,X."
   },
   {
    "address": 38301,
    "type": "line",
-   "text": "For stage field 3, or another even value, select message $99FC and jump to $984E. The destination’s display behavior is separate."
+   "text": "Reached when stage field $4753,X is 3 or has bit 0 clear: select message $99FC and jump to the message call at $984E."
   },
   {
    "address": 38308,

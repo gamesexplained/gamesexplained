@@ -8169,7 +8169,7 @@
   {
    "address": 47235,
    "type": "line",
-   "text": "Decrement $1AE4,X with eight-bit wrap. If the result is negative and not $FA, jump to the frame update at $B8EE. If it equals $FA, set it to 20. When $1A29,X is nonzero, call $72FC; carry set with negative $1AC2,X decrements $1AE4,X once; carry clear with nonnegative $1AC2,X decrements it until the result is nonnegative. Then toggle bit 7 of $1AD3,X and $1AC2,X and jump to the frame update. A nonnegative initial result continues at $B8BE."
+   "text": "Decrement $1AE4,X with eight-bit wrap. If the result is negative and not $FA, jump to the frame update at $B8EE. If it equals $FA, set it to 20. When $1A29,X is nonzero, call $72FC; carry set with negative $1AC2,X, or carry clear with nonnegative $1AC2,X, decrements $1AE4,X once, to 19. Then toggle bit 7 of $1AD3,X and $1AC2,X and jump to the frame update. A nonnegative initial result continues at $B8BE."
   },
   {
    "address": 47294,
@@ -8199,7 +8199,7 @@
   {
    "address": 47462,
    "type": "line",
-   "text": "Load 19: type-$0A uses $1AB1,X as an index into split target tables at $B978/$B97D and patches the jump at $B975. Five captured target pairs follow; this dispatcher does not bound the index."
+   "text": "Load 19: handler for entity types $03–$0A, $14, $15, $19 and $1C; the vectors at $7EDF/$7F0F point here, and the load's entity records use types $0A and $19. Read state $1AB1,X into Y, patch the jump at $B975 from the split tables at $B978/$B97D and jump to $B982, $B99F, $B9F1, $BA4C or $BA6D. The handler's own code keeps that state between 0 and 4: 1 at $B99C, 2 or 0 at $B9E9, 0 at $BA48, 3 or 4 at $BAC9, and at $BA69 the state 0, 1 or 2 that the event helper saved in $1B28,X at $BAA4; the record loader at $1881 and $447A clear it to 0."
   },
   {
    "address": 47477,
@@ -8209,12 +8209,12 @@
   {
    "address": 47480,
    "type": "line",
-   "text": "Five captured low bytes paired with high bytes at $B97D: $B982, $B99F, $B9F1, $BA4C, $BA6D."
+   "text": "Five low bytes of state targets, paired with the high bytes at $B97D: $B982, $B99F, $B9F1, $BA4C and $BA6D, the handlers for states 0 to 4. The dispatcher at $B966 reads them at $B969 with Y = state $1AB1,X, which the handler's own code keeps between 0 and 4."
   },
   {
    "address": 47485,
    "type": "line",
-   "text": "Five captured high bytes paired with low bytes at $B978: $B982, $B99F, $B9F1, $BA4C, $BA6D."
+   "text": "Five high bytes of state targets, paired with the low bytes at $B978: $B982, $B99F, $B9F1, $BA4C and $BA6D. The dispatcher at $B966 reads them at $B96F with Y = state $1AB1,X."
   },
   {
    "address": 47490,
@@ -8229,12 +8229,12 @@
   {
    "address": 47531,
    "type": "line",
-   "text": "Decrement $1AC2,X. If nonnegative, call the frame helper at $BA7B, copy $1AD3,X to the working byte $BAE8, then call $45BC for a negative direction or $4574 otherwise with A=6. If the returned value masked with 6 is not 2, select state 0."
+   "text": "Decrement $1AC2,X. If nonnegative, call the frame helper at $BA7B, copy $1AD3,X to the working byte $BAE8, then call $45BC for a negative direction or $4574 otherwise with A=6. If the returned value masked with 6 is 2, return; otherwise continue at $B9D0, as when the countdown goes negative."
   },
   {
    "address": 47568,
    "type": "line",
-   "text": "For a negative countdown, call $3020. If its result is nonnegative, select state 0. Otherwise call $3020 again, store its top bit in $1AD3,X, set $1AE4,X=4 and $1AF5,X=8, and select state 2."
+   "text": "Reached when the countdown $1AC2,X goes negative ($B9AE) or when the state-1 move returns a value whose AND 6 is not 2 ($B9C7). Call $3020. If its result is nonnegative, select state 0. Otherwise call $3020 again, store its top bit in $1AD3,X, set $1AE4,X=4 and $1AF5,X=8, and select state 2."
   },
   {
    "address": 47601,
@@ -8284,12 +8284,12 @@
   {
    "address": 47848,
    "type": "line",
-   "text": "Working direction byte tested by state 3 and written by other parts of this handler."
+   "text": "Working direction byte, a copy of $1AD3,X: state 1 ($B9B6), state 2 ($BA00) and the frame helper ($BA7E) store that field here, and the event helper rotates the $72FC carry into it at $BAB9 and copies it back to $1AD3,X at $BABC. State 1 ($B9BB), the state-2 movement ($BA15), state 3 ($BA53) and the frame helper ($BA91) test its sign with BIT to choose the direction or the frame offset."
   },
   {
    "address": 47849,
    "type": "line",
-   "text": "Load 19: an unattributed loaded byte $BB between the direction working byte and the next handler. A VICE checkpoint for CPU reads, writes and instruction entry recorded zero hits during 200 frames; the control checkpoint at $13EA recorded 200 hits. This bounded observation does not prove that another state cannot use it. Its semantic role remains unknown."
+   "text": "Load 19: one byte, $BB in the load, between the direction byte at $BAE8 and the handler at $BAEA. No instruction in load 19 reads, writes or indexes it; the resident title copy at $026C, whose index reaches it, runs only after $023D has loaded load 1 again."
   },
   {
    "address": 47850,
@@ -8329,12 +8329,12 @@
   {
    "address": 48096,
    "type": "line",
-   "text": "Copy $1AC2,X/$1AD3,X to $35BD/$35BE. If $1A29,X is zero, return. Otherwise use that byte as Y to fill $35C0 from $4CCF,Y shifted right and $35BF from $4C4F,Y and $4C6F,Y combined by LSR/ROR. Call $34EA, OR its result with $A0, store it in $1B28,X and tail-jump to $35C1. The input index is not locally bounded."
+   "text": "Copy $1AC2,X/$1AD3,X to $35BD/$35BE. If $1A29,X is zero, return. Otherwise use that display slot as Y to fill $35C0 from $4CCF,Y shifted right and $35BF from $4C4F,Y and $4C6F,Y combined by LSR/ROR. Call $34EA, OR its result with $A0, store it in $1B28,X and tail-jump to $35C1."
   },
   {
    "address": 48144,
    "type": "line",
-   "text": "Read entity state $1AB1,X into Y, patch the jump operand at $BC20/$BC21 from the two five-byte tables and jump to the selected handler. The index is not bounded here."
+   "text": "Handler for entity type $1A: the vector at $7EDF/$7F0F points here. Read state $1AB1,X into Y, patch the jump operand at $BC20/$BC21 from the five-byte tables at $BC22/$BC27 and jump to $BC2C, $BC49, $BCDC, $BE96 or $BF18. The type's own code keeps that state between 0 and 4: the increments at $BC2C (0 to 1), $BC5D (1 to 2), $BE42 (2 to 3) and $BEB1 (3 to 4), and the decrement at $BF3B (4 to 3); the record loader at $1881 and $447A clear it to 0."
   },
   {
    "address": 48162,
@@ -8354,7 +8354,7 @@
   {
    "address": 48201,
    "type": "line",
-   "text": "Save X at $BE95, display the message records at $BC70 and $BCA5, restore X, increment entity state $1AB1,X, and store $19E5,X plus 4 and plus 6 modulo 256 to $19C3,X and $19D4,X. Display callback effects are separate."
+   "text": "State 1 of the type-$1A handler: save X at $BE95, show the message records at $BC70 (\"Ha!Ha!Ha! Welcome here, young man. I'm the Sphinx.\") and $BCA5 (\"Fail to answer my question, and you loose life, O.K?\") through $77E0, restore X, increment entity state $1AB1,X, and store $19E5,X plus 4 and plus 6 modulo 256 to $19C3,X and $19D4,X."
   },
   {
    "address": 48240,
@@ -8369,7 +8369,7 @@
   {
    "address": 48348,
    "type": "line",
-   "text": "Save entity index X at $BE95. If bit 1 of $9A4B is clear, enter the question at $BD50. Otherwise display the record at $BCF0 and join the common question setup at $BD57. The display callback and ordinary-play reachability are separate."
+   "text": "State 2 of the type-$1A handler: save entity index X at $BE95. If bit 1 of $9A4B is clear, enter the question at $BD50, which shows the record at $BD20 (\"What did I eat yesterday?\"). Otherwise show the record at $BCF0 (\"What is my hobby recently?\") through $77E0 and join the common question setup at $BD57."
   },
   {
    "address": 48368,
@@ -8384,7 +8384,7 @@
   {
    "address": 48464,
    "type": "line",
-   "text": "Display the three-field question at $BD20, call the HUD updater twice, set cursor mode $BE8E to $FF and enter the cursor/poll loop. Display and HUD callback effects are separate."
+   "text": "Show the three-field question at $BD20 through $77E0, call the HUD updater $370B twice, set cursor mode $BE8E to $FF and enter the cursor and poll loop at $BD62."
   },
   {
    "address": 48482,
@@ -8394,7 +8394,7 @@
   {
    "address": 48493,
    "type": "line",
-   "text": "Call the input sampler and test $70, then $73, then $74 for zero, in that priority order. Physical control mapping belongs to the separate sampler."
+   "text": "Call the input sampler at $3C4C and test $70, then $73, then $74 for zero, in that priority order. The sampler reads joystick port 2 active-low, so $70 is zero while fire is pressed, $73 while the stick is pushed left and $74 while it is pushed right."
   },
   {
    "address": 48511,
@@ -8409,12 +8409,12 @@
   {
    "address": 48538,
    "type": "line",
-   "text": "Update cursor colours and call $BDA5. While it returns carry set, repeat; on carry clear return to the main cursor/poll loop. Callback effects are separate."
+   "text": "Update the cursor colours through $BE61 and call $BDA5. While it returns carry set, repeat; on carry clear return to the cursor and poll loop at $BD62."
   },
   {
    "address": 48549,
    "type": "line",
-   "text": "Call the input sampler; return carry set if any of $73, $74 or $70 is zero, otherwise return carry clear. The sampler’s physical control mapping is separate."
+   "text": "Call the input sampler at $3C4C; return carry set if any of $73, $74 or $70 is zero, that is while the stick is pushed left or right or fire is pressed (joystick port 2, active low), otherwise return carry clear."
   },
   {
    "address": 48568,
@@ -8424,7 +8424,7 @@
   {
    "address": 48601,
    "type": "line",
-   "text": "Pass message pointer $BDED to the display routine, then continue into $BDE0. Message-display effects are separate."
+   "text": "Correct answer: pass message pointer $BDED (\"Well done, you knew that! Allowed to leave the pyramid!\") to $77E0, then continue into $BDE0, which calls $4B20 with A=4, reloads the entity index from $BE95 and jumps to $5DB9 with A=3."
   },
   {
    "address": 48608,
@@ -8444,12 +8444,12 @@
   {
    "address": 48696,
    "type": "line",
-   "text": "Pass message pointer $BE27 in X/Y to the display routine, then load entity index X from $BE95. Increment $1AB1,X, set $1B28,X to 30 and $1B17,X to 1, clear $1B06/$1AF5/$1AE4/$1AD3/$1AC2 at that index, and return. The message callback and natural reachability remain separate."
+   "text": "Wrong answer: pass message pointer $BE27 (\"Fool!!\") in X/Y to $77E0, then load entity index X from $BE95. Increment $1AB1,X from 2 to 3, set $1B28,X to 30 and $1B17,X to 1, clear $1B06/$1AF5/$1AE4/$1AD3/$1AC2 at that index, and return. The answer check jumps here at $BDCA for a negative cursor mode and at $BDD7 when the chosen bit differs."
   },
   {
    "address": 48737,
    "type": "line",
-   "text": "Call frame wait and HUD update. Fill colour RAM $D887–$D89A with 3, then add one to mode $BE8E and use that index in the start and end tables at $BE8F/$BE92. Patch the end into the comparison at $BE86 and write colour 1 from the chosen start through that end, inclusive. The index is not locally bounded; I/O must be visible for colour writes."
+   "text": "Call frame wait and HUD update. Fill colour RAM $D887–$D89A with 3, then add one to mode $BE8E and use that index in the start and end tables at $BE8F/$BE92. Patch the end into the comparison at $BE86 and write colour 1 from the chosen start through that end, inclusive. The quiz keeps the mode among $FF, 0 and 1 ($BD5F, $BD87, $BD97), so the index is 0 to 2."
   },
   {
    "address": 48782,
@@ -8459,27 +8459,27 @@
   {
    "address": 48783,
    "type": "line",
-   "text": "Captured cursor-start values $87, $8D and $94. The cursor-colour routine indexes them using mode plus one; other indexes are not locally bounded."
+   "text": "Cursor-start offsets $87, $8D and $94 for modes $FF, 0 and 1: the cursor-colour routine at $BE61 reads them at $BE7D with the mode plus one as index and writes colour 1 from $D800 plus that offset. The quiz keeps the mode among $FF, 0 and 1, and no instruction writes these bytes."
   },
   {
    "address": 48786,
    "type": "line",
-   "text": "Captured cursor-end values $8C, $93 and $9A. The cursor-colour routine indexes them using mode plus one and patches the selected value into its end comparison."
+   "text": "Cursor-end offsets $8C, $93 and $9A for modes $FF, 0 and 1: the cursor-colour routine at $BE61 reads them at $BE77 with the mode plus one as index and patches the selected value into its end comparison at $BE86."
   },
   {
    "address": 48789,
    "type": "line",
-   "text": "Entity index loaded by $BE38 after the message callback. Its ordinary-play range and writers remain open."
+   "text": "Entity index kept across the message calls: state 1 ($BC49) and state 2 ($BCDC) store X here, and state 1 at $BC5A, the finish at $BDE5 and the wrong-answer path at $BE3F reload it."
   },
   {
    "address": 48790,
    "type": "line",
-   "text": "Decrement $1B28,X. If the result is negative, enter the negative-timer path at $BED9. Otherwise call $792C and $732A. When the latter returns carry set, a zero or negative $1A6D,X jumps to $BDE0; a positive value calls $72FC, rotates A right through the returned carry into $1B17,X, increments $1AB1,X and returns. Callback effects are separate."
+   "text": "State 3 of the type-$1A handler: decrement $1B28,X. If the result is negative, enter the negative-timer path at $BED9. Otherwise call $792C and $732A. When the latter returns carry set, a zero or negative $1A6D,X jumps to $BDE0; a positive value calls $72FC, rotates A right through the returned carry into $1B17,X, increments $1AB1,X to 4 and returns. Carry clear goes to the contact path at $BEB8."
   },
   {
    "address": 48824,
    "type": "line",
-   "text": "Call $7227; if it returns carry set, call $5D7A with A=$08. If the current $1B28,X is 20, enter the frame-update path; otherwise return. Contact callback effects remain separate."
+   "text": "Call $7227; if it returns carry set, call $5D7A with A=$08. If the current $1B28,X is 20, enter the frame-update path at $BECA; otherwise return. State 3 branches here at $BEA1 when $732A returns carry clear."
   },
   {
    "address": 48842,
@@ -8494,7 +8494,7 @@
   {
    "address": 48883,
    "type": "line",
-   "text": "Reset entity countdown $1B28,X to 30. Call $3020, retain only bit 7 and store it in $1B17,X. A negative result chooses right position $BF0D; zero falls through to left position $BF02. The random helper supplies the bit; this sequence alone does not establish its distribution."
+   "text": "Reset entity countdown $1B28,X to 30. Call $3020, retain only bit 7 and store it in $1B17,X. A negative result chooses right position $BF0D; zero falls through to left position $BF02."
   },
   {
    "address": 48898,
@@ -8509,7 +8509,7 @@
   {
    "address": 48920,
    "type": "line",
-   "text": "With decimal mode clear, add 8 to entity base frame $19E5,X and store it at $19C3,X; clear carry again, add 2 and store that result at $19D4,X. If $1A8F,X is zero, decrement $1AB1,X and return. Otherwise pass A=$08 to $43F0 when $1B17,X is negative, or to $43A2 when it is nonnegative. Movement callback effects and ordinary-play reachability remain open."
+   "text": "State 4 of the type-$1A handler, which state 3 selects at $BEB1: with decimal mode clear, add 8 to entity base frame $19E5,X and store it at $19C3,X; clear carry again, add 2 and store that result at $19D4,X. If $1A8F,X is zero, decrement $1AB1,X back to 3 and return. Otherwise pass A=$08 to $43F0 when $1B17,X is negative, or to $43A2 when it is nonnegative."
   },
   {
    "address": 48959,

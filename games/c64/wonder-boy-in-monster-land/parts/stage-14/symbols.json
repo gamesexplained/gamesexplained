@@ -2792,7 +2792,7 @@
   },
   {
    "address": 39349,
-   "name": "visual_copy_boundary_99b5",
+   "name": "shop_input_held_set_carry",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5794,7 +5794,7 @@
   {
    "address": 39332,
    "type": "line",
-   "text": "Load 14: call the input sampler and return carry set if any of $73, $74 or $70 is zero; return carry clear if all are nonzero. Physical control mapping is owned by the sampler."
+   "text": "Load 14: call the input sampler at $3C4C and return carry set if any of $73, $74 or $70 is zero, carry clear if all are nonzero. The sampler reads joystick port 2 active-low, so carry is set while the stick is pushed left or right or fire is pressed."
   },
   {
    "address": 39349,
@@ -6919,22 +6919,22 @@
   {
    "address": 41884,
    "type": "line",
-   "text": "After calling $792C, load Y from $1AB1,X, read the split tables at $A3B1/$A3B8 and patch the low and high operands of the jump at $A3AE. The state index is not locally bounded."
+   "text": "Handler for entity types $06 and $14: the vectors at $7EDF/$7F0F point here for both. Call $792C, then read state $1AB1,X into Y, patch the jump at $A3AE from the split tables at $A3B1/$A3B8, and jump. The type's own code stores only 0 to 6 in that state, one for each table entry: 1 at $A3E4, 2 at $A422, 3 at $A448, 4 at $A4B4, 0 at $A4F6, and 5 or 6 at $A581; the record loader leaves it 0, and $447A clears it to 0 when a slot is freed or set up."
   },
   {
    "address": 41902,
    "type": "line",
-   "text": "Jump through the absolute operand patched at $A3A5 and $A3AB. The entry snapshot contains the placeholder $FF00; the target is patched from the split tables."
+   "text": "Jump through the absolute operand that STA $A3AF at $A3A5 and STA $A3B0 at $A3AB patch from the split tables at $A3B1/$A3B8, indexed by state $1AB1,X. The load holds the placeholder $FF00 there."
   },
   {
    "address": 41905,
    "type": "line",
-   "text": "Seven captured low bytes paired with the high bytes at $A3B8. The pairs target $A3BF, $A3F7, $A428, $A456, $A4CF, $A4FA and $A52A. The state index read at $A39F is not locally bounded."
+   "text": "Seven low bytes paired with the high bytes at $A3B8. The pairs target $A3BF, $A3F7, $A428, $A456, $A4CF, $A4FA and $A52A, the handlers for states 0 to 6. The dispatcher at $A39C reads them at $A3A2 with Y = state $1AB1,X, which the type's own code keeps between 0 and 6."
   },
   {
    "address": 41912,
    "type": "line",
-   "text": "Seven captured high bytes paired with the low bytes at $A3B1. The pairs target $A3BF, $A3F7, $A428, $A456, $A4CF, $A4FA and $A52A. The state index read at $A39F is not locally bounded."
+   "text": "Seven high bytes paired with the low bytes at $A3B1. The pairs target $A3BF, $A3F7, $A428, $A456, $A4CF, $A4FA and $A52A, the handlers for states 0 to 6. The dispatcher at $A39C reads them at $A3A8 with Y = state $1AB1,X, which the type's own code keeps between 0 and 6."
   },
   {
    "address": 41919,
@@ -6984,12 +6984,12 @@
   {
    "address": 42312,
    "type": "line",
-   "text": "Increment $1AC2,X, reset it to zero when it reaches 8, and use it to select an offset at $A59E. Add that offset, $19E5,X and $1AD3,X with eight-bit wrap and store the result in $19C3,X. If $1A29,X is zero, return. Otherwise call $732A: on carry set, a positive nonzero $1A6D,X saves $19F6,X to $1AC2,X and selects state 5; zero or negative sets $1AC2,X to $0A and selects state 6. Both paths pop two stack bytes before returning, so they can bypass a caller’s continuation. On carry clear, call $7227; if it returns carry set, call $5D7A with A=$02 and jump to $A4AB, otherwise return. The animation index has no local bounds check before the table read."
+   "text": "Increment $1AC2,X, reset it to zero when it reaches 8, and use it to select an offset at $A59E. Add that offset, $19E5,X and $1AD3,X with eight-bit wrap and store the result in $19C3,X. If $1A29,X is zero, return. Otherwise call $732A: on carry set, a positive nonzero $1A6D,X saves $19F6,X to $1AC2,X and selects state 5; zero or negative sets $1AC2,X to $0A and selects state 6. Both paths pop two stack bytes before returning, so they can bypass a caller’s continuation. On carry clear, call $7227; if it returns carry set, call $5D7A with A=$02 and jump to $A4AB, otherwise return. The index is 0 to 7 at the table read: the slot starts with $1AC2,X cleared, this routine wraps 8 to 0, and state 5 clears it again after holding $19F6,X there; state 6, which counts it down from $0A, never calls this routine."
   },
   {
    "address": 42398,
    "type": "line",
-   "text": "Eight captured animation offsets: $00, $00, $02, $02, $04, $04, $02, $02. The shared routine at $A548 indexes this table after incrementing $1AC2,X; only the equality with 8 resets the index, so other initial values are not locally bounded."
+   "text": "Eight animation offsets: $00, $00, $02, $02, $04, $04, $02, $02. The shared routine at $A548 reads them at $A558 with Y = $1AC2,X after incrementing it and wrapping 8 to 0. The index is always 0 to 7 there: the slot starts with it cleared, and state 5 clears it again after holding $19F6,X there."
   },
   {
    "address": 42406,

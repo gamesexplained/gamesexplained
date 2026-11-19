@@ -1794,7 +1794,7 @@
   },
   {
    "address": 37697,
-   "name": "copied_charset_boundary_9341",
+   "name": "trigger_callback_saved_x",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1812,7 +1812,7 @@
   },
   {
    "address": 37777,
-   "name": "copied_charset_boundary_9391",
+   "name": "quest_gate_flag_two",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1824,7 +1824,7 @@
   },
   {
    "address": 37857,
-   "name": "copied_charset_boundary_93e1",
+   "name": "quest_scroll_underflow",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2418,7 +2418,7 @@
   },
   {
    "address": 41724,
-   "name": "type0b_position_near",
+   "name": "type0b_frame_near",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2484,7 +2484,7 @@
   },
   {
    "address": 42061,
-   "name": "type0b_position_from_direction",
+   "name": "type0b_frame_from_direction",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3573,7 +3573,7 @@
   {
    "address": 37747,
    "type": "line",
-   "text": "Save incoming X in the immediate operand at $938A. Test the selected player ($4DBD) flags at $4DE2,Y masked by 7. Values other than 2 show message $93FC, restore X and clear $487F,X. With value 2, equal $7F4A/$7F4B increments $487F,X and returns; unequal bytes enter $93A0. Forced simulator and VICE calls checked these branches with display callbacks replaced. Ordinary-play entry remains open."
+   "text": "Trigger record 3 at $9330 names this as its callback: $48BF jumps here with the trigger index in X, after decrementing its remaining count $487F,X, when the view tile is column $4E, row 4. Save X in the immediate operand at $938A. Test the selected player’s ($4DBD) flags at $4DE2,Y masked by 7. Values other than 2 show message $93FC (“Nice View.”), restore X and clear $487F,X, so the trigger stays off. With value 2, equal $7F4A/$7F4B increments $487F,X, re-arming the trigger, and returns; unequal bytes enter $93A0."
   },
   {
    "address": 37777,
@@ -3583,7 +3583,7 @@
   {
    "address": 37792,
    "type": "line",
-   "text": "Copy $7F4A to $7F4B, write $FE to sound request $2C15, show message $940F and set $4DB4 to 15 minus $527D (binary subtraction modulo 256). Call $0C2C and the loop at $93BB. Each pass calls $3C2A/$370B/$6E12/$1B5B and sets $4A=$8E; if $47 is below $AB, exit at $93F3. Otherwise decrement $47 and $4D6A; a nonnegative fine value loops, while underflow calls $2C8D, resets the fine value to 7 and calls $3033 before looping. Exit restores X and writes sound request 1. Forced tests stubbed those callbacks and checked $47=$AA/$AB and fine values 0/4."
+   "text": "The gate at $9373 enters here when the selected player’s flags masked by 7 are 2 and $7F4A differs from $7F4B. Copy $7F4A to $7F4B, write $FE to sound request $2C15, show message $940F (“You tried playing / the flute...”) and set $4DB4 to 15 minus $527D (binary subtraction modulo 256). Call $0C2C and the loop at $93BB. Each pass calls $3C2A/$370B/$6E12/$1B5B and sets $4A=$8E; if $47 is below $AB, exit at $93F3. Otherwise decrement $47 and $4D6A; a nonnegative fine value loops, while underflow stores 0, calls $2C8D, resets the fine value to 7 and calls $3033 before looping. Exit restores X and writes sound request 1."
   },
   {
    "address": 37857,
@@ -3628,17 +3628,17 @@
   {
    "address": 38058,
    "type": "line",
-   "text": "Object record 2 at $9440 stores this callback address in its eleventh/twelfth bytes. Select player Y=$4DBD and test $4DE2,Y masked by 7. A value other than 2 calls $77E2 with A=$16, then tail-calls it with A=X=Y=0. Value 2 replaces the low three flag bits with 3, preserving the upper five, and shows messages $955C/$9590/$95C3 followed by pointer zero through $77E0. Copy 72 bytes from $9514 to $CCD0–$CD17, then three 3-byte colour rows from $950B/$950E/$9511 to $5023/$5038/$504D. Simulator tests checked all 256 flags for both player slots; six VICE cases checked flags 0/2/$82 with message callbacks stubbed. The texts concern a charm, the Great Eel and an emblem; the flags alone do not identify a weapon."
+   "text": "Object record 2 at $9440 names this as its callback in bytes 10–11. Select player Y=$4DBD and test $4DE2,Y masked by 7. A value other than 2 calls $77E2 with A=$16, built-in message 22 (“There's nothing / to tell you about”), then tail-calls it with A=X=Y=0. Value 2 replaces the low three flag bits with 3, preserving the upper five, and shows messages $955C, $9590 and $95C3 (give the charm to the Great Eel, who will replace it with the emblem; the Dragon is a formidable enemy) followed by pointer zero through $77E0. Copy the 72 bytes at $9514 to $CCD0–$CD17, characters $9A–$A2 of the character set at $C800 that make the status panel’s item icon, then three 3-byte colour rows from $950B/$950E/$9511 to $5023/$5038/$504D, the icon’s colour cells."
   },
   {
    "address": 38155,
    "type": "line",
-   "text": "Three three-byte colour rows consumed by the loop at $94F3: $950B–$950D go to $5023–$5025, $950E–$9510 to $5038–$503A and $9511–$9513 to $504D–$504F. The first row is $0E,$0F,$0F and the other rows contain $0F. Six forced VICE cases checked the copy on accepted flag values and its absence on rejected values."
+   "text": "Three three-byte colour rows that the loop at $94F3 copies to the status panel’s colour storage: $950B–$950D to $5023–$5025, $950E–$9510 to $5038–$503A and $9511–$9513 to $504D–$504F, the colour cells of the item icon whose characters $94E8 replaces. The first row is $0E,$0F,$0F and the other rows hold $0F. The copy runs only when the selected player’s flags masked by 7 are 2."
   },
   {
    "address": 38164,
    "type": "line",
-   "text": "Nine consecutive eight-byte glyphs copied by $94E8–$94F1 to $CCD0–$CD17, descending from offset 71 to zero. In a character set based at $C800 these occupy codes $9A–$A2. The copy follows the charm/emblem messages; naming the resulting picture requires identifying its displayed cells. Simulator and VICE checked all 72 destination bytes on the accepted path."
+   "text": "Nine eight-byte characters that $94E8–$94F1 copy, from offset 71 down to zero, to $CCD0–$CD17: characters $9A–$A2 of the character set at $C800, the picture of the status panel’s item icon. The renderer at $4160 places those nine codes three wide and three high in the panel while the low three bits of $4DE2,Y are nonzero. The copy runs only when those bits are 2, and $94C2 sets them to 3 first."
   },
   {
    "address": 38236,
@@ -3953,22 +3953,22 @@
   {
    "address": 41123,
    "type": "line",
-   "text": "Absolute jump whose low and high operands at $A0A4/$A0A5 are patched from the state tables before execution. The entry snapshot contains placeholder $FF00; controlled dispatch tests reach the four captured targets."
+   "text": "Absolute jump whose operand at $A0A4/$A0A5 the dispatcher at $A094 patches from the state tables at $A0A6/$A0AA before each run, with $1AB1,X as index: states 0–3 go to $A0AE, $A0E7, $A1DF and $A203. The load holds $FF00 in the operand."
   },
   {
    "address": 41126,
    "type": "line",
-   "text": "Four captured low bytes of state-handler addresses, paired with high bytes at $A0AA. The pairs target $A0AE, $A0E7, $A1DF, $A203. The state index has no local bounds check."
+   "text": "Four low bytes of state-handler addresses, paired with the high bytes at $A0AA: $A0AE, $A0E7, $A1DF and $A203, the handlers for states 0 to 3. The dispatcher at $A094, which the vectors for types $09 and $1C point to, reads them at $A097 with Y = state $1AB1,X. The record loader starts each entity at state 0, and the type's own code stores only 1 ($A0E4, $A1EB), 2 ($A195) and 3 ($A1AE)."
   },
   {
    "address": 41130,
    "type": "line",
-   "text": "Four captured high bytes paired with the low bytes at $A0A6. The pairs target $A0AE, $A0E7, $A1DF, $A203."
+   "text": "Four high bytes paired with the low bytes at $A0A6: $A0AE, $A0E7, $A1DF and $A203, the handlers for states 0 to 3. The dispatcher at $A094 reads them at $A09D with Y = state $1AB1,X."
   },
   {
    "address": 41134,
    "type": "line",
-   "text": "Load 22, state 0: set $1A07,X to 7 and call $71DB. Save its returned X and Y in the immediate operands at $A0BE/$A0C6, then restore the entity index from A. Store returned X minus 4 at $1AC2,X and returned Y minus 2 at $1AD3,X, both with eight-bit wrap. Call $3020: if its returned negative flag is set, store $FD at $1AE4,X; otherwise store $03. Call $3020 again, store its low nibble at $1AF5,X and increment $1AB1,X. Execution falls through to state 1 at $A0E7; the caller’s possible state indexes and natural reachability are not locally established."
+   "text": "Load 22, state 0: set $1A07,X to 7 and call $71DB. Save its returned X and Y in the immediate operands at $A0BE/$A0C6, then restore the entity index from A. Store returned X minus 4 at $1AC2,X and returned Y minus 2 at $1AD3,X, both with eight-bit wrap. Call $3020: if its returned negative flag is set, store $FD at $1AE4,X; otherwise store $03. Call $3020 again, store its low nibble at $1AF5,X and increment $1AB1,X. Execution falls through to state 1 at $A0E7. The dispatcher at $A094 jumps here when state $1AB1,X is 0, as the record loader leaves it."
   },
   {
    "address": 41191,
@@ -3998,7 +3998,7 @@
   {
    "address": 41285,
    "type": "line",
-   "text": "Read $1AE4,X. For a negative value, form its two’s-complement magnitude, call $4342 with that value in A and continue at $A158. For a nonnegative value, call $4368 with A unchanged before continuing. The external routines’ effects are separate from this trace."
+   "text": "Read $1AE4,X. For a negative value, form its two’s-complement magnitude and call $4342, which moves the entity up by A, then continue at $A158. For a nonnegative value, call $4368, which moves it down by A, before continuing."
   },
   {
    "address": 41304,
@@ -4023,7 +4023,7 @@
   {
    "address": 41394,
    "type": "line",
-   "text": "Call $7227. Return if carry is clear; if carry is set, jump to $5D7A with A=2. The external routines’ behavior is separate from this local control flow."
+   "text": "Call $7227, the player overlap and recoil test. Return if carry is clear; if carry is set, jump to $5D7A, which damages the player, with A=2. State 1 comes here when $732A returns carry clear."
   },
   {
    "address": 41405,
@@ -4033,7 +4033,7 @@
   {
    "address": 41439,
    "type": "line",
-   "text": "Load 22, state 2: if $1A8F,X is zero, clear $1AF5,X, set $1AB1,X to 1 and jump to state 1 at $A0E7. Otherwise call the shared routine at $A224, then inspect $1B06,X: a negative value jumps to $4574 with A=$0A, and a nonnegative value jumps to $45BC with A=$0A. Ordinary reachability and the external callbacks are not established by this local trace."
+   "text": "Load 22, state 2: if $1A8F,X is zero, clear $1AF5,X, set $1AB1,X to 1 and jump to state 1 at $A0E7. Otherwise call the shared routine at $A224, then inspect $1B06,X: a negative value jumps to the move right $4574 with A=$0A, and a nonnegative value jumps to the move left $45BC with A=$0A. The contact check at $A190 selects this state when $732A returns carry set and $1A6D,X is positive, after rotating the $72FC carry into $1B06,X."
   },
   {
    "address": 41475,
@@ -4043,12 +4043,12 @@
   {
    "address": 41508,
    "type": "line",
-   "text": "Load 22: decrement $1B28,X; if the result is odd, return carry clear without changing the frame. Otherwise form $19E5,X plus 4 plus twice bit 0 of $1B17,X, with eight-bit wrap. If $1AF5,X is nonnegative, add 8 with wrap; if that addition produces zero, return carry set without storing the frame or decrementing $1B17,X. Otherwise store the resulting frame at $19C3,X and decrement $1B17,X. If its result has the sign bit set, replace it with 6 and return carry set; otherwise return carry clear. The entry’s callers and ordinary-play reachability are not established here."
+   "text": "Load 22: decrement $1B28,X; if the result is odd, return carry clear without changing the frame. Otherwise form $19E5,X plus 4 plus twice bit 0 of $1B17,X, with eight-bit wrap. If $1AF5,X is nonnegative, add 8 with wrap; if that addition produces zero, return carry set without storing the frame or decrementing $1B17,X. Otherwise store the resulting frame at $19C3,X and decrement $1B17,X. If its result has the sign bit set, replace it with 6 and return carry set; otherwise return carry clear. States 2 and 3 call it, at $A1F1 and $A203."
   },
   {
    "address": 41563,
    "type": "line",
-   "text": "Load 22: type-$0B calls $A468; if that returns, it uses $1AB1,X as an index into split target tables at $A270/$A277 and patches the jump at $A26D. Seven captured target pairs follow; this dispatcher does not bound the index."
+   "text": "Load 22: the type-$0B handler first calls the event helper at $A468, which may change the state, then uses $1AB1,X as an index into split target tables at $A270/$A277, patches the jump at $A26D and takes it. The type’s own code stores only 1 to 6 in that state (1 at $A2A3 and $A3DC, 2 at $A33F, 3 at $A2F1, 4 at $A375, 5 or 6 at $A495), and at $A421 restores the state the helper saved at $A48B. The load’s only type-$0B entity is made by $9450, which object record 1 names, after $447A has cleared the slot’s state to 0."
   },
   {
    "address": 41581,
@@ -4058,12 +4058,12 @@
   {
    "address": 41584,
    "type": "line",
-   "text": "Seven captured low bytes paired with high bytes at $A277: $A27E, $A2A6, $A342, $A380, $A3BB, $A3EF, $A425."
+   "text": "Seven low bytes paired with the high bytes at $A277: $A27E, $A2A6, $A342, $A380, $A3BB, $A3EF and $A425, the handlers for states 0 to 6. The dispatcher at $A25B reads them at $A261 with Y = state $1AB1,X."
   },
   {
    "address": 41591,
    "type": "line",
-   "text": "Seven captured high bytes paired with low bytes at $A270: $A27E, $A2A6, $A342, $A380, $A3BB, $A3EF, $A425."
+   "text": "Seven high bytes paired with the low bytes at $A270: $A27E, $A2A6, $A342, $A380, $A3BB, $A3EF and $A425, the handlers for states 0 to 6. The dispatcher at $A25B reads them at $A267 with Y = state $1AB1,X."
   },
   {
    "address": 41598,
@@ -4078,7 +4078,7 @@
   {
    "address": 41675,
    "type": "line",
-   "text": "Otherwise clear $1B17,X and call $43A2 for a negative direction or $43F0 otherwise, with $1AD3,X in A. Call $3020; if its result is at least $F0, save the direction at $A4B2,X, select state 3, set $1AE4,X=10 and tail-jump to the position helper at $A435."
+   "text": "Otherwise clear $1B17,X and call $43A2 for a negative direction or $43F0 otherwise, with $1AD3,X in A. Call $3020; if its result is at least $F0, save the direction at $A4B2,X, select state 3, set $1AE4,X=10 and tail-jump to the frame setter at $A435, which sets $19C3,X to $19E5,X plus 14, plus another 18 when the direction byte at $A4D4 is negative, and $19D4,X to that frame plus 2; otherwise return."
   },
   {
    "address": 41724,
@@ -4103,7 +4103,7 @@
   {
    "address": 41819,
    "type": "line",
-   "text": "If $1B06,X remains nonnegative, toggle bit 7 of $1AE4,X, call $3020, store its low three bits in $1AF5,X and take the movement path. Otherwise select state 4, set $1AE4,X=5 and tail-jump to the position helper at $A435."
+   "text": "Decrement $1B06,X. If it remains nonnegative, toggle bit 7 of $1AE4,X, call $3020, store its low three bits in $1AF5,X and take the movement path. Otherwise select state 4, set $1AE4,X=5 and tail-jump to the frame setter at $A435, which sets $19C3,X to $19E5,X plus 14, plus another 18 when the direction byte at $A4D4 is negative, and $19D4,X to that frame plus 2."
   },
   {
    "address": 41856,
@@ -4113,7 +4113,7 @@
   {
    "address": 41901,
    "type": "line",
-   "text": "Load $1AD3,X into A and tail-jump to $43A2 when $A4D4 is negative, otherwise $43F0. Indexed source bounds and ordinary-play reachability remain open."
+   "text": "Load $1AD3,X into A and tail-jump to $43A2 when $A4D4 is negative, otherwise $43F0. State 3 jumps here from $A393 after its upward move and falls in from $A3AA; $A4D4 then holds the direction state 3 copied from $A4B2,X."
   },
   {
    "address": 41915,
@@ -4128,7 +4128,7 @@
   {
    "address": 42021,
    "type": "line",
-   "text": "Decrement $1AC2,X and return if the result is nonnegative. If negative, call $4B20 with A=3, load A=2 and jump to $5DB9. The preliminary helper also writes $1AC2,X before the dispatcher; ordinary-play behavior depends on that path."
+   "text": "Decrement $1AC2,X and return if the result is nonnegative. If negative, call $4B20 with A=3, load A=2 and jump to $5DB9. The event helper at $A468, which the dispatcher calls before this handler on every pass, stores the rotated $A4D4 in $1AC2,X at $A471, so after the pass that selects state 6 the value decremented here is that rotated byte, not the 10 stored at $A49B."
   },
   {
    "address": 42037,
@@ -4158,17 +4158,17 @@
   {
    "address": 42162,
    "type": "line",
-   "text": "Load 22: seventeen-byte type-$0B working array of direction values, beginning at $A4B2. The movement path loads a value indexed by entity X into the direction scratch byte; its sign selects the horizontal movement helper. The indexed accesses do not locally bound X. Captured initial bytes need not describe a freshly initialized object. Direct reference sites: $A2EC (STA), $A380 (LDA)."
+   "text": "Load 22: seventeen-byte type-$0B working array of direction values, one per entity slot, at $A4B2–$A4C2. When state 1 selects state 3 it stores the direction byte $A4D4 here ($A2EC), and state 3 copies it back to $A4D4 ($A380), whose sign selects the horizontal move. State 3 is selected only after that store, so the bytes in the load are never read."
   },
   {
    "address": 42179,
    "type": "line",
-   "text": "Load 22: seventeen-byte type-$0B working array of saved state values, beginning at $A4C3. The contact path stores the entity’s previous $1AB1,X state here, and the delayed-return path reads it back after $1B28,X becomes negative. The indexed accesses do not locally bound X. Captured initial bytes need not describe a freshly initialized object. Direct reference sites: $A41E (LDA), $A48B (STA)."
+   "text": "Load 22: seventeen-byte type-$0B working array of saved states, one per entity slot, at $A4C3–$A4D3. The event helper stores the slot’s state $1AB1,X here ($A48B) when it selects state 5, and state 5 restores it ($A41E) once $1B28,X goes negative. State 5 is selected only after that store, so the bytes in the load are never read."
   },
   {
    "address": 42196,
    "type": "line",
-   "text": "Working byte rotated through carry by the preliminary helper, then copied to $1AC2,X."
+   "text": "Working direction byte. The event helper rotates the $72FC carry into it ($A46B) and copies it to $1AC2,X; state 0 sets it to $FF ($A29B), $A44D and state 5 copy $1AC2,X into it ($A450, $A3F7), state 2 copies $1AE4,X ($A34A) and state 3 copies $A4B2,X ($A383). Its sign, tested with BIT at $A2B1, $A2D3, $A2FF, $A350, $A3B0, $A3C4, $A3FD, $A413, $A438 and $A456, chooses the horizontal move and the frame offset, and state 1 saves it to $A4B2,X ($A2E9)."
   },
   {
    "address": 42197,
