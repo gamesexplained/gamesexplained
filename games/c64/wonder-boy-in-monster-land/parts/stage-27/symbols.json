@@ -2731,7 +2731,7 @@
   },
   {
    "address": 37217,
-   "name": "copied_charset_boundary_9161",
+   "name": "shop_second_price_fallback",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2797,7 +2797,7 @@
   },
   {
    "address": 37401,
-   "name": "copied_charset_boundary_9219",
+   "name": "shop_prepare_item_drawing",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2947,7 +2947,7 @@
   },
   {
    "address": 37849,
-   "name": "copied_charset_boundary_93d9",
+   "name": "shop_cursor_tail_jump",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2995,7 +2995,7 @@
   },
   {
    "address": 37971,
-   "name": "charset_bytes_9453",
+   "name": "shop_price_cells_end_byte",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3019,7 +3019,7 @@
   },
   {
    "address": 37977,
-   "name": "copied_charset_boundary_9459",
+   "name": "shop_timeout_countdown",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3037,7 +3037,7 @@
   },
   {
    "address": 37980,
-   "name": "character_copy_fragment_945c",
+   "name": "shop_item_index_offsets",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3175,7 +3175,7 @@
   },
   {
    "address": 38297,
-   "name": "copied_charset_boundary_9599",
+   "name": "shop_message_12_tail",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3211,7 +3211,7 @@
   },
   {
    "address": 38385,
-   "name": "copied_charset_boundary_95f1",
+   "name": "shop_item_message_95e6_tail",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -4453,7 +4453,7 @@
   },
   {
    "address": 44363,
-   "name": "charset_bytes_ad4b",
+   "name": "type03_movement_table_06",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5649,12 +5649,12 @@
   {
    "address": 36815,
    "type": "line",
-   "text": "Load 27: mutable index for the six-byte gate pattern at $8FD0. The entry snapshot holds zero. The update routine increments it and resets it on reaching 6, but does not locally bound its value before indexing."
+   "text": "Load 27: index into the six-byte gate pattern at $8FD0, $00 in the load. The update routine at $8FA1, which the load’s update vector at $7F3F names, reads it at $8FB3 and stores it back at $8FC2 after incrementing it and resetting 6 to 0, so it stays between 0 and 5; when $4DB6 or $4DB3 is nonzero the routine leaves it unchanged. No other instruction reads or writes it."
   },
   {
    "address": 36816,
    "type": "line",
-   "text": "Load 27: six captured gate values $FF, $00, $00, $FF, $00, $00, indexed by the mutable byte at $8FCF. The update routine writes the selected value to $E1 when both tested motion-state bytes are zero."
+   "text": "Load 27: six gate values, $FF, $00, $00, $FF, $00 and $00, read in turn through the index at $8FCF, which steps through 0 to 5. The update routine at $8FA1 copies the selected value to $E1 when $4DB6 and $4DB3 are both zero, and stores $FF there otherwise. The resident right and left speed updates at $0E58 and $0FF2 return at once when $E1 is zero, so while those two bytes are zero they run on two passes in six."
   },
   {
    "address": 36822,
@@ -5749,27 +5749,27 @@
   {
    "address": 37029,
    "type": "line",
-   "text": "Two jump entries: the first enters setup at $90AB, and the second jumps to $91CB. The second entry was not exercised in the setup tests. These bytes can also overlap captured character or graphics sources."
+   "text": "Two jump entries: $90A5 enters the price setup at $90AB, and $90A8 jumps to the item-pair setup at $91CB. Load 27’s stage records 1 and 2 at $901E and $902E both name $90A8 as their callback, and no record or instruction in load 27 or in the resident part names $90A5, so the price path from $90AB does not run in this load. The map's eight-page character copy, which starts at $8DF1, also takes these six bytes, to $D2B4–$D2B9."
   },
   {
    "address": 37035,
    "type": "line",
-   "text": "Write $46 plus 1 modulo 256 to $940A and $9454, set sound state $2C15 to 2, and use stage index $7B to format fields $4783,X and $4789,X through $910E for destination selectors $9B and $AF. The formatter’s display callback was stubbed in the controlled checks."
+   "text": "Write $46 plus 1 modulo 256 to the high address byte at $940A of the digit store at $9408 and to the layout gate at $9454, set sound state $2C15 to 2, and use stage index $7B to format fields $4783,X and $4789,X through $910E with Y=$9B and Y=$AF as the screen offsets of their last digits. Load 27 never runs this path: it is reached only through the entry at $90A5, which no stage record or instruction in the load or the resident part names."
   },
   {
    "address": 37067,
    "type": "line",
-   "text": "Use selected-player index $4DBD. If $4DC7,Y is nonzero, or if $4DC9,Y is at least stage field $4789,X under an unsigned byte comparison, go to $90F9. Otherwise inspect stage field $4753,X. These tests do not establish which values occur in ordinary play."
+   "text": "Use selected-player index $4DBD. If $4DC7,Y is nonzero, or if $4DC9,Y is at least stage field $4789,X under an unsigned byte comparison, go to $90F9. Otherwise inspect stage field $4753,X. Load 27 never runs this path: it is reached only through the entry at $90A5, which no stage record or instruction in the load or the resident part names."
   },
   {
    "address": 37092,
    "type": "line",
-   "text": "For stage field 3, or another even value, select message $9543 and jump to $9395. The destination’s display behavior is separate."
+   "text": "Reached when stage field $4753,X is 3 or has bit 0 clear: select message $9543 and jump to the message call at $9395. Load 27 never runs this path: it is reached only through the entry at $90A5, which no stage record or instruction in the load or the resident part names."
   },
   {
    "address": 37099,
    "type": "line",
-   "text": "Test bit 0 of the stage field. A clear bit selects $9543; a set bit calls $93DC, then selects $952D. The called gate was stubbed in the controlled checks."
+   "text": "Reached when stage field $4753,X is not 3: test its bit 0. A clear bit selects message $9543; a set bit calls $93DC, which stores $FF in $4753,X, then selects message $952D and jumps to the message call at $9395. Load 27 never runs this path: it is reached only through the entry at $90A5, which no stage record or instruction in the load or the resident part names."
   },
   {
    "address": 37113,
@@ -5779,7 +5779,7 @@
   {
    "address": 37134,
    "type": "line",
-   "text": "Save X and Y in immediate operands, call $36E9 to split A into nibbles plus one, clear the first two bytes at $944F, and write the tens and units codes to the next two bytes. A tens code of 1 is written as zero. Restore Y, call $93F6, restore X and return. The display callback was stubbed in the controlled checks."
+   "text": "Save X in the immediate operand at $9136 and Y in the one at $9131, call $36E9 to split A into nibbles plus one, clear the first two bytes at $944F, and write the tens and units codes to the next two bytes. A tens code of 1 is written as zero. Restore Y, call $93F6, restore X and return. Load 27 never runs it: its only callers, at $90C0 and $90C8, are on the price setup, reached only through the entry at $90A5, which nothing in the load or the resident part names."
   },
   {
    "address": 37169,
@@ -5789,7 +5789,7 @@
   {
    "address": 37176,
    "type": "line",
-   "text": "The incoming processor flags select the path: negative enters the first-price balance check at $916A; zero selects a message at $91B8; otherwise use the second-price path at $913C. The controlled cases set these flags directly, so ordinary-play choice mapping remains open."
+   "text": "The flags come from the selection byte $9455, loaded at $9321 before the only jump here ($9324, taken when the layout gate $9454 is nonzero): negative ($FF, left) enters the first-price balance check at $916A; zero selects message $9516 at $91B8; otherwise (1, right) take the second-price path at $913C. Load 27 never runs it: it needs a nonzero layout gate $9454, and in load 27 only the item-pair setup, which stores zero there, runs."
   },
   {
    "address": 37180,
@@ -5819,7 +5819,7 @@
   {
    "address": 37288,
    "type": "line",
-   "text": "Push A, call $77E0 with the selected message pointer and pull A. Continue at $91AD; the message routine was stubbed."
+   "text": "Push A, call $77E0 with the message pointer in X/Y and pull A, then continue at $91AD, which adds A to the player’s meter through $77A9. The second-price fallback jumps here from $9167 with A=4 and message $9584; the first-price fallback falls in from $91A2 with A=8 and message $959F. Load 27 never runs it: it needs a nonzero layout gate $9454, and in load 27 only the item-pair setup, which stores zero there, runs."
   },
   {
    "address": 37293,
@@ -5829,22 +5829,22 @@
   {
    "address": 37304,
    "type": "line",
-   "text": "Load the message pointer encoded here and jump to $9395. This branch was reached by forcing the incoming zero flag."
+   "text": "Load X/Y with message pointer $9516 and jump to the message call at $9395. $913A branches here when the selection byte read at $9321 is zero. Load 27 never runs it: it needs a nonzero layout gate $9454, and in load 27 only the item-pair setup, which stores zero there, runs."
   },
   {
    "address": 37311,
    "type": "line",
-   "text": "Reload stage index, decrement $4753,X, load the message pointer encoded here and jump to $9395. Its ordinary caller was not exercised by the choice tests."
+   "text": "Reload stage index, decrement $4753,X, load message pointer $9560 in X/Y and jump to the message call at $9395. The only jump here is from the timeout path at $92CD, taken when the layout gate $9454 is nonzero. Load 27 never runs it: it needs a nonzero layout gate $9454, and in load 27 only the item-pair setup, which stores zero there, runs."
   },
   {
    "address": 37323,
    "type": "line",
-   "text": "Store zero at $9454, set sound state $2C15 to 2, and set $4D69 to 7. Reload stage index from $7B and continue to the item-pair selection. The later drawing paths start at $9219 and are separate."
+   "text": "Store zero at the layout gate $9454, set sound state $2C15 to 2, and set $4D69 to 7. Reload stage index from $7B and continue to the item-pair selection at $91DC. The jump entry at $90A8 leads here. Both of load 27’s shop records, at $901E and $902E, name that entry."
   },
   {
    "address": 37340,
    "type": "line",
-   "text": "Read $476B,X. If nonzero, pass it and $4771,X separately through the conditional-item resolver at $93A4; store the returned values at $945A/$945B, then jump to $9219. Four forced VICE inputs per load checked this and the implicit path with the real resolver."
+   "text": "Read $476B,X. If nonzero, pass it and $4771,X separately through the conditional-item resolver at $93A4; store the returned values at $945A/$945B, then jump to $9219. If zero, branch to the implicit pair at $91F5. Load 27’s record 2 at $902E takes the explicit pair, with $15 and $16; record 1 at $901E has zero there and takes the implicit pair."
   },
   {
    "address": 37365,
@@ -5864,7 +5864,7 @@
   {
    "address": 37420,
    "type": "line",
-   "text": "Call the patched target with A=$E4. Then read the first item byte at $945A, multiply it by eight modulo 256 and patch a second JSR from the same pointer table. Controlled checks replaced both selected targets with logging stubs; actual drawing effects remain separate."
+   "text": "Call the patched target with A=$E4. Then read the first item byte at $945A, multiply it by eight modulo 256 and patch the JSR operand at $9247/$9248 from the same pointer table."
   },
   {
    "address": 37428,
@@ -5874,7 +5874,7 @@
   {
    "address": 37444,
    "type": "line",
-   "text": "Call the second patched target with A=$D0, then set the temporary row counter at $97AA to 3 and begin filling colour RAM. The target was replaced with a logging stub in the controlled checks."
+   "text": "Call the second patched target with A=$D0, then set the temporary row counter at $97AA to 3 and begin filling colour RAM."
   },
   {
    "address": 37456,
@@ -5884,22 +5884,22 @@
   {
    "address": 37480,
    "type": "line",
-   "text": "Store $46 plus one modulo 256 at $940A. Pass the first selected item at $945A to $9411, then call $93F6 with Y=$73. Repeat for the second item at $945B with Y=$87. The format and display callbacks were stubbed in the controlled tests."
+   "text": "Store $46 plus one modulo 256 at $940A. Pass the first selected item at $945A to $9411, then call $93F6 with Y=$73. Repeat for the second item at $945B with Y=$87."
   },
   {
    "address": 37512,
    "type": "line",
-   "text": "Call $77E0 with the message pointer selected by the preceding path, then fall through to the mode and countdown initializer at $928B. The ordinary label path loads $9461; earlier branches can supply other pointers. The message callback was stubbed in the controlled tests."
+   "text": "Call $77E0 with the message pointer selected by the preceding path, then fall through to the mode and countdown initializer at $928B. The item-pair path loads $9461; the price path jumps here from $9104 or $910B with $94EF or $94D8. Only the item-pair path runs in load 27."
   },
   {
    "address": 37515,
    "type": "line",
-   "text": "Store 0 in the shop mode byte at $9455, store $DC in the countdown at $9459, and fall through to the wait path at $9295. Starting from 0, the captured left and right handlers keep the mode among $FF, $00 and $01 if no other code changes it."
+   "text": "Store 0 in the selection byte at $9455, store $DC in the countdown at $9459, and fall through to the wait path at $9295. Besides this store, only the left and right handlers write the selection byte, and they keep it among $FF, 0 and 1."
   },
   {
    "address": 37525,
    "type": "line",
-   "text": "Call $3C2A, decrement the shop countdown at $9459 and branch to $92C8 when it becomes zero. Otherwise call $370B, $93CC and $93B9; on set carry, repeat this path. On clear carry, fall through to $92A8. Starting from the initialized $DC and holding the tested branches, zero is reached after 220 calls to $3C2A."
+   "text": "Call $3C2A, decrement the shop countdown at $9459 and branch to $92C8 when it becomes zero. Otherwise call $370B, $93CC and $93B9; on set carry, repeat this path. On clear carry, fall through to $92A8. Starting from the initialized $DC, the countdown reaches zero on the 220th call to $3C2A, counting the calls of this loop and of the one at $92A8 together."
   },
   {
    "address": 37544,
@@ -5914,7 +5914,7 @@
   {
    "address": 37576,
    "type": "line",
-   "text": "If $9454 is nonzero, jump to $91BF. Otherwise load X from $7B, store $FF at $4753,X, load X/Y with message pointer $9496, and jump to the $77E0 call at $9395. The selector used by $77E0 and natural timeout reachability remain open."
+   "text": "Reached when the countdown at $9459 reaches zero. If $9454 is nonzero, jump to $91BF. Otherwise load X from $7B, store $FF at $4753,X, load X/Y with message pointer $9496, and jump to the $77E0 call at $9395."
   },
   {
    "address": 37598,
@@ -5929,7 +5929,7 @@
   {
    "address": 37660,
    "type": "line",
-   "text": "Read $9454; if nonzero, load $9455 and jump to $9138. Otherwise load X from $7B and read $9455. If nonzero, branch to the purchase index choice at $9345, preserving the negative flag from that read. If zero, inspect $4753,X: a negative value or a clear bit 1 selects message pointer $94BE; a nonnegative value with bit 1 set selects $94A7. Both paths jump to the $77E0 message call. The meanings and ordinary-play ranges of the two gate bytes remain open."
+   "text": "Read the layout gate $9454; if nonzero, load the selection byte $9455 and jump to $9138. Otherwise load X from $7B and read $9455. If nonzero, branch to the purchase index choice at $9345, preserving the negative flag from that read. If zero, inspect $4753,X: a negative value or a clear bit 1 selects message pointer $94BE; a nonnegative value with bit 1 set selects $94A7. Both paths jump to the $77E0 message call. $9454 is $46 plus one on the price path ($90B1) and zero on the item-pair path ($91CD). Only the item-pair path runs in load 27."
   },
   {
    "address": 37701,
@@ -5954,7 +5954,7 @@
   {
    "address": 37770,
    "type": "line",
-   "text": "Pull the selected item index, clear carry, add 1 in binary mode and call the JSR whose operand was patched by the selector. Load X/Y with $9483 and call $77E0, then call $3C2A and $370B repeatedly while $4D6B is nonzero. Return once it is zero. The effect, message and waiting callbacks were stubbed in controlled tests; this does not establish ordinary-play reachability."
+   "text": "Pull the selected item index, clear carry, add 1 in binary mode and call the JSR whose operand was patched by the selector. Load X/Y with $9483 and call $77E0, then call $3C2A and $370B repeatedly while $4D6B is nonzero. Return once it is zero."
   },
   {
    "address": 37796,
@@ -5974,7 +5974,7 @@
   {
    "address": 37836,
    "type": "line",
-   "text": "Load 27: with decimal mode clear, add one to the selection byte at $9455, use the wrapped result as an index into $9456, and pass that position in X and $82 in Y to $719E. The table index is not locally bounded."
+   "text": "Load 27: with decimal mode clear, add one to the selection byte at $9455, use the wrapped result as an index into $9456, and pass that position in X and $82 in Y to $719E. The selection byte stays among $FF, 0 and 1, so the index is 0 to 2."
   },
   {
    "address": 37849,
@@ -5984,7 +5984,7 @@
   {
    "address": 37852,
    "type": "line",
-   "text": "Load X from $7B, store $FF at $4753,X and return. Several item-effect routines tail-call this helper."
+   "text": "Load X from $7B, store $FF at $4753,X and return. The insufficient-gold path calls it at $90EF, and the item effects at $986B, $9871, $9877, $987D, $9883, $988C and $9898 tail-call it."
   },
   {
    "address": 37860,
@@ -6009,7 +6009,7 @@
   {
    "address": 37967,
    "type": "line",
-   "text": "Load 27: four working price-display bytes, written by the formatter at $9411 and read in reverse by the digit writer. Their captured initial values can be overwritten before drawing."
+   "text": "Load 27: four working price-display bytes. The item-price formatter at $9411 and the stage-price formatter at $910E write them, and the drawing loop at $93F6 reads them in reverse, from $9452 down to $944F, passing each to the digit writer at $9408."
   },
   {
    "address": 37969,
@@ -6034,7 +6034,7 @@
   {
    "address": 37974,
    "type": "line",
-   "text": "Load 27: three captured cursor-position bytes indexed by the selection byte plus one in the cursor helper. Other indexes and runtime changes are not locally constrained."
+   "text": "Load 27: three cursor-position bytes, $5F, $B4 and $FF, for selections $FF, 0 and 1: the cursor helper at $93CC reads them at $93D5 with the selection byte plus one as index, and passes the byte in X to $719E. No instruction writes them."
   },
   {
    "address": 37977,
@@ -6044,12 +6044,12 @@
   {
    "address": 37978,
    "type": "line",
-   "text": "Load 27: mutable first item ID, read by the left-selection description and purchase paths."
+   "text": "Load 27: mutable first item ID. $91E6 or $9210 stores it; the item drawing at $9231, the price label at $926E, the left-selection description at $92F0 and the purchase paths at $934D and $9376 read it."
   },
   {
    "address": 37979,
    "type": "line",
-   "text": "Load 27: mutable second item ID, read by the right-selection description and purchase paths."
+   "text": "Load 27: mutable second item ID. $91EF or $9216 stores it; the item drawing at $9219, the price label at $9279, the right-selection description at $9310 and the purchase paths at $9347 and $9370 read it."
   },
   {
    "address": 37980,
@@ -6199,7 +6199,7 @@
   {
    "address": 38385,
    "type": "line",
-   "text": "Continuation of the three-line message beginning at $95E6, through its control byte at $95F9. These are glyph codes or zero line separators within that already decoded record, not another message pointer. Three zero-terminated glyph lines, with alignment spaces omitted here: “” / “CERAMIC BOOTS” / “”. [$60] denotes a downward-pointing triangular glyph. The following control byte is $10. Input 2 to $93E4 selects this address, and $77E0, which loads A with 0, copies its lines."
+   "text": "Continuation of the three-line message beginning at $95E6, through its control byte at $95F9. These are glyph codes or zero line separators within that already decoded record, not another message pointer. Three zero-terminated glyph lines, with alignment spaces omitted here: “” / “CERAMIC BOOTS” / “”. [$60] denotes a downward-pointing triangular glyph. The following control byte is $10. Input 2 to $93E4 selects the message at $95E6, and $77E0, which loads A with 0, copies its lines."
   },
   {
    "address": 38394,
@@ -6294,7 +6294,7 @@
   {
    "address": 38751,
    "type": "line",
-   "text": "Return without drawing. Several controlled item indexes select this entry."
+   "text": "Return without drawing. Items 0–3, 6–10 and 13–16 of the table at $97AB name this entry as their drawing routine."
   },
   {
    "address": 38752,
@@ -6334,7 +6334,7 @@
   {
    "address": 38826,
    "type": "line",
-   "text": "Working byte used as the number of tile writes remaining; the drawing routine overwrites it before use."
+   "text": "Working counter with two users, each of which stores it before use: the tile-drawing routine at $9787 keeps the number of tile writes remaining here ($9787, $97A4), and the colour fill at $9250 keeps its count of three rows here ($924B, $9263)."
   },
   {
    "address": 38827,
@@ -6819,7 +6819,7 @@
   {
    "address": 39019,
    "type": "line",
-   "text": "Call $76FD and tail-call the helper at $93DC. Controlled item indexes 4 and 5 select this routine; $76FD sets the Wing Boots flag and timer."
+   "text": "Call $76FD and tail-call the helper at $93DC. Items 4 and 5 of the table at $97AB name this as their effect routine; $76FD sets the Wing Boots flag $08 and the counter $4DE0 to $FF."
   },
   {
    "address": 39025,
@@ -6839,7 +6839,7 @@
   {
    "address": 39043,
    "type": "line",
-   "text": "Load the selected player index from $4DBD, store A at $4DD5,X and tail-call $93DC. Controlled item indexes 0–3 select this routine with A equal to index plus 1."
+   "text": "Load the selected player index from $4DBD, store A at $4DD5,X and tail-call $93DC. Items 0–3 of the table at $97AB name this as their effect routine, and the purchase call at $938E passes A equal to the item index plus 1, so $4DD5,X becomes 1 to 4."
   },
   {
    "address": 39052,
@@ -7224,12 +7224,12 @@
   {
    "address": 44323,
    "type": "line",
-   "text": "Load Y from $1AE4,X and read the byte at $AD45,Y. If negative, take its eight-bit two’s complement and call $4342; otherwise call $4368 with the byte unchanged. Increment the Y returned by the callback, replace it with 0 if it equals $28, and store it at $1AE4,X. The entry index is not locally bounded."
+   "text": "Load Y from $1AE4,X and read the byte at $AD45,Y. If negative, take its eight-bit two’s complement and call $4342 to move up by it; otherwise call $4368 with the byte unchanged to move down. Neither call changes Y: increment it, replace it with 0 if it equals $28, and store it at $1AE4,X. The slot starts with $1AE4,X cleared and nothing else in the type’s code writes it, so the index runs through 0 to 39, the table’s forty entries."
   },
   {
    "address": 44357,
    "type": "line",
-   "text": "Forty captured signed movement values: $FD, $FE, $FF, 0, 1, 2, 3, thirteen 4s, 3, 2, 1, 0, $FF, $FE, $FD and thirteen $FC values. The state-0 movement tail indexes this table with $1AE4,X without a local entry bound."
+   "text": "Forty signed movement values: $FD, $FE, $FF, 0, 1, 2, 3, thirteen 4s, 3, 2, 1, 0, $FF, $FE, $FD and thirteen $FC values. The movement tail at $AD23 reads one per call with $1AE4,X as index, which starts at zero and wraps at 40; a negative value moves the entity up by its magnitude through $4342, and the others move it down through $4368."
   },
   {
    "address": 44363,
@@ -7424,22 +7424,22 @@
   {
    "address": 44892,
    "type": "line",
-   "text": "The captured type-$20 vector selects this entry. If $1A8F,X is positive, jump to $B011 with A=8. If zero or negative, read $1AB1,X into Y, patch the absolute jump at $AF7A from $AF7D,Y/$AF7E,Y, call $B009, then jump through the patched operand. The state index is not locally bounded; only the captured pair for index 0 is described."
+   "text": "Handler for entity type $20: its entry in the split vector tables at $7EDF/$7F0F points here. If $1A8F,X is positive, jump to $B011 with A=8. If it is zero or negative, read state $1AB1,X into Y, patch the jump at $AF7A from $AF7D,Y/$AF7E,Y, call $B009, then jump through the patched operand. The only type-$20 entity is the one $904E creates, which the record callback at $073F calls after $190B has found a free slot and $447A has cleared it; no code of type $20 writes $1AB1,X, so it stays 0 and the jump always goes to state 0 at $AF7F."
   },
   {
    "address": 44923,
    "type": "line",
-   "text": "Two-byte operand of the jump at $AF7A, patched before the $B009 call; its entry snapshot placeholder is $FF00."
+   "text": "Two-byte operand of the absolute jump at $AF7A. The dispatcher at $AF5C writes it from $AF7D,Y and $AF7E,Y (STA $AF7B at $AF6E, STA $AF7C at $AF74) before it calls $B009. The load holds $FF00 there."
   },
   {
    "address": 44925,
    "type": "line",
-   "text": "Captured low byte $7F for index 0, paired with the high byte at $AF7E to form target $AF7F. Other indexes and ordinary-play reachability remain open."
+   "text": "Low byte $7F of the one state target, paired with the high byte at $AF7E: $AF7F, state 0. The dispatcher at $AF5C reads it with Y = state $1AB1,X. No code of type $20 writes $1AB1,X, so it keeps the 0 that $447A stored when the record callback at $073F set up the slot for $904E."
   },
   {
    "address": 44926,
    "type": "line",
-   "text": "Captured high byte $AF for index 0, paired with the low byte at $AF7D to form target $AF7F. Other indexes and ordinary-play reachability remain open."
+   "text": "High byte $AF of the one state target, paired with the low byte at $AF7D: $AF7F, state 0. The dispatcher at $AF5C reads it with Y = state $1AB1,X. No code of type $20 writes $1AB1,X, so it keeps the 0 that $447A stored when the record callback at $073F set up the slot for $904E."
   },
   {
    "address": 44927,
@@ -7474,7 +7474,7 @@
   {
    "address": 45089,
    "type": "line",
-   "text": "Load 27: type-$25 uses $1AB1,X as an index into split target tables at $B033/$B035 and patches the jump at $B030. Two captured target pairs follow; this dispatcher does not bound the index."
+   "text": "Load 27: handler for entity type $25; its entry in the vector tables at $7EDF/$7F0F points here. Read state $1AB1,X into Y, patch the jump at $B030 from the split tables at $B033/$B035 and jump to state 0 at $B037 or state 1 at $B09D. The type’s own code stores only 1 in that state, at $B0D7; the type-$0D allocation path at $AE09 puts it in a slot that $190B finds free, whose state $447A cleared when it freed the slot."
   },
   {
    "address": 45104,
@@ -7529,7 +7529,7 @@
   {
    "address": 45291,
    "type": "line",
-   "text": "Load 27: an unattributed loaded byte $D0 after the event-transition routine. A VICE checkpoint for CPU reads, writes and instruction entry recorded zero hits during 200 frames; the control checkpoint at $13EA recorded 200 hits. This bounded observation does not prove that another state cannot use it. Its semantic role remains unknown."
+   "text": "Load 27: one byte, $D0 in the load, between the type-$25 event helper, whose last instruction JMP $B0C7 ends at $B0EA, and the type-$26 return at $B0EC. No instruction in load 27 or in the resident part reads, writes or indexes it: the type-$25 table reads at $B024 and $B02A would reach it only with a state of $B8 or $B6, and that state is 0 or 1."
   },
   {
    "address": 45292,
@@ -7779,7 +7779,7 @@
   {
    "address": 62976,
    "type": "line",
-   "text": "Load 27: the 63 zero bytes at $F600 occupy the bitmap portion of bank-3 slot $D8, immediately after the matched nonzero shape at slot $D7. In the verified source capture from load 17, slots $C5/$C6 form a nonzero layer and a blank layer; this range matches that blank layer. The slot's 64th byte, $00, is not part of the picture."
+   "text": "Load 27: the 63 zero bytes at $F600 are the picture of bank-3 sprite slot $D8, the blank second layer of frame $D7. The type-$0D entity (record 2 at $B0F8, base frame $C9) spawns its type-$25 shot at $AE09 with frame $D5 ($C9 plus $0C at $AE44). The shot’s event transition at $B0C7 adds 2 to its base frame, and state 1 at $B09D then shows $D7 and $D9 before freeing the slot at $B0BC. An entity’s frame F is drawn from slots F and F+1 in two sprites ($1CAB, $1CE9), so frame $D7 is the shape at slot $D7 with this blank slot beside it. The slot’s 64th byte, $00, is not part of the picture."
   },
   {
    "address": 63040,
@@ -7789,12 +7789,12 @@
   {
    "address": 63104,
    "type": "line",
-   "text": "Load 27: 63 zero bytes at $F680–$F6BE, aligned as bank-3 sprite slot $DA. They make an entirely transparent 24-by-21 pixel mask. The stage decoder writes this range as part of the high-memory stream."
+   "text": "Load 27: 63 zero bytes at $F680–$F6BE, the picture of bank-3 sprite slot $DA: the blank second layer of frame $D9, drawn from slots $D9 and $DA. The type-$0D entity (record 2 at $B0F8, base frame $C9) spawns its type-$25 shot at $AE09 with frame $D5 ($C9 plus $0C at $AE44). The shot’s event transition at $B0C7 adds 2 to its base frame, and state 1 at $B09D then shows $D7 and $D9 before freeing the slot at $B0BC. An entity’s frame F is drawn from slots F and F+1 in two sprites ($1CAB, $1CE9), so frame $D9, the shot’s last, is the small pattern at slot $D9 with this blank slot beside it. The stage decoder writes this range as part of the high-memory stream."
   },
   {
    "address": 63167,
    "type": "line",
-   "text": "Final byte of the 64-byte bank-3 slot $DA, following the blank mask at $F680. The VIC fetches the preceding 63 bytes for pixels; this byte is outside that bitmap."
+   "text": "Final byte of the 64-byte bank-3 slot $DA, after the blank picture at $F680. The VIC reads the 63 bytes before it for the sprite’s pixels; this byte, $00, is not part of the picture."
   },
   {
    "address": 63168,
