@@ -106,6 +106,23 @@ record was cleared.
   (`spy_move` `$6BEA`, `club_in_reach` `$6CF1`).
 - Options screen: up and down choose the line, left and right change the
   value, fire starts (`options_loop` `$A00B`).
+- `read_controls` runs on every raster interrupt, twice a frame, and is the
+  only code that touches CIA 1's ports; the game never sets their direction
+  registers. It ends each call with `$DC00` = `$7F`, keyboard row 7
+  selected, and the next call reads port 1 (`$DC01`) before selecting
+  another row, so row 7's first five keys read as the black spy's stick:
+  1 up, ← down, CTRL left, 2 right, SPACE fire. SPACE therefore starts a
+  game from the options screen (either stick, `$A01E`) and ends the attract
+  demo. In a one-player game the black spy's moves come from the computer
+  (`$6811`), so the keys do nothing there.
+- Each key is tested by comparing its whole row with one value: F5 row 0
+  with `$BF`, RUN/STOP row 7 with `$7F` (not in the demo), S row 1 with
+  `$DF`, counted once per press through `$0284`. Another key held in the
+  row, or anything held on the port-1 stick, which pulls down the same
+  column lines, makes the key do nothing; the port-2 stick does not.
+- These two are traced and run in the kit's 6502 simulator on the listing's
+  bytes, with CIA 1 modelled (`test_controls.js`, which also holds the
+  Controls tab's port); they were not tried in the emulator.
 
 ## Graphics
 
@@ -391,7 +408,7 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 
 - The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
 
-### index.html
+### mechanics.html
 
 - One frame of a two-player game, rebuilt from memory by the site's renderer from the video chip's registers, the bitmap at `$4000` and the screen matrix at `$6000`, recorded in the emulator (NTSC).
 - 94,840 of its 94,848 pixels match the emulator's picture.
@@ -401,3 +418,8 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 - Measured in the emulator: in 600 frames the interrupt ran 600 × 2 times and a spy's clock lost 6 seconds.
 - Tested in the emulator on level 1: with the trap count set to 10 the trapulator handed over a bomb; with 11 it refused.
 - Seen in the emulator: on PAL the load ends in that loop; on NTSC the same image plays.
+
+### controls.html
+
+- The port of `read_controls` (`$94A1`) is held against the game's own routine in the kit's 6502 simulator by `test_controls.js`: 46,141 combinations of sticks, keys, demo and held-S states, from the bytes of the listing, with CIA 1 modelled as the C64 wires it, give the same bytes. Each claim on the page (the five row-7 keys as the black stick, SPACE ending the demo, the keys blocked by another key in their row or by the port-1 stick) is a case in that test.
+- Not tried on a real machine or in the emulator: the disk image was not available when the page was made.

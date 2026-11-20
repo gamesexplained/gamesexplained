@@ -34,7 +34,7 @@ Sources:
 |---|---|---|
 | Title picture: MAD Magazine's Official Spy vs Spy, by Mike Riedel, First Star Software, 1984 | live | the loader's files `S1`/`S2` (`orientation.md`); `reference/title.png` |
 | Options screen: number of players, difficulty level, computer IQ (one player only), airport hidden till the end (manual) | confirmed | `options_screen` `$9F7E`, `options_loop` `$A00B`; `reference/options.png`. Eight levels, IQ 1-5 |
-| Up/down moves the option cursor, left/right changes the setting, fire starts (manual; the lower monitor says the same) | live | `options_loop` `$A00B`: walked every row in the code-map sessions. Space is not read: fire only |
+| Up/down moves the option cursor, left/right changes the setting, fire starts (manual; the lower monitor says the same) | live | `options_loop` `$A00B`: walked every row in the code-map sessions. Either stick works (`$A01E`); SPACE starts the game too, as port 1's fire, through the keyboard's wiring (`read_controls` `$94A1`, run in the simulator by `test_controls.js`, not tried live) |
 | Joystick port 2 drives the white spy, port 1 the black (the options screen's own text) | confirmed | `read_controls` `$94A1` |
 | Simulvision: split screen, white spy above, black below (manual) | confirmed | two raster interrupts, `irq_handler` `$8FA6`; `reference/play.png` |
 | Simulplay: both spies move at once; in one-player games the computer plays black (manual) | confirmed | `next_spy` `$674E` alternates the spies; `computer_player` `$9A67` |
