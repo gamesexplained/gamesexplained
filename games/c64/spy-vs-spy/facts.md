@@ -412,12 +412,19 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 
 - One frame of a two-player game, rebuilt from memory by the site's renderer from the video chip's registers, the bitmap at `$4000` and the screen matrix at `$6000`, recorded in the emulator (NTSC).
 - 94,840 of its 94,848 pixels match the emulator's picture.
-- Checked against the original code run in a 6502 simulator: 20,000 frames, with the music switched off and on again with S, every register write the same and in the same order.
-- Checked against the game's own routine in a 6502 simulator, with every level built by the game itself: all 6,667 pairs of start and goal give the same rounds and the same route.
 - Checked against both routines in a 6502 simulator over 600,000 random events and 3,000 escapes, including scores below zero and above 9,900.
 - Measured in the emulator: in 600 frames the interrupt ran 600 × 2 times and a spy's clock lost 6 seconds.
 - Tested in the emulator on level 1: with the trap count set to 10 the trapulator handed over a bomb; with 11 it refused.
 - Seen in the emulator: on PAL the load ends in that loop; on NTSC the same image plays.
+
+### levels.html
+
+- The route search, ported from `route_search` (`$A9EF`): checked against the game's own routine in a 6502 simulator, with every level built by the game itself: all 6,667 pairs of start and goal give the same rounds and the same route.
+- The maps and the level table are drawn from the listing's own bytes on the page.
+
+### music.html
+
+- The port of `play_music` (`$954E`) is held against the game's own driver in a 6502 simulator by `test_music.js`: 20,000 frames, with the music switched off and on again with S, every register write the same and in the same order.
 
 ### controls.html
 
