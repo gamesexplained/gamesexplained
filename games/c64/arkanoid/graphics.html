@@ -53,6 +53,16 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
 .stages button{padding:5px 0;font-size:12px}
 .msg{font-size:14px;color:var(--coral)}
 .ak-cv{width:100%;max-width:768px;height:auto;background:#000;border-radius:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.card{background:#000;border-radius:8px;padding:10px;color:#e9e7e1}
+.card canvas{margin:0 auto}
+.card .nm{font-family:var(--fm);font-size:12px;margin:8px 0 0;color:#e9e7e1}
+.card .nm span{display:block;color:#9a9da4}
+.sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+.sheet div{background:#000;border-radius:6px;padding:4px;text-align:center}
+.sheet canvas{margin:0 auto}
+.sheet span{display:block;font-family:var(--fm);font-size:11px;color:#9a9da4}
+.sheet h3{grid-column:1/-1;font-size:15px;margin:14px 0 2px;background:none}
 @media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.two{grid-template-columns:1fr}.stages{grid-template-columns:repeat(8,1fr)}}
 </style>
 
@@ -60,12 +70,48 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1987 · Imagine</p>
   <h1>Arkanoid: graphics</h1>
-  <p class="sub">The picture the cassette builds on the screen while the game loads, which the game then keeps as its title picture.</p>
+  <p class="sub">Every sprite shape the game keeps, its animations played at the rates the game steps them, the sprites of the intro, and the picture the cassette builds on the screen while the game loads.</p>
 </header>
 <main class="wrap">
 
+<section id="animations">
+  <p class="fig">01 · What moves</p>
+  <h2 class="t">Every animation, at the game's speed</h2>
+  <p class="lede">The Vaus, the enemies, Doh's shots and the falling capsule, each drawn from the listing's bytes and stepped by the game's own rules, fifty frames a second as on a PAL machine.</p>
+  <div class="plate">
+    <div class="cards" id="gx-anims"></div>
+    <p class="cap"><b>Sprites in play are multicolour</b> (<code>$D01C</code> = <code>$FC</code>), with white and light blue as the two shared colours (<code>play_screen_colours</code>, <code>$F719</code>). Each card uses the colour the game gives that sprite: red for the Vaus (<code>$F242</code>), blue for the enemies (<code>enemy_colour</code>, <code>$A3EC</code>), yellow for an explosion (<code>$9EFB</code>), white for a laser shot (<code>$A770</code>) and the capsule's colour by type (<code>capsule_colours</code>, <code>$B2BC</code>). The game sets no colour when Doh fires a shot (<code>$9853</code>-<code>$9872</code>), so the shot keeps its slot's last one; it is drawn here in the enemies' blue.</p>
+  </div>
+  <p>Enemies take their frames from one table of lists, <code>anim_lists</code> (<code>$A376</code>). <code>animate_object</code> (<code>$A344</code>) shows the next frame of a list once every speed + 1 calls, and a 0 in the list is followed by the place to start again, or by a second 0, which removes the object. The speed depends on the enemy (<code>enemy_anim_speed</code>, <code>$A3F0</code>): every 4th call for the cone and the cube, every 3rd for the pyramid, every 5th for the three balls. The enemies are not updated on every frame: <code>update_enemies</code> (<code>$9F5E</code>) adds <code>$A1</code> to a counter each frame and runs only when it carries, on 161 frames in 256, and their animation slows with them. Which enemy a round has follows the round number: the cone in rounds 1, 5, 9 and so on, the pyramid in rounds 2, 6, 10, the three balls in rounds 3, 7, 11 and the cube in rounds 4, 8, 12 (<code>enemy_anim_start</code>, <code>$A3E8</code>).</p>
+  <p>The Vaus is two sprites side by side, a left half and a right half, and its animations are pairs of pointers. It fades in over four steps when a round or a life begins (<code>vaus_appear</code>, <code>$A3F4</code>), runs through the same dithered frames when the laser is fitted or taken away (<code>$A5C7</code>, <code>$AD85</code>), and breaks up over eight pairs when it is lost (<code>vaus_explode_frames</code>, <code>$9C50</code>). The capsule's letter rolls round: every 4th frame the game rebuilds the middle of the capsule sprite from the blank capsule and the letter, one row further on each time (<code>capsule_letter</code>, <code>$A7DC</code>).</p>
+</section>
+
+<section id="shapes">
+  <p class="fig">02 · Every shape in play</p>
+  <h2 class="t">All 104 sprite shapes of the play screen</h2>
+  <div class="plate">
+    <div class="sheet" id="gx-sheet"></div>
+    <p class="cap"><b>Sprite shapes <code>$40</code>-<code>$A7</code> of video bank 3</b>, at <code>$D000</code>-<code>$E9FF</code>, 64 bytes each and numbered as the sprite pointers number them (shape n is at <code>$C000</code> + 64n). They lie under the I/O area, where only the video chip reads them. Each is drawn in the colours of the sprite that shows it; shapes that no code points a sprite at are drawn in grey.</p>
+  </div>
+  <p>Two pairs are not what they first look like. Shapes <code>$43</code> and <code>$44</code> are the laser Vaus, the last frame of the laser's change (<code>laser_on_frames</code>, <code>$A5EA</code>). Shape <code>$95</code> is the capsule with its letter, which the game rewrites every 4th frame from the blank capsule, <code>$94</code>, so as stored it holds whatever letter was last built. Shapes <code>$46</code> to <code>$49</code>, four frames of scattering pixels, are put in a sprite pointer by no code the analysis found.</p>
+  <p>Shapes <code>$96</code> to <code>$99</code> belong to sprites 0 and 1, the two the multiplexer leaves alone. They are hi-res and black, sit at Y <code>$EC</code> (<code>$F221</code>) and take the X positions of the Vaus's two halves every frame (<code>$F74C</code>). The Vaus sits at Y <code>$E0</code> (<code>$F219</code>) and its shapes fill rows 12 to 20 of the sprite, so the black sprites lie exactly over it. Sprites 0 and 1 are drawn in front of the others, so their black lines outline the multicolour Vaus. The game clears them while the Vaus fades in (<code>$F0AA</code>) and copies them back from <code>$98</code>-<code>$99</code> when it has (<code>$F09E</code>). When the Vaus leaves through the Break exit, past X <code>$E0</code>, the game fills them with black one pixel column a frame, the right half first (<code>$A4C4</code>), and the Vaus disappears into the wall a column at a time.</p>
+  <p>The bricks are characters, not sprites; the <a href="levels.html">Levels</a> tab draws every round's wall from them.</p>
+</section>
+
+<section id="intro">
+  <p class="fig">03 · The intro</p>
+  <h2 class="t">A second set of sprites, for the title picture</h2>
+  <p class="lede">Before round 1 a short scene plays over the title picture: a craft flies in and fires, and the Vaus escapes, turning end over end into the distance. Its sprites live in video bank 1, beside the picture.</p>
+  <div class="plate">
+    <div class="cards" id="gx-intro" style="margin-bottom:14px"></div>
+    <div class="sheet" id="gx-intro-sheet"></div>
+    <p class="cap"><b>Shapes <code>$A0</code>-<code>$D5</code> of video bank 1, at <code>$6800</code>-<code>$757F</code></b>, drawn in the intro's colours: white for the craft and the Vaus, cyan and light red as the shared colours (<code>intro_sprite_setup</code>, <code>$08CC</code>). The escaping Vaus advances a frame every 4th frame (<code>intro_vaus_frames</code>, <code>$08A1</code>); the glint over the title, after the intro, every other frame (<code>title_sprite_animate</code>, <code>$B983</code>).</p>
+  </div>
+  <p>To draw in bank 1 the game points its sprite multiplexer at the title's screen: <code>intro_sprite_setup</code> rewrites the high bytes of the two stores that write the sprite pointers (<code>$F976</code>, <code>$FC17</code>) from <code>$C3</code> to <code>$63</code>, and <code>main_entry</code> puts them back before play.</p>
+</section>
+
 <section id="loading">
-  <p class="fig">01 · The loading picture</p>
+  <p class="fig">04 · The loading picture</p>
   <h2 class="t">The title picture, drawn on the screen as the tape reads it</h2>
   <p class="lede">The cassette loads the title picture first and lets you watch it arrive. On a white screen it fills in a cell at a time, left to right along each row of cells and down the screen, over 38 seconds, while Martin Galway's Ocean loading tune plays (<a href="music.html#loading-tune">Music</a>).</p>
   <div class="plate">
@@ -135,5 +181,153 @@ function arkLoadingFrame(ram, n) {
     const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { threshold: 0.4 });
     io.observe(cv);
   } else go();
+})();
+</script>
+<script>
+/* ak-sprites */
+// The Graphics tab's sprites, drawn from the listing's bytes with C64.drawSpriteMC / drawSprite
+// (../../lib/c64.js). Shape n of bank 3 is at $C000 + 64n, of bank 1 at $4000 + 64n.
+// akAnimList(ram, i): the frames of anim_lists ($A376) from index i, as animate_object ($A344)
+// walks them: a 0 is followed by the index to go on from, or by a second 0 (the object removed).
+// Returns { frames, loop } with loop the place in frames to repeat from, or -1 for none.
+function akAnimList(ram, i) {
+  const frames = [], seen = new Map();
+  for (let guard = 0; guard < 256; guard++) {
+    const v = ram[0xA376 + i];
+    if (v) { if (seen.has(i)) return { frames, loop: seen.get(i) }; seen.set(i, frames.length); frames.push(v); i++; continue; }
+    const to = ram[0xA376 + i + 1];
+    if (!to) return { frames, loop: -1 };
+    i = to;
+  }
+  return { frames, loop: -1 };
+}
+// akCapsule(ram, type, roll): the 63 bytes of the lettered capsule, shape $95, as capsule_letter
+// ($A7DC) leaves it with $0238 = roll: the letter is copied to $A80F from $A810 + 8 x type ($B22C),
+// and the 10 rows' middle bytes are rebuilt as ($E501,x AND $A850,y) OR $A80F,y, y stepping on from
+// roll, x = 0, 3 .. 27.
+function akCapsule(ram, type, roll) {
+  const d = ram.slice(0xE540, 0xE57F), letter = ram.slice(0xA810 + 8 * type, 0xA818 + 8 * type);
+  let y = roll;
+  for (let x = 0; x < 0x1E; x += 3) { d[x + 1] = (ram[0xE501 + x] & ram[0xA850 + y]) | letter[y]; y = (y + 1) & 7; }
+  return d;
+}
+// end of ak-sprites
+(async () => {
+  const C = globalThis.C64, $ = (id) => document.getElementById(id);
+  if (!C) { $('gx-anims').textContent = 'This viewer needs the site\'s shared script, lib/c64.js.'; return; }
+  let L;
+  try { L = await C.load('listing.json'); } catch (e) { $('gx-anims').textContent = 'The listing did not load, so the sprites cannot be drawn.'; return; }
+  const ram = L.ram, P = C.PAL, S = 3;
+  const shape = (n, bank = 0xC000) => ram.subarray(bank + 64 * n, bank + 64 * n + 63);
+  const PLAY = { mc1: P[1], mc2: P[14] }, INTRO = { mc1: P[3], mc2: P[10] };
+  const draw = (ctx, n, x, col, pal, bank, hires) => hires ? C.drawSprite(ctx, shape(n, bank), x, 0, S, col)
+    : C.drawSpriteMC(ctx, n.length ? n : shape(n, bank), x, 0, S, col, pal.mc1, pal.mc2);
+
+  // An animation card: step(f) gives the frame's pointers for frame f (one PAL frame each).
+  const cards = [];
+  function card(root, name, note, wide, step, paint) {
+    const d = document.createElement('div'); d.className = 'card';
+    const cv = document.createElement('canvas'); d.appendChild(cv);
+    const p = document.createElement('p'); p.className = 'nm'; p.textContent = name;
+    const sp = document.createElement('span'); sp.textContent = note; p.appendChild(sp); d.appendChild(p);
+    root.appendChild(d);
+    const ctx = C.canvas(cv, (wide ? 48 : 24) * S, 21 * S);
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', name + ': ' + note);
+    cards.push({ ctx, w: (wide ? 48 : 24) * S, step, paint, last: null });
+  }
+  // The enemies' and Doh's shots' timing: update_enemies and move_doh_shots run when $021F + $A1
+  // carries; animate_object steps a list every speed + 1 of those calls.
+  function listAnim(start, speed) {
+    const { frames, loop } = akAnimList(ram, start);
+    let acc = 0, timer = 1, k = 0, f0 = 0;
+    return (f) => {
+      if (f < f0) { acc = 0; timer = 1; k = 0; f0 = 0; }
+      for (; f0 < f; f0++) {
+        acc += 0xA1; if (acc < 256) continue; acc -= 256;
+        if (timer > speed) { timer = 0; k++; if (k >= frames.length) k = loop < 0 ? 0 : loop; }
+        timer++;
+      }
+      return frames[k];
+    };
+  }
+  // A list shown at a fixed rate, every `every` frames, with a pause of `hold` frames at the end.
+  const seq = (frames, every, hold = 0) => (f) => {
+    const n = frames.length * every + hold, t = f % n;
+    return frames[Math.min(frames.length - 1, Math.floor(t / every))];
+  };
+  const one = (col, pal = PLAY, bank) => (ctx, n) => draw(ctx, n, 0, col, pal, bank);
+  // the Vaus: two multicolour halves, and sprites 0 and 1 over them, hi-res and black, from row 12
+  const vaus = (ctx, n, over) => {
+    draw(ctx, n, 0, P[2], PLAY); draw(ctx, n + 1, 24 * S, P[2], PLAY);
+    if (over) for (let h = 0; h < 2; h++) {
+      const d = shape(0x98 + h);
+      for (let y = 0; y + 12 < 21; y++) for (let b = 0; b < 3; b++) for (let x = 0; x < 8; x++)
+        if (d[y * 3 + b] & (0x80 >> x)) { ctx.fillStyle = P[0]; ctx.fillRect((24 * h + 8 * b + x) * S, (y + 12) * S, S, S); }
+    }
+  };
+  const A = $('gx-anims');
+  card(A, 'The Vaus', 'shapes $40, $41; sprites 0 and 1 over them', true, () => 0x40, (c, n) => vaus(c, n, true));
+  card(A, 'The Vaus appearing', '$79 to $73, then $40, every 4th frame', true,
+       seq([0x79, 0x77, 0x75, 0x73, 0x40], 4, 46), (c, n) => vaus(c, n, false));
+  card(A, 'The laser fitted', '$73 to $79 and back, then $43, every 2nd frame', true,
+       seq([0x40, 0x73, 0x75, 0x77, 0x79, 0x77, 0x75, 0x73, 0x43], 2, 50), (c, n) => vaus(c, n, false));
+  card(A, 'The Vaus lost', '$84 to $92 in pairs, every 3rd frame', true,
+       seq([0x84, 0x86, 0x88, 0x8A, 0x8C, 0x8E, 0x90, 0x92], 3, 30), (c, n) => vaus(c, n, false));
+  card(A, 'Cone, rounds 1, 5, 9', 'anim_lists from $0B, speed 3', false, listAnim(0x0B, 3), one(P[6]));
+  card(A, 'Pyramid, rounds 2, 6, 10', 'from $15, speed 2', false, listAnim(0x15, 2), one(P[6]));
+  card(A, 'Three balls, rounds 3, 7, 11', 'from $24, speed 4', false, listAnim(0x24, 4), one(P[6]));
+  card(A, 'Cube, rounds 4, 8, 12', 'from $2C, speed 3', false, listAnim(0x2C, 3), one(P[6]));
+  card(A, 'Explosion', 'from 0, speed 1, then removed', false, ((g) => (f) => g(f % 60))(listAnim(0, 1)), one(P[7]));
+  card(A, 'Doh\'s shot', 'from $56, speed 2', false, listAnim(0x56, 2), one(P[6]));
+  card(A, 'Ball', 'shape $42, dark grey ($F252)', false, () => 0x42, one(P[11]));
+  card(A, 'Laser shot', 'shape $45, white', false, () => 0x45, one(P[1]));
+  const CAPS = 'SCEDLBP', CAPCOL = Array.from(ram.subarray(0xB2BC, 0xB2C4));
+  for (let t = 1; t <= 7; t++)
+    card(A, 'Capsule ' + CAPS[t - 1], 'shape $95, colour ' + CAPCOL[t], false,
+         (f) => 7 - Math.floor(f / 4) % 8,                       // $0238 steps down every 4th frame
+         (c, roll) => draw(c, akCapsule(ram, t, roll), 0, P[CAPCOL[t]], PLAY));
+  const I = $('gx-intro');
+  card(I, 'The Vaus escaping', '$A2 to $B3, every 4th frame', false, seq([...Array(18)].map((_, i) => 0xA2 + i), 4, 40), one(P[1], INTRO, 0x4000));
+  card(I, 'The glint', '$D1 to $D4 and back, every 2nd frame', false, seq([0xD1, 0xD2, 0xD3, 0xD4, 0xD3, 0xD2, 0xD1, 0xD5], 2, 40), one(P[1], INTRO, 0x4000));
+
+  // the sheets
+  const ROLE = (n) => n <= 0x41 || (n >= 0x43 && n <= 0x44) || (n >= 0x73 && n <= 0x7A) || (n >= 0x84 && n <= 0x93) ? P[2]
+    : n === 0x42 ? P[11] : n === 0x45 ? P[1] : n >= 0x46 && n <= 0x49 ? P[12]
+    : (n >= 0x7B && n <= 0x83) ? P[7] : n === 0x94 || n === 0x95 ? P[CAPCOL[1]] : P[6];
+  const GROUPS = [[0x40, 0x45, 'The Vaus, the ball, the laser Vaus and its shot'], [0x46, 0x49, 'Scattering pixels: no code found shows them'],
+    [0x4A, 0x72, 'The enemies and Doh\'s shots'], [0x73, 0x7A, 'The Vaus fading in, and changing to and from the laser'],
+    [0x7B, 0x83, 'The explosion'], [0x84, 0x93, 'The Vaus breaking up'], [0x94, 0x95, 'The capsule, blank and lettered'],
+    [0x96, 0x99, 'Sprites 0 and 1: hi-res, black, drawn here in white'], [0x9A, 0xA7, 'The cube']];
+  function sheet(root, groups, bank, colour, pal, hires) {
+    for (const [a, b, title] of groups) {
+      const h = document.createElement('h3'); h.textContent = title; root.appendChild(h);
+      for (let n = a; n <= b; n++) {
+        const d = document.createElement('div'), cv = document.createElement('canvas');
+        const ctx = C.canvas(cv, 24 * 2, 21 * 2);
+        if (hires(n)) C.drawSprite(ctx, shape(n, bank), 0, 0, 2, P[1]);
+        else C.drawSpriteMC(ctx, shape(n, bank), 0, 0, 2, colour(n), pal.mc1, pal.mc2);
+        cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', 'Sprite shape $' + n.toString(16).toUpperCase());
+        const sp = document.createElement('span'); sp.textContent = '$' + n.toString(16).toUpperCase();
+        d.appendChild(cv); d.appendChild(sp); root.appendChild(d);
+      }
+    }
+  }
+  sheet($('gx-sheet'), GROUPS, 0xC000, ROLE, PLAY, (n) => n >= 0x96 && n <= 0x99);
+  sheet($('gx-intro-sheet'), [[0xA0, 0xA1, 'A puff, in two halves'], [0xA2, 0xB5, 'The Vaus turning away'],
+    [0xB6, 0xCD, 'The attacking craft'], [0xCE, 0xD5, 'An ellipse in two halves, a banded ring, the glint and an empty shape']],
+    0x4000, () => P[1], INTRO, () => false);
+
+  // one clock for every card, fifty frames a second
+  let t0 = performance.now();
+  const tick = (now) => {
+    const f = Math.max(0, Math.floor((now - t0) / 20));      // the first frame can be stamped before t0
+    for (const c of cards) {
+      const n = c.step(f), key = String(n);
+      if (key === c.last) continue;
+      c.last = key; c.ctx.fillStyle = '#000'; c.ctx.fillRect(0, 0, c.w, 21 * S); c.paint(c.ctx, n);
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 })();
 </script>

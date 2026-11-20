@@ -251,7 +251,7 @@ only), and of the sound driver at `$3B8B`-`$3EFF` and `$3F96`-`$3FFE`
   Notes from an 81-entry table (`$2573`/`$25C4`), C0 to G6 and silence.
   Callers: tune 0 `$F03C`, 1 `$96E9`, 2 `$96F1`, 4 `$9B8D`, 5 `$967E`,
   6 `$A8A6`/`$FAF6`, 8 `$B4D4` (title); no caller of tune 7 was found.
-- Twelve sound effects at `$2000`-`$245B`, three voice patches each.
+- Twelve sound effects at `$2000`-`$245B`, three voice patches each: bounce `$2000`, brick `$205D`, enlarge `$20BA`, laser `$2117`, metal `$2174`, enemy `$21D1`, exit `$222E`, catch `$228B`, start `$22E8`, Vaus lost `$2345`, Doh hit `$23A2`, Doh destroyed `$23FF`. A hold (`$0216`, strength `$0217`, run down by `$F8AD`): strength 2 from the extra-life tune (`$A89C`, `$FAEC`), enlarge, exit and Vaus lost; strength 1 for 30 frames from the laser and the enemy. Bounce, catch, brick and metal check `$0216` alone; laser and enemy skip only under strength 2.
 - **Drums on the volume register**: a bytecode sequencer
   (`drum_script_step` `$FEF4`, run from the NMI while `$0209` bit 7 is set)
   reads scripts (title `$9960`, ending `$AB10`, idle `$9A71`); bytes `$80`
@@ -338,9 +338,15 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 
 - The chooser on this page is a port of `$B204`-`$B21B`, checked against the game's own code run in a 6502 simulator on 40,000 random cases, with no difference.
 
+### controls.html
+
+- The menu screenshot is `reference/menu.png`, from the emulator. The device readers and the step and paddle formulas are traced in the code (`$FC9F`-`$FEC9`), not tried live; the speed widget computes from those formulas.
+
 ### graphics.html
 
 - The bitmap appears at the tape's own pace, where it had got to every half second, measured in VICE.
+- Every sprite shape is drawn from the listing's bytes. The animations step by the game's rules as traced: `animate_object` every speed + 1 calls, gated by `$021F` + `$A1` carrying (`$9F5E`, `$97FD`); the Vaus's fade every 4th frame (`$A3F4`), the laser change every 2nd (`$A5C7`, `$AD85`), its break-up every 3rd (`$9AE9`); the capsule's letter rebuilt as `$A7E9` does. Not compared frame by frame with the emulator.
+- Sprites 0 and 1 (shapes `$96`/`$97`) sit at Y `$EC` (`$F221`) with the X of objects 0 and 1, the Vaus's halves (`$F74C`, `$F752`), and the Vaus sits at Y `$E0` (`$F219`): the black hi-res sprites cover its rows 12-20. Read from the code, not watched live.
 
 ### index.html
 
@@ -365,3 +371,4 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 - The title and ending tunes advance once a frame and the others twice, as measured in the emulator (the game calls the driver from its NMI once on the title and twice in play).
 - The player runs the tune's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette calls it.
 - It was checked against the cassette loading in VICE: the sound chip's registers after each of the first 9,000 calls, three minutes of music, are the player's.
+- The sound-effect player runs the game's own driver: `$2690`, `$272F` once per voice with the patches the game's own calls use, then the seven tick routines until `$3417` reports silence. `test_effects.js` checks that its twelve patches are exactly the voice-0 patches of every `LDX`/`LDA`/`LDY`/`JSR` or `JMP $272F` in the listing, that voices 1 and 2 are + 31 and + 62, that every effect ends within 300 frames and that none routes a voice to the filter. The effect after the intro gets one tick a frame (the title's rate), the rest two.

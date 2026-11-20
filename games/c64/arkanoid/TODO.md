@@ -25,6 +25,12 @@ A human pass over `index.html` and `levels.html`, section by section
   writes to the volume register.
 - A Play tab: the capsule chooser, the round renderer and the sound
   driver already run on the page.
-- The Graphics tab holds only the cassette's title picture. It should
-  also draw every shape the moving things use: the Vaus, the balls, the
-  capsules, the enemies and Doh (`kit/skills/core/70-minisite`).
+- Watch the Graphics tab's animations against the emulator, and the
+  black sprites 0 and 1 over the Vaus, which were read from the code.
+- Some listing comments lag what the code shows, to correct when a
+  snapshot is next at hand: `spr_vaus_alt` (`$43`-`$44`) is the laser
+  Vaus (`laser_on_frames` `$A5EA`); `spr_vaus_fade` (`$73`-`$7A`) is the
+  Vaus fading in and changing to and from the laser; `spr_lines` (`$45`)
+  is the laser shot (`fire_laser` `$A770`); `spr_cube` says the cube is
+  round 1's enemy, where `enemy_anim_start` (`$A3E8`) gives round 1 the
+  cone.
