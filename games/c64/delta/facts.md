@@ -402,12 +402,21 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 - The decoder was checked against all 32 banners read from the game; stage 2's banner was also brought up live in VICE.
 - Stage 2, ENTERING ROCKS OF DEATH, in an emulator.
 
-### mechanics.html
+### gameplay.html
 
 - Checked against the game's code in the kit's 6502 simulator over 600 frames.
 - Checked against the game's code in the kit's 6502 simulator in 40 cases.
 - A port of `shop_try_buy` (`$2261`), checked against the game's code in the kit's 6502 simulator over all 280 combinations of icon, credits and shop state.
 - Icon 4 bought with 7 credits, and icon 5 touched with 2, were also tried live in VICE.
+
+### controls.html
+
+- The table and the title keys are the live tests under "Controls" above.
+
+### graphics.html
+
+- Every shape is drawn from the listing's bytes, and the animation lists from `$1300`-`$13FF` as the listing holds them.
+- The enemy shapes recorded from the video chip in the wave recordings (`reference/enemies.json`) were compared with the listing: all 90 are the same bytes except shapes 0, 1, 2 and 7, which the game rewrites in play; those four are drawn as recorded.
 
 ### music.html
 

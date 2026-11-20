@@ -11,6 +11,10 @@ A human curates the page section by section (`kit/START.md`, the
 
 ## Open
 
+- `media.json` is missing. Silver asks for every item on the game's
+  media answered there (`kit/skills/core/12-media`). It needs the
+  contributor's image in `work/`, which this cloud session did not have.
+
 - "Delta Patrol", the US release, is not identified in this image.
 - Which wave records take a credit away (bit 6 of byte 3) in play.
 
@@ -37,9 +41,12 @@ A human curates the page section by section (`kit/START.md`, the
   instead of 7), and the enemy entering at list 91 comes alive a frame
   apart. Probably the cycles the video chip takes, which the machine does
   not model; not settled.
-- A sound-effect player for the 21 effects at `$0406`.
 - The hazard rows (rocks, bubbles, machinery) drawn from the spawn lists
-  under the I/O area, stage by stage.
+  under the I/O area, stage by stage, and their four-step animation
+  (`hazard_frames_step`) played on the Graphics tab, which shows those
+  shapes as stills.
+- The title's sprite lettering placed as the title screen shows it; the
+  Graphics tab draws the stored blocks one under the next.
 - A Play tab: the demo at `$9F40` replays recorded input and would be the
   test for a port.
 - The trainer patch in `cheats.md`, tried live.
