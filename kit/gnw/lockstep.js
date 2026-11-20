@@ -15,6 +15,8 @@
 //                  beta } to set (the same object feeds the port and the machine), the machine's
 //                  cells and its cycles, for a player that looks at the game. It may return
 //                  { cell: value } to write into both, to start a test where play seldom goes
+//     initial      optional: { rows, alpha, beta } held from power on, before the first checkpoint
+//                  (a test pad held at power on); inputs() changes them from the first checkpoint
 //     passes       how many checkpoints to compare (default 1000)
 //     stop()       optional: true ends the run (checked after inputs)
 //     seen         optional: a Set the machine adds each physical pc it runs to
@@ -25,6 +27,9 @@
 //   romFromListing(listing)  the ROM in its own order from a game's listing.json (g.listing().ram)
 //
 // A run of sleep (CEND) is the port's { sleep: n }; the machine sleeps through it on its own.
+// inputs() runs only at checkpoints, and in a clock that sleeps between seconds those come about
+// once a second: a press there must be held longer than that, or it can fall between two of them
+// and never be seen (the test's list of states reached says so).
 
 const path = require('path');
 const SM5A = require(path.join(__dirname, 'sm5a.js'));
@@ -46,9 +51,10 @@ function romFromListing(ram) {
 }
 
 function lockstep(o) {
-  const state = { rows: [0, 0, 0], alpha: 0, beta: 0 };
+  const state = Object.assign({ rows: [0, 0, 0], alpha: 0, beta: 0 }, o.initial || {});
   const m = new SM5A(o.rom);
   const sync = () => { m.rows = state.rows.slice(); m.alpha = state.alpha; m.beta = state.beta; };
+  sync();
   let ptrace = [], gtrace = [];
   const io = {
     keys: rows => { let v = 0; for (let i = 0; i < 3; i++) if (rows >> i & 1) v |= state.rows[i]; return v & 15; },

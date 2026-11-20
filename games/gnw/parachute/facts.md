@@ -162,3 +162,22 @@ moving them is a chain of swaps through C (swap_c_bit0-3, $043B-$043E).
   only when the moving lane held someone (step_click $01B1).
 - A miss's swimmer: tone code 1 for his first move, $D after, $B when
   the shark takes him (miss_anim $0366, $036E). The bonus beeps with $B.
+
+## The Play tab's port
+
+- `play.html`'s port (`/* parachute-port */`, from `work/pages/port.js`)
+  runs in lockstep with the game's own program on the kit's model
+  (`test_play.js`): at every pass, every pass of the wait, every return
+  from drawing and every reading of the keys the two agree on all 65
+  cells and on the cycles since power on. *Live*, 19 November 2026:
+  15 minutes of Game A and 15 of Game B with a simple player, then the
+  test's three sessions (the page's player through both games, the rare
+  states, and an R3 key held at power on).
+- `test_frame.js`: the page's port of the drawing lit the chip's
+  segments on 1,194 screens of the clock, both games, the tree and the
+  bonus's blinking. `test_speed.js`: pcLimit and pcDelay equal the
+  routine's values for every score in both games. `test_sound.js`: the
+  page's five sounds are the routines' edges.
+- The page's computer player, at each step aiming the boat at the
+  paratrooper who lands first, played an hour of each game on the port
+  without a game over.

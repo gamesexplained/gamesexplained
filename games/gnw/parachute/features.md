@@ -25,6 +25,12 @@ Sources, read on 19 November 2026:
 - gameandwatch.ch, <https://gameandwatch.ch/en/game-watch-information/all-60-games/560-parachute-pr-21.html>:
   model PR-21, the ninth game, released 19 June 1981 (the page's text
   did not load beyond its heading).
+- Nintendo's "Iwata Asks: Game & Watch", part 4,
+  <https://www.nintendo.com/en-gb/Iwata-Asks/Iwata-Asks-Game-Watch/Iwata-Asks-Game-Watch/4-Absorbed-in-Development/4-Absorbed-in-Development-223140.html>
+  (read for Octopus on 15 November 2026): Masao Yamamoto programmed
+  Parachute while Takehiro Izushi programmed Octopus, at almost the same
+  time. The Super Mario Wiki also lists Mr. Game & Watch's parachute in
+  Super Smash Bros. Melee.
 - MAME 0.289's driver block for PR-21 (`src/mame/handheld/hh_sm510.cpp`):
   the buttons and their pins; R3 K1 "Infinite Lives (Cheat)",
   unpopulated on the board, "disable after boot", K2 and K3 "same as
