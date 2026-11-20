@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">An inverted character set, bullets cut out of glyphs, hits found by reading the screen, and a shop that is an attack wave (<a href="waves.html">The attack waves</a>).</p>
+  <p class="sub">An inverted character set, bullets cut out of glyphs, hits found by reading the screen, and a shop that is an attack wave (<a href="waves.html">Waves</a>).</p>
 </header>
 <main class="wrap">
 <section id="charset">
@@ -84,6 +84,7 @@
     <p class="cap"><b>Each enemy once, whatever stage it flies in.</b> A single-sprite enemy is told apart by its animation list: the wave record's byte 1 plus its first path segment's offset, an index into the lists at <code>$1300</code>. It is drawn with that list's frames, one every 4 frames as <code>enemy_anim_step</code> (<code>$3C89</code>) steps it. A big enemy is drawn as its parts stood on the first frame they were all on screen. Everything else is counted from the <a href="waves.html">wave recordings</a> of 31 stages, shop icons left out (stage 29 is not recorded, but its wave list holds no enemy that is not here): the stages each enemy flies in, how many came, the hit points and points each started with (points as the panel shows them, ten times what the game adds, <code>$11D8</code>), the colours it was given (<code>$A800</code>), and whether its path ever let it fire. The shapes are the ones the video chip showed in the recordings, since the game rewrites <code>$4000</code>-<code>$40FF</code> in play. The two shared multicolours change by stage; each card uses the first stage it appears in. Some enemies turn into a new form when shot instead of dying (bit 7 of a path segment's byte 3); those forms come from the list read through <code>$12FE</code> and are not drawn here.</p>
   </div>
   <p>The hit points come from the wave, not the enemy: <code>wave_hits_table</code> (<code>$A100</code>) is indexed by the record and the enemy's place in its group, so one shape can die at the first hit in one stage and take 32 hits, or none, in another. The points work the same way, through the record's byte 3, and so does the colour. 0 or 1 hit points dies at the first hit; <code>$FF</code> cannot be destroyed.</p>
+  <p>Every shape the enemies, the ship and the hazards are drawn with is on the <a href="graphics.html">Graphics</a> tab.</p>
   <p>The commonest is enemy 10, a single frame (<code>$60</code>) that came 650 times in 10 stages, from one hit to seven or indestructible. Enemy 4 shows the spread at its widest: the same shape takes anything from 1 to 32 hits, or cannot be destroyed at all.</p>
 </section>
 
@@ -95,22 +96,6 @@
   <p>Which kind comes depends on the player's weapons (<code>enemy_fire_setup</code>, <code>$9100</code>). Owning the shield brings the homing bombs, and owning the double laser or the slow-down changes how finely the shots are aimed. Buying weapons makes the enemies fire differently.</p>
 </section>
 
-<section id="controls">
-  <p class="fig">06 · Controls</p>
-  <h2 class="t">Controls</h2>
-  <div class="scroll"><table>
-    <tr><th>Input</th><th>Where</th><th>Effect</th></tr>
-    <tr><td>Joystick, either port</td><td>play</td><td>both ports are read and combined (<code>read_joysticks</code>, <code>$3375</code>)</td></tr>
-    <tr><td>W, X, A, D, RETURN</td><td>play, after F3</td><td>up, down, left, right, fire (<code>read_keys</code>, <code>$0C40</code>)</td></tr>
-    <tr><td>F1</td><td>title</td><td>one or two players; turns pass at each death</td></tr>
-    <tr><td>F3</td><td>title</td><td>joystick or keyboard</td></tr>
-    <tr><td>F5</td><td>title</td><td>sound effects or music in play</td></tr>
-    <tr><td>SPACE</td><td>title</td><td>shows the three options</td></tr>
-    <tr><td>RUN/STOP</td><td>play</td><td>pause; fire resumes, T quits to game over (<code>pause_check</code>, <code>$9A30</code>)</td></tr>
-    <tr><td>RESTORE</td><td>anywhere</td><td>nothing: the NMI vector points at an <code>RTI</code> at <code>$FFF8</code></td></tr>
-  </table></div>
-  <p>The demo on the title replays 63 recorded joystick bytes from <code>$9F40</code>, one every eight frames. The game points its own joystick read at <code>$0F90</code> for the demo by patching the instruction (<code>demo_joystick_patch</code>), so the ship flies by the same code as in play.</p>
-</section>
 
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

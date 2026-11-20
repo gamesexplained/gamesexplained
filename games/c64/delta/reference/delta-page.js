@@ -470,7 +470,98 @@ const DELTA_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about"
   }
   if ($('enemyCards')) enemiesWidget();
 
-  const need = ['music', 'sfx', 'stageOut', 'stageTable', 'shopOut', 'iconCards', 'shotOut', 'starLab'].filter(id => $(id));
+  /* Graphics tab: every animation list at $1300 played at the game's rate, then every other shape as a still */
+  function graphicsWidget(ram) {
+    const ANIM = [0x02, 0x0B, 0x12, 0x28, 0x2F, 0x36, 0x3D, 0x44, 0x4D, 0x56, 0x5D, 0x64, 0x6B, 0xC6];   // the lists of more than one frame
+    const NAME = { 0x02: 'the explosion, ending on the blank $9B', 0x12: 'the ship, and the small ship in the score panel' };
+    const list = o => { const f = []; for (let i = o; ram[0x1300 + i] !== 0xFF; i++) f.push(ram[0x1300 + i]); return f; };
+    const shapeAt = a => ram.subarray(a, a + 63);
+    function sprite(ctx, d, x0, y0, S, cols) {
+      for (let r = 0; r < 21; r++) for (let c = 0; c < 12; c++) {
+        const v = d[r * 3 + (c >> 2)] >> (6 - 2 * (c & 3)) & 3;
+        if (v) { ctx.fillStyle = cols[v]; ctx.fillRect(x0 + c * 2 * S, y0 + r * S, 2 * S, S); }
+      }
+    }
+    const cols = (c, mc) => [null, PAL[mc[0]], PAL[c], PAL[mc[1]]];
+    const PLAY = [14, [15, 11]], ROCKS = [12, [15, 11]];
+    function card(box, html, w, h) {
+      const div = document.createElement('div'); div.className = 'card';
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h; div.appendChild(cv);
+      div.insertAdjacentHTML('beforeend', html); box.appendChild(div);
+      const ctx = cv.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h); return ctx;
+    }
+    fetch('reference/enemies.json').then(r => r.json()).catch(() => ({ enemies: [], shapes: {} })).then(J => {
+      const byList = {};
+      J.enemies.forEach((k, i) => { if (k.anim != null) byList[k.anim] = [i + 1, k]; });
+      const animated = new Set(), players = [];
+      for (const o of ANIM) {
+        const fr = list(o); fr.forEach(f => animated.add(f));
+        const e = byList[o], [c, mc] = e ? [e[1].colour, e[1].mc] : PLAY;
+        const who = NAME[o] || (e ? `enemy ${e[0]} on <a href="gameplay.html#enemies">Gameplay</a>` : 'no wave in the 31 recorded stages flies it');
+        const ctx = card($('gfxAnims'), `<b>List ${hex(0x1300 + o, 4)}</b><br>${who}<br><span class="k">frames ${fr.map(f => hex(f)).join(' ')}</span>`, 104, 92);
+        players.push({ ctx, fr, cl: cols(c, mc) });
+      }
+      let t = 0;
+      function draw() {
+        for (const p of players) {
+          p.ctx.fillStyle = '#000'; p.ctx.fillRect(0, 0, 104, 92);
+          sprite(p.ctx, shapeAt(0x4000 + 64 * p.fr[Math.floor(t / 4) % p.fr.length]), 4, 4, 4, p.cl);
+        }
+      }
+      draw(); setInterval(() => { if (!document.hidden) { t++; draw(); } }, 20);
+
+      // stills, by where the game keeps them; a frame that an animation above plays is not drawn again
+      const recorded = {};
+      for (const [id, b] of Object.entries(J.shapes)) recorded[parseInt(id, 16)] = Uint8Array.from(atob(b), ch => ch.charCodeAt(0));
+      const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+      const GROUPS = [
+        ['Shapes 0-15 as loaded: the title’s top-score text', range(0x00, 0x0F), 0x4000, PLAY],
+        ['Shapes 0, 1, 2 and 7 as the game rewrites them in play, recorded from the video chip', [0, 1, 2, 7], null, PLAY],
+        ['The eight banner sprites as loaded, holding top-score lines 3 and 4', range(0x28, 0x2F), 0x4000, PLAY],
+        ['Hazard rows: shapes $30-$5F as loaded in the video bank', range(0x30, 0x5F), 0x4000, ROCKS],
+        ['The second set of hazard shapes, stored at $E000 and exchanged with $4C00-$577F between stages', range(0x30, 0x5D), 0xE000 - 0x30 * 64, ROCKS],
+        ['The set stored at $F0E0, exchanged with shapes $30-$43 between the title and play', range(0x30, 0x43), 0xF0E0 - 0x30 * 64, ROCKS],
+        ['Machinery and temple pieces for the hazard rows, $60-$7E', range(0x60, 0x7E), 0x4000, ROCKS],
+        ['Weapon icons, $7F-$93', range(0x7F, 0x93), 0x4000, [14, [ram[0x105E], ram[0x105F]]]],
+        ['The score panel and the blank, $94-$9B', range(0x94, 0x9B), 0x4000, PLAY],
+        ['Enemy shapes no animation list above plays, $B0-$FF', range(0xB0, 0xFF), 0x4000, PLAY],
+      ];
+      const box = $('gfxStills');
+      for (const [title, frames, base, [c, mc]] of GROUPS) {
+        const fs = frames.filter(f => base !== 0x4000 || !animated.has(f));
+        if (!fs.length) continue;
+        box.insertAdjacentHTML('beforeend', `<h3>${title.replace(/\$([0-9A-F]{2,4})/g, '<code>$$$1</code>')}</h3>`);
+        const grid = document.createElement('div'); grid.className = 'grid-cards sheet'; box.appendChild(grid);
+        for (const f of fs) {
+          const d = base == null ? recorded[f] : shapeAt(base + 64 * f);
+          if (!d) continue;
+          const ctx = card(grid, `<span class="k">${hex(f)} · ${base == null ? 'recorded' : hex(base + 64 * f, 4)}</span>`, 56, 50);
+          sprite(ctx, d, 4, 4, 2, cols(c, mc));
+        }
+      }
+
+      // the pictures the title copies into shapes 8-15, 30 bytes (ten rows) a block
+      const pics = $('gfxPics');
+      const blocks = [['title picture', 0xEFD0, 7], ['interlude A', 0xF5E0, 5], ['interlude B', 0xF676, 5], ['interlude C', 0xF70C, 5]];
+      for (const [name, a, n] of blocks) {
+        const ctx = card(pics, `<b>${name}</b><br><span class="k">${hex(a, 4)}, ${n} blocks</span>`, 56, 4 + n * 22);
+        for (let b = 0; b < n; b++) {
+          const rows = new Uint8Array(63); rows.set(ram.subarray(a + 30 * b, a + 30 * b + 30));
+          sprite(ctx, rows, 4, 4 + b * 22, 2, cols(PLAY[0], PLAY[1]));
+        }
+      }
+
+      // the character-drawn fire: the bullet glyph and the player's weapons, inverted as on the screen
+      const ch = $('gfxChars');
+      for (const g of [0x2D, ...range(0x32, 0x3F)]) {
+        const ctx = card(ch, `<span class="k">glyph ${hex(g)}</span>`, 40, 40);
+        for (let r = 0; r < 8; r++) for (let x = 0; x < 8; x++)
+          if (!(ram[0x4800 + 8 * g + r] >> (7 - x) & 1)) { ctx.fillStyle = PAL[1]; ctx.fillRect(4 + x * 4, 4 + r * 4, 4, 4); }
+      }
+    });
+  }
+
+  const need = ['music', 'sfx', 'stageOut', 'stageTable', 'shopOut', 'iconCards', 'shotOut', 'starLab', 'gfxAnims'].filter(id => $(id));
   if (!need.length) return;
   if (!window.C64) {
     need.forEach(id => { $(id).innerHTML = '<span class="msg">' + needSite + '</span>'; });
@@ -486,5 +577,6 @@ const DELTA_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about"
     if ($('iconCards')) iconCards(ram);
     if ($('bannerCv')) stageWidget(ram);
     if ($('stageTable')) stageTable(ram);
+    if ($('gfxAnims')) graphicsWidget(ram);
   });
 })();

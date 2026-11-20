@@ -191,3 +191,14 @@ of the snapshot, `work/entry.vsf`, so the rebuilt listing keeps every
 byte it had and takes only the 282 new ones from the archived disk; the
 unpatched snapshot is `work/entry-thalamus.vsf`.
 
+## Tabs brought to the current layout (20 November 2026)
+
+The tabs now follow the layout the other recent C64 games use:
+Overview, Gameplay, Controls, Levels, Waves, Graphics, Music,
+Discoveries. `mechanics.html` became `gameplay.html`, and its Controls
+section became `controls.html`; `game.json` keeps both old addresses in
+`redirects`. "The 32 stages" is now Levels, "The attack waves" Waves and
+"Music and sound" Music. The new Graphics tab plays the 14 animation
+lists at `$1300` and draws every other sprite shape as a still,
+including both hazard stores. The game is one cracked file with no
+loading picture, so the tab has none.
