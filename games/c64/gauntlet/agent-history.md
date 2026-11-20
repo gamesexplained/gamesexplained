@@ -120,3 +120,27 @@ that showed that no code sets a joining player's values: a live test with
 player two set to the Wizard confirmed it. The kit had moved `opcodes.py`
 and `cpu6502.js` to `kit/cpu/` since the last session; `work/dis.py` was
 pointed there.
+
+## 19 November 2026, Controls and Graphics tabs
+
+Asked to bring the site up to the layout recent games use and to call
+the Music & sound tab Music. Most games added since mid-November have
+Overview, How it works or Gameplay, Controls, Levels or Maps, Graphics,
+Music and Discoveries, so Gauntlet now has a Controls tab and a Graphics
+tab. The build still puts Discoveries straight after How it works.
+
+The frame and the three-fonts sections moved from How it works to
+Graphics, with redirects for their old links. Graphics also gained a
+viewer of all four heroes in eight facings, every tile in the font on
+show, and the sprite shapes `$A0`-`$BF`. Working out the walk for it
+showed that the hero widget on How it works stepped 0, 1, 2, 1 at 130 ms
+where anim_frames gives 0, 8, 0, 16 every fourth frame; it now does
+that. The tile sheet showed tiles `$37` and `$38` drawn as exits
+labelled "TO 4" and "TO 8".
+
+For Controls, every read of the keyboard bytes and of CIA 1's ports was
+listed: player one's stick is keyboard row 7, so SPACE is a fire button
+too, and the magic tests lose to joystick 1's fire and right. This
+container had no disk image or emulator, so these are traced and held
+by `test_keys.js`, not tried live (`TODO.md`). Section 01 of How it
+works also had a stray second `</section>`, removed.
