@@ -58,7 +58,8 @@ moving them is a chain of swaps through C (swap_c_bit0-3, $043B-$043E).
 - One lane moves a step, in turn left, middle, right (lane_move $01C0,
   lane_turn $0A), so each moves every third step. In the clock's demo
   all three move each second (demo_end $010D, *live*: 30 lane moves in
-  10 s, MRL repeated).
+  10 s, MRL repeated), and the step itself, with the rotor, does not
+  run.
 - The boat is at the left (2.2.1), middle (2.1.1) or right (0.3.1). A
   paratrooper arriving at his lane's last place is caught when the boat
   is under it (catch $043A); otherwise miss_due's bit for the lane is
@@ -104,14 +105,14 @@ moving them is a chain of swaps through C (swap_c_bit0-3, $043B-$043E).
   empty and in_air is even; flag_07 bit 3 holds him one step.
 - Each right-lane move swaps his two swings, 8.0.0 and 8.1.0
   (right_lane_end $018E).
-- tree_release ($01E1), on a step with no point and no right-lane miss
-  to see to: when 8.0.1, 0.3.0 and 0.2.0 are all clear, the swing the
+- tree_release ($01E1), tried only on a step with no right-lane miss
+  and the seconds' tens even (release_check $01BA): when 8.0.1, 0.3.0 and 0.2.0 are all clear, the swing the
   rotor's blade 8.3.0 picks (8.0.0 with it lit, 8.1.0 without) drops
   into 0.3.0, so he drops only when he is in that swing.
 
 ## The water
 
-- One chain of eleven places (miss_anim $0340): flag_07 bit 1, the
+- One chain of twelve places (miss_anim $0340): flag_07 bit 1, the
   fin's circle 1.2.1, 1.0.1, 2.3.0, 1.1.0, the shark's leap 1.3.0, then
   the swimmer's path 1.3.1, 1.1.1, 2.3.1, 1.0.0, 1.2.0, 0.0.0. The leap
   does not carry into the swimmer's path.
@@ -143,15 +144,16 @@ moving them is a chain of swaps through C (swap_c_bit0-3, $043B-$043E).
   $0240 the same bytes.
 - After power on, left adds an hour, right a minute, repeating four
   times a second when held; in the alarm's setting the same for the
-  alarm (pad_pressed $02C0, *live*).
+  alarm, repeating too (pad_pressed $02C0, *live*).
 - Each press of Alarm turns the alarm on or off (mode_entered $0535);
   with it on, the bell (5.0.0) shows (draw_prep $0612). Holding Time in
   the clock shows the alarm's time (clock_screen $06C2, *live*).
 - It rings for a minute: the monkey (3.0.1) and the bell swinging
   (bell_swing $0625), the buzzer a quarter of each second (alarm_buzz
   $0293). Time stops it ($0549, *live*).
-- The keys' sum picks the mode (mode_change $0553): Time with Game B is
-  Game A, Game A with Game B the alarm's setting.
+- The keys' sum picks the mode (mode_change $0553): 1 the clock, 2-3
+  Game B, 4-6 Game A, 7 or more the alarm's setting, so the three game
+  keys together open the alarm's setting (*live*).
 
 ## Sound
 

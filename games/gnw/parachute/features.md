@@ -48,7 +48,7 @@ Sources, read on 19 November 2026:
 | Misses removed at 200 and 500 points | live | add_point $0085 ($0093), bonus_step $071C: only when a miss is lit; the misses blink for about 5 seconds, the game held |
 | More parachutists, falling faster, as the score grows | live | set_wait $00C0: jump_limit 1 to 10 and the wait from 11 passes down to 5, by the score's hundreds plus tens (plus one for units of 4 to 7) |
 | Game B harder than Game A | differs | set_wait $00C0 is the same for both. Game B differs in the tree (right_lane $01C3) and in the jump's chance: with one or two in the air Game A always sends another, Game B asks the divider (jump_chance $0124) |
-| In Game B some parachutists get stuck in a tree | live | right_lane $01C3: one leaving the right lane's third place when in_air is even and the tree is empty; tree_release $01E1: he drops when the lane below is clear and the swing and the rotor agree |
+| In Game B some parachutists get stuck in a tree | live | right_lane $01C3: one leaving the right lane's third place when in_air is even and the tree is empty; tree_release $01E1: he drops when the lane below is clear, the seconds' tens are even, and the swing and the rotor agree |
 | A shark | live | timekeep $0239: besides the misses, a fin circles and the shark leaps every ten seconds, in the clock and in a game, silently |
 | The best score is remembered | live | best_check $00A3: one for each game, shown while its key is held (game_screen $05F0) |
 | "Infinite Lives" test pad on R3 (MAME's driver) | live | power_on $03C0: any key of the R3 row held at power on sets pad_flags bit 2, and misses are not counted (count_miss $0370); the chip waits for it to be let go |

@@ -2,7 +2,7 @@
  "schema": 1,
  "platform": "gnw",
  "game": "parachute",
- "build": "",
+ "build": "MAME's ROM set gnw_pchute: pr-21, the Sharp SM5A's mask ROM of the Wide Screen Parachute (PR-21), 1,856 bytes, CRC32 392b545e, SHA-1 e71940cd4cee07ba1e62c1c7d9e9b19410e7232d, as MAME 0.289 lists it",
  "source": "regen2000proj",
  "regions": {
   "exclude": [
@@ -1378,7 +1378,7 @@
   {
    "address": 27,
    "type": "line",
-   "text": "clock_second: the clock's demo steps once a second. Clears flag_07 bit 2, which lets the demo's boat move again, and goes to demo_step ($02E6), which runs a whole step of the game with the boat moved for it."
+   "text": "clock_second: the clock's demo, once a second: clears flag_07 bit 2, which lets the demo's boat move again, and goes to demo_step ($02E6): the three lanes' miss checks and all three lanes' moves. step ($0053) itself does not run in the clock, so the rotor stands still there."
   },
   {
    "address": 31,
@@ -1413,7 +1413,7 @@
   {
    "address": 83,
    "type": "line",
-   "text": "step: one step of a game, and of the clock's demo. First the rotor turns: a token goes round lcd_00 bit 0, which has no segment, and the two blades (8.3.0, 8.3.1), by swapping each with C in turn, so each blade is lit two steps in three. Then the alarm's bell ($0625), and a redraw is asked for. With the third miss lit (lcd_18 bit 0) the game is over: only the rotor turns, and the step ends with a pass. Otherwise step_body ($0100)."
+   "text": "step: one step of a game, reached only from the wait ($0046). First the rotor turns: a token goes round lcd_00 bit 0, which has no segment, and the two blades (8.3.0, 8.3.1), by swapping each with C in turn, so each blade is lit two steps in three. Then the alarm's bell ($0625), and a redraw is asked for. With the third miss lit (lcd_18 bit 0) the game is over: only the rotor turns, and the step ends with a pass. Otherwise step_body ($0100)."
   },
   {
    "address": 102,
@@ -1558,7 +1558,7 @@
   {
    "address": 384,
    "type": "line",
-   "text": "right_miss: in a game, a miss due in the right lane (miss_due bit 0, taken) starts: the paratrooper at 0.2.0 goes out, the water's upper row is set to the splash under the right lane alone (lcd_12 = 8), the shark's chain gets its token (flag_07 bit 1), and miss_start runs ($01AA). With none due: the tree's release ($01E1) unless a point is due (game_flags bit 0), then the step's end ($01AC)."
+   "text": "right_miss: in a game, a miss due in the right lane (miss_due bit 0, taken) starts: the paratrooper at 0.2.0 goes out, the water's upper row is set to the splash under the right lane alone (lcd_12 = 8), the shark's chain gets its token (flag_07 bit 1, the SM 1 at $018C), and miss_start runs ($01AA). With none due: release_check ($01BA), then the step's end ($01AC)."
   },
   {
    "address": 398,
@@ -1588,7 +1588,7 @@
   {
    "address": 442,
    "type": "line",
-   "text": "release_check: with a point due the tree waits; otherwise tree_release ($01E1)."
+   "text": "release_check: the tree's release is tried only when the seconds' tens (time_s10, $3A, by LB $B) are even (tree_release, $01E1); when they are odd, the step's end ($01AC)."
   },
   {
    "address": 447,
@@ -1618,7 +1618,7 @@
   {
    "address": 481,
    "type": "line",
-   "text": "tree_release: on a step with no miss or point to see to. While flag_07 bit 3 is set (taken here) he stays. Otherwise, when the right lane is clear below the tree (8.0.1, 0.3.0 and 0.2.0 all out), the pose that the rotor's blade 8.3.0 picks drops into 0.3.0: 8.0.0 with the blade lit, 8.1.0 with it out ($01F6). He drops only when he is in that pose, so the release waits for the swing and the rotor to agree."
+   "text": "tree_release: on a step with no right-lane miss to see to and the seconds' tens even (release_check, $01BA). While flag_07 bit 3 is set (taken here) he stays. Otherwise, when the right lane is clear below the tree (8.0.1, 0.3.0 and 0.2.0 all out), the pose that the rotor's blade 8.3.0 picks drops into 0.3.0: 8.0.0 with the blade lit, 8.1.0 with it out ($01F6). He drops only when he is in that pose, so the release waits for the swing and the rotor to agree."
   },
   {
    "address": 502,
@@ -1798,7 +1798,7 @@
   {
    "address": 704,
    "type": "line",
-   "text": "pad_pressed: a new press of left or right. After power on (mode 0) left adds an hour ($0240) and right a minute ($0271). In the alarm's setting (mode 8) it clears the seconds' count, puts out the monkey (lcd_14 bit 0), and left adds an hour to the alarm ($0269) and right a minute ($027B). In both, the step's body then runs from jump_chance ($02E4). Otherwise, in a game and in the clock, move_boat ($0300). Both held at once does nothing."
+   "text": "pad_pressed: a new press of left or right. After power on (mode 0) left adds an hour ($0240) and right a minute ($0271). In the alarm's setting (mode 8) it clears the seconds' count, puts out the monkey (lcd_14 bit 0), and left adds an hour to the alarm ($0269) and right a minute ($027B). In both, the step's body then runs from jump_chance ($02E4). Otherwise, in a game, move_boat ($0300). Both held at once does nothing."
   },
   {
    "address": 712,
@@ -1833,7 +1833,7 @@
   {
    "address": 768,
    "type": "line",
-   "text": "move_boat: a press in a game or in the clock. Left moves the boat one place left (boat_left, $0333), right one place right (boat_right, $03F0); both together nothing ($0306). Then, with a point due, the points at once ($0323). Otherwise the late catch: when a miss is due in the lane the boat has just reached (miss_due's bit for the boat's place, swapped out through C), it is a catch after all ($0322): a point, and no miss. Checked on the model: a press made after the paratrooper reached the last place, before the next step, scores."
+   "text": "move_boat: a press in a game, before or after it is over (read_pad gives none in the clock). Left moves the boat one place left (boat_left, $0333), right one place right (boat_right, $03F0); both together nothing ($0306). Then, with a point due, the points at once ($0323). Otherwise the late catch: when a miss is due in the lane the boat has just reached (miss_due's bit for the boat's place, swapped out through C), it is a catch after all ($0322): a point, and no miss. Checked on the model: a press made after the paratrooper reached the last place, before the next step, scores."
   },
   {
    "address": 783,
@@ -1843,7 +1843,7 @@
   {
    "address": 805,
    "type": "line",
-   "text": "demo_boat: called when a paratrooper leaves the left lane's fourth place or the right lane's third. In the clock, unless flag_07 bit 2 says the boat has moved this second, the demo's boat moves one place toward him: left when lane_turn bit 0 is set (the left lane's move), right otherwise. In a game it returns at once."
+   "text": "demo_boat: called when a paratrooper leaves the left lane's fourth place or the right lane's third. In the clock, unless flag_07 bit 2 is set (the demo's boat sent to the middle, or a catch there, since the last second), the demo's boat moves one place toward him: left when lane_turn bit 0 is set (the left lane's move), right otherwise. In a game it returns at once."
   },
   {
    "address": 819,
@@ -1863,7 +1863,7 @@
   {
    "address": 832,
    "type": "line",
-   "text": "miss_anim: runs at the end of each step's body, and moves the water's chain when lane_turn bit 0 is set: every step while a miss's animation runs, every third step (after the left lane's) otherwise. The chain is one line of eleven places, each taking the one before through C: flag_07 bit 1, then the fin's circle 1.2.1, 1.0.1, 2.3.0, 1.1.0, the shark's leap 1.3.0, and then the swimmer's path 1.3.1, 1.1.1, 2.3.1, 1.0.0, 1.2.0, 0.0.0. The leap does not carry on into the swimmer's path: C is cleared after it, A set to 8 and the animation's end asked for (redraw_flags bit 1 cleared, $034E). A miss puts the swimmer in at the splash under his lane and the fin at the same distance along its circle, so the shark leaps as the swimmer reaches 0.0.0. Only the swimmer's moves count from there: in a game, when one of them moved (A left at 0), a tone plays (code 1 the first time, $D after, $0366) and the animation goes on (redraw_flags bit 1 set again); the fin's patrol every ten seconds moves silently and the lanes go on. When the swimmer leaves 0.0.0, taken by the shark, a tone of code $B and the miss is counted ($0373). Out of a game the step ends ($0362)."
+   "text": "miss_anim: runs at the end of each step's body, except a miss's first step, which game_flags bit 3 holds back, and moves the water's chain when lane_turn bit 0 is set: every step while a miss's animation runs, every third step (after the left lane's) otherwise. The chain is one line of twelve places, each taking the one before through C: flag_07 bit 1, then the fin's circle 1.2.1, 1.0.1, 2.3.0, 1.1.0, the shark's leap 1.3.0, and then the swimmer's path 1.3.1, 1.1.1, 2.3.1, 1.0.0, 1.2.0, 0.0.0. The leap does not carry on into the swimmer's path: C is cleared after it, A set to 8 and the animation's end asked for (redraw_flags bit 1 cleared, $034E). A miss puts the swimmer in at the splash under his lane and the fin at the same distance along its circle, so the shark leaps as the swimmer reaches 0.0.0. Only the swimmer's moves count from there: in a game, when one of them moved (A left at 0), a tone plays (code 1 the first time, $D after, $0366) and the animation goes on (redraw_flags bit 1 set again); the fin's patrol every ten seconds moves silently and the lanes go on. When the swimmer leaves 0.0.0, taken by the shark, a tone of code $B and the miss is counted ($0373). Out of a game the step ends ($0362)."
   },
   {
    "address": 846,
@@ -1878,7 +1878,7 @@
   {
    "address": 883,
    "type": "line",
-   "text": "count_miss: unless pad_flags bit 2 (set at power on by a key of the R3 row) says misses are off ($0370), the misses shift up: a new one into 0.2.1 (with the word MISS), the first into 0.1.1, the second into 0.0.1. The third (lcd_18 bit 0) ends the game: the helicopter and its rotor shown (set_00_01), and the seconds' count cleared, so the clock comes back 255 seconds later. Then the points ($0080), which sees to the best score."
+   "text": "count_miss: unless pad_flags bit 2 (set at power on by a key of the R3 row, flipped by R3 K4 at read_r3) says misses are off ($0370), the misses shift up: a new one into 0.2.1 (with the word MISS), the first into 0.1.1, the second into 0.0.1. The third (lcd_18 bit 0) ends the game: the helicopter and its rotor shown (show_helicopter), and the seconds' count cleared, so the clock comes back 255 seconds later. Then the points ($0080), which sees to the best score."
   },
   {
    "address": 895,
@@ -1888,7 +1888,7 @@
   {
    "address": 896,
    "type": "line",
-   "text": "read_pad: reads left and right; returns with a skip for a new press. In the clock (mode 1) it returns at once: the demo plays by itself, and a press there does nothing. Left and right together count as neither and end the hold (pad_flags bit 0). A press that pad_flags says was already held counts again only after power on (mode 0), as a repeat each time the divider reaches repeat_at ($28), four times a second ($0395)."
+   "text": "read_pad: reads left and right; returns with a skip for a new press. In the clock (mode 1) it returns at once: the demo plays by itself, and a press there does nothing. Left and right together count as neither and end the hold (pad_flags bit 0). A press that pad_flags says was already held counts again after power on (mode 0) and in the alarm's setting (mode 8, the carry of ADX 9 at $0393), as a repeat each time the divider reaches repeat_at ($28), four times a second ($0395)."
   },
   {
    "address": 937,
@@ -1908,7 +1908,7 @@
   {
    "address": 960,
    "type": "line",
-   "text": "power_on: where the chip starts at power on and after ACL. Selects the R3 row of buttons, clears the data cells of rows 4 to 0 (clear_down from column 12 of each), and while a key of the R3 row is held sets pad_flags bit 2 (misses are not counted) and waits for it to be let go ($03D3). Then selects the R4 row, asks for a redraw, sets the time to 12:00 AM ($36 = 1, $37 = 2) and the alarm to 12:00 PM ($32 = 9, $33 = 2), turns the screen on and makes a pass. Mode 0 shows every segment until Time is pressed. MAME 0.289's driver names the R3 row's first key \"Infinite Lives (Cheat)\", unpopulated on the board."
+   "text": "power_on: where the chip starts at power on and after ACL. Selects the R3 row of buttons, clears the data cells of rows 4 to 0 (clear_down from column 12 of each), and while a key of the R3 row is held sets pad_flags bit 2 (misses are not counted) and waits for it to be let go ($03D3). Then selects the R4 row, asks for a redraw, sets the time to 12:00 AM ($36 = 1, $37 = 2) and the alarm to 12:00 PM ($32 = 9, $33 = 2), turns the screen on and makes a pass. Mode 0 shows every segment until a key of the R4 row chooses a mode. MAME 0.289's driver names the R3 row's first key \"Infinite Lives (Cheat)\", unpopulated on the board."
   },
   {
    "address": 1001,
@@ -1963,7 +1963,7 @@
   {
    "address": 1033,
    "type": "line",
-   "text": "draw_cell: shifts the cell at B into the screen's W' latches (by WS when its bit 3 is set, WR when clear, as A's bit 3 says) and moves B on one column. The drawing calls it once for each segment cell; the bonus's blink enters at $040A with A = 0, which draws a cell blank."
+   "text": "draw_cell: shifts the cell at B into the screen's W' latches (by WS when its bit 3 is set, WR when clear, as A's bit 3 says) and moves B on one column. The drawing calls it once for each segment cell; the bonus's blink enters at $040A with A = 0, which draws the cell's bits 0-2 blank: bit 3 is still drawn from the cell (TM 3), so the boat at the right stays lit while the misses blink."
   },
   {
    "address": 1041,
@@ -1988,7 +1988,7 @@
   {
    "address": 1045,
    "type": "line",
-   "text": "show_helicopter: sets lcd_00 bit 0 and lcd_01 bits 2 and 3: the helicopter (8.2.0), a rotor blade (8.3.0) and the rotor's unlit third place, as a game starts and when it ends ($0486)."
+   "text": "show_helicopter: sets lcd_00 bit 0 and lcd_01 bits 2 and 3: the helicopter (8.2.0), a rotor blade (8.3.0) and the rotor's unlit third place, when a game starts (start_game) and ends (count_miss), and when mode_setup sets up any mode that is not a game ($05C7) ($0486)."
   },
   {
    "address": 1046,
@@ -2403,7 +2403,7 @@
   {
    "address": 1344,
    "type": "line",
-   "text": "mode_change: the buttons changed a pass ago and still read the same. In the clock with the alarm ringing, Time would stop it ($0549, which never ran in the coverage run); the other keys leave it. All keys let go: when a game's key was held (redraw_flags bit 2) the game starts ($056A). Otherwise, out of a game or after one is over, the keys give the mode by their sum, as the carries of ADX $F, $E and $D sort it: 1 (Time) the clock, 2 (Game B) Game B, 3 to 5 Game A, 6 or more the alarm's setting. So Time with Game B gives Game A, and Game A with Game B gives the alarm's setting; Alarm alone is 8. Coming from power on (old mode 0) the divider is reset (IDIV) and the 1 Hz flag cleared (TG), so the seconds start when a mode is first chosen ($0561)."
+   "text": "mode_change: the buttons changed a pass ago and still read the same. In the clock with the alarm ringing, Time stops it ($0549, checked on the model); the other keys leave it. All keys let go: when a game's key was held (redraw_flags bit 2) the game starts ($056A). Otherwise, out of a game or after one is over, the keys give the mode by their sum, as the carries of ADX $F at $054D and ADX $F, $E and $D from $0553 sort it: 1 (Time) the clock, 2 or 3 Game B, 4 to 6 Game A, 7 or more the alarm's setting. So Time with Game B gives Game B, Time or Game B with Game A gives Game A, and all three together the alarm's setting (checked on the model); Alarm alone is 8. Coming from power on (old mode 0) the divider is reset (IDIV) and the 1 Hz flag cleared (TG), so the seconds start when a mode is first chosen ($0561)."
   },
   {
    "address": 1350,
@@ -2483,7 +2483,7 @@
   {
    "address": 1472,
    "type": "line",
-   "text": "mode_setup: a new mode's screen. Clears row 0 to column 9 (the lanes, the water, in_air) and row 1 to column 8 (the misses and the boat), puts the boat in the middle (lcd_13 bit 1), and clears the sounds, miss_due and a point due. In a game it shows the helicopter and the blade 8.3.1, lights GAME A (lcd_03 bit 2) or GAME B (lcd_08 bit 1), and sets redraw_flags bit 2 so the game starts when the key is let go, with A = 0 for jump_limit. In the clock and after power on it sets keys to $E and clears tick_flags bit 2; there and in the alarm's setting A = 2 ($05E9). Then set_limit_delay ($0500)."
+   "text": "mode_setup: a new mode's screen. Clears row 0 to column 9 (the lanes, the water, in_air) and row 1 to column 8 (the misses and the boat), puts the boat in the middle (lcd_13 bit 1), and clears the sounds, miss_due and a point due. Out of a game it shows the helicopter and the blade 8.3.1 ($05C7). In a game it lights GAME A (lcd_03 bit 2) or GAME B (lcd_08 bit 1) and sets redraw_flags bit 2 so the game starts when the key is let go (start_game shows the helicopter then), with A = 0 for jump_limit. In the clock and after power on it sets keys to $E and clears tick_flags bit 2; there and in the alarm's setting A = 2 ($05E9). Then set_limit_delay ($0500)."
   },
   {
    "address": 1516,
@@ -2608,7 +2608,7 @@
   {
    "address": 1820,
    "type": "line",
-   "text": "bonus_step: the bonus, while pad_flags bit 1 holds the game: no step runs, only passes. On a pass when the divider's bits 11-14 read 0, bonus_blinks ($42) counts down by one with a short beep (tone code $B); at 0 the misses go out (lcd_18 bits 2 and 1) and the bonus ends. On the model it lasted 5.05 seconds from score 199 with a miss."
+   "text": "bonus_step: the bonus, while pad_flags bit 1 holds the game: no step runs, only passes. On a pass when the divider's bits 11-13 read 0 (its bits 11-14 at 0 or 8, by the two ADX 8, the second skipped when the first carries), twice a second, bonus_blinks ($42) counts down by one with a short beep (tone code $B); at 0 the misses go out (lcd_18 bits 2 and 1) and the bonus ends. On the model it lasted 5.05 seconds from score 199 with a miss."
   },
   {
    "address": 1855,
@@ -2648,12 +2648,12 @@
   {
    "address": 4102,
    "type": "line",
-   "text": "flag_06 ($06): bit 0 the bell swung up (5.0.0, the second digit's extra segment), lit with lcd_04 bit 2 while the alarm rings."
+   "text": "flag_06 ($06): bit 0 the bell up (5.0.0, the second digit's extra segment): lit alone as the sign that the alarm is on (draw_prep, $0612), and with lcd_04 bit 2 as one swing of the bell while the alarm rings."
   },
   {
    "address": 4103,
    "type": "line",
-   "text": "flag_07 ($07): bit 0 the left lane's fourth place (6.0.0, the third digit's extra segment). Bit 1 the first place of the shark's chain, a token that starts a miss's animation ($0189). Bit 2 is set when the middle lane's paratrooper is caught or the clock's demo moves the boat, and cleared each second of the clock: the demo moves its boat only while it is clear ($032B). Bit 3 is set when a paratrooper is caught in the tree and holds it there one step more ($01E2)."
+   "text": "flag_07 ($07): bit 0 the left lane's fourth place (6.0.0, the third digit's extra segment). Bit 1 the first place of the shark's chain: set by a right-lane miss (the SM 1 at $018C) and every ten seconds by timekeep ($023B). Bit 2 is set when the middle lane's paratrooper is caught ($0147) or the demo's boat goes to the middle ($0079), and cleared each second of the clock: the demo's boat moves (demo_boat) only while it is clear. Bit 3 is set when a paratrooper is caught in the tree and holds him there one step more ($01E2)."
   },
   {
    "address": 4104,
@@ -2673,7 +2673,7 @@
   {
    "address": 4107,
    "type": "line",
-   "text": "game_flags ($0B): bit 0 a point is due ($043A), bit 1 the alarm is on, bit 2 in the alarm's setting, the alarm's note blinks, bit 3 a miss's animation waits a step ($0106)."
+   "text": "game_flags ($0B): bit 0 a point is due (catch, $043A); bit 1 a minute has passed and the alarm is to be checked (set at $0270 and $052A, taken at $0588); bit 2 the alarm is on (flipped at $0536, tested at $0595 and $060B); bit 3 a miss's animation waits a step ($0106)."
   },
   {
    "address": 4112,
@@ -2698,7 +2698,7 @@
   {
    "address": 4116,
    "type": "line",
-   "text": "lcd_14 ($14): latch 3, H2. Bit 0 the monkey (3.0.1), lit while the alarm rings, bit 1 AM (3.1.1), bit 2 the bell swung down (3.2.1), bit 3 the middle lane's fifth place (3.3.1)."
+   "text": "lcd_14 ($14): latch 3, H2. Bit 0 the monkey (3.0.1), lit while the alarm rings and in the alarm's setting (alarm_screen, for each drawing), bit 1 AM (3.1.1), bit 2 the bell swung down (3.2.1), bit 3 the middle lane's fifth place (3.3.1)."
   },
   {
    "address": 4117,
