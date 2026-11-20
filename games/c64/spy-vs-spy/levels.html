@@ -1,0 +1,278 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spy vs Spy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.svs-cv{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:6px}
+.svs-stack{position:relative}
+.svs-stack canvas+canvas{position:absolute;left:0;top:0}
+.svs-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px;font-family:var(--fm);font-size:12.5px}
+.svs-bar button{padding:6px 10px}
+.svs-bar button.svs-on{background:var(--btn-on-bg);color:var(--btn-on-ink);border-color:var(--btn-on-line)}
+.svs-bar label{color:var(--ink-mute)}
+.svs-read{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.6em}
+.svs-tbl{border-collapse:collapse;width:100%;font-size:14.5px;margin:6px 0 0}
+.svs-tbl th,.svs-tbl td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.svs-tbl th{font-family:var(--fm);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.svs-tbl td.svs-n{font-family:var(--fm);text-align:right;white-space:nowrap}
+.svs-scroll{overflow-x:auto}
+.svs-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.svs-grid button{font-size:14px;text-align:left;padding:8px 10px}
+.svs-grid button small{display:block;font-family:var(--fm);font-size:11.5px;color:var(--ink-mute)}
+.svs-panel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 6px}
+.svs-panel div{background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.svs-panel b{display:block;font-family:var(--fm);font-size:22px;font-weight:500;color:var(--ink)}
+.svs-panel span{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute);letter-spacing:.04em;text-transform:uppercase}
+.svs-miss{font-size:14px;color:var(--coral)}
+@media (max-width:720px){:root{--gx:16px;--h1:36px;--pp:14px}.svs-grid,.svs-panel{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1984 · First Star Software</p>
+  <h1>Spy vs Spy</h1>
+  <p class="sub">The embassy of each of the eight levels, from 6 rooms on one floor to 36 on two, drawn from the game's own level tables with the rooms, minutes, traps and exits of each; then the computer's spy finding its way through them with the game's route search, ported to this page.</p>
+</header>
+<main class="wrap">
+<section>
+  <p class="fig">01 · The embassy</p>
+  <h2 class="t">Every level's embassy has a fixed map</h2>
+  <p class="lede">The manual calls the embassy "selectable, yet randomly generated". The rooms and the doors between them are the same in every game of a level; what changes is what is in them.</p>
+  <div class="plate">
+    <div class="pick"><a class="step" id="svs-map-prev" role="button" aria-label="Previous level">&lsaquo;</a><select id="svs-map-level" aria-label="Level"></select><a class="step" id="svs-map-next" role="button" aria-label="Next level">&rsaquo;</a></div>
+    <canvas id="svs-map" class="svs-cv" width="800" height="300"></canvas>
+    <p class="svs-read" id="svs-map-read"></p>
+    <p class="cap"><b>Each level's map, drawn from the level tables</b> in the listing: six door links for each room (<code>level_layout_lo</code> <code>$BC61</code>), and where the map button draws it (<code>level_map_lo</code> <code>$BC71</code>; the low four bits are the column, the next three the row, the top bit the floor). Rooms outlined in orange are the four that can hold the exit; &#8645; marks a ladder or a hole to the other floor. Click a room for its doors.</p>
+  </div>
+  <p>Each new game, <code>build_embassy</code> (<code>$7EF8</code>) copies the level's door links into the room records and then rolls the rest: which of four rooms has the exit, each room's colour, where along its wall each door stands, up to three pieces of furniture, one per wall, and which pieces hide the five items. The remedies go with the furniture: every piece of two kinds on the left wall holds a fire bucket, two kinds on the right hold wire cutters, and one kind each on the back wall holds the scissors or the umbrella (<code>furniture_contents</code> <code>$0900</code>). A spy who knows the furniture knows where the remedies are.</p>
+  <div class="svs-scroll"><table class="svs-tbl">
+    <thead><tr><th>Level</th><th>Rooms</th><th>Minutes</th><th>Traps shown</th><th>Traps allowed</th><th>Item chance</th><th>Exit rooms</th><th>Floors</th></tr></thead>
+    <tbody id="svs-levels"></tbody>
+  </table></div>
+  <p class="cap">From <code>level_rooms</code> <code>$BC91</code>, <code>level_minutes</code> <code>$1B0E</code>, <code>item_chance</code> <code>$BCA9</code> (the chance that an empty piece of furniture gets an item as they are dealt out) and <code>exit_choices</code> <code>$BCC1</code>, from which one entry is picked at random: level 1 lists room 3 twice, so its exit is in room 3 half the time. "Traps allowed" is explained under <a href="mechanics.html#traps">Traps</a> on How it works.</p>
+</section>
+
+<section>
+  <p class="fig">02 · The computer's spy</p>
+  <h2 class="t">The computer's spy plans its routes with a breadth-first search</h2>
+  <p class="lede">In a one-player game the black spy is the computer, and it moves through the embassy as if it had the map in front of it.</p>
+  <div class="plate">
+    <div class="svs-bar"><select id="svs-route-level" aria-label="Level"></select>
+      <button id="svs-route-step">Step a round</button><button id="svs-route-run">Run</button><button id="svs-route-reset">Reset</button></div>
+    <canvas id="svs-route" class="svs-cv" width="800" height="300"></canvas>
+    <p class="svs-read" id="svs-route-read"></p>
+    <p class="cap"><b>The search, ported from <code>route_search</code> (<code>$A9EF</code>).</b> Click a room to set the goal (red outline), then another for the start (green). Each round, the search looks through every door of every room it reached in the round before, highest room number first and the doors from the last to the first, and marks the rooms behind them; the darker the blue, the later the round.</p>
+  </div>
+  <p>The computer keeps a stack of tasks and picks its next goal from what each spy carries and what is already in the briefcase (<code>cpu_choose_goal</code> <code>$A847</code>). A goal can be a room, a room whose furniture holds a particular remedy, or a room where one of the items lies. The search runs until it reaches a room that passes the test, then walks back through the "came from" list to make the route (<code>route_to_waypoints</code> <code>$AB03</code>), one waypoint at each door.</p>
+  <p>The test reads the game's own tables of where the items are (<code>$0210</code>) and what each piece of furniture holds. The computer never has to search: it knows where every item, remedy and trap is from the start.</p>
+  <p>The IQ setting decides what the computer does with that knowledge. It checks IQ − 1 rooms of its route ahead for traps, and below IQ 3 skips the check three times in four (<code>cpu_check_route</code> <code>$9D01</code>). The IQ also sets how often it thinks of running from a fight (<code>cpu_flee</code> <code>$A30F</code>) and how fast it swings the club, from every 13 turns at IQ 1 to every 2 at IQ 5 (<code>iq_swing_rate</code> <code>$1B1E</code>).</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* svs-route */
+// route_search ($A9EF) for the page: the computer spy's breadth-first search over an embassy's
+// rooms. links[r] is room r's six door links (left, right, back, front, the two floor openings;
+// $FF none), exit the exit room (its back door is the way out, never a way through). Returns the
+// search as the game leaves it: dist[r] (0 unreached, 255 the start, else the round that reached
+// it, from 1), from[r] and slot[r], the order in which rooms were reached, and found, the goal's
+// round (-1 when it gave up after 35 rounds).
+function svsRoute(links, exit, start, goal) {
+  const n = 36, dist = new Array(n).fill(0), from = new Array(n).fill(0), slot = new Array(n).fill(0);
+  const order = [];
+  if (start === goal) return { dist, from, slot, order, found: 0 };
+  dist[start] = 255;
+  const expand = (r, d) => {                               // doors 5 down to 0, as $AA2E
+    for (let x = 5; x >= 0; x--) {
+      const y = (links[r] ? links[r][x] : 0xFF) & 0x7F;
+      if (y === 0x7F) continue;
+      if (r === exit && x === 2) continue;
+      if (dist[y] === 0) { from[y] = r; dist[y] = d; slot[y] = x; order.push(y); }
+      if (y === goal) return true;
+    }
+    return false;
+  };
+  if (expand(start, 1)) return { dist, from, slot, order, found: 1 };
+  for (let round = 1; round < 35; round++) {               // rooms 35 down to 0 at this distance
+    for (let r = 35; r >= 0; r--) {
+      if (dist[r] !== round) continue;
+      if (expand(r, round + 1)) return { dist, from, slot, order, found: round + 1 };
+    }
+  }
+  return { dist, from, slot, order, found: -1 };
+}
+</script>
+<script>
+(function () {
+'use strict';
+const HAS = typeof C64 !== 'undefined';
+const $ = id => document.getElementById(id);
+const say = (el, t) => { el.insertAdjacentHTML('afterend', '<p class="svs-miss">' + t + '</p>'); };
+const SHARED = 'This is drawn by the site\'s shared script, which the built site serves.';
+const hx = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 4, '0');
+
+// ---- 01 and 02 the embassy and the route search
+const SLOTS = ['left', 'right', 'back', 'front', 'floor opening', 'floor opening'];
+let LV = null;
+function levels(D) {
+  const b = (a) => D.ram[a], out = [];
+  for (let v = 0; v < 8; v++) {
+    const lay = b(0xBC61 + v) | b(0xBC69 + v) << 8, mp = b(0xBC71 + v) | b(0xBC79 + v) << 8;
+    const n = b(0xBC91 + v), ex = b(0xBCB1 + v) | b(0xBCB9 + v) << 8;
+    const links = [], cells = [];
+    for (let r = 0; r < n; r++) { links.push(Array.from(D.bytes(lay + 6 * r, 6))); cells.push(b(mp + r)); }
+    out.push({ n, lay, mp, links, cells, exits: Array.from(D.bytes(ex, 4)), cols: b(0xBC99 + v) + 1, rows: b(0xBCA1 + v) + 1,
+      minutes: +b(0x1B0E + v).toString(16), chance: b(0xBCA9 + v) });
+  }
+  return out;
+}
+const CW = 74, CH = 52, PAD = 18, GAP = 40;
+function geometry(L) {                                     // floor 2, when there is one, below floor 1
+  const two = L.cells.some(c => c & 0x80), fh = 26 + L.rows * CH;
+  const w = PAD * 2 + L.cols * CW, h = PAD * 2 + fh + (two ? GAP + fh : 0);
+  const at = (r) => { const c = L.cells[r]; return [PAD + (c & 15) * CW, PAD + 26 + ((c >> 4) & 7) * CH + (c & 0x80 ? fh + GAP : 0)]; };
+  return { two, w, h, at, fh };
+}
+const DCOL = ['#e9e7e1', '#cfe3f7', '#b4d2f0', '#98bfe8', '#7dabdf', '#6597d4', '#4f83c7', '#3d70b8', '#2f5fa6'];
+function drawMap(cv, L, o) {
+  const g = geometry(L), ctx = cv.getContext('2d');
+  cv.width = g.w * 2; cv.height = g.h * 2; ctx.setTransform(2, 0, 0, 2, 0, 0);
+  cv.style.maxWidth = Math.round(g.w * 1.4) + 'px';
+  const fm = getComputedStyle(document.body).getPropertyValue('--fm');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, g.w, g.h);
+  ctx.font = '500 11px ' + fm; ctx.fillStyle = '#80838a';
+  ctx.fillText('FLOOR 1', PAD, PAD + 10);
+  if (g.two) ctx.fillText('FLOOR 2', PAD, PAD + g.fh + GAP + 10);
+  const centre = (r) => { const [x, y] = g.at(r); return [x + CW / 2, y + CH / 2]; };
+  ctx.lineWidth = 3;
+  for (let r = 0; r < L.n; r++) for (let s = 0; s < 4; s++) {
+    const t = L.links[r][s]; if (t === 0xFF || t < r) continue;
+    const [x1, y1] = centre(r), [x2, y2] = centre(t);
+    const onPath = o.path && o.path.some(([a, b]) => (a === r && b === t) || (a === t && b === r));
+    ctx.strokeStyle = onPath ? '#d04a3a' : '#c9c6bd';
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  }
+  for (let r = 0; r < L.n; r++) {
+    const [x, y] = g.at(r), d = o.dist ? o.dist[r] : 0;
+    ctx.fillStyle = d === 255 ? '#2a8a4a' : d ? DCOL[Math.min(d, 8)] : '#f1efea';
+    ctx.strokeStyle = r === o.sel ? '#2f3136' : L.exits.includes(r) ? '#c25a00' : '#d5d3cc';
+    ctx.lineWidth = r === o.sel ? 3 : L.exits.includes(r) ? 2.5 : 1.5;
+    ctx.fillRect(x + 8, y + 7, CW - 16, CH - 14); ctx.strokeRect(x + 8, y + 7, CW - 16, CH - 14);
+    ctx.fillStyle = d === 255 || d > 4 ? '#fff' : '#2f3136';
+    ctx.font = '500 13px ' + fm; ctx.textAlign = 'center';
+    ctx.fillText(String(r), x + CW / 2, y + CH / 2 + 4);
+    if (r === o.goal) { ctx.strokeStyle = '#d04a3a'; ctx.lineWidth = 3; ctx.strokeRect(x + 4, y + 3, CW - 8, CH - 6); }
+    const up = L.links[r][4] !== 0xFF || L.links[r][5] !== 0xFF;
+    if (up) { ctx.fillStyle = '#4a5bd6'; ctx.font = '700 11px ' + fm; ctx.fillText('⇅', x + CW - 16, y + 18); }
+    ctx.textAlign = 'left';
+  }
+  return g;
+}
+function roomAt(L, g, cv, e) {
+  const b = cv.getBoundingClientRect(), px = (e.clientX - b.left) * g.w / b.width, py = (e.clientY - b.top) * g.h / b.height;
+  for (let r = 0; r < L.n; r++) { const [x, y] = g.at(r); if (px >= x && px < x + CW && py >= y && py < y + CH) return r; }
+  return -1;
+}
+function describe(L, r) {
+  const parts = [];
+  L.links[r].forEach((t, s) => { if (t !== 0xFF) parts.push(SLOTS[s] + ' → ' + t); });
+  return 'Room ' + r + ' (' + hx(L.lay + 6 * r) + ', map code ' + hx(L.cells[r], 2) + '): ' + parts.join(', ') +
+    (L.exits.includes(r) ? '. One of the four rooms that can hold the exit.' : '.');
+}
+function fillLevels(sel) {
+  sel.innerHTML = LV.map((L, v) => '<option value="' + v + '">Level ' + (v + 1) + ': ' + L.n + ' rooms</option>').join('');
+}
+function embassy() {
+  const cv = $('svs-map'), sel = $('svs-map-level'), read = $('svs-map-read');
+  fillLevels(sel);
+  let v = 0, pick = -1, g = null;
+  const draw = () => { g = drawMap(cv, LV[v], { sel: pick }); read.textContent = pick < 0 ? 'Click a room.' : describe(LV[v], pick); };
+  sel.onchange = () => { v = +sel.value; pick = -1; draw(); };
+  $('svs-map-prev').onclick = () => { if (v > 0) { sel.value = --v; pick = -1; draw(); } };
+  $('svs-map-next').onclick = () => { if (v < 7) { sel.value = ++v; pick = -1; draw(); } };
+  cv.onclick = (e) => { pick = roomAt(LV[v], g, cv, e); draw(); };
+  draw();
+  const tb = $('svs-levels');
+  tb.innerHTML = LV.map((L, i) => '<tr><td>' + (i + 1) + '</td><td class="svs-n">' + L.n + '</td><td class="svs-n">' + L.minutes +
+    '</td><td class="svs-n">' + 2 * L.n + '</td><td class="svs-n">' + (2 * L.n - 1) + '</td><td class="svs-n">' + L.chance + ' in 32</td><td>' +
+    L.exits.join(', ') + '</td><td>' + (L.cells.some(c => c & 0x80) ? 'two' : 'one') + '</td></tr>').join('');
+}
+function route() {
+  const cv = $('svs-route'), sel = $('svs-route-level'), read = $('svs-route-read');
+  fillLevels(sel);
+  let v = 0, start = 0, goal = 0, res = null, shown = 0, g = null, timer = 0, next = 'goal';
+  const pathOf = () => {
+    const p = []; if (res.found < 0 || shown < res.found) return p;
+    for (let r = goal; r !== start; r = res.from[r]) p.push([res.from[r], r]);
+    return p;
+  };
+  const draw = () => {
+    const L = LV[v], dist = res ? res.dist.map(d => d === 255 || (d && d <= shown) ? d : 0) : null;
+    g = drawMap(cv, L, { dist, goal, sel: start, path: res ? pathOf() : null });
+    if (!res) { read.textContent = 'Start: room ' + start + '. Goal: room ' + goal + '. Click a room to set the ' + next + '.'; return; }
+    const reached = res.order.filter(r => res.dist[r] === shown);
+    const done = res.found >= 0 && shown >= res.found;
+    read.textContent = shown === 0 ? 'The search starts in room ' + start + '.' :
+      'Round ' + shown + ': ' + (reached.length ? 'reaches room' + (reached.length > 1 ? 's ' : ' ') + reached.join(', ') : 'nothing new') +
+      (done ? '. Goal found after ' + res.found + (res.found > 1 ? ' rounds' : ' round') + '; the route back follows the "came from" list: ' +
+        pathOf().map(([a]) => a).reverse().concat(goal).join(' → ') + '.' : '.');
+  };
+  const reset = () => { clearInterval(timer); res = null; shown = 0; draw(); };
+  // the level's links as the layout holds them: the exit door is a wall there, as in a game with
+  // the airport hidden, so no exit room is passed
+  const run = () => { if (!res) { res = svsRoute(LV[v].links, -1, start, goal); shown = 0; } };
+  const step = () => {
+    run();
+    const end = res.found >= 0 ? res.found : 35;
+    if (shown < end) shown++;
+    draw();
+    return shown < end;
+  };
+  sel.onchange = () => { v = +sel.value; start = 0; goal = Math.min(LV[v].n - 1, LV[v].exits[0]); reset(); };
+  cv.onclick = (e) => {
+    const r = roomAt(LV[v], g, cv, e); if (r < 0) return;
+    if (next === 'goal') { goal = r; next = 'start'; } else { start = r; next = 'goal'; }
+    reset();
+  };
+  $('svs-route-step').onclick = () => { clearInterval(timer); step(); };
+  $('svs-route-run').onclick = () => { clearInterval(timer); timer = setInterval(() => { if (!step()) clearInterval(timer); }, 450); };
+  $('svs-route-reset').onclick = reset;
+  goal = LV[0].exits[0];
+  draw();
+}
+if (HAS) C64.load('listing.json').then((D) => { LV = levels(D); embassy(); route(); })
+  .catch((e) => { say($('svs-map'), 'The listing did not load (' + e.message + ').'); });
+else { say($('svs-map'), SHARED); say($('svs-route'), SHARED); }
+})();
+</script>

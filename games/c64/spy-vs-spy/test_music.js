@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the page's port of the music driver against the game's own. mechanics.html's svs-music block
+// Hold the page's port of the music driver against the game's own. music.html's svs-music block
 // (createDriver) runs beside play_music ($954E) on the kit's 6502 simulator, over the bytes of the
 // committed listing, with the driver's variables set as reset_play_state ($8F67) sets them. Every
 // frame, the SID writes each makes must be the same, in the same order, for 20,000 frames (more
@@ -10,7 +10,7 @@
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const portCheck = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
-const g = portCheck.game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'mechanics.html';
+const g = portCheck.game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'music.html';
 const html = g.read(page);
 const { createDriver } = g.run(page, 'svs-music', 'createDriver');
 const dm = html.match(/SVS_MUSIC\s*=\s*(\{[^}]*\})/);

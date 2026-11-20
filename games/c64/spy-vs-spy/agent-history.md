@@ -109,3 +109,23 @@ calls, so row 7's keys read as the port-1 stick, and that it tests each key
 by its whole row. `features.md` had said Space is not read on the options
 screen; the simulator shows SPACE reads as port 1's fire, which the options
 screen takes from either stick, and the row was corrected.
+
+## 20 November 2026: the Music tab
+
+The contributor asked for a Music tab after Graphics, with the music
+section moved there from How it works. `music.html` carries the section
+unchanged, with its driver port, tune data and player, and a hero that says
+what the page plays. How it works lost the section and its scripts, and its
+sections were renumbered, with the two "section 07" references moved to 06.
+`game.json` forwards `mechanics.html#the-music` and the older
+`index.html#the-music` to `music.html#the-music`, and `test_music.js` now
+holds the port on `music.html`. The effects player and the 33 unreached
+bytes between the tunes stay in `TODO.md`.
+
+The contributor then asked for a Levels tab before Graphics, with the
+embassy and the computer's spy moved there. `levels.html` carries both
+sections with the map viewer, the level table and the route search, and its
+hero names the eight embassies (6 rooms on one floor up to 36 on two, read
+from `level_rooms` `$BC91` and `level_map_lo` `$BC71`). The Traps table on
+How it works was filled by the embassy code, so it now reads the room
+counts from the listing itself. How it works runs 01 to 07.
