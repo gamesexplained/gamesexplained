@@ -1,0 +1,501 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qix · How it works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.qx-pair{display:flex;gap:18px;flex-wrap:wrap}
+.qx-pair figure{margin:0;flex:1 1 300px}
+.qx-pair img,.qx-cv{width:100%;image-rendering:pixelated;border-radius:4px;display:block}
+.qx-ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 14px;font-size:15px}
+.qx-ctl button{font-size:14px;padding:5px 12px}.qx-ctl select{font-size:14px}
+.qx-ctl input[type=number]{width:7em;padding:4px 8px}
+.qx-key{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--ink-soft);margin-top:10px}
+.qx-key i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.qx-tab{border-collapse:collapse;width:100%;font-size:14px}
+.qx-tab th,.qx-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.qx-tab th{font-weight:700;color:var(--ink-soft)}
+.qx-tab td.qx-on{background:var(--hl)}
+.qx-out{font-family:var(--fm);font-size:15px}
+.qx-out b{font-size:20px}
+.qx-miss{font-size:14px;color:var(--coral)}
+.qx-scroll{overflow-x:auto}
+.qm-wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.qm-cv{flex:2 1 320px;max-width:560px;background:#000}
+.qm-side{flex:1 1 220px;min-width:0}
+.qm-read{color:var(--ink);font-family:var(--fm);font-size:13px;line-height:1.5;margin:0 0 10px;padding:10px 12px;background:var(--surface-2);border-radius:6px;white-space:pre-wrap}
+.qm-log{font-family:var(--fm);font-size:12px;line-height:1.45;color:var(--ink-soft);margin:0;padding:0;list-style:none;max-height:220px;overflow:auto}
+.qm-log li{margin:0 0 4px}
+.qm-log b{color:var(--ink-mute);font-weight:400}
+.qm-log li.qm-k{color:var(--coral);font-weight:500}
+.qm-log li.qm-f{color:var(--amber)}
+@media (max-width:640px){:root{--gx:18px;--h1:36px;--pp:16px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1989 · Taito America</p>
+  <h1>Qix</h1>
+  <p class="sub">How the C64 Qix works inside: a playfield it keeps three times over and reads by colour, a Qix made of two bouncing points that turn back at random, Sparx that walk the edge, and one table of fourteen settings that sets every level.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · One frame, rebuilt from memory</p>
+  <h2 class="t">The colour of a pixel says what it is</h2>
+  <p class="lede">The play screen is a multicolour bitmap: 160 pixels across, each one of four colours. The game uses the colour as the map.</p>
+  <div class="plate">
+    <div class="qx-ctl"><button type="button" id="qx-v0" aria-pressed="true">The screen</button><button type="button" id="qx-v1" aria-pressed="false">What each pixel means</button></div>
+    <canvas id="qx-frame" class="qx-cv" width="384" height="272"></canvas>
+    <div class="qx-key" id="qx-key" hidden><span><i style="background:#2a8a4a"></i>colour 3: the edge, walls and the border</span><span><i style="background:#1f5fa8"></i>colour 1</span><span><i style="background:#d04a3a"></i>colour 2</span><span><i style="background:#e9e7e1"></i>colour 0: open field</span></div>
+    <p class="cap">One frame of level 1 drawn by the site's renderer from its memory and register writes. The <a href="graphics.html">Graphics</a> tab draws the sprites on top of it, one by one. 26 pixels on the Qix's newest line come out differently from the game's own picture: the game draws that line while the beam is passing.</p>
+  </div>
+  <p>The game keeps three copies of the field. The one on screen is at <code>$2000</code>; two more at <code>$6000</code> and <code>$E000</code> hold the same picture for the game to read. Every routine that asks "what is here?" looks up one pixel in the <code>$E000</code> copy (<code>$8D10</code>) and compares it with the four masks at <code>$150B</code>: colour 3 is the edge the marker may walk, colour 1 the line being drawn, and colour 2 a line that kills.</p>
+  <p>A slow draw and a fast draw differ only in that check. The marker moves one pixel a step; with fire held, the step is skipped on every other pass (<code>$991C</code>). Moving onto colour 2 is a death. Reaching colour 3 closes the line, which <code>$B243</code> then repaints as edge. The same map steers the Qix (section 02): it turns back where its next line would cross colour 3.</p>
+</section>
+
+<section>
+  <p class="fig">02 · The Qix</p>
+  <h2 class="t">The Qix is two bouncing points that turn back at random</h2>
+  <p class="lede">The Qix has no path to follow and no target. Its line joins two points, each with a speed across and a speed down, and every few steps a random draw sends most of those speeds the other way.</p>
+  <p>Once a pass of the main loop, about 14 times a second, the game moves the Qix one step (<code>$946A</code>). The step erases the oldest of the eight lines on screen, moves the two ends, checks the new line against the claimed edges, and draws it. The whole trail can kill, as <a href="discoveries.html#the-trail">Discoveries</a> shows. On the levels with two Qix the step serves them in turn, so each moves half as often. Both start each life on the same short line in the middle.</p>
+  <p>A speed is a signed byte: 3 or 4 pixels across, or 4 or 5 lines up or down. The game never changes a speed by a little. Every change draws a new size and flips the sign, because the routine that makes the new speed takes the old one's sign as its input (<code>$A555</code>). These are the only moments a speed changes:</p>
+  <div class="qx-scroll"><table class="qx-tab">
+    <tr><th>When</th><th>What the game does</th><th>Where</th></tr>
+    <tr><td>The turn timer runs out</td><td>Draws a new timer, then reverses each of the four speeds with a chance of three in four. No pull.</td><td><code>$94C4</code></td></tr>
+    <tr><td>An end would leave the box two pixels inside the field</td><td>Reverses that speed and adds the pull towards the marker. The end stays put for this step.</td><td><code>$92AD</code></td></tr>
+    <tr><td>The second end is 30 or more from the first, across or down</td><td>Moves the second end 5 towards the first until it is closer. The Qix never spans more than 29 either way.</td><td><code>$9313</code></td></tr>
+    <tr><td>An end's move crosses a claimed edge</td><td>Tests the move across and the move down on their own, and reverses each one that crosses, as at a wall.</td><td><code>$96CA</code></td></tr>
+    <tr><td>The new line itself still crosses a claimed edge</td><td>Puts the Qix back on the oldest line of its trail and clears the timer (<a href="discoveries.html#the-fallback">Discoveries</a>).</td><td><code>$9774</code></td></tr>
+    <tr><td>After every step</td><td>Chooses the pull for the next bounce on each axis: towards the marker, from where the first end now is.</td><td><code>$954F</code></td></tr>
+  </table></div>
+  <p class="cap">A bounce also draws a new turn time, but stores it at <code>$0273</code>, which the game never reads. A bounce leaves the turn timer running as it was.</p>
+  <p class="cap">Qix 2 runs its own copy of these edge tests, with one slip in it: <a href="discoveries.html#qix-2s-edge-test">Discoveries</a>.</p>
+  <p>The turn timer is what changes most between levels. The game draws a random byte and keeps it when it falls between <code>$20</code> and <code>$3E</code>, about one draw in eight; any other value is cut to 0-3. The level's mask (<code>$6F</code>) then caps the result. On level 1 the mask is 3, so the Qix turns every one to four steps and shivers about the middle of the field. From level 2 the one draw in eight lets the Qix run straight across the field.</p>
+  <div class="qx-scroll"><table class="qx-tab">
+    <tr><th>Levels</th><th>Steps between turns</th><th>Pull added at a bounce</th></tr>
+    <tr><td>1</td><td>1-4</td><td>none</td></tr>
+    <tr><td>3</td><td>1-4; one turn in eight, 1-8</td><td>none</td></tr>
+    <tr><td>2, 4, 5, 6</td><td>1-4; one turn in eight, 1-31</td><td>1</td></tr>
+    <tr><td>7 and later</td><td>1-4; one turn in eight, 33-48</td><td>2</td></tr>
+  </table></div>
+  <p>The pull is all the hunting the Qix does, and it works only at a bounce. The pull is added to the new speed on that axis, towards the marker. On level 7 a Qix that bounces off the far wall comes back towards you at up to 7 lines a step, and one that bounces off a wall on your side leaves at 2 or 3. In open field the Qix never steers.</p>
+  <div class="plate">
+    <div class="qx-ctl">
+      <button type="button" id="qm-run" aria-pressed="false">Run</button><button type="button" id="qm-step">Step</button>
+      <button type="button" id="qm-slow" aria-pressed="false">Slow</button>
+      <label>Level <select id="qm-lvl"></select></label>
+      <label>Field <select id="qm-field"><option value="open">Open</option><option value="corner">A claimed corner</option><option value="pen">A peninsula</option></select></label>
+      <button type="button" id="qm-line" aria-pressed="false">Your line</button><button type="button" id="qm-old" aria-pressed="false">Show the oldest line</button>
+      <button type="button" id="qm-reset">Reset</button>
+    </div>
+    <div class="qm-wrap"><canvas id="qm-cv" class="qx-cv qm-cv" width="280" height="200" aria-label="The Qix moving in the field"></canvas>
+      <div class="qm-side"><pre class="qm-read" id="qm-read"></pre><ul class="qm-log" id="qm-log" aria-live="off"></ul></div></div>
+    <p class="cap"><b>The viewer runs the game's own rules.</b> It is a port of the Qix's step and the line routine it uses for every test and every pixel, down to the order of the random draws. Given the same random numbers, it moves the Qix step for step as the game does, in an open field and in fields with claimed corners. Levels 3, 4, 6, 8, 9 and 11 bring a second Qix, as in the game. Click the field to move the marker; the pull points at it. <b>Your line</b> lays a line being drawn up from the marker. The Qix colours are those of the frame in section 01.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">03 · The enemies</p>
+  <h2 class="t">Sparx follow the edge towards the Qix</h2>
+  <p class="lede">Every enemy is a sprite, and each kind moves by its own rule. The <a href="graphics.html">Graphics</a> tab draws each one animating in a round's colours.</p>
+  <table class="qx-tab">
+    <tr><th>Enemy</th><th>Sprites</th><th>How it moves</th><th>Where</th></tr>
+    <tr><td>The Qix</td><td>none: lines in the bitmap</td><td>Two ends, each with a speed across and down. Every few steps each speed may reverse at random; at a wall it reverses with a pull towards the marker. The last eight lines stay on screen as a trail (section 02).</td><td><code>$946A</code></td></tr>
+    <tr><td>Sparx</td><td>2-7, in three pairs</td><td>Walk the edge pixel by pixel, one each way round; at a junction they take the branch nearer the Qix. They start halfway round the edge from the marker.</td><td><code>$A1C0</code>, <code>$9F1D</code></td></tr>
+    <tr><td>Chasing Sparx</td><td>4-5</td><td>From level 3, once they reach the corner where your line left the edge, they follow the line itself.</td><td><code>$B200</code></td></tr>
+    <tr><td>The Fuse</td><td>1</td><td>Appears when the marker stops while drawing, runs along the line from its start, and burns the line behind it into the killing colour.</td><td><code>$8AC4</code>, <code>$AFD3</code></td></tr>
+    <tr><td>Spritz</td><td>2-3, from level 7 also 6-7</td><td>Start at the middle of a Qix's line and fly diagonally through the open field, turning by a table of 28 wall patterns. One that is walled in all round makes every later line score as slow, until you die.</td><td><code>$9B3A</code>, <code>$9D47</code></td></tr>
+  </table>
+  <p>The Sparx are released by the timer bar to the right of the field. It shortens from both ends, a pixel row at a time; each time the ends meet, the count of runs goes up and the bar is drawn full again (<code>$85FD</code>). Each pair of Sparx has a run count of its own in the level table.</p>
+</section>
+
+<section>
+  <p class="fig">04 · Scoring</p>
+  <h2 class="t">A fill is worth half its area, twice that for a slow line</h2>
+  <p>A fill is worth half its area in pixels, doubled for a slow line (<code>$8E60</code>). A line counts as fast when it ends with fire released, whether or not it started slow. A Spritz walled in on every side makes every later line score as slow, until you lose a life. Each time a player splits the Qix, a counter goes up, and every fill after it is meant to score double again; <a href="discoveries.html#scoring">Discoveries</a> shows how the code gets that wrong.</p>
+  <p>When a level ends, the claim over the requirement earns 1,000 points a percent (<code>$8E13</code>). The claimed percentage is the high byte of the player's claimed pixel count, so one percent is 256 pixels of a field about 25,000 pixels inside.</p>
+</section>
+
+<section>
+  <p class="fig">05 · Progression</p>
+  <h2 class="t">Each level is a row of one table</h2>
+  <p class="lede">Fourteen settings per level, in tables at <code>$1181</code>: the claim needed, how many Qix, when each enemy appears, how hard the Qix leans towards you.</p>
+  <div class="plate">
+    <div class="qx-ctl"><label>Level <select id="qx-lvl"></select></label></div>
+    <div class="qx-scroll"><table class="qx-tab" id="qx-ltab"></table></div>
+    <p class="cap">Read from the level tables at <code>$1181</code>-<code>$121A</code> by <code>$9061</code>. From level 12 on the game alternates the settings of levels 10 and 11.</p>
+  </div>
+  <p>The table explains how the difficulty climbs. Levels 3 and 4 bring a second Qix and Sparx that chase you up your line. Level 5 asks for 70 % and lets a pair of creatures loose in the open field. From level 7 the Qix pulls twice as hard towards the side of the screen you are on, and the timer bar may run out only once before every Sparx is out.</p>
+  <p>The game prepares the player for both changes. At the end of level 2 it shows "SPLITTING QIXS MULTIPLIES POINTS", and at the end of level 4 "CAPTURE SPRITZ FOR EXTRA POINTS" (<code>$1786</code>).</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+// A port of the C64 Qix's movement: qix_step ($946A) for one Qix, with the routines it calls.
+// Each method names the routine it follows. Coordinates are the game's: x in multicolour pixels
+// (0-159), y in lines (0-199). Speeds, positions and biases are bytes, as in the game, so the
+// arithmetic wraps the way the 6502's does.
+class QixMover {
+  // o: { rand(n) -> 0..n-1 (random_range), cls, live, bmp: Uint8Array(160*200) planes,
+  //      field: [left, right, top, bottom] ($1575-$1578), level: [mask $6F, pull $6E, pull $6D],
+  //      marker: [x, y] ($31, $32), consts: [trail $156B, speed $156C, step $156E, len $156F, len $1570] }
+  constructor(o) {
+    this.rand = o.rand;
+    this.cls = o.cls; this.live = o.live; this.bmp = o.bmp;     // the $E000 plane, the $6000 plane, the bitmap
+    const f = o.field || [1, 135, 10, 198];
+    this.left = f[0] + 2; this.right = f[1] - 2; this.top = f[2] + 2; this.bottom = f[3] - 2;   // qix_limits
+    const k = o.consts || [7, 2, 5, 15, 30];
+    this.trailLen = k[0]; this.K = k[1]; this.lenStep = k[2]; this.lenA = k[3]; this.lenB = k[4];
+    this.setLevel(o.level || [3, 0, 0]);
+    this.marker = o.marker || [67, 198];
+    this.tx1 = new Array(10).fill(0); this.ty1 = new Array(10).fill(0);
+    this.tx2 = new Array(10).fill(0); this.ty2 = new Array(10).fill(0);
+    this.idx = this.trailLen; this.timer = 0; this.b1 = 0; this.colour = 1; this.t73 = 0;
+    this.x1 = 61; this.x2 = 71; this.y1 = 93; this.y2 = 103;
+    this.sx1 = 3; this.sx2 = 0xFD; this.sy1 = 4; this.sy2 = 0xFC; this.biasX = 0; this.biasY = 0;
+    this.events = []; this.kill = null;
+    this.partner = o.partner || null;                              // set on Qix 2: Qix 1's mover
+  }
+  setLevel(l) { this.mask = l[0]; this.pullPos = l[1] & 255; this.pullNeg = l[2] & 255; }
+
+  // qix_reset ($91DA): a short diagonal in the middle, an empty trail.
+  reset() {
+    this.idx = this.trailLen;
+    for (let i = 0; i < 10; i++) this.tx1[i] = this.ty1[i] = this.tx2[i] = this.ty2[i] = 0;
+    const cy = this.bottom >> 1, cx = this.right >> 1, t = this.idx;
+    this.y1 = this.ty1[t] = cy - 5; this.x1 = this.tx1[t] = cx - 5;
+    this.y2 = this.ty2[t] = cy + 5; this.x2 = this.tx2[t] = cx + 5;
+  }
+
+  random() { return this.rand(255); }                               // random ($A58D): LDA #$FF, random_range
+  static adc(a, b, c) { const r = a + b + c; return [r & 255, r > 255 ? 1 : 0]; }
+  static sbc(a, b, c) { const r = a - b - (1 - c); return [r & 255, r >= 0 ? 1 : 0]; }
+  // negate_speed ($A555): carry is the old speed's sign, so the new speed always goes the other way.
+  negateSpeed(old) {
+    const r = this.rand(this.K);
+    if (!(old & 0x80)) { let [a, c] = QixMover.sbc(r, this.K, 1); [a] = QixMover.sbc(a, 2, c); return a; }   // random_speed_neg
+    let [a, c] = QixMover.adc(r, this.K, 0); [a] = QixMover.adc(a, 2, c); return a;                         // random_speed_pos
+  }
+  // random_speed1 ($A571): the same with a smaller magnitude, for x.
+  speed1(old) {
+    const r = this.rand(this.K);
+    if (!(old & 0x80)) { let [a, c] = QixMover.sbc(r, this.K, 1); [a] = QixMover.sbc(a, 1, c); return a; }
+    let [a, c] = QixMover.adc(r, this.K, 0); [a] = QixMover.adc(a, 1, c); return a;
+  }
+  newTurnTime() {                                                    // new_turn_time ($98DB): $0273, which the game never reads
+    let r = this.random(); if (r >= 0x3F || r < 0x20) r &= 3; this.t73 = r; this.qixColour();
+  }
+  qixColour() { this.b1 = this.random() & 3; }                      // qix_colour ($98EB)
+  inside(v, lo, hi) { return !(v < lo) && v < hi; }
+
+  // qix1_move_y1 ($92AD) and its bounce at $92BB
+  bounceY1() { this.sy1 = (this.negateSpeed(this.sy1) + this.biasY) & 255; this.newTurnTime(); this.ev(this.inCheck ? 'block' : 'wall', 'y1', this.biasY); }
+  moveY1() { const v = (this.y1 + this.sy1) & 255; if (this.inside(v, this.top, this.bottom)) return v; this.bounceY1(); return this.y1; }
+  // qix1_move_x1 ($92D0) and $92DE
+  bounceX1() { this.sx1 = (this.speed1(this.sx1) + this.biasX) & 255; this.newTurnTime(); this.ev(this.inCheck ? 'block' : 'wall', 'x1', this.biasX); }
+  moveX1() { const v = (this.x1 + this.sx1) & 255; if (this.inside(v, this.left, this.right)) return v; this.bounceX1(); return this.x1; }
+  // the length limit at $9313: step the second end towards the first while they are 30 or more apart
+  clamp(v, ref) {
+    for (let guard = 0; guard < 64; guard++) {
+      const d = (v - ref) & 255, c = v >= ref, m = c ? d : (-d) & 255;
+      if (m < this.lenA || m < this.lenB) return v;
+      v = c ? (v - this.lenStep) & 255 : (v + this.lenStep) & 255;
+    }
+    return v;
+  }
+  // qix1_move_y2 ($92F3), $9301
+  bounceY2() { this.sy2 = (this.negateSpeed(this.sy2) + this.biasY) & 255; this.newTurnTime(); this.ev(this.inCheck ? 'block' : 'wall', 'y2', this.biasY); }
+  moveY2() { let v = (this.y2 + this.sy2) & 255; if (!this.inside(v, this.top, this.bottom)) { this.bounceY2(); v = this.y2; } return this.clamp(v, this.D4); }
+  // qix1_move_x2 ($933F), $934D
+  bounceX2() { this.sx2 = (this.speed1(this.sx2) + this.biasX) & 255; this.newTurnTime(); this.ev(this.inCheck ? 'block' : 'wall', 'x2', this.biasX); }
+  moveX2() { let v = (this.x2 + this.sx2) & 255; if (!this.inside(v, this.left, this.right)) { this.bounceX2(); v = this.x2; } return this.clamp(v, this.D3); }
+
+  // line_start ($A5F4) and line_to ($A62C): the pixels the game's line routine visits, the start included.
+  static linePixels(x0, y0, x1, y1) {
+    const pts = [[x0, y0]], right = x1 >= x0, down = y1 > y0;
+    const n46 = Math.abs(x1 - x0), n47 = (~Math.abs(y1 - y0)) & 255;
+    let n48 = n46, r = n47 - n46, n4C = r & 255, n4D = r >= 0 ? 0x80 : 0, A = n47, x = x0, y = y0;
+    for (let guard = 0; guard < 2048; guard++) {
+      const s = A + n48 + 1; n48 = s & 255; let c = s > 255;
+      n4C = (n4C + 1) & 255;
+      if (n4C === 0) { const b = n4D & 0x80; n4D = (n4D << 1) & 255; if (b) break; c = false; }
+      if (c) { x += right ? 1 : -1; A = n47; } else { y += down ? 1 : -1; A = n46; }
+      pts.push([x, y]);
+    }
+    return pts;
+  }
+  // line_begin + line_to with pixel_op ($AD64) in test mode ($0286 bit 7): does the line touch a colour-3 pixel?
+  test(x0, y0, x1, y1) {
+    for (const [x, y] of QixMover.linePixels(x0, y0, x1, y1)) if (this.cls[y * 160 + x] === 3) return true;
+    return false;
+  }
+  // pixel_op in plot or erase mode; either way a colour-1 pixel in the $6000 plane (the line being drawn) kills.
+  paint(x0, y0, x1, y1, erase) {
+    for (const [x, y] of QixMover.linePixels(x0, y0, x1, y1)) {
+      const p = y * 160 + x;
+      if (this.live && this.live[p] === 1 && !this.kill) this.kill = { how: erase ? 'erase' : 'draw', x, y };
+      const c = this.cls[p];
+      if (erase) { if (c === 2) { this.cls[p] = 0; this.bmp[p] = 0; } }
+      else if (c === 0 || c === 2) { this.cls[p] = 2; this.bmp[p] ^= this.colour; }
+    }
+  }
+  ev(kind, what, pull) { this.events.push([kind, what, pull]); }
+
+  // qix1_check_line ($96CA)
+  checkLine() {
+    this.inCheck = true;
+    if (this.test(this.x2, this.y2, this.D3, this.D4)) {
+      if (this.test(this.x2, this.y2, this.D3, this.y1)) { this.bounceX1(); this.D3 = this.moveX1(); }
+      if (this.test(this.x2, this.y2, this.x1, this.D4)) { this.bounceY1(); this.D4 = this.moveY1(); }
+    }
+    if (this.test(this.x1, this.y1, this.D5, this.D6)) {
+      // Qix 2's copy of this test (qix2_check_line, $982F) reads Qix 1's y2 ($028A) instead of its own ($028E)
+      const yAcross = this.partner ? this.partner.y2 : this.y2;
+      if (this.test(this.x1, this.y1, this.D5, yAcross)) { this.bounceX2(); this.D5 = this.moveX2(); }
+      if (this.test(this.x1, this.y1, this.x2, this.D6)) { this.bounceY2(); this.D6 = this.moveY2(); }
+    }
+    if (this.test(this.D3, this.D4, this.D5, this.D6)) {            // $9774: the whole new line still crosses
+      this.newTurnTime();
+      const t = this.idx;                                           // the trail's oldest line, erased this step
+      this.D3 = this.tx1[t]; this.D5 = this.tx2[t]; this.D4 = this.ty1[t]; this.D6 = this.ty2[t];
+      this.timer = 0; this.ev('fallback', '');
+    }
+    this.inCheck = false;
+    this.paint(this.D3, this.D4, this.D5, this.D6, false);          // qix1_store_line, draw_qix_line
+  }
+
+  // qix_step ($946A), Qix 1
+  step() {
+    this.events = []; this.kill = null;
+    let t = this.idx;
+    if (this.ty1[t] && this.ty2[t] && this.tx1[t] && this.tx2[t]) this.paint(this.tx1[t], this.ty1[t], this.tx2[t], this.ty2[t], true);
+    this.D3 = this.x1; this.D5 = this.x2; this.D4 = this.y1; this.D6 = this.y2;
+    this.timer = (this.timer - 1) & 255;
+    if (this.timer & 0x80) {
+      let r = this.random(); if (r >= 0x3F || r < 0x20) r &= 3;
+      this.timer = r & this.mask;
+      const flips = [];
+      if (this.random() >= 0x40) { this.sy1 = this.negateSpeed(this.sy1); flips.push('y1'); }
+      if (this.random() >= 0x40) { this.sy2 = this.negateSpeed(this.sy2); flips.push('y2'); }
+      if (this.random() >= 0x40) { this.sx1 = this.speed1(this.sx1); flips.push('x1'); }
+      if (this.random() >= 0x40) { this.sx2 = this.speed1(this.sx2); flips.push('x2'); }
+      this.ev('turn', flips.join(' '));
+    }
+    this.D4 = this.moveY1(); this.D6 = this.moveY2(); this.D3 = this.moveX1(); this.D5 = this.moveX2();
+    this.qixColour(); this.colour = this.b1 || 1;                   // qix_pattern ($98C7): $00 is never used
+    this.checkLine();
+    t = this.idx;
+    this.x1 = this.tx1[t] = this.D3; this.biasX = this.D3 < this.marker[0] ? this.pullPos : this.pullNeg;
+    this.x2 = this.tx2[t] = this.D5;
+    this.y1 = this.ty1[t] = this.D4; this.biasY = this.D4 < this.marker[1] ? this.pullPos : this.pullNeg;
+    this.y2 = this.ty2[t] = this.D6;
+    this.idx = this.idx - 1; if (this.idx < 0) this.idx = this.trailLen;
+    return this.events;
+  }
+}
+</script>
+<script>
+(function () {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const FRAME = {"schema":1,"standard":"NTSC","lines":263,"cycles":65,"about":"","vic":[60,208,0,0,0,0,0,0,28,221,38,238,0,0,0,0,16,59,12,213,0,49,216,0,25,126,241,0,48,0,255,255,240,240,240,240,240,252,241,241,241,241,241,241,241,241,241],"cia2":[67,63],"cpu":[47,53],"writes":[[58,44,53258,40],[70,65,53257,222],[72,22,2044,36],[72,30,2045,34],[3,1,53285,241],[3,9,53286,246],[3,19,2041,39],[3,51,2042,34],[3,59,2043,36],[4,16,2046,34],[4,24,2047,37]],"colour":"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==","ram":[{"a":1024,"b":"ISEhISEhISEhISEhISEhISHnEhISEhISEhISEhISEhISEhIgICEhIWxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsInd3d3dsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbCJ3d3d3bGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGwid3d3d2xsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsInd3d3dsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbCJmZmZmbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGwiIiIiImxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsIhERERFsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbCLo6OjobGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGwiVVVVVWxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsIiIiIiJsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbCLo6OjobGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGwi6Ojo6GxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsIujo6OhsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbCLo6OjobGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGwi6Ojo6GxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsIujo6OhsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbCLo6OjobGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGwi6Ojo6GxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsIujo6OhsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbCLo6OjobGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGwi6Ojo6GxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsIujo6OhsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbCLo6OjobGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGwi6Ojo6A=="},{"a":2040,"b":"IQ=="},{"a":2044,"b":"JSM="},{"a":2112,"b":"AAAAAAAAAAAAAAAAAAAAAAAAABAAACgAAEQAAIIAAREAAIIAAEQAACgAABAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":2176,"b":"AAAAAAAAAAAAAAAAAAAAAEAAAAwAAMEAAAAAABAAAAwAAMAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":2304,"b":"AAAAAAAAAAAAAAAAAAAAAAAAADEAAMAAAAQAAEMAAAAAAMwAAAAAABEAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":8192,"b":"qIiIqICAgACAgICAgICoAKCIiKiIiIgAiIiIqCAgIACogICggICoAKiIiKCIiIgAAAAAAAAAAACgICAgICCoAAAAAAAAAAAAAAAAAAAAAACoCAgICAgIAKiAgKgICKgAqAgIqICAqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgIIiIICAAACAgiIggIAAAICCIiCAgAAAgIIiIICAAACAgiIggIAAA///w8PDw8AD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8DAwMDAwDAwMDAwMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPDw8PDw8PDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAwMDAwMDwMDAwMDAwMAAAAAAAABQUAoqKCgoKCgooKgICAgICAiioqKioqCgoIKCgoKCiCiI8PDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwPAwMDAwMDAwFBQUFBQUFBQKCgoKCoKAAAICIgoqKgKAqKioqKiogCqgoKCgoKCAKrw8PDw8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDA8DAwMDAwMDAUFBQUFBQUFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPDw8PDw8PDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAwMDAwMDwMDAwMDAwMBQUFBQUFBQUKiIgICAiKgAgICAgICAqACIqKiIiIiIAAAAAAAAAAAA8PDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCoAAAAAKAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwPAwMDAwMDAwFBQUFBQUFBQqICAqIiIqACogICoCAioAICICCCAiAgAAAAAAAAAAADw8PDw8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIKKAAAAAqogAAAAQQAAQUQVFAFURFFFFBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDA8DAwMDAwMDAUFBQUFBQUFCogICoiIioAICICCCAiAgAAAAAAAAAAAAAAAAAAAAAAPDw8PDw8PDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASRxMDAAIGFxBQQECwgDAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAwMDAwMDwMDAwMDAwMBQUFBQUFBQUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBQQAAAAAAAMDwMDAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwPAwMDAwMDAwFBQUFBQUFBQgICAgICAqACIiIiIiIggAICAgICAgKgAAAAAAAAAAADw8PDw8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDA8DAwMDAwMDAUFBQUFBQUFAAAAAAAAAAAKAgICAgIKgAAAAAAAAAAAAAAAAAAAAAAPDw8PDw8PDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAwMDAwMDwMDAwMDAwMBQUFBQUFBQUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwPAwMDAwMDAwFBQUFBQUFBQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADw8PDw8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDA8DAwMDAwMDAUFBQUFBQUFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPDw8PDw8PDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAwMDAwMDwMDAwMDAwMBQUFBQUFBQUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwPAwMDAwMDAwFBQUFBQUFBQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADw8PDw8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDA8DAwMDAwMDAUFBQUFBQUFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPDw8PDw8PDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAwMDAwMDwMDAwMDAwMBQUFBQUFBQUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwPAwMDAwMDAwFBQUFBQUFBQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADw8PDw8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDA8DAwMDAwMDAUFBQUFBQUFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPDw8PDw8PDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAwMDAwAA/1VVlaWpAAD/qWpaVlYAAP9VVZWlqQAA/6lqWlZWAAD/VVWVpakAAP+palpWVgAA/1VVlaWpAAD/qWpaVlYAAP9VVZWlqQAA/6lqWlZWAAD/V1eXp6sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAwMDAwMDwMDAwMDAwMBQUFBQUFBQUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAwMDAwMDqlpWVVWVpalaqqmpalpWVqpaVlVVlaWpWqqpqWpaVlaqWlZVVZWlqVqqqalqWlZWqlpWVVWVpalaqqmpalpWVqpaVlVVlaWpWqqpqWpaVlarW1dXV5enqwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwPAwMDAwMDAwFBQUFBQUFBQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADw8PDw8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwOqWlZVVZWlqVqqqalqWlZWqlpWVVWVpalaqqmpalpWVqpaVlVVlaWpWqqpqWpaVlaqWlZVVZWlqVqqqalqWlZWqlpWVVWVpalaqqmpalpWVqtbV1dXl6erAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDA8DAwMDAwMDAUFBQUFBQUFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPDw8PDw8PDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDA6paVlVVlaWpWqqpqWpaVlaqWlZVVZWlqVqqqalqWlZWqlpWVVWVpalaqqmpalpWVqpaVlVVlaWpWqqpqWpaVlaqWlZVVZWlqVqqqalqWlZWq1tXV1eXp6sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAwMDAwMDwMDAwMDAwMBQUFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDw8PDw//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wMDAwMDA///qlpWVVWV//9aqqmpalr//6paVlVVlf//WqqpqWpa//+qWlZVVZX//1qqqalqWv//qlpWVVWV//9aqqmpalr//6paVlVVlf//WqqpqWpa//+rW1dXV5f//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AwMDAwMD///AwMDAwMDAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="},{"a":16383,"b":"AA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":17096,"frame_ended_on_line":12,"picture_lines_low":null,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":84,"colour_cells_changed_during_frame":0}};
+const LVL = {"msg": [0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 2], "chase": [0, 0, 0, 128, 128, 128, 128, 128, 128, 128, 128, 128], "pull": [47, 0, 1, 0, 1, 1, 1, 2, 2, 2, 2, 2], "turn": [128, 3, 31, 7, 31, 31, 31, 47, 47, 47, 47, 47], "pulln": [2, 0, 255, 0, 255, 255, 255, 254, 254, 254, 254, 254], "roam": [254, 0, 0, 0, 0, 128, 128, 192, 192, 192, 192, 192], "pa": [192, 1, 1, 1, 1, 1, 1, 255, 255, 255, 255, 255], "pb": [255, 3, 3, 3, 3, 2, 2, 1, 1, 1, 1, 1], "pc": [1, 2, 2, 2, 2, 255, 255, 255, 255, 255, 255, 255], "timer": [255, 2, 2, 3, 3, 2, 2, 1, 1, 1, 1, 1], "claim": [1, 65, 65, 65, 65, 70, 70, 75, 75, 80, 80, 80], "two": [192, 0, 0, 128, 128, 0, 128, 0, 128, 128, 0, 128]};
+function missing(el) { el.insertAdjacentHTML('afterend', '<p class="qx-miss">This is drawn by the site\'s shared script, which the built site serves.</p>'); }
+
+// ---- 01 the frame, and the pixel classes
+const HASC = typeof C64 !== 'undefined';
+const cv = $('qx-frame');
+function memOf(F) { const m = new Uint8Array(65536); for (const r of F.ram) { const b = atob(r.b); for (let i = 0; i < b.length; i++) m[r.a + i] = b.charCodeAt(i); } return m; }
+function classes() {
+  const ctx = cv.getContext('2d'), m = memOf(FRAME), img = ctx.createImageData(384, 272);
+  const col = [[233, 231, 225], [31, 95, 168], [208, 74, 58], [42, 138, 74]];
+  for (let i = 0; i < img.data.length; i += 4) { img.data[i] = 35; img.data[i + 1] = 38; img.data[i + 2] = 45; img.data[i + 3] = 255; }
+  for (let y = 0; y < 200; y++) for (let xb = 0; xb < 40; xb++) {
+    const byte = m[0x2000 + (y >> 3) * 320 + xb * 8 + (y & 7)];
+    for (let p = 0; p < 4; p++) {
+      const c = col[(byte >> (6 - 2 * p)) & 3];
+      for (let k = 0; k < 2; k++) { const o = ((y + 35) * 384 + 32 + xb * 8 + p * 2 + k) * 4; img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+function view(which) {
+  $('qx-v0').setAttribute('aria-pressed', which === 0); $('qx-v1').setAttribute('aria-pressed', which === 1);
+  $('qx-key').hidden = which !== 1;
+  if (which === 1) classes(); else if (HASC) C64.drawFrame(cv, FRAME, 1);
+}
+$('qx-v0').onclick = () => view(0); $('qx-v1').onclick = () => view(1);
+if (HASC) view(0); else { missing(cv); classes(); }
+
+// ---- 05 the level table
+const rows = [
+  ['Claim needed', (l) => LVL.claim[l] + ' %'],
+  ['Qix', (l) => LVL.two[l] & 0x80 ? '2' : '1'],
+  ['Timer may run out', (l) => LVL.timer[l] + (LVL.timer[l] === 1 ? ' time' : ' times')],
+  ['Sparx pair A after', (l) => LVL.pa[l] === 255 ? 'never' : LVL.pa[l] + ' run' + (LVL.pa[l] > 1 ? 's' : '')],
+  ['Sparx pair B after', (l) => LVL.pb[l] === 255 ? 'never' : LVL.pb[l] + ' run' + (LVL.pb[l] > 1 ? 's' : '')],
+  ['Sparx pair C after', (l) => LVL.pc[l] === 255 ? 'never' : LVL.pc[l] + ' run' + (LVL.pc[l] > 1 ? 's' : '')],
+  ['Pair B chases up the line', (l) => LVL.chase[l] & 0x80 ? 'yes' : 'no'],
+  ['Spritz', (l) => (LVL.roam[l] & 0x40) ? 'two pairs' : (LVL.roam[l] & 0x80) ? 'one pair' : 'none'],
+  ['The Qix leans towards you', (l) => ['not at all', 'by 1', 'by 2'][LVL.pull[l]] || LVL.pull[l]],
+  ['The Qix runs straight for up to', (l) => { let mx = 0; for (let r = 0; r < 255; r++) { const v = ((r >= 0x3F || r < 0x20) ? r & 3 : r) & LVL.turn[l]; mx = Math.max(mx, v + 1); } return mx + ' steps'; }],
+  ['Hint at the end', (l) => ['', '"Splitting Qixs multiplies points"', '"Capture Spritz for extra points"'][l < 9 ? LVL.msg[l] : 0] || '-'],
+];
+const sel = $('qx-lvl');
+for (let l = 1; l <= 11; l++) sel.insertAdjacentHTML('beforeend', '<option value="' + l + '">' + l + '</option>');
+function table() {
+  const L = +sel.value;
+  let h = '<tr><th></th>' + [1,2,3,4,5,6,7,8,9,10,11].map((l) => '<th>' + l + '</th>').join('') + '</tr>';
+  for (const [k, f] of rows) h += '<tr><td>' + k + '</td>' + [1,2,3,4,5,6,7,8,9,10,11].map((l) => '<td' + (l === L ? ' class="qx-on"' : '') + '>' + f(l) + '</td>').join('') + '</tr>';
+  $('qx-ltab').innerHTML = h;
+}
+sel.onchange = table; table();
+
+// ---- 02 the Qix's movement, on the port of qix_step
+(function () {
+  const W = 140, H = 200, cv = $('qm-cv'), ctx = cv.getContext('2d');
+  const PAL = typeof C64 !== 'undefined' ? C64.PAL : ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171', '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
+  const hexrgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const INK = [null, hexrgb(PAL[6]), hexrgb(PAL[12]), hexrgb(PAL[1])], WALL = hexrgb(PAL[1]), CLAIM = hexrgb(PAL[11]), LIVE = [208, 74, 58], OLD = [194, 90, 0];
+  const s8 = (v) => (v > 127 ? v - 256 : v);
+  // random_range: a byte reduced by repeated subtraction, as the game does
+  const rand = (n) => (Math.random() * 256 | 0) % n;
+  let m, m2 = null, turn2 = false, step = 0, timer = null, slow = false, showOld = false, lineOn = false, marker = [67, 198], log = [], dead = null;
+  const lvSel = $('qm-lvl');
+  for (let l = 1; l <= 11; l++) lvSel.insertAdjacentHTML('beforeend', '<option value="' + l + '">' + l + '</option>');
+  const level = () => { const l = +lvSel.value; return [LVL.turn[l], LVL.pull[l], LVL.pulln[l]]; };
+  const twoQix = () => !!(LVL.two[+lvSel.value] & 0x80);
+  function field(kind) {
+    const cls = new Uint8Array(160 * 200), rect = (x0, y0, x1, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) cls[y * 160 + x] = 3; };
+    rect(1, 10, 135, 10); rect(1, 198, 135, 198); rect(1, 10, 1, 198); rect(135, 10, 135, 198);
+    if (kind === 'corner') rect(1, 120, 44, 198);
+    if (kind === 'pen') rect(86, 96, 100, 198);
+    return cls;
+  }
+  function layLine() {               // a line being drawn, straight from the marker towards the middle
+    const dir = marker[1] > 104 ? -1 : 1;
+    for (let k = 1; k <= 70; k++) {
+      const y = marker[1] + dir * k, p = y * 160 + marker[0];
+      if (y < 11 || y > 197 || m.cls[p] === 3) break;
+      m.live[p] = 1; if (m.cls[p] !== 2) m.cls[p] = 1;
+    }
+  }
+  function clearLine() { for (let p = 0; p < m.live.length; p++) if (m.live[p]) { m.live[p] = 0; if (m.cls[p] === 1) m.cls[p] = 0; } }
+  function start(q) {
+    q.reset();
+    q.sx1 = q.speed1(rand(2) ? 0 : 0x80); q.sx2 = q.speed1(rand(2) ? 0 : 0x80);
+    q.sy1 = q.negateSpeed(rand(2) ? 0 : 0x80); q.sy2 = q.negateSpeed(rand(2) ? 0 : 0x80);
+    q.biasX = q.x1 < marker[0] ? q.pullPos : q.pullNeg; q.biasY = q.y1 < marker[1] ? q.pullPos : q.pullNeg;
+  }
+  function reset() {
+    const shared = { rand, cls: field($('qm-field').value), live: new Uint8Array(160 * 200), bmp: new Uint8Array(160 * 200), level: level(), marker: marker };
+    m = new QixMover(shared); start(m);
+    // two Qix: both start on the same line (qix_reset), share the planes, and Qix 2 reads Qix 1's y2 in one test ($982F)
+    m2 = twoQix() ? new QixMover(Object.assign({}, shared, { partner: m })) : null;
+    if (m2) start(m2);
+    turn2 = false; step = 0; log = []; dead = null;
+    if (lineOn) layLine();
+    draw();
+  }
+  const name = { x1: 'end 1 across', y1: 'end 1 down', x2: 'end 2 across', y2: 'end 2 down' };
+  function say(t, c) { log.unshift([step, t, c || '']); if (log.length > 40) log.pop(); }
+  function tick() {
+    if (dead) return;
+    step++;
+    const q = m2 && turn2 ? m2 : m, who = m2 ? (q === m2 ? 'Qix 2: ' : 'Qix 1: ') : '';
+    if (m2) turn2 = !turn2;
+    const ev = q.step();
+    for (const [k, w, pl] of ev) {
+      if (k === 'turn') say(who + 'turn: ' + (w ? 'reversed ' + w.split(' ').map((a) => name[a]).join(', ') : 'nothing reversed') + '; next turn in ' + (q.timer + 1) + (q.timer ? ' steps' : ' step'));
+      else if (k === 'wall') say(who + name[w] + ' hit the box: reversed' + (s8(pl) ? ', pull ' + fmt(s8(pl)) : ''));
+      else if (k === 'block') say(who + name[w] + ' crossed a claimed edge: reversed' + (s8(pl) ? ', pull ' + fmt(s8(pl)) : ''), 'qm-f');
+      else if (k === 'fallback') say(who + 'the new line crossed a claimed edge: back to the line from 8 steps ago', 'qm-f');
+    }
+    if (q.kill) { dead = q.kill; say('your line is hit by ' + (m2 ? (q === m2 ? 'Qix 2 ' : 'Qix 1 ') : 'the Qix ') + (dead.how === 'erase' ? 'erasing its oldest line' : 'drawing its new line') + ' at (' + dead.x + ', ' + dead.y + ')', 'qm-k'); run(false); }
+    draw();
+  }
+  const fmt = (v) => (v > 0 ? '+' : '') + v;
+  function draw() {
+    const img = ctx.createImageData(W * 2, H), d = img.data;
+    const put = (x, y, c) => { for (let k = 0; k < 2; k++) { const o = (y * W * 2 + x * 2 + k) * 4; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; } };
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const p = y * 160 + x, c = m.cls[p];
+      let col = [0, 0, 0];
+      if (c === 3) { const inner = x > 0 && y > 0 && m.cls[p - 1] === 3 && m.cls[p + 1] === 3 && m.cls[p - 160] === 3 && m.cls[p + 160] === 3; col = inner ? CLAIM : WALL; }
+      else if (m.live[p]) col = LIVE;
+      if (m.bmp[p]) col = INK[m.bmp[p]];
+      put(x, y, col);
+    }
+    if (showOld) for (const q of m2 ? [m, m2] : [m]) { const t = q.idx; if (q.tx1[t]) for (const [x, y] of QixMover.linePixels(q.tx1[t], q.ty1[t], q.tx2[t], q.ty2[t])) put(x, y, OLD); }
+    const [mx, my] = marker;
+    for (const [dx, dy] of [[0, -2], [-1, -1], [0, -1], [1, -1], [-2, 0], [-1, 0], [0, 0], [1, 0], [2, 0], [-1, 1], [0, 1], [1, 1], [0, 2]])
+      if (mx + dx >= 0 && mx + dx < W && my + dy >= 0 && my + dy < H) put(mx + dx, my + dy, [255, 255, 255]);
+    if (dead) for (let k = -3; k <= 3; k++) { if (dead.x + k >= 0 && dead.x + k < W) put(dead.x + k, dead.y, LIVE); if (dead.y + k >= 0 && dead.y + k < H) put(dead.x, dead.y + k, LIVE); }
+    ctx.putImageData(img, 0, 0);
+    const ar = (v, a) => (s8(v) > 0 ? a[1] : a[0]) + ' ' + fmt(s8(v)).padStart(3);
+    const block = (q, head) => {
+      const bx = s8(q.x1 < marker[0] ? q.pullPos : q.pullNeg), by = s8(q.y1 < marker[1] ? q.pullPos : q.pullNeg);
+      return head +
+        'end 1  across ' + ar(q.sx1, ['←', '→']) + '   down ' + ar(q.sy1, ['↑', '↓']) + '\n' +
+        'end 2  across ' + ar(q.sx2, ['←', '→']) + '   down ' + ar(q.sy2, ['↑', '↓']) + '\n' +
+        'next turn in ' + (((q.timer + 1) & 255) || 1) + ' step' + (q.timer ? 's' : '') + (m2 ? ' of its own' : '') + '\n' +
+        'pull at the next bounce  across ' + fmt(bx) + '  down ' + fmt(by);
+    };
+    $('qm-read').textContent = (m2 ? 'pass ' : 'step ') + step + '\n' + (m2 ? block(m, 'Qix 1\n') + '\n' + block(m2, 'Qix 2\n') : block(m, ''));
+    $('qm-log').innerHTML = log.map(([n, t, c]) => '<li' + (c ? ' class="' + c + '"' : '') + '><b>' + n + '</b> ' + t + '</li>').join('');
+  }
+  function run(on) {
+    if (timer) { clearInterval(timer); timer = null; }
+    if (on && dead) { dead = null; lineOn = false; $('qm-line').setAttribute('aria-pressed', false); clearLine(); }
+    if (on) timer = setInterval(tick, slow ? 300 : 72);
+    $('qm-run').setAttribute('aria-pressed', !!on); $('qm-run').textContent = on ? 'Pause' : 'Run';
+  }
+  $('qm-run').onclick = () => run(!timer);
+  $('qm-step').onclick = () => { run(false); if (dead) { dead = null; lineOn = false; $('qm-line').setAttribute('aria-pressed', false); clearLine(); } tick(); };
+  $('qm-slow').onclick = () => { slow = !slow; $('qm-slow').setAttribute('aria-pressed', slow); if (timer) run(true); };
+  $('qm-old').onclick = () => { showOld = !showOld; $('qm-old').setAttribute('aria-pressed', showOld); draw(); };
+  $('qm-line').onclick = () => { lineOn = !lineOn; $('qm-line').setAttribute('aria-pressed', lineOn); dead = null; clearLine(); if (lineOn) layLine(); draw(); };
+  $('qm-reset').onclick = () => { run(false); reset(); };
+  $('qm-field').onchange = () => { run(false); reset(); };
+  lvSel.onchange = () => { if (twoQix() !== !!m2) { run(false); reset(); } else { m.setLevel(level()); if (m2) m2.setLevel(level()); draw(); } };
+  cv.onclick = (e) => {
+    const r = cv.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) / r.width * W), y = Math.floor((e.clientY - r.top) / r.height * H);
+    marker = [Math.max(2, Math.min(134, x)), Math.max(11, Math.min(197, y))]; m.marker = marker; if (m2) m2.marker = marker;
+    if (lineOn) { clearLine(); layLine(); }
+    draw();
+  };
+  reset();
+})();
+})();
+</script>
