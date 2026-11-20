@@ -41,3 +41,11 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   How it works page's drawing port had the bonus's blink the wrong way
   round, unnoticed because its test never blinked; fixed, and the test
   now includes the bonus.
+
+## 19 November 2026: the click's count
+
+Issue https://github.com/gamesexplained/gamesexplained/issues/953: the
+click at $02A7 writes R1 24 times in about 100 cycles, not 16 in 64, as
+Octopus's checker found on the same bytes and the page's recorded click
+(12 edges, cycle 0 to 88) shows. Corrected in symbols.json, facts.md and
+How it works, and the listing recommented.

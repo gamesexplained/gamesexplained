@@ -197,8 +197,8 @@ after power on).
   length code A sets how many passes: from A to 15, each one longer. So
   a larger code is shorter. Codes: $E a catch, 9 an item into the sea, 8
   a miss counted, 5 Popeye knocked in, $B the bonus's beep.
-- The click ($02A7), 16 writes to R1, on a step whose lane threw or
-  moved an item: request_click ($0265) sets it only when A is 0, which
+- The click ($02A7), 24 writes to R1 in about 100 cycles, on a step
+  whose lane threw or moved an item: request_click ($0265) sets it only when A is 0, which
   the swaps and carry_count leave in just that case.
 - The alarm's buzz ($0293): bursts of 16 toggles while the divider's
   bits 11-14 read below 4, a quarter of each second.
