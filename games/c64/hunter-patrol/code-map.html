@@ -13,7 +13,14 @@
   .cm-scroll{overflow-x:auto}
   .cm-strip text,.cm-graph text{font-family:var(--fb)}
   .cm-strip .mono,.cm-graph .mono{font-family:var(--fm)}
-  .cm-seg{cursor:pointer}
+  .cm-seg,.cm-area{cursor:pointer}
+  .cm-area:focus-visible{outline:2px solid var(--edge-hi)}
+  .cm-kinds{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+  .cm-kinds a{font-size:13.5px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--ink)}
+  .cm-kinds a[aria-current="true"]{background:var(--ink);color:var(--surface,#fff);border-color:var(--ink);font-weight:600}
+  .cm-users{margin:12px 0 0;font-size:14px;line-height:1.7}
+  .cm-users p{margin:0 0 6px}
+  .cm-users a{font-family:var(--fm);font-size:13px;margin-right:6px}
   .cm-seg:hover,.cm-seg.on{stroke:var(--edge-hi);stroke-width:2}
   .cm-grid{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:16px;align-items:start}
   @media (max-width:820px){.cm-grid{grid-template-columns:minmax(0,1fr)}}
@@ -30,13 +37,18 @@
   .cm-edge.jump path{stroke-dasharray:6 4}
   .cm-edge.falls path{stroke-dasharray:1.5 3.5;stroke-width:2}
   .cm-edge.hi path{stroke:var(--edge-hi);stroke-width:2.3}
-  #cm-detail{position:sticky;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;font-size:15px}
+  #cm-detail{position:sticky;top:calc(var(--tabs-h,72px) + 12px);max-height:calc(100vh - var(--tabs-h,72px) - 24px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;font-size:15px}
   #cm-detail h3{font-family:var(--fm);font-size:16px;margin:0 0 2px;word-break:break-all}
   #cm-detail .meta{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);margin:0 0 10px}
   #cm-detail .tag{display:inline-block;font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;border:1.5px solid;margin:0 0 8px}
   #cm-detail p{font-size:14.5px;margin:0 0 10px}
   #cm-detail h4{font-size:11.5px;font-family:var(--fm);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:12px 0 4px;font-weight:500}
   #cm-detail ul{list-style:none;margin:0;padding:0;font-family:var(--fm);font-size:13px}
+  .cm-pop{position:fixed;z-index:6;width:min(340px,90vw);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 6px 24px rgba(0,0,0,.18);padding:8px;pointer-events:none}
+  .cm-pop img,.cm-pop canvas,#cm-detail .clip{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px;background:#000}
+  .cm-pop p{font-size:13px;line-height:1.4;margin:6px 2px 0;color:var(--ink-soft)}
+  #cm-detail figure{margin:0 0 10px}
+  #cm-detail figcaption{font-size:12.5px;color:var(--ink-mute);margin-top:4px;line-height:1.4}
   .cm-tip{position:fixed;pointer-events:none;background:var(--chip);color:var(--chip-ink);font-family:var(--fm);font-size:12px;padding:5px 8px;border-radius:5px;z-index:5;max-width:280px}
 </style>
 <!-- tabs -->
@@ -48,17 +60,18 @@
 <main class="wrap">
 <section id="memory">
   <p class="fig">01 · Where it lives</p>
-  <h2 class="t">A game in three slices of memory</h2>
-  <p class="lede">The top bar is the machine's whole 64 KB. The bars below it zoom into the stretches that hold code, one segment for each subroutine or table.</p>
-  <div class="plate"><div class="cm-scroll"><svg id="cm-strip" class="cm-strip" width="100%" role="img" aria-label="The program's place in memory"></svg></div>
+  <h2 class="t">The whole 64 KB, area by area</h2>
+  <p class="lede">The bar is the machine's whole 64 KB, split into the areas the game uses. Pick a kind of area, or click one in the bar, to open it below: each subroutine and table in it, and the code that uses it. Click a subroutine to find it in the map of calls.</p>
+  <div class="plate"><nav class="cm-kinds" id="cm-kinds" aria-label="Kinds of area"></nav><div class="cm-scroll"><svg id="cm-strip" class="cm-strip" width="100%" role="img" aria-label="The program's place in memory"></svg></div>
   <div class="cm-legend" id="cm-strip-legend"></div>
-  <p class="cap">Point at a segment to name it, and click a subroutine to find it in the map below. The engine runs from <a href="source.html#0c55"><code>$0C55</code></a> to <a href="source.html#2fb0"><code>$2FB0</code></a>, with the cracker's additions at its start; Rob Hubbard's <a href="music.html">music driver</a> sits on its own at <a href="source.html#a000"><code>$A000</code></a>.</p></div>
+  <div class="cm-users" id="cm-users"></div>
+  <p class="cap">Point at a segment to name it. The engine runs from <a href="source.html#0c55"><code>$0C55</code></a> to <a href="source.html#2fb0"><code>$2FB0</code></a>, with the cracker's additions at its start; Rob Hubbard's <a href="music.html">music driver</a> sits on its own at <a href="source.html#a000"><code>$A000</code></a>.</p></div>
 </section>
 
 <section id="calls">
   <p class="fig">02 · Who calls whom</p>
   <h2 class="t">The wiring between the subroutines</h2>
-  <p class="lede">Each box is one subroutine, taller when it is longer, in a band for its job. Inside a band, the boxes run from the first reached to the last. Hover over a box to light up its connections, or click it to keep them lit and read what it does.</p>
+  <p class="lede">Each box is one subroutine, taller when it is longer, in a band for its job. Inside a band, the boxes run from the first reached to the last. Hover over a box to light up its connections, or click it to keep them lit and read what it does. A box marked ▶ shows that routine at work on its own: the game is held still and dimmed while only that routine runs, and a tune is drawn as its notes.</p>
   <div class="cm-legend" id="cm-graph-legend"></div>
   <div class="cm-grid" style="margin-top:14px">
     <div class="plate" style="padding:8px"><svg id="cm-graph" class="cm-graph" role="img" aria-label="Call graph"></svg></div>
@@ -69,8 +82,13 @@
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <div class="cm-tip" id="cm-tip" hidden></div>
+<div class="cm-pop" id="cm-pop" hidden></div>
 
 <script src="../../lib/c64.js"></script>
+<script src="../../lib/collide.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="reference/hp-port.js"></script>
+<script src="reference/hp-play.js"></script>
 <script>
 (function () {
   // Which job each subroutine does: the one hand-made part of the map. Everything else is read
@@ -85,6 +103,260 @@
     hits: ['Hits, scores and strafing runs', 'hits_play hits_sky_crash sprite_slot_hi sprite_slot_lo plane_crash add_score resolve_hits strafing_runs start_run place_target hits_strafing run_slot_hi run_slot_lo target_hit show_target_hits run_result'],
     sound: ['Sound and music', 'start_music start_engine_sound engine_sound shot_sound hit_sound music_init music_play music_start music_irq music_stop music_reset music_silence tune2_start tune2_irq tune2_init tune2_tick'],
   };
+  // A loop for each routine whose work can be seen or heard, drawn live: the Play tab's port of the
+  // game (reference/hp-port.js) is run to the title screen and to the middle of the first level and
+  // held still there, and then only the routines named run, a pass at a time at the game's pace, on
+  // the game's own memory. In play the bands' sprites are set as game_irq ($13AB) would set them from
+  // the band images. Bright is what those routines change: the pixels that differ over the first
+  // passes (change), or the sprites in on (a mask of sprites for each band: sky, ground); ctx sprites
+  // are shown dimmed, for their place, and the other sprites are hidden. crop is the part of the
+  // screen shown, in renderFrame's pixels. A roll is music: the sound chip's three voices drawn as
+  // notes on a scrolling stave. cycle starts the loop again from the snapshot after that many passes,
+  // and done(M) when it says so; start(M, P, E, k) sets up its k-th time round.
+  const run = g => { if (g && g.next) for (const _ of g); };
+  const TURN = [0, 1, 2, 1, 0, 0xFF, 0xFE, 0xFF];
+  // read_inputs ($1920) takes $33 from voice 3's noise and $36 from the raster line, and the game
+  // reads the timers and the noise for other random numbers; here a little generator stands in
+  let seed = 1;
+  const noise = () => (seed = (seed * 1103515245 + 12345) >>> 0) >>> 24;
+  const TITLE = [32, 35, 352, 235], PANEL = [32, 195, 352, 235];
+  // the joystick in $DC01: 0 bits pressed (left 4, right 8, fire 16)
+  const STICK = { L: 0x1B, R: 0x17, F: 0x0F, N: 0x1F };
+  // the name entry spelling HUNTER from the cursor's start at the end mark (position 27); the
+  // alphabet row is . A-Z and the end mark, so A is position 1
+  const SPELL = (() => {
+    let x = 27, s = '';
+    for (const ch of 'HUNTER') {
+      const to = ch.charCodeAt(0) - 64, r = (to - x + 28) % 28;
+      s += r <= 14 ? 'R'.repeat(r) : 'L'.repeat(28 - r);
+      s += 'FN'; x = to;
+    }
+    return s + 'N'.repeat(12);
+  })();
+  const CLIPS = {
+    move_stripes: { crop: [40, 50, 342, 196], change: 64, pass: P => P.move_stripes(),
+      text: 'The ground never scrolls. Each pass move_stripes redraws the stripes a few bytes further down the ground characters, faster near the bottom, so the fields seem to roll towards the plane.' },
+    scroll_left: { crop: [40, 50, 342, 104], change: 512,
+      pass(P, M) { M[0x22] = 2; if (!(M[0x1E] & 7)) run(P.scroll_ground()); P.set_fine_scroll(M[0x23]); },
+      text: 'The plane banked hard one way. Each pixel of turn moves the fine scroll on; when it runs out, scroll_left shifts the three hill rows a whole character left and fills the new column at the right edge from the panorama.' },
+    plane_shadow: { crop: [104, 38, 280, 198], on: [0x01, 0x09],
+      pass(P, M, t) { M[0x37] = t % 320 < 160 ? 0x01 : 0xFF; M[0x22] = TURN[(t >> 5) & 7]; P.move_plane(); },
+      text: 'The plane climbs, dives and banks. plane_shadow picks one of five shadow sizes from the plane\'s height, and the bank picks the turned picture of each.' },
+    fire_shot: { crop: [128, 38, 256, 198], on: [0x02, 0x02], ctx: [0x01, 0x09], speed: 0.25,
+      start(M) { const d = 0xA0 - M[0x8061]; M[0x8061] += d; M[0x8091] = (M[0x8091] + d) & 255; },
+      pass(P, M) { if (!M[0x8670] && !(M[0x1E] & 7)) P.fire_shot(); P.move_shots(); P.sort_shot(); },
+      text: 'Slowed to a quarter of the game\'s speed. fire_shot starts a shot just above the plane (dimmed), and move_shots carries it up the screen, smaller as it goes, until it is freed. Only one shot is in the air at a time.' },
+    move_aircraft: { crop: [40, 38, 342, 120], on: [0xF0, 0], ctx: [0x01, 0], speed: 3,
+      start(M) { for (let i = 0; i < 4; i++) M[0x8530 + 16 * i] = 0; },
+      pass(P, M, t) { M[0x33] = t % 200 ? noise() | 1 : 0; M[0x36] = noise(); if (!(M[0x1E] & 7)) M[0x21] = (M[0x21] + 1) & 255; P.spawn_aircraft(); P.sort_aircraft(); },
+      text: 'Three times the game\'s speed. spawn_aircraft starts an enemy aircraft close by at one edge when the noise byte at $33 comes up 0 (here, every 200 passes); move_aircraft then drifts it left, right, up and down by its movement bits, turning now and then at random, while it shrinks into the distance and is freed.' },
+    move_ground: { crop: [40, 96, 342, 198], on: [0, 0xF0], speed: 2,
+      start(M) { M[0x22] = 0; for (let i = 0; i < 4; i++) M[0x80C0 + 16 * i] = 0; },
+      pass(P, M, t) { M[0x33] = t % 160 ? noise() | 1 : 0; M[0x36] = noise(); run(P.spawn_ground()); P.sort_ground(); },
+      text: 'Twice the game\'s speed. spawn_ground starts a ground object on the horizon at a random place when the noise byte at $33 comes up right (here, every 160 passes); move_ground brings each one nearer, larger as it comes, until it passes under the plane and is freed.' },
+    move_flak: { crop: [40, 38, 342, 198], on: [0x04, 0x04], ctx: [0x01, 0x09],
+      pass(P) { run(P.move_flak()); },
+      text: 'move_flak starts a flak shell from the ground at a random place, carries it up the screen, and bursts it at a random height: three burst pictures, one every 32 passes, before the record is freed.' },
+    place_target: { crop: [40, 96, 342, 198], on: [0, 0x70], speed: 2,
+      start(M, P, E, k) { M[0x41] = 0x80; M[0x44] = k % 4; M[0x43] = 0; M[0x22] = 0; E.toggle = true; run(P.start_run()); E.toggle = false; },
+      done: M => !M[0x80C0],
+      pass(P) { run(P.place_target()); },
+      text: 'The four levels\' targets in turn, at twice the game\'s speed. For a strafing run, start_run copies the level\'s set of target shapes to $7800, from the address in the table at $8B80, and puts the target on the horizon in three parts; place_target brings it nearer each pass, picking larger shapes as it comes.' },
+    colour_title: { scene: 'title', crop: TITLE, change: 120, maskEvery: 10,
+      pass(P, M, t, E) { const p = t % 120; if (p === 1) E.colour.fill(1); if (p === 60) P.colour_title(); },
+      text: 'colour_title gives each character of the title screen the colour that the table at $8100 holds for its code, so every letter of the logo takes its own colours, then colours the highscore rows and the alphabet. Here it runs against a screen of white every 120 passes.' },
+    insert_row: { scene: 'title', crop: TITLE, change: 420, maskEvery: 10, cycle: 420,
+      pass(P, M, t) { if (t % 70 === 30) { for (let i = 0; i < 5; i++) M[0x13 + i] = i < 1 ? 0 : noise() % 10; P.insert_score(); } },
+      text: 'A random score is tried every 70 passes. insert_score compares it with the five in the table, from the top; insert_row moves the rows below its place down one, dropping the last, and writes the score with a blank name, in white.' },
+    enter_name: { scene: 'title', crop: TITLE, change: SPELL.length, maskEvery: 1, cycle: SPELL.length, rate: 7.5,
+      start(M, P, E) { [0, 1, 2, 3, 4].forEach((d, i) => { M[0x13 + i] = d; }); P.insert_score(); E.gen = P.enter_name(); E.step(); },
+      pass(P, M, t, E) { E.joy = STICK[SPELL[(t - 1) % SPELL.length]]; E.step(); },
+      text: 'After a new highscore, enter_name moves a white cursor along the alphabet row as the stick goes left and right, with a short delay between moves, and fire writes the letter into the new row of the table. Here it spells HUNTER.' },
+    add_score: { crop: PANEL, change: 400, maskEvery: 5, cycle: 1000,
+      pass(P, M, t) { if (t % 25 === 0) P.add_score(t % 50 ? 0x32 : 0x64); },
+      text: 'add_score adds to the last digit and carries through the five digits at $13, then writes them to the status panel: 50 for an aircraft and 100 for a ground object, here one every 25 passes.' },
+    draw_distance_bar: { crop: PANEL, change: 520, maskEvery: 5,
+      start(M, P) { for (let y = 0xA0; y > 0; y--) M[0x496F + y] = 0xFF; M[0x41] = 0; M[0x44] = 0; P.set_hits_needed(); },
+      done: M => M[0x41] === 3 && M[0x42] === 1,
+      pass(P, M, t) { if (t % 25 === 0) { M[0x42]--; run(P.draw_distance_bar()); } },
+      text: 'Each hit on the current kind of defence fills more of the distance bar, from the right; each of the four kinds has its own section, and a new kind starts when the hits it needs ($42) reach 0. Here a hit is counted every 25 passes. In the game the fourth kind\'s last hit starts the strafing run.' },
+    music_play: { roll: true, rate: 985248 / 18433,
+      start(M, P) { P.music_start(); },
+      pass(P) { P.music_irq(); },
+      text: 'The title tune, from Rob Hubbard\'s music driver: music_play runs 53 times a second from CIA 1\'s timer, and each line here is one of the sound chip\'s three voices (numbered at the right edge), its pitch as it plays. Sound is not played here; the Music tab plays it.' },
+    tune2_tick: { roll: true, rate: 985248 / 12289,
+      start(M, P, E) { E.call(0x1050); },
+      pass(P, M, t, E) { if (M[0x12]) E.call(0x1050); E.call(0x10A0); },
+      text: 'The second tune that nothing in the game calls, run as its own interrupt would run it, 80 times a second: tune2_tick counts down each voice\'s note and starts the next. Notes of 16 and 8 ticks are never released, so those voices hold on.' },
+    plane_crash: { crop: [104, 38, 280, 198], on: [0x01, 0x09],
+      pass(P, M) { if (!M[0x3F] || M[0x3F] >= 0x9F) M[0x3F] = 1; run(P.plane_crash()); },
+      text: 'The crash: every other pass the plane and its shadow show the next explosion picture. In the game a life is then taken and play starts again.' },
+  };
+  // The game held still. The port is run once, the first time a loop is shown: 60 frames to the
+  // title, then fire pressed and 300 frames of play, to the middle of the first level.
+  const Solo = (() => {
+    const PASSES = 176 / 100 * 50;            // main-loop passes a second, measured on the port
+    let snap = null;
+    function boot(ram) {
+      if (snap) return snap;
+      return (snap = new Promise((res, rej) => {
+        const play = HunterPlay.create({ M: ram.slice(), keep: {}, CPU: C64Cpu.CPU }), F = HunterPlay.FRAME;
+        const keep = () => ({ M: play.M.slice(), colour: play.colour.slice(), vic: play.shown.vic.slice(), cia2: play.shown.cia2.slice() });
+        let n = 0, title = null;
+        (function chunk() {
+          try {
+            const t = performance.now();
+            while (n < 410 && performance.now() - t < 12) {
+              if (n < 60) play.joy = 0x1F; else if (n < 110) play.joy = n % 20 < 10 ? 0x0F : 0x1F; else { play.joy = 0x1F; play.M[0x40] = 3; }
+              play.run(++n * F);
+              if (n === 60) title = keep();
+            }
+            if (n < 410) { setTimeout(chunk, 0); return; }
+            res({ play: keep(), title });
+          } catch (e) { rej(e); }
+        })();
+      }));
+    }
+    const rgb = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+    const SKIP = new Set([0x12, 0x19, 0x1A, 0x1E, 0x1F]);
+    // one frame as game_irq draws it: band 0 (the sky) from $8060 at the top, band 1 (the ground) from
+    // $8090 at its line, band 2 (the score row) at the next, sprites limited to the masks given
+    function frame(M, S, colour, en) {
+      const vic = S.vic.slice(), w = [];
+      const band = (src, from, line, ptr, mask) => {
+        const put = line < 0 ? (a, v) => { vic[a] = v; } : (a, v) => w.push([line, 1, 0xD000 + a, v]);
+        put(0x21, M[src + 0x21]);
+        for (let x = from; x < 0x2F; x++) if (!SKIP.has(x)) put(x, x === 0x15 ? M[src + x] & mask : M[src + x]);
+        for (let x = 0; x < 8; x++) if (line < 0) M[0x47F8 + x] = M[ptr + x]; else w.push([line, 1, 0x47F8 + x, M[ptr + x]]);
+      };
+      const l1 = M[0x8072], l2 = M[0x80A2];
+      band(0x8060, 0, -1, 0x8520, en[0]);
+      band(0x8090, 8, l1, 0x8528, en[1]);
+      w.push([l2, 1, 0xD021, 0x0B], [l2, 1, 0xD011, 0x1B], [l2, 1, 0xD016, 0x18]);
+      return C64.renderFrame({ lines: 312, cycles: 63, vic, cia2: S.cia2, writes: w, mem: M, colourMem: colour }).px;
+    }
+    function runner(snaps, c) {
+      const S = snaps[c.scene || 'play'];
+      let M, colour, P, E, t, k = -1;
+      const sid = new Uint8Array(32);
+      function begin() {
+        k++; t = 0;
+        M = S.M.slice(); colour = S.colour.slice();
+        E = { colour, sid, joy: 0x1F, toggle: false, flip: 0 };
+        const io = {
+          read(a) {
+            if (a >= 0xD800 && a < 0xDC00) return colour[a - 0xD800];
+            if (a === 0xD012) return 0xC0 | (noise() & 0x3F);
+            if (a === 0xD41B || a === 0xDC04 || a === 0xDC05) return noise();
+            if (a === 0xDC01) return E.toggle ? ((E.flip ^= 1) ? 0x1F : 0x0F) : E.joy;
+            return 0;
+          },
+          write(a, v) { if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15; else if (a >= 0xD400 && a < 0xD420) sid[a & 31] = v; },
+          irqByte: a => M[a],
+        };
+        P = HunterPort.create(M, io, { CPU: C64Cpu.CPU });
+        let cpu = null;
+        E.call = a => { if (!cpu) cpu = new C64Cpu.CPU(M, { port: { dir: 0x2F, data: 0x36 }, io }); cpu.sp = 0xFF; cpu.call(a, {}, { maxSteps: 100000 }); };
+        // a routine that waits in a loop runs to the next turn of the loop, where it reads the stick
+        E.step = () => { for (;;) { const r = E.gen.next(); if (r.done || (r.value && r.value.cp !== undefined)) return; } };
+        if (c.start) c.start(M, P, E, k);
+      }
+      begin();
+      const on = c.on || [0, 0], ctx = c.ctx || [0, 0];
+      return {
+        sid,
+        pass() {
+          if ((c.cycle && t >= c.cycle) || (c.done && t > 4 && c.done(M))) begin();
+          t++;
+          if (!c.roll && (c.scene || 'play') === 'play') M[0x1E] = (M[0x1E] + 1) & 255;
+          c.pass(P, M, t, E);
+        },
+        draw() {
+          if (c.scene === 'title') return { px: C64.renderFrame({ lines: 312, cycles: 63, vic: S.vic, cia2: S.cia2, writes: [], mem: M, colourMem: colour }).px };
+          const all = frame(M, S, colour, [on[0] | ctx[0], on[1] | ctx[1]]);
+          return { px: all, bright: c.on ? frame(M, S, colour, ctx) : null };
+        },
+      };
+    }
+    // the music: each voice's pitch, from its frequency registers, while its gate is on
+    const VOICE = [['#56B4E9', 0], ['#E69F00', 7], ['#009E73', 14]];
+    function roll(cv, r, c) {
+      const w = 320, h = 150, lo = 28, hi = 96, Y = n => h - 8 - (n - lo) / (hi - lo) * (h - 16);
+      cv.width = w; cv.height = h;
+      const ctx = cv.getContext('2d'), hist = [];
+      let t0 = 0, done = 0;
+      (function tick(t) {
+        if (!cv.isConnected) return;
+        if (!t0) t0 = t;
+        const due = Math.floor((t - t0) / 1000 * c.rate);
+        for (; done < due; done++) {
+          r.pass();
+          hist.push(VOICE.map(([, o]) => {
+            const f = r.sid[o] | r.sid[o + 1] << 8;
+            if (!(r.sid[o + 4] & 1) || !f) return null;
+            return 69 + 12 * Math.log2(f * 985248 / 16777216 / 440);
+          }));
+          if (hist.length > w - 24) hist.shift();
+        }
+        ctx.fillStyle = '#16171a'; ctx.fillRect(0, 0, w, h);
+        ctx.font = '9px monospace'; ctx.fillStyle = '#6a6d74';
+        for (let n = 36; n <= hi; n += 12) {           // the Cs
+          ctx.fillRect(0, Y(n), w - 24, 1);
+          ctx.fillText('C' + (n / 12 - 1), 2, Y(n) - 2);
+        }
+        VOICE.forEach(([col], v) => {
+          ctx.fillStyle = col;
+          hist.forEach((s, x) => { if (s[v] !== null) ctx.fillRect(x, Y(s[v]) - 1.5 + v * 0.5, 1, 3); });
+          const last = hist.length ? hist[hist.length - 1][v] : null;
+          const y = last === null ? h - 10 - (2 - v) * 0 : Y(last);
+          ctx.fillRect(w - 22, Math.max(2, Math.min(h - 14, y - 6)), 14, 12);
+          ctx.fillStyle = '#000'; ctx.font = 'bold 10px monospace';
+          ctx.fillText(String(v + 1), w - 18, Math.max(2, Math.min(h - 14, y - 6)) + 10);
+          if (last === null) { ctx.fillStyle = '#16171a'; ctx.globalAlpha = .6; ctx.fillRect(w - 22, Math.max(2, Math.min(h - 14, y - 6)), 14, 12); ctx.globalAlpha = 1; }
+        });
+        requestAnimationFrame(tick);
+      })(performance.now());
+    }
+    async function mount(cv, ram) {
+      const c = CLIPS[cv.dataset.solo];
+      cv.width = 320; cv.height = 150;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.fillStyle = '#bbb'; ctx.font = '12px sans-serif'; ctx.fillText('Starting the game…', 10, 20);
+      const S = await boot(ram);
+      if (!cv.isConnected) return;
+      if (c.roll) { roll(cv, runner(S, c), c); return; }
+      const [x0, y0, x1, y1] = c.crop, w = x1 - x0, h = y1 - y0, W = 384;
+      cv.width = w; cv.height = h;
+      if (c.change && !c.mask) {                 // what the routine changes over its first passes
+        const t = runner(S, c), first = t.draw().px.slice(), m = new Uint8Array(first.length);
+        for (let i = 1; i <= c.change; i++) {
+          t.pass();
+          if (i % (c.maskEvery || 1)) continue;
+          const p = t.draw().px; for (let k = 0; k < p.length; k++) if (p[k] !== first[k]) m[k] = 1;
+        }
+        c.mask = m;
+      }
+      const r = runner(S, c), img = ctx.createImageData(w, h);
+      let t0 = 0, done = 0;
+      (function tick(t) {
+        if (!cv.isConnected) return;
+        if (!t0) t0 = t;
+        const due = Math.floor((t - t0) / 1000 * (c.rate || PASSES) * (c.speed || 1));
+        for (; done < due; done++) r.pass();
+        const f = r.draw();
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+          const k = (y + y0) * W + x + x0, o = (y * w + x) * 4, col = rgb[f.px[k]];
+          const on = c.mask ? c.mask[k] : f.px[k] !== f.bright[k];
+          for (let j = 0; j < 3; j++) img.data[o + j] = on ? col[j] : col[j] * 0.25 + 40;
+          img.data[o + 3] = 255;
+        }
+        ctx.putImageData(img, 0, 0);
+        requestAnimationFrame(tick);
+      })(performance.now());
+    }
+    return { mount, runner, boot };
+  })();
   const ORDER = Object.keys(JOBS).concat(['other']);
   const JOBNAME = Object.assign({ other: 'Other' }, Object.fromEntries(Object.entries(JOBS).map(([k, v]) => [k, v[0]])));
   const jobOf = {}; for (const [k, v] of Object.entries(JOBS)) for (const n of v[1].split(' ')) jobOf[n] = k;
@@ -138,61 +410,116 @@
       el('rect', { width: 6, height: 6, fill: 'var(--empty)' }, h); el('rect', { width: 2.2, height: 6, fill: 'var(--data)' }, h);
       const x = el('pattern', { id: 'cm-cross', width: 7, height: 7, patternUnits: 'userSpaceOnUse' }, d);
       el('rect', { width: 7, height: 7, fill: 'var(--empty)' }, x); el('path', { d: 'M0 3.5H7M3.5 0V7', stroke: 'var(--data)', 'stroke-width': 1.4 }, x);
+      const ln = el('pattern', { id: 'cm-lines', width: 6, height: 5, patternUnits: 'userSpaceOnUse' }, d);
+      el('rect', { width: 6, height: 5, fill: 'var(--empty)' }, ln); el('rect', { y: 3, width: 6, height: 1.6, fill: 'var(--data)' }, ln);
       const ar = el('marker', { id: 'cm-arr', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, d);
       el('path', { d: 'M0 0L10 5L0 10Z', fill: 'var(--edge)' }, ar);
       const ah = el('marker', { id: 'cm-arrh', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, d);
       el('path', { d: 'M0 0L10 5L0 10Z', fill: 'var(--edge-hi)' }, ah);
     }
 
-    /* ---------- the memory strip ---------- */
-    // code stretches: routines closer than 4 KB to the last one belong to the same stretch
-    const clusters = [];
-    R.forEach(r => { const c = clusters[clusters.length - 1]; if (c && r.a - c[1] < 0x1000) c[1] = Math.max(c[1], r.e); else clusters.push([r.a, r.e]); });
-    clusters.forEach(c => { c[0] &= 0xFF00; c[1] = Math.min(0xFFFF, c[1] | 0xFF); });
-    // game.json's regions, and zero page
-    const regions = [[0x0000, 0x00FF, 'tables', 'zero page'], [0x0C00, 0x0CEF, 'code', "the cracker's highscore loader and its file name"], [0x1170, 0x2FA8, 'code', "the game's engine: title, input, scrolling, objects, collisions, sound effects"], [0x4000, 0x4FFF, 'tables', "title and status screens, screen matrix and character set"], [0x5000, 0x7FFF, 'graphics', "sprite shapes"], [0x8000, 0x8FFF, 'tables', "sprite registers, object records, templates and texts"], [0xA000, 0xAE40, 'code', "Rob Hubbard's music driver and its tune data"]];
+    /* ---------- the memory map ---------- */
+    // The areas of the 64 KB the game uses, from facts.md's memory layout: the one hand-made part of
+    // the map besides the jobs. Each has a kind, which the buttons above the bar pick.
+    const KINDS = { code: ['Code', 'var(--ink)'], graphics: ['Graphics', 'url(#cm-cross)'], screens: ['Screens', 'url(#cm-lines)'], music: ['Music', 'var(--j-sound)'], data: ['Data', 'url(#cm-hatch)'] };
+    const AREAS = [
+      [0x0000, 0x00FF, 'data', 'Zero page', 'the game\'s variables'],
+      [0x0C00, 0x0FFF, 'code', 'Cracker', 'the cracker\'s highscore file, saver, trainer and joystick read, and four engine routines from $0F00'],
+      [0x1000, 0x116F, 'music', 'Unused tune', 'a second tune player the game never calls'],
+      [0x1170, 0x2FFF, 'code', 'Engine', 'title, input, scrolling, objects, hits and sound effects'],
+      [0x3000, 0x3FFF, 'graphics', 'Targets 1–2', 'the target sprites of levels 1 and 2', 'the level\'s set is copied to $7800 from the address in the table at $8B80, so no instruction names it.'],
+      [0x4000, 0x43FF, 'screens', 'Title', 'the title screen and highscore table'],
+      [0x4400, 0x47FF, 'screens', 'Play', 'the play screen: hills, ground, status panel, sprite pointers'],
+      [0x4800, 0x4FFF, 'graphics', 'Characters', 'the character set'],
+      [0x5000, 0x7FFF, 'graphics', 'Sprite shapes', 'the plane, enemies, ground objects and explosions', 'no instruction names it: the video chip reads each shape through the sprite pointers at $47F8.'],
+      [0x8000, 0x8FFF, 'data', 'Objects', 'sprite register images, object records and templates, sound settings, texts and the hill panorama'],
+      [0x9000, 0x9FFF, 'graphics', 'Targets 3–4', 'the target sprites of levels 3 and 4', 'the level\'s set is copied to $7800 from the address in the table at $8B80, so no instruction names it.'],
+      [0xA000, 0xAE3F, 'music', 'Music', 'Rob Hubbard\'s music driver and its tune data'],
+    ].map(([a, b, k, n, what, note], i) => ({ i, a, b, k, n, what, note }));
+    // the code that names an address in each area (not counting calls and jumps), by routine
+    const users = AREAS.map(() => new Set());
+    for (const r of code) {
+      if (r.oa === undefined || r.m === 'jsr' || r.m === 'jmp' || (r.m[0] === 'b' && r.m !== 'bit')) continue;
+      const o = owner(r.a); if (o < 0) continue;
+      for (const A of AREAS) if (r.oa >= A.a && r.oa <= A.b && (r.a < A.a || r.a > A.b)) users[A.i].add(o);
+    }
     const strip = $('cm-strip'), SEGS = {};
+    let open = new Set(AREAS.filter(A => A.k === 'code').map(A => A.i)), kind = 'code';
+    function pick(k) { kind = k; open = new Set(AREAS.filter(A => k === 'all' || A.k === k).map(A => A.i)); drawStrip(); }
+    function pickArea(i) { kind = null; open = new Set([i]); drawStrip(); }
+    const kindBar = $('cm-kinds');
+    kindBar.innerHTML = ['all', ...Object.keys(KINDS)].map(k => `<a href="#memory" data-k="${k}">${k === 'all' ? 'Everything' : KINDS[k][0]}</a>`).join('');
+    kindBar.querySelectorAll('a').forEach(b => b.addEventListener('click', e => { e.preventDefault(); pick(b.dataset.k); }));
+    function zoom(A, y, W, pad) {
+      const inner = W - pad * 2, z0 = A.a, z1 = A.b, h2 = 40, Z = a => pad + (a - z0) / (z1 + 1 - z0) * inner;
+      el('text', { x: pad, y: y + 14, 'font-size': 14, 'font-weight': 600, fill: 'var(--ink)' }, strip).textContent = A.n;
+      el('text', { x: W - pad, y: y + 14, 'font-size': 11.5, 'text-anchor': 'end', fill: 'var(--ink-mute)', class: 'mono' }, strip).textContent = `${hex(z0)}–${hex(z1)} · ${((z1 + 1 - z0) / 1024).toFixed(1)} KB`;
+      el('text', { x: pad, y: y + 31, 'font-size': 12.5, fill: 'var(--ink-soft)' }, strip).textContent = A.what.charAt(0).toUpperCase() + A.what.slice(1);
+      const yb = y + 40;
+      el('rect', { x: pad, y: yb, width: inner, height: h2, fill: 'var(--empty)', stroke: 'var(--line)' }, strip);
+      let run = null; const runs = [];
+      for (const r of recs) {
+        if (r.a < z0 || r.a > z1) continue;
+        let key; if (r.t === 'code') { const o = owner(r.a); key = 'c' + o; } else { const t = tableAt(r.a); key = 't' + (t ? t.n : ''); }
+        if (run && run.key === key && run.a + run.n >= r.a - 4) run.n = r.a + r.b.length - run.a; else { run = { key, a: r.a, n: r.b.length }; runs.push(run); }
+      }
+      const fillOf = { graphics: 'url(#cm-cross)', screens: 'url(#cm-lines)' }[A.k] || 'url(#cm-hatch)';
+      for (const s of runs) {
+        const x = Z(s.a), w = Math.max(1, Z(s.a + s.n) - x); let fill, label, tipx, ri = -1;
+        if (s.key[0] === 'c' && s.key !== 'c-1') { ri = +s.key.slice(1); const r = R[ri]; fill = jcol(r.g); label = r.n; tipx = `<b>${r.n}</b><br>${hex(s.a)} · ${r.size} bytes of code<br>${JOBNAME[r.g]}<br>Click to find it in the map of calls`; }
+        else { const n = s.key.slice(1) || (s.key === 'c-1' ? 'code outside any named routine' : 'data'); fill = fillOf; label = n; tipx = `<b>${esc(n)}</b><br>${hex(s.a)} · ${s.n} bytes`; }
+        const rr = el('rect', { x, y: yb, width: w, height: h2, fill, stroke: '#ffffff', 'stroke-width': .5, class: ri >= 0 ? 'cm-seg' : '' }, strip);
+        rr.addEventListener('mousemove', e => showTip(e, tipx)); rr.addEventListener('mouseleave', hideTip);
+        if (ri >= 0) { (SEGS[ri] = SEGS[ri] || []).push(rr); rr.addEventListener('click', () => { hideTip(); select(ri, true); }); }
+        if (w > 64) { const t = el('text', { x: x + w / 2, y: yb + h2 + 13, 'font-size': 10.5, 'text-anchor': 'middle', fill: 'var(--ink-soft)', class: 'mono' }, strip); t.textContent = label.length * 6.4 > w ? label.slice(0, Math.max(3, Math.floor(w / 6.4) - 1)) + '…' : label; }
+      }
+      return yb + h2 + 22;
+    }
     function drawStrip() {
-      strip.innerHTML = ''; defs(strip);
+      strip.innerHTML = ''; defs(strip); for (const k in SEGS) delete SEGS[k];
+      kindBar.querySelectorAll('a').forEach(b => b.setAttribute('aria-current', String(b.dataset.k === kind)));
       const W = Math.max(strip.clientWidth || 900, 600), pad = 4, inner = W - pad * 2;
-      const H = 58 + clusters.length * 96; strip.setAttribute('viewBox', `0 0 ${W} ${H}`); strip.setAttribute('height', H);
-      const X = a => pad + a / 65536 * inner, y1 = 18, h1 = 22;
+      const X = a => pad + a / 65536 * inner, y1 = 18, h1 = 46;
       el('text', { x: pad, y: 12, 'font-size': 11.5, fill: 'var(--ink-mute)', class: 'mono' }, strip).textContent = '$0000';
       el('text', { x: W - pad, y: 12, 'font-size': 11.5, fill: 'var(--ink-mute)', 'text-anchor': 'end', class: 'mono' }, strip).textContent = '$FFFF · all 64 KB';
       el('rect', { x: pad, y: y1, width: inner, height: h1, fill: 'var(--empty)', stroke: 'var(--line)', rx: 3 }, strip);
-      for (const [a, b, k, what] of regions) {
-        const x = X(a), w = Math.max(2, X(b + 1) - x), fill = k === 'code' ? 'var(--ink)' : k === 'graphics' ? 'url(#cm-cross)' : 'url(#cm-hatch)';
-        const r = el('rect', { x, y: y1, width: w, height: h1, fill, stroke: 'var(--ink-mute)', 'stroke-width': .7 }, strip);
-        r.addEventListener('mousemove', e => showTip(e, `${hex(a)}–${hex(b)}<br>${esc(what)}`)); r.addEventListener('mouseleave', hideTip);
+      for (const A of AREAS) {
+        const x = X(A.a), w = Math.max(3, X(A.b + 1) - x), on = open.has(A.i);
+        const g = el('g', { class: 'cm-area' + (on ? ' on' : ''), tabindex: 0, role: 'button', 'aria-label': `${A.n}, ${hex(A.a)} to ${hex(A.b)}: ${A.what}` }, strip);
+        el('rect', { x, y: y1, width: w, height: h1, fill: KINDS[A.k][1], stroke: on ? 'var(--edge-hi)' : 'var(--ink-mute)', 'stroke-width': on ? 2.5 : .7 }, g);
+        const dark = A.k === 'code';
+        if (w > A.n.length * 6.6 + 6) {
+          const tx = el('text', { x: x + w / 2, y: y1 + h1 / 2 + 4, 'font-size': 11.5, 'text-anchor': 'middle', fill: dark ? '#ffffff' : 'var(--ink)', 'paint-order': 'stroke', stroke: dark ? 'none' : 'var(--empty)', 'stroke-width': 3 }, g);
+          tx.textContent = A.n;
+        }
+        if (!on) el('rect', { x, y: y1, width: w, height: h1, fill: 'var(--surface, #fff)', opacity: .55 }, g);
+        g.addEventListener('mousemove', e => showTip(e, `<b>${esc(A.n)}</b> · ${KINDS[A.k][0]}<br>${hex(A.a)}–${hex(A.b)}<br>${esc(A.what)}<br>Click to open it below`));
+        g.addEventListener('mouseleave', hideTip);
+        g.addEventListener('click', () => { hideTip(); pickArea(A.i); });
+        g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickArea(A.i); } });
       }
-      clusters.forEach(([z0, z1], ci) => {
-        const y2 = 66 + ci * 96, h2 = 44, Z = a => pad + (a - z0) / (z1 + 1 - z0) * inner;
-        el('path', { d: `M${X(z0)} ${y1 + h1} L${pad} ${y2 - 16} M${X(z1 + 1)} ${y1 + h1} L${W - pad} ${y2 - 16}`, stroke: 'var(--ink-mute)', 'stroke-dasharray': '3 3', fill: 'none', opacity: .7 }, strip);
-        el('text', { x: W / 2, y: y2 - 5, 'font-size': 12, 'text-anchor': 'middle', fill: 'var(--ink-soft)' }, strip).textContent = `${hex(z0)}–${hex(z1)}, ${((z1 + 1 - z0) / 1024).toFixed(1)} KB`;
-        el('rect', { x: pad, y: y2, width: inner, height: h2, fill: 'var(--empty)' }, strip);
-        let run = null; const runs = [];
-        for (const r of recs) {
-          if (r.a < z0 || r.a > z1) continue;
-          let key; if (r.t === 'code') { const o = owner(r.a); key = 'c' + o; } else { const t = tableAt(r.a); key = 't' + (t ? t.n : ''); }
-          if (run && run.key === key && run.a + run.n >= r.a - 4) run.n = r.a + r.b.length - run.a; else { run = { key, a: r.a, n: r.b.length }; runs.push(run); }
-        }
-        for (const s of runs) {
-          const x = Z(s.a), w = Math.max(1, Z(s.a + s.n) - x); let fill, label, tipx, ri = -1;
-          if (s.key[0] === 'c' && s.key !== 'c-1') { ri = +s.key.slice(1); const r = R[ri]; fill = jcol(r.g); label = r.n; tipx = `<b>${r.n}</b><br>${hex(s.a)} · ${r.size} bytes of code<br>${JOBNAME[r.g]}`; }
-          else { const n = s.key.slice(1) || (s.key === 'c-1' ? 'code outside any named routine' : 'data'); fill = 'url(#cm-hatch)'; label = n; tipx = `<b>${esc(n)}</b><br>${hex(s.a)} · ${s.n} bytes`; }
-          const rr = el('rect', { x, y: y2, width: w, height: h2, fill, stroke: '#ffffff', 'stroke-width': .5, class: 'cm-seg' }, strip);
-          rr.addEventListener('mousemove', e => showTip(e, tipx)); rr.addEventListener('mouseleave', hideTip);
-          if (ri >= 0) { (SEGS[ri] = SEGS[ri] || []).push(rr); rr.addEventListener('click', () => select(ri, true)); }
-          if (ri >= 0 && w > 64) { const t = el('text', { x: x + w / 2, y: y2 + h2 + 13, 'font-size': 10.5, 'text-anchor': 'middle', fill: 'var(--ink-soft)', class: 'mono' }, strip); t.textContent = label.length * 6.4 > w ? label.slice(0, Math.max(3, Math.floor(w / 6.4) - 1)) + '…' : label; }
-        }
-        el('text', { x: pad, y: y2 + h2 + 30, 'font-size': 10.5, fill: 'var(--ink-mute)', class: 'mono' }, strip).textContent = hex(z0);
-        el('text', { x: W - pad, y: y2 + h2 + 30, 'font-size': 10.5, fill: 'var(--ink-mute)', 'text-anchor': 'end', class: 'mono' }, strip).textContent = hex(z1);
-      });
+      // the open areas, each zoomed to its own bar, with the code that uses it
+      let y = y1 + h1 + 22;
+      const shown = AREAS.filter(A => open.has(A.i));
+      for (const A of shown) {
+        el('path', { d: `M${X(A.a)} ${y1 + h1} L${X(A.a)} ${y1 + h1 + 8}`, stroke: 'var(--edge-hi)', 'stroke-width': 1.5 }, strip);
+        y = zoom(A, y, W, pad) + 8;
+      }
+      strip.setAttribute('viewBox', `0 0 ${W} ${y}`); strip.setAttribute('height', y);
+      // below the bars, the code that reads or writes each open area, a click from the map of calls
+      $('cm-users').innerHTML = shown.map(A => {
+        const u = [...users[A.i]].sort((p, q) => R[p].a - R[q].a), outside = A.k === 'code' || A.k === 'music';
+        if (!u.length && outside) return '';
+        const body = u.length ? u.map(i => `<a href="#calls" data-i="${i}">${R[i].n}</a>`).join(' ')
+          : `<span style="color:var(--ink-mute)">${esc(A.note || 'no instruction outside it names an address here.')}</span>`;
+        return `<p><b>${esc(A.n)}</b>, ${outside ? 'code elsewhere that reads or writes it' : 'the code that reads or writes it'}: ${body}</p>`;
+      }).join('');
+      $('cm-users').querySelectorAll('a[data-i]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); select(+b.dataset.i, true); }));
       if (cur !== null) markStrip(cur);
     }
     function markStrip(i) { strip.querySelectorAll('.cm-seg.on').forEach(s => s.classList.remove('on')); (SEGS[i] || []).forEach(s => s.classList.add('on')); }
     const sw = f => `<svg width="28" height="15" aria-hidden="true"><rect x=".75" y=".75" width="26.5" height="13.5" rx="3" fill="${f}" stroke="var(--ink-mute)" stroke-width="1.5"/></svg>`;
-    $('cm-strip-legend').innerHTML = `<span>${sw('var(--ink)')}code (in the zoomed bars, coloured by job as below)</span><span>${sw('url(#cm-hatch)')}tables and data</span><span>${sw('url(#cm-cross)')}sprite shapes</span>`;
+    $('cm-strip-legend').innerHTML = Object.values(KINDS).map(([n, f]) => `<span>${sw(f)}${n}</span>`).join('') + '<span>In the opened bars, code is coloured by its job, as in the map of calls below.</span>';
     // the legend's swatches use the strip's patterns; a hidden copy keeps them defined
     const hid = el('svg', { width: 0, height: 0, style: 'position:absolute' }, document.body); defs(hid);
     const used = ORDER.filter(j => R.some(r => r.g === j));
@@ -244,15 +571,27 @@
         el('text', { x: P.x + 8, y: P.y + 13, 'font-size': 9, 'letter-spacing': '.06em', fill: 'var(--ink-soft)', class: 'mono' }, g).textContent = JOBNAME[r.g].toUpperCase().slice(0, 26);
         const nm = el('text', { x: P.x + 8, y: P.y + 28, 'font-size': 11, 'font-weight': 500, fill: 'var(--ink)', class: 'mono' }, g); nm.textContent = r.n;
         if (r.n.length * 6.65 > P.w - 14) nm.textContent = r.n.slice(0, Math.floor((P.w - 14) / 6.65) - 1) + '…';
+        if (CLIPS[r.n]) el('text', { x: P.x + P.w - 8, y: P.y + 13, 'font-size': 10, 'text-anchor': 'end', fill: 'var(--ink)', class: 'mono' }, g).textContent = '▶';
         if (P.h >= 48) el('text', { x: P.x + 8, y: P.y + P.h - 7, 'font-size': 10, fill: 'var(--ink-mute)', class: 'mono' }, g).textContent = `${hex(r.a)} · ${r.size} bytes`;
         g.addEventListener('click', () => select(r.i, false));
         g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); select(r.i, false); } });
-        g.addEventListener('mouseenter', () => { if (cur === null) focusOn(r.i); });
-        g.addEventListener('mouseleave', () => { if (cur === null) focusOn(null); });
+        g.addEventListener('mouseenter', () => { if (cur === null) focusOn(r.i); showPop(r, g); });
+        g.addEventListener('mouseleave', () => { if (cur === null) focusOn(null); hidePop(); });
         return g;
       });
       focusOn(cur);
     }
+    const pop = $('cm-pop');
+    const clipHTML = (n, cls) => `<canvas class="${cls}" data-solo="${n}" role="img" aria-label="${esc(n)} at work, on its own"></canvas>`;
+    const mountClips = box => box.querySelectorAll('canvas[data-solo]').forEach(cv => Solo.mount(cv, M.ram).catch(e => { console.error(e); }));
+    function showPop(r, g) {
+      const c = CLIPS[r.n]; if (!c || cur === r.i) return;
+      pop.innerHTML = clipHTML(r.n, '') + `<p><b>${r.n}</b> · ${esc(c.text)}</p>`; pop.hidden = false; mountClips(pop);
+      const b = g.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+      let x = b.right + 10; if (x + w > innerWidth - 8) x = Math.max(8, b.left - w - 10);
+      pop.style.left = x + 'px'; pop.style.top = Math.max(8, Math.min(innerHeight - h - 8, b.top + b.height / 2 - h / 2)) + 'px';
+    }
+    function hidePop() { pop.hidden = true; pop.innerHTML = ''; }
     let cur = null;
     function focusOn(i) {
       const near = new Set(i === null ? [] : [i, ...calls[i].map(e => e.b), ...callers[i].map(e => e.a)]);
@@ -266,20 +605,22 @@
       if (i === null) {
         const big = R.slice().sort((a, b) => b.size - a.size).slice(0, 5), most = R.slice().sort((a, b) => callers[b.i].length - callers[a.i].length).slice(0, 5);
         D.innerHTML = `<p style="margin:0 0 8px"><b>${R.length} subroutines, ${EDGES.length} links.</b> Click a box to see what it does, what it calls and what calls it.</p>
+          <h4>Watch them work</h4><ul>${R.filter(r => CLIPS[r.n]).map(r => `<li><a href="#calls" data-i="${r.i}">▶ ${r.n}</a></li>`).join('')}</ul>
           <h4>Longest</h4><ul>${big.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${r.size}</span></li>`).join('')}</ul>
           <h4>Called from most places</h4><ul>${most.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${callers[r.i].length}</span></li>`).join('')}</ul>`;
       } else {
         const r = R[i], rd = [...reads[i]];
         D.innerHTML = `<span class="tag" style="border-color:${jcol(r.g)};background:${tint(r.g)}">${JOBNAME[r.g]}</span>
-          <h3>${r.n}</h3><p class="meta">${hex(r.a)}–${hex(r.e)} · ${r.size} bytes</p><p>${esc(firstSentences(r.c, 3))}</p>
+          <h3>${r.n}</h3><p class="meta">${hex(r.a)}–${hex(r.e)} · ${r.size} bytes</p>${CLIPS[r.n] ? `<figure>${clipHTML(r.n, 'clip')}<figcaption>${esc(CLIPS[r.n].text)}</figcaption></figure>` : ''}<p>${esc(firstSentences(r.c, 3))}</p>
           <h4>Calls</h4>${list(calls[i], 'b')}<h4>Called from</h4>${list(callers[i], 'a')}
           ${rd.length ? `<h4>Tables it reads</h4><ul>${rd.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
           <p style="margin:12px 0 0"><a href="source.html#${id4(r.a)}">Read it in the Source code tab</a></p>`;
       }
+      mountClips(D);
       D.querySelectorAll('a[data-i]').forEach(b => b.addEventListener('click', ev => { ev.preventDefault(); select(+b.dataset.i, true); }));
     }
     function select(i, scroll) {
-      cur = (cur === i && !scroll) ? null : i; focusOn(cur); detail(cur); markStrip(cur);
+      hidePop(); cur = (cur === i && !scroll) ? null : i; focusOn(cur); detail(cur); markStrip(cur);
       if (cur !== null && scroll) NODES[cur].scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     }
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && cur !== null) select(cur, false); });
