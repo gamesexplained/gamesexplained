@@ -290,7 +290,11 @@ class Rpc:
         `realtape-open` or `--realtape` (kit/skills/spectrum/tool-zesarux, "Tapes")."""
         if not os.path.isfile(path):
             raise ZesaruxError(f"smartload {path}: no such file")
-        return self.entering("smartload", os.path.abspath(path))
+        absolute = os.path.abspath(path)
+        # ZRCP splits an unquoted filename at spaces (the extension then looks wrong).
+        # Its quoted form also accepts a tape whose name contains spaces.
+        argument = '"' + absolute + '"' if any(c.isspace() for c in absolute) else absolute
+        return self.entering("smartload", argument)
 
     # -- phase 3: live measurement ------------------------------------------
     def run(self, limit=0, timeout=60.0, stop_on_data=False):
