@@ -304,14 +304,33 @@ the erase (a clear, not an XOR), and the listing carries the checked text.
 
 How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
 
-### index.html
+### index.html (Overview)
+
+- The release and reception copy rests on the sources the page lists. The two reviews were read in the Internet Archive's text of the scans on 20 November 2026: Info 28, pages 44-45 (Mark R. Brown), and Computer Gaming World 64, page 39 (Russell Sipe). Info's star rating is not in the scan's text; the score of 3 out of 5 is Lemon64's, as search results quoted it (lemon64.com refused the request). One retro site, The King of Grabs, credits the C64 version to Threshold Research; the loading screen names Alien Technology Group, and the page gives both.
+
+### mechanics.html (How it works)
 
 - One frame of level 1 drawn by the site's renderer from the memory and register writes recorded in the emulator.
 - 94,822 of its 94,848 pixels match the emulator's own picture; the 26 that differ are on the Qix's newest line, which the game draws while the beam is passing.
-- The tunes played by the game's own music player: its bytes from `$E000`, run once a frame on the kit's 6502 simulator inside the page and heard through the site's model of the SID.
-- Checked against the original code in a 6502 simulator: every register write of every frame of all eleven tunes, 14,159 frames, matches.
-- The arithmetic of `$8E60`, ported and checked against the game's own routine in a 6502 simulator over 3,150 cases (areas from 0 to 65,535, slow and fast, 0 to 4 splits): every result matches.
 - In 1,600 steps watched in the emulator, nothing read `$0273`.
-- Given the random numbers the game drew, it repeats 1,000 steps of one Qix and 400 of two, recorded in the emulator, exactly, in an open field and in fields with claimed corners.
+- The viewer's port of qix_step: given the random numbers the game drew, it repeats 1,000 steps of one Qix and 400 of two, recorded in the emulator, exactly, in an open field and in fields with claimed corners.
+
+### controls.html
+
+- The panel runs the game's read_stick (`$83DF`) on the kit's 6502 over the listing. `test_controls.js` runs the page's block and the routine directly on 25 cases (each direction and fire on each port, the same on both ports, two sticks in different directions, diagonals from rest and from a straight direction) and checks the copy's claims: the same direction or fire on both ports gives 0 in `$2E`; a diagonal keeps last_dir (`$840C`), and from rest gives no direction.
+- The same test checks the code the copy names: every read of the joystick ports in the program is `LDA $DC00` then `EOR $DC01` (read_stick, the menu at `$821C`, the pause at `$81EB`, the level's end at `$163F` and `$1657`, the drive-error wait at `$1C66`), apart from read_runstop's keyboard read; the start-up points the NMI at an RTI (`$1180`); draw_advance stores the fire button at `$99BF`, and the line's end reads it at `$9994`.
+- Traced, not tried in play: because the points follow the fire button at the line's last step and the speed follows it step by step, a line drawn fast and finished with fire held should score as slow, double. A first try on the kit's machine model (20 November 2026) drew the wrong line and lost a life; a test in the emulator is in TODO.md.
+
+### music.html
+
+- The tunes played by the game's own music player: its bytes from `$E000`, run once a frame on the kit's 6502 simulator inside the page and heard through the site's model of the SID.
+- Checked against the original code in a 6502 simulator: every register write of every frame of all eleven tunes, 14,159 frames, matches. `test_music.js` checks it again on every run, from the listing: the page's 8,000 bytes are the listing's, and the page's driver writes what the game's code writes, frame by frame.
+- The sound effects: the page carries `$B800`-`$BC37` from the listing, and its driver starts an effect with `$B800` and `$B806` and runs `$B803` once a frame. Before the effect it writes `$4F` to `$D418`, as sprite_colours_init (`$9EAF`) leaves it in play, because sfx_reset clears it. `test_music.js` compares every SID write of every frame of the twelve effects with the game's code run directly, and the table's lengths: 3, 101, 51, 72, 47, 73, 73, 57 and 1 frames, and effects 3, 4 and 10 repeating. It also checks that every call to play_sfx loads its effect number (`LDA #n`, or 3 and 4 in qix_step), that 2 is never among them, and that no effect's script starts another (sfx_load runs once, for the effect asked for, in 600 frames of each).
+
+### discoveries.html
+
+- The arithmetic of `$8E60`, ported and checked against the game's own routine in a 6502 simulator over 3,150 cases (areas from 0 to 65,535, slow and fast, 0 to 4 splits): every result matches.
 - In the emulator, a pixel of a line being drawn was placed under trail lines of different ages, six times.
 - In the emulator, a peninsula of claimed edge was added to the field; in 500 steps the Qix fell back five times, and each time it landed on its line from exactly eight steps earlier.
+- The second Qix's slip at `$982F`: a replay of the 400-step two-Qix recording drifts from the game at step 288 with the line read correctly, and matches all 400 steps with the slip.
+- The unused effect 2: `test_music.js` (above).

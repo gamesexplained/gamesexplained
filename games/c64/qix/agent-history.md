@@ -116,3 +116,43 @@ seconds; and the real flight is about a tenth slower than the routines
 alone, not a few per cent, since the interrupt takes its share as well
 as the video chip. A first try also counted shape `$2C`'s padding byte
 and found it not empty; the 63 bytes of the shape are.
+
+## 20 November 2026: Overview, Controls, Music and Discoveries tabs
+
+The contributor asked for the page to match the newer games: an Overview
+before How it works, a Controls tab and a Music tab. The single page was
+split, as Spy vs Spy and Gauntlet were split: How it works moved to
+`mechanics.html`, with game.json redirects for each old section link. Its
+secrets and bugs, and the loading section, went to a new Discoveries tab,
+the controls section became a Controls tab, and the music section a Music
+tab. `index.html` is the new Overview. The page's scripts were cut apart
+by a script in the scratchpad, so each page carries only the data and
+code its own widgets use.
+
+The Overview's research found two contemporary reviews in the Internet
+Archive's scans: Info 28 (Mark R. Brown, unimpressed by the speed) and
+Computer Gaming World 64 (Russell Sipe, on strategy). MobyGames,
+Lemon64, C64-Wiki and StrategyWiki refused or lacked the page; Lemon64's
+score for the Info review comes from search results. One retro site
+credits the C64 version to Threshold Research, against the loading
+screen's Alien Technology Group; the page gives both.
+
+The Controls tab runs read_stick on the kit's 6502, and its test found
+that every port read in the program is the same exclusive OR of both
+ports. The exclusive OR makes two sticks held the same way cancel. While
+checking the drawing rules, the run found that the points follow the
+fire button only at a line's last step (draw_advance at `$99BF`, the
+check at `$9994`), so a line drawn fast and finished slow should score
+double. A try on the kit's machine model went wrong (the marker left the
+edge while walking it and died), and VICE was not installed in this
+container, so the claim stays a lead in facts.md and TODO.md.
+
+The Music tab gained the sound effects: the effect player at `$B800`
+runs on the kit's 6502 from 1,080 bytes of the listing. Its reset clears
+the SID's volume, which play sets once at its start, so the page's
+driver writes `$4F` after it. Effect 2 is never asked for: every caller
+of play_sfx loads its number directly, and no effect's script starts
+another, which was checked by watching sfx_load. The Qix's hum switches
+between effects 3 and 4 with the length of the turn timer, so a change
+of hum means a long straight run.
+
