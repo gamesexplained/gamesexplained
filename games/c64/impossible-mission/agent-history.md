@@ -207,3 +207,11 @@ interrupt, is not acted on while up is held in an empty spot, since
 nothing calls `agent_death` until the agent's update runs again. That
 was not observed live (no emulator in this container) and is left out
 of the pages; it is open in `TODO.md`.
+
+## The ending joins How it works (21 November 2026)
+
+At the contributor's request the ending's one section, Elvin's face with
+the lip-synced "No! No! NO!", moved to the end of How it works as
+section 06, and its tab was removed. The page's memory excerpts and the
+speech player came with it; the links from Sound and Discoveries now
+point at `mechanics.html#elvin`.

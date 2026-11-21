@@ -494,7 +494,7 @@ Three checks, all verified:
 
 How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
 
-### ending.html
+### mechanics.html (the ending)
 
 - The emulator's own picture of the same moment is here.
 
