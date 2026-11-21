@@ -171,7 +171,31 @@ only), and of the sound driver at `$3B8B`-`$3EFF` and `$3F96`-`$3FFE`
   4, 10, 18 and 33 reached by setting `$093D` and `$0455`
   (`reference/round*.png`).
 - **Silver bricks** need 2 hits in rounds 1-8, 3 in 9-16, 4 in 17-24 and
-  5 in 25-32 (`$F52A`, `$F4DF`).
+  5 in 25-32 (`$F52A`, `$F4DF`). `draw_wall` sets the counter `$0355` to
+  the table + 1 and starts the brick shining; `silver_shine` `$AB55`
+  steps every shining silver or gold brick one character down every 4th
+  frame (`$0225`) and takes one off the counter when the right half
+  reaches `$86` (or `$8E`), after three steps: 9 to 12 frames. A hit
+  (`silver_brick_hit` `$B073`) breaks the brick at 0, and otherwise
+  redraws `$85 $89` and restarts the shine without counting, so hits
+  8 frames apart or closer never break it. *Simulated* (the game's code
+  on the kit's 6502, `test_bricks.js`): 8 hits 4 frames apart left a
+  round-1 silver brick standing; with gaps of 9 to 11 frames the result
+  depends on the divider's phase; 12 or more always count. Not tried in
+  play.
+- **Silver and gold points**: a silver brick's colour RAM is 9, and
+  `brick_hit` looks the points up by colour RAM AND 7 for every brick it
+  breaks, so silver is worth 100 in every round. Gold returns from
+  `gold_brick_hit` `$B010` before the points: nothing. Wall type 0 (a
+  black brick, `brick_points` entry 0 = 0) is used by none of the 32
+  maps. Gold's face is drawn in `$D023`, light blue (`$F719`), as
+  `reference/round03.png` shows.
+- **Brick shadows**: `draw_wall` ORs `$10` into the cells one row down
+  and one and two columns right of each brick (the second only when it
+  is not a brick); the background tiles' shaded copies are the 16 codes
+  above each tile. `brick_hit` restores a broken brick's cells with the
+  shaded copy when there is a brick above or above-left of each, and
+  unshades the two cells below-right unless they are bricks.
 - **Brick points** by colour 1-7: 100, 80, 120, 90, 110, 70, 130
   (`brick_points` `$B2C4`). An enemy is worth 100 (`$9F45`), a capsule
   1000 (`$A9DD`). Scores are BCD in units of 10, the panel's last 0
@@ -333,6 +357,14 @@ hand-over image. Indexed accesses with a base outside a chip
 ## Checks behind the pages
 
 How the pages' widgets, pictures and sounds were checked against the game, and which emulator showed what the pages describe. The pages themselves say only what the reader is looking at.
+
+### levels.html, the bricks
+
+- The brick table and the silver widget (`ak-bricks`) are held to the game by `test_bricks.js`: a wall with every type 1-15 drawn by `draw_wall` on the kit's 6502, each brick hit through `brick_hit` until it breaks, in rounds 1, 9, 17 and 25 (characters, colour RAM, points added to the score, hits, the bricks-left count), and the silver port compared frame by frame with `silver_shine`/`brick_hit` in 400 random runs. Swatches and counts are drawn from the listing. Not checked live: the emulator was not reachable in this session (20-21 November 2026).
+
+### graphics.html, the bricks
+
+- The brick characters `$80`-`$91` (`$CC00`), the shine (three steps 4 frames apart) and the shadow scene are drawn from the listing's bytes in the play colours `$00`, `$0C`, `$0E` (`$F719`); the colours of gold and silver match `reference/round03.png` (light blue `115,133,255` and grey `148,148,148` in VICE's palette).
 
 ### discoveries.html
 

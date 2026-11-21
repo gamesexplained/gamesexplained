@@ -66,6 +66,8 @@ Found in the code, not in the manual.
 | A capsule is worth 1,000 points, an enemy 100 | traced | `$A9DD`, `$9F45` |
 | Sampled drums play on the title screen | traced | `drum_play` `$FEE0` |
 | A copy-protection check through CIA 1's serial port | live | `$5F42`; `$BA0A` |
+| A silver brick counts a hit only when its shine ends; hits 8 frames apart or closer never break it | traced | `silver_shine` `$AB55`, `silver_brick_hit` `$B073`; the game's code run on the kit's 6502 (`test_bricks.js`), not tried in play |
+| A silver brick is worth 100 points in every round; gold gives none | traced | `brick_points` `$B2C4` by colour RAM 9; `gold_brick_hit` `$B010` |
 
 
 ## Open questions

@@ -95,11 +95,28 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
   </div>
   <p>Two pairs are not what they first look like. Shapes <code>$43</code> and <code>$44</code> are the laser Vaus, the last frame of the laser's change (<code>laser_on_frames</code>, <code>$A5EA</code>). Shape <code>$95</code> is the capsule with its letter, which the game rewrites every 4th frame from the blank capsule, <code>$94</code>, so as stored it holds whatever letter was last built. Shapes <code>$46</code> to <code>$49</code>, four frames of scattering pixels, are put in a sprite pointer by no code the analysis found.</p>
   <p>Shapes <code>$96</code> to <code>$99</code> belong to sprites 0 and 1, the two the multiplexer leaves alone. They are hi-res and black, sit at Y <code>$EC</code> (<code>$F221</code>) and take the X positions of the Vaus's two halves every frame (<code>$F74C</code>). The Vaus sits at Y <code>$E0</code> (<code>$F219</code>) and its shapes fill rows 12 to 20 of the sprite, so the black sprites lie exactly over it. Sprites 0 and 1 are drawn in front of the others, so their black lines outline the multicolour Vaus. The game clears them while the Vaus fades in (<code>$F0AA</code>) and copies them back from <code>$98</code>-<code>$99</code> when it has (<code>$F09E</code>). When the Vaus leaves through the Break exit, past X <code>$E0</code>, the game fills them with black one pixel column a frame, the right half first (<code>$A4C4</code>), and the Vaus disappears into the wall a column at a time.</p>
-  <p>The bricks are characters, not sprites; the <a href="levels.html">Levels</a> tab draws every round's wall from them.</p>
+  <p>The bricks are characters, not sprites (<a href="#bricks">below</a>).</p>
+</section>
+
+<section id="bricks">
+  <p class="fig">03 · The bricks</p>
+  <h2 class="t">Eighteen characters for the bricks, and a shadow for the background</h2>
+  <p class="lede">A brick is two characters side by side, 16 pixels wide and 8 high with a black line below and to the right. Coloured bricks share one pair; silver and gold each have four pairs, which the game steps through to make them shine when they are hit.</p>
+  <div class="plate">
+    <div class="sheet" id="gx-bricks"></div>
+    <div class="row" id="gx-shine"></div>
+    <p class="cap"><b>Characters <code>$80</code>-<code>$91</code> of the play screen's set</b>, at <code>$CC00</code>-<code>$CC8F</code>, drawn four times their size in the play screen's colours: black behind, grey and light blue as the two shared colours (<code>play_screen_colours</code>, <code>$F719</code>), and the colour RAM the wall gives them: red here for the coloured pair, which takes each brick's own colour, and white (9) for silver and gold. The two bricks under them shine as the game shines them, one step every fourth frame (<code>silver_shine</code>, <code>$AB55</code>), over and over here; in the game a shine runs once per hit.</p>
+  </div>
+  <p>A coloured brick's face is entirely the brick's colour, so one pair, <code>$80 $81</code>, serves all seven colours, and the colour comes from colour RAM. Silver is grey with a white edge, and its shine is a white band that moves across it through <code>$85</code>-<code>$82</code> on the left and <code>$89</code>-<code>$86</code> on the right. Gold uses the same pattern with light blue in place of grey, <code>$8D</code>-<code>$8A</code> and <code>$91</code>-<code>$8E</code>, so on the Commodore 64 the gold bricks are light blue. What each brick is worth and how many hits it takes is on the <a href="levels.html#bricks">Levels</a> tab.</p>
+  <div class="plate">
+    <canvas id="gx-shade" width="400" height="140" role="img" aria-label="A background tile, its shaded copy, and two bricks casting their shadow on the background"></canvas>
+    <p class="cap"><b>The playfield's 4 × 4 background tile</b> (characters <code>$40</code>-<code>$4F</code>, copied in from <code>$EC00</code>), its shaded copy (<code>$50</code>-<code>$5F</code>), and two bricks on the background with the shadow <code>draw_wall</code> gives them.</p>
+  </div>
+  <p>The shadow is a second copy of the background. The 64 background characters copied in each round hold two tiles of 16 characters, one for odd rounds and one for even, and after each its shaded copy, 16 codes higher. <code>draw_wall</code> (<code>$F40E</code>) adds <code>$10</code> to the two cells one row below a brick and one column to the right, the second only if it is not itself a brick, so every brick casts a shadow down and to the right. When a brick breaks, <code>brick_hit</code> (<code>$B108</code>) puts the background back in its two cells, each shaded when a brick still sits above it or above and to its left, and takes the shadow off the cells below and to its right unless another brick is there.</p>
 </section>
 
 <section id="intro">
-  <p class="fig">03 · The intro</p>
+  <p class="fig">04 · The intro</p>
   <h2 class="t">A second set of sprites, for the title picture</h2>
   <p class="lede">Before round 1 a short scene plays over the title picture: a craft flies in and fires, and the Vaus escapes, turning end over end into the distance. Its sprites live in video bank 1, beside the picture.</p>
   <div class="plate">
@@ -111,7 +128,7 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
 </section>
 
 <section id="loading">
-  <p class="fig">04 · The loading picture</p>
+  <p class="fig">05 · The loading picture</p>
   <h2 class="t">The title picture, drawn on the screen as the tape reads it</h2>
   <p class="lede">The cassette loads the title picture first and lets you watch it arrive. On a white screen it fills in a cell at a time, left to right along each row of cells and down the screen, over 38 seconds, while Martin Galway's Ocean loading tune plays (<a href="music.html#loading-tune">Music</a>).</p>
   <div class="plate">
@@ -329,5 +346,59 @@ function akCapsule(ram, type, roll) {
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
+})();
+</script>
+<script>
+// The brick characters, their shine and the background's shadow, drawn from the listing's bytes.
+(function () {
+  const C = globalThis.C64, sheet = document.getElementById('gx-bricks');
+  if (!C || !sheet) return;
+  C.load('listing.json').then((L) => {
+    const ram = L.ram, P = C.PAL, cs = new Uint8Array(0x800);
+    cs.set(ram.subarray(0xEC00, 0xEE00), 0x200); cs.set(ram.subarray(0xCC00, 0xD000), 0x400);
+    const cols = (c) => [P[0], P[12], P[14], P[c & 7]];
+    for (let code = 0x80; code <= 0x91; code++) {
+      const d = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+      C.drawGlyphMC(C.canvas(cv, 32, 32), cs, code, 0, 0, 4, cols(code < 0x82 ? 10 : 9));
+      sp.textContent = '$' + code.toString(16).toUpperCase();
+      d.append(cv, sp); sheet.append(d);
+    }
+    // a silver and a gold brick shining: three steps a fourth frame apart, then at rest
+    const row = document.getElementById('gx-shine'), shines = [];
+    for (const [name, top] of [['silver', 0x85], ['gold', 0x8D]]) {
+      const cv = document.createElement('canvas'), lab = document.createElement('span');
+      lab.className = 'lab'; lab.textContent = name;
+      cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', 'A ' + name + ' brick shining');
+      shines.push({ ctx: C.canvas(cv, 64, 32), top }); row.append(cv, lab);
+    }
+    let t0 = 0;
+    const tick = (t) => {
+      if (!t0) t0 = t;
+      const f = Math.max(0, Math.floor((t - t0) / 20)) % 50, step = Math.min(3, Math.floor(f / 4));
+      for (const s of shines) {
+        s.ctx.fillStyle = '#000'; s.ctx.fillRect(0, 0, 64, 32);
+        C.drawGlyphMC(s.ctx, cs, s.top - step, 0, 0, 4, cols(9));
+        C.drawGlyphMC(s.ctx, cs, s.top + 4 - step, 32, 0, 4, cols(9));
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    // the tile, the shaded tile, and two bricks with their shadow on the background
+    const ctx = C.canvas(document.getElementById('gx-shade'), 400, 140), s = 3, bg = cols(ram[0xF54A]);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 400, 140);
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
+      C.drawGlyphMC(ctx, cs, 0x40 + r * 4 + c, c * 8 * s, r * 8 * s, s, bg);
+      C.drawGlyphMC(ctx, cs, 0x50 + r * 4 + c, 112 + c * 8 * s, r * 8 * s, s, bg);
+    }
+    // 6 x 5 cells of background from x 224: bricks at row 1, columns 0-1 and 2-3, as draw_wall shades them
+    const scr = [], colr = [];
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 6; c++) { scr.push(0x40 + (r & 3) * 4 + (c & 3)); colr.push(ram[0xF54A]); }
+    for (const [x, colour] of [[0, 10], [2, 15]]) {
+      const i = 6 + x; scr[i] = 0x80; scr[i + 1] = 0x81; colr[i] = colr[i + 1] = colour;
+      scr[i + 7] |= 0x10; if (!(scr[i + 8] & 0x80)) scr[i + 8] |= 0x10;
+    }
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 6; c++)
+      C.drawGlyphMC(ctx, cs, scr[r * 6 + c], 232 + c * 8 * 3, r * 8 * 3, 3, cols(colr[r * 6 + c]));
+  });
 })();
 </script>
