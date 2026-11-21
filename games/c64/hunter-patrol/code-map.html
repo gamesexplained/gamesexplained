@@ -22,8 +22,6 @@
   .cm-users p{margin:0 0 6px}
   .cm-users a{font-family:var(--fm);font-size:13px;margin-right:6px}
   .cm-seg:hover,.cm-seg.on{stroke:var(--edge-hi);stroke-width:2}
-  .cm-grid{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:16px;align-items:start}
-  @media (max-width:820px){.cm-grid{grid-template-columns:minmax(0,1fr)}}
   .cm-graph{display:block;width:100%}
   .cm-node{cursor:pointer}
   .cm-node rect.box{stroke-width:1.6}
@@ -37,7 +35,11 @@
   .cm-edge.jump path{stroke-dasharray:6 4}
   .cm-edge.falls path{stroke-dasharray:1.5 3.5;stroke-width:2}
   .cm-edge.hi path{stroke:var(--edge-hi);stroke-width:2.3}
-  #cm-detail{position:sticky;top:calc(var(--tabs-h,72px) + 12px);max-height:calc(100vh - var(--tabs-h,72px) - 24px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;font-size:15px}
+  #cm-detail{position:sticky;top:calc(var(--tabs-h,72px) + 8px);z-index:4;margin:14px 0;max-height:min(56vh,460px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;font-size:15px;box-shadow:0 6px 18px rgba(0,0,0,.10)}
+  .cm-d{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+  .cm-links{display:flex;flex-wrap:wrap;gap:4px 32px}
+  .cm-links>div{min-width:150px}
+  @media (max-width:720px){#cm-detail{position:static;max-height:none}.cm-d{grid-template-columns:minmax(0,1fr)}}
   #cm-detail h3{font-family:var(--fm);font-size:16px;margin:0 0 2px;word-break:break-all}
   #cm-detail .meta{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);margin:0 0 10px}
   #cm-detail .tag{display:inline-block;font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;border:1.5px solid;margin:0 0 8px}
@@ -71,12 +73,10 @@
 <section id="calls">
   <p class="fig">02 · Who calls whom</p>
   <h2 class="t">The wiring between the subroutines</h2>
-  <p class="lede">Each box is one subroutine, taller when it is longer, in a band for its job. Inside a band, the boxes run from the first reached to the last. Hover over a box to light up its connections, or click it to keep them lit and read what it does. A box marked ▶ shows that routine at work on its own: the game is held still and dimmed while only that routine runs, and a tune is drawn as its notes.</p>
+  <p class="lede">Each box is one subroutine, taller when it is longer, in a band for its job. Inside a band, the boxes run from the first reached to the last. Hover over a box to light up its connections, or click it to keep them lit and read what it does. A box with a round play badge shows that routine at work on its own: the game is held still and dimmed while only that routine runs. A badge with a note draws a tune as it plays.</p>
   <div class="cm-legend" id="cm-graph-legend"></div>
-  <div class="cm-grid" style="margin-top:14px">
-    <div class="plate" style="padding:8px"><svg id="cm-graph" class="cm-graph" role="img" aria-label="Call graph"></svg></div>
-    <aside id="cm-detail" aria-live="polite"></aside>
-  </div>
+  <aside id="cm-detail" aria-live="polite"></aside>
+  <div class="plate" style="padding:8px"><svg id="cm-graph" class="cm-graph" role="img" aria-label="Call graph"></svg></div>
   <p class="cap">The lines come from the program's own <code>JSR</code>, <code>JMP</code> and branch instructions. Calls made through a pointer are not drawn: the raster interrupt <a href="source.html#13ab"><code>game_irq</code></a>, the music's <a href="source.html#ae03"><code>music_irq</code></a>, and the <a href="source.html#2f30">RESTORE restart</a> are reached through vectors, and <a href="source.html#0d14"><code>read_joystick</code></a> through a call the trainer rewrites, so they start bands of their own. The unused tune's player, <a href="discoveries.html#unused-tune"><code>tune2_start</code></a> to <code>tune2_tick</code>, has no callers at all.</p>
 </section>
 </main>
@@ -366,6 +366,15 @@
   const NS = 'http://www.w3.org/2000/svg';
   const el = (t, a, p) => { const e = document.createElementNS(NS, t); for (const k in a || {}) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
   const jcol = j => `var(--j-${j})`;
+  // the badge on a box that has a loop: a play sign, or a note for a tune
+  function badge(g, cx, cy, note) {
+    el('circle', { cx, cy, r: 10.5, fill: 'var(--ink)', stroke: '#ffffff', 'stroke-width': 1.5 }, g);
+    if (note) {
+      el('ellipse', { cx: cx - 2.4, cy: cy + 3.6, rx: 3.3, ry: 2.4, fill: '#ffffff', transform: `rotate(-20 ${cx - 2.4} ${cy + 3.6})` }, g);
+      el('path', { d: `M${cx + 0.7} ${cy + 3.4}V${cy - 6}q3.4 1.6 3.6 4.6`, stroke: '#ffffff', 'stroke-width': 1.6, fill: 'none', 'stroke-linecap': 'round' }, g);
+    } else el('path', { d: `M${cx - 3.2} ${cy - 5.2}L${cx + 5.4} ${cy}L${cx - 3.2} ${cy + 5.2}Z`, fill: '#ffffff' }, g);
+  }
+  const badgeSvg = note => { const s = document.createElementNS(NS, 'svg'); s.setAttribute('width', 24); s.setAttribute('height', 24); s.setAttribute('aria-hidden', 'true'); s.setAttribute('style', 'vertical-align:middle'); badge(s, 12, 12, note); return s.outerHTML; };
   const tint = j => `color-mix(in srgb, var(--j-${j}) 28%, #ffffff)`;
   const tip = $('cm-tip');
   const showTip = (e, h) => { tip.innerHTML = h; tip.hidden = false; tip.style.left = Math.min(e.clientX + 14, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 16) + 'px'; };
@@ -527,7 +536,9 @@
       `<span style="flex-basis:100%;height:0"></span>
       <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="1.6"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>calls and comes back (JSR)</span>
       <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="1.6" stroke-dasharray="6 4"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>jumps there for good</span>
-      <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="2" stroke-dasharray="1.5 3.5"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>runs straight on into the next</span>`;
+      <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="2" stroke-dasharray="1.5 3.5"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>runs straight on into the next</span>
+      <span style="flex-basis:100%;height:0"></span>
+      <span>${badgeSvg(false)}a loop of it at work</span><span>${badgeSvg(true)}its tune, drawn as notes</span>`;
 
     /* ---------- the call graph: one band per job, boxes wrapping inside it ---------- */
     const depth = R.map(() => 99), q = [];
@@ -566,12 +577,13 @@
         return { e, g, p, layer: eL };
       });
       NODES = R.map(r => {
-        const P = POS[r.i], g = el('g', { class: 'cm-node', tabindex: 0, role: 'button', 'aria-label': `${r.n}, ${r.size} bytes, ${JOBNAME[r.g]}` }, nL);
+        const P = POS[r.i], g = el('g', { class: 'cm-node', tabindex: 0, role: 'button', 'aria-label': `${r.n}, ${r.size} bytes, ${JOBNAME[r.g]}${CLIPS[r.n] ? (CLIPS[r.n].roll ? ', with its tune drawn as notes' : ', with a loop of it at work') : ''}` }, nL);
         el('rect', { class: 'box', x: P.x, y: P.y, width: P.w, height: P.h, rx: 6, fill: tint(r.g), stroke: jcol(r.g) }, g);
-        el('text', { x: P.x + 8, y: P.y + 13, 'font-size': 9, 'letter-spacing': '.06em', fill: 'var(--ink-soft)', class: 'mono' }, g).textContent = JOBNAME[r.g].toUpperCase().slice(0, 26);
+        const room = P.w - (CLIPS[r.n] ? 38 : 14);
+        el('text', { x: P.x + 8, y: P.y + 13, 'font-size': 9, 'letter-spacing': '.06em', fill: 'var(--ink-soft)', class: 'mono' }, g).textContent = JOBNAME[r.g].toUpperCase().slice(0, Math.floor(room / 6.1));
         const nm = el('text', { x: P.x + 8, y: P.y + 28, 'font-size': 11, 'font-weight': 500, fill: 'var(--ink)', class: 'mono' }, g); nm.textContent = r.n;
-        if (r.n.length * 6.65 > P.w - 14) nm.textContent = r.n.slice(0, Math.floor((P.w - 14) / 6.65) - 1) + '…';
-        if (CLIPS[r.n]) el('text', { x: P.x + P.w - 8, y: P.y + 13, 'font-size': 10, 'text-anchor': 'end', fill: 'var(--ink)', class: 'mono' }, g).textContent = '▶';
+        if (r.n.length * 6.65 > room) nm.textContent = r.n.slice(0, Math.floor(room / 6.65) - 1) + '…';
+        if (CLIPS[r.n]) badge(g, P.x + P.w - 17, P.y + Math.min(P.h / 2, 21), CLIPS[r.n].roll);
         if (P.h >= 48) el('text', { x: P.x + 8, y: P.y + P.h - 7, 'font-size': 10, fill: 'var(--ink-mute)', class: 'mono' }, g).textContent = `${hex(r.a)} · ${r.size} bytes`;
         g.addEventListener('click', () => select(r.i, false));
         g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); select(r.i, false); } });
@@ -604,24 +616,34 @@
       const D = $('cm-detail');
       if (i === null) {
         const big = R.slice().sort((a, b) => b.size - a.size).slice(0, 5), most = R.slice().sort((a, b) => callers[b.i].length - callers[a.i].length).slice(0, 5);
-        D.innerHTML = `<p style="margin:0 0 8px"><b>${R.length} subroutines, ${EDGES.length} links.</b> Click a box to see what it does, what it calls and what calls it.</p>
-          <h4>Watch them work</h4><ul>${R.filter(r => CLIPS[r.n]).map(r => `<li><a href="#calls" data-i="${r.i}">▶ ${r.n}</a></li>`).join('')}</ul>
-          <h4>Longest</h4><ul>${big.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${r.size}</span></li>`).join('')}</ul>
-          <h4>Called from most places</h4><ul>${most.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${callers[r.i].length}</span></li>`).join('')}</ul>`;
+        D.innerHTML = `<p style="margin:0 0 6px"><b>${R.length} subroutines, ${EDGES.length} links.</b> Click a box to see what it does, what it calls and what calls it; a box with a badge plays a loop of it at work here.</p>
+          <div class="cm-links"><div><h4>Watch them work</h4><ul style="columns:2;column-gap:24px">${R.filter(r => CLIPS[r.n]).map(r => `<li><a href="#calls" data-i="${r.i}">${CLIPS[r.n].roll ? '♪' : '▶'} ${r.n}</a></li>`).join('')}</ul></div>
+          <div><h4>Longest</h4><ul>${big.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${r.size}</span></li>`).join('')}</ul></div>
+          <div><h4>Called from most places</h4><ul>${most.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${callers[r.i].length}</span></li>`).join('')}</ul></div></div>`;
       } else {
         const r = R[i], rd = [...reads[i]];
-        D.innerHTML = `<span class="tag" style="border-color:${jcol(r.g)};background:${tint(r.g)}">${JOBNAME[r.g]}</span>
-          <h3>${r.n}</h3><p class="meta">${hex(r.a)}–${hex(r.e)} · ${r.size} bytes</p>${CLIPS[r.n] ? `<figure>${clipHTML(r.n, 'clip')}<figcaption>${esc(CLIPS[r.n].text)}</figcaption></figure>` : ''}<p>${esc(firstSentences(r.c, 3))}</p>
-          <h4>Calls</h4>${list(calls[i], 'b')}<h4>Called from</h4>${list(callers[i], 'a')}
-          ${rd.length ? `<h4>Tables it reads</h4><ul>${rd.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
-          <p style="margin:12px 0 0"><a href="source.html#${id4(r.a)}">Read it in the Source code tab</a></p>`;
+        const head = `<span class="tag" style="border-color:${jcol(r.g)};background:${tint(r.g)}">${JOBNAME[r.g]}</span>
+          <h3>${r.n}</h3><p class="meta">${hex(r.a)}–${hex(r.e)} · ${r.size} bytes · <a href="source.html#${id4(r.a)}">read it in the Source code tab</a></p>
+          <p>${esc(firstSentences(r.c, 3))}</p>`;
+        const links = `<div class="cm-links"><div><h4>Calls</h4>${list(calls[i], 'b')}</div><div><h4>Called from</h4>${list(callers[i], 'a')}</div>
+          ${rd.length ? `<div><h4>Tables it reads</h4><ul>${rd.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}</div>`;
+        D.innerHTML = CLIPS[r.n]
+          ? `<div class="cm-d"><figure>${clipHTML(r.n, 'clip')}<figcaption>${esc(CLIPS[r.n].text)}</figcaption></figure><div>${head}${links}</div></div>`
+          : `<div class="cm-d"><div>${head}</div><div>${links}</div></div>`;
       }
       mountClips(D);
       D.querySelectorAll('a[data-i]').forEach(b => b.addEventListener('click', ev => { ev.preventDefault(); select(+b.dataset.i, true); }));
     }
     function select(i, scroll) {
       hidePop(); cur = (cur === i && !scroll) ? null : i; focusOn(cur); detail(cur); markStrip(cur);
-      if (cur !== null && scroll) NODES[cur].scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      if (cur === null) return;
+      // keep the chosen box in view below the pinned details panel
+      const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', n = cur;
+      requestAnimationFrame(() => {
+        const b = NODES[n].getBoundingClientRect(), d = $('cm-detail').getBoundingClientRect();
+        const top = getComputedStyle($('cm-detail')).position === 'sticky' ? d.bottom + 16 : (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tabs-h')) || 72) + 16;
+        if (scroll || b.top < top || b.bottom > innerHeight) window.scrollBy({ top: b.top - top - Math.max(0, (innerHeight - top - b.height) / 3), behavior });
+      });
     }
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && cur !== null) select(cur, false); });
     detail(null); layout(); drawStrip();
