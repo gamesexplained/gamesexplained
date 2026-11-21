@@ -122,6 +122,8 @@
   const TITLE = [32, 35, 352, 235], PANEL = [32, 195, 352, 235];
   // the joystick in $DC01: 0 bits pressed (left 4, right 8, fire 16)
   const STICK = { L: 0x1B, R: 0x17, F: 0x0F, N: 0x1F };
+  // the stick as steer_plane finds it in $1F: 0 bits pressed (up 1, down 2, left 4, right 8, fire 16)
+  const STEER = [['↑ forward', 0x1E], ['→ right', 0x17], ['· centre', 0x1F], ['↓ back', 0x1D], ['← left', 0x1B], ['· centre', 0x1F], ['fire', 0x0F]];
   // the name entry spelling HUNTER from the cursor's start at the end mark (position 27); the
   // alphabet row is . A-Z and the end mark, so A is position 1
   const SPELL = (() => {
@@ -191,7 +193,38 @@
     plane_crash: { crop: [104, 38, 280, 198], on: [0x01, 0x09],
       pass(P, M) { if (!M[0x3F] || M[0x3F] >= 0x9F) M[0x3F] = 1; run(P.plane_crash()); },
       text: 'The crash: every other pass the plane and its shadow show the next explosion picture. In the game a life is then taken and play starts again.' },
+    scroll_right: { crop: [40, 50, 342, 104], change: 512,
+      pass(P, M) { M[0x22] = 0xFE; if (!(M[0x1E] & 7)) run(P.scroll_ground()); P.set_fine_scroll(M[0x23]); },
+      text: 'The mirror of scroll_left. With the plane banked hard the other way, scroll_right shifts the three hill rows a whole character right each time the fine scroll runs out, and fills the new column at the left edge from the panorama.' },
+    steer_plane: { crop: [40, 38, 342, 198], on: [0x03, 0x0B], maskY: [50, 104], change: 480, label: t => STEER[Math.floor((t - 1) / 60) % STEER.length][0],
+      start(M) { const d = 0x78 - M[0x8061]; M[0x8061] += d; M[0x8091] = (M[0x8091] + d) & 255; },
+      pass(P, M, t) {
+        M[0x1F] = STEER[Math.floor((t - 1) / 60) % STEER.length][1];
+        run(P.steer_plane()); P.move_plane();
+        if (!(M[0x1E] & 7)) run(P.scroll_ground());
+        P.set_fine_scroll(M[0x23]); P.move_shots(); P.sort_shot();
+      },
+      text: 'The stick, read into $1F, as the box in the corner shows. Every 8 passes steer_plane turns the bank ($22) one step towards the side pushed, up to two, and the climb ($37) one step, as a pilot\'s stick works: forward dives, back climbs. Both hold when the stick is let go. Fire starts a shot. The bank sets how fast the hills scroll and which way, and the climb moves the plane up or down the screen.' },
+    engine_sound: { sfx: true,
+      start(M, P) { P.start_engine_sound(); const d = 0x78 - M[0x8061]; M[0x8061] += d; M[0x8091] = (M[0x8091] + d) & 255; },
+      pass(P, M, t) {
+        M[0x37] = t % 360 < 180 ? 0x01 : 0xFF; P.move_plane();
+        if (t % 80 === 20) M[0x0A] = 1;
+        if (t % 120 === 70) P.hit_sound();
+        P.engine_sound();
+      },
+      text: 'The sound effects, each on its own voice of the sound chip. engine_sound sets voice 1\'s pitch from the plane\'s height every pass, so the engine rises as the plane climbs and falls as it dives. shot_sound restarts voice 2\'s noise four times for each shot, and hit_sound restarts voice 3\'s for each hit. A tick is a restart; the fade the chip gives each one is not drawn. Sound is not played here.' },
+    colour_play: { crop: [32, 35, 352, 235], change: 120, maskEvery: 10,
+      pass(P, M, t, E) { const p = t % 120; if (p === 1) E.colour.fill(1); if (p === 60) P.colour_play(); },
+      text: 'At the start of each level colour_play gives every character of the play screen the colour that the table at $8100 holds for its code: the hills, the ground stripes and the status panel. Here it runs against a screen of white every 120 passes.' },
+    target_hit: { crop: PANEL, change: 400, maskEvery: 5, cycle: 1000,
+      pass(P, M, t) { if (t % 20 === 0) P.target_hit(); },
+      text: 'On a strafing run, each shot that strikes the target counts in $45: target_hit sounds the hit on voice 3, adds one and has show_target_hits write the count as three digits in the status panel. Here a hit lands every 20 passes.' },
+    run_result: { crop: [32, 35, 352, 235], change: 560, maskEvery: 20, cycle: 140,
+      pass(P, M, t, E) { if (t === 1) { M[0x45] = [0x05, 0x15, 0x35, 0x45][E.k % 4]; E.gen = P.run_result(); E.step(); } },
+      text: 'After a strafing run run_result levels the plane, and picks a verdict from the hits in $45 through the table at $8B90: TARTARGET UNDAMAGED-TRY AGAIN under 16 (the slip is the game\'s own), TARGET PARTIALLY DAMAGED from 16, TARGET SUSTAINED HEAVY DAMAGE from 48, and WELL DONE-TARGET DESTROYED from 64. Then it waits for fire; 16 hits or more earn a life and the next level. Here the four come in turn, for 5, 21, 53 and 69 hits.' },
   };
+  CLIPS.shot_sound = CLIPS.hit_sound = CLIPS.engine_sound;
   // The game held still. The port is run once, the first time a loop is shown: 60 frames to the
   // title, then fire pressed and 300 frames of play, to the middle of the first level.
   const Solo = (() => {
@@ -238,11 +271,11 @@
     function runner(snaps, c) {
       const S = snaps[c.scene || 'play'];
       let M, colour, P, E, t, k = -1;
-      const sid = new Uint8Array(32);
+      const sid = new Uint8Array(32), attack = [0, 0, 0];
       function begin() {
         k++; t = 0;
         M = S.M.slice(); colour = S.colour.slice();
-        E = { colour, sid, joy: 0x1F, toggle: false, flip: 0 };
+        E = { colour, sid, joy: 0x1F, toggle: false, flip: 0, k };
         const io = {
           read(a) {
             if (a >= 0xD800 && a < 0xDC00) return colour[a - 0xD800];
@@ -251,7 +284,13 @@
             if (a === 0xDC01) return E.toggle ? ((E.flip ^= 1) ? 0x1F : 0x0F) : E.joy;
             return 0;
           },
-          write(a, v) { if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15; else if (a >= 0xD400 && a < 0xD420) sid[a & 31] = v; },
+          write(a, v) {
+            if (a >= 0xD800 && a < 0xDC00) { colour[a - 0xD800] = v & 15; return; }
+            if (a < 0xD400 || a >= 0xD420) return;
+            const r = a & 31, g = [4, 11, 18].indexOf(r);
+            if (g >= 0 && (v & 1) && !(sid[r] & 1)) attack[g] = 1;      // a gate turned on: the note starts
+            sid[r] = v;
+          },
           irqByte: a => M[a],
         };
         P = HunterPort.create(M, io, { CPU: C64Cpu.CPU });
@@ -264,11 +303,11 @@
       begin();
       const on = c.on || [0, 0], ctx = c.ctx || [0, 0];
       return {
-        sid,
+        sid, attack,
         pass() {
           if ((c.cycle && t >= c.cycle) || (c.done && t > 4 && c.done(M))) begin();
           t++;
-          if (!c.roll && (c.scene || 'play') === 'play') M[0x1E] = (M[0x1E] + 1) & 255;
+          if (!c.roll && !c.sfx && (c.scene || 'play') === 'play') M[0x1E] = (M[0x1E] + 1) & 255;
           c.pass(P, M, t, E);
         },
         draw() {
@@ -317,6 +356,35 @@
         requestAnimationFrame(tick);
       })(performance.now());
     }
+    // the sound effects: voice 1's pitch as a line, and a tick each time voice 2 or 3 starts a note
+    function sfx(cv, r) {
+      const w = 320, h = 150, X = w - 8, lanes = [[12, 64], [82, 110], [126, 150]];
+      cv.width = w; cv.height = h;
+      const ctx = cv.getContext('2d'), hist = [];
+      let t0 = 0, done = 0;
+      (function tick(t) {
+        if (!cv.isConnected) return;
+        if (!t0) t0 = t;
+        const due = Math.floor((t - t0) / 1000 * PASSES);
+        for (; done < due; done++) {
+          r.attack.fill(0); r.pass();
+          hist.push([r.sid[0] | r.sid[1] << 8, r.attack[1], r.attack[2]]);
+          if (hist.length > X - 4) hist.shift();
+        }
+        ctx.fillStyle = '#16171a'; ctx.fillRect(0, 0, w, h);
+        ctx.font = '10px sans-serif'; ctx.fillStyle = '#c8cad0';
+        ctx.fillText('1 engine: pitch', 4, 10); ctx.fillText('2 shot: notes started', 4, 78); ctx.fillText('3 hit: notes started', 4, 122);
+        ctx.fillStyle = '#3a3c42'; lanes.forEach(([, b]) => ctx.fillRect(0, b, X, 1));
+        const lo = 0x0858, hi = 0x08B4, Y = f => lanes[0][1] - 4 - (f - lo) / (hi - lo) * (lanes[0][1] - lanes[0][0] - 8);
+        ctx.fillStyle = VOICE[0][0];
+        hist.forEach((s, x) => ctx.fillRect(x, Y(s[0]) - 1.5, 1, 3));
+        [1, 2].forEach(v => {
+          ctx.fillStyle = VOICE[v][0];
+          hist.forEach((s, x) => { if (s[v]) ctx.fillRect(x - 1, lanes[v][0] + 2, 3, lanes[v][1] - lanes[v][0] - 4); });
+        });
+        requestAnimationFrame(tick);
+      })(performance.now());
+    }
     async function mount(cv, ram) {
       const c = CLIPS[cv.dataset.solo];
       cv.width = 320; cv.height = 150;
@@ -326,6 +394,7 @@
       const S = await boot(ram);
       if (!cv.isConnected) return;
       if (c.roll) { roll(cv, runner(S, c), c); return; }
+      if (c.sfx) { sfx(cv, runner(S, c)); return; }
       const [x0, y0, x1, y1] = c.crop, w = x1 - x0, h = y1 - y0, W = 384;
       cv.width = w; cv.height = h;
       if (c.change && !c.mask) {                 // what the routine changes over its first passes
@@ -333,7 +402,8 @@
         for (let i = 1; i <= c.change; i++) {
           t.pass();
           if (i % (c.maskEvery || 1)) continue;
-          const p = t.draw().px; for (let k = 0; k < p.length; k++) if (p[k] !== first[k]) m[k] = 1;
+          const p = t.draw().px, [ya, yb] = c.maskY || [0, 312];
+          for (let k = ya * W; k < Math.min(p.length, yb * W); k++) if (p[k] !== first[k]) m[k] = 1;
         }
         c.mask = m;
       }
@@ -347,11 +417,18 @@
         const f = r.draw();
         for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
           const k = (y + y0) * W + x + x0, o = (y * w + x) * 4, col = rgb[f.px[k]];
-          const on = c.mask ? c.mask[k] : f.px[k] !== f.bright[k];
+          const on = (c.mask && c.mask[k]) || (f.bright && f.px[k] !== f.bright[k]);
           for (let j = 0; j < 3; j++) img.data[o + j] = on ? col[j] : col[j] * 0.25 + 40;
           img.data[o + 3] = 255;
         }
         ctx.putImageData(img, 0, 0);
+        if (c.label) {                           // what the stick is doing, in the corner
+          const s = 'stick: ' + c.label(Math.max(1, done));
+          ctx.font = 'bold 11px sans-serif';
+          const tw = ctx.measureText(s).width + 12;
+          ctx.fillStyle = 'rgba(0,0,0,.75)'; ctx.fillRect(4, 4, tw, 18);
+          ctx.fillStyle = '#fff'; ctx.fillText(s, 10, 17);
+        }
         requestAnimationFrame(tick);
       })(performance.now());
     }
@@ -538,7 +615,7 @@
       <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="1.6" stroke-dasharray="6 4"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>jumps there for good</span>
       <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="2" stroke-dasharray="1.5 3.5"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>runs straight on into the next</span>
       <span style="flex-basis:100%;height:0"></span>
-      <span>${badgeSvg(false)}a loop of it at work</span><span>${badgeSvg(true)}its tune, drawn as notes</span>`;
+      <span>${badgeSvg(false)}a loop of it at work</span><span>${badgeSvg(true)}its sound, drawn over time</span>`;
 
     /* ---------- the call graph: one band per job, boxes wrapping inside it ---------- */
     const depth = R.map(() => 99), q = [];
@@ -577,13 +654,13 @@
         return { e, g, p, layer: eL };
       });
       NODES = R.map(r => {
-        const P = POS[r.i], g = el('g', { class: 'cm-node', tabindex: 0, role: 'button', 'aria-label': `${r.n}, ${r.size} bytes, ${JOBNAME[r.g]}${CLIPS[r.n] ? (CLIPS[r.n].roll ? ', with its tune drawn as notes' : ', with a loop of it at work') : ''}` }, nL);
+        const P = POS[r.i], g = el('g', { class: 'cm-node', tabindex: 0, role: 'button', 'aria-label': `${r.n}, ${r.size} bytes, ${JOBNAME[r.g]}${CLIPS[r.n] ? ((CLIPS[r.n].roll || CLIPS[r.n].sfx) ? ', with its sound drawn over time' : ', with a loop of it at work') : ''}` }, nL);
         el('rect', { class: 'box', x: P.x, y: P.y, width: P.w, height: P.h, rx: 6, fill: tint(r.g), stroke: jcol(r.g) }, g);
         const room = P.w - (CLIPS[r.n] ? 38 : 14);
         el('text', { x: P.x + 8, y: P.y + 13, 'font-size': 9, 'letter-spacing': '.06em', fill: 'var(--ink-soft)', class: 'mono' }, g).textContent = JOBNAME[r.g].toUpperCase().slice(0, Math.floor(room / 6.1));
         const nm = el('text', { x: P.x + 8, y: P.y + 28, 'font-size': 11, 'font-weight': 500, fill: 'var(--ink)', class: 'mono' }, g); nm.textContent = r.n;
         if (r.n.length * 6.65 > room) nm.textContent = r.n.slice(0, Math.floor(room / 6.65) - 1) + '…';
-        if (CLIPS[r.n]) badge(g, P.x + P.w - 17, P.y + Math.min(P.h / 2, 21), CLIPS[r.n].roll);
+        if (CLIPS[r.n]) badge(g, P.x + P.w - 17, P.y + Math.min(P.h / 2, 21), CLIPS[r.n].roll || CLIPS[r.n].sfx);
         if (P.h >= 48) el('text', { x: P.x + 8, y: P.y + P.h - 7, 'font-size': 10, fill: 'var(--ink-mute)', class: 'mono' }, g).textContent = `${hex(r.a)} · ${r.size} bytes`;
         g.addEventListener('click', () => select(r.i, false));
         g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); select(r.i, false); } });
@@ -617,7 +694,7 @@
       if (i === null) {
         const big = R.slice().sort((a, b) => b.size - a.size).slice(0, 5), most = R.slice().sort((a, b) => callers[b.i].length - callers[a.i].length).slice(0, 5);
         D.innerHTML = `<p style="margin:0 0 6px"><b>${R.length} subroutines, ${EDGES.length} links.</b> Click a box to see what it does, what it calls and what calls it; a box with a badge plays a loop of it at work here.</p>
-          <div class="cm-links"><div><h4>Watch them work</h4><ul style="columns:2;column-gap:24px">${R.filter(r => CLIPS[r.n]).map(r => `<li><a href="#calls" data-i="${r.i}">${CLIPS[r.n].roll ? '♪' : '▶'} ${r.n}</a></li>`).join('')}</ul></div>
+          <div class="cm-links"><div><h4>Watch them work</h4><ul style="columns:2;column-gap:24px">${R.filter(r => CLIPS[r.n]).map(r => `<li><a href="#calls" data-i="${r.i}">${(CLIPS[r.n].roll || CLIPS[r.n].sfx) ? '♪' : '▶'} ${r.n}</a></li>`).join('')}</ul></div>
           <div><h4>Longest</h4><ul>${big.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${r.size}</span></li>`).join('')}</ul></div>
           <div><h4>Called from most places</h4><ul>${most.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${callers[r.i].length}</span></li>`).join('')}</ul></div></div>`;
       } else {
