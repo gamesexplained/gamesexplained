@@ -183,3 +183,27 @@ terminal's corner sprites on the reference screenshots confirmed their
 positions. The `robot_zap` comment gave the zap's offsets in half-pixels
 (9 and 22); it was corrected with `listing.py --recomment`, since the
 snapshot was no longer here.
+
+## 21 November 2026: the Controls tab and the tab names
+
+The contributor asked for the site to be brought up to the newer C64
+games' tabs (Gauntlet, Spy vs Spy and Delta each gained a Controls tab).
+The new `controls.html` is built from the routines that read `$DC00` and
+`$DC01`, found with `opcodes.py --refs` and read from `listing.json`: the
+room loop, the lift loop, `agent_read_stick`, `agent_animate`, the
+search, the terminal, the hand, the messages, `read_key` and the name
+entry. Its stick and keyboard widgets run a port of them, held against
+the game in the simulator by `test_controls.py`; five deliberate breaks
+in the port were each caught. `controls-browser.js` drives the page. Two
+details came out of reading the code rather than from any earlier note:
+up while standing skips the agent's update, and the minus key types the
+same character as the equals key.
+
+Two tab labels were renamed to the one-word names `70-minisite` asks
+for: The stronghold became Map (one world the player explores) and Sound
+and speech became Sound. The files and links are unchanged. Reading the
+code also suggested that a robot's hit, which sets `$43` from the
+interrupt, is not acted on while up is held in an empty spot, since
+nothing calls `agent_death` until the agent's update runs again. That
+was not observed live (no emulator in this container) and is left out
+of the pages; it is open in `TODO.md`.

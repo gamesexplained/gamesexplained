@@ -1,0 +1,346 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impossible Mission</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/impossible-mission-page.css">
+<style>
+.im-stage{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.im-play{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;margin-top:14px}
+.im-pad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:4px;touch-action:none;user-select:none}
+[data-own-look] .im-pad button,[data-own-look] .im-fire{font-size:18px;padding:0;width:52px;height:52px}
+[data-own-look] .im-fire{width:76px;height:76px;border-radius:50%;font-size:13px;font-weight:700}
+[data-own-look] .im-pad button[aria-pressed="true"],[data-own-look] .im-fire[aria-pressed="true"]{background:var(--accent);color:#fff}
+.im-bits{display:flex;gap:4px;font-family:var(--fm);font-size:12.5px;margin:0 0 8px}
+.im-bits span{border:1px solid var(--line);border-radius:4px;padding:3px 7px;text-align:center;min-width:44px}
+.im-bits span.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.im-state{font-family:var(--fm);font-size:12.5px;line-height:1.7;color:var(--ink-soft);flex:1 1 220px}
+.im-kb{display:flex;flex-direction:column;gap:4px;font-family:var(--fm);user-select:none;overflow-x:auto;padding-bottom:4px}
+.im-kb .row{display:flex;gap:4px}
+[data-own-look] .im-kb button{flex:0 0 auto;width:37px;height:40px;padding:0;font-size:10.5px;line-height:1.15;display:flex;flex-direction:column;align-items:center;justify-content:center}
+[data-own-look] .im-kb button b{font-size:13px}
+[data-own-look] .im-kb button.w2{width:54px}[data-own-look] .im-kb button.w3{width:74px}[data-own-look] .im-kb button.sp{width:300px}
+[data-own-look] .im-kb button.ign{opacity:.4}
+[data-own-look] .im-kb button.del{background:#fde8d8}[data-own-look] .im-kb button.end{background:#dff0e0}[data-own-look] .im-kb button.stop{background:#e6e3fb}
+.im-name{display:flex;gap:4px;margin:12px 0 6px}
+.im-name span{font-family:var(--fm);font-size:18px;width:34px;height:40px;display:flex;align-items:center;justify-content:center;background:#000;color:#b77cf0;border-radius:4px}
+.im-name span.cur{box-shadow:inset 0 -5px 0 #ffd54a}
+table.d td.n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+#places table.d{width:100%;table-layout:fixed}
+#places table.d td,#places table.d th{overflow-wrap:anywhere}
+#places table.d code{white-space:normal}
+@media (max-width:640px){#places table.d{font-size:13px}#places table.d td,#places table.d th{padding:6px 4px}}
+@media (max-width:640px){[data-own-look] .im-kb button{width:30px;height:34px;font-size:9px}[data-own-look] .im-kb button b{font-size:11px}[data-own-look] .im-kb button.w2{width:46px}[data-own-look] .im-kb button.w3{width:62px}[data-own-look] .im-kb button.sp{width:200px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1984 · Epyx</p>
+  <h1>Impossible Mission</h1>
+  <p class="sub">One joystick in port 2 plays the whole game: the agent, the lift, the pocket computer and the terminals. The keyboard is read only when the hall of fame asks for a name.</p>
+</header>
+<main class="wrap">
+
+<section id="stick">
+  <p class="fig">01 · The stick</p>
+  <h2 class="t">Left and right walk, fire somersaults, and up searches only while he stands still</h2>
+  <p class="lede">Press the stick and fire below, or click the picture and use the arrow keys and the space bar. The agent answers the way the game's own routines would, a tick at a time on a PAL machine.</p>
+  <div class="plate" id="stickplate" tabindex="0">
+    <canvas id="stage" class="im-stage" width="200" height="64"></canvas>
+    <div class="im-play" data-own-look>
+      <div class="im-pad" id="pad">
+        <button data-b="5" aria-label="up and left">↖</button><button data-b="1" aria-label="up">↑</button><button data-b="9" aria-label="up and right">↗</button>
+        <button data-b="4" aria-label="left">←</button><span></span><button data-b="8" aria-label="right">→</button>
+        <button data-b="6" aria-label="down and left">↙</button><button data-b="2" aria-label="down">↓</button><button data-b="10" aria-label="down and right">↘</button>
+      </div>
+      <button class="im-fire" id="fire">FIRE</button>
+      <div class="im-state">
+        <div class="im-bits" id="bits"></div>
+        <div id="state"></div>
+      </div>
+    </div>
+    <p class="cap" id="cap"></p>
+  </div>
+  <p>The game reads the stick in port 2 straight from the chip, at <code>$DC00</code>: five bits, each 0 while its direction or the button is held. Three routines share the work. The room's loop (<code>$7249</code>) runs every tick; it counts each new press of fire (<code>$51</code>, with <code>$DE</code> set while the button stays down, so holding it counts once) and sends up to the search when the agent is standing still. Every third tick the agent's update reads left and right (<code>$87ED</code>), moves him (<code>$8859</code>) and picks his next frame (<code>$8817</code>).</p>
+  <p>Left and right set the facing and a step of five pixels. With neither held the agent drops straight to his standing frame and stops: there is no slowing down. A counted fire press turns any walking or standing frame into the first frame of the somersault, and the somersault then runs its twelve frames with the stick ignored. Its steps come from tables (<code>$8D07</code>-<code>$8D42</code>), not from the walking speed, so from the moment he leaves the ground a standing somersault carries him as far as a running one. On the last frame the stick is read again: he lands running if left or right is held, and standing if not.</p>
+  <p>Up wins over everything else while the agent stands. When up is held and he is on his standing frame, the room's loop calls the search (<code>$92A0</code>) instead of the agent's update, so pushing the stick up and to one side leaves him standing where he is. Down does nothing in a room unless he stands on a lifting platform.</p>
+</section>
+
+<section id="places">
+  <p class="fig">02 · What the stick does where</p>
+  <h2 class="t">Each part of the game reads the stick in its own loop</h2>
+  <p class="lede">There is no table of controls in the program. Each loop reads <code>$DC00</code> itself and decides what a direction means there.</p>
+  <table class="d">
+    <tr><th>Where</th><th>Stick</th><th>Fire</th><th>Read by</th></tr>
+    <tr><td>In a room</td><td>Left and right walk. Up, standing in front of furniture or a terminal, searches it or switches it on.</td><td>Somersault, from walking or standing</td><td><code>$7249</code>, <code>$87ED</code></td></tr>
+    <tr><td>Searching</td><td>Hold up. Letting go stops the search; the time left is counted down in the object's own record (<code>$4F59</code>), so pushing up again carries on where it stopped.</td><td>Not read</td><td><code>$98C2</code></td></tr>
+    <tr><td>On a lifting platform</td><td>Up raises it and down lowers it while he stands on it, once for each push of the stick</td><td>Somersault</td><td><code>$AC88</code></td></tr>
+    <tr><td>At a security terminal</td><td>Up and down move the pointer between the choices, once for each push</td><td>Carries out the choice</td><td><code>$9F6A</code>-<code>$9FA7</code></td></tr>
+    <tr><td>In a corridor or the lift</td><td>Left and right walk. In the lift car, standing, up and down start the lift; it then runs on by itself to the next level with a door, and pushing the other way on the way turns it round.</td><td>Standing, opens the pocket computer; walking, a somersault</td><td><code>$39CF</code></td></tr>
+    <tr><td>The pocket computer and the code rooms' screen</td><td>Moves the hand one pixel a tick, within the panel</td><td>Presses the button under the hand, once for each press</td><td><code>$3DC2</code>, <code>$3AD8</code>, <code>$A808</code></td></tr>
+    <tr><td>A message, or the pause button's TIME IS SUSPENDED</td><td>Not read</td><td>Waits for fire to be pressed and let go</td><td><code>$81F7</code></td></tr>
+  </table>
+  <p>The lift is the one place where a short push does a long job. Once up or down has started the car, the loop keeps calling <code>$8592</code> or <code>$855C</code> until a corridor's opening is level with the car (<code>$1F</code> or <code>$20</code> = <code>$0B</code>), reading only the opposite direction on the way. At the top or bottom of a shaft the car stops whatever the stick says (<code>$1D</code>, <code>$1E</code>). The pocket computer's buttons, the phone among them, are on <a href="mechanics.html#computer">How it works</a>.</p>
+</section>
+
+<section id="keyboard">
+  <p class="fig">03 · The keyboard</p>
+  <h2 class="t">Five characters for the hall of fame, and three keys that delete</h2>
+  <p class="lede">Type a name, by clicking the keys or with your own keyboard while the picture of the keyboard has the focus. Each key shows the character the game's table gives it; the faded keys give nothing.</p>
+  <div class="plate" id="kbplate" tabindex="0" data-own-look>
+    <div class="im-kb" id="kb"></div>
+    <div class="im-name" id="name"></div>
+    <p class="cap" id="kcap"></p>
+    <div class="ctl"><button id="kreset">Start the name again</button></div>
+  </div>
+  <p>The game scans the keyboard itself (<code>$BE2D</code>) rather than through the machine's ROM, which it has switched out. It drives the eight rows of the keyboard one at a time through <code>$DC00</code>, from the row of RUN/STOP and SPACE down to the row of DEL and RETURN, and reads the columns at <code>$DC01</code>. The first key it finds is the one it keeps, and a 64-byte table (<code>$BE78</code>) turns it into a character. A key counts once, until every key has been let go (<code>$DF</code>).</p>
+  <p>The table gives every letter and digit, and a few signs: the full stop, the asterisk, and the equals sign, which the minus key types as well. SPACE gives character <code>$FD</code> and the colon <code>$98</code>, neither of them the blank or the colon of the game's own texts. Three keys delete: DEL, the left arrow at the top left, and cursor right. RETURN ends the name early; a fifth character ends it at once. The shift keys, the function keys and the rest give nothing.</p>
+  <p>The name is taken from the screen, five characters from where it was typed (<code>$BD61</code>), and kept with the score at <code>$CF00</code> until the machine is switched off. While the name is typed, RUN/STOP is ignored (<code>$BD24</code>). After it, the game waits for RUN/STOP alone and then starts a new game (<code>$B89D</code>).</p>
+</section>
+
+<section id="restore">
+  <p class="fig">04 · RESTORE</p>
+  <h2 class="t">RESTORE starts a new game from anywhere, except while a voice line plays</h2>
+  <p>The RESTORE key is wired to the processor's non-maskable interrupt, not to the keyboard's rows. The game points that interrupt at <code>$388C</code>, the part of its start-up that sets up a new game (<code>$BECD</code>), so pressing RESTORE at any time abandons the mission and starts again in the lift. The hall of fame's prompt, HIT RESTORE OR RUN/STOP FOR NEW GAME, names both ways.</p>
+  <p>While a voice line plays, the speech driver uses the same interrupt for its samples, nearly ten thousand a second, and points the vector at its own handlers in page <code>$08</code>. RESTORE then lands in the speech driver and starts nothing. The start-up, a death and the end of a line point the vector back at the new game (<code>$BEC2</code>). The speech is on <a href="music.html#speech">Sound</a>.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script>
+// ---- port: the stick (room_loop $7249, lift_loop $39CF, agent_read_stick $87ED, agent_animate $8817),
+// the keyboard (read_key $BE2D, the name entry $BD18) and, as on the Graphics tab, the agent's sprites
+// (agent_frame $8729, agent_move $8859). d is $DC00 as read: bits 0-4 up, down, left, right, fire, 0 while held.
+const REV = Array.from({ length: 256 }, (_, v) => { let r = 0; for (let b = 0; b < 8; b++) if (v & (1 << b)) r |= 0x80 >> b; return r; });
+function agentPointers(M, f) {                       // $873B-$875E: the pointers of sprites 1, 2 and 3
+  let y = M[0x8D43 + f], s2 = -1;
+  if (f < 0x14 || f >= 0x1A) { s2 = y; y = (y + 1) & 0xFF; }
+  const s3 = y; y = (y + 1) & 0xFF;
+  if (f >= 7 && f < 0x0E) y = (y + 1) & 0xFF;
+  return { s1: y, s2, s3 };
+}
+function agentMirror(M, f, facing) {                 // $8764-$87D4: turns frame f to face `facing` in place
+  const base = M[0x8D5F + 2 * f] | M[0x8D60 + 2 * f] << 8;
+  if (M[base + 0x3F] === facing) return false;
+  M[base + 0x3F] = REV[M[base + 0x3F]];
+  let y = M[0x8D97 + f];
+  for (;;) {
+    const a = base + y, b0 = M[a], b2 = M[a + 2];
+    M[a + 2] = REV[b0]; M[a] = REV[b2]; M[a + 1] = REV[M[a + 1]];
+    y = (y - 3) & 0xFF;
+    if ((y & 0x3F) !== 0x3D) continue;
+    y = (y - 1) & 0xFF;
+    if (y === 0xFC) return true;
+  }
+}
+function agentMove(M, P, f, facing, speed) {         // $8859: P = { x: [3], y: [3], bits } as $2C-$32
+  if (f < 0x10) {
+    let c = 0;
+    for (const i of [2, 1, 0]) { const s = P.x[i] + speed; c = s > 255 ? 1 : 0; P.x[i] = s & 0xFF; }
+    if (speed & 0x80) { if (!c) P.bits &= 0xF1; } else if (c) P.bits |= 0x0E;
+    return;
+  }
+  const k = f - 0x10;
+  P.y[0] = (P.y[0] + M[0x8D07 + k]) & 0xFF; P.y[1] = (P.y[1] + M[0x8D13 + k]) & 0xFF; P.y[2] = (P.y[2] + M[0x8D1F + k]) & 0xFF;
+  const step = (i, d, bit) => {
+    if (facing & 0x80) d = (-d) & 0xFF;
+    const s = P.x[i] + d, c = s > 255;
+    P.x[i] = s & 0xFF;
+    if ((d & 0x80) ? !c : c) P.bits ^= bit;
+  };
+  step(2, M[0x8D37 + k], 0x08);
+  const d = M[0x8D2B + k]; step(0, d, 0x02); step(1, d, 0x04);
+}
+// s = { f: $3F, facing: $50, speed: $39, fire: $51, held: $DE, falling: $41 }
+function readStick(s, d) {                           // agent_read_stick $87ED
+  if (s.f >= 0x10) return;
+  if ((d & 0x0C) === 0x0C) { s.f = 0x0E; s.speed = 0; return; }
+  if (d & 0x04) { s.facing = 0x01; s.speed = 0x05; } else { s.facing = 0x80; s.speed = 0xFB; }
+}
+function animate(s, d) {                             // agent_animate $8817
+  const y = s.f;
+  if (y < 0x10) {
+    if (s.fire) { s.fire = 0; s.f = 0x1B; return; }  // the somersault starts
+    if (y === 0x0E) { if (s.speed) s.f = 0x0D; return; }
+    s.f = y === 0 ? 0x0D : y - 1; return;
+  }
+  if (y - 1 >= 0x10) { s.f = y - 1; return; }
+  s.f = (d & 0x0C) === 0x0C ? 0x0E : 0x0D;           // landing: running if left or right is held
+}
+function roomInput(s, d) {                           // room_loop $7259-$7286: 'search' ($92A0) or 'update' ($860B)
+  if (s.falling || s.f >= 0x10) return 'update';
+  if (!(d & 0x01) && s.f === 0x0E) return 'search';
+  if (!(d & 0x10)) { if (!s.held) { s.held = 1; s.fire = (s.fire + 1) & 0xFF; } } else s.held = 0;
+  return 'update';
+}
+function liftInput(s, d) {                           // lift_loop $39F6-$3A16: 'computer' ($3A80) or 'on'
+  if (d & 0x10) { s.held = 0; return 'on'; }
+  if (s.held) return 'on';
+  s.held = 1;
+  if (s.f === 0x0E) return 'computer';
+  if (s.f < 0x10) s.fire = (s.fire + 1) & 0xFF;
+  return 'on';
+}
+function readKey(M, s, pressed) {                    // read_key $BE2D: pressed(row, col); s.held = $DF
+  for (let row = 7; row >= 0; row--) {
+    let cols = 0; for (let c = 0; c < 8; c++) if (pressed(row, c)) cols |= 1 << c;
+    if (!cols) continue;
+    if (s.held) return 0xFF;
+    s.held = 1;
+    let col = 0; while (!(cols & (1 << col))) col++;
+    return M[0xBE78 + row * 8 + col];
+  }
+  s.held = 0; return 0xFF;
+}
+function nameStart() { return { cells: [0xDB, -1, -1, -1, -1, -1], pos: 0, n: 0, done: false }; }   // $BD0F: the cursor
+function nameKey(s, k) {                             // $BD1E-$BD87: one key code from read_key
+  if (s.done || k === 0xFF || k === 0xF0) return;
+  if (k === 0x00) { s.cells[s.pos] = 0xAF; s.done = true; return; }      // RETURN
+  if (k === 0x01) {                                  // DEL
+    if (!s.n) return;
+    s.n--; s.pos--; s.cells[s.pos + 1] = 0xAF; s.cells[s.pos] = 0xDB; return;
+  }
+  s.cells[s.pos] = k; s.pos++; s.n++;
+  if (s.n >= 5) { s.done = true; return; }
+  s.cells[s.pos] = 0xDB;
+}
+// end of port
+
+const PALC = C64.PAL;
+const KEYS = [                                       // the C64's keyboard matrix as [row, column] (c64-reference)
+  ['DEL', 'RETURN', 'CRSR →', 'F7', 'F1', 'F3', 'F5', 'CRSR ↓'],
+  ['3', 'W', 'A', '4', 'Z', 'S', 'E', 'SHIFT L'],
+  ['5', 'R', 'D', '6', 'C', 'F', 'T', 'X'],
+  ['7', 'Y', 'G', '8', 'B', 'H', 'U', 'V'],
+  ['9', 'I', 'J', '0', 'M', 'K', 'O', 'N'],
+  ['+', 'P', 'L', '-', '.', ':', '@', ','],
+  ['£', '*', ';', 'HOME', 'SHIFT R', '=', '↑', '/'],
+  ['1', '←', 'CTRL', '2', 'SPACE', 'C=', 'Q', 'RUN/STOP']];
+const LAYOUT = [
+  ['←', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '+', '-', '£', 'HOME', 'DEL', 'F1'],
+  ['CTRL', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '*', '↑', 'RESTORE', 'F3'],
+  ['RUN/STOP', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', ';', '=', 'RETURN', 'F5'],
+  ['C=', 'SHIFT L', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'SHIFT R', 'CRSR ↓', 'CRSR →', 'F7'],
+  ['SPACE']];
+function glyphName(v) {                              // the $4800 set's order (facts.md, "Text")
+  if (v >= 0x71 && v <= 0x8A) return String.fromCharCode(65 + v - 0x71);
+  if (v >= 0x8B && v <= 0x94) return String(v - 0x8B);
+  return { 0x95: '*', 0x96: '=', 0x97: '>', 0xFE: '.' }[v] ?? C64.hex(v, 2);
+}
+
+(async () => {
+  const G = await C64.load('listing.json'), M0 = G.ram;
+  for (let v = 0; v < 256; v++) M0[0xC500 + v] = REV[v];
+  const M = M0.slice();
+
+  // ---- the stick ----
+  const stage = document.getElementById('stage'), sc = stage.getContext('2d');
+  const ROOM = 0x1C, Y0 = 0x58;
+  const rp = M0[0x0E70 + 2 * ROOM] | M0[0x0E71 + 2 * ROOM] << 8, bg = M0[rp] & 15;
+  let held = 0;                                      // the five bits pressed, 1 while held
+  const dc00 = () => 0xFF & ~held;
+  const s = { f: 0x0E, facing: 0x01, speed: 0, fire: 0, held: 0, falling: 0 };
+  const P = { x: [60, 60, 60], y: [0x6A, 0x5E, 0x73], bits: 0 };
+  let timer = 0, last = performance.now(), acc = 0, what = 'update', searchTicks = 0;
+  function spr(ptr, x, y, colour) {
+    C64.drawSprite(sc, M.subarray(0x4000 + ptr * 64, 0x4000 + ptr * 64 + 64), x - 24, y - Y0, 1, PALC[colour]);
+  }
+  function draw() {
+    sc.fillStyle = PALC[bg]; sc.fillRect(0, 0, 200, 64);
+    sc.fillStyle = PALC[11]; sc.fillRect(0, 60, 200, 4);
+    agentMirror(M, s.f, s.facing);
+    const p = agentPointers(M, s.f), X = i => P.x[i] + (P.bits & (2 << i) ? 256 : 0);
+    spr(p.s3, X(2), P.y[2], 11); if (p.s2 >= 0) spr(p.s2, X(1), P.y[1], 11); spr(p.s1, X(0), P.y[0], 1);
+  }
+  function tick() {
+    const d = dc00();
+    what = roomInput(s, d);
+    if (what === 'search') { searchTicks++; timer++; return; }
+    searchTicks = 0;
+    if (++timer < 3) return;                         // $3E against $40 = 3
+    timer = 0;
+    readStick(s, d); agentMove(M, P, s.f, s.facing, s.speed); animate(s, d);
+    const x = P.x[0] + (P.bits & 2 ? 256 : 0);       // the page's stage has no walls: he comes round again
+    if (x > 214 || x < 4) { const nx = x > 214 ? 6 : 212; P.x = [nx, nx, nx]; P.bits = 0; }
+    if (s.f === 0x0E || s.f === 0x0D) P.y = [0x6A, 0x5E, 0x73];
+  }
+  const NAMES = ['up', 'down', 'left', 'right', 'fire'];
+  function show() {
+    const d = dc00();
+    document.getElementById('bits').innerHTML = NAMES.map((n, i) => `<span class="${d & (1 << i) ? '' : 'on'}">${n}<br>${(d >> i) & 1}</span>`).join('');
+    document.getElementById('state').innerHTML =
+      `<code>$DC00</code> = ${C64.hex(d, 2)}<br>frame <code>$3F</code> = ${C64.hex(s.f, 2)}, facing <code>$50</code> = ${C64.hex(s.facing, 2)}<br>step <code>$39</code> = ${C64.hex(s.speed, 2)}, fire presses <code>$51</code> = ${s.fire}, fire held <code>$DE</code> = ${s.held}`;
+    const cap = document.getElementById('cap');
+    cap.innerHTML = what === 'search'
+      ? `Up is held and he is standing, so the room's loop goes to the search (<code>$92A0</code>) and skips his update: whatever the stick says to the side, he stays put. In the game, with furniture or a terminal behind him, the search would start; this stage has none.`
+      : s.f >= 0x10 ? `Somersault, frame <b>${C64.hex(s.f, 2)}</b>. The stick is not read until he lands.`
+      : s.f === 0x0E ? `Standing, frame <b>$0E</b>. Fire starts a somersault on his next update; up would search.`
+      : `Walking, frame <b>${C64.hex(s.f, 2)}</b>, five pixels every three ticks. Let go and he stops on the spot.`;
+  }
+  function frame(now) {
+    acc += Math.min(now - last, 200); last = now;
+    while (acc >= 20) { acc -= 20; tick(); }
+    draw(); show(); requestAnimationFrame(frame);
+  }
+  const pad = document.getElementById('pad'), fire = document.getElementById('fire');
+  const press = (el, bits, on) => { held = on ? held | bits : held & ~bits; el.setAttribute('aria-pressed', on ? 'true' : 'false'); };
+  for (const b of pad.querySelectorAll('button')) {
+    const bits = +b.dataset.b;
+    b.addEventListener('pointerdown', e => { e.preventDefault(); b.setPointerCapture(e.pointerId); press(b, bits, true); });
+    for (const ev of ['pointerup', 'pointercancel']) b.addEventListener(ev, () => press(b, bits, false));
+  }
+  fire.addEventListener('pointerdown', e => { e.preventDefault(); fire.setPointerCapture(e.pointerId); press(fire, 16, true); });
+  for (const ev of ['pointerup', 'pointercancel']) fire.addEventListener(ev, () => press(fire, 16, false));
+  const KB = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8, ' ': 16 };
+  const plate = document.getElementById('stickplate');
+  plate.addEventListener('keydown', e => { if (KB[e.key]) { e.preventDefault(); held |= KB[e.key]; } });
+  plate.addEventListener('keyup', e => { if (KB[e.key]) held &= ~KB[e.key]; });
+  plate.addEventListener('blur', () => { held = 0; });
+  stage.addEventListener('pointerdown', () => plate.focus());
+  requestAnimationFrame(frame);
+
+  // ---- the keyboard ----
+  const where = {}; KEYS.forEach((r, row) => r.forEach((k, col) => { where[k] = [row, col]; }));
+  const kb = document.getElementById('kb'), ks = { held: 0 };
+  let name = nameStart();
+  const kcap = document.getElementById('kcap');
+  function showName() {
+    document.getElementById('name').innerHTML = name.cells.slice(0, 5).map((v, i) =>
+      `<span class="${!name.done && i === name.pos ? 'cur' : ''}">${v < 0 || v === 0xAF || v === 0xDB ? '' : glyphName(v)}</span>`).join('');
+  }
+  function hit(k) {
+    if (k === 'RESTORE') { kcap.innerHTML = 'RESTORE is not on the keyboard\'s rows: it starts a new game through the non-maskable interrupt (below).'; return; }
+    const [row, col] = where[k];
+    readKey(M0, ks, () => false);                    // the previous key let go
+    const v = readKey(M0, ks, (r, c) => r === row && c === col);
+    const before = name.done;
+    nameKey(name, v);
+    const what = v === 0xFF ? 'nothing: the table gives <code>$FF</code>, and the name entry waits on'
+      : v === 0xF0 ? 'RUN/STOP, <code>$F0</code>, which the name entry ignores'
+      : v === 0x01 ? 'delete, <code>$01</code>' : v === 0x00 ? 'RETURN, <code>$00</code>, which ends the name'
+      : `character <code>${C64.hex(v, 2)}</code>${glyphName(v).length === 1 ? ', ' + glyphName(v) : ''}`;
+    kcap.innerHTML = `${k}: row ${row} driven low on <code>$DC00</code> (<code>${C64.hex(0xFF ^ (1 << row), 2)}</code>), column ${col} read low on <code>$DC01</code>; entry ${row * 8 + col} of the table at <code>$BE78</code> gives ${what}.` +
+      (before ? ' The name was already finished.' : name.done ? ' The name is finished, and the game stores the five characters on the screen.' : '');
+    showName();
+  }
+  LAYOUT.forEach(r => {
+    const div = document.createElement('div'); div.className = 'row';
+    for (const k of r) {
+      const b = document.createElement('button');
+      const v = where[k] ? M0[0xBE78 + where[k][0] * 8 + where[k][1]] : -1;
+      b.className = (k === 'SPACE' ? 'sp ' : ['RETURN', 'RUN/STOP', 'RESTORE', 'SHIFT L', 'SHIFT R'].includes(k) ? 'w3 ' : k.length > 2 ? 'w2 ' : '') +
+        (v === 0xFF ? 'ign' : v === 0x01 ? 'del' : v === 0x00 ? 'end' : v === 0xF0 || k === 'RESTORE' ? 'stop' : '');
+      b.innerHTML = `<b>${k}</b>${v >= 0x02 && v !== 0xFF && v !== 0xF0 && glyphName(v) !== k ? glyphName(v) : ''}`;
+      b.title = v < 0 ? 'not on the keyboard\'s rows' : 'table entry ' + C64.hex(v, 2);
+      b.dataset.k = k; b.onclick = () => hit(k);
+      div.appendChild(b);
+    }
+    kb.appendChild(div);
+  });
+  const fromKey = e => e.key === 'Enter' ? 'RETURN' : e.key === 'Backspace' ? 'DEL' : e.key === ' ' ? 'SPACE'
+    : e.key === 'Escape' ? 'RUN/STOP' : e.key.length === 1 && where[e.key.toUpperCase()] ? e.key.toUpperCase() : null;
+  document.getElementById('kbplate').addEventListener('keydown', e => { const k = fromKey(e); if (k) { e.preventDefault(); hit(k); } });
+  document.getElementById('kreset').onclick = () => { name = nameStart(); kcap.innerHTML = 'A new name: the cursor sits on the first of the five places.'; showName(); };
+  kcap.innerHTML = 'The cursor sits on the first of the five places. Click a key.';
+  showName();
+  window.imControls = { s, P, setHeld: v => { held = v; }, hit, name: () => name };   // for the page's browser check
+})();
+</script>
