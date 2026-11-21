@@ -79,3 +79,17 @@ needed and the halves, then landing one blow; the bull floored an idle
 player, and a crouch followed by down-forward at 28 units felled it at
 26. A blow with CIA 2's timer A running crashed the game, as agent 5's
 reading of `$2CAE` predicted.
+
+## 21 November 2026, the tabs brought into line
+
+The game kept the tab set it was built with: one How it works page held
+the screen, the fighters, the controls, the scoring and the opponent,
+and Graphics held only the loading picture. Most C64 games on the site
+had moved to Overview, Gameplay, Controls, Maps, Graphics, Music and
+Discoveries, and `kit/style.md` asks each paragraph to serve its tab. So
+the controls and the move cards went to a new Controls tab, the screen
+and the fighters' poses and animations to Graphics (with a picker for
+the step viewer, and `?move=` so a move card opens its animation
+there), and what was left, scoring and the opponent, became Gameplay.
+"The backdrops" became Backdrops, one word as `70-minisite` asks. The
+old section links forward through `redirects`. No claim was changed.
