@@ -220,9 +220,39 @@
     target_hit: { crop: PANEL, change: 400, maskEvery: 5, cycle: 1000,
       pass(P, M, t) { if (t % 20 === 0) P.target_hit(); },
       text: 'On a strafing run, each shot that strikes the target counts in $45: target_hit sounds the hit on voice 3, adds one and has show_target_hits write the count as three digits in the status panel. Here a hit lands every 20 passes.' },
-    run_result: { crop: [32, 35, 352, 235], change: 560, maskEvery: 20, cycle: 140,
+    run_result: { crop: [32, 35, 352, 235], cells: true, change: 560, maskEvery: 20, cycle: 140,
       pass(P, M, t, E) { if (t === 1) { M[0x45] = [0x05, 0x15, 0x35, 0x45][E.k % 4]; E.gen = P.run_result(); E.step(); } },
       text: 'After a strafing run run_result levels the plane, and picks a verdict from the hits in $45 through the table at $8B90: TARTARGET UNDAMAGED-TRY AGAIN under 16 (the slip is the game\'s own), TARGET PARTIALLY DAMAGED from 16, TARGET SUSTAINED HEAVY DAMAGE from 48, and WELL DONE-TARGET DESTROYED from 64. Then it waits for fire; 16 hits or more earn a life and the next level. Here the four come in turn, for 5, 21, 53 and 69 hits.' },
+    hits_play: { crop: [40, 38, 342, 198], on: [0xF2, 0], ctx: [0x01, 0x09], speed: 0.5, cycle: 80,
+      start(M, P) {
+        for (let i = 0; i < 64; i++) M[0x8530 + i] = 0;
+        M[0x33] = 0; M[0x1E] = 0; P.spawn_aircraft();             // one aircraft, then put it ahead of the plane
+        M[0x8561] = 0x98; M[0x8562] = 0x38; M[0x8563] = 0; M[0x856A] = 0x40; M[0x33] = 1;
+        const d = 0x52 - M[0x8061]; M[0x8061] += d; M[0x8091] = (M[0x8091] + d) & 255; P.move_plane();
+      },
+      pass(P, M, t, E) {
+        P.spawn_aircraft(); P.sort_aircraft();
+        if (t % 30 === 10 && !M[0x8670]) P.fire_shot();
+        P.move_shots(); P.sort_shot();
+        M[0x3D] = M[0x3E] = 0;
+        if ((M[0x8075] & 0x02) && (M[0x8075] & 0xF0)) {
+          for (let n = 4; n < 8; n++) if ((M[0x8075] >> n & 1) && E.meet(0x02, 1 << n)) { M[0x3D] = 0x02 | 1 << n; break; }
+        }
+        run(P.hits_play());
+      },
+      text: 'Slowed to half the game\'s speed. The video chip notes when the shot\'s sprite meets an aircraft\'s; hits_play reads that from $3D, frees the shot, adds 50 to the score, sounds the hit and sets the aircraft exploding, and move_aircraft carries the explosion away into the distance until it is freed. Here an aircraft is put in front of the plane (dimmed), which fires every 30 passes; the page finds the sprites meeting from the pixels it draws, where the game has the chip.' },
+    move_by_scroll: { crop: [40, 50, 342, 198], on: [0, 0xF0], maskY: [50, 104], change: 400, speed: 2,
+      start(M) { for (let i = 0; i < 4; i++) M[0x80C0 + 16 * i] = 0; },
+      pass(P, M, t) { M[0x22] = t % 400 < 200 ? 0x02 : 0xFE; M[0x33] = t % 120 ? noise() | 1 : 0; M[0x36] = noise(); run(P.spawn_ground()); P.sort_ground(); P.set_fine_scroll(M[0x23]); },
+      text: 'Twice the game\'s speed, banked hard one way and then the other. As the hills scroll, move_by_scroll moves each ground object sideways by the same amount, so the objects stay put on the ground while it slides past; the aircraft and the shots are moved the same way.' },
+    start_run: { crop: [32, 35, 352, 235], cells: true, on: [0, 0x70], change: 560, maskEvery: 20, cycle: 140,
+      pass(P, M, t, E) {
+        if (t === 1) { M[0x44] = E.k % 4; M[0x43] = 3 - E.k % 4; E.gen = P.start_run(); E.step(); }
+        if (t >= 70 && t <= 76 && !(t & 1)) { E.joy = t === 72 ? STICK.F : STICK.N; E.step(); }
+        if (t === 78) { E.step(); run(P.place_target()); }
+        if (t > 78) run(P.place_target());
+      },
+      text: 'Before each strafing run start_run levels the plane, clears the sky and shows the run\'s number with the game\'s own spelling, STRAFFING RUN AIRCRAFT NO., then waits for fire. Fire clears the prompt, and the target goes on the horizon in three parts at a random place, for place_target to bring nearer. Here the four levels come in turn.' },
   };
   CLIPS.shot_sound = CLIPS.hit_sound = CLIPS.engine_sound;
   // The game held still. The port is run once, the first time a loop is shown: 60 frames to the
@@ -298,6 +328,12 @@
         E.call = a => { if (!cpu) cpu = new C64Cpu.CPU(M, { port: { dir: 0x2F, data: 0x36 }, io }); cpu.sp = 0xFF; cpu.call(a, {}, { maxSteps: 100000 }); };
         // a routine that waits in a loop runs to the next turn of the loop, where it reads the stick
         E.step = () => { for (;;) { const r = E.gen.next(); if (r.done || (r.value && r.value.cp !== undefined)) return; } };
+        // whether two sets of sky sprites have a pixel on the same place, as the chip's collision register says
+        E.meet = (a, b) => {
+          const base = frame(M, S, colour, [0, 0]), fa = frame(M, S, colour, [a, 0]), fb = frame(M, S, colour, [b, 0]);
+          for (let i = 0; i < base.length; i++) if (fa[i] !== base[i] && fb[i] !== base[i]) return true;
+          return false;
+        };
         if (c.start) c.start(M, P, E, k);
       }
       begin();
@@ -404,6 +440,15 @@
           if (i % (c.maskEvery || 1)) continue;
           const p = t.draw().px, [ya, yb] = c.maskY || [0, 312];
           for (let k = ya * W; k < Math.min(p.length, yb * W); k++) if (p[k] !== first[k]) m[k] = 1;
+        }
+        if (c.cells) {                           // text: light whole characters, so a letter is never half lit
+          const cell = new Uint8Array(40 * 25);
+          for (let k = 0; k < m.length; k++) if (m[k]) { const x = k % W - 32, y = (k / W | 0) - 35; if (x >= 0 && x < 320 && y >= 0 && y < 200) cell[(y >> 3) * 40 + (x >> 3)] = 1; }
+          for (let r = 0; r < 25; r++) {         // and every character between, where a letter is the same as before
+            const row = cell.subarray(r * 40, r * 40 + 40), lo = row.indexOf(1), hi = row.lastIndexOf(1);
+            if (lo >= 0) row.fill(1, lo, hi + 1);
+          }
+          for (let k = 0; k < m.length; k++) { const x = k % W - 32, y = (k / W | 0) - 35; if (x >= 0 && x < 320 && y >= 0 && y < 200 && cell[(y >> 3) * 40 + (x >> 3)]) m[k] = 1; }
         }
         c.mask = m;
       }
