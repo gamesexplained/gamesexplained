@@ -73,7 +73,7 @@
 <section id="calls">
   <p class="fig">02 · Who calls whom</p>
   <h2 class="t">The wiring between the subroutines</h2>
-  <p class="lede">Each box is one subroutine, taller when it is longer, in a band for its job. Inside a band, the boxes run from the first reached to the last. Hover over a box to light up its connections, or click it to keep them lit and read what it does. A box marked ▶ shows that routine at work on its own: the game is held still and dimmed while only that routine runs, and a tune is drawn as its notes.</p>
+  <p class="lede">Each box is one subroutine, taller when it is longer, in a band for its job. Inside a band, the boxes run from the first reached to the last. Hover over a box to light up its connections, or click it to keep them lit and read what it does. A box with a round play badge shows that routine at work on its own: the game is held still and dimmed while only that routine runs. A badge with a note draws a tune as it plays.</p>
   <div class="cm-legend" id="cm-graph-legend"></div>
   <aside id="cm-detail" aria-live="polite"></aside>
   <div class="plate" style="padding:8px"><svg id="cm-graph" class="cm-graph" role="img" aria-label="Call graph"></svg></div>
@@ -366,6 +366,15 @@
   const NS = 'http://www.w3.org/2000/svg';
   const el = (t, a, p) => { const e = document.createElementNS(NS, t); for (const k in a || {}) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
   const jcol = j => `var(--j-${j})`;
+  // the badge on a box that has a loop: a play sign, or a note for a tune
+  function badge(g, cx, cy, note) {
+    el('circle', { cx, cy, r: 10.5, fill: 'var(--ink)', stroke: '#ffffff', 'stroke-width': 1.5 }, g);
+    if (note) {
+      el('ellipse', { cx: cx - 2.4, cy: cy + 3.6, rx: 3.3, ry: 2.4, fill: '#ffffff', transform: `rotate(-20 ${cx - 2.4} ${cy + 3.6})` }, g);
+      el('path', { d: `M${cx + 0.7} ${cy + 3.4}V${cy - 6}q3.4 1.6 3.6 4.6`, stroke: '#ffffff', 'stroke-width': 1.6, fill: 'none', 'stroke-linecap': 'round' }, g);
+    } else el('path', { d: `M${cx - 3.2} ${cy - 5.2}L${cx + 5.4} ${cy}L${cx - 3.2} ${cy + 5.2}Z`, fill: '#ffffff' }, g);
+  }
+  const badgeSvg = note => { const s = document.createElementNS(NS, 'svg'); s.setAttribute('width', 24); s.setAttribute('height', 24); s.setAttribute('aria-hidden', 'true'); s.setAttribute('style', 'vertical-align:middle'); badge(s, 12, 12, note); return s.outerHTML; };
   const tint = j => `color-mix(in srgb, var(--j-${j}) 28%, #ffffff)`;
   const tip = $('cm-tip');
   const showTip = (e, h) => { tip.innerHTML = h; tip.hidden = false; tip.style.left = Math.min(e.clientX + 14, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 16) + 'px'; };
@@ -527,7 +536,9 @@
       `<span style="flex-basis:100%;height:0"></span>
       <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="1.6"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>calls and comes back (JSR)</span>
       <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="1.6" stroke-dasharray="6 4"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>jumps there for good</span>
-      <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="2" stroke-dasharray="1.5 3.5"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>runs straight on into the next</span>`;
+      <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="2" stroke-dasharray="1.5 3.5"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>runs straight on into the next</span>
+      <span style="flex-basis:100%;height:0"></span>
+      <span>${badgeSvg(false)}a loop of it at work</span><span>${badgeSvg(true)}its tune, drawn as notes</span>`;
 
     /* ---------- the call graph: one band per job, boxes wrapping inside it ---------- */
     const depth = R.map(() => 99), q = [];
@@ -566,12 +577,13 @@
         return { e, g, p, layer: eL };
       });
       NODES = R.map(r => {
-        const P = POS[r.i], g = el('g', { class: 'cm-node', tabindex: 0, role: 'button', 'aria-label': `${r.n}, ${r.size} bytes, ${JOBNAME[r.g]}` }, nL);
+        const P = POS[r.i], g = el('g', { class: 'cm-node', tabindex: 0, role: 'button', 'aria-label': `${r.n}, ${r.size} bytes, ${JOBNAME[r.g]}${CLIPS[r.n] ? (CLIPS[r.n].roll ? ', with its tune drawn as notes' : ', with a loop of it at work') : ''}` }, nL);
         el('rect', { class: 'box', x: P.x, y: P.y, width: P.w, height: P.h, rx: 6, fill: tint(r.g), stroke: jcol(r.g) }, g);
-        el('text', { x: P.x + 8, y: P.y + 13, 'font-size': 9, 'letter-spacing': '.06em', fill: 'var(--ink-soft)', class: 'mono' }, g).textContent = JOBNAME[r.g].toUpperCase().slice(0, 26);
+        const room = P.w - (CLIPS[r.n] ? 38 : 14);
+        el('text', { x: P.x + 8, y: P.y + 13, 'font-size': 9, 'letter-spacing': '.06em', fill: 'var(--ink-soft)', class: 'mono' }, g).textContent = JOBNAME[r.g].toUpperCase().slice(0, Math.floor(room / 6.1));
         const nm = el('text', { x: P.x + 8, y: P.y + 28, 'font-size': 11, 'font-weight': 500, fill: 'var(--ink)', class: 'mono' }, g); nm.textContent = r.n;
-        if (r.n.length * 6.65 > P.w - 14) nm.textContent = r.n.slice(0, Math.floor((P.w - 14) / 6.65) - 1) + '…';
-        if (CLIPS[r.n]) el('text', { x: P.x + P.w - 8, y: P.y + 13, 'font-size': 10, 'text-anchor': 'end', fill: 'var(--ink)', class: 'mono' }, g).textContent = '▶';
+        if (r.n.length * 6.65 > room) nm.textContent = r.n.slice(0, Math.floor(room / 6.65) - 1) + '…';
+        if (CLIPS[r.n]) badge(g, P.x + P.w - 17, P.y + Math.min(P.h / 2, 21), CLIPS[r.n].roll);
         if (P.h >= 48) el('text', { x: P.x + 8, y: P.y + P.h - 7, 'font-size': 10, fill: 'var(--ink-mute)', class: 'mono' }, g).textContent = `${hex(r.a)} · ${r.size} bytes`;
         g.addEventListener('click', () => select(r.i, false));
         g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); select(r.i, false); } });
@@ -604,8 +616,8 @@
       const D = $('cm-detail');
       if (i === null) {
         const big = R.slice().sort((a, b) => b.size - a.size).slice(0, 5), most = R.slice().sort((a, b) => callers[b.i].length - callers[a.i].length).slice(0, 5);
-        D.innerHTML = `<p style="margin:0 0 6px"><b>${R.length} subroutines, ${EDGES.length} links.</b> Click a box to see what it does, what it calls and what calls it; a box marked ▶ plays a loop of it at work here.</p>
-          <div class="cm-links"><div><h4>Watch them work</h4><ul style="columns:2;column-gap:24px">${R.filter(r => CLIPS[r.n]).map(r => `<li><a href="#calls" data-i="${r.i}">▶ ${r.n}</a></li>`).join('')}</ul></div>
+        D.innerHTML = `<p style="margin:0 0 6px"><b>${R.length} subroutines, ${EDGES.length} links.</b> Click a box to see what it does, what it calls and what calls it; a box with a badge plays a loop of it at work here.</p>
+          <div class="cm-links"><div><h4>Watch them work</h4><ul style="columns:2;column-gap:24px">${R.filter(r => CLIPS[r.n]).map(r => `<li><a href="#calls" data-i="${r.i}">${CLIPS[r.n].roll ? '♪' : '▶'} ${r.n}</a></li>`).join('')}</ul></div>
           <div><h4>Longest</h4><ul>${big.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${r.size}</span></li>`).join('')}</ul></div>
           <div><h4>Called from most places</h4><ul>${most.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${callers[r.i].length}</span></li>`).join('')}</ul></div></div>`;
       } else {
