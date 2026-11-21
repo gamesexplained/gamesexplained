@@ -89,3 +89,16 @@ rebuilt (no snapshot in `work/` in this container), so four listing
 comments that the code contradicts are listed in `TODO.md` instead.
 Reading the effect callers corrected an earlier guess: sprites 0 and 1
 take the Vaus's X each frame and sit over it.
+
+## The bricks (21 November 2026)
+
+The contributor found nothing on the site about the bricks: their colours,
+points or graphics. Added a Bricks and a Silver section to the Levels tab
+and a Bricks section to the Graphics tab, all drawn from the listing.
+Running `draw_wall`, `brick_hit` and `silver_shine` on the kit's 6502
+showed that a silver brick counts a hit only when its shine ends, so hits
+8 frames apart or closer never break it; that silver is worth 100 in
+every round, because its colour RAM gives white's entry; and that gold's
+face is the second shared colour, light blue. `test_bricks.js` holds the
+table and the silver port to the game's routines. The emulator's MCP
+server refused connections in this session, so nothing was tried live.

@@ -53,6 +53,8 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
 .stages button{padding:5px 0;font-size:12px}
 .msg{font-size:14px;color:var(--coral)}
 @media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.two{grid-template-columns:1fr}.stages{grid-template-columns:repeat(8,1fr)}}
+table.bricks canvas{display:inline-block;vertical-align:middle}
+table.bricks td{vertical-align:middle}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}.grid figure{margin:0}.grid canvas{width:100%}.grid figcaption{font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
 </style>
 
@@ -60,17 +62,59 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1987 · Imagine</p>
   <h1>Arkanoid: the rounds</h1>
-  <p class="sub">All 32 walls, drawn from their 160 bytes each at <code>$8000</code>-<code>$93FF</code>, and round 33, Doh.</p>
+  <p class="sub">The nine kinds of brick, what each is worth and how silver counts its hits; all 32 walls, drawn from their 160 bytes each at <code>$8000</code>-<code>$93FF</code>; and round 33, Doh.</p>
 </header>
 <main class="wrap">
+<section id="bricks">
+  <p class="fig">01 · The bricks</p>
+  <h2 class="t">Seven colours, silver and gold</h2>
+  <p class="lede">Every wall is built from nine kinds of brick. Seven colours break at the first hit, each worth its own points; silver takes two to five hits, by round; gold never breaks.</p>
+  <div class="plate">
+    <div class="scroll"><table class="bricks">
+      <thead><tr><th>Brick</th><th>Kind</th><th>Wall type</th><th>Points</th><th>Hits</th><th>In rounds 1-32</th></tr></thead>
+      <tbody id="ak-bricks"></tbody>
+    </table></div>
+    <p class="cap"><b>Each brick is drawn from its two characters in the game's character set</b>, at <code>$CC00</code>, in the play screen's colours: a black background, grey and light blue as the two shared colours (<code>play_screen_colours</code>, <code>$F719</code>) and the brick's own colour from colour RAM. The wall type is the 4-bit number a round's map holds for the brick (<code>draw_wall</code>, <code>$F40E</code>); the last column counts the bricks of each kind over all 32 maps.</p>
+  </div>
+  <p>A coloured brick is wall type 1 to 7, and <code>draw_wall</code> gives its two characters, <code>$80</code> and <code>$81</code>, colour RAM type + 8. The 8 tells the video chip to draw the character in multicolour, and the 1 to 7 is the colour of the brick's face: white, red, cyan, purple, green, blue or yellow. Type 0 would be a black brick worth nothing, and no round uses it. The points come from <code>brick_points</code> (<code>$B2C4</code>), looked up by the colour, not by the type, so they follow the brick's look: blue is the cheapest at 70, yellow the dearest at 130. They are the game's numbers, not the arcade's.</p>
+  <p>Silver and gold bricks are wall types 8 and up. Type AND 3 = 1 makes a silver brick, <code>$85 $89</code>, and anything else a gold one, <code>$8D $91</code>, both in colour RAM 9. Each gets an entry in three small tables, a flag at <code>$0300</code>, a hit counter at <code>$0355</code> and its screen address at <code>$03AA</code>, so that a hit can find it again. On the Commodore 64 gold looks light blue and white, because its face is drawn in the second shared colour.</p>
+  <p>A silver brick, when it finally breaks, is worth 100 points in every round. The game reads the points by colour for every brick it breaks, and silver's colour RAM, 9, gives the same entry as white. A gold brick gives nothing: <code>gold_brick_hit</code> (<code>$B010</code>) redraws it, plays the metal sound and returns before the points.</p>
+  <p>Only coloured and silver bricks count towards the end of the round. <code>draw_wall</code> adds one to the bricks-left count (<code>$0455</code>) for each, and leaves gold out; the round ends when the count reaches 0. A capsule can fall from any brick that breaks, a silver one on its last hit included, but never from a gold one. Every brick the ball touches, gold too, adds 4 to the fraction that speeds the ball up (<code>speed_up</code>, <code>$AF5F</code>).</p>
+</section>
+
+<section id="silver">
+  <p class="fig">02 · Silver</p>
+  <h2 class="t">A silver brick counts a hit when it stops shining</h2>
+  <p class="lede">Hit a silver brick and a white shine runs across it. The game takes one off the brick's hit counter at the end of the shine, not at the hit, and a hit that arrives while the shine is still running starts the shine again without counting.</p>
+  <div class="plate">
+    <div class="two">
+      <canvas id="ak-sv-cv" width="128" height="64" role="img" aria-label="A silver brick, drawn eight times its size"></canvas>
+      <div>
+        <div class="row" style="margin-top:0">
+          <button type="button" id="ak-sv-hit">Hit</button>
+          <button type="button" id="ak-sv-two">Hit twice, 6 frames apart</button>
+          <button type="button" id="ak-sv-new">New brick</button>
+          <label class="lab">Rounds <select id="ak-sv-round"><option value="0">1-8</option><option value="8">9-16</option><option value="16">17-24</option><option value="24">25-32</option></select></label>
+        </div>
+        <p class="out" id="ak-sv-out" aria-live="polite"></p>
+      </div>
+    </div>
+    <p class="cap"><b>A port of the game's code for one silver brick</b>: the shine of <code>silver_shine</code> (<code>$AB55</code>) and the hit of <code>silver_brick_hit</code> (<code>$B073</code>), stepped fifty times a second. <code>test_bricks.js</code> holds it to the game's own routines.</p>
+  </div>
+  <p><code>draw_wall</code> sets a silver brick's counter to one more than the round's number at <code>silver_hits_by_round</code> (<code>$F52A</code>): 2 in rounds 1 to 8, 3 in 9 to 16, 4 in 17 to 24 and 5 in 25 to 32. It also starts every silver and gold brick shining as the round is drawn, and that first shine takes one off, so a brick in round 1 begins the round at 1.</p>
+  <p>The shine is four characters a side. On every fourth frame (<code>$0225</code> counts them) <code>silver_shine</code> moves each shining brick on by one character: the left half from <code>$85</code> down to <code>$82</code>, the right from <code>$89</code> down to <code>$86</code>. When the right half reaches <code>$86</code> the shine is over and the counter goes down by one. That takes three steps, 9 to 12 frames after the hit depending on where the four-frame count stood.</p>
+  <p>A hit looks at the counter first (<code>$B09E</code>). At 0 the brick breaks like a coloured one. Otherwise the brick is drawn back as <code>$85 $89</code> and set shining again, and the counter waits for that shine to end. So two hits less than 9 frames apart count as one, and a brick hit every 8 frames or sooner never breaks. With the game's code run on the kit's 6502, eight hits 4 frames apart left a round-1 silver brick standing, where two hits 12 frames apart broke it. Hits that close need a ball back at the brick within a sixth of a second, as a ball bouncing in a narrow gap beside it, or a second ball after the D capsule, might manage; whether it happens in play was not tried.</p>
+  <p>Gold bricks shine through <code>$8D</code> to <code>$8A</code> and <code>$91</code> to <code>$8E</code> by the same routine. Their counter is set to <code>$80</code>, which <code>silver_shine</code> never takes one from, and <code>gold_brick_hit</code> never looks at it.</p>
+</section>
+
 <section>
-  <p class="fig">01 · Rounds 1-32</p>
+  <p class="fig">03 · Rounds 1-32</p>
   <h2 class="t">Every wall</h2>
   <p class="lede">Each picture is drawn from the round's bytes with a port of the game's wall routine (<code>draw_wall</code>, <code>$F40E</code>, and <code>draw_playfield_background</code>, <code>$F552</code>): the tile set and colour of the round, the brick characters, and the shading each brick casts below and to its right. The numbers under each give the bricks to clear and the hits a silver brick takes in that round.</p>
   <div id="grid" class="grid"></div>
 </section>
 <section>
-  <p class="fig">02 · Round 33</p>
+  <p class="fig">04 · Round 33</p>
   <h2 class="t">Doh</h2>
   <div class="plate"><img src="reference/round33-doh.png" alt="Round 33: Doh" width="384">
     <p class="cap">Round 33 has no brick map. It copies a screen of Doh's characters from <code>$7B90</code> and swaps in its own character set (<code>doh_setup</code>, <code>$9C59</code>).</p></div>
@@ -127,6 +171,113 @@ function buildRound(ram, idx){
       cap.textContent = 'Round ' + (idx + 1) + ' · $' + (0x8000 + idx * 160).toString(16).toUpperCase() + ' · ' + bricks + ' to clear · silver ' + (ram[0xF52A + idx] + 1) + ' hits';
       f.append(cv, cap); grid.append(f);
     }
+  });
+})();
+</script>
+<script>
+/* ak-bricks */
+// The nine kinds of brick: wall type (a round map's nibble), colour RAM as draw_wall $F40E sets it,
+// the screen codes of the two halves at rest, points (brick_points $B2C4 by colour RAM AND 7; gold
+// none) and hits (silver: silver_hits_by_round $F52A + 1, by round group).
+const AK_BRICKS = [
+  { name: 'White',  kind: 'coloured', types: [1], colour: 9,  chars: [0x80, 0x81], points: 100, hits: '1' },
+  { name: 'Red',    kind: 'coloured', types: [2], colour: 10, chars: [0x80, 0x81], points: 80,  hits: '1' },
+  { name: 'Cyan',   kind: 'coloured', types: [3], colour: 11, chars: [0x80, 0x81], points: 120, hits: '1' },
+  { name: 'Purple', kind: 'coloured', types: [4], colour: 12, chars: [0x80, 0x81], points: 90,  hits: '1' },
+  { name: 'Green',  kind: 'coloured', types: [5], colour: 13, chars: [0x80, 0x81], points: 110, hits: '1' },
+  { name: 'Blue',   kind: 'coloured', types: [6], colour: 14, chars: [0x80, 0x81], points: 70,  hits: '1' },
+  { name: 'Yellow', kind: 'coloured', types: [7], colour: 15, chars: [0x80, 0x81], points: 130, hits: '1' },
+  { name: 'Silver', kind: 'silver', types: [9, 13], colour: 9, chars: [0x85, 0x89], points: 100, hits: '2-5' },
+  { name: 'Gold',   kind: 'gold', types: [8, 10, 11, 12, 14, 15], colour: 9, chars: [0x8D, 0x91], points: 0, hits: 'never' },
+];
+// One silver brick, ported from silver_shine $AB55 (every 4th frame, by the divider $0225, a shining
+// brick's halves step down one character; when the right half reaches $86 the shine ends and the
+// counter $0355 goes down by one unless negative) and silver_brick_hit $B073 (counter 0: the brick
+// breaks; otherwise it is redrawn $85 $89 and set shining). count starts as draw_wall leaves it,
+// silver_hits_by_round + 1, with the round's opening shine running; div is the divider's phase.
+function akSilver(count, div) {
+  const s = { left: 0x85, count, shining: true, div, broken: false };
+  return {
+    s,
+    frame() {
+      if (s.div !== 3) { s.div++; return; }
+      s.div = 0;
+      if (s.broken || !s.shining) return;
+      s.left--;
+      if (s.left + 4 === 0x86) { s.shining = false; if (!(s.count & 0x80)) s.count = (s.count - 1) & 255; }
+    },
+    hit() {
+      if (s.broken) return;
+      if (s.count === 0) { s.broken = true; return; }
+      s.left = 0x85; s.shining = true;
+    },
+  };
+}
+// end of ak-bricks
+
+(function(){
+  const C = globalThis.C64, body = document.getElementById('ak-bricks');
+  if (!C || !body) return;
+  C.load('listing.json').then(L => {
+    const ram = L.ram, P = C.PAL, cs = new Uint8Array(0x800);
+    cs.set(ram.subarray(0xCC00, 0xD000), 0x400);
+    const brick = (ctx, l, r, colour, x, y, s) => {
+      const cols = [P[0], P[12], P[14], P[colour & 7]];
+      C.drawGlyphMC(ctx, cs, l, x, y, s, cols); C.drawGlyphMC(ctx, cs, r, x + 8 * s, y, s, cols);
+    };
+    // how many of each wall type the 32 maps hold
+    const n = new Array(16).fill(0);
+    for (let idx = 0; idx < 32; idx++) {
+      let p = 0x8000 + idx * 160;
+      for (let row = 0; row < 16; row++, p += 10) {
+        const mask = ram[p] << 8 | ram[p + 1];
+        for (let x = 0; x < 14; x++) if (mask & (0x8000 >> x)) n[(ram[p + 2 + (x >> 1)] >> (x & 1 ? 0 : 4)) & 15]++;
+      }
+    }
+    for (const b of AK_BRICKS) {
+      const tr = document.createElement('tr'), cv = document.createElement('canvas');
+      brick(C.canvas(cv, 48, 24), b.chars[0], b.chars[1], b.colour, 0, 0, 3);
+      const cells = [b.name, b.kind, b.types.join(', '), b.points ? String(b.points) : 'none', b.hits,
+        String(b.types.reduce((t, k) => t + n[k], 0))];
+      const td0 = document.createElement('td'); td0.append(cv, ' ', cells[0]); tr.append(td0);
+      for (const c of cells.slice(1)) { const td = document.createElement('td'); td.textContent = c; tr.append(td); }
+      body.append(tr);
+    }
+
+    // the silver brick widget
+    const cv = document.getElementById('ak-sv-cv'), out = document.getElementById('ak-sv-out');
+    const sel = document.getElementById('ak-sv-round'), ctx = C.canvas(cv, 128, 64);
+    let B, total, hits, frame = 0, pending = [];
+    const fresh = () => {
+      total = ram[0xF52A + +sel.value] + 1; hits = 0; pending = [];
+      B = akSilver(total, frame & 3);
+      for (let k = 0; k < 16; k++) B.frame();          // the round's opening shine
+    };
+    const hit = () => { if (B.s.broken) return; hits++; B.hit(); };
+    const draw = () => {
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 128, 64);
+      if (!B.s.broken) brick(ctx, B.s.left, B.s.left + 4, 9, 0, 0, 8);
+      out.textContent = B.s.broken
+        ? 'Broken by hit ' + hits + '. A silver brick in these rounds takes ' + total + ' hits that count.'
+        : 'Hits: ' + hits + ' · counter ($0355): ' + B.s.count + (B.s.shining ? ' · shining, the next hit will not count' : ' · at rest') +
+          (B.s.count === 0 && !B.s.shining ? ' · the next hit breaks it' : '');
+    };
+    document.getElementById('ak-sv-hit').onclick = hit;
+    document.getElementById('ak-sv-two').onclick = () => { hit(); pending.push(frame + 6); };
+    document.getElementById('ak-sv-new').onclick = fresh;
+    sel.onchange = fresh;
+    fresh(); draw();
+    let last = 0;
+    const tick = t => {
+      const want = Math.floor(t / 20);
+      if (!last) last = want;
+      for (let k = 0; k < Math.min(want - last, 10); k++) {
+        frame++; B.frame();
+        pending = pending.filter(f => { if (f <= frame) { hit(); return false; } return true; });
+      }
+      last = want; draw(); requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   });
 })();
 </script>
