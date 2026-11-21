@@ -75,3 +75,17 @@ and the jiffy clock at `$A2`), which were written back from the earlier
 listing into `work/entry.vsf` before the rebuild; the unpatched snapshot
 is `work/entry-raw.vsf`.
 
+
+## Controls, more Graphics and the sound effects (20 November 2026)
+
+Brought the tabs in line with the other C64 games: a Controls tab (the
+menu, the four device readers, a widget comparing the joystick's step
+with the paddle's halving, and the Neos mouse bug); the Graphics tab
+now opens with every animation at the game's rates, all 104 play-screen
+shapes and the intro's bank-1 sprites, with the loading picture after
+them; the Music tab gained a player for the twelve sound effects, run on
+the game's own driver, and `test_effects.js`. The listing could not be
+rebuilt (no snapshot in `work/` in this container), so four listing
+comments that the code contradicts are listed in `TODO.md` instead.
+Reading the effect callers corrected an earlier guess: sprites 0 and 1
+take the Vaus's X each frame and sit over it.

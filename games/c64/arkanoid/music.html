@@ -59,7 +59,7 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1987 · Imagine</p>
   <h1>Arkanoid: music</h1>
-  <p class="sub">Martin Galway's tunes for Arkanoid, played by the game's own sound driver running in the page, and the tune the cassette plays while it loads.</p>
+  <p class="sub">Martin Galway's tunes for Arkanoid and the game's twelve sound effects, played by the game's own sound driver running in the page, and the tune the cassette plays while it loads.</p>
 </header>
 <main class="wrap">
 
@@ -73,8 +73,33 @@ th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:
   <p>Tune 7 is complete and the game never starts it: a search for its start value finds no caller. Tune 3's record is empty.</p>
 </section>
 
+<section id="effects">
+  <p class="fig">02 · Sound effects</p>
+  <h2 class="t">Sound: twelve effects, each on all three voices</h2>
+  <p class="lede">Every effect in Arkanoid takes the whole chip. The game starts one with three calls to <code>sound_effect_start</code> (<code>$272F</code>), one 31-byte patch for each voice, and the same driver that plays the tunes plays it out.</p>
+  <div class="scroll"><table>
+    <tr><th>Effect</th><th>When the game plays it</th><th>Patches</th></tr>
+    <tr><td>Bounce</td><td>the ball comes off the Vaus, or a held ball is let go</td><td><code>$2000</code> (<code>$ACAA</code>, <code>$AAF4</code>)</td></tr>
+    <tr><td>Brick</td><td>a brick breaks</td><td><code>$205D</code> (<code>$B26F</code>)</td></tr>
+    <tr><td>Enlarge</td><td>the E capsule is caught</td><td><code>$20BA</code> (<code>$AA53</code>)</td></tr>
+    <tr><td>Laser</td><td>the Vaus fires</td><td><code>$2117</code> (<code>$A7AA</code>)</td></tr>
+    <tr><td>Metal</td><td>a silver brick takes a hit and holds, or the ball strikes gold</td><td><code>$2174</code> (<code>$B0BD</code>, <code>$B050</code>)</td></tr>
+    <tr><td>Enemy</td><td>an enemy is destroyed</td><td><code>$21D1</code> (<code>$9F2A</code>)</td></tr>
+    <tr><td>Exit</td><td>the Vaus slides out through the Break exit</td><td><code>$222E</code> (<code>$A48C</code>)</td></tr>
+    <tr><td>Catch</td><td>the ball sticks to the Vaus under the C power</td><td><code>$228B</code> (<code>$AC7C</code>)</td></tr>
+    <tr><td>Start</td><td>after the intro, before round 1; the game waits for it to end</td><td><code>$22E8</code> (<code>$F04F</code>)</td></tr>
+    <tr><td>Vaus lost</td><td>the last ball falls and the Vaus explodes</td><td><code>$2345</code> (<code>$9B15</code>)</td></tr>
+    <tr><td>Doh hit</td><td>the ball hits Doh</td><td><code>$23A2</code> (<code>$B12A</code>)</td></tr>
+    <tr><td>Doh destroyed</td><td>Doh's 23rd hit, before the ending</td><td><code>$23FF</code> (<code>$9659</code>)</td></tr>
+  </table></div>
+  <div class="plate" style="margin-top:22px"><div id="sfxRoot"></div>
+    <p class="cap">Each button runs the game's own driver on the listing's bytes: <code>sound_reset</code> (<code>$2690</code>), the effect's three calls to <code>$272F</code>, then the driver's seven routines twice a frame, as in play, until <code>sound_busy</code> (<code>$3417</code>) reports silence. The start effect gets one call a frame, as on the title, where the driver runs once a frame. <code>$272F</code> turns the filter off, so no filter is modelled here.</p></div>
+  <p>A patch sets a voice's pitch and pulse envelopes (bytes <code>$00</code>-<code>$17</code>), its waveform and envelope registers (<code>$18</code>-<code>$1A</code>, written straight to the chip), how long the gate stays open (<code>$1B</code>), how long the effect lives (<code>$1C</code>) and the starting pitch (<code>$1D</code>-<code>$1E</code>). The catch is the bounce cut short: the same three starting pitches, with the gate open for 5 ticks instead of 15 and a life of 8 instead of 90.</p>
+  <p>Because an effect takes all three voices, a new one would cut short whatever is playing, so the game keeps a hold (<code>$0216</code>, with its strength in <code>$0217</code>, counted down once a frame by <code>$F8AD</code>). The extra-life tune, whether from points or the P capsule, the enlarge, exit and Vaus-lost effects set a strong hold, which lasts until the sound has finished. The laser and the enemy set a weak one for 30 frames. The bounce, catch, brick and metal effects give way to either kind; the laser and the enemy give way only to a strong one.</p>
+</section>
+
 <section id="loading-tune">
-  <p class="fig">02 · The loading tune</p>
+  <p class="fig">03 · The loading tune</p>
   <h2 class="t">Music: the Ocean loading tune, by Martin Galway</h2>
   <p class="lede">The 1987 cassette brings its own music: Martin Galway's second loading tune for Ocean, from 1985. About a minute into the tape it starts, and it plays for three and a half minutes while the title picture fills in on the screen (<a href="graphics.html#loading">Graphics</a>) and the rest of the game loads. The game never plays it.</p>
   <div class="plate"><div id="loadRoot"></div>
@@ -126,6 +151,35 @@ function createDriver(M, C64Cpu) {
 }
 // end of createDriver
 
+/* ak-effects */
+function createEffects(M, C64Cpu) {
+  // Arkanoid's sound effects on the game's own driver, run on the kit's 6502 (C64Cpu) over the
+  // game's bytes $0000-$3FFF: sound_reset $2690, then sound_effect_start $272F once per voice
+  // (X = voice, A/Y = the voice's 31-byte patch, M.fx[n] + 31 x voice), then per tick the seven
+  // routines the game's NMI calls, M.ticks[n] ticks a frame, until sound_busy $3417 sets Z.
+  const mem = new Uint8Array(0x10000), image = M.bytes;
+  const sid = new Uint8Array(25);
+  let writes = [], on = false, ticks = 2;
+  const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: {
+    read: a => mem[a],
+    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); } else mem[a] = v; },
+  } });
+  const call = (entry, r) => cpu.call(entry, r, { maxSteps: 200000 });
+  const TICK = [0x2B5D, 0x2C15, 0x2D6C, 0x2EC5, 0x3022, 0x3160, 0x32D2];
+  return {
+    init(n) { mem.fill(0); mem.set(image, 0); sid.fill(0); writes = []; ticks = M.ticks[n];
+              call(0x2690, {});
+              for (let x = 0; x < 3; x++) { const p = M.fx[n] + 31 * x; call(0x272F, { a: p & 255, y: p >> 8, x }); }
+              on = true; },
+    stop() { call(0x2690, {}); on = false; },
+    play() { if (!on) { writes = []; return; }
+             for (let k = 0; k < ticks; k++) for (const r of TICK) call(r, {});
+             call(0x3417, {}); if (cpu.z) on = false; },
+    sid, get writes() { return writes; }, playing: () => on, mem,
+  };
+}
+// end of ak-effects
+
 /* ak-loader-tune */
 function createLoaderTune(D, C64Cpu) {
   // The cassette's loading tune run on the kit's 6502 (C64Cpu, which sid.js passes in) over its own
@@ -153,13 +207,20 @@ function createLoaderTune(D, C64Cpu) {
   const $ = id => document.getElementById(id);
   const needSite = 'This widget needs the site\'s shared scripts: open the page from the built site.';
   const C = globalThis.C64, S = globalThis.C64Sid;
-  if (!C || !S || !globalThis.C64Cpu) { $('sidRoot').textContent = needSite; $('loadRoot').textContent = needSite; return; }
+  if (!C || !S || !globalThis.C64Cpu) { $('sidRoot').textContent = needSite; $('loadRoot').textContent = needSite; $('sfxRoot').textContent = needSite; return; }
   C.load('listing.json').then(L => {
     const map = [8, 0, 1, 2, 6, 4, 5, 7];
     S.mount($('sidRoot'), {
       driver: createDriver, data: { bytes: L.ram.slice(0, 0x4000), map }, filter: '6581',
       tunes: ['8 Title', '0 After the menu', '1 Round start', '2 Doh round start', '6 Extra life', '4 Game over', '5 Ending (loops)', '7 Never played'],
       rows: [{ k: 'Note', f: v => v.note }, { k: 'Gate', f: v => v.gate }],
+    });
+    S.mount($('sfxRoot'), {
+      driver: createEffects,
+      data: { bytes: L.ram.slice(0, 0x4000),
+              fx: [0x2000, 0x205D, 0x20BA, 0x2117, 0x2174, 0x21D1, 0x222E, 0x228B, 0x22E8, 0x2345, 0x23A2, 0x23FF],
+              ticks: [2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2] },
+      tunes: ['Bounce', 'Brick', 'Enlarge', 'Laser', 'Metal', 'Enemy', 'Exit', 'Catch', 'Start', 'Vaus lost', 'Doh hit', 'Doh destroyed'],
     });
   });
   S.mount($('loadRoot'), { driver: createLoaderTune, data: JSON.parse($('ak-loader-data').textContent),
