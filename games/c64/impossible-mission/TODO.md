@@ -8,6 +8,14 @@ Open questions (`facts.md`):
 
 - The clock poke in `cheats.md` (`$D3`/`$D4`) is a candidate that
   was not tried live.
+- Does holding up while standing in an empty spot hold off a robot's
+  kill? The interrupt's hit check sets `$43` (`$834F` → `$95CC`), but in a
+  room only the agent's update (`$860B`, skipped while up is held at
+  `$726F`) and the platform code call `agent_death`. Try it live: stand
+  by a shooting robot, hold up, and watch.
+- Does the tape or disk show a picture while the game loads? The
+  Graphics tab would draw it (`70-minisite`, "Graphics"); `media.json`
+  has not been made for this game.
 
 Article ideas:
 

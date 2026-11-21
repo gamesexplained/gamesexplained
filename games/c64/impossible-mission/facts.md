@@ -91,10 +91,44 @@ into the RAM under the I/O area and the KERNAL (`move_high_tables`,
   `$39CF`, `lift_platforms` `$AC88`).
 - Fire in the lift or corridor opens the pocket computer; the stick then
   moves a hand pointer and fire presses the button under it (`$3A80`).
+- In a room the stick is read every tick by `room_loop` (`$7259`): a new
+  fire press adds 1 to `$51` (`$DE` holds it until released); up with the
+  agent on his standing frame (`$0E`) calls `search_check` and skips the
+  agent's update, so up with left or right while standing does not walk.
+  Every third tick `agent_read_stick` (`$87ED`) sets the facing and a step
+  of 5 or -5 from left and right, or the standing frame with neither;
+  `agent_animate` (`$8817`) turns any frame below `$10` into `$1B` when
+  `$51` is set, and on the somersault's last frame lands on `$0D` if left
+  or right is held, `$0E` if not. The somersault's steps ignore `$39`.
+- In the lift loop (`$39F6`) fire opens the pocket computer only on the
+  standing frame; on a walking frame it counts a somersault. Up or down
+  in the car keeps the car moving without the stick until a corridor is
+  level (`$1F`/`$20` = `$0B`), reading only the other direction on the
+  way (`$3A36`-`$3A7E`).
+- Searching continues only while up is held (`$98C2`, `$99D4`); the time
+  left is in the object's record (`$4F59`). The terminal's pointer moves
+  once per push (`$83`, `$9F96`); the hand moves one pixel a call
+  (`$3DC2`); messages wait for fire pressed and released (`$81F7`).
+- *Tested:* `test_controls.py` runs the Controls tab's port of these
+  routines, `read_key` and the name entry against the game's code in the
+  kit's simulator, and they agree in every case (10,752 stick, 3,584
+  room-loop, 1,792 lift, 2,130 keyboard cases and 2,000 names).
 - The keyboard is read only for the high-score name (own matrix scan,
-  `read_key` `$BE2D`).
+  `read_key` `$BE2D`): rows driven from 7 down to 0, the first key found
+  kept, once per press (`$DF`), through the 64-byte table `tbl_keys`
+  (`$BE78`, row × 8 + column). It gives A-Z and 0-9, `.` (`$FE`), `*`
+  (`$95`), and `$96` for both `=` and `-`; SPACE gives `$FD` and `:`
+  gives `$98`; DEL, `←` and CRSR → give 1 (delete); RETURN 0; RUN/STOP
+  `$F0`; every other key `$FF`. The name entry (`$BD18`) ignores
+  `$FF` and `$F0`, ends on RETURN or the fifth character, and stores the
+  five screen cells (`$BD61`); after it only RUN/STOP is read, and starts
+  a new game (`$B89D`).
 - RESTORE restarts the game: the NMI vector points at `$388C`, inside the
   start-up (`nmi_normal`, `$BECD`).
+  While a voice line plays, the speech driver points the vector at its own
+  handlers in page `$08` (`$0899`-`$0CA3`), so RESTORE then reaches the
+  driver instead; `irq_normal` (`$BEC2`, which falls into `$BECD`) puts it
+  back after the start-up's lines, a death and `say_line`'s wait (`$BF25`).
 
 ## Graphics
 
