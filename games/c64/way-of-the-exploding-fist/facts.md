@@ -449,6 +449,7 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 ### graphics.html
 
 - The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
+- One frame of a two-player bout, drawn from memory and the recorded writes to the video chip with the site's renderer: all 104,448 pixels match the emulator's own picture of the same frame.
 
 ### index.html
 
@@ -457,10 +458,6 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 ### levels.html
 
 - The end of a two-player game, captured in the emulator.
-
-### mechanics.html
-
-- One frame of a two-player bout, drawn from memory and the recorded writes to the video chip with the site's renderer: all 104,448 pixels match the emulator's own picture of the same frame.
 
 ### music.html
 

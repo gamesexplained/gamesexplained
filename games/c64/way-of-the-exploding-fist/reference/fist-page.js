@@ -281,8 +281,11 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
   function main(G) {
     const ram = G.ram;
 
+    // The move cards are on the Controls tab and the step viewer on the Graphics tab:
+    // a card picks the move here when the viewer is on this page, and opens it there when not.
+    let select = null;
     if ($('stepCards')) {
-    /* 01 the fighters: the steps of the chosen move */
+    /* the fighters: the steps of the chosen move */
     let timer = null, curSteps = [], curMove = 1;
     const s8 = v => (v << 24) >> 24, sgn = v => { v = s8(v); return v > 0 ? '+' + v : String(v); };
     function mark(i) {
@@ -308,8 +311,9 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
       };
       tick(); timer = setInterval(tick, 20);
     }
-    function select(move) {
+    select = function (move) {
       stop();
+      if ($('stepMove')) $('stepMove').value = move;
       const steps = curSteps = FIST.anim(ram, move); curMove = move;
       const box = $('stepCards'), strike = ram[0x1176 + move] ? ram[0x1204 + move] : -1;
       const ticks = steps.reduce((a, s) => a + s[0], 0), frames = new Set(steps.map(s => s[1])).size;
@@ -331,10 +335,16 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
         b.onclick = () => selectStep(i, false);
         box.appendChild(b);
       });
-    }
+    };
     $('stepTab').onclick = e => { const r = e.target.closest('tr[data-i]'); if (r) selectStep(+r.dataset.i, true); };
     $('stepPlay').onclick = playSteps;
-    select(0x0E);
+    if ($('stepMove')) {
+      const order = Object.keys(MOVES).map(Number).sort((a, b) => a - b);
+      $('stepMove').innerHTML = order.map(m => `<option value="${m}">${hex(m)} · ${MOVES[m]}</option>`).join('');
+      $('stepMove').onchange = e => select(+e.target.value);
+    }
+    const asked = parseInt(new URLSearchParams(location.search).get('move'), 10);
+    select(MOVES[asked] ? asked : 0x0E);
     if ($('gameCards')) {
       for (const [m, f, how] of GAME_CARDS) {
         const b = document.createElement('button'); b.className = 'fx-move'; b.type = 'button';
@@ -347,6 +357,8 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
         $('gameCards').appendChild(b);
       }
     }
+
+    }
     if ($('moveCards')) {
       const box = $('moveCards');
       for (const [m, f, arrow, fired, how] of MOVE_CARDS) {
@@ -357,12 +369,13 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
         b.appendChild(cv);
         b.insertAdjacentHTML('beforeend', `<span class="fx-move-id">Move ${hex(m)}${pts}</span><b>${MOVES[m][0].toUpperCase() + MOVES[m].slice(1)}</b>` +
           `<span class="fx-move-in"><span class="fx-move-arrow">${arrow}</span>${fired ? '<span class="fx-move-fire">fire</span>' : ''}${how ? ' ' + how : ''}</span>`);
-        b.title = 'Show the steps of move ' + hex(m) + ' below';
-        b.onclick = () => { select(m); $('stepPlay').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+        b.title = 'Show the steps of move ' + hex(m) + (select ? ' below' : ' on the Graphics tab');
+        b.onclick = () => {
+          if (select) { select(m); $('stepPlay').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+          else location.href = 'graphics.html?move=' + m + '#animations';
+        };
         box.appendChild(b);
       }
-    }
-
     }
     if ($('bdCv')) {
     /* 03 the backdrops */
@@ -652,7 +665,7 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
   }
 
   if ($('frameCv')) frameWidget();
-  const needs = ['stepCards', 'bdCv', 'music', 'spCv', 'gBar', 'aiTab', 'bullCv'].some(id => $(id));
+  const needs = ['stepCards', 'moveCards', 'bdCv', 'music', 'spCv', 'gBar', 'aiTab', 'bullCv'].some(id => $(id));
   if (needs && globalThis.C64) C64.load('listing.json').then(main).catch(e => console.error(e));
   else if (needs) document.querySelectorAll('canvas').forEach(c => { if (c.id !== 'frameCv') c.insertAdjacentHTML('afterend', '<p class="fx-need">' + needSite + '</p>'); });
 })();
