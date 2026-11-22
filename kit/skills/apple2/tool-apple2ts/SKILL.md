@@ -37,8 +37,8 @@ There is no window and no sound. The screen is drawn from memory as a PNG,
 the text page is read as text, and the sound is a log of the speaker's
 clicks and the Mockingboard's register writes. The machine runs only when
 asked, and then as fast as the host goes: 600 frames, ten seconds of the
-machine's time, took 0.55 s with nothing hooked, 18.3 times real time (a
-four-core cloud container, Node 22.22.0, 19 October 2026).
+machine's time, took 0.44 s with nothing hooked, 23 times real time (a
+four-core cloud container, Apple2TS 3.8.0, Node 22.23.5, 22 November 2026).
 
 ## Connecting
 
