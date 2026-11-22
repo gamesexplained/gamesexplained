@@ -1,17 +1,28 @@
 # The Last Ninja — verified technical facts
 
-## Opening Wastelands
+## Tape chapters and resident code
 
-- VICE boots Side 1 directly into the first room. Two cold boots
-  produced the same opening screenshot. A 24-frame port-2 right hold
-  moved sprite 1 from `$6C/$82` to `$84/$83` at `$D002/$D003`.
-  Restoring the gameplay snapshot restored its starting coordinates.
-- The hardware IRQ vector points to `$554D`, whose prologue saves A,
-  X, Y and `$01`, then selects the I/O area before testing `$D019`.
-  The VIC path writes the flags back to `$D019`. The other path can
-  increment `$1B` at `$5565` before reading `$DC0D`.
-- The gameplay loop spins at `$BD14` until `$1B` differs from the
-  saved tick at `$0268`. It copies the tick and reaches the first
-  update call at `$BD20`. In one uninterrupted test interval,
-  non-stopping execute checkpoints counted 23 hits at `$554D`,
-  12 at `$5565` and 12 at `$BD20`.
+- The six steady gameplay captures have chapter letters A through F
+  at `$0805`. `$0804` gives the next letter. It is B through F for
+  the first five captures and A in the Inner Sanctum.
+- In the Wastelands, the main loop tests `$02AF` at `$BD4D`.
+  Setting it to 1 took the game to its transition at `$CE80`. The
+  same edit before each of the next four transitions let the game's
+  loader bring in all six chapters across the two supplied tapes.
+- Comparing all six play snapshots shows `$53F9–$9DFF` holds
+  18,951 byte-identical bytes, including the IRQ entry at `$554D`.
+  The 352 bytes at `$CE80–$CFDF` also match. The Wastelands loop
+  waits at `$BD14`, while the Wilderness waits at `$BCBE`. The
+  identical ranges establish shared bytes only. The precise memory
+  ranges written by each tape load are open.
+- Holding right on port 2 for 24 PAL frames changed sprite 1's
+  coordinates in each capture.
+
+| Chapter | Before | After |
+|---|---|---|
+| Wastelands | `$6C/$82` | `$84/$83` |
+| Wilderness | `$18/$8E` | `$30/$8F` |
+| Palace Gardens | `$18/$A0` | `$21/$A1` |
+| Dungeons | `$18/$9E` | `$30/$9F` |
+| Palace | `$55/$AF` | `$6D/$B0` |
+| Inner Sanctum | `$9C/$98` | `$B0/$98` |

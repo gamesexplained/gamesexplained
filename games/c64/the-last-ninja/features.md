@@ -6,8 +6,8 @@ Read 22 November 2026. The [original instructions](https://heechee.net/c64/ninja
 
 | Feature | Status | Evidence or question |
 |---|---|---|
-| Automatic cassette loading | live | Cyberload displays a title image and loads directly into the Wastelands. The later cassette prompt is open. |
-| Relative movement on joystick port 2 | live | Right moved the player across the first screen in 24 PAL frames. Diagonal movement, turning and walking backwards are documented and open. |
+| Automatic cassette loading | live | Cyberload boots straight to the Wastelands. Side 1 carries chapters A–C and Side 2 carries D–F. The cassette prompt is open. |
+| Relative movement on joystick port 2 | live | Right moved the player in each of the six chapters in 24 PAL frames. Diagonal movement, turning and walking backwards are documented and open. |
 | Attacks and defence | open | Fire plus a direction punches, kicks, blocks or uses the selected weapon. Check the directional tables for the staff, sword, nunchaku and shuriken. |
 | Somersaults and hazards | open | The manual describes three jump lengths and distinguishes starting with movement from starting with fire at obstacles. |
 | Crouch, search and pickup | open | Fire and a diagonal also crouch. Check which position and facing allow the outstretched hand to reach an item. |
@@ -17,10 +17,15 @@ Read 22 November 2026. The [original instructions](https://heechee.net/c64/ninja
 | Status panel | live | The opening play screen shows Enemy, Wounds, Using, Holding, Power and Weaponry. What each display reads and when it updates are open. |
 | Life count and retry | open | The manual gives three starting lives, an extra life per apple and a minimum of two lives when entering the second section. Check respawn location and which inventory and room state carry over. |
 | Temporary Ninja Magic | open | The manual describes hidden pickups that produce short-lived effects without a Found notification. |
-| Six areas and the scrolls | open | Wastelands, Wilderness, Palace Gardens, Dungeons, Palace and Inner Sanctum. Retrieving the scrolls is the stated goal. Wastelands opening observed. |
+| Six areas and the scrolls | live | Wastelands, Wilderness, Palace Gardens, Dungeons, Palace and Inner Sanctum all reached gameplay. The conditions for retrieving the scrolls and ending the game are open. |
 | Music | open | Loading and gameplay tracks need to be identified and matched to their calls in each load. |
 
 ## Captures
 
 - [Cyberload title image](reference/cyberload-title.png)
 - [Opening Wastelands screen](reference/wastelands-start.png)
+- [Wilderness](reference/play-wilderness.png)
+- [Palace Gardens](reference/play-palace-gardens.png)
+- [Dungeons](reference/play-dungeons.png)
+- [Palace](reference/play-palace.png)
+- [Inner Sanctum](reference/play-inner-sanctum.png)

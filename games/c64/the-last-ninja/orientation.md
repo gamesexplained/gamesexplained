@@ -58,9 +58,42 @@ joystick input and saving and loading snapshots within the session
 passed. Regenerator2000 0.9.20 opened the capture as a 65,536-byte
 Commodore 64 image.
 
-## Later loads
+## Chapter loads
 
-The [cassette manual](https://heechee.net/c64/ninja/manual1.php) says
-that sections load automatically with PLAY left engaged and that the
-game prompts for the second tape. The exact boundaries between those
-loads and the resident code are open.
+From any of the first five playable captures, set `$02AF` to `$01`
+in the debugger and resume. This takes the game's own end-of-chapter
+branch. Leave PLAY engaged. Use warp during the load and switch it
+off when Armakuni appears in the new chapter. This route skips the
+gameplay between loads, so the captures do not establish which items
+would carry over during a playthrough.
+
+After Palace Gardens, that branch entered the tape reader at `$0448`
+with Side 1 at end of tape. Attach `work/side-2.tap` at the beginning
+and press virtual PLAY. In this run the monitor needed a restart.
+Saving `work/before-side2.vsf`, restarting VICE, restoring that
+snapshot, then using `vice.tape()` to attach Side 2 resumed the load.
+
+The files below are in each chapter's `parts/<id>/work/`. Positions
+are byte offsets into the TAP pulse stream, after the 20-byte header.
+They come from the VICE snapshot's TAPE module.
+
+| Chapter | Side | Position in play | Snapshot |
+|---|---:|---:|---|
+| Wastelands | 1 | 638,541 | `play-wastelands.vsf` |
+| Wilderness | 1 | 948,389 | `play-wilderness.vsf` |
+| Palace Gardens | 1 | 1,258,373, end of tape | `play-palace-gardens.vsf` |
+| Dungeons | 2 | 309,064 | `play-dungeons.vsf` |
+| Palace | 2 | 617,632 | `play-palace.vsf` |
+| Inner Sanctum | 2 | 928,360, end of tape | `play-inner-sanctum.vsf` |
+
+A snapshot saved through the regular MCP command omits the TAP image.
+Use a continuous boot for transitions within a side. For the
+Wastelands-to-Wilderness transition alone, attaching Side 1 at offset
+630,000 while the loader was waiting also worked. Starting at the
+Wastelands snapshot's recorded offset missed that load.
+
+For Palace Gardens, a stopping checkpoint at `$CF11` captured the
+handover into `$BC60` before its first instruction. This is
+`parts/palace-gardens/work/entry.vsf`. That RAM image differs from
+the playable snapshot at 4,612 addresses. Capture the other chapters
+at the same boundary before choosing their listing inputs.

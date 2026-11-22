@@ -16,8 +16,8 @@ take about 73 seconds.
 
 The kit's emulator check preserved gameplay access through MCP, but
 the separate remote monitor reset its connection for `tapeoffs`.
-A restart may be needed before tape position and execution-map
-commands are used.
+Stopping VICE outside the shell sandbox and restarting through the
+launcher recovered the monitor. The Side 2 attach then worked.
 
 ## Candidates
 
