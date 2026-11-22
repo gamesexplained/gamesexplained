@@ -1,16 +1,18 @@
 # The Last Ninja — TODO
 
-Next: repeat the Palace Gardens handover capture for the remaining
-chapters, then instrument the tape writes
-to assign the exact overlay ranges and separate the resident engine
-from the chapter-specific bytes.
+Silver requires complete coverage and a maintainer’s listing sample on a
+proven model. The seven listings explain 160,077 of 219,680 tracked bytes
+(72.9%). The source for each chapter starts from its own tape handover.
 
-The six playable snapshots, boot and tape-switch routes, and first
-listing meet Bronze. The Wastelands listing explains 204 of 2,900 tracked bytes
-(7.0%). Those ranges cover the initial analysis and omit most of the
-game, including 4,096 bytes flagged below the I/O area.
-
-Silver needs listings for the remaining parts, a closed media ledger, full
-coverage, verified facts, and the minisite and its music players. The kit
-requires a maintainer to sample the listing on a proven model because it
-does not classify GPT-6.2 Sol as proven.
+- Annotate the remaining resident input, action, actor, collision, text
+  and foreground drawing routines. Resolve the initial data under I/O
+  at `$DC80–$DEFF` and the bootstrap and tape reader state below `$0600`.
+- Decode the chapter-specific item, enemy, hazard and end-of-chapter
+  logic and data. Verify normal completion through gameplay and trace
+  inventory, wounds, deaths, retries and the ending.
+- Finish the music driver and song stream comments for both driver
+  layouts. Investigate sound effects and any unused tunes.
+- Repeat the coverage calculation, listing checks and feature verification
+  before sampling the listings. GPT-6.2 Sol is outside the kit’s proven
+  model list. Record the maintainer’s sample and any required audit in
+  `game.json` before changing the tier.

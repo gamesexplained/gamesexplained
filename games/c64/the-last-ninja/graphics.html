@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}} · Graphics</title>
+<style>
+body { margin: 0; color: #242922; background: #edf1e8; font: 16px/1.5 system-ui, sans-serif; }
+main { max-width: 58rem; padding: 2rem clamp(1rem, 4vw, 3rem) 4rem; margin: auto; }
+h1 { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.15; margin-bottom: .4rem; }
+.ninja-pose-panel { background: white; border: 1px solid #c9d3c2; border-radius: .8rem; padding: 1.2rem; }
+.ninja-pose-layout { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: start; }
+.ninja-pose-layout canvas { width: 150px; height: 225px; background: #b7ff86; image-rendering: pixelated; }
+.ninja-pose-controls { display: grid; gap: .6rem; flex: 1 1 12rem; }
+.ninja-pose-controls button { padding: .3rem .6rem; width: fit-content; }
+.ninja-pose-controls label { display: flex; align-items: center; gap: .55rem; }
+.ninja-pose-controls output { font-weight: bold; }
+.ninja-sprite-table { border-collapse: collapse; width: 100%; }
+.ninja-sprite-table th, .ninja-sprite-table td { text-align: left; padding: .4rem .3rem; border-bottom: 1px solid #d7ded2; }
+.ninja-sprite-bank { margin-top: 2rem; }
+.ninja-sprite-bank select { width: fit-content; max-width: 100%; padding: .3rem .5rem; }
+.ninja-sprite-bank canvas { width: 144px; height: 126px; }
+</style>
+</head>
+<body>
+<!-- tabs -->
+<main>
+<h1>Two sprites make one ninja</h1>
+<p>Armakuni’s head and shoulders occupy one hardware sprite. His feet occupy another directly below. The two sprites move together while the game replaces their bitmap data to change his pose.</p>
+<div class="ninja-pose-panel ninja-pose-layout">
+  <canvas id="ninja-pose" width="28" height="42" role="img" aria-label="Armakuni walking"></canvas>
+  <div class="ninja-pose-controls">
+    <label for="pose-frame">Pose <output id="pose-number" for="pose-frame"></output></label>
+    <input id="pose-frame" type="range" min="0" value="0" step="1">
+    <button type="button" id="pose-play" aria-pressed="false">Play poses</button>
+    <label><input type="checkbox" id="pose-upper" checked> Use upper sprite</label>
+    <label><input type="checkbox" id="pose-lower" checked> Use lower sprite</label>
+    <table class="ninja-sprite-table">
+      <thead><tr><th>VIC sprite</th><th>Bitmap in RAM</th><th>X, Y</th></tr></thead>
+      <tbody id="pose-details"></tbody>
+    </table>
+  </div>
+</div>
+<p>These are the distinct poses captured while holding right in the first Wastelands room. Each hardware sprite displays 24 by 21 pixels here. The pointers occupy two adjacent bytes at $C3F9 and $C3FA.</p>
+<section class="ninja-sprite-bank">
+  <h2>Sprite bitmaps</h2>
+  <p>The engine has a set of packed sprite bitmaps, and each chapter supplies its own directly stored frames. The viewer shows the stored bits. The game sets the colour when it assembles a pose.</p>
+  <div class="ninja-pose-panel ninja-pose-layout">
+    <canvas id="stored-sprite" width="24" height="21" role="img" aria-label="Stored sprite 0"></canvas>
+    <div class="ninja-pose-controls">
+      <label>Bank
+        <select id="stored-bank">
+          <option value="resident" data-count="171">Resident engine</option>
+          <option value="wastelands" data-count="49">The Wastelands</option>
+          <option value="wilderness" data-count="37">The Wilderness</option>
+          <option value="palace-gardens" data-count="56">Palace Gardens</option>
+          <option value="dungeons" data-count="58">The Dungeons</option>
+          <option value="palace" data-count="55">The Palace</option>
+          <option value="inner-sanctum" data-count="68">The Inner Sanctum</option>
+        </select>
+      </label>
+      <label for="stored-frame">Bitmap <output id="stored-number" for="stored-frame"></output></label>
+      <input id="stored-frame" type="range" min="0" value="0" step="1">
+      <a id="stored-source" href="source-resident.html#8000">Source addresses</a>
+    </div>
+  </div>
+  <p>The packed format uses a single byte for a run of zeros. An escape byte lets a literal use the same value as a command. <a href="source-resident.html#7E36">See the decoder at $7E36</a>.</p>
+</section>
+</main>
+<script id="pose-data" type="application/json">[{"tick":0,"sprites":[{"sprite":1,"pointer":33,"source":51264,"x":108,"y":130,"color":0,"pixels":"07f00007f00007f00007f80006f80003780003f80003780003f80007f8001fe0001f40000fc00007c00003c00001800003800003e00003c000000000000000"},{"sprite":2,"pointer":34,"source":51328,"x":108,"y":109,"color":0,"pixels":"000000001800003c00007e00007e00007c00187c000cfc0006f80003fc0007fe000f7e000fb7001ddf003beb003bf7403fffc01ffdc00ffb8007f00007f000"}],"enable":6},{"tick":8,"sprites":[{"sprite":1,"pointer":41,"source":51776,"x":112,"y":130,"color":0,"pixels":"07f80007f80005fc0006fc00077e0007be00079f0007bf000f7e000f7e000ef8000df8001dc0001dc0001ee0000ce0001f00001f00001e0000000000000000"},{"sprite":2,"pointer":42,"source":51840,"x":112,"y":109,"color":0,"pixels":"000000001800003c00007e00007e00187c000c7c00067c0003f80003fc0007fe00077e0007be000fdf000def000df7000fff000ffb8007fbc003fbc003f180"}],"enable":6},{"tick":12,"sprites":[{"sprite":1,"pointer":33,"source":51264,"x":117,"y":131,"color":0,"pixels":"1dfc001efc001ffe001f7e003e1e003c3c003c3c003c7c00387c00787800703000703800e03c00e03c00e00000e00000c00000000000000000000000000000"},{"sprite":2,"pointer":34,"source":51328,"x":116,"y":110,"color":0,"pixels":"001800003c00007c00007c00187c000cf80006f80003f80003fc0007fe00077e0007be0007de0007fe0007de0003de0003fe0007ef0007f30007fc0007fc00"}],"enable":6},{"tick":16,"sprites":[{"sprite":1,"pointer":41,"source":51776,"x":120,"y":130,"color":0,"pixels":"07f8000ff8000ffc000efc000efe001f7e001e3e001e1f003c0f003c0f00780f00f80f00f80f00e00600e00e00e00f00000f80000f00000000000000000000"},{"sprite":2,"pointer":42,"source":51840,"x":120,"y":110,"color":0,"pixels":"001800003c00007e00007e00187c000c7c0006fc0003f80003fc00077e0007be0007fe0007fe0007bc0007be0003be0003ef0007fb0007f80007f800000000"}],"enable":6},{"tick":20,"sprites":[{"sprite":1,"pointer":33,"source":51264,"x":124,"y":130,"color":0,"pixels":"0ff0000ff0000ff0000df0000df00006f0000ef0003ef0003ef0003df00039f00031e00031c00000c00001c00001f00001f00001c000000000000000000000"},{"sprite":2,"pointer":34,"source":51328,"x":124,"y":110,"color":0,"pixels":"001800003c00007e00007e00187c000c7c0006fc0003f80003fc00077e0007be0007de0007fe000ffc000bbc000bbf0003df0007ee0007f0000ff000000000"}],"enable":6},{"tick":24,"sprites":[{"sprite":1,"pointer":41,"source":51776,"x":128,"y":130,"color":0,"pixels":"07f00003f00003f00003e80003e80007e80007d80007d00007a00007a0000fb0000f70000f60000600000700000f00000f8000078000000000000000000000"},{"sprite":2,"pointer":42,"source":51840,"x":128,"y":110,"color":0,"pixels":"001800003c00007e00007e00187c000c7c0006fc0003f800037c0007be0007de000fee000ffe001bff001fff0017ff8007f78007f30007f00007f000000000"}],"enable":6},{"tick":28,"sprites":[{"sprite":1,"pointer":33,"source":51264,"x":132,"y":131,"color":0,"pixels":"07fc0007f60007fe0007de0007bc000fbc000f98000f18000f38001e3c001e3c001e38001e00001800003800003c00003e00001e0000000000000000000000"},{"sprite":2,"pointer":34,"source":51328,"x":132,"y":110,"color":0,"pixels":"001800003c00007e00007e00187c000c7c0006fc0003f800077c0007be000fdf001feb403ff7c03ffbc03ffdc01bfc001bf20007f00007f00007f0000ff000"}],"enable":6}]</script>
+<script>
+(() => {
+  const frames = JSON.parse(document.getElementById('pose-data').textContent);
+  const canvas = document.getElementById('ninja-pose');
+  const context = canvas.getContext('2d');
+  const frame = document.getElementById('pose-frame');
+  const play = document.getElementById('pose-play');
+  const controls = ['pose-lower', 'pose-upper'].map(id => document.getElementById(id));
+  const details = document.getElementById('pose-details');
+  let timer = null;
+  frame.max = frames.length - 1;
+  function draw() {
+    const index = Number(frame.value);
+    const pose = frames[index];
+    const left = Math.min(...pose.sprites.map(sprite => sprite.x));
+    const top = Math.min(...pose.sprites.map(sprite => sprite.y));
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = '#000';
+    document.getElementById('pose-number').value = `${index + 1} of ${frames.length}`;
+    canvas.setAttribute('aria-label', `Armakuni walking, pose ${index + 1}`);
+    const rows = pose.sprites.map((sprite, part) => {
+      if (controls[part].checked) {
+        for (let i = 0; i < 63; i++) {
+          const byte = parseInt(sprite.pixels.slice(i * 2, i * 2 + 2), 16);
+          for (let bit = 0; bit < 8; bit++) {
+            if (byte & (128 >> bit)) context.fillRect(2 + sprite.x - left + 8 * (i % 3) + bit,
+              sprite.y - top + Math.floor(i / 3), 1, 1);
+          }
+        }
+      }
+      const row = document.createElement('tr');
+      const address = '$' + sprite.source.toString(16).toUpperCase();
+      for (const value of [sprite.sprite, address, `${sprite.x}, ${sprite.y}`]) {
+        const cell = document.createElement('td');
+        cell.textContent = value;
+        row.append(cell);
+      }
+      return row;
+    });
+    details.replaceChildren(...rows);
+  }
+  play.addEventListener('click', () => {
+    if (timer === null) {
+      timer = setInterval(() => {
+        frame.value = (Number(frame.value) + 1) % frames.length;
+        draw();
+      }, 160);
+    } else {
+      clearInterval(timer);
+      timer = null;
+    }
+    play.setAttribute('aria-pressed', String(timer !== null));
+    play.textContent = timer === null ? 'Play poses' : 'Pause poses';
+  });
+  frame.addEventListener('input', draw);
+  controls.forEach(control => control.addEventListener('change', draw));
+  draw();
+})();
+(() => {
+  const bank = document.getElementById('stored-bank');
+  const frame = document.getElementById('stored-frame');
+  const label = document.getElementById('stored-number');
+  const canvas = document.getElementById('stored-sprite');
+  const source = document.getElementById('stored-source');
+  const context = canvas.getContext('2d');
+  let sheet;
+  function draw() {
+    const index = Number(frame.value);
+    label.value = `${index} of ${frame.max}`;
+    canvas.setAttribute('aria-label', `Stored sprite ${index}`);
+    if (!sheet?.complete || !sheet.naturalWidth) return;
+    context.drawImage(sheet, (index % 16) * 24, Math.floor(index / 16) * 21, 24, 21, 0, 0, 24, 21);
+  }
+  function selectBank() {
+    frame.max = Number(bank.selectedOptions[0].dataset.count) - 1;
+    frame.value = '0';
+    source.href = `source-${bank.value}.html#${bank.value === 'resident' ? '8000' : '9E00'}`;
+    context.clearRect(0, 0, 24, 21);
+    sheet = new Image();
+    sheet.onload = draw;
+    sheet.src = `reference/sprites-${bank.value}.png`;
+    draw();
+  }
+  bank.addEventListener('change', selectBank);
+  frame.addEventListener('input', draw);
+  selectBank();
+})();
+</script>
+</body>
+</html>

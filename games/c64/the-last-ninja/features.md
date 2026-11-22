@@ -11,14 +11,14 @@ Read 22 November 2026. The [original instructions](https://heechee.net/c64/ninja
 | Attacks and defence | open | Fire plus a direction punches, kicks, blocks or uses the selected weapon. Check the directional tables for the staff, sword, nunchaku and shuriken. |
 | Somersaults and hazards | open | The manual describes three jump lengths and distinguishes starting with movement from starting with fire at obstacles. |
 | Crouch, search and pickup | open | Fire and a diagonal also crouch. Check which position and facing allow the outstretched hand to reach an item. |
-| Object and weapon selection | open | F3/F5 cycle objects and Space cycles weapons. F7 pauses. The wiki also lists F1 for music and Run/Stop for forfeiting a life. |
+| Object and weapon selection | open | F3/F5 cycle objects and Space cycles weapons. F7 pauses. The wiki also lists Run/Stop for forfeiting a life. |
 | Weapon and puzzle items | open | Staff, sword, nunchaku, shuriken, smoke bombs, sleeping potion, amulet, claw, flower, glove, key, pouch, rope, apples and scrolls. Check inventory limits and where each item is used. |
 | Shrine and fountain hints | open | The instructions describe prompts to collect nearby items. Check activation and the relation between hint and pickup. |
 | Status panel | live | The opening play screen shows Enemy, Wounds, Using, Holding, Power and Weaponry. What each display reads and when it updates are open. |
 | Life count and retry | open | The manual gives three starting lives, an extra life per apple and a minimum of two lives when entering the second section. Check respawn location and which inventory and room state carry over. |
 | Temporary Ninja Magic | open | The manual describes hidden pickups that produce short-lived effects without a Found notification. |
 | Six areas and the scrolls | live | Wastelands, Wilderness, Palace Gardens, Dungeons, Palace and Inner Sanctum all reached gameplay. The conditions for retrieving the scrolls and ending the game are open. |
-| Music | open | Loading and gameplay tracks need to be identified and matched to their calls in each load. |
+| Music | confirmed | The two tapes supply six loading tracks and six gameplay tracks. The player checks timed SID writes from both sets of entry points. F1 mutes and resumes the gameplay tune in place. |
 
 ## Captures
 

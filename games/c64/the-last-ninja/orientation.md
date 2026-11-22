@@ -9,8 +9,10 @@ The SHA-256 digests are in [`media.json`](media.json).
 
 The kit finds the initial KERNAL program at `$029F–$033A` and its
 header at `$033C–$03FB`. The rest of Side 1 uses pulses most commonly
-472 and 912 cycles long. VICE plays that section through Cyberload.
-The tape scanner does not decode it.
+472 and 912 cycles long. The game-specific ledger decodes 257
+checksum-bearing cold-boot blocks and 40 checksum-bearing named files.
+The named files replace the tentative page detections made by the
+generic tape scanner on Side 2.
 
 | Extracted item | Bytes equal at load address in play | Aligned 16-byte pieces found in play RAM |
 |---|---:|---:|
@@ -92,8 +94,29 @@ Wastelands-to-Wilderness transition alone, attaching Side 1 at offset
 630,000 while the loader was waiting also worked. Starting at the
 Wastelands snapshot's recorded offset missed that load.
 
-For Palace Gardens, a stopping checkpoint at `$CF11` captured the
-handover into `$BC60` before its first instruction. This is
-`parts/palace-gardens/work/entry.vsf`. That RAM image differs from
-the playable snapshot at 4,612 addresses. Capture the other chapters
-at the same boundary before choosing their listing inputs.
+The handovers are in each chapter's `work/entry.vsf`. Wastelands stops
+at `$5420`, the cold-boot jump to `$BC60`. Chapters B–F stop at
+`$CF11`, which also jumps to `$BC60` after the final tape file.
+The Palace Gardens handover differs from the playable snapshot at
+4,612 RAM addresses. The listings use the handover bytes and use the
+play snapshots to help identify runtime changes.
+
+The live tape trace stops at `$CF6F` after each named file is read.
+The destination and end pointer equal the tape header's address and
+address plus length for all 40 files. The buffers at those stops
+agree byte for byte with the decoded payloads. At each handover,
+segments 2–7 also match their final destinations:
+
+| Segment | Destination at handover |
+|---|---|
+| 2 | `$DF00–$DFFF` then `$FF40–$FFF7` |
+| 3 | `$D800–$DC7F` |
+| 4 | `$CC00–$CE7F` |
+| 5 | `$9E00–$AFFF` |
+| 6 | `$0600–$53FF` |
+| 7 | `$B000–$BFFF` |
+
+Segment 0 plays the loading music. Segment 1 supplies the loading
+picture. Later reads reuse both of those staging areas. The resident
+engine at `$5400–$9DFF` and the tape-transition code at
+`$CE80–$CFDF` match in every handover.
