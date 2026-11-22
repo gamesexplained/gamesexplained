@@ -288,25 +288,53 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
     /* the fighters: the steps of the chosen move */
     let timer = null, curSteps = [], curMove = 1;
     const s8 = v => (v << 24) >> 24, sgn = v => { v = s8(v); return v > 0 ? '+' + v : String(v); };
+    // The whole fighter, moved as the animator moves it ($3837): every tick adds the step's X
+    // (along the facing) and Y to the position, both in units of two pixels, Y down the screen.
+    let path = [], starts = [];
+    function track(steps) {
+      path = []; starts = [];
+      let x = 0, y = 0;
+      steps.forEach(([t, f, dx, dy], i) => {
+        starts.push(path.length);
+        for (let n = 0; n < t; n++) { x += s8(dx); y += s8(dy); path.push([i, f, x, y]); }
+      });
+      if (!path.length) path.push([0, steps.length ? steps[0][1] : 0, 0, 0]);
+    }
+    function drawWhole(at) {
+      const cv = $('stepWhole');
+      if (!cv) return;
+      const ctx = cv.getContext('2d'), k = 2, u = 2 * k, pw = 24 * 3 * k, ph = 21 * 3 * k;
+      const xs = path.map(p => p[2]), ys = path.map(p => p[3]);
+      const xmin = Math.min(0, ...xs), xmax = Math.max(0, ...xs), ymax = Math.max(0, ...ys);
+      const ox = Math.round((cv.width - pw - (xmax - xmin) * u) / 2 - xmin * u);
+      const oy = cv.height - 10 - ph - ymax * u;
+      ctx.fillStyle = '#edf171'; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(0, oy + ph, cv.width, 1);
+      const [, f, x, y] = path[Math.min(at, path.length - 1)];
+      FIST.pose(ram, f, false, false).forEach((sp, j) => {
+        if (sp) drawSpriteMC(ctx, sp, ox + x * u + (j % 3) * 24 * k, oy + y * u + Math.floor(j / 3) * 21 * k, k, 1);
+      });
+    }
     function mark(i) {
       $('stepTab').querySelectorAll('tr').forEach(r => r.classList.toggle('hl', r.dataset.i == i));
       $('stepCards').querySelectorAll('.fx-move').forEach((c, j) => c.classList.toggle('on', j === i));
     }
     function stop() { clearInterval(timer); timer = null; $('stepPlay').textContent = 'Play'; }
     function selectStep(i, scrollCard) {
-      stop(); mark(i);
+      stop(); mark(i); drawWhole(starts[i] || 0);
       if (scrollCard) $('stepCards').children[i].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     // one tick per PAL frame (20 ms): the fight loop's fastest pace, one pass per frame ($1A96)
     function playSteps() {
       if (timer) { stop(); return; }
-      let i = 0, left = 0;
+      let i = 0, left = 0, at = 0;
       $('stepPlay').textContent = 'Stop';
       const tick = () => {
         if (left <= 0) {
           if (i >= curSteps.length) { stop(); return; }
           left = curSteps[i][0]; mark(i); i++;
         }
+        drawWhole(at++);
         left--;
       };
       tick(); timer = setInterval(tick, 20);
@@ -315,6 +343,7 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
       stop();
       if ($('stepMove')) $('stepMove').value = move;
       const steps = curSteps = FIST.anim(ram, move); curMove = move;
+      track(steps);
       const box = $('stepCards'), strike = ram[0x1176 + move] ? ram[0x1204 + move] : -1;
       const ticks = steps.reduce((a, s) => a + s[0], 0), frames = new Set(steps.map(s => s[1])).size;
       const tx = steps.reduce((a, s) => a + s[0] * s8(s[2]), 0);
@@ -335,6 +364,7 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
         b.onclick = () => selectStep(i, false);
         box.appendChild(b);
       });
+      drawWhole(0);
     };
     $('stepTab').onclick = e => { const r = e.target.closest('tr[data-i]'); if (r) selectStep(+r.dataset.i, true); };
     $('stepPlay').onclick = playSteps;
