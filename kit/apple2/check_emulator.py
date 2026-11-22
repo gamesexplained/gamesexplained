@@ -737,6 +737,34 @@ def p_disk(m):
           "a snapshot saved half way through reading a disk loads and reads on to the same memory at the same cycle",
           f"the motor {'on' if motor else 'OFF'} when saved; the saving machine finished at cycle {a['cycles']}, "
           f"the loaded one at {b['cycles']}; memory {'identical' if a_mem[0] == b_mem[0] else 'DIFFERS'}")
+
+    # The boot program turns the motor off as it starts; a Disk II spins on for about a second
+    # before it stops (Apple2TS: 1,020,000 cycles), and a snapshot taken meanwhile stops on time too.
+    def motor():
+        return (m.chips().get("disk") or {}).get("motor")
+
+    def stops():
+        """The cycle of the first frame end at which the motor is off, within two seconds."""
+        for _ in range(120):
+            r = m.run(frames=1)
+            if not motor():
+                return r["cycles"]
+        return None
+
+    m.boot(until=DONE, seconds=20)
+    m.run(seconds=0.5)
+    spinning = motor()
+    spin = snap_path("emutest_spin")
+    m.save(spin)
+    a = stops()
+    m.load(spin)
+    b = stops()
+    second = a is not None and 0.9 * 1020484 < a - total < 1.2 * 1020484
+    check("disk-motor-stops", spinning and second and a == b,
+          "a drive told to stop spins on for about a second and stops; a snapshot taken while it spins down stops "
+          "it in the same frame",
+          f"spinning half a second on: {'yes' if spinning else 'NO'}; stopped by cycle {a} "
+          f"({'never' if a is None else f'{(a - total) / 1020484:.2f} s after the boot'}), the loaded snapshot's by {b}")
     m.disk(drive=1, eject=True)
 
 

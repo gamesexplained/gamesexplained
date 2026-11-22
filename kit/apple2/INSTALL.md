@@ -8,7 +8,7 @@ phase by phase, is `kit/EMULATOR.md`.
 
 | Need | Capability | Recommended tool |
 |---|---|---|
-| Emulator with an agent interface | run, stop on an instruction, read and write every bank of memory and the soft switches, count checkpoints without stopping, advance a frame, hold keys, buttons and paddles, change disks, save and load a snapshot, log the speaker and the Mockingboard | Apple2TS 3.7.0 (https://github.com/ct6502/apple2ts), its machine run inside the kit's own server, `kit/apple2/apple2ts_server.mjs` |
+| Emulator with an agent interface | run, stop on an instruction, read and write every bank of memory and the soft switches, count checkpoints without stopping, advance a frame, hold keys, buttons and paddles, change disks, save and load a snapshot, log the speaker and the Mockingboard | Apple2TS 3.8.0 (https://github.com/ct6502/apple2ts), its machine run inside the kit's own server, `kit/apple2/apple2ts_server.mjs` |
 | Disassembler with an agent interface | read the kit's snapshot, disassemble, label, comment, type data, export a symbol map | regenerator2000 0.9.20 from crates.io, in its Apple II mode: the C64's disassembler, installed once for every machine |
 | A JavaScript runtime | run Apple2TS's machine, bundle it, and run the site's screen drawing for `kit/apple2/test_frame.py` | Node, with npm |
 
@@ -52,29 +52,33 @@ names every check, and `kit/skills/apple2/tool-apple2ts/workarounds.md`
 says what to do about each one that fails. Run it after installing, and
 again after a new release.
 
-**Which build: 3.7.0, and only after measuring a newer one.** The kit's
-server reaches inside Apple2TS's machine, and the build changes it in five
+**Which build: 3.8.0, and only after measuring a newer one.** The kit's
+server reaches inside Apple2TS's machine, and the build changes it in four
 ways (`kit/apple2/apple2ts_build.mjs`): the timers run on the machine's
-cycles, the speaker and the Mockingboard report to the server, the game
-patches are off, the disk controller's and the paddle timer's private
-state is saved and restored, and every data read and write reaches the
-server's checkpoints. Each change is checked as the build makes it, so a
-release that has moved what it changes stops the build with a message
-instead of running wrong. `get-apple2ts` clones the tag v3.7.0 (commit
-c900979, tagged 7 October 2026) and refuses it if the tag has moved. To
-move on, change `APPLE2TS_VERSION` and `APPLE2TS_COMMIT` in
-`kit/apple2/tools.py`, run `get-apple2ts`, `check-emulator`,
-`monitor.py --check` and `opcodes.py --check apple2`, and change the rows
-here together.
+cycles, the speaker and the Mockingboard report to the server, the cycle
+the disk's motor is due to stop at is saved and restored, and every data
+read and write reaches the server's checkpoints. The server turns the game
+patches off with Apple2TS's own switch, and after each instruction does
+what Apple2TS's run loop does, which it replaces. Each change is checked as
+the build makes it, so a release that has moved what it changes stops the
+build with a message instead of running wrong. A release can also move
+work into its run loop, which the build cannot see: 3.8.0 moved the
+motor's spin-down there, and `disk-motor-stops` failed until the server
+did it too. `get-apple2ts` clones the tag v3.8.0 (commit b665413, tagged
+22 November 2026) and refuses it if the tag has moved. To move on, change
+`APPLE2TS_VERSION` and `APPLE2TS_COMMIT` in `kit/apple2/tools.py`, read
+what Apple2TS's run loop (`src/worker/motherboard.ts`) does after each
+instruction, run `get-apple2ts`, `check-emulator`, `monitor.py --check`
+and `opcodes.py --check apple2`, and change the rows here together.
 
 | Build | Machine | Measured | Checks passed |
 |---|---|---|---|
-| Apple2TS 3.7.0 (tag v3.7.0), bundled with esbuild 0.25.12 into the kit's server, Node 22.22.0 | Linux x86_64 (Ubuntu 24.04, no display) | 20 October 2026 | 49 of 49, the II Plus's seven among them, 8 s, two runs; `verify-footprint` clean. On 10 November 2026, under Node 22.23.4, with the read log's check added: 50 of 50, 8 s |
+| Apple2TS 3.8.0 (tag v3.8.0), bundled with esbuild 0.28.2 into the kit's server, Node 22.23.5 | Linux x86_64 (Ubuntu 24.04, no display) | 22 November 2026 | 51 of 51, the II Plus's seven among them, 11 to 13 s, six runs; `verify-footprint` clean |
 
 | Phase | Passes | Fails | Workaround |
 |---|---|---|---|
 | 1 static inspection | all 64 KB as the CPU sees it in one call (5 ms), the I/O page read as $00 and flagged without touching a switch; main memory, auxiliary memory, the language card's four banks and the ROM, each by name, the switches left as they were; the registers and the cycle count; the soft switches by name, the keyboard, the game port, the disk drive and the Mockingboard's 6522s; a snapshot read by `kit/apple2/snapshot.py` matches the live machine bank by bank; a screenshot drawn with no display, its text the same as the server's | | |
-| 2 state management | a save from a second connection while a run is in progress; a load leaves the machine stopped at the saved state; a counting checkpoint goes on counting after a load; three loads give the same machine, from a stopped save, from a running one, and after a restart of the server; a load continues exactly as the machine that saved; a 16-sector disk boots to the same memory at the same cycle twice, and a snapshot saved while the disk was being read reads on to the same memory at the same cycle; the read log holds what the boot ROM stored while it read track 0, each run at its address, and nothing stored after the reading; warp: 600 frames, ten seconds of the machine's time, in 0.55 s, 18.3 times real time | | |
+| 2 state management | a save from a second connection while a run is in progress; a load leaves the machine stopped at the saved state; a counting checkpoint goes on counting after a load; three loads give the same machine, from a stopped save, from a running one, and after a restart of the server; a load continues exactly as the machine that saved; a 16-sector disk boots to the same memory at the same cycle twice, and a snapshot saved while the disk was being read reads on to the same memory at the same cycle; a drive told to stop spins down for a second and stops, and a snapshot taken meanwhile stops it in the same frame; the read log holds what the boot ROM stored while it read track 0, each run at its address, and nothing stored after the reading; warp: 600 frames, ten seconds of the machine's time, in 0.55 s, 18.3 times real time | | |
 | 3 live measurement | counting checkpoints agree with the program's own counter to one pass (249 hits in 250 passes); one on a routine nothing calls stays at zero; the vertical blank seen once a frame; the Mockingboard timer's interrupts counted, 260 of 260; write and read checkpoints, 250 stores and 250 reads of the keyboard; the cycle counter, 17,030 a frame; every address an instruction started at, with its count, in one call (100 frames in 0.08 s, 0.09 s recording); reads from a second connection while the machine runs; `stop` from a second connection; every click of the speaker and every change to a sound chip's registers, with its cycle | | |
 | 4 frame stepping | a stopping checkpoint stops before its instruction runs; a step returns with the new PC; a key pressed while stopped is waiting in $C000 at the program's next read; ten one-frame advances with a key held, one pass a frame; the key released when the script says; button 0 held and let go; paddle 0 set to 20, 100 and 200 read 20, 100 and 197; a hundred runs back to back, 1,888 calls a second; thirty stops from a second connection, each between two instructions; keep and go back in 2.8 ms a pair | | |
 
@@ -112,9 +116,11 @@ suite of WOZ images chosen to break a weak disk emulation (the 21st, a
 13-sector disk, does not boot through a 16-sector controller on a real IIe
 either), and passed the automatic tests of a2audit, a test suite of the
 IIe's memory and soft switches. It needed one change for the checks: its
-save state leaves out the disk controller's private state, so a snapshot
+save state left out the disk controller's private state, so a snapshot
 saved while a disk turned loaded into a different machine, until the kit's
-build added it.
+build added it. From 3.8.0 the save state holds it (Apple2TS's pull request
+515), all but the cycle the motor is due to stop at, which the build still
+adds.
 
 MAME 0.289, driven from a Lua script inside its debugger, passed 38 of
 the 39 and makes its own screenshots, in the colours a TV shows. It is the
@@ -143,7 +149,7 @@ shell made for a person, and neither has a saved state.
 python3 kit/scripts/tools.py --platform apple2 status
 python3 kit/scripts/tools.py get-apple2ts                             # clone Apple2TS and install esbuild into tools/apple2, then build the server
 python3 kit/scripts/tools.py apple2ts                                 # powered on with no disk, waiting on 127.0.0.1:6502
-python3 kit/scripts/tools.py --platform apple2 check-emulator         # 50 named checks, about nine seconds
+python3 kit/scripts/tools.py --platform apple2 check-emulator         # 51 named checks, about twelve seconds
 python3 kit/scripts/tools.py --platform apple2 stop                   # this clone's servers
 python3 kit/scripts/tools.py --platform apple2 verify-footprint       # what it writes outside the repository
 python3 kit/scripts/tools.py r2000 games/apple2/<slug>/work/<state>.json    # the disassembler, on a snapshot
@@ -166,9 +172,9 @@ Tell the contributor this before installing anything:
 
 | What | Where | Size |
 |---|---|---|
-| Apple2TS 3.7.0's source, its `src/` folder only | `tools/apple2/apple2ts/` | 9.3 MB on disk, git's own files included |
-| esbuild 0.25.12, from npm | `tools/apple2/esbuild/` | 11 MB |
-| The server, bundled from both | `tools/apple2/apple2ts-server.cjs` | 556 KB |
+| Apple2TS 3.8.0's source, its `src/` folder only | `tools/apple2/apple2ts/` | 18 MB on disk, git's own files included |
+| esbuild 0.28.2, from npm | `tools/apple2/esbuild/` | 12 MB |
+| The server, bundled from both | `tools/apple2/apple2ts-server.cjs` | 1.5 MB |
 | The server's home directory and the kit's scratch snapshots | `tools/apple2-home/` | small; a snapshot measured 5 KB with no disk in and about 300 KB with one |
 | Disassembler binary, shared with the C64 | `tools/cargo/` | about 20 MB |
 | Disassembler settings | `tools/r2000-home/` | small |
@@ -202,7 +208,9 @@ Run on Linux x86_64 (Ubuntu 24.04 in a cloud container, no display, Node
 42 of 42 in each of two runs, and on 20 October 2026, with phase 5's
 seven checks of the II Plus added, 49 of 49 in each of two runs,
 and on 10 November 2026, under Node 22.23.4, with the read log's check
-added, 50 of 50;
+added, 50 of 50. On 22 November 2026, with Apple2TS 3.8.0, esbuild 0.28.2
+and Node 22.23.5, with the motor's check added: 51 of 51 in each of six
+runs, and a fresh install took 3 s;
 `test_frame.py` found no pixel different,
 and `verify-footprint` was clean, with nothing written outside the
 repository either by the server or by `get-apple2ts`'s install. Nothing in

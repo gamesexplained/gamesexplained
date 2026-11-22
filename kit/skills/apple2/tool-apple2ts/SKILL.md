@@ -1,6 +1,6 @@
 ---
 name: tool-apple2ts
-description: How to drive Apple2TS 3.7.0, the Apple II emulator the kit uses, through the kit's own server. Start it, connect, the commands, memory by space, runs and checkpoints, frames, keys and the game port, disks, snapshots, the screen, the text and the sound, what ran, and the traps measured on the release. What to do when a check fails is in workarounds.md, beside this file.
+description: How to drive Apple2TS 3.8.0, the Apple II emulator the kit uses, through the kit's own server. Start it, connect, the commands, memory by space, runs and checkpoints, frames, keys and the game port, disks, snapshots, the screen, the text and the sound, what ran, and the traps measured on the release. What to do when a check fails is in workarounds.md, beside this file.
 ---
 
 # Apple2TS in the kit's server
@@ -315,12 +315,13 @@ m.keep(); ...; m.back()                          # a whole state in memory, 2.8 
 
 - **The format** is the kit's: JSON that begins
   `{"format":"apple2ts-kit-snapshot"`, holding Apple2TS's own save state
-  (both 64Ks, the switches, the CPU, the cards, and each disk in a drive)
-  with what that leaves out: the random generator's state, the inputs held,
-  the disk controller's bit position and latch, the motor's pending
-  spin-down, and the paddle timer. `kit/apple2/snapshot.py` reads it for
-  `listing.py`: main memory, with the language card's RAM at $D000-$FFFF,
-  or another bank by name (`kit/scripts/parts.py`, a part's `bank`). The
+  (both 64Ks, the switches, the CPU, the cards with the disk controller's
+  bit position and latch, the paddle timer, and each disk in a drive) with
+  what that leaves out: the random generator's state, the inputs held, and
+  the cycle the motor's pending spin-down ends at. `kit/apple2/snapshot.py`
+  reads it for `listing.py`: main memory, with the language card's RAM at
+  $D000-$FFFF, or another bank by name (`kit/scripts/parts.py`, a part's
+  `bank`). The
   ROM, the I/O page and the cards are not in its image. The hand-over is
   `work/entry.json`.
 - **A save** can be taken while a run is in progress, between two slices
@@ -330,7 +331,11 @@ m.keep(); ...; m.back()                          # a whole state in memory, 2.8 
   running, and three loads of the same file come out the same, in this
   server and after a restart (`determinism-*`, `load-continues-exactly`).
   A snapshot taken while a disk was being read loads and reads on to the
-  same memory at the same cycle (`disk-in-snapshot`).
+  same memory at the same cycle (`disk-in-snapshot`), and one taken while
+  the drive spins down stops its motor in the same frame
+  (`disk-motor-stops`). A snapshot saved on Apple2TS 3.7.0 loads and reads
+  on to the same memory, but a disk read ends at another cycle: 3.8.0 reads
+  the test disk's boot about 67,000 cycles sooner.
 - **A snapshot holds its disks whole**, with what the game wrote to them, so
   a load needs no disk file. Measured on 19 October 2026: 5,392 bytes with
   no disk in, 305,072 with a WOZ of 221,436 bytes in drive 1, and 322,363

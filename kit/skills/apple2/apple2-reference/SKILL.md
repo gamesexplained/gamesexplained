@@ -13,7 +13,7 @@ NTSC. Its CPU is a 65C02 without Rockwell's bit instructions. An
 extended 80-column card with 64K of auxiliary memory sits in the
 auxiliary slot, a Mockingboard in slot 4, and a Disk II controller with
 two drives in slot 6. There is no hard disk and no clock card. The
-emulator is Apple2TS 3.7.0 (MIT) inside the kit's server,
+emulator is Apple2TS 3.8.0 (MIT) inside the kit's server,
 `kit/apple2/apple2ts_server.mjs`, driven with `kit/apple2/apple2ts.py`
 (`kit/skills/apple2/tool-apple2ts`). The Apple II, the II Plus, the
 unenhanced IIe, the IIc and the IIgs appear only in notes marked as
