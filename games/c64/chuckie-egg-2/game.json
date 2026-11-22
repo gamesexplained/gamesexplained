@@ -3,33 +3,225 @@
   "platform": "c64",
   "slug": "chuckie-egg-2",
   "title": "Chuckie Egg 2",
-  "year": null,
-  "publisher": "",
-  "developer": "",
-  "title_image": "",
-  "build": "",
+  "year": 1985,
+  "publisher": "A&F Software",
+  "developer": "A&F Software (the A&F R&D Team)",
+  "title_image": "reference/title.png",
+  "build": "one-file whole-memory image, $0314-$FFFF, started by an IRQ hook at $033C (chuckie-egg-2.prg, MD5 feba9b149adc49799ba1f58201ef344a); the same kind of file as games/c64/i-ball's, which came from the OneLoad64 games collection; where this one came from is not recorded",
   "tier": "none",
   "coverage_percent": null,
   "copy": "agent-draft",
   "steward": "",
   "credits": [],
-  "tools": {},
-  "model": "",
-  "step_models": {},
-  "accuracy": [],
+  "tools": {
+    "emulator": "release v4.0.0, v4.0.0-linux-x86_64-gui.zip",
+    "disassembler": "regenerator2000 0.9.20",
+    "host": "Linux x86_64 (Ubuntu 24.04, cloud container)"
+  },
+  "model": "claude-opus-5-5",
+  "step_models": {
+    "10-orient": [
+      "claude-opus-5-5"
+    ],
+    "12-media": [
+      "claude-opus-5-5"
+    ],
+    "20-features": [
+      "claude-opus-5-5"
+    ],
+    "40-sweep": [
+      "claude-opus-5-5"
+    ],
+    "50-coverage": [
+      "claude-opus-5-5"
+    ]
+  },
+  "accuracy": [
+    {
+      "step": "research",
+      "web": true,
+      "models": [
+        "claude-opus-5-5"
+      ]
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "claude-opus-5-5"
+      ]
+    }
+  ],
   "kit_version": "0.0.361",
   "created": "2026-11-22",
   "video": {
-    "screen": "",
-    "charset": ""
+    "screen": "$0400",
+    "charset": "$0800"
   },
   "coverage": {
-    "exclude": [],
+    "exclude": [
+      [
+        "$0000",
+        "$00FF",
+        "runtime: zero page, the game's variables (named in the listing) and the pointers its routines use"
+      ],
+      [
+        "$0200",
+        "$033B",
+        "system: the KERNAL's work area and vectors, which the game does not use once it runs"
+      ],
+      [
+        "$0383",
+        "$03FF",
+        "never read: zeros after start_after_load"
+      ],
+      [
+        "$0400",
+        "$07FF",
+        "runtime: the screen and the sprite pointers, drawn by room_clear, draw_room and the front end's printing"
+      ],
+      [
+        "$1000",
+        "$11FF",
+        "never read: VICE's power-on fill around the interrupt and tune code (the code itself is counted)"
+      ],
+      [
+        "$1200",
+        "$15FF",
+        "runtime: the shadow copy of the screen that room_finish makes and the take and collect code copy back"
+      ],
+      [
+        "$1600",
+        "$16FF",
+        "never read: VICE's power-on fill"
+      ],
+      [
+        "$1700",
+        "$1AFF",
+        "runtime: the property map under the screen, built by plot_cell as each room is drawn"
+      ],
+      [
+        "$1B00",
+        "$1B0F",
+        "never read: VICE's power-on fill"
+      ],
+      [
+        "$1B89",
+        "$1BFF",
+        "never read: VICE's power-on fill after rooms_visited"
+      ],
+      [
+        "$1C00",
+        "$1CFF",
+        "runtime: Harry's movement and the restart point ($1C00-$1C0F), set by player_init; the rest is power-on fill"
+      ],
+      [
+        "$1D00",
+        "$1FFF",
+        "runtime: the creature records ($1D00, 26 bytes each) and the list of them ($1E00), built by creatures_setup and creatures_move; the rest is power-on fill"
+      ],
+      [
+        "$8820",
+        "$888F",
+        "never read: VICE's power-on fill after key_check (redefine_keys writes $888F, the byte before key_table, as a sentinel)"
+      ],
+      [
+        "$88A8",
+        "$89FF",
+        "never read: VICE's power-on fill between key_table and the pick-ups' pictures"
+      ],
+      [
+        "$C7B4",
+        "$C8FF",
+        "never read: zeros and VICE's power-on fill after note_table"
+      ],
+      [
+        "$F4B2",
+        "$F7FF",
+        "never read: VICE's power-on fill after the tape saver"
+      ],
+      [
+        "$F800",
+        "$FBFF",
+        "runtime: save_buffer, filled by save_table and read by tape_restore"
+      ],
+      [
+        "$FC00",
+        "$FFF9",
+        "not the game's: VICE's power-on fill and, at $FD30, a copy of the KERNAL's vector table that nothing reads (start_after_load reads the ROM's)"
+      ]
+    ],
     "extra": [],
     "include": []
   },
   "io": [],
-  "regions": [],
+  "regions": [
+    [
+      "$0800",
+      "$0FFF",
+      "graphics",
+      "the character set: scenery, the pick-ups' cells and two fonts"
+    ],
+    [
+      "$2000",
+      "$3FFF",
+      "graphics",
+      "128 sprite shapes: Harry, the creatures, the train, the dog, the van, the big creature and the lift"
+    ],
+    [
+      "$5E00",
+      "$5F5B",
+      "tables",
+      "the creatures' animations"
+    ],
+    [
+      "$7C00",
+      "$7FFF",
+      "levels",
+      "the creature list: room, y, column and type of 256 creatures"
+    ],
+    [
+      "$8000",
+      "$81FF",
+      "tables",
+      "the creature types"
+    ],
+    [
+      "$8200",
+      "$86C8",
+      "levels",
+      "the object table and the pick-ups' shapes"
+    ],
+    [
+      "$8A00",
+      "$8EFF",
+      "graphics",
+      "the pick-ups' pictures"
+    ],
+    [
+      "$8F00",
+      "$8FFF",
+      "text",
+      "a fragment of the BBC BASIC source"
+    ],
+    [
+      "$9000",
+      "$C630",
+      "levels",
+      "the 120 room records and their table"
+    ],
+    [
+      "$C650",
+      "$C777",
+      "graphics",
+      "an unused title logo's characters"
+    ],
+    [
+      "$C780",
+      "$C7B3",
+      "sound",
+      "the tune's note table"
+    ]
+  ],
   "links": {
     "wiki": {
       "title": "",
