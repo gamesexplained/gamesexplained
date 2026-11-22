@@ -93,3 +93,15 @@ the step viewer, and `?move=` so a move card opens its animation
 there), and what was left, scoring and the opponent, became Gameplay.
 "The backdrops" became Backdrops, one word as `70-minisite` asks. The
 old section links forward through `redirects`. No claim was changed.
+
+## 22 November 2026, the contributor's tab order
+
+At the contributor's request, Gameplay took back the name How it works
+and sits after Overview, the build placing it ahead of Discoveries. The
+Backdrops tab was folded into Graphics as its third and fourth sections,
+before the loading picture, keeping the `backdrops` and `judge` ids, and
+`levels.html` now forwards to `graphics.html#backdrops`. The step viewer
+gained a picture of the whole fighter that Play animates, moved each
+tick by the step's X and Y as `$3837` moves it, both in units of two
+pixels; every animation was played in Chromium to check it stays inside
+the picture.

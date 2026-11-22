@@ -448,16 +448,13 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 
 ### graphics.html
 
+- The end of a two-player game, captured in the emulator.
 - The cassette's own bytes, recorded in VICE with the picture up and drawn as the video chip draws them, with the border as the loader painted it in that one frame.
 - One frame of a two-player bout, drawn from memory and the recorded writes to the video chip with the site's renderer: all 104,448 pixels match the emulator's own picture of the same frame.
 
 ### index.html
 
 - The start of a one-player bout at Novice, captured in an emulator.
-
-### levels.html
-
-- The end of a two-player game, captured in the emulator.
 
 ### music.html
 
