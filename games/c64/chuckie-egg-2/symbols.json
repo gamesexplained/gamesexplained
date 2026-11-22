@@ -2,7 +2,7 @@
  "schema": 1,
  "platform": "c64",
  "game": "chuckie-egg-2",
- "build": "",
+ "build": "one-file whole-memory image, $0314-$FFFF, started by an IRQ hook at $033C (chuckie-egg-2.prg, MD5 feba9b149adc49799ba1f58201ef344a); the same kind of file as games/c64/i-ball's, which came from the OneLoad64 games collection; where this one came from is not recorded",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -15,6 +15,11 @@
     53248,
     57343,
     "I/O and colour RAM"
+   ],
+   [
+    1024,
+    2047,
+    "screen RAM"
    ],
    [
     0,
@@ -107,7 +112,13 @@
     "not the game's: VICE's power-on fill and, at $FD30, a copy of the KERNAL's vector table that nothing reads (start_after_load reads the ROM's)"
    ]
   ],
-  "extra": [],
+  "extra": [
+   [
+    2048,
+    4095,
+    "character set"
+   ]
+  ],
   "edges": [
    0,
    256,
@@ -7152,13 +7163,13 @@
   },
   {
    "address": 31197,
-   "name": "lift_high",
+   "name": "lift_low_stop",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 31198,
-   "name": "lift_low",
+   "name": "lift_top",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -9606,7 +9617,103 @@
   },
   {
    "address": 60331,
-   "name": "key_name_runstop",
+   "name": "key_name_run_stop",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60344,
+   "name": "key_name_cbm_key",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60356,
+   "name": "key_name_space",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60366,
+   "name": "key_name_left_arrow",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60381,
+   "name": "key_name_up_arrow",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60394,
+   "name": "key_name_right_shift",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60410,
+   "name": "key_name_clr_home",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60423,
+   "name": "key_name_left_shift",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60438,
+   "name": "key_name_crsr_u_d",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60451,
+   "name": "key_name_f5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60458,
+   "name": "key_name_f3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60465,
+   "name": "key_name_f1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60472,
+   "name": "key_name_f7",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60479,
+   "name": "key_name_crsr_l_r",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60492,
+   "name": "key_name_return",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60503,
+   "name": "key_name_inst_del",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60516,
+   "name": "key_name_control",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -10852,7 +10959,7 @@
   {
    "address": 20753,
    "type": "line",
-   "text": "For a jump or fall: the position within the cell ($5558) and along the walk ($5559). Going up, a ceiling (platform or slope bits) above stops the rise. Going down, a deadly cell is fatal; a platform or pipe within the distance he drops lands him: dy trimmed to the floor, state from the floor (stand_state), and death when the fall counter $BB reached 15 (a fall of fifteen steps or more kills). While falling, pressing up or down over a ladder or chain grips it. Then the side check and the move."
+   "text": "For a jump or fall: the position within the cell ($5558) and along the walk ($5559). Going up, a deadly cell above kills him, and a platform, slope or slippery-pipe cell above (mask $2D) stops the rise; ladder and chain cells do not. Going down, a deadly cell is fatal; a platform, slope or pipe within the distance he drops lands him: dy trimmed to the floor, state from the floor (stand_state), and death when the fall counter $BB reached 15 (a fall of fifteen steps or more kills). While falling, pressing up or down over a ladder or chain grips it. Then the side check and the move."
   },
   {
    "address": 20921,
@@ -10997,7 +11104,7 @@
   {
    "address": 22116,
    "type": "line",
-   "text": "Draw object entry Y: its shape number picks a three-byte entry of the shape table at $8600 (colour as a Spectrum colour, then a graphic number and height). The graphic number picks a bitmap from pickup_bitmaps ($576C): its width and height in cells, then 8 bytes a cell, copied into the character set at $0AE8 + 8*n so that each pick-up gets characters of its own from $5D up; then the characters are plotted at the entry's row and column. The attribute marks what the cells are: graphic $0D (the ladder) gets the ladder bit $02, graphic $0C (the girder) the platform bit $01, and every entry below $2D also gets $40, the bit that says something can be picked up here."
+   "text": "Draw object entry Y: its shape number picks a three-byte entry of the shape table at $8600 (colour as a Spectrum colour, then a graphic number and height). The graphic number picks a bitmap from pickup_bitmaps ($576C): its height and width in cells, then 8 bytes a cell, copied into the character set at $0AE8 + 8*n so that each pick-up gets characters of its own from $5D up; then the characters are plotted at the entry's row and column. The attribute marks what the cells are: graphic $0D (the ladder) gets the ladder bit $02, graphic $0C (the girder) the platform bit $01, and every entry below $2D also gets $40, the bit that says something can be picked up here."
   },
   {
    "address": 22348,
@@ -11007,7 +11114,7 @@
   {
    "address": 22380,
    "type": "line",
-   "text": "Pointers to the 37 pick-up bitmaps (graphic numbers 0 to $24; the colour table follows at $57B6), in the $8A00-$8EFF area: each starts with its width and height in cells and then its cells, 8 bytes each."
+   "text": "Pointers to the 37 pick-up bitmaps (graphic numbers 0 to $24; the colour table follows at $57B6), in the $8A00-$8EFF area: each starts with its height and width in cells and then its cells, 8 bytes each."
   },
   {
    "address": 22454,
@@ -11107,7 +11214,7 @@
   {
    "address": 22765,
    "type": "line",
-   "text": "Delay of 255*19 loop turns between moves of the van."
+   "text": "Delay of 255*20 loop turns between moves of the van."
   },
   {
    "address": 22776,
@@ -11162,7 +11269,7 @@
   {
    "address": 23277,
    "type": "line",
-   "text": "Delay 255*19 loop turns; keeps X."
+   "text": "Delay 255*20 loop turns; keeps X."
   },
   {
    "address": 23294,
@@ -11187,7 +11294,7 @@
   {
    "address": 23673,
    "type": "line",
-   "text": "Look up animation A in anim_table ($5D5D, a word each) and copy its first bytes into the creature's record: two frame characters, width and height, the frame count, and the frame for the start position."
+   "text": "Look up animation A in anim_table ($5D5D, a word each, 27 entries) and copy its six-byte header into the creature's record (sprites down +6, across +7, count +$16, stretch flags +$17, +$0E, +$0F), then the frame pointer for the start position (+$18) and the address of its frames (+0/+1)."
   },
   {
    "address": 23804,
@@ -11252,7 +11359,7 @@
   {
    "address": 24064,
    "type": "line",
-   "text": "The creatures' animations, which anim_table and anim_table2 point into: each starts with two frame characters, the sprites across and down, then the frame sprite pointers for going right and going left."
+   "text": "The creatures' animations, which anim_table and anim_table2 point into. Each starts with a six-byte header copied into the creature's record: sprites down (+6) and across (+7), the sprite count (+$16), the stretch flags (+$17), and two bytes for +$0E and +$0F (the width and height its look-ahead tests); then the frame sprite pointers, for going right and going left."
   },
   {
    "address": 24412,
@@ -11282,12 +11389,12 @@
   {
    "address": 24576,
    "type": "line",
-   "text": "Move every creature in the room ($D9 of them, records from $1D00, 26 bytes each): run its behaviour (creature_think), place its sprites (creature_sprites) and step to the next record. Each record's address is listed at $1E00 for the collision test, the list ending with a zero word. All sprites on. Called twice a pass from main_loop, so creatures move twice for each step of Harry's."
+   "text": "Move every creature in the room ($D9 of them, records from $1D00, 26 bytes each): its behaviour (creature_think), its sprites (creature_sprites), and on to the next record. A creature that acts this pass has its record's address written into a list at $1E00, ended by a zero word; one still counting down its delay is not entered. Nothing found reads the list (collide_check works from $D01E). All sprites on. Called twice a pass from main_loop, so creatures move twice for each step of Harry's."
   },
   {
    "address": 24651,
    "type": "line",
-   "text": "One creature's behaviour for this pass. Its delay (record +8) counts down; when it runs out it is reloaded from the low five bits of record +$13 and the creature acts, chosen by its flag bytes: +$13 bit 7 a creature that waits and then pounces (creature_wait), +$12 bit 0 a creature that stands still (creature_stop), +$12 bit 6 a creature that climbs (creature_climb); otherwise it walks: with no step under way it looks ahead in its direction (record +$0B) along its height for anything other than a ladder in the property map, and for a floor under its next cell. A wall, or no floor for one that needs it (+$12 bit 5), turns it round (creature_turn). Then it moves (creature_step)."
+   "text": "One creature's behaviour for this pass. Its delay (record +8) counts down; until it runs out the routine returns. Then it is reloaded from the low five bits of record +$13 and the creature acts, chosen by its flag bytes: +$13 bit 7 a creature that waits and then pounces (creature_wait), +$12 bit 0 one that stands still (creature_stop), +$12 bit 6 one that climbs (creature_climb); otherwise it walks: with no step under way it looks ahead in its direction (record +$0B) along its height for anything other than a ladder in the property map, and, unless +$12 bit 5 is set, for a floor under its next cell. A wall, or a missing floor for one without bit 5, turns it round (creature_turn). Then it moves (creature_step)."
   },
   {
    "address": 24828,
@@ -11322,12 +11429,12 @@
   {
    "address": 25365,
    "type": "line",
-   "text": "A creature with +$13 bit 7: in phase +$13 bit 5 it rises (creature_rise); with bit 6 it falls (creature_fall); with +$12 bit 3 it stays hidden until a random number (rnd) is below 10, then starts: steps cleared, phase bit 5 set, delay 10."
+   "text": "A creature with +$13 bit 7: in phase +$13 bit 5 it rises (creature_rise); with bit 6 it falls (creature_fall). With +$12 bit 3 clear it stays hidden (pointer $FA) until a random number (rnd) is below 10; with bit 3 set it starts at once. Starting: steps cleared, phase bit 5 set, delay 10."
   },
   {
    "address": 25450,
    "type": "line",
-   "text": "A pouncing creature falling: with +$12 bit 3 only on a random chance of 10 in 256; dy 2 down (or up with bit 3), phase bit 5."
+   "text": "A pouncing creature's move: with +$12 bit 3 set, only on a random chance of 10 in 256; dy is 2 up (2 down with bit 3 set), and phase bit 5 is set."
   },
   {
    "address": 25520,
@@ -11507,7 +11614,7 @@
   {
    "address": 26632,
    "type": "line",
-   "text": "The first sprite of the creature, plus one, for creature_stretch."
+   "text": "The first sprite of the creature (sprite_next plus one, which is the sprite's own number), for creature_stretch."
   },
   {
    "address": 26633,
@@ -11577,17 +11684,17 @@
   {
    "address": 26921,
    "type": "line",
-   "text": "Room $78: the seven sprites of the big creature there take their pointers from giant_frame_tbl, one set of seven or the other by bit 1 of its x phase (two frames), all green."
+   "text": "Room $78: the seven sprites of the big creature there take their pointers from giant_frame_tbl, frame 1 from $6950 or frame 2 from $6956 by bit 1 of its x phase, all green. The two frames overlap: frame 1's seventh pointer is frame 2's first, and frame 2's seventh is $A9, the first byte of room2_switch, not a sprite pointer of the table."
   },
   {
    "address": 26960,
    "type": "line",
-   "text": "The sprite pointers of the big creature in room $78, two frames of seven sprites: $F2 $F3 $F6 $F4 $F7 $F5 and $F2 $F3 $F6 $F8 $F7 $F5."
+   "text": "The big creature's sprite pointers: $F2 $F3 $F6 $F4 $F7 $F5 for frame 1 and $F2 $F3 $F6 $F8 $F7 $F5 for frame 2, six each; giant_frames reads seven from each start."
   },
   {
    "address": 26966,
    "type": "line",
-   "text": "The second frame of the big creature's seven sprites: $F2 $F3 $F6 $F8 $F7 $F5."
+   "text": "The second frame's six pointers: $F2 $F3 $F6 $F8 $F7 $F5. giant_frames reads a seventh past them, the byte $A9 at $695C."
   },
   {
    "address": 26972,
@@ -12022,7 +12129,7 @@
   {
    "address": 31092,
    "type": "line",
-   "text": "Move the lift, only while the power is on ($B0): in rooms $1A and $37 it rises a pixel a pass and goes back to the bottom ($DD) after passing $3A, a lift that never stops. In rooms $22 and $68 it moves towards its upper stop while Harry rides it (state 8) and back to its lower stop when he is off."
+   "text": "Move the lift, only while the power is on ($B0): in rooms $1A and $37 it rises a pixel a pass and goes back to the bottom ($DD) after passing $3A, a lift that never stops. In rooms $22 and $68 it starts high (y $44) and goes down a pixel a pass to its lower stop (lift_low_stop) while Harry rides it (state 8), and back up to y $44 when he is off."
   },
   {
    "address": 31185,
@@ -12047,22 +12154,22 @@
   {
    "address": 31193,
    "type": "line",
-   "text": "The two stops of the lifts in rooms $22 and $68: lower stops $44, $44 at $79D9, upper stops $7A, $DA at $79DB; the current pair is kept at $79DD-$79DE."
+   "text": "The lifts' stops in rooms $22 and $68: the upper stop y $44 for both at $79D9, the lower stops at $79DB ($7A in room $22, $DA in room $68); lift_setup copies this room's pair to $79DD-$79DE."
   },
   {
    "address": 31195,
    "type": "line",
-   "text": "lift_stops' upper stops: $7A in room $22, $DA in room $68."
+   "text": "lift_stops' lower stops (sprite y, larger is lower): $7A in room $22, $DA in room $68."
   },
   {
    "address": 31197,
    "type": "line",
-   "text": "The upper stop of the lift in this room."
+   "text": "The lower stop of the lift in this room, which it goes down to while Harry rides it."
   },
   {
    "address": 31198,
    "type": "line",
-   "text": "The lower stop of the lift in this room."
+   "text": "The upper stop of the lift in this room, y $44, which it goes back up to."
   },
   {
    "address": 31199,
@@ -12247,7 +12354,7 @@
   {
    "address": 34304,
    "type": "line",
-   "text": "The pick-ups' shapes, three bytes each (shapes 0 to $42): colour (a Spectrum colour), graphic number (an index into pickup_bitmaps) and value (low five bits the points take_or_collect awards, 0 for things that are carried)."
+   "text": "The pick-ups' shapes, three bytes each (shapes 0 to $42): colour (a Spectrum colour), graphic number (an index into pickup_bitmaps) and value. The value's low five bits are the points take_or_collect awards for things collected by touching; the things that are carried have bit 7 set ($80 for the toy parts, $81-$89 for milk, cocoa, sugar, the baskets and the rest)."
   },
   {
    "address": 34505,
@@ -12317,7 +12424,7 @@
   {
    "address": 35426,
    "type": "line",
-   "text": "A pick-up picture, 4 cells high and 2 wide (66 bytes): the first egg's toy (the last pointer of toy_set_1), which pickups_init puts at graphic $0E."
+   "text": "A pick-up picture, 2 cells high and 4 wide (66 bytes): the first egg's toy (the last pointer of toy_set_1), which pickups_init puts at graphic $0E."
   },
   {
    "address": 35490,
@@ -12367,7 +12474,7 @@
   {
    "address": 35572,
    "type": "line",
-   "text": "A pick-up picture, 4 cells high and 2 wide (66 bytes): the second egg's toy (the last pointer of toy_set_2)."
+   "text": "A pick-up picture, 2 cells high and 4 wide (66 bytes): the second egg's toy (the last pointer of toy_set_2)."
   },
   {
    "address": 35638,
@@ -12412,7 +12519,7 @@
   {
    "address": 35718,
    "type": "line",
-   "text": "A pick-up picture, 4 cells high and 2 wide (66 bytes): the third egg's toy (the last pointer of toy_set_3)."
+   "text": "A pick-up picture, 2 cells high and 4 wide (66 bytes): the third egg's toy (the last pointer of toy_set_3)."
   },
   {
    "address": 35784,
@@ -12457,7 +12564,7 @@
   {
    "address": 35864,
    "type": "line",
-   "text": "A pick-up picture, 4 cells high and 2 wide (66 bytes): the fourth egg's toy (the last pointer of toy_set_4)."
+   "text": "A pick-up picture, 2 cells high and 4 wide (66 bytes): the fourth egg's toy (the last pointer of toy_set_4)."
   },
   {
    "address": 35930,
@@ -12507,7 +12614,7 @@
   {
    "address": 36028,
    "type": "line",
-   "text": "A pick-up picture, 1 cell high and 1 wide (10 bytes): graphic $16. Used for: object."
+   "text": "A pick-up picture, 1 cell high and 1 wide (10 bytes): graphic $16, the scoring pick-up of shapes $2A-$2C (worth 3, 5 and 4 points), placed by 32 objects."
   },
   {
    "address": 36038,
@@ -12567,7 +12674,7 @@
   {
    "address": 36228,
    "type": "line",
-   "text": "A pick-up picture, 4 cells high and 3 wide (98 bytes): graphic $14, drawn for shape $15, object $36 in room 105."
+   "text": "A pick-up picture, 3 cells high and 4 wide (98 bytes): graphic $14, drawn for shape $15, object $36 in room 105."
   },
   {
    "address": 36292,
@@ -12577,7 +12684,7 @@
   {
    "address": 36326,
    "type": "line",
-   "text": "A pick-up picture, 1 cell high and 4 wide (34 bytes): graphic $13. Used for: object."
+   "text": "A pick-up picture, 1 cell high and 4 wide (34 bytes): graphic $13, object $39 in room 105, which room69_trigger takes away."
   },
   {
    "address": 36352,
@@ -13312,7 +13419,7 @@
   {
    "address": 51462,
    "type": "line",
-   "text": "Set voice 1 up for Harry's footsteps: frequency and pulse cleared, no filter, attack/decay 0, sustain/release 0, waveform noise ($80, gate off), volume 15; the gate toggle $5B starts at $80 and the countdown $5A at 4."
+   "text": "Set voice 1 up for Harry's footsteps: the frequency's low byte and the pulse width cleared, no filter, attack/decay 0, sustain/release 0, waveform noise ($80, gate off), volume 15; the gate toggle $5B starts at $80 and the countdown $5A at 4."
   },
   {
    "address": 51501,
@@ -13862,7 +13969,7 @@
   {
    "address": 59877,
    "type": "line",
-   "text": "Back in instructions after printing PRESS SPACE BAR TO CONTINUE."
+   "text": "Back in press_space after printing PRESS SPACE BAR TO CONTINUE."
   },
   {
    "address": 59891,
@@ -13952,7 +14059,7 @@
   {
    "address": 60169,
    "type": "line",
-   "text": "Back in redefine_keys after printing PRESS ABORT KEY...."
+   "text": "Back in redefine_abort_prompt after printing PRESS ABORT KEY...."
   },
   {
    "address": 60184,
@@ -13962,7 +14069,7 @@
   {
    "address": 60203,
    "type": "line",
-   "text": "Back in redefine_keys after printing PRESS SAVE KEY....."
+   "text": "Back in redefine_abort_prompt after printing PRESS SAVE KEY....."
   },
   {
    "address": 60210,
@@ -13982,7 +14089,7 @@
   {
    "address": 60331,
    "type": "line",
-   "text": "Print RUN/STOP, the name of key code $80."
+   "text": "Print RUN/STOP, the name of key code $80 (key_name_table's entry 0)."
   },
   {
    "address": 60334,
@@ -13992,7 +14099,12 @@
   {
    "address": 60343,
    "type": "line",
-   "text": "Back in key_name_table after printing RUN/STOP."
+   "text": "Back in key_name_run_stop after printing RUN/STOP."
+  },
+  {
+   "address": 60344,
+   "type": "line",
+   "text": "Print CBM KEY, the name of key code $81 (key_name_table's entry 1)."
   },
   {
    "address": 60347,
@@ -14002,7 +14114,12 @@
   {
    "address": 60355,
    "type": "line",
-   "text": "Back in key_name_table after printing CBM KEY."
+   "text": "Back in key_name_cbm_key after printing CBM KEY."
+  },
+  {
+   "address": 60356,
+   "type": "line",
+   "text": "Print SPACE, the name of key code $82 (key_name_table's entry 2)."
   },
   {
    "address": 60359,
@@ -14012,7 +14129,12 @@
   {
    "address": 60365,
    "type": "line",
-   "text": "Back in key_name_table after printing SPACE."
+   "text": "Back in key_name_space after printing SPACE."
+  },
+  {
+   "address": 60366,
+   "type": "line",
+   "text": "Print LEFT ARROW, the name of key code $84 (key_name_table's entry 4)."
   },
   {
    "address": 60369,
@@ -14022,7 +14144,12 @@
   {
    "address": 60380,
    "type": "line",
-   "text": "Back in key_name_table after printing LEFT ARROW."
+   "text": "Back in key_name_left_arrow after printing LEFT ARROW."
+  },
+  {
+   "address": 60381,
+   "type": "line",
+   "text": "Print UP ARROW, the name of key code $85 (key_name_table's entry 5)."
   },
   {
    "address": 60384,
@@ -14032,7 +14159,12 @@
   {
    "address": 60393,
    "type": "line",
-   "text": "Back in key_name_table after printing UP ARROW."
+   "text": "Back in key_name_up_arrow after printing UP ARROW."
+  },
+  {
+   "address": 60394,
+   "type": "line",
+   "text": "Print RIGHT SHIFT, the name of key code $86 (key_name_table's entry 6)."
   },
   {
    "address": 60397,
@@ -14042,7 +14174,12 @@
   {
    "address": 60409,
    "type": "line",
-   "text": "Back in key_name_table after printing RIGHT SHIFT."
+   "text": "Back in key_name_right_shift after printing RIGHT SHIFT."
+  },
+  {
+   "address": 60410,
+   "type": "line",
+   "text": "Print CLR/HOME, the name of key code $87 (key_name_table's entry 7)."
   },
   {
    "address": 60413,
@@ -14052,7 +14189,12 @@
   {
    "address": 60422,
    "type": "line",
-   "text": "Back in key_name_table after printing CLR/HOME."
+   "text": "Back in key_name_clr_home after printing CLR/HOME."
+  },
+  {
+   "address": 60423,
+   "type": "line",
+   "text": "Print LEFT SHIFT, the name of key code $88 (key_name_table's entry 8)."
   },
   {
    "address": 60426,
@@ -14062,7 +14204,12 @@
   {
    "address": 60437,
    "type": "line",
-   "text": "Back in key_name_table after printing LEFT SHIFT."
+   "text": "Back in key_name_left_shift after printing LEFT SHIFT."
+  },
+  {
+   "address": 60438,
+   "type": "line",
+   "text": "Print CRSR U/D, the name of key code $89 (key_name_table's entry 9)."
   },
   {
    "address": 60441,
@@ -14072,7 +14219,12 @@
   {
    "address": 60450,
    "type": "line",
-   "text": "Back in key_name_table after printing CRSR U/D."
+   "text": "Back in key_name_crsr_u_d after printing CRSR U/D."
+  },
+  {
+   "address": 60451,
+   "type": "line",
+   "text": "Print F5, the name of key code $8A (key_name_table's entry 10)."
   },
   {
    "address": 60454,
@@ -14082,7 +14234,12 @@
   {
    "address": 60457,
    "type": "line",
-   "text": "Back in key_name_table after printing F5."
+   "text": "Back in key_name_f5 after printing F5."
+  },
+  {
+   "address": 60458,
+   "type": "line",
+   "text": "Print F3, the name of key code $8B (key_name_table's entry 11)."
   },
   {
    "address": 60461,
@@ -14092,7 +14249,12 @@
   {
    "address": 60464,
    "type": "line",
-   "text": "Back in key_name_table after printing F3."
+   "text": "Back in key_name_f3 after printing F3."
+  },
+  {
+   "address": 60465,
+   "type": "line",
+   "text": "Print F1, the name of key code $8C (key_name_table's entry 12)."
   },
   {
    "address": 60468,
@@ -14102,7 +14264,12 @@
   {
    "address": 60471,
    "type": "line",
-   "text": "Back in key_name_table after printing F1."
+   "text": "Back in key_name_f1 after printing F1."
+  },
+  {
+   "address": 60472,
+   "type": "line",
+   "text": "Print F7, the name of key code $8D (key_name_table's entry 13)."
   },
   {
    "address": 60475,
@@ -14112,7 +14279,12 @@
   {
    "address": 60478,
    "type": "line",
-   "text": "Back in key_name_table after printing F7."
+   "text": "Back in key_name_f7 after printing F7."
+  },
+  {
+   "address": 60479,
+   "type": "line",
+   "text": "Print CRSR L/R, the name of key code $8E (key_name_table's entry 14)."
   },
   {
    "address": 60482,
@@ -14122,7 +14294,12 @@
   {
    "address": 60491,
    "type": "line",
-   "text": "Back in key_name_table after printing CRSR L/R."
+   "text": "Back in key_name_crsr_l_r after printing CRSR L/R."
+  },
+  {
+   "address": 60492,
+   "type": "line",
+   "text": "Print RETURN, the name of key code $8F (key_name_table's entry 15)."
   },
   {
    "address": 60495,
@@ -14132,7 +14309,12 @@
   {
    "address": 60502,
    "type": "line",
-   "text": "Back in key_name_table after printing RETURN."
+   "text": "Back in key_name_return after printing RETURN."
+  },
+  {
+   "address": 60503,
+   "type": "line",
+   "text": "Print INST/DEL, the name of key code $90 (key_name_table's entry 16)."
   },
   {
    "address": 60506,
@@ -14142,7 +14324,12 @@
   {
    "address": 60515,
    "type": "line",
-   "text": "Back in key_name_table after printing INST/DEL."
+   "text": "Back in key_name_inst_del after printing INST/DEL."
+  },
+  {
+   "address": 60516,
+   "type": "line",
+   "text": "Print CONTROL, the name of key code $83 (key_name_table's entry 3)."
   },
   {
    "address": 60519,
@@ -14152,7 +14339,7 @@
   {
    "address": 60527,
    "type": "line",
-   "text": "Back in key_name_table after printing CONTROL."
+   "text": "Back in key_name_control after printing CONTROL."
   },
   {
    "address": 60528,
@@ -14242,7 +14429,7 @@
   {
    "address": 61054,
    "type": "line",
-   "text": "Point the IRQ vectors ($0314 and $FFFE) at irq_raster_split, stop the CIA interrupts, and start the raster interrupt at line $40."
+   "text": "Point the IRQ vectors at the raster interrupt ($FFFE at irq_raster_split, $1100; $0314 at irq_raster_body, $1105), stop the CIA interrupts, and start the raster interrupt at line $40."
   },
   {
    "address": 61115,
@@ -14332,7 +14519,7 @@
   {
    "address": 61823,
    "type": "line",
-   "text": "Both saves meet here: PRESS PLAY & RECORD ON TAPE in cyan, a wait for a key, then the buffer is written."
+   "text": "Back in save_table after printing SAVING TABLE."
   },
   {
    "address": 61835,
@@ -14342,7 +14529,7 @@
   {
    "address": 61863,
    "type": "line",
-   "text": "Back in save_table after printing PRESS PLAY & RECORD ON TAPE."
+   "text": "Back in save_prompt after printing PRESS PLAY & RECORD ON TAPE."
   },
   {
    "address": 61899,
