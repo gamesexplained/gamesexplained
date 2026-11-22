@@ -253,8 +253,159 @@
         if (t > 78) run(P.place_target());
       },
       text: 'Before each strafing run start_run levels the plane, clears the sky and shows the run\'s number with the game\'s own spelling, STRAFFING RUN AIRCRAFT NO., then waits for fire. Fire clears the prompt, and the target goes on the horizon in three parts at a random place, for place_target to bring nearer. Here the four levels come in turn.' },
+    hits_sky_crash: { crop: [40, 38, 342, 198], on: [0xF1, 0x08], cycle: 200,
+      start(M, P) {
+        for (let i = 0; i < 64; i++) M[0x8530 + i] = 0;
+        const d = 0x52 - M[0x8061]; M[0x8061] += d; M[0x8091] = (M[0x8091] + d) & 255; P.move_plane();
+        M[0x33] = 0; M[0x1E] = 0; P.spawn_aircraft();             // one aircraft, beside the plane and coming at it
+        M[0x8561] = (M[0x8060] + 100) & 255; M[0x8563] = M[0x8060] + 100 > 255 ? 1 : 0; M[0x8562] = 0x50; M[0x8566] = 0x0C; M[0x856A] = 0x48; M[0x33] = 1;
+      },
+      pass(P, M, t, E) {
+        if (M[0x3F]) { run(P.plane_crash()); return; }
+        P.spawn_aircraft(); P.sort_aircraft();
+        M[0x3D] = M[0x3E] = 0;
+        for (let n = 4; n < 8; n++) if ((M[0x8075] >> n & 1) && E.meet(0x01, 1 << n)) { M[0x3D] = 0x01 | 1 << n; break; }
+        run(P.hits_sky_crash());
+      },
+      text: 'The video chip notes when the plane\'s sprite meets an aircraft\'s. hits_sky_crash reads that from $3D and, if the aircraft is still near (its size at least 9 of 12) and not already hit, marks it and starts the crash ($3F), which plane_crash then plays. Here an aircraft comes at the plane from the side; the page finds the sprites meeting from the pixels it draws, where the game has the chip.' },
+    hits_strafing: { crop: [40, 96, 342, 198], on: [0x02, 0x72], ctx: [0x01, 0x09], speed: 1.5, cycle: 700,
+      start(M, P, E, k) { M[0x41] = 0x80; M[0x44] = k % 4; M[0x43] = 0; M[0x45] = 0; E.toggle = true; run(P.start_run()); E.toggle = false; },
+      done: M => !M[0x80C0],
+      pass(P, M, t, E) {
+        run(P.place_target());
+        if (t % 6 === 0 && !M[0x8670]) P.fire_shot();
+        P.move_shots(); P.sort_shot();
+        M[0x3D] = M[0x3E] = 0;
+        if (M[0x8075] & 0x02) for (let n = 4; n < 7; n++) if ((M[0x80A5] >> n & 1) && E.meet(0x02, 1 << n, 1)) { M[0x3E] = 0x02 | 1 << n; break; }
+        run(P.hits_strafing());
+      },
+      text: 'One and a half times the game\'s speed. On a strafing run hits_strafing reads the chip\'s note of the shot meeting a part of the target from $3E: the part shows its hit picture, the shot is freed, 100 is scored and target_hit counts the hit. Here the plane fires as often as it can at each level\'s target in turn; the page finds the sprites meeting from the pixels it draws.' },
+    reset_after_life: { crop: [32, 35, 352, 235], on: [0xF7, 0xF9], change: 120, maskEvery: 10, maskY: [195, 235], cycle: 120,
+      start(M, P) { for (let i = 0; i < 4; i++) M[0x80C0 + 16 * i] = 0; M[0x40] = 3; M[0x47E6] = 3; const d = 0x6A - M[0x8061]; M[0x8061] += d; M[0x8091] = (M[0x8091] + d) & 255; M[0x22] = 2; P.move_plane(); },
+      pass(P, M, t) {
+        if (t < 60) { M[0x33] = t % 12 ? noise() | 1 : 0; M[0x36] = noise(); run(P.spawn_ground()); P.sort_ground(); P.spawn_aircraft(); P.sort_aircraft(); }
+        if (t === 60) { M[0x40] = 2; run(P.reset_after_life()); P.move_plane(); P.sort_ground(); P.sort_aircraft(); P.sort_shot(); }
+      },
+      text: 'After a crash plane_crash takes a life, and reset_after_life clears every ground object, aircraft and shot, levels the plane and puts it back at the bottom of the sky, and writes the lives left to the panel. Then it waits about a second and starts the engine again. Here the sky fills for 60 passes before each reset.' },
+    hill_column_right: { crop: [40, 50, 342, 104], change: 512, maskX: [328, 344],
+      pass(P, M) { M[0x22] = 2; if (!(M[0x1E] & 7)) run(P.scroll_ground()); P.set_fine_scroll(M[0x23]); },
+      text: 'Lit: the right edge, where each new column of hills comes into view. Each time scroll_left moves the three hill rows a character left, hill_column_right fills the last column, hidden behind the border, with the next column of the panorama, 40 characters to a row at $8D00, $8E00 and $8F00, wrapping after the 40th, and colours it from the table at $8100.' },
+    hill_column_left: { crop: [40, 50, 342, 104], change: 512, maskX: [40, 56],
+      pass(P, M) { M[0x22] = 0xFE; if (!(M[0x1E] & 7)) run(P.scroll_ground()); P.set_fine_scroll(M[0x23]); },
+      text: 'Lit: the left edge, where each new column of hills comes into view. Each time scroll_right moves the hill rows a character right, hill_column_left fills the first column, hidden behind the border, with the panorama\'s column before, wrapping below the first to the 40th, so the 40 columns go round as the plane circles.' },
+    new_game: { crop: [32, 67, 352, 107], change: 120, maskEvery: 10, cycle: 120,
+      start(M) { for (let a = 0x44C8; a < 0x4540; a++) M[a] = 0x20; },
+      pass(P, M, t) { if (t === 40) run(P.new_game_screen()); },
+      text: 'At the start of a game new_game copies the panorama\'s first two rows, $8D00 and $8E00, to the screen as the top two rows of hills, and new_game_screen the third, $8F00; then the level starts. Here the rows are cleared and drawn again every 120 passes.' },
+    move_plane: { sheet: M => ({ bg: sky(M, 0xD021), rows: [[0x40, 0x41, 0x42, 0x43, 0x44].map((p, i) => ({ p, label: ['hard left', 'left', 'level', 'right', 'hard right'][i], hi: 1, col: sky(M, 0xD027) }))] }),
+      text: 'The plane\'s five pictures. move_plane shows $42 plus the bank ($22, from −2 to 2), so the plane leans as the stick turns it; it also moves the plane up or down by the climb.' },
+    sort_aircraft: { sheet: M => ({ bg: sky(M, 0xD021), rows: [
+        [0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x50, 0x51, 0x52].map(p => ({ p, hi: 1, col: sky(M, 0xD02B) })),
+        [0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C].map(p => ({ p, hi: 1, col: sky(M, 0xD02B) })),
+        [{ p: [0xA2, 0xA3], label: 'hit', col: sky(M, 0xD02B), mc1: sky(M, 0xD025), mc2: sky(M, 0xD026) }]] }),
+      text: 'The pictures sort_aircraft puts in sprites 4 to 7 of the sky: an enemy aircraft heading right, near to far ($49 to $52), and heading left ($53 to $5C, ten on); a hit one flickers between $A2 and $A3.' },
+    sort_ground: { sheet: M => ({ bg: gnd(M, 0xD021), rows: [0, 1, 2, 3].map(k => Array.from({ length: 10 }, (_, i) => ({ p: 0x5D + 10 * k + i, label: i ? '' : ['tanks', 'lorries', 'guns', 'buildings'][k], col: gnd(M, 0xD02B), mc1: gnd(M, 0xD025), mc2: gnd(M, 0xD026) }))).concat([
+        Array.from({ length: 9 }, (_, k) => ({ p: [0xC0 + 2 * k, 0xC1 + 2 * k], label: k ? '' : 'hit', col: gnd(M, 0xD02B), mc1: gnd(M, 0xD025), mc2: gnd(M, 0xD026) }))]) }),
+      text: 'The pictures sort_ground puts in sprites 4 to 7 of the ground: four kinds of ground object at ten sizes, far to near ($5D to $84), and a hit one\'s explosion at its size, two pictures in turn ($C0 to $D1).' },
+    sort_shot: { sheet: M => ({ bg: gnd(M, 0xD021), rows: [Array.from({ length: 10 }, (_, i) => ({ p: 0xA8 + i, hi: 1, col: gnd(M, 0xD028) }))] }),
+      text: 'The shot\'s pictures, which sort_shot puts in sprite 1 of both bands: $A8 as it leaves the plane, getting smaller to $B1 as it flies away.' },
+    place_flak: { sheet: M => ({ bg: gnd(M, 0xD021), rows: [[0x45, 0x46, 0x47, 0x48].map(p => ({ p, col: gnd(M, 0xD029), mc1: gnd(M, 0xD025), mc2: gnd(M, 0xD026) })).concat([{ p: [0x45, 0x46, 0x47, 0x48], label: 'in turn', every: 32, col: gnd(M, 0xD029), mc1: gnd(M, 0xD025), mc2: gnd(M, 0xD026) }])] }),
+      text: 'The flak\'s pictures, which place_flak puts in sprite 2 of both bands: the shell rising ($45), then its burst in three steps ($46 to $48), 32 passes each.' },
+    set_plane_pictures: { sheet: M => ({ bg: sky(M, 0xD021), rows: [Array.from({ length: 10 }, (_, i) => ({ p: 0x9E + i, col: 6, mc1: sky(M, 0xD025), mc2: sky(M, 0xD026) })).concat([{ p: Array.from({ length: 10 }, (_, i) => 0x9E + i), label: 'in turn', every: 32, col: 6, mc1: sky(M, 0xD025), mc2: sky(M, 0xD026) }])] }),
+      text: 'The crash, $9E to $A7: set_plane_pictures puts each picture in the plane\'s and the shadow\'s sprites, one every 32 passes, as plane_crash counts on.' },
   };
   CLIPS.shot_sound = CLIPS.hit_sound = CLIPS.engine_sound;
+  CLIPS.new_game_screen = CLIPS.new_game;
+  // Diagrams, for routines whose work is moving data about: drawn on a canvas from the game's bytes
+  const DIAGRAM = {
+    // the three raster bands over a frame of play
+    bands: { play: true, text: 'game_irq runs three times a frame, at lines the band images name, and each time loads a band\'s video chip registers and sprite pointers, so eight sprites serve as many as 16 things: the plane, its shot, the flak and the aircraft in the sky, the shadow and the ground objects below, and the score panel at the bottom. setup_raster_irq points the interrupt at it.',
+      draw(ctx, w, h, M, S, frame) {
+        const px = frame(S.M.slice(), S, S.colour.slice(), [0xFF, 0xFF]), rgb = C64.PAL.map(c => [1, 3, 5].map(i => parseInt(c.substr(i, 2), 16)));
+        const x0 = 32, y0 = 35, cw = 320, ch = 200, img = ctx.createImageData(cw, ch);
+        for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) { const c = rgb[px[(y + y0) * 384 + x + x0]], o = (y * cw + x) * 4; img.data.set([c[0] * .55, c[1] * .55, c[2] * .55, 255], o); }
+        ctx.putImageData(img, 0, 0);
+        const lines = [[0, 'band 0, the sky: registers from $8060, sprite pointers $8520'], [M[0x8072], 'band 1, the ground: from $8090, pointers $8528'], [M[0x80A2], 'band 2, the panel: background, scroll, rows']];
+        ctx.font = 'bold 10px sans-serif';
+        lines.forEach(([l, label], i) => {
+          const y = Math.max(0, l - 16 - y0);
+          ctx.fillStyle = '#fff'; ctx.fillRect(0, y, cw, 2);
+          ctx.setLineDash([]);
+          const tw = ctx.measureText(label).width + 10;
+          ctx.fillStyle = 'rgba(0,0,0,.8)'; ctx.fillRect(2, y + 3, tw, 15);
+          ctx.fillStyle = '#fff'; ctx.fillText(label + (i ? '' : ''), 7, y + 14);
+          if (i) { ctx.fillStyle = 'rgba(0,0,0,.8)'; ctx.fillRect(cw - 62, y + 3, 60, 15); ctx.fillStyle = '#fff'; ctx.fillText('line ' + l, cw - 57, y + 14); }
+        });
+      }, size: [320, 200] },
+    // the record tables and the routine's own
+    records: { text: 'Every moving thing is a 16-byte record in a table, and every routine that works on one first calls a point routine, which sets a pointer in the zero page to the table plus 16 times the record number (3 for a ground stripe): $2E/$2F for a record, $26/$27 for the template it is stepping through. Lit: the table this routine points into.',
+      draw(ctx, w, h, M, S, frame, name) {
+        const T = [['ground objects', 0x80C0, 4, 'point_ground', 0x8400, 'point_ground_template'], ['aircraft', 0x8530, 4, 'point_aircraft', 0x8570, 'point_aircraft_template'],
+          ['shots', 0x8670, 2, 'point_shot', 0x86A0, 'point_shot_template'], ['flak', 0x8880, 1, 'point_flak', 0x88A0, 'point_flak_template'], ['stripes, 3 bytes', 0x87A0, 12, 'point_stripe', 0x8A00, 'point_stripe_template']];
+        const hx = a => '$' + a.toString(16).toUpperCase();
+        ctx.fillStyle = '#16171a'; ctx.fillRect(0, 0, w, h); ctx.font = '11px sans-serif';
+        ctx.fillStyle = '#c8cad0'; ctx.fillText('records ($2E/$2F)', 104, 12); ctx.fillText('templates ($26/$27)', 262, 12);
+        T.forEach(([label, rec, n, pr, tpl, pt], i) => {
+          const y = 20 + i * 32;
+          ctx.fillStyle = '#e8e9ec'; ctx.fillText(label, 4, y + 11);
+          [[rec, pr, n, 104], [tpl, pt, 99, 262]].forEach(([a, r, k, x]) => {
+            const me = r === name;
+            ctx.fillStyle = me ? '#ffffff' : '#8a8d94'; ctx.font = (me ? 'bold ' : '') + '10px sans-serif'; ctx.fillText(hx(a), x, y + 26); ctx.font = '11px sans-serif';
+            for (let j = 0; j < 4; j++) {
+              if (j >= k) break;
+              ctx.fillStyle = me ? '#E69F00' : '#3a3c42'; ctx.fillRect(x + 34 + j * 30, y, 27, 18);
+              ctx.fillStyle = me ? '#000' : '#9a9da4'; ctx.fillText(j === 3 && k > 4 ? '…' : '#' + j, x + 38 + j * 30, y + 13);
+            }
+            if (me) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(x - 2, y - 3, 158, 34); }
+          });
+        });
+        const y0 = 198, F = ['depth, 0 free', 'x', 'y', 'x high bit', 'expand', 'expand', 'next template', 'sideways rate', 'approach rate', 'picture', '', '', '', '', '', 'kind; hit $40'];
+        ctx.fillStyle = '#c8cad0'; ctx.fillText('a record\'s 16 bytes, as $1630 lists them', 4, y0);
+        F.forEach((f, j) => {
+          const x = 4 + (j % 4) * 99, y = y0 + 8 + (j >> 2) * 26;
+          ctx.fillStyle = f ? '#3a3c42' : '#24262b'; ctx.fillRect(x, y, 95, 22);
+          ctx.fillStyle = '#9a9da4'; ctx.fillText(String(j), x + 4, y + 15);
+          ctx.fillStyle = '#e8e9ec'; ctx.fillText(f, x + 22, y + 15);
+        });
+      }, size: [400, 310] },
+    // the hits each kind of defence needs, by level
+    hits: { text: 'At the start of each kind of defence set_hits_needed puts in $42 the hits that kind needs, which depends on the level in $44: 5 shifted left once for each level before it, so 5 on the first level and 10 on the second, and 20 on the third and the fourth, which is counted as the third. Each hit counts one off and fills the distance bar\'s section; the fourth kind\'s last hit starts the strafing run.',
+      draw(ctx, w, h) {
+        const N = [5, 10, 20, 20];
+        ctx.fillStyle = '#16171a'; ctx.fillRect(0, 0, w, h); ctx.font = '11px sans-serif';
+        ctx.fillStyle = '#c8cad0'; ctx.fillText('the four kinds of defence, each a section of the distance bar; a block is a hit', 4, 12);
+        N.forEach((n, i) => {
+          const y = 22 + i * 30;
+          ctx.fillStyle = '#e8e9ec'; ctx.fillText('level ' + (i + 1), 4, y + 14);
+          ctx.font = 'bold 11px sans-serif'; ctx.fillText(n + ' each', 54, y + 14); ctx.font = '11px sans-serif';
+          for (let k = 0; k < 4; k++) {
+            const x = 108 + k * 72;
+            ctx.fillStyle = '#56B4E9'; for (let b = 0; b < n; b++) ctx.fillRect(x + b * 68 / n, y + 2, 68 / n - 1, 16);
+          }
+        });
+        ctx.fillStyle = '#9a9da4'; ctx.fillText('first kind', 108, 146); ctx.fillText('second', 180, 146); ctx.fillText('third', 252, 146); ctx.fillText('fourth', 324, 146);
+      }, size: [400, 152] },
+    // where the random numbers come from
+    inputs: { text: 'Each pass read_inputs gathers what the game uses as chance and as the player\'s hand: voice 3 of the sound chip runs as noise, and its output decides when a ground object or an aircraft appears and when an aircraft turns; the raster line decides where and which way. Two bytes from CIA 1\'s timer are stored too, but the game never makes use of them. Last comes the stick, or the cracker\'s trainer key.',
+      draw(ctx, w, h) {
+        const R = [['$D41B', 'voice 3 noise', '$33', 'when things appear; turns'], ['$DC04', 'CIA 1 timer low', '$35', 'never read'], ['$DC05', 'CIA 1 timer high', '$34', 'read once, ANDed with 0'], ['$D012', 'raster line', '$36', 'where; which way'], ['$DC01', 'joystick port 2', '$1F', 'steer_plane']];
+        ctx.fillStyle = '#16171a'; ctx.fillRect(0, 0, w, h); ctx.font = '11px sans-serif';
+        R.forEach(([a, what, z, use], i) => {
+          const y = 8 + i * 30;
+          ctx.fillStyle = '#3a3c42'; ctx.fillRect(4, y, 150, 24); ctx.fillStyle = '#e8e9ec'; ctx.fillText(a + '  ' + what, 10, y + 16);
+          ctx.fillStyle = '#c8cad0'; ctx.fillRect(158, y + 11, 18, 2); ctx.beginPath(); ctx.moveTo(176, y + 7); ctx.lineTo(184, y + 12); ctx.lineTo(176, y + 17); ctx.fill();
+          ctx.fillStyle = '#E69F00'; ctx.fillRect(188, y, 40, 24); ctx.fillStyle = '#000'; ctx.font = 'bold 11px sans-serif'; ctx.fillText(z, 195, y + 16); ctx.font = '11px sans-serif';
+          ctx.fillStyle = '#c8cad0'; ctx.fillText(use, 236, y + 16);
+        });
+      }, size: [400, 158] },
+  };
+  const diag = (k, extra) => Object.assign({ diagram: k, text: DIAGRAM[k].text }, extra || {});
+  CLIPS.game_irq = CLIPS.setup_raster_irq = diag('bands');
+  for (const n of ['point_ground', 'point_ground_template', 'point_aircraft', 'point_aircraft_template', 'point_shot', 'point_shot_template', 'point_flak', 'point_flak_template', 'point_stripe', 'point_stripe_template']) CLIPS[n] = diag('records');
+  CLIPS.set_hits_needed = diag('hits');
+  CLIPS.read_inputs = diag('inputs');
+  // a colour from a band's register image, as game_irq loads it into $D021-$D02E
+  const sky = (M, r) => M[0x8060 + r - 0xD000] & 15, gnd = (M, r) => M[0x8090 + r - 0xD000] & 15;
   // The game held still. The port is run once, the first time a loop is shown: 60 frames to the
   // title, then fire pressed and 300 frames of play, to the middle of the first level.
   const Solo = (() => {
@@ -329,8 +480,19 @@
         // a routine that waits in a loop runs to the next turn of the loop, where it reads the stick
         E.step = () => { for (;;) { const r = E.gen.next(); if (r.done || (r.value && r.value.cp !== undefined)) return; } };
         // whether two sets of sky sprites have a pixel on the same place, as the chip's collision register says
-        E.meet = (a, b) => {
-          const base = frame(M, S, colour, [0, 0]), fa = frame(M, S, colour, [a, 0]), fb = frame(M, S, colour, [b, 0]);
+        E.meet = (a, b, g) => {
+          const src = g ? 0x8090 : 0x8060, box = m => {   // the sprites' rough boxes first: drawing is dear
+            let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+            for (let n = 0; n < 8; n++) if (m >> n & 1) {
+              const x = M[src + 2 * n] + (M[src + 0x10] >> n & 1) * 256, y = M[src + 2 * n + 1];
+              x0 = Math.min(x0, x); x1 = Math.max(x1, x + 48); y0 = Math.min(y0, y); y1 = Math.max(y1, y + 42);
+            }
+            return [x0, x1, y0, y1];
+          };
+          const A = box(a), B = box(b);
+          if (A[0] > B[1] || B[0] > A[1] || A[2] > B[3] || B[2] > A[3]) return false;
+          const en = m => g ? [0, m] : [m, 0];
+          const base = frame(M, S, colour, [0, 0]), fa = frame(M, S, colour, en(a)), fb = frame(M, S, colour, en(b));
           for (let i = 0; i < base.length; i++) if (fa[i] !== base[i] && fb[i] !== base[i]) return true;
           return false;
         };
@@ -421,8 +583,40 @@
         requestAnimationFrame(tick);
       })(performance.now());
     }
+    // a sheet: the sprite shapes a routine picks from, drawn from the game's bytes in the video bank at $4000
+    function sheet(cv, ram, c) {
+      const sp = c.sheet(ram), Z = 2, CW = 24 * Z + 6, CH = 21 * Z + 16;
+      const cols = Math.max(...sp.rows.map(r => r.length));
+      cv.width = cols * CW + 8; cv.height = sp.rows.length * CH + 6;
+      const ctx = cv.getContext('2d'), P = C64.PAL, t0 = performance.now();
+      (function tick() {
+        if (!cv.isConnected) return;
+        const pass = Math.floor((performance.now() - t0) / 1000 * PASSES);
+        ctx.fillStyle = P[sp.bg]; ctx.fillRect(0, 0, cv.width, cv.height);
+        sp.rows.forEach((row, ri) => row.forEach((cell, ci) => {
+          const pics = Array.isArray(cell.p) ? cell.p : [cell.p];
+          const p = pics[Math.floor(pass / (cell.every || 4)) % pics.length], x = 4 + ci * CW, y = 4 + ri * CH;
+          const data = ram.subarray(0x4000 + p * 64, 0x4000 + p * 64 + 63);
+          if (cell.hi) C64.drawSprite(ctx, data, x, y + 12, Z, P[cell.col]);
+          else C64.drawSpriteMC(ctx, data, x, y + 12, Z, P[cell.col], P[cell.mc1], P[cell.mc2]);
+          ctx.fillStyle = sp.bg === 1 || sp.bg === 7 || sp.bg === 13 || sp.bg === 15 ? '#000' : '#fff';
+          ctx.font = '10px monospace';
+          ctx.fillText(cell.label !== undefined ? cell.label : '$' + p.toString(16).toUpperCase(), x, y + 9);
+        }));
+        if (sp.rows.some(r => r.some(cell => Array.isArray(cell.p)))) requestAnimationFrame(tick);
+      })();
+    }
     async function mount(cv, ram) {
       const c = CLIPS[cv.dataset.solo];
+      if (c.sheet) { sheet(cv, ram, c); return; }
+      if (c.diagram) {
+        const d = DIAGRAM[c.diagram], [w, h] = d.size;
+        cv.width = w; cv.height = h;
+        const S = d.play ? (await boot(ram)).play : null;
+        if (!cv.isConnected) return;
+        d.draw(cv.getContext('2d'), w, h, ram, S, frame, cv.dataset.solo);
+        return;
+      }
       cv.width = 320; cv.height = 150;
       const ctx = cv.getContext('2d');
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
@@ -438,8 +632,8 @@
         for (let i = 1; i <= c.change; i++) {
           t.pass();
           if (i % (c.maskEvery || 1)) continue;
-          const p = t.draw().px, [ya, yb] = c.maskY || [0, 312];
-          for (let k = ya * W; k < Math.min(p.length, yb * W); k++) if (p[k] !== first[k]) m[k] = 1;
+          const p = t.draw().px, [ya, yb] = c.maskY || [0, 312], [xa, xb] = c.maskX || [0, W];
+          for (let k = ya * W; k < Math.min(p.length, yb * W); k++) if (p[k] !== first[k] && k % W >= xa && k % W < xb) m[k] = 1;
         }
         if (c.cells) {                           // text: light whole characters, so a letter is never half lit
           const cell = new Uint8Array(40 * 25);
@@ -458,6 +652,7 @@
         if (!cv.isConnected) return;
         if (!t0) t0 = t;
         const due = Math.floor((t - t0) / 1000 * (c.rate || PASSES) * (c.speed || 1));
+        if (due - done > 8) done = due - 8;      // a slow machine drops passes rather than falling behind for ever
         for (; done < due; done++) r.pass();
         const f = r.draw();
         for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
@@ -491,12 +686,18 @@
   // the badge on a box that has a loop: a play sign, or a note for a tune
   function badge(g, cx, cy, note) {
     el('circle', { cx, cy, r: 10.5, fill: 'var(--ink)', stroke: '#ffffff', 'stroke-width': 1.5 }, g);
-    if (note) {
+    if (note === 'diagram') {                    // three bars: a diagram
+      for (const [dy, ww] of [[-5, 11], [-1, 8], [3, 11]]) el('rect', { x: cx - 5.5, y: cy + dy, width: ww, height: 2.4, fill: '#ffffff' }, g);
+    } else if (note === 'sheet') {                      // a grid of four: the shapes it draws with
+      for (const [dx, dy] of [[-5, -5], [0.5, -5], [-5, 0.5], [0.5, 0.5]]) el('rect', { x: cx + dx, y: cy + dy, width: 4.5, height: 4.5, fill: '#ffffff' }, g);
+    } else if (note) {
       el('ellipse', { cx: cx - 2.4, cy: cy + 3.6, rx: 3.3, ry: 2.4, fill: '#ffffff', transform: `rotate(-20 ${cx - 2.4} ${cy + 3.6})` }, g);
       el('path', { d: `M${cx + 0.7} ${cy + 3.4}V${cy - 6}q3.4 1.6 3.6 4.6`, stroke: '#ffffff', 'stroke-width': 1.6, fill: 'none', 'stroke-linecap': 'round' }, g);
     } else el('path', { d: `M${cx - 3.2} ${cy - 5.2}L${cx + 5.4} ${cy}L${cx - 3.2} ${cy + 5.2}Z`, fill: '#ffffff' }, g);
   }
   const badgeSvg = note => { const s = document.createElementNS(NS, 'svg'); s.setAttribute('width', 24); s.setAttribute('height', 24); s.setAttribute('aria-hidden', 'true'); s.setAttribute('style', 'vertical-align:middle'); badge(s, 12, 12, note); return s.outerHTML; };
+  const kindOf = c => c.diagram ? 'diagram' : c.sheet ? 'sheet' : (c.roll || c.sfx) ? 'sound' : 'loop';
+  const KIND = { loop: ['▶', ', with a loop of it at work'], sound: ['♪', ', with its sound drawn over time'], sheet: ['▦', ', with the shapes it draws with'], diagram: ['≡', ', with a diagram of its work'] };
   const tint = j => `color-mix(in srgb, var(--j-${j}) 28%, #ffffff)`;
   const tip = $('cm-tip');
   const showTip = (e, h) => { tip.innerHTML = h; tip.hidden = false; tip.style.left = Math.min(e.clientX + 14, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 16) + 'px'; };
@@ -660,7 +861,7 @@
       <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="1.6" stroke-dasharray="6 4"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>jumps there for good</span>
       <span><svg width="44" height="12" aria-hidden="true"><path d="M2 6H34" stroke="var(--edge)" stroke-width="2" stroke-dasharray="1.5 3.5"/><path d="M34 2L42 6L34 10Z" fill="var(--edge)"/></svg>runs straight on into the next</span>
       <span style="flex-basis:100%;height:0"></span>
-      <span>${badgeSvg(false)}a loop of it at work</span><span>${badgeSvg(true)}its sound, drawn over time</span>`;
+      <span>${badgeSvg(false)}a loop of it at work</span><span>${badgeSvg(true)}its sound, drawn over time</span><span>${badgeSvg('sheet')}the shapes it draws with</span><span>${badgeSvg('diagram')}a diagram of its work</span>`;
 
     /* ---------- the call graph: one band per job, boxes wrapping inside it ---------- */
     const depth = R.map(() => 99), q = [];
@@ -699,13 +900,13 @@
         return { e, g, p, layer: eL };
       });
       NODES = R.map(r => {
-        const P = POS[r.i], g = el('g', { class: 'cm-node', tabindex: 0, role: 'button', 'aria-label': `${r.n}, ${r.size} bytes, ${JOBNAME[r.g]}${CLIPS[r.n] ? ((CLIPS[r.n].roll || CLIPS[r.n].sfx) ? ', with its sound drawn over time' : ', with a loop of it at work') : ''}` }, nL);
+        const P = POS[r.i], g = el('g', { class: 'cm-node', tabindex: 0, role: 'button', 'aria-label': `${r.n}, ${r.size} bytes, ${JOBNAME[r.g]}${CLIPS[r.n] ? KIND[kindOf(CLIPS[r.n])][1] : ''}` }, nL);
         el('rect', { class: 'box', x: P.x, y: P.y, width: P.w, height: P.h, rx: 6, fill: tint(r.g), stroke: jcol(r.g) }, g);
         const room = P.w - (CLIPS[r.n] ? 38 : 14);
         el('text', { x: P.x + 8, y: P.y + 13, 'font-size': 9, 'letter-spacing': '.06em', fill: 'var(--ink-soft)', class: 'mono' }, g).textContent = JOBNAME[r.g].toUpperCase().slice(0, Math.floor(room / 6.1));
         const nm = el('text', { x: P.x + 8, y: P.y + 28, 'font-size': 11, 'font-weight': 500, fill: 'var(--ink)', class: 'mono' }, g); nm.textContent = r.n;
         if (r.n.length * 6.65 > room) nm.textContent = r.n.slice(0, Math.floor(room / 6.65) - 1) + '…';
-        if (CLIPS[r.n]) badge(g, P.x + P.w - 17, P.y + Math.min(P.h / 2, 21), CLIPS[r.n].roll || CLIPS[r.n].sfx);
+        if (CLIPS[r.n]) badge(g, P.x + P.w - 17, P.y + Math.min(P.h / 2, 21), { loop: false, sound: true, sheet: 'sheet', diagram: 'diagram' }[kindOf(CLIPS[r.n])]);
         if (P.h >= 48) el('text', { x: P.x + 8, y: P.y + P.h - 7, 'font-size': 10, fill: 'var(--ink-mute)', class: 'mono' }, g).textContent = `${hex(r.a)} · ${r.size} bytes`;
         g.addEventListener('click', () => select(r.i, false));
         g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); select(r.i, false); } });
@@ -716,7 +917,7 @@
       focusOn(cur);
     }
     const pop = $('cm-pop');
-    const clipHTML = (n, cls) => `<canvas class="${cls}" data-solo="${n}" role="img" aria-label="${esc(n)} at work, on its own"></canvas>`;
+    const clipHTML = (n, cls) => `<canvas class="${cls}" data-solo="${n}" role="img" aria-label="${esc(n)} ${CLIPS[n].sheet ? 'shapes' : CLIPS[n].diagram ? 'diagram' : 'at work, on its own'}"></canvas>`;
     const mountClips = box => box.querySelectorAll('canvas[data-solo]').forEach(cv => Solo.mount(cv, M.ram).catch(e => { console.error(e); }));
     function showPop(r, g) {
       const c = CLIPS[r.n]; if (!c || cur === r.i) return;
@@ -739,7 +940,7 @@
       if (i === null) {
         const big = R.slice().sort((a, b) => b.size - a.size).slice(0, 5), most = R.slice().sort((a, b) => callers[b.i].length - callers[a.i].length).slice(0, 5);
         D.innerHTML = `<p style="margin:0 0 6px"><b>${R.length} subroutines, ${EDGES.length} links.</b> Click a box to see what it does, what it calls and what calls it; a box with a badge plays a loop of it at work here.</p>
-          <div class="cm-links"><div><h4>Watch them work</h4><ul style="columns:2;column-gap:24px">${R.filter(r => CLIPS[r.n]).map(r => `<li><a href="#calls" data-i="${r.i}">${(CLIPS[r.n].roll || CLIPS[r.n].sfx) ? '♪' : '▶'} ${r.n}</a></li>`).join('')}</ul></div>
+          <div class="cm-links"><div><h4>Watch them work</h4><ul style="columns:2;column-gap:24px">${R.filter(r => CLIPS[r.n]).map(r => `<li><a href="#calls" data-i="${r.i}">${KIND[kindOf(CLIPS[r.n])][0]} ${r.n}</a></li>`).join('')}</ul></div>
           <div><h4>Longest</h4><ul>${big.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${r.size}</span></li>`).join('')}</ul></div>
           <div><h4>Called from most places</h4><ul>${most.map(r => `<li><a href="#calls" data-i="${r.i}">${r.n}</a> <span style="color:var(--ink-mute)">${callers[r.i].length}</span></li>`).join('')}</ul></div></div>`;
       } else {
