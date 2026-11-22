@@ -11,5 +11,6 @@ listing meet Bronze. The Wastelands listing explains 204 of 2,900 tracked bytes
 game, including 4,096 bytes flagged below the I/O area.
 
 Silver needs listings for the remaining parts, a closed media ledger, full
-coverage, verified facts, the minisite and its music players, and an
-independent listing check while the analysis model is unidentified.
+coverage, verified facts, and the minisite and its music players. The kit
+requires a maintainer to sample the listing on a proven model because it
+does not classify GPT-6.2 Sol as proven.
