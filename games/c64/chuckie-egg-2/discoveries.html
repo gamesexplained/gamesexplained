@@ -51,7 +51,7 @@ table.t td,table.t th{border-bottom:1px solid var(--line-soft);padding:4px 10px;
 <header class="hero">
   <p class="eyebrow">{{year}} · {{publisher}}</p>
   <h1>Discoveries</h1>
-  <p class="sub">The authors' own source code left in memory, a joystick port the instructions get wrong, vats that take the wrong ingredients, the bug that sinks the green ladder, and an unused title logo.</p>
+  <p class="sub">The authors' own source code left in memory, a joystick port the instructions get wrong, vats that take the wrong ingredients, the bug that sinks the green ladder, the five bytes that break room 76 in other copies, and an unused title logo.</p>
 </header>
 <main class="wrap">
 
@@ -124,6 +124,20 @@ table.t td,table.t th{border-bottom:1px solid var(--line-soft);padding:4px 10px;
     <p class="cap">The same save with six bytes changed. The ladder stands on the block, and Harry climbs it, jumps to the fixed ladder and leaves the basement.</p>
   </div>
   <p>The fix replaces the six bytes at <code>$73A9</code> (<code>A9 85 85 F9 B1 F8</code>) with a direct read of the table, <code>LDA $8500,Y</code>, and three NOPs: <code>B9 00 85 EA EA EA</code>. In the program file the six bytes start at offset 28,823 (<code>$7097</code>) from the start of the file, load address included. Two other places in the take routine use the same six bytes and need no change.</p>
+</section>
+
+<section id="room76">
+  <p class="fig">07 · Other copies</p>
+  <h2 class="t">Room 76 and the walk that never stops</h2>
+  <p class="lede">In many copies of the game, entering room 76 on the train line makes Harry walk left by himself and never stop, and the game cannot be finished. This copy is not affected. Five bytes of the room's record make the difference.</p>
+  <div class="plate" style="display:flex;gap:18px;flex-wrap:wrap">
+    <img src="reference/room-76.png" alt="Room 76 in this copy: a ceiling of bricks across the top, the DO NOT WALK ON THE TRACK sign, Harry standing still" style="width:46%;min-width:260px;image-rendering:pixelated">
+    <img src="reference/room-76-other-copies.png" alt="Room 76 with the bytes of other copies: no ceiling, and Harry walking left on his own" style="width:46%;min-width:260px;image-rendering:pixelated">
+    <p class="cap">Room 76 in VICE. Left: this copy. Right: the same game with the five bytes other copies have, a moment after Harry arrives. Nobody is touching the controls.</p>
+  </div>
+  <p>The record starts at <code>$9FFA</code>, and its first command draws the ceiling: character <code>$2C</code> along row 2, 32 cells long (<code>2C 3A 02 00 20</code>). In the other copies the five bytes after the record's first byte read <code>43 45 32 2D 42</code>. In ASCII that spells "CE2-B", and the bytes are the last five before <code>$A000</code>. They may be a file name that a copier wrote over the end of a block; that is a guess.</p>
+  <p>The game draws them faithfully: 66 cells of character <code>$43</code>, starting at row 50. The screen has 25 rows, so no ceiling appears, and the run lands in memory the room drawer was never meant to touch. Its characters go into the character set at <code>$0801</code>, its property bits into the table of rooms visited at <code>$1B10</code>, and its colours into <code>$DC01</code> to <code>$DC42</code>. That last range is not colour memory but the chip that reads the keyboard, CIA 1, whose sixteen registers repeat through it.</p>
+  <p>Every CIA register gets the colour, 3. Afterwards the keyboard's column port, <code>$DC01</code>, reads <code>$3F</code> in VICE: columns 6 and 7 read low whatever is pressed. The game reads a key by selecting its row and testing its column for a low bit, so any key on column 7 looks pressed. The left key, comma, is on column 7, so the game sees left held down, and the registers stay that way. Putting back the two timer control registers, <code>$DC0E</code> and <code>$DC0F</code>, by hand in VICE stopped the walk at once; putting back the data direction registers did not.</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>

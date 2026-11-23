@@ -78,6 +78,17 @@ Sources:
   at `$73A9` (`B9 00 85 EA EA EA`) fix it: with the fix Harry climbs the
   ladder from the block, jumps to the fixed ladder and leaves room 118.
 
+- **Room 76 in other copies** (reported by the contributor, who sent a
+  snapshot of another copy). In many copies the five bytes at `$9FFB`
+  (`room_076_ceiling`) read `43 45 32 2D 42` ("CE2-B" in ASCII) instead
+  of `2C 3A 02 00 20`. The ceiling run then starts at row 50: no ceiling,
+  and its cells land at `$0801-$0842`, `$1B01-$1B42` and `$DC01-$DC42`.
+  CIA 1's timer controls get `$03`, keyboard columns 6 and 7 read low, and
+  the left key (comma) reads as held: Harry walks left without stopping.
+  Confirmed in VICE with this copy's room 76 given those bytes. That
+  other copy also uses `$B0-$B5` for the print routines' temporaries
+  (this one `$90-$95`), and differs in two tape constants and the loader.
+
 ## Open questions
 
 - Room 106 drew as a black screen when entered by the restart-point

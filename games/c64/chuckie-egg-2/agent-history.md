@@ -130,3 +130,15 @@ save but 0 in all my earlier tests. Patching `$73A9` to a direct
 items are misjudged too (a milk bag sank one row; a toy part could not be
 dropped). The listing has the finding at `drop_size`, and Discoveries §06
 now explains the bug and the fix in place of the open question.
+
+### Room 76 in other copies (23 November 2026)
+
+The contributor sent a snapshot of another copy, with the bytes that
+break room 76 in most copies. Comparing its memory with this one's found
+the five bytes at `$9FFB` and nothing else different in the room data.
+Drawing the room with them in VICE made Harry walk left with no input.
+Putting back, one at a time, each area the broken run wrote over (the
+character set, `rooms_visited`, the missing ceiling) changed nothing,
+and a read watch showed nothing reading the record during play. The
+run's colour bytes had gone to `$DC01-$DC42`, CIA 1; putting back its
+timer control registers stopped the walk. Discoveries §07 explains it.
