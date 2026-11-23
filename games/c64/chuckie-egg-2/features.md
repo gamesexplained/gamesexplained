@@ -77,6 +77,9 @@ Sources:
   row and a toy part could not be dropped. `LDA $8500,Y` and three NOPs
   at `$73A9` (`B9 00 85 EA EA EA`) fix it: with the fix Harry climbs the
   ladder from the block, jumps to the fixed ladder and leaves room 118.
+  The copy with the room 76 fault has the same drop code; from the
+  contributor's save of it (power off, `work1` 0) the ladder stood on the
+  block, and with `work1` set to `$27` it sank to rows 19-23.
 
 - **Room 76 in other copies** (reported by the contributor, who sent a
   snapshot of another copy). In many copies the five bytes at `$9FFB`

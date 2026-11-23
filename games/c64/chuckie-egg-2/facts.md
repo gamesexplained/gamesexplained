@@ -171,6 +171,9 @@ comment is recommended.
 - 22 November 2026: the ladder taken in room 109 and dropped in rooms 1,
   109 and 118 with `work1` at 0; stands with its bottom row on the row of
   Harry's feet each time.
+- 23 November 2026, from the contributor's save of the other copy in room
+  118 (power off, `work1` 0): the ladder dropped from the block stood at
+  rows 16-20; rebuilt again with `work1` = `$27`, it landed at rows 19-23.
 - 23 November 2026: room 76 drawn with `43 45 32 2D 42` at `$9FFB` (the
   bytes of another copy, from the contributor's snapshot of it): no
   ceiling; `$DC00-$DC0F` read `ff 3f 03 03 a5 01 51 02 03 03 03 03 03 03
