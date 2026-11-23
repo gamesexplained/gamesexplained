@@ -61,3 +61,12 @@ Sanctum from the item 9 pickup through the last player pose script.
 Staged the last room in VICE from its real room setup, then picked up
 the scrolls with a joystick gesture. Captured the ending text after
 the second wait and confirmed the bitmap dissolve repeated.
+
+
+Extended the SID comparison from 6,000 to 90,000 steps per track
+after finding additional phrases beyond the initial capture window.
+Used the complete payload for each expected digest. Re-identified
+the three bitmap captions and the separate safe-rectangle data under
+I/O. The original rectangle code agreed with 2,340 independent tests.
+Inspected the two duplicated picture records and the original
+renderer, including the palette bits, separately from the maps.

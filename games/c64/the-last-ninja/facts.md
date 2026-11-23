@@ -39,8 +39,8 @@
   The following two bytes give placement coordinates when the entry
   draws a bitmap. Bits 5–6 of the fourth byte count the colour remaps
   that follow it. Bit 6 of the third byte ends the script at that level.
-- The native renderer produced all 135 populated picture slots
-  against the six captured chapters. At each chapter's opening, its
+- The native renderer produced 135 populated pictures in slots 1–27
+  across the six captured chapters. At each chapter's opening, its
   bare bitmap agreed with 34,253 to 34,275 of 34,560 playfield pixels
   in VICE after mapping the palette colours. Those comparisons did
   not render the sprite layer.
@@ -66,7 +66,7 @@
   calls the latter two directly, passing `$B728` in X/Y to the
   initialiser at `$B000`. During 120 PAL frames in the Wastelands,
   the raster path and `$B003` each counted 119 calls.
-- The page's 12 tracks each matched 6,000 steps of timestamped SID
+- The page's 12 tracks each matched 90,000 steps of timestamped SID
   writes from their full tape payloads on the kit's 6502. The test
   also renders three seconds from each track and checks for sound.
 - F1 reached the keyboard branch at `$6EAC` in live play. The
@@ -160,3 +160,43 @@
   for 24 PAL frames added the scrolls to slot 9. The game then
   drew the closing card and reached `$4CD8` twice. That address
   repeats the bitmap dissolve in batches after the final text.
+
+
+## Contact ranges
+
+- `$7ECC` tests whether an active opponent is within the current
+  attack's X and Y ranges. Twenty-one attack classes supply
+  inclusive lower and exclusive upper limits from four tables
+  beginning at `$7E78`. The code then checks the target's guard.
+  An independent calculation agreed with 13,824 calls using the
+  standard attack family, both actor slots, six weapons, four
+  directions, two opponent types and four defender poses.
+
+
+## Extra picture records and boundary data
+
+- The Palace Gardens' slot 32 and the Dungeons' slot 37 repeat
+  all five bytes of their respective slot 22. Isolated renders
+  gave VIC backgrounds 13 and 15, respectively, for both versions.
+  None of the 115,020 tested ordinary room exits selects either slot.
+- The Wastelands, Wilderness and Palace Gardens keep 64 safe
+  rectangles in RAM under I/O at `$DC00`. A boundary action selects
+  a list. The game permits a position inside any rectangle and
+  takes the failure branch after the list's `$FF` marker. An
+  independent calculation reproduced 2,340 tests of the bounds.
+- Each overlay holds the Using, Found and Collect captions at
+  `$DB00`, `$DB40` and `$DB80`. These are eight-cell bitmap drawings.
+  The game copies them at `$69E6` with matching colour values.
+
+
+## The power meter
+
+- The raster handler uses `$C7` as the displayed power and `$C8`
+  as the target. On eligible ticks, it colours or clears one cell.
+  Three 32-byte tables at `$697C–$69DB` give the screen offset
+  and the two colour values for each cell.
+- Before clearing a cell, it compares CIA 2 timer A's low byte
+  at `$DD84` with two reads of timer B's low byte, at `$DDF6`
+  and `$DD36`. The first comparison must match and the second
+  must differ. Setting the meter from 32 to 31 in live PAL
+  VICE took the passing branch at `$55AD`.

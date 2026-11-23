@@ -6,8 +6,10 @@ snapshots, the disassembler's project file, the annotation log. Nothing in
 this folder is ever committed or uploaded.
 
 To rebuild it from your own copy of the game, follow `../orientation.md`,
-then `python3 kit/scripts/symbols_import.py <this game> <your snapshot>`
-to recreate the disassembler project with all annotations. The snapshot is
+then run `python3 kit/scripts/symbols_import.py <part> <entry snapshot>`
+for each of the seven parts to recreate its disassembler project. The
+entry snapshots are at `parts/<slug>/work/entry.vsf` relative to the
+game folder. The resident uses the Wastelands handover. The snapshot is
 in the platform's own format, which its `steps` skill names under
 `snapshot`, and `../orientation.md` names the file this game used.
 
