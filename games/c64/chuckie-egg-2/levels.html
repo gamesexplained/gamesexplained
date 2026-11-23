@@ -1,0 +1,274 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.mapgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;background:#111;padding:3px;border-radius:6px}
+.mapgrid canvas{width:100%;height:auto;cursor:pointer;display:block}
+.mapgrid canvas.on{outline:3px solid var(--amber)}
+.ctl{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:12px 0;font-size:14px}
+
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--ink-soft);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+table.t{border-collapse:collapse;font-size:15px;margin:10px 0}
+table.t td,table.t th{border-bottom:1px solid var(--line-soft);padding:4px 10px;text-align:left}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>Maps</h1>
+  <p class="sub">All 120 rooms of the factory, drawn on this page from the game's own room records, with the pick-ups where a new game puts them.</p>
+</header>
+<main class="wrap">
+<section id="map">
+  <p class="fig">01 · The whole map</p>
+  <h2 class="t">Ten rooms across, twelve down</h2>
+  <p class="lede">Harry starts in room 1, top left. Walking off the right edge of a room adds 1 to the room number, and off the left edge takes 1 away. Climbing off the top takes 10 away, and dropping off the bottom adds 10. So each row of the map is ten rooms in a row.</p>
+  <div class="plate"><div class="mapgrid" id="ce2-grid"></div>
+  <p class="cap">A yellow number marks a room described on this site: the vats, the generator, dispatch, the lifts and the start. Click any room to see it larger below. Every room is drawn by a port of the game's drawing code, <code>$4000</code>, from its record. A test, <code>test_rooms.js</code>, runs the game's own code on a 6502 simulator for all 120 rooms and checks that the port gives the same characters, colours and property map. The creatures and the lifts are sprites, so they are not here. Click a room to see it full size below.</p></div>
+</section>
+<section id="room">
+  <p class="fig">02 · One room</p>
+  <h2 class="t" id="ce2-title">Room 1</h2>
+  <div class="plate">
+    <div class="ctl"><button id="ce2-prev">&larr; Previous</button><button id="ce2-next">Next &rarr;</button>
+      <label><input type="checkbox" id="ce2-ov"> Show what each cell is</label></div>
+    <canvas id="ce2-big"></canvas>
+    <div class="legend" id="ce2-legend"></div>
+    <p class="cap" id="ce2-cap"></p>
+  </div>
+  <p>The row of rooms 71 to 80 is the odd one out. Leaving room 80 to the right leads back to room 71, not on to room 81, and leaving room 71 to the left leads to room 80 (<code>$4CDA</code>, <code>$4D07</code>). That row is the train track, and the train goes round the same loop (<code>$6F70</code>). Everywhere else a room on the edge of the map just leads into the next row's room.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script>
+/* ce2-rooms */
+// A port of the game's room drawing: room_clear ($4667), draw_room ($4000) with its eleven
+// commands (room_cmd_table, $4072), plot_cell ($4620), and the pick-ups (place_pickups $5600,
+// draw_pickup $5664). It reads the game's own bytes from the listing (C64.load) and returns the
+// screen, colour RAM and property map ($1700) the game builds, and the character set with the
+// pick-ups' pictures copied into it from $0AE8. test_rooms.js holds it to the game's code run on
+// the kit's 6502 for all 120 rooms.
+function ce2Rooms(ram) {
+  const SPEC = [0, 6, 2, 4, 5, 3, 7, 1];                       // spectrum_colour, $4088
+  const rd = (a) => ram[a & 0xFFFF];
+  const word = (a) => rd(a) | rd(a + 1) << 8;
+  // The object table as a new game leaves it: game_state_init clears bit 7 of every room byte,
+  // then puts back entries $00-$39 from the master copy objects_backup made of them at start-up.
+  function objectsAtStart() {
+    const rooms = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) rooms[i] = i <= 0x39 ? rd(0x8200 + i) : rd(0x8200 + i) & 0x7F;
+    return rooms;
+  }
+  function draw(room, objRooms, limit = Infinity) {
+    const scr = new Uint8Array(1000).fill(0x37), col = new Uint8Array(1000), prop = new Uint8Array(1000);
+    const chars = ram.slice(0x0800, 0x1000);
+    let colour = 0, attr = 0;
+    const plot = (ch, x, y) => {                                 // plot_cell
+      const o = y * 40 + x;
+      if (o < 0 || o >= 1000) return;
+      col[o] = colour; scr[o] = ch;
+      if (attr) prop[o] |= attr;
+    };
+    // room_clear: the frame of char_block in colour 0
+    attr = 0; colour = 0;
+    for (let x = 0; x < 80; x++) { col[x] = 0; scr[x] = 0x3A; }
+    for (let y = 0; y < 24; y++) for (const x0 of [0, 36]) for (let x = x0; x < x0 + 4; x++) plot(0x3A, x, y);
+    for (let x = 0; x < 40; x++) { col[960 + x] = 0; scr[960 + x] = 0x3A; }
+    // draw_room
+    let p = word(0x9000 + room * 2);
+    const bg = (rd(p) >> 3) & 7;                                 // room_bg_code
+    const setColour = (c) => { colour = SPEC[c & 7]; };          // set_colour
+    const pick = (c) => ((c & 7) === bg ? c >> 3 : c);           // the second colour
+    let i = 1;
+    const b = () => rd(p + i++);
+    let done = 0;
+    for (let guard = 0; guard < 400; guard++) {
+      const c = b();
+      if (c === 0) break;
+      if (done++ >= limit) return { scr, col, prop, chars, bg: SPEC[bg], commands: done - 1, partial: true };
+      if (c >= 0x2C) {                                           // room_cmd_run
+        setColour(pick(b())); const row = b(), cx = b() + 4, len = b(); attr = b();
+        let x = cx, y = row;
+        for (let n = len & 0x7F; n > 0; n--) { plot(c, x, y); if (len & 0x80) y++; else x++; }
+        continue;
+      }
+      if (c >= 0x20) {                                           // room_cmd_capped_run
+        setColour(b()); const row = b(), cx = b() + 4, len = b(), caps = b(); attr = b();
+        const down = len & 0x80, joint = down ? 0x23 : 0x22;
+        let n = len & 0x7F, x = cx, y = row, phase = 0;
+        const step = () => { if (down) y++; else x++; };
+        plot((caps >> 4) | 0x20, x, y); step();
+        if (n >= 4) {
+          n -= 3;
+          do { phase = (phase + 1) & 3; plot(phase === 1 ? joint : c, x, y); step(); } while (--n);
+        }
+        plot(joint, x, y); step();
+        plot((caps & 15) | 0x20, x, y);
+        continue;
+      }
+      switch (c) {
+        case 1: {                                                // room_cmd_block
+          setColour(b() >> 3); let row = b(); const cx = b() + 4, h = b(), w = b(); attr = b();
+          for (let r = 0; r < h; r++, row++) for (let k = 0; k < w; k++) plot(0x3A, cx + k, row);
+          break;
+        }
+        case 2: {                                                // room_cmd_text
+          setColour(b() >> 3); const row = b(); let x = b() + 4;
+          for (let ch = b(); ch !== 0x80; ch = b()) plot(ch | 0x80, x++, row);
+          break;
+        }
+        case 3: case 4: case 5: case 6: {                        // the four pipe bends
+          setColour(b()); let y = b(), x = b() + 4; attr = b();
+          if (c === 3) { plot(0x21, x, y); x--; plot(0x22, x, y); x--; plot(0x26, x, y); y++; plot(0x23, x, y); y++; plot(0x20, x, y); }
+          if (c === 4) { plot(0x21, x, y); x++; plot(0x22, x, y); x++; plot(0x27, x, y); y++; plot(0x23, x, y); y++; plot(0x20, x, y); }
+          if (c === 5) { plot(0x20, x, y); y++; plot(0x23, x, y); y++; plot(0x24, x, y); x++; plot(0x22, x, y); x++; plot(0x21, x, y); }
+          if (c === 6) { plot(0x20, x, y); y++; plot(0x23, x, y); y++; plot(0x25, x, y); x--; plot(0x22, x, y); x--; plot(0x21, x, y); }
+          break;
+        }
+        case 7: {                                                // room_cmd_frame
+          setColour(b()); let y = b(), x = b() + 4; let h = b(), w = b(); attr = 0x80;
+          for (; h > 0; h--) {
+            let xx = x; plot(0x38, xx++, y);
+            for (let k = w - 1; k > 0; k--) plot(0x3A, xx++, y);
+            plot(0x39, xx - 1, y);
+            w -= 2; x += 1; y += 1;
+          }
+          break;
+        }
+        case 8: {                                                // room_cmd_rise
+          setColour(b()); let y = b(), x = b() + 4, n = b(); attr = b();
+          for (;;) { plot(0x55, x, y); if (--n === 0) break; x++; plot(0x39, x, y); y--; }
+          break;
+        }
+        case 9: {                                                // room_cmd_fall
+          setColour(b()); let y = b(), x = b() + 4, n = b(); attr = b();
+          plot(0x54, x, y); y++; n--;
+          for (; n > 0; n--) { plot(0x38, x, y); x++; plot(0x54, x, y); y++; }
+          break;
+        }
+        case 10: {                                               // room_cmd_char
+          const cc = b(); setColour(pick(cc)); const ch = b(), row = b(), x = b() + 4; attr = b();
+          plot(ch, x, row);
+          break;
+        }
+        default: return null;
+      }
+    }
+    // place_pickups and draw_pickup
+    let next = 0;
+    for (let e = 0; e < 0xFF; e++) {
+      if (objRooms[e] !== room) continue;
+      const row0 = rd(0x8300 + e), col0 = rd(0x8400 + e) + 4, shape = rd(0x8500 + e) * 3;
+      colour = rd(0x57B6 + rd(0x8600 + shape));                  // the table copy at $57B6
+      const g = rd(0x8601 + shape);
+      attr = g === 0x0D ? 0x02 : g === 0x0C ? 0x01 : 0;
+      if (e < 0x2D) attr |= 0x40;
+      const bm = word(0x576C + g * 2), h = rd(bm), w = rd(bm + 1);
+      const n = h * w * 8;
+      const x0 = (next * 8) & 0xFF;                               // an 8-bit index: the copy wraps
+      for (let k = 0; k < (n & 0xFF); k++) chars[0x2E8 + ((x0 + k) & 0xFF)] = rd(bm + 2 + k);
+      for (let r = 0; r < h; r++) for (let x = 0; x < w; x++) plot((next++ + 0x5D) & 0xFF, col0 + x, row0 + r);
+    }
+    return { scr, col, prop, chars, bg: SPEC[bg], commands: done };
+  }
+  return { draw, objectsAtStart, SPEC };
+}
+// end of ce2-rooms
+</script>
+<script>
+/* ce2-view */
+// Drawing for the room pages: a room from the ce2-rooms port onto a canvas, rows 0-1 (the status
+// line) black, the play area on the room's background, and on request the property map over it.
+const CE2_PROPS = [[0x80, '#ff3b30', 'deadly'], [0x02, '#34c759', 'ladder'], [0x10, '#30b0c7', 'chain'],
+  [0x20, '#ff9f0a', 'slippery pipe'], [0x04, '#bf5af2', 'rising slope'], [0x08, '#bf5af2', 'falling slope'],
+  [0x01, '#ffd60a', 'platform'], [0x40, '#8e8e93', 'something to pick up']];
+function ce2Paint(ctx, got, s, overlay) {
+  const P = C64.PAL;
+  ctx.fillStyle = P[0]; ctx.fillRect(0, 0, 320 * s, 200 * s);
+  ctx.fillStyle = P[got.bg]; ctx.fillRect(0, 16 * s, 320 * s, 184 * s);
+  for (let o = 80; o < 1000; o++) {
+    const x = (o % 40) * 8 * s, y = Math.floor(o / 40) * 8 * s;
+    C64.drawGlyph(ctx, got.chars, got.scr[o], x, y, s, P[got.col[o] & 15]);
+  }
+  if (!overlay) return;
+  ctx.globalAlpha = 0.55;
+  for (let o = 80; o < 1000; o++) {
+    const v = got.prop[o]; if (!v) continue;
+    const hit = CE2_PROPS.find(([b]) => v & b);
+    ctx.fillStyle = hit[1];
+    ctx.fillRect((o % 40) * 8 * s, Math.floor(o / 40) * 8 * s, 8 * s, 8 * s);
+  }
+  ctx.globalAlpha = 1;
+}
+const CE2_NOTES = {1: 'the start: the van brings Harry here', 2: 'the dog, which wants its bone', 26: 'a lift that never stops',
+  34: 'a lift that carries Harry down', 55: 'a lift that never stops', 95: 'the toy maker', 96: 'the girder bridge',
+  104: 'a lift that carries Harry down', 105: 'the machine that changes as Harry walks in', 33: 'the milk vat',
+  51: 'the cocoa vat', 110: 'the sugar vat', 111: 'dispatch, where the egg goes', 115: 'the generator: the power switch',
+  120: 'the big creature'};
+for (let r = 71; r <= 80; r++) CE2_NOTES[r] = CE2_NOTES[r] || 'on the train track';
+// end of ce2-view
+</script>
+<script>
+C64.load().then((L) => {
+  const R = ce2Rooms(L.ram), objs = R.objectsAtStart();
+  const grid = document.getElementById('ce2-grid'), cells = [];
+  const drawn = [];
+  for (let r = 1; r <= 120; r++) {
+    const c = document.createElement('canvas'); c.width = 320; c.height = 200; c.title = 'Room ' + r;
+    drawn[r] = R.draw(r, objs); ce2Paint(c.getContext('2d'), drawn[r], 1, false);
+    { const x = c.getContext('2d'); x.font = 'bold 30px sans-serif'; const w = x.measureText(String(r)).width + 12;
+      x.fillStyle = CE2_NOTES[r] ? '#edf171' : 'rgba(0,0,0,.7)'; x.fillRect(0, 0, w, 36);
+      x.fillStyle = CE2_NOTES[r] ? '#000' : '#fff'; x.fillText(String(r), 6, 29); }
+    c.onclick = () => { show(r); document.getElementById('room').scrollIntoView({ behavior: 'smooth' }); };
+    grid.appendChild(c); cells[r] = c;
+  }
+  const big = document.getElementById('ce2-big'); C64.canvas(big, 640, 400); big.style.width = '100%'; big.style.height = 'auto';
+  const ov = document.getElementById('ce2-ov');
+  document.getElementById('ce2-legend').innerHTML = CE2_PROPS.map(([b, c, n]) => `<span><i style="background:${c}"></i>${n}</span>`).join('');
+  let cur = 1;
+  function show(r) {
+    cur = r; cells.forEach((c, i) => c && c.classList.toggle('on', i === r));
+    ce2Paint(big.getContext('2d'), drawn[r], 2, ov.checked);
+    const row = Math.floor((r - 1) / 10), col = (r - 1) % 10;
+    document.getElementById('ce2-title').textContent = 'Room ' + r;
+    const rec = L.ram[0x9000 + 2 * r] | L.ram[0x9001 + 2 * r] << 8;
+    document.getElementById('ce2-cap').innerHTML = `Row ${row}, column ${col} of the map. Its record is at <code>$${rec.toString(16).toUpperCase()}</code>: ${drawn[r].commands} drawing commands.` + (CE2_NOTES[r] ? ` This is ${CE2_NOTES[r]}.` : '');
+  }
+  document.getElementById('ce2-prev').onclick = () => show(cur > 1 ? cur - 1 : 120);
+  document.getElementById('ce2-next').onclick = () => show(cur < 120 ? cur + 1 : 1);
+  ov.onchange = () => show(cur);
+  show(1);
+});
+</script>

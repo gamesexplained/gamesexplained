@@ -1,0 +1,121 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.mapgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;background:#111;padding:3px;border-radius:6px}
+.mapgrid canvas{width:100%;height:auto;cursor:pointer;display:block}
+.mapgrid canvas.on{outline:3px solid var(--amber)}
+.ctl{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:12px 0;font-size:14px}
+
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--ink-soft);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+table.t{border-collapse:collapse;font-size:15px;margin:10px 0}
+table.t td,table.t th{border-bottom:1px solid var(--line-soft);padding:4px 10px;text-align:left}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>Graphics</h1>
+  <p class="sub">All 128 sprite shapes, every picture Harry can pick up, the four toys, and the character set the rooms are built from.</p>
+</header>
+<main class="wrap">
+
+<section id="sprites">
+  <p class="fig">01 · Sprites</p>
+  <h2 class="t">128 shapes at $2000</h2>
+  <p class="lede">Harry, the creatures, the train, the dog, the van and the lifts are sprites. Their shapes fill <code>$2000</code> to <code>$3FFF</code>, shape numbers <code>$80</code> to <code>$FF</code>. Big creatures are built from several sprites side by side, and some are stretched to double width or height.</p>
+  <div class="plate"><div id="ce2-spr"></div>
+  <p class="cap">Every shape in one colour, from the bytes in the listing, grouped by the labels in the Source code tab. The game sets each sprite's colour as it draws it; none of them uses multicolour mode (<code>$495B</code>).</p></div>
+</section>
+
+<section id="pickups">
+  <p class="fig">02 · Pick-ups</p>
+  <h2 class="t">Pictures drawn in characters</h2>
+  <p class="lede">The things Harry picks up are not sprites. Each room's pick-ups have their pictures copied into the character set from <code>$0AE8</code> as the room is drawn. The pictures are at <code>$8A00</code> to <code>$8EFF</code>, each starting with its height and width in cells. The table at <code>$576C</code> points to 37 of them.</p>
+  <div class="plate"><div id="ce2-pk"></div>
+  <p class="cap">Pictures <code>$08</code> to <code>$24</code> of the table, with the names the game gives them where it gives one. The rest are numbered only.</p></div>
+  <p>The first eight pictures, the toy parts, and picture <code>$0E</code>, the toy, change with each egg. At the start of an egg <code>pickups_init</code> (<code>$7B75</code>) copies one of four sets from <code>toy_sets</code> into the table.</p>
+  <div class="plate"><div id="ce2-toys"></div>
+  <p class="cap">The four sets at <code>$7BAF</code>, <code>$7BC1</code>, <code>$7BD3</code> and <code>$7BE5</code>: eight toy parts and the toy each. Egg 5 uses the first set again.</p></div>
+</section>
+
+<section id="charset">
+  <p class="fig">03 · Characters</p>
+  <h2 class="t">The character set at $0800</h2>
+  <p>The rooms are drawn in these 256 characters: the scenery, the cells the pick-ups are copied into, and two fonts. These are the bytes the file loads, before the game has drawn any room, so the cells the pick-ups are copied into still hold what the file brought with it.</p>
+  <div class="plate"><canvas id="ce2-cs"></canvas><p class="cap">Characters <code>$00</code> to <code>$FF</code>, 32 to a row, from the listing.</p></div>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script>
+const CE2_PK_NAMES = {"8": "milk", "9": "cocoa", "10": "sugar", "11": "bone", "12": "girder", "13": "ladder", "15": "egg", "19": "LIFT sign", "20": "OUT OF ORDER sign", "22": "scoring pick-up", "34": "full sign", "36": "basket"};
+C64.load().then((L) => {
+  const ram = L.ram, hex = (n, w = 2) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+  const box = (cv, label) => { const d = document.createElement('figure'); d.style.cssText = 'display:inline-block;margin:0 10px 12px 0;text-align:center;vertical-align:top'; d.appendChild(cv); const c = document.createElement('figcaption'); c.style.cssText = 'font:12px var(--fm);color:var(--ink-2,#888)'; c.textContent = label; d.appendChild(c); return d; };
+  // sprites, grouped by the listing's labels
+  const groups = L.listing.records.filter((r) => r.l && r.l.startsWith('sprites_') && r.a >= 0x2000 && r.a < 0x4000).map((r) => [r.a, r.l.slice(8)]);
+  const out = document.getElementById('ce2-spr');
+  groups.forEach(([a, n], i) => {
+    const end = i + 1 < groups.length ? groups[i + 1][0] : 0x4000;
+    const h = document.createElement('p'); h.className = 'fig'; h.textContent = n + ' · ' + hex(0x80 + (a - 0x2000) / 64) + (end - a > 64 ? '–' + hex(0x80 + (end - 0x2000) / 64 - 1) : '');
+    out.appendChild(h);
+    for (let p = a; p < end; p += 64) {
+      const cv = document.createElement('canvas'), s = 2; C64.canvas(cv, 24 * s, 21 * s);
+      const c = cv.getContext('2d'); c.fillStyle = '#1b1d22'; c.fillRect(0, 0, cv.width, cv.height);
+      C64.drawSprite(c, ram.slice(p, p + 63), 0, 0, s, C64.PAL[1]);
+      out.appendChild(box(cv, hex(0x80 + (p - 0x2000) / 64)));
+    }
+  });
+  // a pick-up picture: height, width, then cells row by row (draw_pickup)
+  function pic(bm, label) {
+    const h = ram[bm], w = ram[bm + 1], s = 3, cv = document.createElement('canvas'); C64.canvas(cv, Math.max(w, 1) * 8 * s, h * 8 * s);
+    const c = cv.getContext('2d'); c.fillStyle = '#1b1d22'; c.fillRect(0, 0, cv.width, cv.height);
+    const cells = ram.slice(bm + 2, bm + 2 + h * w * 8);
+    for (let k = 0; k < h * w; k++) C64.drawGlyph(c, cells, k, (k % w) * 8 * s, Math.floor(k / w) * 8 * s, s, C64.PAL[1]);
+    return box(cv, label);
+  }
+  const word = (a) => ram[a] | ram[a + 1] << 8, pk = document.getElementById('ce2-pk');
+  for (let g = 8; g < 37; g++) if (g !== 14) pk.appendChild(pic(word(0x576C + g * 2), hex(g) + (CE2_PK_NAMES[g] ? ' ' + CE2_PK_NAMES[g] : '')));
+  const toys = document.getElementById('ce2-toys');
+  for (let t = 0; t < 4; t++) {
+    const set = word(0x7BA7 + t * 2), row = document.createElement('div');
+    const h = document.createElement('p'); h.className = 'fig'; h.textContent = 'Egg ' + (t + 1) + ' · ' + hex(set, 4); row.appendChild(h);
+    for (let k = 0; k < 9; k++) row.appendChild(pic(word(set + k * 2), k < 8 ? 'part ' + (k + 1) : 'the toy'));
+    toys.appendChild(row);
+  }
+  const cs = document.getElementById('ce2-cs'); C64.canvas(cs, 32 * 9 * 2, 8 * 9 * 2); cs.style.maxWidth = '100%';
+  C64.drawCharset(cs.getContext('2d'), ram.slice(0x0800, 0x1000), 256, 32, 2, C64.PAL[1], '#1b1d22');
+});
+</script>
