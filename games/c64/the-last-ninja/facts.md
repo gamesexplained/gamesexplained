@@ -91,3 +91,72 @@
   bitmaps. An independent decoder reproduced the 63 output bytes
   of each of them from `$7E36`. The shared reversal table at `$9D00`
   matches the bit reversals of all 256 possible byte values.
+
+## Keyboard timing
+
+- In the Wastelands, CIA 1 timer A began with a period of `$4800`.
+  After the first 24 frames with the keys held, the next 24 frames
+  yielded 25 game ticks with no keys or with minus alone, 18 with
+  left Shift and minus, and 58 with right Shift and plus. The
+  respective final timer values were `$4800`, `$7000` and `$1F00`.
+  The press goes through the matrix scan at `$6E99` and the timer
+  change through `$6F6D`.
+- Holding F7 changed the pause byte `$02B7` from 0 to `$FF`. The
+  tick counter at `$1B` held at 240 for the next 24 frames.
+- The F3 and F5 branches step forward or backward through the
+  11 item slots beginning at `$03EC`. Space walks six weapon slots
+  beginning at `$03F6`. Both paths skip unoccupied slots.
+- The Wastelands, Wilderness, Palace Gardens, Palace and Inner
+  Sanctum use the same music driver code from `$B000` to `$B663`.
+  It reads three streams of two-byte commands and note events.
+  The Dungeons initialiser instead copies its own pattern and
+  sequence pointers to zero page and uses 47-byte instrument
+  records. It writes voice registers directly to the SID.
+
+
+## Items, lives and the status panel
+
+- The item painter at `$63CB` selects one of two panel positions.
+  For codes 0–9 it reads a 64-byte graphic from `$DC80 + 64 × code`
+  with the I/O registers banked out, then draws the graphic as eight
+  bitmap cells in two rows. All ten bitmaps matched the bytes drawn
+  to both positions. Code 10 clears the panel. Higher codes select
+  five weapon pictures, with colours and dimensions from `$652F`.
+- The pickup check at `$5940` tests the hand against the rectangle
+  at `$027B–$027E`. For facing values 4–7, it subtracts 36 from player X
+  before the test. Direct calls verified both reaches, the exclusive
+  right edge and the special inventory requirement. With inventory
+  slot 2 empty, the same valid reach did not collect ordinary item 3.
+- `$6E36` grants one life for an unused apple and clears its slot on
+  chapter exit. It then saves the rest of the inventory. Direct calls
+  with one life and no apple saved two lives leaving the Wastelands
+  and one leaving the Wilderness. Two lives and an apple saved three
+  leaving the Wilderness.
+
+
+## Per-room initialization
+
+- Each chapter reads a sorted list of ten-byte item records. A record
+  has the room, item code, four reach bounds, sprite ID, sprite flags,
+  and the sprite's X and Y. The six lists contain 23 items or
+  hidden effects. A separate three-byte room table selects an
+  opponent's initial action script. Independent table readers
+  matched the original setup routines for all 162 room codes.
+- The opponent dispatch at `$BC63` selects a pose script from the
+  action code and facing. Dungeons type `$85` and Inner Sanctum
+  type `$88` select alternate action offsets. An independent
+  selector matched the original code in 3,392 calls across the
+  six overlays.
+
+
+## The ending
+
+- Inner Sanctum room 15 supplies item code 9. Taking it writes 9
+  to `$77`. The next idle pose at `$BF99` starts the sequence at
+  `$5113`. Its last event, `$2D`, enters the closing card at `$4C98`.
+- In VICE, I staged room 15 from the captured chapter, entered through
+  its room setup at `$BCA0`, and set player X/Y to 146/109, facing
+  1, and inventory slot 2 to occupied. Holding down-left and fire
+  for 24 PAL frames added the scrolls to slot 9. The game then
+  drew the closing card and reached `$4CD8` twice. That address
+  repeats the bitmap dissolve in batches after the final text.

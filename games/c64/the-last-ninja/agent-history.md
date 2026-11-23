@@ -41,3 +41,23 @@ and verified the F1 mute edge in VICE.
 The precise handover isolates boot assets from the runtime bitmap and
 sprite storage that reuse their addresses. The initial screen colours and
 bitmap at `$C000`, `$C400` and `$E000` match the tape pages byte for byte.
+
+## 24 November 2026
+
+Followed the per-tick player and opponent action paths and traced the
+ordinary chapter loop in each overlay. The five common music drivers
+are byte-identical. The Dungeons driver uses its own pattern and
+instrument format.
+
+Pressed the speed keys and F7 in VICE. Compared inventory icon copies
+with their packed source in both panel positions and tested pickup
+limits and the chapter-exit life count by calling the original code
+with controlled inputs on the kit’s 6502.
+
+Decoded the room item and initial opponent records in all six chapter
+overlays. Compared 162 native room setups and 3,392 native action
+selections with independent readers. Followed the ending in the Inner
+Sanctum from the item 9 pickup through the last player pose script.
+Staged the last room in VICE from its real room setup, then picked up
+the scrolls with a joystick gesture. Captured the ending text after
+the second wait and confirmed the bitmap dissolve repeated.
