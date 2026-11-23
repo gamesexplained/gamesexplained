@@ -33,8 +33,6 @@ range, is the next step for the listing.
   row 13, column 24, with two empty rows between them.
 - Room 106 drew black in one teleport test, though `test_rooms.js` shows
   its drawing matches the game. Not investigated.
-- Where this copy of the file came from (it is a one-file whole-memory
-  image like the OneLoad64 copies).
 
 ## Ideas
 
