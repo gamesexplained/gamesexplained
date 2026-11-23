@@ -51,7 +51,7 @@ table.t td,table.t th{border-bottom:1px solid var(--line-soft);padding:4px 10px;
 <header class="hero">
   <p class="eyebrow">{{year}} · {{publisher}}</p>
   <h1>Discoveries</h1>
-  <p class="sub">The authors' own source code left in memory, a joystick port the instructions get wrong, vats that take the wrong ingredients, and an unused title logo.</p>
+  <p class="sub">The authors' own source code left in memory, a joystick port the instructions get wrong, vats that take the wrong ingredients, the bug that sinks the green ladder, and an unused title logo.</p>
 </header>
 <main class="wrap">
 
@@ -106,10 +106,24 @@ table.t td,table.t th{border-bottom:1px solid var(--line-soft);padding:4px 10px;
 </section>
 
 <section id="ladder">
-  <p class="fig">06 · The green ladder</p>
-  <h2 class="t">Where a dropped ladder stands</h2>
-  <p>The contributor who supplied this copy reports that the green ladder sinks into the floor when Harry puts it down, so he cannot climb from the one-cell block in the basement to the fixed ladder above, and that he can then drop through the floor.</p>
-  <p>The drop routine, <code>$7300</code>, puts any item down with its bottom row on the row of Harry's feet, in the column he stands in. Dropped while Harry stands on the block in room 118, the ladder's top reaches row 16, in column 25. The fixed ladder above ends at row 13, in column 24. Two empty rows and one column separate them, so the two ladders do not meet.</p>
+  <p class="fig">06 · A bug</p>
+  <h2 class="t">The green ladder sinks into the floor</h2>
+  <p class="lede">The way out of the basement, room 118, is to stand the green ladder on the one-cell block, climb it and jump across to the long fixed ladder. In this copy the ladder often sinks three rows into the floor instead, and the jump cannot be made.</p>
+  <div class="plate" style="display:flex;gap:18px;flex-wrap:wrap">
+    <img src="reference/room-118-ladder-sunk.png" alt="Room 118: the green ladder standing in the floor beside Harry, its foot below the floor line" style="width:46%;min-width:260px;image-rendering:pixelated">
+    <img src="reference/room-118-ladder-hole.png" alt="Room 118 after the ladder is taken back: a gap in the floor where its foot was" style="width:46%;min-width:260px;image-rendering:pixelated">
+    <p class="cap">Room 118 in VICE, from a save of our contributor's. The ladder dropped from the block lands with its foot in the floor; taken back, it leaves a hole in the floor, and the block is gone too.</p>
+  </div>
+  <p>To put an item down, the drop routine (<code>$7300</code>) needs the item's height, so it reads the item's shape number from a table at <code>$8500</code> (<code>$73A9</code>). It reads it through a pointer whose high byte it sets to <code>$85</code>, but it never clears the low byte. That byte is <code>work1</code>, which the authors use as a scratch pointer everywhere. Once the factory's power is on, other routines often leave it at <code>$27</code>, <code>$28</code> or <code>$29</code>. The drop then reads the shape of another item further along the table.</p>
+  <p>For the ladder, with <code>work1</code> at <code>$27</code>, the table gives a picture two rows high instead of five. The ladder is placed as if it were two rows tall, so its foot lands three rows lower, over the block and the floor. Its cells overwrite theirs in the map of what each cell is, so the block and that bit of floor stop being solid. Taking the ladder back clears all five cells, the right size this time, and leaves a hole for Harry to fall through.</p>
+  <p>Most other items are misjudged too, by less. In VICE, with <code>work1</code> at <code>$27</code>, a bag of milk sank one row into the floor, and a toy part could not be put down at all, because the game took it for a taller item with no room above it. Only the ladder's three rows decide whether the game can be finished.</p>
+  <p>The take routine reads the same table correctly, because it sets <code>work1</code> to 0 first (<code>$707D</code>). Whenever <code>work1</code> happens to be 0, a drop works, which is why the bug comes and goes.</p>
+  <div class="plate" style="display:flex;gap:18px;flex-wrap:wrap">
+    <img src="reference/room-118-ladder-fixed.png" alt="Room 118 with the fix: the green ladder standing on the block above Harry" style="width:46%;min-width:260px;image-rendering:pixelated">
+    <img src="reference/room-118-ladder-escape.png" alt="Room 118 with the fix: Harry at the top of the fixed ladder" style="width:46%;min-width:260px;image-rendering:pixelated">
+    <p class="cap">The same save with six bytes changed. The ladder stands on the block, and Harry climbs it, jumps to the fixed ladder and leaves the basement.</p>
+  </div>
+  <p>The fix replaces the six bytes at <code>$73A9</code> (<code>A9 85 85 F9 B1 F8</code>) with a direct read of the table, <code>LDA $8500,Y</code>, and three NOPs: <code>B9 00 85 EA EA EA</code>. In the program file the six bytes start at offset 28,823 (<code>$7097</code>) from the start of the file, load address included. Two other places in the take routine use the same six bytes and need no change.</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>

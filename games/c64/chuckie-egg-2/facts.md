@@ -102,6 +102,10 @@ van are sprites, each creature as several sprites (`creature_sprites`
   the lifts move only with the power on (`$B0`).
 - Vats take ingredients that come before their own (`drop_vat_check`
   `$746B`).
+- `drop_item` measures the item through `(work1),y` without clearing
+  `work1` (`drop_size` `$73A9`), so with `work1` left non-zero it uses
+  another item's height and width: the green ladder sinks 3 rows (see
+  Live tests).
 - A toy part dropped into the milk, cocoa or sugar vat is marked gone and
   counted nowhere (`ingredient_in` `$76FF` skips kind 0). Only
   `game_state_init` (`$49CA`), run for a new game and after each egg,
@@ -165,7 +169,14 @@ comment is recommended.
 ## Live tests
 
 - 22 November 2026: the ladder taken in room 109 and dropped in rooms 1,
-  109 and 118 (`features.md`, Open questions); stands with its bottom row
-  on the row of Harry's feet each time.
+  109 and 118 with `work1` at 0; stands with its bottom row on the row of
+  Harry's feet each time.
+- 23 November 2026, from the contributor's save in room 118 (`work1` =
+  `$27`, power on): the ladder dropped from the one-cell block lands at rows
+  19-23 over the block and the floor; taken back, it leaves both cells
+  empty. With `$73A9` patched to `B9 00 85 EA EA EA` it lands at rows
+  16-20, and Harry climbs it, jumps to the fixed ladder and climbs out.
+  With `work1` set to `$27`, a milk bag sank to rows 22-23 and a toy part
+  could not be dropped; patched, both landed on the floor.
 - 22 November 2026: the stick in control port 1 opened "SAVING GAME"
   (right, the F7 line) and returned to the title (fire, the F1 line).

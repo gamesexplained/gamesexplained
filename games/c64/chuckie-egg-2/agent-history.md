@@ -108,3 +108,25 @@ missing extra lives and creature rules added, and numbers on the map.
 Colouring and animating the sprites, a player for the footsteps and a
 marker on the power switch were left for curation. Each finding and its
 outcome is in `work/reports/review-settled.md`.
+
+### The green ladder, from the contributor's save (23 November 2026)
+
+My drops of the ladder had all worked, and the contributor sent a save
+made in room 118 where it failed. VICE 4.0 refused to load it: it came
+from an older VICE (snapshot format 1.1, the `x64` machine, not
+`x64sc`). The kit's snapshot reader still read its RAM, and the VIC-II
+module gave sprite 0's position, so the moment was rebuilt: a running
+game stopped at the main loop, the save's RAM copied in, and the game's
+own restart (`$5085`) used to put Harry at x 224, y 197 in room 118 with
+the ladder given back afterwards. The drop key did nothing at first,
+because the contributor had redefined take/drop as RETURN (the key table
+at `$8890` is in the save).
+
+The drop then sank the ladder to rows 19-23. Stopping inside `drop_item`
+showed it measuring the ladder as 2 rows: it reads the shape table
+through `(work1),y` with only `work2` set, and `work1` was `$27` in the
+save but 0 in all my earlier tests. Patching `$73A9` to a direct
+`LDA $8500,Y` fixed it, and Harry then climbed out of the basement. Other
+items are misjudged too (a milk bag sank one row; a toy part could not be
+dropped). The listing has the finding at `drop_size`, and Discoveries §06
+now explains the bug and the fix in place of the open question.

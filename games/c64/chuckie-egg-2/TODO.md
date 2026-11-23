@@ -27,10 +27,6 @@ range, is the next step for the listing.
 
 ## Open questions
 
-- The contributor's green ladder: in which room, and standing where,
-  does it sink? Our drops in rooms 1, 109 and 118 stood on the floor; in
-  room 118 its top is at row 16, column 25, and the fixed ladder ends at
-  row 13, column 24, with two empty rows between them.
 - Room 106 drew black in one teleport test, though `test_rooms.js` shows
   its drawing matches the game. Not investigated.
 

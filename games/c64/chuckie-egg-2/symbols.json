@@ -2,7 +2,7 @@
  "schema": 1,
  "platform": "c64",
  "game": "chuckie-egg-2",
- "build": "one-file whole-memory image, $0314-$FFFF, started by an IRQ hook at $033C (chuckie-egg-2.prg, MD5 feba9b149adc49799ba1f58201ef344a); the same kind of file as games/c64/i-ball's, which came from the OneLoad64 games collection; where this one came from is not recorded",
+ "build": "one-file whole-memory image from the OneLoad64 games collection, $0314-$FFFF, started by an IRQ hook at $033C (chuckie-egg-2.prg, MD5 feba9b149adc49799ba1f58201ef344a)",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -6668,6 +6668,12 @@
    "kind": "auto"
   },
   {
+   "address": 29609,
+   "name": "drop_size",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 29676,
    "name": "b_73EC",
    "type": "Branch",
@@ -11990,6 +11996,11 @@
    "address": 29440,
    "type": "line",
    "text": "The take/drop key while walking (state 1) and carrying something: drop it. A drop already falling into a vat is moved on instead (drop_fall). The item's bitmap is placed with its bottom row on the row of Harry's feet and its right column one left of him; if that rectangle of the property map is not empty, or is off the left of the room, nothing happens. Otherwise the entry gets this room, row and column. In the four vat rooms ($21 milk, $33 cocoa, $6E sugar, $5F the toy maker) an item may fall in (drop_vat_check); anywhere else, or when it may not, it simply lies there (drop_done)."
+  },
+  {
+   "address": 29609,
+   "type": "line",
+   "text": "The size of the item being dropped, from its shape entry ($8500 + item, then $8600 + 3 \u00d7 shape + 1 for the picture, whose first two bytes are height and width). The read at $73AD goes through (work1),y with only work2 set to $85: work1 is not cleared, so when another routine has left it non-zero the size is taken from the entry at $8500 + work1 + item, another item's shape. With the power on work1 is often $27, $28 or $29 (power_on, drop_done and others leave it so); take_item clears it first ($707D) and is not affected. The green ladder ($26, 5 rows high) is then measured as picture $1F, 2 rows high, and placed 3 rows too low, over whatever is below it; take_item, which uses the right size, later clears all five cells and leaves a hole. Replacing $73A9-$73AE with LDA $8500,Y and three NOPs (B9 00 85 EA EA EA) fixes it; tested in VICE on 23 November 2026 from the contributor's save in room 118."
   },
   {
    "address": 29803,

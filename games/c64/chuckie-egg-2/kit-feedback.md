@@ -19,6 +19,8 @@ None. The run changed no file under `kit/` or `site/`.
 
 A table whose index counter is incremented before the end test is read one entry short of its length. Here a jump table of 22 entries is read for counter values 1 to 21, because the code adds 1 and leaves the jump when the counter reaches 22; the listing said the jump lasted 22 steps, and nothing flagged it until a widget drawn from the table counted 21. A rule for `60-verify` could say: when a comment gives a count of steps or entries, count them from the loop's end test, not from the table's length. No other game folder showed the same mistake, so it waits here.
 
+A bug a contributor reports, and the run cannot reproduce, should be tested from the contributor's own save before it is written up as unreproduced. Here the ladder dropped correctly in every test I set up, because a scratch pointer the drop routine forgets to clear happened to be 0; in the contributor's save it was `$27`, and the bug appeared on the first try. A rule for `20-features` could say: when a reported fault does not appear, ask the contributor for a snapshot taken just before it, since state the run did not think to set may be the cause. This is one game's evidence, so it waits here.
+
 ## Maintainer asks
 
 - **Let browser checks ignore console errors from other sites.** In a cloud session the web fonts and the analytics script cannot load, and Chromium logs "Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED" for each. A check that collects console errors, as `kit/skills/core/70-minisite` asks, then fails for a reason that has nothing to do with the page. This run's check (`games/c64/chuckie-egg-2/pages-browser.js`) keeps only errors whose location starts with the site's own address. The same filter could live in `kit/scripts/play_browser.js` as a helper every check uses, so each check need not find this out again.
@@ -28,6 +30,8 @@ A table whose index counter is incremented before the end test is read one entry
 Linux (x86-64) in a cloud container. VICE release v4.0.0 (`v4.0.0-linux-x86_64-gui.zip`) through the kit's vice-mcp, regenerator2000 0.9.20. The browser checks ran on the Chromium the container carries for Playwright (`/opt/pw-browsers`), so `tools.py get-chromium` was not needed.
 
 The checker the contributor asked for needed usage credits the account did not have, so the 60-verify sample ran on claude-opus-5-5 in a fresh context, as `game.json` records.
+
+The contributor's save came from an older VICE (snapshot format 1.1, machine `x64`), which VICE 4.0's `x64sc` would not load. `kit/c64/snapshot.py` still read its RAM; the moment was rebuilt by copying that RAM into a running game and using the game's own restart. A note in `kit/skills/c64/tool-vice-mcp` that snapshots from VICE 3.x do not load, and that their RAM and VIC-II registers can still be read, would save the next run the detour.
 
 ## What cost the most time
 

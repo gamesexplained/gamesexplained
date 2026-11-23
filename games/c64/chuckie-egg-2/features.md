@@ -66,16 +66,20 @@ Sources:
 - Dying returns what Harry carried to where it came from, except the toy
   and the egg (`lose_life` `$7875`).
 
+- **The green ladder sinks into the floor** (reported by the contributor;
+  traced and confirmed in VICE). `drop_item` reads the item's shape
+  through `(work1),y` at `$73AD` with only `work2` set (`drop_size`
+  `$73A9`); `work1` is left at `$27`, `$28` or `$29` by power_on and
+  other routines, so the item is measured with another item's picture.
+  The ladder (5 rows) is measured as 2 rows and placed 3 rows low, over
+  the one-cell block in room 118 and the floor; taking it back clears five
+  cells and leaves a hole. With `work1` at `$27` a milk bag also sank one
+  row and a toy part could not be dropped. `LDA $8500,Y` and three NOPs
+  at `$73A9` (`B9 00 85 EA EA EA`) fix it: with the fix Harry climbs the
+  ladder from the block, jumps to the fixed ladder and leaves room 118.
+
 ## Open questions
 
-- **The green ladder "sinks into the floor"** (the contributor). Tested on
-  22 November 2026 with the game's own take and drop: taken in room 109 and
-  dropped on the floor there and in room 1, it stands on the floor with its
-  bottom row on the row of Harry's feet (rows 18-22 above a floor at row
-  23). In room 118, dropped standing on the one-cell block, it stands at
-  rows 16-20 in column 25, beside the block; the fixed ladder above ends
-  at row 13 in column 24, so two rows and a column separate them. Not yet
-  seen: the ladder sinking, or a fall through the floor.
 - Room 106 drew as a black screen when entered by the restart-point
   teleport used for testing; not yet known whether the room itself or the
   test was at fault.
