@@ -43,8 +43,8 @@
    ],
    [
     4096,
-    4607,
-    "never read: VICE's power-on fill around the interrupt and tune code (the code itself is counted)"
+    4351,
+    "never read: VICE's power-on fill below the interrupt code at $1100"
    ],
    [
     4608,
@@ -168,7 +168,7 @@
   {
    "start": 4400,
    "end": 4415,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 4416,
@@ -177,8 +177,13 @@
   },
   {
    "start": 4425,
+   "end": 4476,
+   "type": "Byte"
+  },
+  {
+   "start": 4477,
    "end": 4478,
-   "type": "Undefined"
+   "type": "Address"
   },
   {
    "start": 4479,
@@ -188,7 +193,7 @@
   {
    "start": 4518,
    "end": 4518,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 4519,
@@ -197,6 +202,11 @@
   },
   {
    "start": 4600,
+   "end": 4607,
+   "type": "Byte"
+  },
+  {
+   "start": 4608,
    "end": 6927,
    "type": "Undefined"
   },
@@ -1931,9 +1941,9 @@
   },
   {
    "address": 215,
-   "name": "zpa_D7",
+   "name": "lives",
    "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 216,
@@ -1979,9 +1989,9 @@
   },
   {
    "address": 227,
-   "name": "zpa_E3",
+   "name": "tcar",
    "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 228,
@@ -2033,15 +2043,15 @@
   },
   {
    "address": 248,
-   "name": "zpa_F8",
+   "name": "work1",
    "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 249,
-   "name": "zpa_F9",
+   "name": "work2",
    "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 250,
@@ -10272,6 +10282,26 @@
  ],
  "comments": [
   {
+   "address": 215,
+   "type": "line",
+   "text": "Lives left. The authors' own name, from the source fragment at $8F00."
+  },
+  {
+   "address": 227,
+   "type": "line",
+   "text": "The item number the vat code works on (carb at $7770 compares it with 32, the toy-part basket). Harry's carried item itself is $B2. The authors' own name, from the source fragment at $8F00."
+  },
+  {
+   "address": 248,
+   "type": "line",
+   "text": "Pointer, low byte, used by several routines. The authors' own name, from the source fragment at $8F00."
+  },
+  {
+   "address": 249,
+   "type": "line",
+   "text": "Pointer, high byte (work1+1). The authors' own name, from the source fragment at $8F00."
+  },
+  {
    "address": 828,
    "type": "line",
    "text": "Start-up of the one-file version. The file loads at $0314 and its first two bytes point the IRQ vector here, so the first interrupt after the load ends runs this: acknowledge the video chip, blank the screen, black border and background, clear colour RAM, reset the stack, copy the KERNAL's default vectors back to $0314-$0327 from the ROM table at $FD30, wait 25 frames, IOINIT ($FDA3), screen back on, CLI and jump to the game's entry at $490A."
@@ -10954,7 +10984,7 @@
   {
    "address": 20717,
    "type": "line",
-   "text": "State 7, a jump in progress: the jump counter $B9 picks dy from jump_profile ($55AE): up 4, 4, 3, 2, 1, 1, 1, then level, then down 1 to 4. After 22 steps the jump ends in a fall (state 0, fall counter 5). Each step goes through the landing check."
+   "text": "State 7, a jump in progress: the jump counter $B9 goes up by 1 and picks dy from jump_profile ($55AE) entry $B9-1: up 4, 4, 3, 2, 1, 1, 1, then level, then down 1 to 4. When $B9 reaches 22 the jump ends in a fall (state 0, fall counter 5), so from a counter of 0 it lasts 21 steps and the table's 22nd entry is never read. Each step goes through the landing check."
   },
   {
    "address": 20753,
@@ -11089,7 +11119,7 @@
   {
    "address": 21934,
    "type": "line",
-   "text": "dy for each step of a jump ($B9 = 1 to 22): 4, 4, 3, 2, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -2, -3, then -4 six times. Positive is up. The rise is 16 pixels, the fall from the top 16 again plus whatever is left below."
+   "text": "dy for each step of a jump, read as entry $B9-1 for $B9 = 1 to 21: 4, 4, 3, 2, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -2, -3, then -4 five times; a sixth -4 follows that state_jump never reaches. Positive is up. The rise is 16 pixels and the jump ends 12 below the take-off."
   },
   {
    "address": 21956,

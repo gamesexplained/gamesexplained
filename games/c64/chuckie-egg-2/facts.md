@@ -102,6 +102,11 @@ van are sprites, each creature as several sprites (`creature_sprites`
   the lifts move only with the power on (`$B0`).
 - Vats take ingredients that come before their own (`drop_vat_check`
   `$746B`).
+- A toy part dropped into the milk, cocoa or sugar vat is marked gone and
+  counted nowhere (`ingredient_in` `$76FF` skips kind 0). Only
+  `game_state_init` (`$49CA`), run for a new game and after each egg,
+  brings it back, so that egg cannot be made. Observed in VICE, 23 November
+  2026: a part dropped into the milk vat in room 33 left `$0F`-`$12` at 8.
 
 ## Data tables
 

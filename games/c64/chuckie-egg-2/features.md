@@ -53,8 +53,12 @@ Sources:
   to C64 colours as they are drawn (`spectrum_colour` `$4088`).
 - A fall of fifteen steps kills (`land_check` `$5111`).
 - The vats take the ingredients that come before their own: toy parts and
-  milk into the cocoa vat, for example, each counted as its own kind
-  (`drop_vat_check` `$746B`).
+  milk into the cocoa vat, for example (`drop_vat_check` `$746B`). Milk,
+  cocoa and sugar are counted as their own kind (`ingredient_in` `$76FF`);
+  a toy part in any vat but the toy maker counts nowhere and stays gone
+  until the next egg or game (`game_state_init` `$49CA`), so that egg
+  cannot be finished. Confirmed in VICE: a toy part dropped into the milk
+  vat in room 33 left all four counts at 8.
 - Creatures choose with a random number seeded the same way every game
   (`rnd` `$64D2`).
 - Some creatures throw Harry into a jump instead of killing him
