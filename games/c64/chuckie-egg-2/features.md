@@ -88,7 +88,8 @@ Sources:
   and its cells land at `$0801-$0842`, `$1B01-$1B42` and `$DC01-$DC42`.
   CIA 1's timer controls get `$03`, keyboard columns 6 and 7 read low, and
   the left key (comma) reads as held: Harry walks left without stopping.
-  Players report (the contributor, and a Chuckie Egg fan site he cites)
+  Players report (the contributor, and and https://www.bagshot-row.org/chuckie-egg/commodore642.html, which
+  he cites; it could not be fetched from the cloud session)
   that the game cannot then be finished; not tested here.
   Confirmed in VICE with this copy's room 76 given those bytes. That
   other copy also uses `$B0-$B5` for the print routines' temporaries
