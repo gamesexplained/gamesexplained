@@ -73,28 +73,37 @@ for (const kind of ['strawberry','enemy','falling','apple','cherry']) {
   }
 }
 
-const traces = embedded('discoveries.html', 'tf-slide-data');
-for (let i = 0; i < traces.length; i++) {
-  const mem = ram.slice();
-  const cpu = new C64Cpu.CPU(mem, {ramSize: 0x4000});
-  mem[0xE2] = 5;
-  cpu.call(0x2940, {x: 3});
-  mem[0xE2] = 6;
-  mem.fill(0xFF, 0x378, 0x380);
-  mem[0x360] = 48;
-  mem[0x368] = 0;
-  mem[0x370] = 0x83;
-  mem[0xF6] = 0x02;
-  mem[0x33F] = i === 0 ? 126 : 0;
-  cpu.call(0x2CB3);
-  // The delayed branch returns one caller early. Keep the same JSR frame as the IRQ's fruit update.
-  mem.set([0x20, 0x80, 0x33, 0x60], 0x700);
-  for (const [delay, y] of traces[i]) {
-    assert.equal(mem[0x33F], delay);
-    assert.equal(mem[0x34F], y);
-    cpu.call(0x700);
-    cpu.call(0x2400);
-  }
+// The push on the Discoveries page: the game's own routines, one play frame at a time.
+const {slideFrames} = g.run('discoveries.html', 'tutti-slide', 'slideFrames');
+const firstMove = frames => frames.findIndex(f => f.y !== 8);
+const stop = frames => frames.findIndex((f, i) => i > 0 && !f.sliding);
+const waited = slideFrames(ram, 126, 140);
+const prompt = slideFrames(ram, 0, 140);
+assert.equal(waited.length, 141);
+assert.deepEqual(waited.slice(0, 128).map(f => f.countdown), Array.from({length: 128}, (_, i) => Math.max(0, 126 - i)));
+assert.ok(waited.slice(0, 127).every(f => f.y === 8 && f.sliding), 'the first push waits in place');
+assert.equal(firstMove(waited), 127);
+assert.equal(firstMove(prompt), 1);
+assert.equal(stop(prompt), 8);
+assert.equal(stop(waited), 134);
+for (const [frames, at] of [[prompt, 8], [waited, 134]]) {
+  assert.equal(frames[at].y, 16, 'the cherry stops one tile down');
+  const cell = 0xC00 + 4 * 40 + 12 - 0x800;       // tile (6,2): screen row 4, column 12
+  assert.deepEqual([cell, cell + 1, cell + 40, cell + 41].map(a => frames[at].screen[a]), [0x68, 0x69, 0x6A, 0x6B],
+    'a cherry block drawn at column 6, row 2');
+}
+assert.deepEqual(Array.from(waited[140].screen), Array.from(prompt[140].screen), 'both pushes end in the same picture');
+
+// The corner check on the same page: the game's own check at $2C78.
+const {cornerBoard} = g.run('discoveries.html', 'tutti-corners', 'cornerBoard');
+for (const level of [3, 6]) {
+  const start = cornerBoard(ram, level, false);
+  const goal = cornerBoard(ram, level, true);
+  assert.equal(start.apples.length, 4, `four Bad Apple blocks in orchard ${level}`);
+  assert.equal(start.met, false);
+  assert.equal(goal.met, true);
+  assert.deepEqual([0x600, 0x658].map(a => goal.mem[a] >> 4), [5, 5]);
+  assert.deepEqual([0x607, 0x65F].map(a => goal.mem[a] & 15), [5, 5]);
 }
 
 function readPitches(writes) {
@@ -131,4 +140,4 @@ for (let i = 0; i < soundCases.length; i++) {
   const samples = TEDSound.render(clip, 11025);
   assert.ok(samples.some(sample => Math.abs(sample) > 0.01), tracks[i].name + ' has audible output');
 }
-console.log(`Tutti Frutti: six maps, ${shapes} drawing records, two 128-tick slide traces, and five TED recordings verified.`);
+console.log(`Tutti Frutti: six maps, ${shapes} drawing records, both pushes frame by frame, the corner check in both block orchards, and five TED recordings verified.`);

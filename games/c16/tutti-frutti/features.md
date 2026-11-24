@@ -18,7 +18,7 @@
 | Bouncing ball in the first two rulesets | confirmed | $2700 and $2740. Fire gave an active ball with diagonal velocity and it later entered cooldown. |
 | First orchard ends on cherries or enemies | confirmed | $2C00 and $1E34. Each condition advanced the layout in the live probes. |
 | Second orchard ends on enemies or cherries and six bottom-row apples | confirmed | $2C20 and $1E34. Cherries alone kept layout 2 running. Six type-3 bottom cells triggered the alternate clear. |
-| An apple is invisible near the spawn on the first second-ruleset layout | open | Plus/4 World reports it. All six apples appear in the captured opening of layout 2. A specific route to the reported state remains open. |
+| An apple is invisible near the spawn on the first second-ruleset layout | open | Plus/4 World reports it. All six apples appear in the captured opening of layout 2, and its map and fall positions agree. The apple at column 8, row 4 is the one the round message covers until play starts. A route to the reported state remains open. |
 | The third ruleset uses sliding fruit blocks | confirmed | $2CB3. A recorded push at a tile boundary set the slot-7 direction and the cherry moved after the timer expired. |
 | First slide waits before the fruit moves | confirmed | $033F begins at $7E in this packed PRG. Clearing the byte in an otherwise identical probe removed the wait. |
 | Third orchard ends on enemies or Bad Apples in the four corners | confirmed | $2C78 and $1E34. Setting the corner cells to type 5 advanced the round. |
