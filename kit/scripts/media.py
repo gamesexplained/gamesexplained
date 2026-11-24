@@ -43,8 +43,11 @@ again, saying so, when they are not.
 "bytes" counts what reaches memory (a PRG without its address); "sha256" is of the item as it
 lies on the medium. An item whose bytes another holds exactly is listed once, and "also" names
 the others ("side3", or "side3: OTHER NAME"). An open item the scan matched in part carries
-"near", where most of its bytes were found. Images stay in work/: the ledger keeps names, sizes
-and hashes, never bytes (AGENTS.md, "No binaries, ever").
+"near", where most of its bytes were found. A reader that lists an item in pieces, such as a run
+of a disk's sectors, has each piece looked for on its own, since a loader may store them in an
+order of its own; and bytes the listings hold only EORed with one byte are found too, and "near"
+gives that "key" ("$C9"). Images stay in work/: the ledger keeps names, sizes and hashes, never
+bytes (AGENTS.md, "No binaries, ever").
 
 Usage:
   media.py scan <game dir> [<name>=]<image> [...]
@@ -78,6 +81,8 @@ MEDIA_SINCE = "2026-11-11"   # games created from this day need a media.json wit
 ANSWERS = ("part", "data", "loader", "saved", "unused", "open")
 WHOLE = 0.9                  # a part answers a file or bank when this share of its bytes is in the listing
 NEAR = 0.25                  # an open item names where this share of its bytes was found
+PROBE = 256                  # bytes of a piece tried under each one-byte key
+KEYS = [bytes(b ^ k for b in range(256)) for k in range(256)]   # bytes.translate tables, one per key
 SHOW = 40                    # open items the summary prints
 FILE = "media.json"
 
@@ -202,29 +207,53 @@ class Finder:
                 best[pid] = (n, base)
         return best
 
+    def keyed(self, data, at=None):
+        """(key, places) for bytes the listings hold, as they are or EORed with one byte, as a
+        loader may keep a disk's tracks (Ikari Warriors, tracks 8 to 14 with $C9, #985). The
+        bytes as they are come first; while those match less than half, each key is tried on the
+        first PROBE bytes, and of those whose 16-byte pieces the listings hold, the one that
+        matches most is counted. Key 0 is the bytes as they are."""
+        got = self.places(data, at)
+        best = max((n for n, _ in got.values()), default=0)
+        if 2 * best >= len(data) or len(set(data)) < 4:     # found, or a fill no piece is made of
+            return 0, got
+        head, key = bytes(data[:PROBE]), 0
+        for k in range(1, 256):
+            probe = head.translate(KEYS[k])
+            if not any(probe[o:o + 16] in self.index for o in range(0, len(probe) - 15, 8)):
+                continue
+            more = self.places(bytes(data).translate(KEYS[k]), at)
+            n = max((n for n, _ in more.values()), default=0)
+            if n > best:
+                best, key, got = n, k, more
+        return key, got
+
     def find(self, data):
-        """(bytes equal, part id, address) of the best place, or (0, None, None)."""
-        best = (0, None, None)
-        for pid, (n, base) in self.places(data).items():
+        """(bytes equal, part id, address, key) of the best place, or (0, None, None, 0)."""
+        best = (0, None, None, 0)
+        key, got = self.keyed(data)
+        for pid, (n, base) in got.items():
             if n > best[0]:
-                best = (n, pid, base)
+                best = (n, pid, base, key)
         return best
 
     def pieces(self, pieces):
         """The same for an item that reaches memory in pieces (a track's sectors or the runs a
         loader stored), each (address or None, bytes): every piece is looked for on its own, and
-        the part that holds the most of them answers, at the place of its first piece. Parts that
-        share code each count the pieces they hold, so the shared piece does not go to one part
-        and the rest of the item to another."""
-        held, first = Counter(), {}
+        the part that holds the most of them answers, at the place of its first piece, with the
+        key that matched most of its bytes. Parts that share code each count the pieces they
+        hold, so the shared piece does not go to one part and the rest of the item to another."""
+        held, first, keys = Counter(), {}, {}
         for at, data in pieces:
-            for pid, (n, base) in self.places(data, at).items():
+            key, got = self.keyed(data, at)
+            for pid, (n, base) in got.items():
                 held[pid] += n
                 first.setdefault(pid, base)
+                keys.setdefault(pid, Counter())[key] += n
         if not held:
-            return (0, None, None)
+            return (0, None, None, 0)
         pid, n = held.most_common(1)[0]
-        return (n, pid, first[pid])
+        return (n, pid, first[pid], keys[pid].most_common(1)[0][0])
 
 
 
@@ -294,13 +323,16 @@ def scan(gdir, images):
         if item["answer"] != "open" or len(data) < 16:
             continue
         item.pop("near", None)
-        n, pid, base = find.pieces(pieces) if pieces else find.find(data)
+        n, pid, base, key = find.pieces(pieces) if pieces else find.find(data)
         if not n:
             continue
         where = {"at": hexa(base), "matched": n}
         if pid:
             where = {"part": pid, **where}
-        if n >= WHOLE * len(data) and "sectors" not in item["place"]:   # a stray sector only hints
+        if key:
+            where["key"] = f"${key:02X}"
+        # a stray sector only hints, and so do bytes found through a key: the answer says how they are kept
+        if n >= WHOLE * len(data) and "sectors" not in item["place"] and not key:
             item.pop("near", None)
             item.update(answer="part", **where)
         elif n >= NEAR * len(data):
@@ -511,7 +543,7 @@ def report(gdir):
         for i in opened[:SHOW]:
             near = i.get("near")
             hint = (f"  near {near.get('part') or 'the listing'} at {near['at']}: {near['matched']} of {i['bytes']} bytes"
-                    if near else "")
+                    + (f", each EORed with {near['key']}" if near.get("key") else "") if near else "")
             load_at = f" loads at {i['load']}" if i.get("load") else ""
             print(f"  {i['image']}: {i['label']:<22} {i['bytes']:6} bytes{load_at}{hint}")
         if len(opened) > SHOW:

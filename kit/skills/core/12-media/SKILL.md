@@ -39,7 +39,8 @@ snapshots taken after it.
 
 Scan again with the same images once the listings are built. An open
 file or bank with 90 % of its bytes in one part's listing is answered
-`part`, and one found in some measure says where (`near`); answers
+`part`, and one found in some measure says where (`near`, with `key`
+when the bytes lie on the medium EORed with one byte); answers
 already given stay. Answer the rest with
 `media.py answer <game dir> <pattern> <answer>`, where a pattern takes a
 family at once (`MON*`) and `--open-only` leaves the answered alone.

@@ -24,6 +24,9 @@ format of the game's own). Each item is a dict:
   raw      its bytes on the medium, which the ledger hashes
   problem  why it cannot be read whole (a decoy's chain that leaves the disk), or absent
   blank    True for a bank of one value throughout
+  pieces   [(None, bytes)]: for a run of sectors no file holds, each sector, which the ledger
+           looks for in the listings on its own, since a fast loader keeps its sectors in an
+           order of its own (#985)
 
   sectors(path, track, first, last) -> the bytes of a run of sectors, for a traced item
 
@@ -110,7 +113,8 @@ def disk_items(path):
             raw = b"".join(bytes(d.sectors[(t, s)]) for s in range(a, b + 1))
             label = f"track {t}, sector {a}" if a == b else f"track {t}, sectors {a}-{b}"
             out.append({"label": label, "place": {"track": t, "sectors": [a, b]}, "load": None,
-                        "data": raw, "raw": raw})
+                        "data": raw, "raw": raw,
+                        "pieces": [(None, bytes(d.sectors[(t, s)])) for s in range(a, b + 1)]})
     return {"what": "disk side", "items": out, "missing": missing}
 
 
