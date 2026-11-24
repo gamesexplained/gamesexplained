@@ -9,6 +9,7 @@ shows what is open. The cartridge's blank bank answers itself; a T64 is listed a
 """
 import json
 from pathlib import Path
+import random
 import struct
 import subprocess
 import sys
@@ -28,7 +29,8 @@ STRAY = bytes((i * 13) & 255 for i in range(256))
 
 
 def write_d64(path, files, stray):
-    """files: [(name, load, data)] on tracks 17 down, one entry each; stray: (track, sector, bytes)."""
+    """files: [(name, load, data)] on tracks 17 down, one entry each; stray: (track, sector, bytes),
+    or a list of them."""
     S = {(t, s): bytearray(256) for t in range(1, 36) for s in range(disk.SPT[t])}
     bam = S[(18, 0)]
     bam[0:4] = bytes([18, 1, 0x41, 0])
@@ -58,9 +60,9 @@ def write_d64(path, files, stray):
         e[30] = len(chunks)
         S[(18, 1)][i * 32:i * 32 + 32] = e
         track -= 1
-    t, s, b = stray
-    use(t, s)
-    S[(t, s)][:] = b
+    for t, s, b in stray if isinstance(stray, list) else [stray]:
+        use(t, s)
+        S[(t, s)][:] = b
     with open(path, "wb") as f:
         for t in range(1, 36):
             for s in range(disk.SPT[t]):
@@ -223,6 +225,43 @@ class Traced(unittest.TestCase):
         other.write_bytes(self.d64.read_bytes()[:-1] + b"\x01")
         self.assertIn("none of the images",
                       run('trace', self.g, other, 18, 18, 'saved', '--why', 'x', ok=False).stderr)
+
+
+BLOB = random.Random(985).randbytes(4 * 254)     # what a fast loader reads to $6000
+
+
+def loader_sectors(track, key):
+    """BLOB as a fast loader keeps it: 254 bytes a sector after a two-byte header, the sectors in
+    an order of its own, and every byte EORed with `key`."""
+    order = [2, 0, 3, 1]                  # sector s holds the 254 bytes of chunk order[s]
+    return [(track, s, bytes(b ^ key for b in bytes([0x4B, s]) + BLOB[254 * c:254 * c + 254]))
+            for s, c in enumerate(order)]
+
+
+class LoaderSectors(unittest.TestCase):
+    """A run of sectors no file holds, stored in the loader's own order, as it is and EORed
+    with one byte: the scan looks for each sector on its own and tries the 256 keys (#985)."""
+
+    def test_sectors_found_one_at_a_time_and_through_a_key(self):
+        tmp = Path(tempfile.mkdtemp())
+        g = tmp / 'game'
+        g.mkdir()
+        (g / 'game.json').write_text(json.dumps({"platform": "c64"}))
+        (g / 'listing.json').write_text(json.dumps({"records": [{"a": 0x1000, "b": list(ENGINE)},
+                                                                 {"a": 0x6000, "b": list(BLOB)}]}))
+        d64 = tmp / 'disk.d64'
+        write_d64(d64, [(b"ENGINE", 0x1000, ENGINE)],
+                  loader_sectors(21, 0) + loader_sectors(22, 0xC9) + [(20, 5, STRAY)])
+        out = run('scan', g, d64).stdout
+        it = {i["label"]: i for i in json.loads((g / 'media.json').read_text())["items"]}
+        plain, keyed = it["track 21, sectors 0-3"], it["track 22, sectors 0-3"]
+        for item in (plain, keyed):
+            self.assertEqual(item["answer"], "open")        # a stray sector only hints
+            self.assertGreaterEqual(item["near"]["matched"], len(BLOB))
+        self.assertNotIn("key", plain["near"])
+        self.assertEqual(keyed["near"]["key"], "$C9")
+        self.assertIn("each EORed with $C9", out)
+        self.assertNotIn("near", it["track 20, sector 5"])  # bytes no listing holds, under any key
 
 
 if __name__ == '__main__':
