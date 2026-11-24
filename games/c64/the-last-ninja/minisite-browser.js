@@ -109,7 +109,7 @@ async function testMechanics(page, game) {
   await page.locator('#jump-shift').click();
   await page.waitForFunction(() => document.querySelector('#jump-result').textContent.includes('Fails'));
   await page.locator('#combat-weapon').selectOption('4');
-  await page.getByRole('button', {name:'Joystick up',exact:true}).click();
+  await page.getByRole('button', {name:'Joystick right',exact:true}).click();
   await page.waitForFunction(() => document.querySelector('#combat-result').textContent.includes('Projectile'));
   await page.locator('#enemy-step').click();
   for (let i=0;i<4;i++) await page.locator('#enemy-time').click();
