@@ -94,6 +94,14 @@ column 7, row 6 (zero-based). $37A0–$37FF stores the six sets of
 fallable apple positions. A record is eight X bytes and eight Y bytes,
 with $FF for unused slots. Layout 2 has an apple at column 8, row 4.
 The reported invisible apple to the right of the spawn remains open.
+In this PRG the six apple tiles in layout 2's map and its six fall
+positions at $37B0 agree, and `reference/orchard-2.png` shows all six
+at the start of play. Apple (8,4) is the only layout-2 apple under the
+8-by-3 round message at $0D24–$0D7B (screen rows 7–9, columns 12–19).
+$3172 saves that patch straight after $2940 draws the new layout, and
+$2308 restores it when play starts, so this copy shows the apple. A
+release that skipped or misplaced that restore would hide exactly that
+apple: a lead for another copy of the game.
 
 The clear routines are $2C00 (cherries, then bottom row for state 4),
 $2C78 (the four corner cells), and $1E34 (enemies). In layout 1, opening
@@ -145,6 +153,27 @@ to the wraparound during ordinary play remains open.
   down-and-fire route reproduced the delay on both PAL models after
   the first two rounds were skipped by clearing their enemy rosters. From the same pre-push state
   with the delay cleared, the first tick after the push moves it.
+  The play tick runs once a frame from the raster interrupt at $20A0,
+  so the wait is 127 frames, about 2.5 seconds at 49.86 frames a
+  second. $3194 resets $0350–$037F (velocities, actor positions and
+  directions) when a round starts or a life is lost, and never touches
+  the delays at $0338–$033F. Only $337A writes a delay, and only for
+  the falling-apple slots 0–5, so slot 7 keeps its boot value until a
+  slide counts it down. Warren Pilkington's review of the game
+  (mastertronic.co.uk, read 24 November 2026) calls it "a known bug on
+  level three on the first game you have (after loading)" where the
+  first block moves "after a couple of seconds".
+- Leads from the code, not yet seen live: while slot 7 waits, the push
+  has already written type 0 to the block's tile, so the map treats the
+  square as open. $1DB4 tests all eight fruit slots against enemies,
+  including a waiting slot 7, while $1E50 tests only slots 5–0 against
+  the player. A waiting block should therefore squash an Acid Apple
+  that walks into its square and let the strawberry walk through it.
+  When the wait ends, $2C90 calls $25C8, which starts the descending
+  voice-2 effect that falling apples use; a slide with no wait never
+  calls it. While any slot's delay is nonzero, $2C90 returns straight
+  to the play tick, so the lower-numbered slots skip that frame's move.
+  Two apples whose waits overlap should therefore hold each other up.
 - The bonus begins at 599, 799, or 999. $1A00 subtracts one every
   second call from the enemy update at $1C5B. The separate elapsed
   clock at $1A38 adds one displayed second per 60 calls. The PAL
@@ -195,3 +224,13 @@ How the pages' widgets, pictures and sounds were checked against the game, and w
 ### index.html
 
 - The 320×200 reconstruction matches every pixel of the emulator’s display window.
+
+### discoveries.html
+
+- The push pictures run $30A0, $3380, $2CB3, $2400, $3000, $3200 and
+  $30C0 in the play tick's order on the kit's processor. `test_tutti.js`
+  holds them to the live observation: with 126 in $033F the block first
+  moves on frame 127, and with 0 on frame 1. Both stop one tile down.
+- The corner pictures draw layouts 3 and 6 with $2940, and the corner
+  line is $2C78's own result. The test checks that it fails on both
+  opening layouts and passes with type 5 in the four corners.

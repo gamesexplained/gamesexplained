@@ -63,32 +63,71 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .tf-foot{font-size:.85em;color:var(--ink-soft);margin-top:32px}
 @media(max-width:680px){:root{--gx:20px;--h1:37px;--fs:16px;--pp:15px;--sy:30px}.tf-table td,.tf-table th{padding:8px 5px}}
 @media(max-width:500px){.tf-pair{grid-template-columns:1fr}}
+.tf-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 16px}
+.tf-lane{margin:0}
+.tf-lane figcaption{font-weight:700;margin:0 0 8px}
+.tf-lane canvas{display:block;width:100%;height:auto;image-rendering:pixelated;background:#080808;border-radius:5px}
+.tf-meter{height:8px;background:var(--line-soft);border-radius:4px;margin:10px 0 8px;overflow:hidden}
+.tf-meter span{display:block;height:100%;width:0;background:var(--accent)}
+.tf-lane .tf-out{min-height:0}
+.tf-board.tf-still canvas{cursor:default}
+.tf-group{display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px;margin-right:12px}
+@media(max-width:500px){.tf-lanes{grid-template-columns:1fr}}
 </style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">1985 · Mastertronic · Commodore 16 / Plus/4</p>
   <h1>Tutti Frutti</h1>
-  <p class="sub">A leftover timer delays the first slide. Four well-placed apples can clear the orchard.</p>
+  <p class="sub">The first block that you push after loading the game waits two and a half seconds before it moves. In the block orchards, a Bad Apple in each corner wins the round.</p>
 </header>
 <main class="wrap">
 <section id="first-push">
-  <h2 class="t">Bug: The first slide waits 126 ticks</h2>
-  <p>The first successful push after a cold boot can leave the fruit sitting in place. The unpacker leaves <code>$7E</code> in the timer for the sliding fruit. The setup at <code>$2D34</code> gives the fruit a speed and a direction and leaves that timer alone.</p>
+  <h2 class="t">Bug: The first block that you push after loading waits two and a half seconds</h2>
+  <p>In the block orchards (levels 3 and 6, and every third level after them), Super Strawberry pushes cherry blocks and Bad Apple blocks with the fire button. A pushed block slides away at once, except the first one after the game is loaded. That block stays where it is for about two and a half seconds, and then it slides. Every block pushed after that moves at once, so the wait comes back only when the game is loaded again.</p>
   <div class="plate">
-    <div class="tf-controls">
-      <label for="tf-tick">Ticks after the push</label><input id="tf-tick" type="range" min="0" max="127" value="0">
-      <label><input id="tf-clear-timer" type="checkbox"> Start with timer cleared</label>
+    <div class="tf-lanes">
+      <figure class="tf-lane">
+        <figcaption>First push after loading</figcaption>
+        <canvas id="tf-lane-0" width="144" height="64" role="img" aria-label="Super Strawberry above a cherry block that waits before it slides"></canvas>
+        <div class="tf-meter" aria-hidden="true"><span id="tf-meter-0"></span></div>
+        <output id="tf-state-0" class="tf-out"></output>
+      </figure>
+      <figure class="tf-lane">
+        <figcaption>Every later push</figcaption>
+        <canvas id="tf-lane-1" width="144" height="64" role="img" aria-label="Super Strawberry above a cherry block that slides at once"></canvas>
+        <div class="tf-meter" aria-hidden="true"><span id="tf-meter-1"></span></div>
+        <output id="tf-state-1" class="tf-out"></output>
+      </figure>
     </div>
-    <output id="tf-delay" class="tf-out" aria-live="polite"></output>
-    <p class="cap">Both traces start with the same push. In the second run the timer at <code>$033F</code> starts at zero.</p>
+    <div class="tf-controls">
+      <button type="button" id="tf-push" disabled>Push the cherry</button>
+      <label for="tf-time">Time after the push</label><input id="tf-time" type="range" min="0" max="140" value="0" disabled>
+      <output id="tf-clock" class="tf-status" aria-live="off"></output>
+    </div>
+    <p class="cap">The top of the first block orchard. The strawberry stands one step up and one step left of where it starts the round, and pushes down. The bar under each picture is the block's countdown. Both pictures come from the game's own push, countdown and drawing routines, run one frame at a time. The only difference is the starting countdown: 126 on the left and 0 on the right.</p>
   </div>
-  <p>On the first block board, go up from the start and left by one tile. Hold down and fire. The cherry below has a clear space to slide into. The delay routine at <code>$2C90</code> runs until the timer reaches zero. Movement starts on the next tick.</p>
+  <p>Each moving fruit has a countdown, and the fruit moves only when its countdown is zero. A Bad Apple uses its countdown to hang for 32 frames before it falls, which gives the strawberry time to get out from underneath. A pushed block is meant to move at once. The push routine at <code>$2D34</code> gives the block a position, a direction and a speed, but it never sets the block's countdown, because the countdown should already be zero. The routine that starts each orchard does not set it either.</p>
+  <p>The block's countdown is one byte of memory, at the hexadecimal address <code>$033F</code>, and the game never writes a starting value into it. In the version of the game on this site, loading leaves the number 126 in that byte. The game takes one off the countdown each frame, 50 times a second, and moves the block on the frame after the countdown reaches zero. That is 127 frames, or about two and a half seconds. After the first push the countdown stays at zero, so every block pushed after it moves on the next frame.</p>
+  <p>Players noticed the wait too. <a href="https://mastertronic.co.uk/game-review-tutti-frutti-commodore-16-and-plus-4-mastertronic/">Warren Pilkington's review</a> calls it a known bug: on the first game after loading, the first block on level three "does not always push straight away but does so after a couple of seconds".</p>
 </section>
 <section id="corners">
-  <h2 class="t">Secret: Four apples in the corners clear the board</h2>
-  <p>The four Bad Apples in each block orchard can finish the round by themselves. The check at <code>$2C78</code> combines the four corner tile values. When they all carry the apple block value, the round ends and the game adds 3,000 points on top of the remaining bonus.</p>
-  <figure class="tf-figure"><img class="tf-image" src="reference/orchard-3.png" width="384" height="294" alt="Block orchard showing the four green Bad Apples to move to the corners"><figcaption class="cap">The first block orchard contains four Bad Apple blocks. All four destinations are at the edge of the board.</figcaption></figure>
-  <p><a href="levels.html#boards">Inspect the corner tiles in the level viewer.</a></p>
+  <h2 class="t">Secret: A Bad Apple block in each corner wins a block orchard</h2>
+  <p>Every orchard ends when its last Acid Apple is gone. Each of the three kinds of orchard also has a second way to win, which pays extra points. In a cherry orchard it is to eat every cherry. In a falling-apple orchard it is to eat every cherry and drop all six Bad Apples onto the bottom row (<a href="index.html#rules">how an orchard is won</a>). The cassette inlay says only that the job is to collect the cherries.</p>
+  <p>In a block orchard, crushing every cherry block does not end the round. The second way to win there is to push the four green Bad Apple blocks into the four corners of the orchard. The round then ends at once, and the game adds 3,000 points on top of the bonus that is left on the counter.</p>
+  <div class="plate">
+    <div class="tf-controls">
+      <span class="tf-group" role="group" aria-labelledby="tf-orchard-label"><span id="tf-orchard-label">Orchard</span>
+        <button type="button" id="tf-level-3" aria-pressed="true" disabled>Level 3</button>
+        <button type="button" id="tf-level-6" aria-pressed="false" disabled>Level 6</button></span>
+      <span class="tf-group" role="group" aria-labelledby="tf-show-label"><span id="tf-show-label">Show</span>
+        <button type="button" id="tf-start" aria-pressed="true" disabled>Start of the round</button>
+        <button type="button" id="tf-goal" aria-pressed="false" disabled>Goal</button></span>
+    </div>
+    <div class="tf-board tf-still"><canvas id="tf-corners" class="tf-orchard" width="256" height="192" role="img" aria-label="Block orchard with the four Bad Apple blocks and the four corners marked"></canvas></div>
+    <output id="tf-corner-check" class="tf-out" aria-live="polite">Loading the listing…</output>
+    <p class="cap">The game's own map routine draws the orchard. Yellow squares mark the four Bad Apple blocks, and dashed squares mark the four corners. The goal picture shows the same orchard with its four Bad Apple blocks moved into the corners. The line under the picture is the result of the game's own corner check at <code>$2C78</code>.</p>
+  </div>
+  <p>The four blocks start near the middle, inside rings of cherry blocks. A pushed block slides until the next square is filled, so a block can leave its ring only through a gap. Pushing a cherry block against something crushes it, which opens a new gap. A Bad Apple block cannot be crushed. In the tunnel that runs round the edge of the orchard, a block pushed along the tunnel slides all the way to its end, which is a corner.</p>
 </section>
 <section id="shift">
   <h2 class="t">Secret: Shift pauses the orchard tune</h2>
@@ -98,20 +137,184 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <footer class="wrap tf-foot">
   Game by Shaun Southern for Mr. Chip Software. <a href="https://github.com/gamesexplained/gamesexplained">Games Explained</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> text · <a href="https://opensource.org/licenses/MIT">MIT</a> page code.
 </footer>
-<script type="application/json" id="tf-slide-data">[[[126,8],[125,8],[124,8],[123,8],[122,8],[121,8],[120,8],[119,8],[118,8],[117,8],[116,8],[115,8],[114,8],[113,8],[112,8],[111,8],[110,8],[109,8],[108,8],[107,8],[106,8],[105,8],[104,8],[103,8],[102,8],[101,8],[100,8],[99,8],[98,8],[97,8],[96,8],[95,8],[94,8],[93,8],[92,8],[91,8],[90,8],[89,8],[88,8],[87,8],[86,8],[85,8],[84,8],[83,8],[82,8],[81,8],[80,8],[79,8],[78,8],[77,8],[76,8],[75,8],[74,8],[73,8],[72,8],[71,8],[70,8],[69,8],[68,8],[67,8],[66,8],[65,8],[64,8],[63,8],[62,8],[61,8],[60,8],[59,8],[58,8],[57,8],[56,8],[55,8],[54,8],[53,8],[52,8],[51,8],[50,8],[49,8],[48,8],[47,8],[46,8],[45,8],[44,8],[43,8],[42,8],[41,8],[40,8],[39,8],[38,8],[37,8],[36,8],[35,8],[34,8],[33,8],[32,8],[31,8],[30,8],[29,8],[28,8],[27,8],[26,8],[25,8],[24,8],[23,8],[22,8],[21,8],[20,8],[19,8],[18,8],[17,8],[16,8],[15,8],[14,8],[13,8],[12,8],[11,8],[10,8],[9,8],[8,8],[7,8],[6,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8],[0,9]],[[0,8],[0,9],[0,10],[0,11],[0,12],[0,13],[0,14],[0,15],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16],[0,16]]]</script>
+<script src="../../lib/c16.js"></script>
+<script src="../../lib/cpu6502.js"></script>
 <script>
-const tick = document.getElementById('tf-tick');
-const clear = document.getElementById('tf-clear-timer');
-const delay = document.getElementById('tf-delay');
-const traces = JSON.parse(document.getElementById('tf-slide-data').textContent);
-function showDelay() {
-  const count = Number(tick.value);
-  const [remaining, y] = traces[Number(clear.checked)][count];
-  const distance = y - 8;
-  const units = distance === 1 ? 'step' : 'steps';
-  delay.textContent = `Tick ${count} · timer ${remaining} · ${distance} movement ${units}`;
+/* tutti-slide */
+// Runs the first block orchard's push with a starting countdown, one play frame at a time,
+// in the order the game's frame routine at $237E calls the same routines.
+function slideFrames(ram, countdown, frames) {
+  const mem = ram.slice();
+  const cpu = new C64Cpu.CPU(mem, {ramSize: 0x4000});
+  mem[0xE2] = 5;
+  cpu.call(0x2940, {x: 3});                // draw orchard 3
+  mem[0xE2] = 6;                           // block-orchard play
+  mem.fill(0xFF, 0x370, 0x380);            // every actor and fruit slot idle
+  mem[0x360] = 48;                         // the strawberry at column 6, row 0
+  mem[0x368] = 0;
+  mem[0x370] = 0x83;                       // facing down, blocked by the cherry block
+  mem[0xF6] = 0x02;                        // down held, fire pressed
+  mem[0xE4] = 0xFF;                        // nothing drawn yet
+  mem[0x33F] = countdown;                  // the sliding block's countdown
+  // JSR $3380 then RTS: the countdown routine returns past its caller, here to this RTS.
+  mem.set([0x20, 0x80, 0x33, 0x60], 0x700);
+  const out = [];
+  for (let frame = 0; frame <= frames; frame++) {
+    cpu.call(0x30A0);                      // erase the last frame's moving figures
+    cpu.call(0x700);                       // move fruit, or count down
+    if (frame === 0) cpu.call(0x2CB3);     // the push
+    cpu.call(0x2400);                      // stop at an obstacle
+    cpu.call(0x3000);                      // queue the strawberry
+    cpu.call(0x3200);                      // queue the moving fruit
+    cpu.call(0x30C0);                      // draw the queue
+    out.push({
+      screen: mem.slice(0x800, 0x1000),
+      countdown: mem[0x33F],
+      y: mem[0x34F],
+      sliding: mem[0x37F] !== 0xFF,
+    });
+  }
+  return out;
 }
-tick.addEventListener('input', showDelay);
-clear.addEventListener('change', showDelay);
-showDelay();
+// end of tutti-slide
+
+/* tutti-corners */
+// Draws a block orchard with the game's map routine, optionally with its four Bad Apple
+// blocks moved into the corners, and runs the game's corner check on the result.
+function cornerBoard(ram, level, goal) {
+  const mem = ram.slice();
+  const start = 0x3500 + level * 96;
+  const tile = i => i & 1 ? mem[start + (i >> 1)] & 15 : mem[start + (i >> 1)] >> 4;
+  const put = (i, v) => {
+    const a = start + (i >> 1);
+    mem[a] = i & 1 ? (mem[a] & 0xF0) | v : (mem[a] & 0x0F) | (v << 4);
+  };
+  const apples = [];
+  for (let i = 0; i < 192; i++) if (tile(i) === 5) apples.push(i);
+  const corners = [0, 15, 176, 191];
+  if (goal) {
+    for (const i of apples) put(i, 0);
+    for (const i of corners) put(i, 5);
+  }
+  const cpu = new C64Cpu.CPU(mem, {ramSize: 0x4000});
+  mem[0xE2] = 5;
+  cpu.call(0x2940, {x: level});
+  mem[0xE2] = 6;
+  const check = new C64Cpu.CPU(mem.slice(), {ramSize: 0x4000});
+  check.call(0x2C78, {}, {hooks: {0x2C74: () => true}});
+  return {mem, apples: goal ? corners : apples, corners, met: check.pc === 0x2C74};
+}
+// end of tutti-corners
+
+const ted = Array(32).fill(0);
+ted[6] = 0x1B;
+ted[7] = 0x98;
+ted[0x13] = 0x38;
+ted[0x14] = 8;
+ted[0x16] = 0x32;
+ted[0x17] = 0x35;
+const palFrame = 1000 * 312 * 114 / 1773447;
+const checkLine = document.getElementById('tf-corner-check');
+
+function crop(mem, x0, y0, w, h) {
+  const full = C16.render(mem, ted, {size: 0x4000});
+  const px = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) px.set(full.px.subarray((y0 + y) * full.w + x0, (y0 + y) * full.w + x0 + w), y * w);
+  return new ImageData(C16.rgba({w, h, px}), w, h);
+}
+
+if (typeof C16 === 'undefined' || typeof C64Cpu === 'undefined') {
+  checkLine.textContent = 'These pictures use the built site’s Commodore renderer.';
+} else {
+  C16.load('listing.json').then(({ram}) => {
+    // The slide.
+    const last = 140;
+    const lanes = [126, 0].map((countdown, n) => ({
+      countdown,
+      frames: slideFrames(ram, countdown, last),
+      images: [],
+      ctx: document.getElementById(`tf-lane-${n}`).getContext('2d'),
+      meter: document.getElementById(`tf-meter-${n}`),
+      state: document.getElementById(`tf-state-${n}`),
+    }));
+    const push = document.getElementById('tf-push');
+    const time = document.getElementById('tf-time');
+    const clock = document.getElementById('tf-clock');
+    const scratch = ram.slice();
+    function picture(lane, frame) {
+      if (!lane.images[frame]) {
+        scratch.set(lane.frames[frame].screen, 0x800);
+        lane.images[frame] = crop(scratch, 32, 0, 144, 64);
+      }
+      return lane.images[frame];
+    }
+    function show(frame) {
+      time.value = frame;
+      clock.textContent = `Frame ${frame} · ${(frame * palFrame / 1000).toFixed(2)} s`;
+      for (const lane of lanes) {
+        const f = lane.frames[frame];
+        lane.ctx.putImageData(picture(lane, frame), 0, 0);
+        lane.meter.style.width = `${100 * f.countdown / 126}%`;
+        const moved = f.y !== 8;
+        lane.state.textContent = frame === 0 ? `Pushed · countdown ${lane.countdown}`
+          : f.countdown ? `Waiting · countdown ${f.countdown}`
+          : f.sliding ? (moved ? 'Sliding' : 'Countdown 0 · moves next frame')
+          : 'Stopped against the cherry block below';
+      }
+    }
+    let request, started;
+    function stop() { cancelAnimationFrame(request); request = undefined; push.textContent = 'Push the cherry'; }
+    function tick(now) {
+      if (started === undefined) started = now;
+      const frame = Math.min(last, Math.floor((now - started) / palFrame));
+      show(frame);
+      if (frame < last) request = requestAnimationFrame(tick);
+      else stop();
+    }
+    push.addEventListener('click', () => {
+      stop();
+      started = undefined;
+      push.textContent = 'Push again';
+      request = requestAnimationFrame(tick);
+    });
+    time.addEventListener('input', () => { stop(); show(Number(time.value)); });
+    push.disabled = time.disabled = false;
+    show(0);
+
+    // The corners.
+    const canvas = document.getElementById('tf-corners');
+    const ctx = canvas.getContext('2d');
+    const buttons = {3: 'tf-level-3', 6: 'tf-level-6', start: 'tf-start', goal: 'tf-goal'};
+    for (const key in buttons) buttons[key] = document.getElementById(buttons[key]);
+    let level = 3, goal = false;
+    function square(i, dashed) {
+      const x = (i % 16) * 16, y = Math.floor(i / 16) * 16;
+      ctx.setLineDash(dashed ? [3, 2] : []);
+      ctx.strokeRect(x + 1, y + 1, 14, 14);
+    }
+    function drawCorners() {
+      const board = cornerBoard(ram, level, goal);
+      ctx.putImageData(crop(board.mem, 0, 0, 256, 192), 0, 0);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#ffffff';
+      for (const i of board.corners) square(i, true);
+      ctx.strokeStyle = '#f2d23c';
+      for (const i of board.apples) square(i, false);
+      ctx.setLineDash([]);
+      checkLine.textContent = board.met
+        ? 'Corner check: met. The round ends, and the game adds the bonus and 3,000 points to the score.'
+        : 'Corner check: not met. The round goes on until the corners are filled or the last Acid Apple is gone.';
+      buttons[3].setAttribute('aria-pressed', level === 3);
+      buttons[6].setAttribute('aria-pressed', level === 6);
+      buttons.start.setAttribute('aria-pressed', !goal);
+      buttons.goal.setAttribute('aria-pressed', goal);
+    }
+    buttons[3].addEventListener('click', () => { level = 3; drawCorners(); });
+    buttons[6].addEventListener('click', () => { level = 6; drawCorners(); });
+    buttons.start.addEventListener('click', () => { goal = false; drawCorners(); });
+    buttons.goal.addEventListener('click', () => { goal = true; drawCorners(); });
+    for (const key in buttons) buttons[key].disabled = false;
+    drawCorners();
+  }).catch(error => { checkLine.textContent = error.message; });
+}
 </script>
