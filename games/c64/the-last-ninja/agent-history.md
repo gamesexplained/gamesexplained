@@ -135,3 +135,17 @@ head b90fd886), check_docs.py passed. That scoped comparison checks this
 follow-up; it does not replace the required check against fetched main
 before committing. The three rebuilt listings retain the exact snapshot
 hashes and all 30,904 listed bytes per chapter.
+
+## 25 November 2026 — align the minisite with the contributor’s pages
+
+Compared Fist II and Skate or Die. Added an illustrated Overview, put the
+existing technical material on Gameplay and the complete player on Music,
+and applied the same page tokens to Maps, Graphics and Discoveries. Kept
+the room viewer and sprite controls, added section labels and stable IDs,
+and redirected the two old index anchors. Sources for the new overview are
+named in features.md and linked beside the claims. Music verification reads
+the moved player; the browser runner follows its new tab.
+
+The host refused a local HTTP listener. The browser also refused file URLs,
+so local visual preview and screenshots could not be captured. No browser
+policy was bypassed.

@@ -30,3 +30,11 @@ Read 22 November 2026. The [original instructions](https://heechee.net/c64/ninja
 - [Dungeons](reference/play-dungeons.png)
 - [Palace](reference/play-palace.png)
 - [Inner Sanctum](reference/play-inner-sanctum.png)
+
+## Overview sources
+
+Read 25 November 2026 for the illustrated overview.
+
+- [Games That Weren’t: Last Ninja V1](https://www.gamesthatwerent.com/gtw64/last-ninja-v1/) collects Hugh Riley’s recollection and the developers’ accounts of the Integrator. The overview attributes the history to those recollections.
+- [Retro Gamer issue 18](https://manuals.plus/m/359b814fb8a20a9d6f3949bbec8694fa8150ca8e366927381757f93ccdebe527.pdf), printed page 58 (PDF page 54), contains John Twiddy’s answers about fitting the animations and the precision of the jumps.
+- The contemporary review scores on the overview are attributed to C64-Wiki’s review index. The magazine scans behind those scores were not read in this pass.

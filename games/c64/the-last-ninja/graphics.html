@@ -3,29 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{title}} · Graphics</title>
-<style>
-body { margin: 0; color: #242922; background: #edf1e8; font: 16px/1.5 system-ui, sans-serif; }
-main { max-width: 58rem; padding: 2rem clamp(1rem, 4vw, 3rem) 4rem; margin: auto; }
-h1 { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.15; margin-bottom: .4rem; }
-.ninja-pose-panel { background: white; border: 1px solid #c9d3c2; border-radius: .8rem; padding: 1.2rem; }
-.ninja-pose-layout { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: start; }
-.ninja-pose-layout canvas { width: 150px; height: 225px; background: #b7ff86; image-rendering: pixelated; }
-.ninja-pose-controls { display: grid; gap: .6rem; flex: 1 1 12rem; }
-.ninja-pose-controls button { padding: .3rem .6rem; width: fit-content; }
-.ninja-pose-controls label { display: flex; align-items: center; gap: .55rem; }
-.ninja-pose-controls output { font-weight: bold; }
-.ninja-sprite-table { border-collapse: collapse; width: 100%; }
-.ninja-sprite-table th, .ninja-sprite-table td { text-align: left; padding: .4rem .3rem; border-bottom: 1px solid #d7ded2; }
-.ninja-sprite-bank { margin-top: 2rem; }
-.ninja-sprite-bank select { width: fit-content; max-width: 100%; padding: .3rem .5rem; }
-.ninja-sprite-bank canvas { width: 144px; height: 126px; }
-</style>
+<title>The Last Ninja · Graphics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/ninja-page.css">
 </head>
 <body>
 <!-- tabs -->
-<main>
-<h1>Two sprites make one ninja</h1>
+<header class="hero">
+<p class="eyebrow">Commodore 64 · 1987 · System 3</p>
+<h1>Graphics</h1>
+<p class="sub">See how Armakuni’s poses are assembled, then browse the stored sprite bitmaps.</p>
+</header>
+<main class="wrap">
+
+<section id="poses">
+<p class="fig">01 · Armakuni</p>
+<h2 class="t">Two sprites make one ninja</h2>
 <p>Armakuni’s head and shoulders occupy one hardware sprite. His feet occupy another directly below. The two sprites move together while the game replaces their bitmap data to change his pose.</p>
 <div class="ninja-pose-panel ninja-pose-layout">
   <canvas id="ninja-pose" width="28" height="42" role="img" aria-label="Armakuni walking"></canvas>
@@ -42,8 +36,10 @@ h1 { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.15; margin-bottom: .4re
   </div>
 </div>
 <p>These are the distinct poses captured while holding right in the first Wastelands room. Each hardware sprite displays 24 by 21 pixels here. The pointers occupy two adjacent bytes at $C3F9 and $C3FA.</p>
-<section class="ninja-sprite-bank">
-  <h2>Sprite bitmaps</h2>
+</section>
+<section id="bitmaps" class="ninja-sprite-bank">
+<p class="fig">02 · The sprite banks</p>
+  <h2 class="t">Sprite bitmaps</h2>
   <p>The engine has a set of packed sprite bitmaps, and each chapter supplies its own directly stored frames. The viewer shows the stored bits. The game sets the colour when it assembles a pose.</p>
   <div class="ninja-pose-panel ninja-pose-layout">
     <canvas id="stored-sprite" width="24" height="21" role="img" aria-label="Stored sprite 0"></canvas>
@@ -66,6 +62,7 @@ h1 { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.15; margin-bottom: .4re
   </div>
   <p>The packed format uses a single byte for a run of zeros. An escape byte lets a literal use the same value as a command. <a href="source-resident.html#7E36">See the decoder at $7E36</a>.</p>
 </section>
+
 </main>
 <script id="pose-data" type="application/json">[{"tick":0,"sprites":[{"sprite":1,"pointer":33,"source":51264,"x":108,"y":130,"color":0,"pixels":"07f00007f00007f00007f80006f80003780003f80003780003f80007f8001fe0001f40000fc00007c00003c00001800003800003e00003c000000000000000"},{"sprite":2,"pointer":34,"source":51328,"x":108,"y":109,"color":0,"pixels":"000000001800003c00007e00007e00007c00187c000cfc0006f80003fc0007fe000f7e000fb7001ddf003beb003bf7403fffc01ffdc00ffb8007f00007f000"}],"enable":6},{"tick":8,"sprites":[{"sprite":1,"pointer":41,"source":51776,"x":112,"y":130,"color":0,"pixels":"07f80007f80005fc0006fc00077e0007be00079f0007bf000f7e000f7e000ef8000df8001dc0001dc0001ee0000ce0001f00001f00001e0000000000000000"},{"sprite":2,"pointer":42,"source":51840,"x":112,"y":109,"color":0,"pixels":"000000001800003c00007e00007e00187c000c7c00067c0003f80003fc0007fe00077e0007be000fdf000def000df7000fff000ffb8007fbc003fbc003f180"}],"enable":6},{"tick":12,"sprites":[{"sprite":1,"pointer":33,"source":51264,"x":117,"y":131,"color":0,"pixels":"1dfc001efc001ffe001f7e003e1e003c3c003c3c003c7c00387c00787800703000703800e03c00e03c00e00000e00000c00000000000000000000000000000"},{"sprite":2,"pointer":34,"source":51328,"x":116,"y":110,"color":0,"pixels":"001800003c00007c00007c00187c000cf80006f80003f80003fc0007fe00077e0007be0007de0007fe0007de0003de0003fe0007ef0007f30007fc0007fc00"}],"enable":6},{"tick":16,"sprites":[{"sprite":1,"pointer":41,"source":51776,"x":120,"y":130,"color":0,"pixels":"07f8000ff8000ffc000efc000efe001f7e001e3e001e1f003c0f003c0f00780f00f80f00f80f00e00600e00e00e00f00000f80000f00000000000000000000"},{"sprite":2,"pointer":42,"source":51840,"x":120,"y":110,"color":0,"pixels":"001800003c00007e00007e00187c000c7c0006fc0003f80003fc00077e0007be0007fe0007fe0007bc0007be0003be0003ef0007fb0007f80007f800000000"}],"enable":6},{"tick":20,"sprites":[{"sprite":1,"pointer":33,"source":51264,"x":124,"y":130,"color":0,"pixels":"0ff0000ff0000ff0000df0000df00006f0000ef0003ef0003ef0003df00039f00031e00031c00000c00001c00001f00001f00001c000000000000000000000"},{"sprite":2,"pointer":34,"source":51328,"x":124,"y":110,"color":0,"pixels":"001800003c00007e00007e00187c000c7c0006fc0003f80003fc00077e0007be0007de0007fe000ffc000bbc000bbf0003df0007ee0007f0000ff000000000"}],"enable":6},{"tick":24,"sprites":[{"sprite":1,"pointer":41,"source":51776,"x":128,"y":130,"color":0,"pixels":"07f00003f00003f00003e80003e80007e80007d80007d00007a00007a0000fb0000f70000f60000600000700000f00000f8000078000000000000000000000"},{"sprite":2,"pointer":42,"source":51840,"x":128,"y":110,"color":0,"pixels":"001800003c00007e00007e00187c000c7c0006fc0003f800037c0007be0007de000fee000ffe001bff001fff0017ff8007f78007f30007f00007f000000000"}],"enable":6},{"tick":28,"sprites":[{"sprite":1,"pointer":33,"source":51264,"x":132,"y":131,"color":0,"pixels":"07fc0007f60007fe0007de0007bc000fbc000f98000f18000f38001e3c001e3c001e38001e00001800003800003c00003e00001e0000000000000000000000"},{"sprite":2,"pointer":34,"source":51328,"x":132,"y":110,"color":0,"pixels":"001800003c00007e00007e00187c000c7c0006fc0003f800077c0007be000fdf001feb403ff7c03ffbc03ffdc01bfc001bf20007f00007f00007f0000ff000"}],"enable":6}]</script>
 <script>
@@ -156,5 +153,6 @@ h1 { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.15; margin-bottom: .4re
   selectBank();
 })();
 </script>
+
 </body>
 </html>

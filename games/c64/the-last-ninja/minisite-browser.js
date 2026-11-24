@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { start, watchErrors } = require('../../../kit/scripts/play_browser.js');
+const { start } = require('../../../kit/scripts/play_browser.js');
 
 async function canvasImage(page, selector) {
   return page.locator(selector).evaluate(canvas => canvas.toDataURL());
@@ -76,7 +76,7 @@ async function testGraphics(page, game) {
 }
 
 async function testTapeAndMusic(page, game) {
-  await page.goto(game + 'index.html');
+  await page.goto(game + 'gameplay.html');
   const tape = page.locator('#ninja-load-chapter');
   await tape.selectOption('D');
   assert.equal(await page.locator('#ninja-tape-side').textContent(), 'Side 2');
@@ -85,6 +85,7 @@ async function testTapeAndMusic(page, game) {
   await tape.selectOption('C');
   assert.equal(await page.locator('#ninja-tape-side').textContent(), 'Side 1');
 
+  await page.goto(game + 'music.html');
   assert.equal(await page.locator('#ninja-music [data-tune]').count(), 12);
   const tune = page.getByRole('button', { name: 'Dungeons gameplay', exact: true });
   await tune.click();
@@ -101,7 +102,10 @@ async function main() {
   const { browser, base, stop } = await start(process.argv.slice(2));
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const errors = [];
-  watchErrors(page, base, errors);
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
   const game = base + '/c64/the-last-ninja/';
   try {
     await testMaps(page, game);
