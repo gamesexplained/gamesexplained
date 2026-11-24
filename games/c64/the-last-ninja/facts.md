@@ -76,6 +76,21 @@
   position. The code clears `$D400–$D417` when muting and leaves
   the driver's RAM state intact.
 
+- The Wastelands, Wilderness, Palace Gardens, Palace and Inner
+  Sanctum have identical driver code and initial state at
+  `$B000–$B727`. The driver reads three streams of two-byte
+  commands and note events. The Dungeons initialiser copies its
+  own pattern and sequence pointers to zero page and uses
+  47-byte instrument records. It writes voice registers directly
+  to the SID.
+- The Dungeons temporary sweep saves the downward step's high
+  byte in the slot used to restore the downward countdown.
+  At `$BADF`, A still holds instrument byte `$1F`. The old
+  countdown was loaded into Y by the preceding instruction.
+  In a direct call to the original code, the countdown went
+  from 31 to 22 when the new step began and came back as 7,
+  the saved instrument byte, when `$BB10` ended the sweep.
+
 ## Collision and foreground shapes
 
 - The room collision data starts at `$CC00`. The game expands chains
@@ -111,12 +126,6 @@
 - The F3 and F5 branches step forward or backward through the
   11 item slots beginning at `$03EC`. Space walks six weapon slots
   beginning at `$03F6`. Both paths skip unoccupied slots.
-- The Wastelands, Wilderness, Palace Gardens, Palace and Inner
-  Sanctum use the same music driver code from `$B000` to `$B663`.
-  It reads three streams of two-byte commands and note events.
-  The Dungeons initialiser instead copies its own pattern and
-  sequence pointers to zero page and uses 47-byte instrument
-  records. It writes voice registers directly to the SID.
 
 
 ## Items, lives and the status panel
@@ -232,5 +241,5 @@ Seed 1124 drew 100 of 7,830 comments across all seven listings.
 Independent checkers GPT-6 Astra and GPT-5.6 Sol found zero errors.
 The unweighted estimate was 0.0%, with a 95% Wilson interval of
 0.0–3.7%. Weighting by stratum size also gave 0.0%. The sample
-preceded the final annotations on retained tables and game-state
-aliases. An audit of the full listing is recommended.
+preceded the later annotations on the retained tables, game-state
+aliases and SID drivers. An audit of the full listing is recommended.

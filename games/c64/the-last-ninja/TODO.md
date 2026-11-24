@@ -1,12 +1,12 @@
 # The Last Ninja — TODO
 
-The seven listings explain 218,149 of 219,680 tracked bytes
-(99.3%). Each chapter listing starts at its own tape handover.
+The seven listings explain 219,527 of 219,680 tracked bytes
+(99.9%). The Wilderness listing explains all 30,904 of its tracked
+bytes. Each chapter listing starts at its own tape handover.
 
-- Resolve the remaining bytes from the work queue of each part. The
-  largest gaps include retained pose and sprite fragments and small
-  chapter-specific tables. Preserve the captured tape windows and
-  separate runtime aliases by their actual use.
+- Resolve the remaining 153 bytes from the work queue of each part.
+  The largest gaps are the Palace and Inner Sanctum bytes after the
+  shape catalogues and the resident engine’s remaining RAM aliases.
 - Follow the selected jump and attack scripts through their movement
   updates, then verify the normal room-to-room route. The ending was
   reached from a staged room with its real pickup gesture.

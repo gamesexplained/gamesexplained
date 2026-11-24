@@ -80,3 +80,9 @@ Tested all 21 phases of the Palace Gardens sprite rotation and
 compared the six copies of the hit-reaction pointer table.
 Two fresh checkers reviewed all 100 comments drawn with seed
 1124. The draw is saved under `work/reports/sample-1124/`.
+
+Named the SID workspace fields in both drivers and the indexed RAM
+fields that the room and item routines read. Checked two stored
+Dungeons patterns through the original event reader. Called the
+temporary pitch-sweep routines directly and observed the countdown
+restore from the instrument step field.
