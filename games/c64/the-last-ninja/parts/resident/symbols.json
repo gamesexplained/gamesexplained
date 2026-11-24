@@ -4,7 +4,7 @@
  "game": "the-last-ninja",
  "part": "resident",
  "build": "Supplied C64 Cyberload tape pair",
- "source": "regenerator2000 live",
+ "source": "regen2000proj",
  "regions": {
   "exclude": [
    [
@@ -1261,6 +1261,12 @@
    "name": "zpa_72",
    "type": "ZeroPageAbsoluteAddress",
    "kind": "auto"
+  },
+  {
+   "address": 115,
+   "name": "saved_opponent_action_family",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 116,
@@ -10641,6 +10647,16 @@
    "text": "Shape cell index while painting. The direction helper uses this scratch to shift in coordinate comparison bits."
   },
   {
+   "address": 32,
+   "type": "line",
+   "text": "Shared scratch byte. The palette fade loop at $7DAB decrements it once per pass, and $6C43 stores the direction towards the player here."
+  },
+  {
+   "address": 33,
+   "type": "line",
+   "text": "Shared scratch byte. The palette fade at $7DA7 decrements it within a pass, and the collision calculation at $67CA saves and shifts Y in it."
+  },
+  {
    "address": 34,
    "type": "line",
    "text": "Working copy of the destination raster byte in the cell colour allocation loop."
@@ -10721,6 +10737,21 @@
    "text": "Initialised to zero before drawing a room. The colour merge uses this byte as its starting lookup value."
   },
   {
+   "address": 58,
+   "type": "line",
+   "text": "The first palette-allocation path writes 3 here at $613A when it increments the number of additional colour slots."
+  },
+  {
+   "address": 59,
+   "type": "line",
+   "text": "The palette-allocation path at $61A7 records 3 here after adding a slot and before testing the source auxiliary colour flags."
+  },
+  {
+   "address": 60,
+   "type": "line",
+   "text": "The palette-allocation path at $6212 records 3 here before testing the number of source colour slots still needed."
+  },
+  {
    "address": 61,
    "type": "line",
    "text": "Counts destination code 00 in uncovered portions of the bitmap cell during colour allocation."
@@ -10759,6 +10790,21 @@
    "address": 68,
    "type": "line",
    "text": "Clip mask for the last byte of each sprite row. The mirrored copy keeps the destination mask order."
+  },
+  {
+   "address": 69,
+   "type": "line",
+   "text": "The multiplier at $687E saves its X input here and shifts out one bit per iteration of the unsigned product."
+  },
+  {
+   "address": 70,
+   "type": "line",
+   "text": "Low byte of the shifting multiplicand in the unsigned product at $687E. Its initial value is the incoming Y."
+  },
+  {
+   "address": 71,
+   "type": "line",
+   "text": "High byte of the shifting multiplicand in the unsigned product. It starts at zero and receives the carry from shifting $46."
   },
   {
    "address": 72,
@@ -10966,9 +11012,29 @@
    "text": "A chapter event saves the player's action family at $6D here before a special effect. The pose reset copies it back."
   },
   {
+   "address": 114,
+   "type": "line",
+   "text": "Opponent variant used as an index to the approach-distance table at $6B8B. The Wilderness event at $A8AA sets it from the low two bits of the opponent type."
+  },
+  {
+   "address": 115,
+   "type": "line",
+   "text": "Saved opponent action family restored by Wilderness pose event $21. The event reads it at $A926 before writing the active action family."
+  },
+  {
    "address": 116,
    "type": "line",
    "text": "Low byte of the arithmetic scratch used while the random selection routine mixes and advances its state."
+  },
+  {
+   "address": 117,
+   "type": "line",
+   "text": "High byte of the RAM pointer in the random mixer at $79D2. Timer bits initialise it within pages $54 to $73 when it needs reseeding."
+  },
+  {
+   "address": 118,
+   "type": "line",
+   "text": "The random mixer at $79EB loads its previous result here and uses the same byte to hold caller Y until the next result replaces it."
   },
   {
    "address": 119,
@@ -11011,9 +11077,79 @@
    "text": "Saves X from the collision scan before line-intersection code reuses the register."
   },
   {
+   "address": 127,
+   "type": "line",
+   "text": "Saved horizontal sprite expansion flag. The clipping setup at $7032 copies it from the current sprite and later tests it when applying the mask."
+  },
+  {
+   "address": 128,
+   "type": "line",
+   "text": "Saved vertical sprite expansion flag. The clipping setup at $703F copies it from the current sprite and reads it back during mask drawing."
+  },
+  {
+   "address": 129,
+   "type": "line",
+   "text": "Low byte of the sprite X position used in the shape-mask overlap subtraction at $7147."
+  },
+  {
+   "address": 130,
+   "type": "line",
+   "text": "Sprite Y position subtracted from the mask Y position at $7123 to place the overlap vertically."
+  },
+  {
+   "address": 131,
+   "type": "line",
+   "text": "High byte of the sprite X position used in the upper byte of the shape-mask overlap subtraction at $714C."
+  },
+  {
    "address": 132,
    "type": "line",
    "text": "The foreground routine saves the caller's incoming depth here and compares it with each mask's stored cutoff."
+  },
+  {
+   "address": 133,
+   "type": "line",
+   "text": "Width limit in pixels for the mask overlap. The setup at $7034 selects 24 for normal width and 48 for an expanded sprite."
+  },
+  {
+   "address": 134,
+   "type": "line",
+   "text": "Height limit in pixels for the mask overlap. The setup at $7041 selects 21 rows for normal height and 42 for an expanded sprite."
+  },
+  {
+   "address": 135,
+   "type": "line",
+   "text": "Source X pixels skipped before applying the sprite mask when its left edge begins left of the sprite. The other branch clears this offset."
+  },
+  {
+   "address": 136,
+   "type": "line",
+   "text": "Destination X pixel offset within the sprite. The overlap code clears it when clipping the source left edge and otherwise saves the X difference here."
+  },
+  {
+   "address": 137,
+   "type": "line",
+   "text": "Source Y rows skipped when the mask starts above the sprite. The overlap code clears this value when the mask starts within the sprite vertically."
+  },
+  {
+   "address": 138,
+   "type": "line",
+   "text": "Destination Y offset within the sprite. The overlap calculation saves the nonnegative vertical offset here when the mask starts within the sprite."
+  },
+  {
+   "address": 139,
+   "type": "line",
+   "text": "High byte of the shape X position for mask placement. The code at $70E5 stores the carry and the code at $714C uses it in the overlap subtraction."
+  },
+  {
+   "address": 140,
+   "type": "line",
+   "text": "Right X bound for the clipped sprite-mask rectangle. The setup at $7187 caps it to the current sprite width."
+  },
+  {
+   "address": 141,
+   "type": "line",
+   "text": "Bottom Y bound for the clipped sprite-mask rectangle. The setup at $7197 caps it to the current sprite height."
   },
   {
    "address": 142,
@@ -11036,6 +11172,11 @@
    "text": "The transition entry at $CE80 sets this flag to $FF before arming the new load."
   },
   {
+   "address": 146,
+   "type": "line",
+   "text": "Actor component flags handed to the pose drawer. Bit 7 changes the first component offset, and the low two bits are tested after drawing the main components."
+  },
+  {
    "address": 147,
    "type": "line",
    "text": "The tape routine saves the caller A here. Bit 0 bypasses the supplied X/Y destination setup, bit 1 bypasses the wait, and bit 6 permits its border flash."
@@ -11054,6 +11195,11 @@
    "address": 151,
    "type": "line",
    "text": "Doubled X origin used to reflect the horizontal position of a sprite component."
+  },
+  {
+   "address": 155,
+   "type": "line",
+   "text": "The game keeps its working lives count here. The tape pulse decoder also reuses the address for its byte checksum during loading."
   },
   {
    "address": 156,
@@ -11101,9 +11247,19 @@
    "text": "Saved heading used as the held-fire direction settles. The invalid value is $FF."
   },
   {
+   "address": 169,
+   "type": "line",
+   "text": "Inner Sanctum event flag. Event code at $BE76 sets it, and opponent setup at $4DBB tests it before keeping the scripted opening."
+  },
+  {
    "address": 170,
    "type": "line",
    "text": "The raster path uses this flag to decide whether to call the music driver. F1 toggles every bit."
+  },
+  {
+   "address": 171,
+   "type": "line",
+   "text": "The raster interrupt tests this one-bit flag on every sixth pass before deciding whether to call the chapter music driver."
   },
   {
    "address": 172,
@@ -11136,6 +11292,21 @@
    "text": "High part of the palette effect countdown. The interrupt decrements it when the low part crosses zero."
   },
   {
+   "address": 178,
+   "type": "line",
+   "text": "Raster-pass counter incremented at $55CF. It returns to zero on reaching six before the music-enable checks."
+  },
+  {
+   "address": 179,
+   "type": "line",
+   "text": "Room-action flag tested by the Wilderness trigger at $0629 before it can start the next action. The retry path at $BD04 clears it."
+  },
+  {
+   "address": 180,
+   "type": "line",
+   "text": "Pending room retry flag. The Wilderness hazard sets it after waiting at $BF29. The room loop clears it and removes a life."
+  },
+  {
    "address": 181,
    "type": "line",
    "text": "The game stores the inverted joystick input with direction in bits 0\u20133 and fire in bit 4."
@@ -11149,6 +11320,16 @@
    "address": 183,
    "type": "line",
    "text": "Prefix length for matching the received tape header. The transition setup writes two for the start of its name."
+  },
+  {
+   "address": 185,
+   "type": "line",
+   "text": "The chapter tape setup at $CF5E writes zero to this byte just after setting the neighbouring field at $BA."
+  },
+  {
+   "address": 186,
+   "type": "line",
+   "text": "The chapter tape setup at $CF5A writes eight here before indexing the tape destination table."
   },
   {
    "address": 187,
@@ -11221,6 +11402,16 @@
    "text": "Action record extension stored by the pose reader. Its low two bits and the next three bits supply separate fields."
   },
   {
+   "address": 209,
+   "type": "line",
+   "text": "Saved opponent X before the movement action at $6AB5. Comparing it with the new X measures the horizontal patrol distance."
+  },
+  {
+   "address": 210,
+   "type": "line",
+   "text": "Index seed for the fractional opponent movement test. The test adds one to it, and the pose path at $6B47 derives it from the low two extension bits."
+  },
+  {
    "address": 211,
    "type": "line",
    "text": "Low two bits of the extended action byte shifted left two positions."
@@ -11244,6 +11435,16 @@
    "address": 215,
    "type": "line",
    "text": "Counts special nearby opponent actions. The approach code tests whether it has reached three."
+  },
+  {
+   "address": 216,
+   "type": "line",
+   "text": "Low game-tick byte when the opponent last changed direction. The reversal test at $6C6D uses it to enforce a twenty-tick delay."
+  },
+  {
+   "address": 217,
+   "type": "line",
+   "text": "Collision movement threshold. The test at $760C compares it with the magnitude of a coordinate difference before accepting a step."
   },
   {
    "address": 218,
@@ -11414,6 +11615,11 @@
    "address": 621,
    "type": "line",
    "text": "Tick stored when the pickup at $59B7 activates the timed effect. The effect path measures elapsed ticks from this value."
+  },
+  {
+   "address": 622,
+   "type": "line",
+   "text": "Last sampled ticks for elapsed-time channels 6 and 7. The fade waits on channel 6 at $7D1C. The Wilderness room logic waits on channel 7 at $BEC9 and $BEE4. The shared timing routine reads and updates both through its $0268,X table."
   },
   {
    "address": 624,
@@ -11601,9 +11807,19 @@
    "text": "Current number of filled opponent wound cells. The wound update caps the count at 32 and saves it in the chapter's room state as well."
   },
   {
+   "address": 698,
+   "type": "line",
+   "text": "Bootstrap residue at the handover. This is the high address byte of the KERNAL-loaded STA $D96A,X at $02B8. The byte is zero in the play capture."
+  },
+  {
    "address": 699,
    "type": "line",
    "text": "The new-life preparation code at $6DF8 clears this byte before zeroing the per-room wound array."
+  },
+  {
+   "address": 700,
+   "type": "line",
+   "text": "The handover retains the two address bytes of the KERNAL-loaded STA $D992,X at $02BB. Both are zero in the play capture."
   },
   {
    "address": 702,
@@ -11649,6 +11865,26 @@
    "address": 820,
    "type": "line",
    "text": "Base of the expanded room collision segments. Each record stores the two endpoint coordinates and a separate flags byte."
+  },
+  {
+   "address": 821,
+   "type": "line",
+   "text": "First endpoint Y of an expanded collision segment. The decoder stores it from the room stream at $6797."
+  },
+  {
+   "address": 822,
+   "type": "line",
+   "text": "Second endpoint X of an expanded collision segment. The decoder adds the stored horizontal step to the first endpoint X."
+  },
+  {
+   "address": 823,
+   "type": "line",
+   "text": "Second endpoint Y of an expanded collision segment. The decoder stores the computed Y at $67EB and copies it into the following segment when the chain continues."
+  },
+  {
+   "address": 824,
+   "type": "line",
+   "text": "Flag byte for an expanded collision segment. The decoder combines bits from the two encoded steps, and the scan tests it when selecting segments."
   },
   {
    "address": 825,
