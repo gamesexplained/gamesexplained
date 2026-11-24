@@ -10,9 +10,11 @@ Wastelands bytes after its catalogue, and two resident RAM bytes between
 named fields. The stored music tails are classified by their event format;
 ordinary playback reaching these tails remains unverified.
 
-- Follow the selected jump and attack scripts through their movement
-  updates, then verify the normal room-to-room route. The ending was
-  reached from a staged room with its real pickup gesture.
+- Verify the normal room-to-room route with terrain collision, projectile
+  flight and complete enemy movement. The interactive demonstrations check
+  action scripts, contact, landing rectangles, pickup and five puzzle gates
+  separately. The ending was reached from a staged room with its real pickup
+  gesture.
 - Run `minisite-browser.js` after providing the kit's supported browser
   test tools. The built site and the Node SID test passed. The browser
   runner stops on this host before opening a page because Playwright is

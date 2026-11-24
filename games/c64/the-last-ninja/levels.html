@@ -15,10 +15,17 @@
 <h1>Maps</h1>
 <p class="sub">Explore the background art and room connections in all six chapters.</p>
 </header>
-<main class="wrap">
+<main class="wrap"><section id="world" data-ninja-mechanics>
+<p class="fig">01 · Connections</p><h2 class="t">Follow a route through each chapter</h2>
+<p>Choose a room to highlight its connections and one shortest route from the first displayed room. Each thumbnail opens the room viewer below. A diamond marks a room with an item or hidden effect.</p>
+<div class="plate"><div class="ninja-try-row"><label>Chapter <select id="world-chapter"></select></label><label class="ninja-check"><input type="checkbox" id="world-all"> Show every stored connection</label><a href="#rooms">Selected room picture</a></div>
+<div class="ninja-world-scroll"><svg id="world-map" role="group" aria-label="Chapter room connections"></svg></div>
+<p id="world-selected" aria-live="polite"></p><p id="world-exit"></p><button type="button" id="world-next">Next chapter</button></div>
+<p class="cap">This is a diagram of stored room links, not a geographic plan of the island. An exit in the data is not proof that Armakuni can reach it past the room’s obstacles. Arrows show the stored direction of travel; blue links touch the selected room and gold links show its route. <a href="items.html">Browse the objects and puzzle gates</a>.</p>
+</section>
 
 <section id="rooms">
-<p class="fig">01 · The island</p>
+<p class="fig">02 · The room pictures</p>
 <h2 class="t">Room pictures</h2>
 <p>Browse the background art for each chapter. The pictures come from the game’s own drawing routine. Sprites and objects that the game adds during play are a separate layer.</p>
 <div class="ninja-map-card ninja-map-grid">
@@ -118,6 +125,7 @@
     const data = chapters[chapter.selectedIndex];
     const index = Number(slot.value);
     const room = data.rooms[index];
+    document.dispatchEvent(new CustomEvent('ninja-room-changed', {detail:{chapter:chapter.selectedIndex,room:room.slot}}));
     const name = chapter.selectedOptions[0].textContent;
     link(record, data.slug, room.record);
     link(script, data.slug, room.script);
@@ -146,5 +154,7 @@
 })();
 </script>
 
+<script src="reference/ninja-rules.js"></script>
+<script src="reference/ninja-mechanics.js"></script>
 </body>
 </html>

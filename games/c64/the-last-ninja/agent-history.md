@@ -149,3 +149,22 @@ the moved player; the browser runner follows its new tab.
 The host refused a local HTTP listener. The browser also refused file URLs,
 so local visual preview and screenshots could not be captured. No browser
 policy was bypassed.
+
+
+## 25 November 2026 — add the five requested demonstrations
+
+Added combat, jumping, items and puzzles, connected maps and an enemy
+decision viewer. Extracted the small tables and pictures used by these
+widgets from the exact snapshots named by their listings. The published
+pages contain data excerpts and JavaScript ports, with no machine image.
+Native renderer output supplies 304 pose frames and 16 inventory icons.
+
+The portable test reconstructs memory from committed listings, executes
+the relevant original routines and compares their results with the page's
+JavaScript. It covers input, movement, animation, contact, enemy choices,
+pickup, puzzle gates, landing bounds, room exits and every atlas pixel.
+The browser runner exercises each widget and mobile overflow, but cannot
+run on this host because Playwright is absent and local listeners are
+refused. The pages state that they isolate mechanics: terrain collision,
+projectile flight and the complete enemy movement remain outside the demos.
+Coverage and tier are unchanged.
