@@ -142,15 +142,15 @@ async function testItemsAndWorld(page, game) {
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
   await page.goto(game + 'levels.html?chapter=palace-gardens&room=15#world');
   await page.waitForFunction(() => document.querySelector('#world-selected').textContent.startsWith('Room 15'));
-  assert((await page.locator('#world-map [role=button]').count()) > 15);
+  assert((await page.locator('#world-map button').count()) > 15);
   const ropeRoom = page.getByRole('button',{name:'Room 9, contains Rope',exact:true});
   const roomBounds = await ropeRoom.boundingBox();
-  assert(roomBounds.width > 0 && roomBounds.width < 150, 'The room hit area must fit its thumbnail card.');
+  assert(roomBounds.width > 0 && roomBounds.width < 150, 'The room hit area must fit its thumbnail card: '+JSON.stringify(roomBounds));
   await ropeRoom.click();
   await page.waitForFunction(() => document.querySelector('#world-selected').textContent.startsWith('Room 9'));
   assert.equal(await page.locator('#room-slot').evaluate(x => x.selectedOptions[0].textContent), '9');
   await page.locator('#world-chapter').selectOption('5');
-  await page.waitForFunction(() => document.querySelector('#world-map [role=button]').length===16);
+  await page.waitForFunction(() => document.querySelector('#world-map button').length===16);
   assert.equal(await page.locator('.ninja-widget-error').count(),0);
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
 }
