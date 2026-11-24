@@ -62,7 +62,6 @@ Staged the last room in VICE from its real room setup, then picked up
 the scrolls with a joystick gesture. Captured the ending text after
 the second wait and confirmed the bitmap dissolve repeated.
 
-
 Extended the SID comparison from 6,000 to 90,000 steps per track
 after finding additional phrases beyond the initial capture window.
 Used the complete payload for each expected digest. Re-identified
@@ -70,3 +69,14 @@ the three bitmap captions and the separate safe-rectangle data under
 I/O. The original rectangle code agreed with 2,340 independent tests.
 Inspected the two duplicated picture records and the original
 renderer, including the palette bits, separately from the maps.
+
+
+Checked the six shape catalogue counts against their table ends.
+Resolved two additional raw Wastelands sprites through the original
+selector and updated the sprite image. Compared 3,840 fire input states
+against predictions for the chosen script and pickup branch.
+
+Tested all 21 phases of the Palace Gardens sprite rotation and
+compared the six copies of the hit-reaction pointer table.
+Two fresh checkers reviewed all 100 comments drawn with seed
+1124. The draw is saved under `work/reports/sample-1124/`.

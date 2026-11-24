@@ -8,9 +8,9 @@ Read 22 November 2026. The [original instructions](https://heechee.net/c64/ninja
 |---|---|---|
 | Automatic cassette loading | live | Cyberload boots straight to the Wastelands. Side 1 carries chapters A–C and Side 2 carries D–F. Switching to Side 2 in the loader brought up the Dungeons. |
 | Relative movement on joystick port 2 | live | Right moved the player in each of the six chapters in 24 PAL frames. Diagonal movement, turning and walking backwards are documented and open. |
-| Attacks and defence | traced | The contact test uses attack class and direction to choose its four bounds, then checks the defender’s pose. Tested the standard attack family for all six weapon slots. The full joystick-to-action map remains open. |
+| Attacks and defence | traced | The contact test uses attack class and direction to choose its four bounds, then checks the defender’s pose. Tested the standard attack family for all six weapon slots. A native input test matched the fire script selection for eight directions and six weapons. Following each selected script through the fight remains open. |
 | Somersaults and hazards | open | The manual describes three jump lengths and distinguishes starting with movement from starting with fire at obstacles. |
-| Crouch, search and pickup | traced | Facing changes the hand’s pickup rectangle test. Direct calls verified both orientations and the item-slot gate. The full joystick gesture remains open. |
+| Crouch, search and pickup | traced | Facing changes the hand’s pickup rectangle test. Direct calls verified both orientations and the item-slot gate. A new fire press while moving checks for an item on wider turns. Holding fire and choosing an odd heading also checks the item outside boundary actions 16–19. A live test collected the final scrolls. |
 | Object and weapon selection | traced | F3/F5 cycle occupied item slots and Space cycles available weapons. The Run/Stop branch sets the forfeit request. |
 | Pause and game speed | live | F7 holds the game tick. Shift and plus or minus change the CIA timer period. Measured both speed changes in the Wastelands. |
 | Weapon and puzzle items | open | Staff, sword, nunchaku, shuriken, smoke bombs, sleeping potion, amulet, claw, flower, glove, key, pouch, rope, apples and scrolls. Check inventory limits and where each item is used. |

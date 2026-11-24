@@ -91,6 +91,11 @@
   bitmaps. An independent decoder reproduced the 63 output bytes
   of each of them from `$7E36`. The shared reversal table at `$9D00`
   matches the bit reversals of all 256 possible byte values.
+- The Wastelands actor descriptors at `$DA4C` and `$DA5C` select
+  local sprite IDs 49 and 50. Calls to the original selector at
+  `$7E1B` resolved those IDs to raw 63-byte bitmaps at `$AA40`
+  and `$AA80`. The final byte of each 64-byte slot lies outside
+  the bitmap.
 
 ## Keyboard timing
 
@@ -162,6 +167,20 @@
   repeats the bitmap dissolve in batches after the final text.
 
 
+## Fire button
+
+- In the Wastelands snapshot, 3,840 calls to `$5727` matched an
+  independent prediction of the chosen script pointer and any call to
+  the pickup routine. The test covered eight directions, four diagonal
+  facings, six weapons, and boundary codes 0, 15, 16, 19 and 20.
+- A new press while stationary wrote crouch flags without starting a
+  pose script. While moving, a new press within one heading of the
+  current facing chose the forward action. A wider turn checked for a
+  pickup. With fire held, a changed heading started a four-tick wait.
+  Boundary codes 16–19 sent the resulting input through the forward
+  handler. Outside that range, an odd heading checked for a pickup
+  before the game selected a script from the heading and weapon.
+
 ## Contact ranges
 
 - `$7ECC` tests whether an active opponent is within the current
@@ -179,6 +198,11 @@
   all five bytes of their respective slot 22. Isolated renders
   gave VIC backgrounds 13 and 15, respectively, for both versions.
   None of the 115,020 tested ordinary room exits selects either slot.
+- The chapter's word at `$0800` gives the shape catalogue address.
+  The word at `$0802` gives the number of two-byte entries. In
+  play order the six catalogues contain 113, 112, 106, 107, 94
+  and 101 entries. The end of each catalogue agrees with its
+  chapter's stored data boundaries.
 - The Wastelands, Wilderness and Palace Gardens keep 64 safe
   rectangles in RAM under I/O at `$DC00`. A boundary action selects
   a list. The game permits a position inside any rectangle and
@@ -200,3 +224,13 @@
   and `$DD36`. The first comparison must match and the second
   must differ. Setting the meter from 32 to 31 in live PAL
   VICE took the passing branch at `$55AD`.
+
+
+## The listing's error rate
+
+Seed 1124 drew 100 of 7,830 comments across all seven listings.
+Independent checkers GPT-6 Astra and GPT-5.6 Sol found zero errors.
+The unweighted estimate was 0.0%, with a 95% Wilson interval of
+0.0–3.7%. Weighting by stratum size also gave 0.0%. The sample
+preceded the final annotations on retained tables and game-state
+aliases. An audit of the full listing is recommended.
