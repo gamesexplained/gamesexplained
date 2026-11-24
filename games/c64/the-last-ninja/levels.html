@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}} · Maps</title>
+<style>
+body { margin: 0; color: #242922; background: #edf1e8; font: 16px/1.5 system-ui, sans-serif; }
+main { max-width: 58rem; padding: 2rem clamp(1rem, 4vw, 3rem) 4rem; margin: auto; }
+h1 { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.15; margin-bottom: .4rem; }
+.ninja-map-card { background: #fff; border: 1px solid #c9d3c2; border-radius: .8rem; padding: clamp(.8rem, 2.8vw, 1.5rem); }
+.ninja-map-grid { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(12rem, 1fr); gap: 1.5rem; align-items: start; }
+.ninja-map-field { display: grid; gap: .3rem; margin-bottom: 1rem; }
+.ninja-map-field select { max-width: 100%; padding: .5rem; }
+#room-picture { width: 100%; max-width: 480px; aspect-ratio: 5 / 3; display: block; background: #182216; image-rendering: pixelated; }
+.ninja-map-record { margin: 1rem 0 0; }
+.ninja-map-record dt { font-weight: 650; }
+.ninja-map-record dd { margin: 0 0 .6rem; }
+.ninja-edge-table { width: 100%; border-collapse: collapse; margin: 1rem 0 0; }
+.ninja-edge-table th, .ninja-edge-table td { text-align: left; padding: .3rem .25rem; border-bottom: 1px solid #d7ded2; }
+.ninja-edge-table button { padding: .1rem .45rem; margin: .1rem .2rem; }
+figure { margin: 0; }
+figcaption { margin-top: .5rem; font-size: .9rem; color: #4d5949; }
+@media (max-width: 38rem) { .ninja-map-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<!-- tabs -->
+<main>
+<h1>Room pictures</h1>
+<p>Browse the background art for each chapter. The pictures come from the game’s own drawing routine. Sprites and objects that the game adds during play are a separate layer.</p>
+<div class="ninja-map-card ninja-map-grid">
+  <figure>
+    <canvas id="room-picture" width="240" height="144" role="img" aria-label="Wastelands, picture slot 1"></canvas>
+    <figcaption id="room-caption" aria-live="polite">Loading the Wastelands…</figcaption>
+  </figure>
+  <div>
+    <label class="ninja-map-field">Chapter
+      <select id="room-chapter">
+        <option>The Wastelands</option><option>The Wilderness</option>
+        <option>Palace Gardens</option><option>The Dungeons</option>
+        <option>The Palace</option><option>The Inner Sanctum</option>
+      </select>
+    </label>
+    <label class="ninja-map-field">Picture slot <select id="room-slot"></select></label>
+    <dl class="ninja-map-record">
+      <dt>Five-byte record</dt><dd><a id="room-record" href="source-wastelands.html#080D"></a> <code id="room-bytes"></code></dd>
+      <dt>Shape script</dt><dd><a id="room-script" href="source-wastelands.html"></a></dd>
+      <dt>Background colour</dt><dd id="room-color"></dd>
+    </dl>
+    <table class="ninja-edge-table">
+      <thead><tr><th>Screen edge</th><th>Picture slots it can lead to</th></tr></thead>
+      <tbody id="room-exits"></tbody>
+    </table>
+  </div>
+</div>
+<p>Each picture record picks a shape script. A flag selects which of two pointer pages supplies the script’s address, so two picture slots can point to the same scene. The low four bits of the last byte set the background. <a href="source-resident.html#5DFE">See the renderer at $5DFE</a>.</p>
+<p>The game turns a point along the boundary into a number that runs clockwise around the playfield. It uses four limits in the room’s exit record to decide where that point leads. The destinations in the table reflect the edge data. The room’s paths and obstacles determine which exits Armakuni can reach. <a href="source-resident.html#7478">See the boundary check at $7478</a>.</p>
+</main>
+<script id="room-data" type="application/json">[{"slug":"wastelands","rooms":[{"slot":1,"record":2061,"bg":13,"selector":152,"script":13882,"bytes":"98 C8 00 00 FD","edgeRecord":44808,"exits":{"Top":[2],"Right":[2,14],"Bottom":[14],"Left":[14]}},{"slot":2,"record":2066,"bg":13,"selector":154,"script":13986,"bytes":"9A C8 00 00 FD","edgeRecord":44816,"exits":{"Top":[3],"Right":[3],"Bottom":[1],"Left":[1]}},{"slot":3,"record":2071,"bg":13,"selector":156,"script":14106,"bytes":"9C C8 00 00 FD","edgeRecord":44824,"exits":{"Top":[4],"Right":[4],"Bottom":[2],"Left":[2,15]}},{"slot":4,"record":2076,"bg":13,"selector":158,"script":14274,"bytes":"9E C8 00 00 FD","edgeRecord":44832,"exits":{"Top":[3],"Right":[3],"Bottom":[3],"Left":[3,5]}},{"slot":5,"record":2081,"bg":13,"selector":160,"script":14478,"bytes":"A0 C8 00 00 FD","edgeRecord":44840,"exits":{"Top":[6],"Right":[6,4],"Bottom":[4],"Left":[4]}},{"slot":6,"record":2086,"bg":13,"selector":162,"script":14698,"bytes":"A2 C8 00 00 FD","edgeRecord":44848,"exits":{"Top":[7],"Right":[7,5],"Bottom":[5],"Left":[5]}},{"slot":7,"record":2091,"bg":13,"selector":164,"script":15026,"bytes":"A4 C8 00 00 FD","edgeRecord":44856,"exits":{"Top":[8],"Right":[8,6],"Bottom":[6],"Left":[6]}},{"slot":8,"record":2096,"bg":13,"selector":166,"script":15194,"bytes":"A6 C8 00 00 FD","edgeRecord":44864,"exits":{"Top":[7],"Right":[7],"Bottom":[7],"Left":[7,9]}},{"slot":9,"record":2101,"bg":13,"selector":168,"script":15422,"bytes":"A8 C8 00 00 FD","edgeRecord":44872,"exits":{"Top":[10],"Right":[10,8],"Bottom":[8,1],"Left":[1]}},{"slot":10,"record":2106,"bg":13,"selector":170,"script":15782,"bytes":"AA C8 00 00 FD","edgeRecord":44880,"exits":{"Top":[11],"Right":[11,9],"Bottom":[9],"Left":[9]}},{"slot":11,"record":2111,"bg":13,"selector":172,"script":15926,"bytes":"AC C8 00 00 FD","edgeRecord":44888,"exits":{"Top":[12],"Right":[12,10],"Bottom":[10],"Left":[10]}},{"slot":12,"record":2116,"bg":13,"selector":174,"script":16202,"bytes":"AE C8 00 00 FD","edgeRecord":44896,"exits":{"Top":[11],"Right":[11],"Bottom":[11],"Left":[11,13]}},{"slot":13,"record":2121,"bg":13,"selector":176,"script":16426,"bytes":"B0 C8 00 00 FD","edgeRecord":44904,"exits":{"Top":[14],"Right":[14,12],"Bottom":[12,1],"Left":[1]}},{"slot":14,"record":2126,"bg":13,"selector":178,"script":16646,"bytes":"B2 C8 00 00 FD","edgeRecord":44912,"exits":{"Top":[13],"Right":[13],"Bottom":[13],"Left":[13,1]}},{"slot":15,"record":2131,"bg":13,"selector":200,"script":18415,"bytes":"C8 C8 00 00 FD","edgeRecord":44920,"exits":{"Top":[16],"Right":[16,3],"Bottom":[3,1],"Left":[1]}},{"slot":16,"record":2136,"bg":13,"selector":186,"script":16953,"bytes":"BA C8 00 00 FD","edgeRecord":44928,"exits":{"Top":[17],"Right":[17,15],"Bottom":[15],"Left":[15]}},{"slot":17,"record":2141,"bg":13,"selector":162,"script":14698,"bytes":"A2 C8 00 00 FD","edgeRecord":44936,"exits":{"Top":[18],"Right":[18,16],"Bottom":[16],"Left":[16]}},{"slot":18,"record":2146,"bg":13,"selector":188,"script":17253,"bytes":"BC C8 00 00 FD","edgeRecord":44944,"exits":{"Top":[19],"Right":[19,21],"Bottom":[21,17],"Left":[17]}},{"slot":19,"record":2151,"bg":13,"selector":190,"script":17397,"bytes":"BE C8 00 00 FD","edgeRecord":44952,"exits":{"Top":[20],"Right":[20],"Bottom":[18],"Left":[18,24]}},{"slot":20,"record":2156,"bg":13,"selector":192,"script":17525,"bytes":"C0 C8 00 00 FD","edgeRecord":44960,"exits":{"Top":[25],"Right":[25,19],"Bottom":[19],"Left":[19]}},{"slot":21,"record":2161,"bg":13,"selector":194,"script":17895,"bytes":"C2 C8 00 00 FD","edgeRecord":44968,"exits":{"Top":[22],"Right":[22,18],"Bottom":[18],"Left":[18]}},{"slot":22,"record":2166,"bg":13,"selector":196,"script":18051,"bytes":"C4 C8 00 00 FD","edgeRecord":44976,"exits":{"Top":[23],"Right":[23],"Bottom":[21],"Left":[21]}},{"slot":23,"record":2171,"bg":13,"selector":218,"script":19679,"bytes":"DA C8 00 00 FD","edgeRecord":44984,"exits":{"Top":[24],"Right":[24,22],"Bottom":[22],"Left":[22,1]}},{"slot":24,"record":2176,"bg":13,"selector":198,"script":18271,"bytes":"C6 C8 00 00 FD","edgeRecord":44992,"exits":{"Top":[19],"Right":[19],"Bottom":[23],"Left":[23]}},{"slot":25,"record":2181,"bg":13,"selector":204,"script":19037,"bytes":"CC C8 00 00 FD","edgeRecord":45000,"exits":{"Top":[0],"Right":[0],"Bottom":[0,20],"Left":[20]}}]},{"slug":"wilderness","rooms":[{"slot":1,"record":2061,"bg":13,"selector":154,"script":12353,"bytes":"9A C8 00 00 FD","edgeRecord":44808,"exits":{"Top":[2],"Right":[2],"Bottom":[2,1],"Left":[1]}},{"slot":2,"record":2066,"bg":13,"selector":208,"script":20524,"bytes":"D0 C8 00 00 FD","edgeRecord":44816,"exits":{"Top":[3],"Right":[3],"Bottom":[1],"Left":[1]}},{"slot":3,"record":2071,"bg":13,"selector":158,"script":12869,"bytes":"9E C8 00 00 FD","edgeRecord":44824,"exits":{"Top":[4],"Right":[4,2],"Bottom":[2],"Left":[2]}},{"slot":4,"record":2076,"bg":13,"selector":206,"script":20204,"bytes":"CE C8 00 00 FD","edgeRecord":44832,"exits":{"Top":[5],"Right":[5,3],"Bottom":[3],"Left":[3]}},{"slot":5,"record":2081,"bg":13,"selector":162,"script":13507,"bytes":"A2 C8 00 00 FD","edgeRecord":44840,"exits":{"Top":[6],"Right":[6],"Bottom":[6,4],"Left":[4]}},{"slot":6,"record":2086,"bg":13,"selector":166,"script":14574,"bytes":"A6 C8 00 00 FD","edgeRecord":44848,"exits":{"Top":[7],"Right":[7],"Bottom":[7,5],"Left":[5]}},{"slot":7,"record":2091,"bg":13,"selector":164,"script":14090,"bytes":"A4 C8 00 00 FD","edgeRecord":44856,"exits":{"Top":[8],"Right":[8],"Bottom":[8,6],"Left":[6]}},{"slot":8,"record":2096,"bg":13,"selector":210,"script":20611,"bytes":"D2 C8 00 00 FD","edgeRecord":44864,"exits":{"Top":[9],"Right":[9],"Bottom":[9,7],"Left":[7]}},{"slot":9,"record":2101,"bg":13,"selector":212,"script":20643,"bytes":"D4 C8 00 00 FD","edgeRecord":44872,"exits":{"Top":[10],"Right":[10],"Bottom":[25],"Left":[25,8]}},{"slot":10,"record":2106,"bg":13,"selector":172,"script":16281,"bytes":"AC C8 00 00 FD","edgeRecord":44880,"exits":{"Top":[11],"Right":[11,9],"Bottom":[9],"Left":[9,18]}},{"slot":11,"record":2111,"bg":13,"selector":174,"script":16489,"bytes":"AE C8 00 00 FD","edgeRecord":44888,"exits":{"Top":[12],"Right":[12,10],"Bottom":[10],"Left":[10]}},{"slot":12,"record":2116,"bg":13,"selector":176,"script":16709,"bytes":"B0 C8 00 00 FD","edgeRecord":44896,"exits":{"Top":[13],"Right":[13,17],"Bottom":[17,11],"Left":[11]}},{"slot":13,"record":2121,"bg":13,"selector":220,"script":21047,"bytes":"DC C8 00 00 FD","edgeRecord":44904,"exits":{"Top":[14],"Right":[14],"Bottom":[12],"Left":[12]}},{"slot":14,"record":2126,"bg":13,"selector":214,"script":20819,"bytes":"D6 C8 00 00 FD","edgeRecord":44912,"exits":{"Top":[26,15],"Right":[15],"Bottom":[15,13],"Left":[13]}},{"slot":15,"record":2131,"bg":13,"selector":216,"script":20947,"bytes":"D8 C8 00 00 FD","edgeRecord":44920,"exits":{"Top":[16],"Right":[16],"Bottom":[16,14],"Left":[14]}},{"slot":16,"record":2136,"bg":13,"selector":186,"script":17786,"bytes":"BA C8 00 00 FD","edgeRecord":44928,"exits":{"Top":[17],"Right":[17,15],"Bottom":[15],"Left":[15]}},{"slot":17,"record":2141,"bg":13,"selector":188,"script":17982,"bytes":"BC C8 00 00 FD","edgeRecord":44936,"exits":{"Top":[16],"Right":[16],"Bottom":[16],"Left":[16,12]}},{"slot":18,"record":2146,"bg":13,"selector":190,"script":18158,"bytes":"BE C8 00 00 FD","edgeRecord":44944,"exits":{"Top":[19],"Right":[19,10],"Bottom":[10],"Left":[10]}},{"slot":19,"record":2151,"bg":13,"selector":192,"script":18692,"bytes":"C0 C8 00 00 FD","edgeRecord":44952,"exits":{"Top":[20],"Right":[20],"Bottom":[20,18],"Left":[18]}},{"slot":20,"record":2156,"bg":13,"selector":194,"script":19100,"bytes":"C2 C8 00 00 FD","edgeRecord":44960,"exits":{"Top":[21],"Right":[21,27],"Bottom":[27],"Left":[27,19]}},{"slot":21,"record":2161,"bg":13,"selector":196,"script":19268,"bytes":"C4 C8 00 00 FD","edgeRecord":44968,"exits":{"Top":[22],"Right":[22],"Bottom":[20],"Left":[20]}},{"slot":22,"record":2166,"bg":13,"selector":218,"script":21003,"bytes":"DA C8 00 00 FD","edgeRecord":44976,"exits":{"Top":[23],"Right":[23],"Bottom":[21],"Left":[21]}},{"slot":23,"record":2171,"bg":13,"selector":200,"script":19544,"bytes":"C8 C8 00 00 FD","edgeRecord":44984,"exits":{"Top":[24],"Right":[24],"Bottom":[24,22],"Left":[22]}},{"slot":24,"record":2176,"bg":13,"selector":202,"script":19764,"bytes":"CA C8 00 00 FD","edgeRecord":44992,"exits":{"Top":[0],"Right":[0],"Bottom":[23],"Left":[23]}},{"slot":25,"record":2181,"bg":13,"selector":222,"script":21111,"bytes":"DE C8 00 00 FD","edgeRecord":45000,"exits":{"Top":[9],"Right":[9],"Bottom":[9],"Left":[9]}},{"slot":26,"record":2186,"bg":13,"selector":222,"script":21111,"bytes":"DE C8 00 00 FD","edgeRecord":45008,"exits":{"Top":[14],"Right":[14],"Bottom":[14],"Left":[14]}},{"slot":27,"record":2191,"bg":13,"selector":222,"script":21111,"bytes":"DE C8 00 00 FD","edgeRecord":45016,"exits":{"Top":[20],"Right":[20],"Bottom":[20],"Left":[20]}}]},{"slug":"palace-gardens","rooms":[{"slot":1,"record":2061,"bg":13,"selector":188,"script":16978,"bytes":"BC C8 00 00 FD","edgeRecord":44808,"exits":{"Top":[2],"Right":[2],"Bottom":[2],"Left":[2]}},{"slot":2,"record":2066,"bg":13,"selector":190,"script":17198,"bytes":"BE C8 00 00 FD","edgeRecord":44816,"exits":{"Top":[3],"Right":[3],"Bottom":[3,1],"Left":[1,11]}},{"slot":3,"record":2071,"bg":13,"selector":192,"script":17437,"bytes":"C0 C8 00 00 FD","edgeRecord":44824,"exits":{"Top":[4],"Right":[4],"Bottom":[4,2],"Left":[2]}},{"slot":4,"record":2076,"bg":13,"selector":194,"script":17622,"bytes":"C2 C8 00 00 FD","edgeRecord":44832,"exits":{"Top":[5],"Right":[5],"Bottom":[5,3],"Left":[3]}},{"slot":5,"record":2081,"bg":13,"selector":196,"script":17916,"bytes":"C4 C8 00 00 FD","edgeRecord":44840,"exits":{"Top":[6],"Right":[6],"Bottom":[6,4],"Left":[4]}},{"slot":6,"record":2086,"bg":13,"selector":200,"script":18388,"bytes":"C8 C8 00 00 FD","edgeRecord":44848,"exits":{"Top":[7],"Right":[7],"Bottom":[7,5],"Left":[5]}},{"slot":7,"record":2091,"bg":13,"selector":202,"script":18785,"bytes":"CA C8 00 00 FD","edgeRecord":44856,"exits":{"Top":[8],"Right":[8],"Bottom":[8,6],"Left":[6]}},{"slot":8,"record":2096,"bg":13,"selector":204,"script":19088,"bytes":"CC C8 00 00 FD","edgeRecord":44864,"exits":{"Top":[9],"Right":[9],"Bottom":[9,7],"Left":[7]}},{"slot":9,"record":2101,"bg":13,"selector":164,"script":13405,"bytes":"A4 C8 00 00 FD","edgeRecord":44872,"exits":{"Top":[10],"Right":[10],"Bottom":[10,8],"Left":[8]}},{"slot":10,"record":2106,"bg":13,"selector":208,"script":19340,"bytes":"D0 C8 00 00 FD","edgeRecord":44880,"exits":{"Top":[9],"Right":[9],"Bottom":[9],"Left":[9]}},{"slot":11,"record":2111,"bg":13,"selector":160,"script":12996,"bytes":"A0 C8 00 00 FD","edgeRecord":44888,"exits":{"Top":[12],"Right":[12,2],"Bottom":[2],"Left":[2]}},{"slot":12,"record":2116,"bg":13,"selector":162,"script":13240,"bytes":"A2 C8 00 00 FD","edgeRecord":44896,"exits":{"Top":[13],"Right":[13],"Bottom":[13,11],"Left":[11]}},{"slot":13,"record":2121,"bg":13,"selector":206,"script":19292,"bytes":"CE C8 00 00 FD","edgeRecord":44904,"exits":{"Top":[14],"Right":[14],"Bottom":[14,12],"Left":[12]}},{"slot":14,"record":2126,"bg":13,"selector":166,"script":13629,"bytes":"A6 C8 00 00 FD","edgeRecord":44912,"exits":{"Top":[15],"Right":[15],"Bottom":[15,13],"Left":[13]}},{"slot":15,"record":2131,"bg":13,"selector":168,"script":13893,"bytes":"A8 C8 00 00 FD","edgeRecord":44920,"exits":{"Top":[16],"Right":[16],"Bottom":[16,14],"Left":[14]}},{"slot":16,"record":2136,"bg":13,"selector":170,"script":14320,"bytes":"AA C8 00 00 FD","edgeRecord":44928,"exits":{"Top":[17],"Right":[17],"Bottom":[17,15],"Left":[15]}},{"slot":17,"record":2141,"bg":13,"selector":172,"script":14518,"bytes":"AC C8 00 00 FD","edgeRecord":44936,"exits":{"Top":[18],"Right":[18,25],"Bottom":[25,16],"Left":[16]}},{"slot":18,"record":2146,"bg":13,"selector":174,"script":14750,"bytes":"AE C8 00 00 FD","edgeRecord":44944,"exits":{"Top":[17],"Right":[17],"Bottom":[17],"Left":[17,19]}},{"slot":19,"record":2151,"bg":13,"selector":176,"script":15120,"bytes":"B0 C8 00 00 FD","edgeRecord":44952,"exits":{"Top":[20],"Right":[20,18],"Bottom":[18],"Left":[18]}},{"slot":20,"record":2156,"bg":13,"selector":178,"script":15441,"bytes":"B2 C8 00 00 FD","edgeRecord":44960,"exits":{"Top":[21],"Right":[21],"Bottom":[19],"Left":[19]}},{"slot":21,"record":2161,"bg":13,"selector":182,"script":16040,"bytes":"B6 C8 00 00 FD","edgeRecord":44968,"exits":{"Top":[22],"Right":[22],"Bottom":[20],"Left":[20]}},{"slot":22,"record":2166,"bg":13,"selector":180,"script":15703,"bytes":"B4 C8 00 00 FD","edgeRecord":44976,"exits":{"Top":[23],"Right":[23],"Bottom":[21],"Left":[21]}},{"slot":23,"record":2171,"bg":13,"selector":184,"script":16312,"bytes":"B8 C8 00 00 FD","edgeRecord":44984,"exits":{"Top":[24],"Right":[24],"Bottom":[24,22],"Left":[22]}},{"slot":24,"record":2176,"bg":13,"selector":198,"script":18068,"bytes":"C6 C8 00 00 FD","edgeRecord":44992,"exits":{"Top":[0],"Right":[0],"Bottom":[0,23],"Left":[23]}},{"slot":25,"record":2181,"bg":13,"selector":186,"script":16512,"bytes":"BA C8 00 00 FD","edgeRecord":45000,"exits":{"Top":[17],"Right":[17],"Bottom":[17],"Left":[17]}}]},{"slug":"dungeons","rooms":[{"slot":1,"record":2061,"bg":13,"selector":148,"script":13020,"bytes":"94 C8 00 00 FD","edgeRecord":44808,"exits":{"Top":[2],"Right":[2],"Bottom":[1],"Left":[1]}},{"slot":2,"record":2066,"bg":13,"selector":150,"script":13182,"bytes":"96 C8 00 00 FD","edgeRecord":44816,"exits":{"Top":[3],"Right":[3],"Bottom":[1],"Left":[1]}},{"slot":3,"record":2071,"bg":15,"selector":152,"script":13370,"bytes":"98 C8 00 00 FF","edgeRecord":44824,"exits":{"Top":[4],"Right":[4],"Bottom":[4,3],"Left":[3]}},{"slot":4,"record":2076,"bg":15,"selector":154,"script":13726,"bytes":"9A C8 00 00 FF","edgeRecord":44832,"exits":{"Top":[5],"Right":[5],"Bottom":[5,3],"Left":[3]}},{"slot":5,"record":2081,"bg":15,"selector":156,"script":14050,"bytes":"9C C8 00 00 FF","edgeRecord":44840,"exits":{"Top":[6],"Right":[6],"Bottom":[6,4],"Left":[4]}},{"slot":6,"record":2086,"bg":15,"selector":158,"script":14318,"bytes":"9E C8 00 00 FF","edgeRecord":44848,"exits":{"Top":[7],"Right":[7,11],"Bottom":[11,5],"Left":[5]}},{"slot":7,"record":2091,"bg":15,"selector":160,"script":14666,"bytes":"A0 C8 00 00 FF","edgeRecord":44856,"exits":{"Top":[11],"Right":[11],"Bottom":[11,6],"Left":[6]}},{"slot":8,"record":2096,"bg":15,"selector":162,"script":15026,"bytes":"A2 C8 00 00 FF","edgeRecord":44864,"exits":{"Top":[9],"Right":[9],"Bottom":[9,12],"Left":[12]}},{"slot":9,"record":2101,"bg":15,"selector":164,"script":15302,"bytes":"A4 C8 00 00 FF","edgeRecord":44872,"exits":{"Top":[13],"Right":[13],"Bottom":[13,12],"Left":[12,8]}},{"slot":10,"record":2106,"bg":15,"selector":166,"script":15638,"bytes":"A6 C8 00 00 FF","edgeRecord":44880,"exits":{"Top":[13],"Right":[13,11],"Bottom":[11],"Left":[11]}},{"slot":11,"record":2111,"bg":15,"selector":174,"script":16851,"bytes":"AE C8 00 00 FF","edgeRecord":44888,"exits":{"Top":[7],"Right":[7,24],"Bottom":[24,10],"Left":[10,6]}},{"slot":12,"record":2116,"bg":15,"selector":178,"script":17392,"bytes":"B2 C8 00 00 FF","edgeRecord":44896,"exits":{"Top":[8],"Right":[8],"Bottom":[8,14],"Left":[14,9]}},{"slot":13,"record":2121,"bg":15,"selector":168,"script":15874,"bytes":"A8 C8 00 00 FF","edgeRecord":44904,"exits":{"Top":[9],"Right":[9,10],"Bottom":[10],"Left":[10]}},{"slot":14,"record":2126,"bg":15,"selector":180,"script":17456,"bytes":"B4 C8 00 00 FF","edgeRecord":44912,"exits":{"Top":[12],"Right":[12,17],"Bottom":[17,14],"Left":[14]}},{"slot":15,"record":2131,"bg":15,"selector":182,"script":17592,"bytes":"B6 C8 00 00 FF","edgeRecord":44920,"exits":{"Top":[18],"Right":[18,16],"Bottom":[16],"Left":[16]}},{"slot":16,"record":2136,"bg":15,"selector":184,"script":17840,"bytes":"B8 C8 00 00 FF","edgeRecord":44928,"exits":{"Top":[26],"Right":[26,20],"Bottom":[20,19],"Left":[19,15]}},{"slot":17,"record":2141,"bg":15,"selector":186,"script":17948,"bytes":"BA C8 00 00 FF","edgeRecord":44936,"exits":{"Top":[18],"Right":[18,22],"Bottom":[22,21],"Left":[21,14]}},{"slot":18,"record":2146,"bg":15,"selector":188,"script":18040,"bytes":"BC C8 00 00 FF","edgeRecord":44944,"exits":{"Top":[22],"Right":[22,17],"Bottom":[17,15],"Left":[15,21]}},{"slot":19,"record":2151,"bg":15,"selector":190,"script":18132,"bytes":"BE C8 00 00 FF","edgeRecord":44952,"exits":{"Top":[20],"Right":[20],"Bottom":[23],"Left":[23,16]}},{"slot":20,"record":2156,"bg":15,"selector":170,"script":16171,"bytes":"AA C8 00 00 FF","edgeRecord":44960,"exits":{"Top":[19],"Right":[19],"Bottom":[19],"Left":[19,16]}},{"slot":21,"record":2161,"bg":15,"selector":192,"script":18200,"bytes":"C0 C8 00 00 FF","edgeRecord":44968,"exits":{"Top":[17],"Right":[17,18],"Bottom":[18,22],"Left":[22]}},{"slot":22,"record":2166,"bg":15,"selector":194,"script":18532,"bytes":"C2 C8 00 00 FF","edgeRecord":44976,"exits":{"Top":[21],"Right":[21],"Bottom":[18],"Left":[18,17]}},{"slot":23,"record":2171,"bg":15,"selector":208,"script":19457,"bytes":"D0 C8 00 00 FF","edgeRecord":44984,"exits":{"Top":[0],"Right":[0],"Bottom":[19],"Left":[19]}},{"slot":24,"record":2176,"bg":15,"selector":206,"script":19384,"bytes":"CE C8 00 00 FF","edgeRecord":44992,"exits":{"Top":[25],"Right":[25],"Bottom":[25,11],"Left":[11]}},{"slot":25,"record":2181,"bg":15,"selector":172,"script":16567,"bytes":"AC C8 00 00 FF","edgeRecord":45000,"exits":{"Top":[24],"Right":[24],"Bottom":[24],"Left":[24]}},{"slot":26,"record":2186,"bg":15,"selector":206,"script":19384,"bytes":"CE C8 00 00 FF","edgeRecord":45008,"exits":{"Top":[27],"Right":[27],"Bottom":[27,16],"Left":[16]}},{"slot":27,"record":2191,"bg":15,"selector":172,"script":16567,"bytes":"AC C8 00 00 FF","edgeRecord":45016,"exits":{"Top":[26],"Right":[26],"Bottom":[26],"Left":[26]}}]},{"slug":"palace","rooms":[{"slot":1,"record":2061,"bg":13,"selector":156,"script":15814,"bytes":"9C C8 00 00 FD","edgeRecord":44808,"exits":{"Top":[2],"Right":[2],"Bottom":[2,1],"Left":[1]}},{"slot":2,"record":2066,"bg":13,"selector":158,"script":15984,"bytes":"9E C8 00 00 FD","edgeRecord":44816,"exits":{"Top":[3],"Right":[3],"Bottom":[1],"Left":[1]}},{"slot":3,"record":2071,"bg":13,"selector":160,"script":16140,"bytes":"A0 C8 00 00 FD","edgeRecord":44824,"exits":{"Top":[4],"Right":[4],"Bottom":[4,2],"Left":[2]}},{"slot":4,"record":2076,"bg":13,"selector":162,"script":16292,"bytes":"A2 C8 00 00 FD","edgeRecord":44832,"exits":{"Top":[7],"Right":[7],"Bottom":[3],"Left":[3]}},{"slot":5,"record":2081,"bg":13,"selector":164,"script":16440,"bytes":"A4 C8 00 00 FD","edgeRecord":44840,"exits":{"Top":[6],"Right":[6],"Bottom":[6],"Left":[6,1]}},{"slot":6,"record":2086,"bg":13,"selector":166,"script":16588,"bytes":"A6 C8 00 00 FD","edgeRecord":44848,"exits":{"Top":[5],"Right":[5],"Bottom":[5,7],"Left":[7]}},{"slot":7,"record":2091,"bg":13,"selector":168,"script":16736,"bytes":"A8 C8 00 00 FD","edgeRecord":44856,"exits":{"Top":[8],"Right":[8,6],"Bottom":[6,7],"Left":[7,4]}},{"slot":8,"record":2096,"bg":15,"selector":170,"script":16942,"bytes":"AA C8 00 00 FF","edgeRecord":44864,"exits":{"Top":[7],"Right":[7,10],"Bottom":[10,9],"Left":[9]}},{"slot":9,"record":2101,"bg":15,"selector":172,"script":17293,"bytes":"AC C8 00 00 FF","edgeRecord":44872,"exits":{"Top":[8],"Right":[8],"Bottom":[8],"Left":[8]}},{"slot":10,"record":2106,"bg":15,"selector":174,"script":17597,"bytes":"AE C8 00 00 FF","edgeRecord":44880,"exits":{"Top":[11],"Right":[11,13],"Bottom":[13,12],"Left":[12,8]}},{"slot":11,"record":2111,"bg":15,"selector":176,"script":17963,"bytes":"B0 C8 00 00 FF","edgeRecord":44888,"exits":{"Top":[10],"Right":[10],"Bottom":[10],"Left":[10,1]}},{"slot":12,"record":2116,"bg":15,"selector":178,"script":18430,"bytes":"B2 C8 00 00 FF","edgeRecord":44896,"exits":{"Top":[10],"Right":[10],"Bottom":[10],"Left":[10]}},{"slot":13,"record":2121,"bg":15,"selector":180,"script":18741,"bytes":"B4 C8 00 00 FF","edgeRecord":44904,"exits":{"Top":[14],"Right":[14,15],"Bottom":[15,10],"Left":[10]}},{"slot":14,"record":2126,"bg":15,"selector":182,"script":19162,"bytes":"B6 C8 00 00 FF","edgeRecord":44912,"exits":{"Top":[13],"Right":[13],"Bottom":[13],"Left":[13,1]}},{"slot":15,"record":2131,"bg":15,"selector":184,"script":19572,"bytes":"B8 C8 00 00 FF","edgeRecord":44920,"exits":{"Top":[0],"Right":[0],"Bottom":[13],"Left":[13]}}]},{"slug":"inner-sanctum","rooms":[{"slot":1,"record":2061,"bg":15,"selector":170,"script":14881,"bytes":"AA C8 00 00 FF","edgeRecord":44808,"exits":{"Top":[2],"Right":[2],"Bottom":[2,8],"Left":[8]}},{"slot":2,"record":2066,"bg":15,"selector":172,"script":15137,"bytes":"AC C8 00 00 FF","edgeRecord":44816,"exits":{"Top":[3],"Right":[3,4],"Bottom":[4,1],"Left":[1]}},{"slot":3,"record":2071,"bg":15,"selector":174,"script":15437,"bytes":"AE C8 00 00 FF","edgeRecord":44824,"exits":{"Top":[2],"Right":[2],"Bottom":[2],"Left":[2,1]}},{"slot":4,"record":2076,"bg":15,"selector":176,"script":15725,"bytes":"B0 C8 00 00 FF","edgeRecord":44832,"exits":{"Top":[5],"Right":[5,6],"Bottom":[6,2],"Left":[2]}},{"slot":5,"record":2081,"bg":15,"selector":178,"script":15937,"bytes":"B2 C8 00 00 FF","edgeRecord":44840,"exits":{"Top":[4],"Right":[4],"Bottom":[4],"Left":[4]}},{"slot":6,"record":2086,"bg":15,"selector":180,"script":16182,"bytes":"B4 C8 00 00 FF","edgeRecord":44848,"exits":{"Top":[7],"Right":[7,8],"Bottom":[8,4],"Left":[4]}},{"slot":7,"record":2091,"bg":15,"selector":182,"script":16390,"bytes":"B6 C8 00 00 FF","edgeRecord":44856,"exits":{"Top":[10],"Right":[10,6],"Bottom":[6],"Left":[6,1]}},{"slot":8,"record":2096,"bg":15,"selector":184,"script":16578,"bytes":"B8 C8 00 00 FF","edgeRecord":44864,"exits":{"Top":[9],"Right":[9,1],"Bottom":[1,6],"Left":[6]}},{"slot":9,"record":2101,"bg":15,"selector":186,"script":16839,"bytes":"BA C8 00 00 FF","edgeRecord":44872,"exits":{"Top":[8],"Right":[8],"Bottom":[8],"Left":[8,1]}},{"slot":10,"record":2106,"bg":15,"selector":188,"script":17106,"bytes":"BC C8 00 00 FF","edgeRecord":44880,"exits":{"Top":[11],"Right":[11,7],"Bottom":[7],"Left":[7,1]}},{"slot":11,"record":2111,"bg":15,"selector":190,"script":17385,"bytes":"BE C8 00 00 FF","edgeRecord":44888,"exits":{"Top":[12],"Right":[12],"Bottom":[10],"Left":[10,1]}},{"slot":12,"record":2116,"bg":15,"selector":192,"script":17642,"bytes":"C0 C8 00 00 FF","edgeRecord":44896,"exits":{"Top":[13],"Right":[13,11],"Bottom":[11],"Left":[11]}},{"slot":13,"record":2121,"bg":15,"selector":194,"script":17850,"bytes":"C2 C8 00 00 FF","edgeRecord":44904,"exits":{"Top":[12],"Right":[12],"Bottom":[12,14],"Left":[14]}},{"slot":14,"record":2126,"bg":3,"selector":196,"script":18016,"bytes":"C4 C8 00 00 F3","edgeRecord":44912,"exits":{"Top":[13],"Right":[13],"Bottom":[13,15],"Left":[15]}},{"slot":15,"record":2131,"bg":15,"selector":198,"script":18204,"bytes":"C6 C8 00 00 FF","edgeRecord":44920,"exits":{"Top":[0],"Right":[0],"Bottom":[14],"Left":[14,1]}},{"slot":16,"record":2136,"bg":3,"selector":200,"script":18494,"bytes":"C8 C8 00 00 F3","edgeRecord":44928,"exits":{"Top":[17],"Right":[17,15],"Bottom":[15],"Left":[15]}}]}]</script>
+<script>
+(() => {
+  const chapters = JSON.parse(document.getElementById('room-data').textContent);
+  const chapter = document.getElementById('room-chapter');
+  const slot = document.getElementById('room-slot');
+  const canvas = document.getElementById('room-picture');
+  const context = canvas.getContext('2d');
+  const caption = document.getElementById('room-caption');
+  const record = document.getElementById('room-record');
+  const script = document.getElementById('room-script');
+  const exits = document.getElementById('room-exits');
+  const colors = ['Black', 'White', 'Red', 'Cyan', 'Purple', 'Green', 'Blue', 'Yellow',
+    'Orange', 'Brown', 'Light red', 'Dark grey', 'Grey', 'Light green', 'Light blue', 'Light grey'];
+  const images = new Map();
+  let request = 0;
+  const hex = address => address.toString(16).toUpperCase().padStart(4, '0');
+  function link(element, slug, address) {
+    element.href = `source-${slug}.html#${hex(address)}`;
+    element.textContent = '$' + hex(address);
+  }
+  function image(slug) {
+    if (!images.has(slug)) {
+      images.set(slug, new Promise((resolve, reject) => {
+        const texture = new Image();
+        texture.onload = () => resolve(texture);
+        texture.onerror = reject;
+        texture.src = `reference/rooms-${slug}.png`;
+      }));
+    }
+    return images.get(slug);
+  }
+  function showExits(data, room) {
+    const rows = Object.entries(room.exits).map(([side, destinations]) => {
+      const row = document.createElement('tr');
+      const heading = document.createElement('th');
+      const cell = document.createElement('td');
+      heading.scope = 'row';
+      heading.textContent = side;
+      for (const destination of destinations) {
+        const index = data.rooms.findIndex(option => option.slot === destination);
+        if (destination === 0 || index < 0) {
+          const text = document.createElement('span');
+          text.textContent = destination === 0 ? 'Chapter transition' : String(destination);
+          cell.append(text);
+        } else {
+          const control = document.createElement('button');
+          control.type = 'button';
+          control.textContent = destination;
+          control.setAttribute('aria-label', `Show picture slot ${destination}`);
+          control.addEventListener('click', () => {
+            slot.value = String(index);
+            slot.focus();
+            draw();
+          });
+          cell.append(control);
+        }
+      }
+      row.append(heading, cell);
+      return row;
+    });
+    exits.replaceChildren(...rows);
+  }
+  async function draw() {
+    const current = ++request;
+    const data = chapters[chapter.selectedIndex];
+    const index = Number(slot.value);
+    const room = data.rooms[index];
+    const name = chapter.selectedOptions[0].textContent;
+    link(record, data.slug, room.record);
+    link(script, data.slug, room.script);
+    document.getElementById('room-bytes').textContent = room.bytes;
+    document.getElementById('room-color').textContent = colors[room.bg];
+    showExits(data, room);
+    try {
+      const bitmap = await image(data.slug);
+      if (current !== request) return;
+      const label = `${name}, picture slot ${room.slot}`;
+      context.drawImage(bitmap, (index % 5) * 240, Math.floor(index / 5) * 144, 240, 144, 0, 0, 240, 144);
+      canvas.setAttribute('aria-label', label);
+      caption.textContent = label;
+    } catch {
+      if (current === request) caption.textContent = 'The picture could not be loaded.';
+    }
+  }
+  function changeChapter() {
+    const rooms = chapters[chapter.selectedIndex].rooms;
+    slot.replaceChildren(...rooms.map((room, index) => new Option(String(room.slot), String(index))));
+    draw();
+  }
+  chapter.addEventListener('change', changeChapter);
+  slot.addEventListener('change', draw);
+  changeChapter();
+})();
+</script>
+</body>
+</html>
