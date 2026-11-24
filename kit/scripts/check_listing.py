@@ -145,8 +145,13 @@ def check(gdir):
             r = subprocess.run([sys.executable, LISTING, gdir, "--rebuild"], capture_output=True, text=True)
             if r.returncode:
                 said = (r.stdout.strip() or r.stderr.strip() or "no output").splitlines()[0].replace("FAILED - ", "")
-                errs.append(f"listing.json no longer rebuilds from its own bytes ({said}); "
-                            f"rebuild it: listing.py {gdir} --rebuild --write")
+                if said.startswith("game.json's") and os.path.isfile(os.path.join(gdir, "part.json")):
+                    top = os.path.dirname(os.path.dirname(os.path.normpath(gdir)))   # one edit, every part (#984)
+                    errs.append(f"listing.json no longer rebuilds from its own bytes ({said}); rebuild every "
+                                f"part's: listing.py {top} --rebuild --write")
+                else:
+                    errs.append(f"listing.json no longer rebuilds from its own bytes ({said}); "
+                                f"rebuild it: listing.py {gdir} --rebuild --write")
             from listing import LOST
             lost = [x for x in L["records"] if x.get("note") == LOST]
             if lost:
