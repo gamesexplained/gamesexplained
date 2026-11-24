@@ -1,6 +1,8 @@
-// The footprint widget: a game's use of the 64 KB address space, one pixel per byte,
-// 512 bytes per row, drawn from memmap.json (written by kit/scripts/build.py). A memmap.json
-// with base and size draws only those addresses (the Spectrum's: its 48 KB of RAM, $4000 up).
+// The footprint widget: a game's use of the 64 KB address space, one pixel per byte, in columns
+// of 128 bytes, drawn from memmap.json (written by kit/scripts/build.py). A memmap.json
+// with base and size draws only those addresses (the Spectrum's: its 48 KB of RAM, $4000 up);
+// one with column draws that many bytes to a column, so a smaller memory is still a banner
+// (the Commodore 16's 16 KB, in columns of 64; build.py's map_column chooses).
 // `makeMemMap` is the drawing, shared by every machine; only the legend words differ,
 // so C64Map and SpectrumMap are two label sets over one implementation.
 globalThis.makeMemMap = function (LABELS) {
@@ -11,11 +13,12 @@ globalThis.makeMemMap = function (LABELS) {
   async function render(el, url, opts = {}) {
     const M = await fetch(url).then(r => r.json());
     const base = M.base || 0, size = M.size || 0x10000, mini = !!opts.mini;
-    // Vertical fill by default: each column is 128 bytes, so the picture reads as a ruler
-    // from the first address on the left to $FFFF on the right and the axis labels are true.
-    // opts.orient = 'h' gives the row-major layout (512 bytes per row) instead.
-    const vertical = opts.orient !== 'h';
-    const W = vertical ? size / 128 : 512, H = vertical ? 128 : size / 512;
+    // Vertical fill by default: each column is M.column bytes (128 unless memmap.json says),
+    // so the picture reads as a ruler from the first address on the left to the last on the
+    // right and the axis labels are true. opts.orient = 'h' gives the row-major layout
+    // (512 bytes per row) instead.
+    const vertical = opts.orient !== 'h', col = M.column || 128;
+    const W = vertical ? size / col : 512, H = vertical ? col : size / 512;
     el.innerHTML = '';
     const cv = document.createElement('canvas');
     if (!mini && opts.compare) { const note = document.createElement('p'); note.className = 'mute'; note.style.cssText = 'font-family:var(--fm);font-size:12px;margin:0 0 6px'; note.textContent = opts.compare; el.appendChild(note); }
@@ -40,9 +43,9 @@ globalThis.makeMemMap = function (LABELS) {
       const span = (a, n) => {                       // one run as at most three rectangles
         a -= base; const last = a + n - 1;
         if (vertical) {
-          const c0 = a >> 7, c1 = last >> 7;
-          if (c0 === c1) return cell(c0, a & 127, c0, last & 127);
-          cell(c0, a & 127, c0, 127); if (c1 > c0 + 1) cell(c0 + 1, 0, c1 - 1, 127); cell(c1, 0, c1, last & 127);
+          const c0 = Math.floor(a / col), c1 = Math.floor(last / col);
+          if (c0 === c1) return cell(c0, a % col, c0, last % col);
+          cell(c0, a % col, c0, col - 1); if (c1 > c0 + 1) cell(c0 + 1, 0, c1 - 1, col - 1); cell(c1, 0, c1, last % col);
         } else {
           const r0 = a >> 9, r1 = last >> 9;
           if (r0 === r1) return cell(a & 511, r0, last & 511, r0);
@@ -53,14 +56,15 @@ globalThis.makeMemMap = function (LABELS) {
       for (const [a, n, k] of M.runs) { ctx.fillStyle = COLOURS[k] || COLOURS.unused; span(a, n); }
       if (mini) return;
       ctx.fillStyle = 'rgba(233,231,247,.12)';        // 4 KB gridlines
-      for (let a = 0x1000; a < size; a += 0x1000) { if (vertical) ctx.fillRect(Math.round((a >> 7) * sx), 0, 1, cv.height); else ctx.fillRect(0, Math.round((a / W) * sy), cv.width, 1); }
+      for (let a = 0x1000; a < size; a += 0x1000) { if (vertical) ctx.fillRect(Math.round((a / col) * sx), 0, 1, cv.height); else ctx.fillRect(0, Math.round((a / W) * sy), cv.width, 1); }
     };
     draw();
     if (window.ResizeObserver) { let w = cv.clientWidth; new ResizeObserver(() => { if (cv.clientWidth !== w) { w = cv.clientWidth; draw(); } }).observe(cv); }
     if (mini) return M;
     const axis = document.createElement('div');
     axis.style.cssText = 'display:flex;justify-content:space-between;font-family:var(--fm);font-size:10.5px;color:var(--ink-mute);margin:4px 0 10px';
-    const ticks = []; for (let a = base; a < base + size; a += 0x2000) ticks.push(hex(a));
+    let step = 0x2000; while (step > 0x100 && size / step < 4) step /= 2;   // at least four labels on a small memory
+    const ticks = []; for (let a = base; a < base + size; a += step) ticks.push(hex(a));
     axis.innerHTML = [...ticks, hex(base + size - 1)].map(x => `<span>${x}</span>`).join('');
     el.appendChild(axis);
     const legend = document.createElement('div');
