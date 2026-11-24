@@ -308,6 +308,30 @@ def memory_span(game, size=0x10000):
     return PLATFORM_MAP_SPAN.get(platform_of(game), (0, 0x10000))
 
 
+def map_column(size):
+    """How many bytes the footprint draws in each column, top to bottom: 128 while that leaves the
+    map at least three times as wide as it is tall, else the largest power of two that does. The map
+    spans the page, so the C64's 64 KB is a banner of 512 by 128 and the Commodore 16's 16 KB,
+    in columns of 128, would be a square as tall as the page is wide; in columns of 64 it is 256
+    by 64, the C64's shape."""
+    column = 128
+    while column > 1 and size // column < 3 * column:
+        column //= 2
+    return column
+
+
+def memmap_doc(runs, totals, symbols, span):
+    """memmap.json, which site/lib/memmap.js draws: base, size and column only where they differ
+    from its defaults (all 64 KB, in columns of 128 bytes)."""
+    doc = {"runs": runs, "totals": totals, "symbols": symbols}
+    if span != (0, 0x10000):
+        doc.update(base=span[0], size=span[1] - span[0])
+    column = map_column(span[1] - span[0])
+    if column != 128:
+        doc["column"] = column
+    return doc
+
+
 def memory_name(game):
     from symbols_export import platform_of
     if platform_of(game) == "c16" and game.get("ram_kb") == 64:
@@ -1532,9 +1556,8 @@ def game_footprint(P, out, hidden=False):
     shown = [p for p in P if listed(p)]
     root = next((p for p in shown if not p["over"]), shown[0])
     runs, t, symbols, span = footprint(root["dir"], load_game(root["dir"]))
-    doc = {"runs": runs, "totals": t, "symbols": symbols, "source": False if hidden else part_page(root)}
-    if span != (0, 0x10000):   # memmap.js draws all 64 KB unless told otherwise
-        doc.update(base=span[0], size=span[1] - span[0])
+    doc = memmap_doc(runs, t, symbols, span)
+    doc["source"] = False if hidden else part_page(root)
     json.dump(doc, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
     totals = dict(t)
     for p in shown:
@@ -1679,11 +1702,9 @@ def build_game(gdir, out_root):
         totals, foot, span = game_footprint(P, out, hidden)
     else:
         runs, totals, symbols, span = footprint(gdir, game)
-        memmap = {"runs": runs, "totals": totals, "symbols": symbols}
+        memmap = memmap_doc(runs, totals, symbols, span)
         if hidden:   # nothing to open: memmap.js leaves the map unclickable
             memmap["source"] = False
-        if span != (0, 0x10000):   # memmap.js draws all 64 KB unless told otherwise
-            memmap.update(base=span[0], size=span[1] - span[0])
         json.dump(memmap, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
         foot = ""
     about_template = os.path.join(gdir, "about-layout.html")
@@ -1705,7 +1726,7 @@ def build_game(gdir, out_root):
     if bare:   # no map: the template's Footprint section goes, from its marker to the one that closes it
         tpl = re.sub(r"<!-- footprint\b.*?<!-- /footprint -->\s*", "", tpl, flags=re.S)
     data = "" if bare else WITHHELD if hidden else data_links(P)
-    about = fill(tpl, **common, footprint=foot, data_links=data, map_row=(span[1] - span[0]) // 128,
+    about = fill(tpl, **common, footprint=foot, data_links=data, map_row=(span[1] - span[0]) // map_column(span[1] - span[0]),
                  tier=html.escape(tier_name(game.get("tier", "none"), game.get("steward"))), coverage=cov, listing_row=listing_row(game) + media_row(gdir),
                  accuracy=accuracy_section(game, gdir),
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
