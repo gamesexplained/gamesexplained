@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Last Ninja · Items</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/ninja-page.css">
+</head>
+<body>
+<!-- tabs -->
+<header class="hero">
+<p class="eyebrow">Commodore 64 · 1987 · System 3</p>
+<h1>Items and puzzles</h1>
+<p class="sub">The pictures in the status panel connect weapons, collected objects and the checks that open a route through the island.</p>
+</header>
+<main class="wrap" data-ninja-mechanics>
+<section id="inventory"><p class="fig">01 · The inventory</p><h2 class="t">What the objects are for</h2>
+<p>Weapons appear under Using. Other collected objects appear under Holding, where F3 and F5 select them. The pictures below are drawn by the game’s inventory painter. Location links open the connected map at the recorded room.</p>
+<div id="item-list" class="ninja-item-grid"></div>
+<h3>Hidden effects</h3><div id="item-hidden"></div><p class="cap">Hidden effects have their own record codes. Their full behaviour remains open; they are not labelled as extra inventory objects.</p></section>
+<section id="pickup"><p class="fig">02 · Picking up</p><h2 class="t">The hand must reach a small rectangle</h2>
+<p>Moving close to a visible object is not enough. The pickup reader uses Armakuni’s position as a proxy for the reach of his hand and tests it against a stored rectangle. Facing left shifts the tested X coordinate by 36 pixels. The right and bottom boundaries are excluded.</p>
+<div class="plate ninja-lab"><div><canvas id="pickup-stage" class="ninja-room-canvas" width="240" height="144" role="img" aria-label="Item room with the pickup rectangle and the tested hand coordinate"></canvas><p class="cap">Yellow marks accepted coordinates, rather than the visible outline of the object. The blue dot is the coordinate the code tests. The object sprites are a separate layer from this room background.</p></div>
+<div class="ninja-lab-controls"><label>Object and location <select id="pickup-item"></select></label><label>Armakuni X <output id="pickup-x-value"></output><input id="pickup-x" type="range" min="0" max="255" value="100"></label><label>Armakuni Y <output id="pickup-y-value"></output><input id="pickup-y" type="range" min="0" max="180" value="90"></label><label>Facing <select id="pickup-facing"><option value="1">Up-right</option><option value="5">Down-left</option></select></label><label class="ninja-check"><input type="checkbox" id="pickup-bag" checked> Pouch in inventory</label><label>Selected Holding object <select id="pickup-holding"></select></label></div>
+<p id="pickup-result" class="ninja-result" aria-live="polite">Loading…</p></div>
+<p><a id="pickup-map" href="levels.html">Open the room map</a> · <a id="pickup-source" href="source-resident.html#5940">The item record</a> · <a href="source-resident.html#5940">The pickup test</a></p></section>
+<section id="puzzles"><p class="fig">03 · Using an object</p><h2 class="t">The right object can still be the wrong selection</h2>
+<p>Some puzzle checks read the selected Holding object, not simply whether it is somewhere in the inventory. Several also require empty hands and an up-right facing. Try the selections below against the original gate conditions.</p>
+<div class="plate ninja-lab-controls"><label>Puzzle gate <select id="puzzle-name"></select></label><label>Selected Holding object <select id="puzzle-holding"></select></label><label>Weapon <select id="puzzle-weapon"><option value="0">Empty hands</option><option value="1">Sword equipped</option></select></label><label>Facing <select id="puzzle-facing"><option value="1">Up-right</option><option value="3">Down-right</option><option value="5">Down-left</option><option value="7">Up-left</option></select></label><label class="ninja-check"><input type="checkbox" id="puzzle-owned" checked> Flower still in inventory</label><p id="puzzle-result" class="ninja-result" aria-live="polite"></p><p><a id="puzzle-map" href="levels.html">Open this puzzle room</a> · <a id="puzzle-source" href="source-inner-sanctum.html#BE4E">The original gate</a></p></div>
+<p>The flower makes a complete chain: select the glove before taking it in Palace Gardens room 15, then select the flower at the Inner Sanctum room 10 trigger. The latter check consumes the flower, starts the opponent’s next script and changes the first collision segment.</p>
+<p class="cap">These viewers isolate the reach and selection checks. They do not reproduce walking to the trigger, every room’s side effects, or a complete walkthrough.</p></section>
+</main><script src="reference/ninja-rules.js"></script>
+<script src="reference/ninja-mechanics.js"></script>
+</body>
+</html>

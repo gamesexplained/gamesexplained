@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { start, watchErrors } = require('../../../kit/scripts/play_browser.js');
+const { start } = require('../../../kit/scripts/play_browser.js');
 
 async function canvasImage(page, selector) {
   return page.locator(selector).evaluate(canvas => canvas.toDataURL());
@@ -76,7 +76,7 @@ async function testGraphics(page, game) {
 }
 
 async function testTapeAndMusic(page, game) {
-  await page.goto(game + 'index.html');
+  await page.goto(game + 'gameplay.html');
   const tape = page.locator('#ninja-load-chapter');
   await tape.selectOption('D');
   assert.equal(await page.locator('#ninja-tape-side').textContent(), 'Side 2');
@@ -85,6 +85,7 @@ async function testTapeAndMusic(page, game) {
   await tape.selectOption('C');
   assert.equal(await page.locator('#ninja-tape-side').textContent(), 'Side 1');
 
+  await page.goto(game + 'music.html');
   assert.equal(await page.locator('#ninja-music [data-tune]').count(), 12);
   const tune = page.getByRole('button', { name: 'Dungeons gameplay', exact: true });
   await tune.click();
@@ -97,18 +98,80 @@ async function testTapeAndMusic(page, game) {
   assert.equal(await tune.getAttribute('aria-pressed'), 'false');
 }
 
+async function testMechanics(page, game) {
+  await page.goto(game + 'gameplay.html');
+  await page.waitForFunction(() => document.querySelector('#combat-result').textContent.includes('wounds'));
+  await page.locator('#combat-defence').selectOption('toward');
+  await page.waitForFunction(() => document.querySelector('#combat-result').textContent.includes('guarding'));
+  await page.locator('#combat-count').selectOption('4');
+  await page.waitForFunction(() => document.querySelector('#combat-result').textContent.includes('Hit.'));
+  await page.waitForFunction(() => document.querySelector('#jump-result').textContent.includes('Passes'));
+  await page.locator('#jump-shift').click();
+  await page.waitForFunction(() => document.querySelector('#jump-result').textContent.includes('Fails'));
+  await page.locator('#combat-weapon').selectOption('4');
+  await page.getByRole('button', {name:'Joystick right',exact:true}).click();
+  await page.waitForFunction(() => document.querySelector('#combat-result').textContent.includes('Projectile'));
+  await page.locator('#enemy-step').click();
+  for (let i=0;i<4;i++) await page.locator('#enemy-time').click();
+  await page.locator('#enemy-step').click();
+  assert.equal(await page.locator('#enemy-state').textContent(), 'approaching');
+  await page.locator('#enemy-place').click();
+  await page.locator('#enemy-step').click();
+  assert.equal(await page.locator('#enemy-state').textContent(), 'close');
+  await page.locator('#enemy-step').click();
+  assert.equal(await page.locator('#enemy-state').textContent(), 'attacking');
+  assert.equal(await page.locator('.ninja-widget-error').count(),0);
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+}
+
+async function testItemsAndWorld(page, game) {
+  await page.goto(game + 'items.html');
+  await page.waitForFunction(() => document.querySelector('#pickup-result').textContent.includes('Can collect'));
+  assert.equal(await page.locator('.ninja-item').count(),15);
+  await page.locator('#pickup-holding').selectOption('0');
+  await page.waitForFunction(() => document.querySelector('#pickup-result').textContent.includes('glove'));
+  await page.locator('#pickup-holding').selectOption('6');
+  await page.locator('#pickup-bag').uncheck();
+  await page.waitForFunction(() => document.querySelector('#pickup-result').textContent.includes('pouch'));
+  await page.locator('#puzzle-name').selectOption('4');
+  await page.locator('#puzzle-holding').selectOption('1');
+  await page.waitForFunction(() => document.querySelector('#puzzle-result').textContent.includes('accepts'));
+  await page.locator('#puzzle-owned').uncheck();
+  await page.waitForFunction(() => document.querySelector('#puzzle-result').textContent.includes('requires'));
+  assert.equal(await page.locator('.ninja-widget-error').count(),0);
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  await page.goto(game + 'levels.html?chapter=palace-gardens&room=15#world');
+  await page.waitForFunction(() => document.querySelector('#world-selected').textContent.startsWith('Room 15'));
+  assert((await page.locator('#world-map button').count()) > 15);
+  const ropeRoom = page.getByRole('button',{name:'Room 9, contains Rope',exact:true});
+  const roomBounds = await ropeRoom.boundingBox();
+  assert(roomBounds.width > 0 && roomBounds.width < 150, 'The room hit area must fit its thumbnail card: '+JSON.stringify(roomBounds));
+  await ropeRoom.click();
+  await page.waitForFunction(() => document.querySelector('#world-selected').textContent.startsWith('Room 9'));
+  assert.equal(await page.locator('#room-slot').evaluate(x => x.selectedOptions[0].textContent), '9');
+  await page.locator('#world-chapter').selectOption('5');
+  await page.waitForFunction(() => document.querySelectorAll('#world-map button').length===16);
+  assert.equal(await page.locator('.ninja-widget-error').count(),0);
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+}
+
 async function main() {
   const { browser, base, stop } = await start(process.argv.slice(2));
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const errors = [];
-  watchErrors(page, base, errors);
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
   const game = base + '/c64/the-last-ninja/';
   try {
+    await testMechanics(page, game);
+    await testItemsAndWorld(page, game);
     await testMaps(page, game);
     await testGraphics(page, game);
     await testTapeAndMusic(page, game);
     assert.deepEqual(errors, []);
-    console.log('The room viewer, sprite controls, tape selector, and SID player passed.');
+    console.log('Combat, jumping, enemy decisions, items, connected maps, sprite controls and music passed.');
   } finally {
     await stop();
   }

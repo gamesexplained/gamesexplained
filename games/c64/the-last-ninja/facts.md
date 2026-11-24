@@ -243,3 +243,38 @@ The unweighted estimate was 0.0%, with a 95% Wilson interval of
 0.0–3.7%. Weighting by stratum size also gave 0.0%. The sample
 preceded the later annotations on the retained tables, game-state
 aliases and SID drivers. An audit of the full listing is recommended.
+
+
+## Interactive mechanics
+
+- The action selector at `$5727` chooses scripts through `$581B`. The
+  interpreter at `$5B69` supplies pose changes, movement and contact events.
+  The page uses 304 frames drawn by the original sprite renderer.
+- Contact at `$7ECC` selects four bounds by attack class, facing and weapon.
+  A somersault rejects contact. A matching guard rejects it while `$D7 < 4`.
+  The wound table begins at `$782F`; the wound accumulator caps at 32.
+- The three forward somersault inputs share an animation but change the
+  projected path. One tested Wastelands landing accepts X=138 and rejects
+  X=139. Safe rectangles include left/top and exclude right/bottom.
+- Pickup at `$5940` uses the player's coordinate, facing, inventory and
+  Holding slot. Ordinary items need the pouch, except the pouch itself.
+  Taking the flower without Holding the glove clears power and requests
+  death. The page's marker represents the tested coordinate.
+- Puzzle handlers require the amulet in Wilderness room 4, rope in Palace
+  Gardens room 24, claw in Dungeons room 23, key in Palace room 7 and
+  flower in Inner Sanctum room 10. The first three also test facing and
+  weapon state. The flower handler tests ownership and consumes the flower.
+- Enemy entry wait at `$6AF8` uses the low five random bits, plus 16 for
+  a nonzero variant. Approach at `$6B5E` selects an offset target near the
+  player. Close choices at `$6CA8` depend on variant and random bits.
+  Close wait at `$6CEB` restarts approach after movement or three choices.
+- The chapter room tables contain 302 directed exits. The map finds paths
+  through these stored links; this does not prove terrain is traversable.
+
+`test_mechanics.js` executes the published listing bytes to compare 384
+input selections, 384 movement cases, 4,916 animation steps, 19,200 contact
+cases, 1,024 initial enemy choices, 2,700 approach cases, 3,200 close waits,
+544 pickup cases, 800 puzzle gates and 1,024 landing boundaries. It checks
+all 23 room item/effect records, 302 exits, 304 rendered frames and 16
+inventory pictures. The JavaScript demonstrations omit terrain collision,
+projectile flight and the complete enemy controller.

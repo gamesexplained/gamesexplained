@@ -86,3 +86,85 @@ fields that the room and item routines read. Checked two stored
 Dungeons patterns through the original event reader. Called the
 temporary pitch-sweep routines directly and observed the countdown
 restore from the instrument step field.
+
+## 24 November 2026
+
+Explained 119 more tracked bytes. Compared the exact handover snapshots
+with the previous chapters and checked the catalogue's stored count
+against its last slot. The late Dungeons voices leave pairs of zeros
+between the reads of adjacent patterns or pointer lists. The resident
+notes name the collision endpoints, mask bounds and the timing channels
+used by the fade and the Wilderness room logic. Three low-RAM bytes
+match address operands in the KERNAL-loaded bootstrap decoded from
+Side 1 and are zero in the play capture. All seven handover
+snapshot hashes matched those recorded in the previous listings.
+
+The follow-up exported the changed symbol maps from offline
+Regenerator2000 projects seeded with those snapshots and the committed
+symbols. Seed future disassembler sessions from these exports so an
+older live session cannot overwrite the new comments.
+
+## 24 November 2026 — stored music tails
+
+Classified 18 bytes in Palace, Palace Gardens and Inner Sanctum as stored
+rest records, a command with its argument, and two $FF/$FF pitch/duration
+pairs. Controlled entries into the original event reader checked all eight
+pitch/duration pairs. Three command-handler cases checked addition and
+eight-bit wraparound. These checks establish the interpretation when entered,
+not that ordinary playback reaches the tails. All nine new comments were
+reviewed against the original code and bytes.
+
+Exported offline Regenerator2000 projects seeded from the recorded symbol
+maps and exact listing snapshots. Rebuilt the three affected listings from
+those snapshots. Coverage rose from 219,646 to 219,664 of 219,680 tracked
+bytes, leaving 16 unexplained. Preserved the earlier uncommitted 119-byte
+annotation pass.
+
+PR #1024 was confirmed merged. Fetching main failed because the shell could
+not resolve github.com. The checkout remains detached from the merged PR's
+head; no new commit or push was made on its finished branch. Apply the
+follow-up to a new branch from main when Git network access is available.
+The proven-model maintainer review and ordinary room route remain open.
+
+Validation: check_binaries.py and check_listing.py passed. build.py built
+139 games. test_kit.py --changed HEAD reported 51 passed, one skipped
+(SkoolKit absent), zero failed. The default documentation check reported
+six kit retrospective issues because origin/main predates the run. With
+GITHUB_BASE_REF=last-ninja-pass-baseline (verified equal to the merged PR
+head b90fd886), check_docs.py passed. That scoped comparison checks this
+follow-up; it does not replace the required check against fetched main
+before committing. The three rebuilt listings retain the exact snapshot
+hashes and all 30,904 listed bytes per chapter.
+
+## 25 November 2026 — align the minisite with the contributor’s pages
+
+Compared Fist II and Skate or Die. Added an illustrated Overview, put the
+existing technical material on Gameplay and the complete player on Music,
+and applied the same page tokens to Maps, Graphics and Discoveries. Kept
+the room viewer and sprite controls, added section labels and stable IDs,
+and redirected the two old index anchors. Sources for the new overview are
+named in features.md and linked beside the claims. Music verification reads
+the moved player; the browser runner follows its new tab.
+
+The host refused a local HTTP listener. The browser also refused file URLs,
+so local visual preview and screenshots could not be captured. No browser
+policy was bypassed.
+
+
+## 25 November 2026 — add the five requested demonstrations
+
+Added combat, jumping, items and puzzles, connected maps and an enemy
+decision viewer. Extracted the small tables and pictures used by these
+widgets from the exact snapshots named by their listings. The published
+pages contain data excerpts and JavaScript ports, with no machine image.
+Native renderer output supplies 304 pose frames and 16 inventory icons.
+
+The portable test reconstructs memory from committed listings, executes
+the relevant original routines and compares their results with the page's
+JavaScript. It covers input, movement, animation, contact, enemy choices,
+pickup, puzzle gates, landing bounds, room exits and every atlas pixel.
+The browser runner exercises each widget and mobile overflow, but cannot
+run on this host because Playwright is absent and local listeners are
+refused. The pages state that they isolate mechanics: terrain collision,
+projectile flight and the complete enemy movement remain outside the demos.
+Coverage and tier are unchanged.

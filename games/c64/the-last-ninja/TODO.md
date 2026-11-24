@@ -1,15 +1,20 @@
 # The Last Ninja — TODO
 
-The seven listings explain 219,527 of 219,680 tracked bytes
-(99.9%). The Wilderness listing explains all 30,904 of its tracked
-bytes. Each chapter listing starts at its own tape handover.
+The seven listings explain 219,664 of 219,680 tracked bytes (99.99%).
+The Wilderness listing explains all 30,904 of its tracked bytes.
+Each chapter listing starts at its own tape handover.
 
-- Resolve the remaining 153 bytes from the work queue of each part.
-  The largest gaps are the Palace and Inner Sanctum bytes after the
-  shape catalogues and the resident engine’s remaining RAM aliases.
-- Follow the selected jump and attack scripts through their movement
-  updates, then verify the normal room-to-room route. The ending was
-  reached from a staged room with its real pickup gesture.
+Next: trace the remaining 16 bytes to a reader or establish their
+provenance and role in the tape payload. They are four two-byte words after chapter shape catalogues, six
+Wastelands bytes after its catalogue, and two resident RAM bytes between
+named fields. The stored music tails are classified by their event format;
+ordinary playback reaching these tails remains unverified.
+
+- Verify the normal room-to-room route with terrain collision, projectile
+  flight and complete enemy movement. The interactive demonstrations check
+  action scripts, contact, landing rectangles, pickup and five puzzle gates
+  separately. The ending was reached from a staged room with its real pickup
+  gesture.
 - Run `minisite-browser.js` after providing the kit's supported browser
   test tools. The built site and the Node SID test passed. The browser
   runner stops on this host before opening a page because Playwright is

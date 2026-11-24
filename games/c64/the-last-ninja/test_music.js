@@ -12,7 +12,7 @@ const root = path.resolve(__dirname, '../../..');
 const C64Cpu = require(path.join(root, 'kit/cpu/cpu6502.js'));
 require(path.join(root, 'site/lib/sid.js'));
 
-const page = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const page = fs.readFileSync(path.join(__dirname, 'music.html'), 'utf8');
 const tracks = JSON.parse(page.match(/<script id="ninja-music-data" type="application\/json">([^<]+)<\/script>/)[1]);
 const driverText = page.match(/<script id="ninja-music-driver">\s*([\s\S]+?)\s*<\/script>/)[1];
 const createDriver = vm.runInNewContext('(' + driverText + ')', {atob});
