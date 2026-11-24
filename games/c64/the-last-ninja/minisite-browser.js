@@ -150,7 +150,7 @@ async function testItemsAndWorld(page, game) {
   await page.waitForFunction(() => document.querySelector('#world-selected').textContent.startsWith('Room 9'));
   assert.equal(await page.locator('#room-slot').evaluate(x => x.selectedOptions[0].textContent), '9');
   await page.locator('#world-chapter').selectOption('5');
-  await page.waitForFunction(() => document.querySelector('#world-map button').length===16);
+  await page.waitForFunction(() => document.querySelectorAll('#world-map button').length===16);
   assert.equal(await page.locator('.ninja-widget-error').count(),0);
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
 }
