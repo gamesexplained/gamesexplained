@@ -12,11 +12,13 @@
 //  - every module's setTimeout and setInterval run on the machine's cycle count (apple2ts_clock.mjs);
 //  - worker2main, which posts to Apple2TS's page, passes the speaker's clicks and the Mockingboard's
 //    registers to the server's hooks instead;
-//  - the game patches are off (games/game_mappings.ts: Apple2TS changes some twenty games it recognises);
-//  - the Disk II controller and the paddle timer get a save and a restore of the private state that
+//  - the Disk II controller gets a save and a restore of the cycle its motor stops at, which
 //    Apple2TS's own save state leaves out;
 //  - memory.ts lends its table of where each page's writes land, and cpu6502.ts's watchpoint test
 //    tells the server's hook about every data read and write.
+// The game patches, the controller's other private state and the paddle timer need no change:
+// the server turns the patches off with enableGamePatches(false), and the save state holds the
+// rest (apple2ts_server.mjs).
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
@@ -39,8 +41,7 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const src = path.resolve(checkout, "src");
 const clock = path.join(here, "apple2ts_clock.mjs");
 const realW2M = path.join(src, "worker", "worker2main.ts");
-const realGames = path.join(src, "worker", "games", "game_mappings.ts");
-for (const f of [realW2M, realGames, path.join(here, "apple2ts_server.mjs"), clock])
+for (const f of [realW2M, path.join(here, "apple2ts_server.mjs"), clock])
     if (!fs.existsSync(f)) {
         console.error(`missing ${f}: is ${checkout} a checkout of Apple2TS (kit/apple2/INSTALL.md)?`);
         process.exit(1);
@@ -53,28 +54,17 @@ const at = JSON.stringify(clock);
 // be declared there, or the build stops (an undeclared name would only fail when the code runs).
 const APPEND = {
     "worker/devices/diskdata.ts": {
-        needs: ["prevCycleCount", "cycleRemainder", "dataRegister", "dataRegHold", "MOTOR_RUNNING", "DATA_LATCH",
-            "fullRevolutionCount", "randPos", "headWindow", "motorOffTimeout", "doMotorTimeout", "getCurrentDriveState"],
+        needs: ["motorOffDeadline", "motorOffDrive", "motorOffTimeout", "getCurrentDriveState"],
         code: `
-import { vSetTimeoutAt as kitAt, vTimerDue as kitDue } from ${at}
-export const kitDiskSave = () => ({ prevCycleCount, cycleRemainder, dataRegister, dataRegHold, MOTOR_RUNNING,
-  DATA_LATCH, fullRevolutionCount, randPos, headWindow, motorOffDue: motorOffTimeout ? kitDue(motorOffTimeout as number) : -1 })
+export const kitDiskSave = () => ({ motorOffDue: motorOffDeadline || -1 })
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const kitDiskRestore = (s: any) => {
   if (!s) return
-  prevCycleCount = s.prevCycleCount; cycleRemainder = s.cycleRemainder; dataRegister = s.dataRegister
-  dataRegHold = s.dataRegHold; MOTOR_RUNNING = s.MOTOR_RUNNING; DATA_LATCH = s.DATA_LATCH
-  fullRevolutionCount = s.fullRevolutionCount; randPos = s.randPos; headWindow = s.headWindow
-  motorOffTimeout = s.motorOffDue >= 0 ? kitAt(() => doMotorTimeout(getCurrentDriveState()), s.motorOffDue) : 0
+  if (motorOffTimeout) clearTimeout(motorOffTimeout)
+  motorOffTimeout = 0
+  motorOffDeadline = s.motorOffDue >= 0 ? s.motorOffDue : 0
+  motorOffDrive = motorOffDeadline ? getCurrentDriveState() : null
 }
-`,
-    },
-    "worker/devices/joystick.ts": {
-        needs: ["countStart"],
-        code: `
-export const kitJoySave = () => ({ countStart })
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const kitJoyRestore = (s: any) => { if (s) countStart = s.countStart }
 `,
     },
     "worker/memory.ts": {
@@ -127,13 +117,10 @@ const plugin = {
     name: "kit-apple2ts",
     setup(b) {
         b.onResolve({ filter: /^A2TS_REAL_WORKER2MAIN$/ }, () => ({ path: realW2M }));
-        b.onResolve({ filter: /^A2TS_REAL_GAMES$/ }, () => ({ path: realGames }));
         b.onResolve({ filter: /^A2TS\// }, (a) => ({ path: path.join(src, a.path.slice(5)) + ".ts" }));
-        // Apple2TS's own modules import worker2main and the game list: give them the kit's
+        // Apple2TS's own modules import worker2main: give them the kit's
         b.onResolve({ filter: /worker2main$/ }, (a) =>
             a.importer.startsWith(src) && a.importer !== realW2M ? { path: "worker2main", namespace: VIRTUAL } : undefined);
-        b.onResolve({ filter: /game_mappings$/ }, (a) =>
-            a.importer.startsWith(src) && a.importer !== realGames ? { path: "game_mappings", namespace: VIRTUAL } : undefined);
         b.onLoad({ filter: /^worker2main$/, namespace: VIRTUAL }, () => ({
             resolveDir: here,
             loader: "js",
@@ -141,14 +128,6 @@ const plugin = {
 import { hooks } from ${at};
 export const passClickSpeaker = (cycleCount) => hooks.speaker(cycleCount);
 export const passMockingboard = (sound) => hooks.mockingboard(sound);
-`,
-        }));
-        b.onLoad({ filter: /^game_mappings$/, namespace: VIRTUAL }, () => ({
-            resolveDir: here,
-            loader: "js",
-            contents: `export * from "A2TS_REAL_GAMES";
-export const handleGameSetup = (_reset = false) => {};
-export const handleKeyMapping = (key) => key;
 `,
         }));
         // icons the debugger's breakpoint list imports: the server draws nothing, so the build

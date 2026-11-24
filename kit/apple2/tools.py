@@ -7,10 +7,10 @@ Reached through `python3 kit/scripts/tools.py`, which picks the platform: `apple
 `verify-footprint` need `--platform apple2` when another platform has a launcher too.
 
 Everything the kit installs lives under tools/ (gitignored):
-  tools/apple2/apple2ts/       the source of Apple2TS 3.7.0 (github.com/ct6502/apple2ts, MIT), the
+  tools/apple2/apple2ts/       the source of Apple2TS 3.8.0 (github.com/ct6502/apple2ts, MIT), the
                                release's src/ folder only, cloned with git: the emulator, with
                                the Apple IIe's ROMs, which Apple2TS keeps in its source
-  tools/apple2/esbuild/        esbuild 0.25.12 from npm (MIT), which bundles the server
+  tools/apple2/esbuild/        esbuild 0.28.2 from npm (MIT), which bundles the server
   tools/apple2/apple2ts-server.cjs  the server: kit/apple2/apple2ts_server.mjs and Apple2TS's
                                machine in one script. It holds the ROMs, so it is never committed
   tools/apple2-home/           the server's home directory (HOME and the XDG folders point here),
@@ -34,7 +34,7 @@ Usage:
                                             disk, waiting on 127.0.0.1:6502, or N; `--model iiplus`
                                             makes it an Apple II Plus, for a game that needs one
   tools.py stop [apple2ts] [--port N]       stop this clone's servers, or the one on N
-  tools.py get-apple2ts                     clone Apple2TS 3.7.0's source and install esbuild into
+  tools.py get-apple2ts                     clone Apple2TS 3.8.0's source and install esbuild into
                                             tools/apple2, then build the server
   tools.py snapshots                        where snapshots land, and what is there
   tools.py check-emulator [--keep]          test it against kit/EMULATOR.md (kit/apple2/check_emulator.py)
@@ -65,9 +65,9 @@ LOGS = os.path.join(TOOLS, "logs")
 BUILDER = os.path.join(HERE, "apple2ts_build.mjs")
 KIT_SOURCES = ("apple2ts_build.mjs", "apple2ts_clock.mjs", "apple2ts_server.mjs")   # what the bundle is built from
 APPLE2TS_REPO = "https://github.com/ct6502/apple2ts.git"
-APPLE2TS_VERSION = "3.7.0"     # the release the checks in kit/apple2/INSTALL.md were measured on
-APPLE2TS_COMMIT = "c900979bb7cfdcbec193b2ae21760d8da9cda548"   # its tag, v3.7.0
-ESBUILD_VERSION = "0.25.12"
+APPLE2TS_VERSION = "3.8.0"     # the release the checks in kit/apple2/INSTALL.md were measured on
+APPLE2TS_COMMIT = "b6654131492dc0a7a19d231132fdc5e7f5fa448a"   # its tag, v3.8.0
+ESBUILD_VERSION = "0.28.2"
 MODELS = ("iie", "iiplus")    # the server's --model: the enhanced IIe, or the II Plus (apple2ts_server.mjs, MODELS)
 PORT = int(os.environ.get("KIT_APPLE2TS_PORT") or 6502)   # loopback only; `--port N` in main() sets both
 

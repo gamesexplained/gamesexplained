@@ -42,18 +42,20 @@ import {
 } from "A2TS/worker/memory";
 import { SWITCHES } from "A2TS/worker/softswitches";
 import { configureMachine, doReset, doSetSlotConfig, doSetMachineName, doSetAppMode } from "A2TS/worker/motherboard";
-import { doGetSaveState, doRestoreSaveState } from "A2TS/worker/save_restore";
+import { doGetSaveState, doRestoreSaveState } from "A2TS/worker/save_restore_worker";
 import { doSetEmuDriveNewData, getCurrentDriveState, setCurrentDrive } from "A2TS/worker/devices/drivestate";
-import { kitDiskSave, kitDiskRestore } from "A2TS/worker/devices/diskdata";
+import { kitDiskSave, kitDiskRestore, processFloppyMotorTimeout } from "A2TS/worker/devices/diskdata";
+import { getSlotCardSaveState, restoreSlotCardSaveState } from "A2TS/worker/devices/slot_card_state";
+import { enableGamePatches } from "A2TS/worker/games/game_mappings";
 import { apple2KeyRelease } from "A2TS/worker/devices/keyboard";
-import { pressAppleCommandKey, setGamepadValue, kitJoySave, kitJoyRestore } from "A2TS/worker/devices/joystick";
+import { pressAppleCommandKey, setGamepadValue, getJoystickSaveState, restoreJoystickSaveState } from "A2TS/worker/devices/joystick";
 import { onMouseVBL } from "A2TS/worker/devices/mouse";
 import { getInstructionString } from "A2TS/common/util_disassemble";
 import { RamWorksMemoryStart, ROMmemoryStart } from "A2TS/common/utility";
 import { clock, hooks, vclockInit, vFire, vClearAll, vPending } from "./apple2ts_clock.mjs";
 
 const PROTOCOL = 1;
-const APPLE2TS = "3.7.0";        // the release kit/apple2/tools.py clones; the bundle is built from it
+const APPLE2TS = "3.8.0";        // the release kit/apple2/tools.py clones; the bundle is built from it
 const CLOCK = 1020484;            // cycles a second (kit/skills/apple2/apple2-reference)
 const FRAME = 17030;              // 65 cycles a line, 262 lines
 const VBL = 4550;                 // the vertical blank: the first 70 lines of Apple2TS's frame
@@ -100,14 +102,14 @@ const ROOT = path.resolve(option("--root", path.join(path.dirname(path.resolve(p
 
 // What the server changes in Apple2TS, as `hello` reports it (kit/skills/apple2/tool-apple2ts).
 const WORKAROUNDS = [
-    "the server's own run loop: Apple2TS's is paced by the browser's frame timer. After each instruction it applies Apple2TS's vertical-blank rule ($C019 low for the first 4,550 cycles of each 17,030)",
-    "Apple2TS's timers (the disk motor's spin-down) run on the machine's cycle count instead of the host's clock",
+    "the server's own run loop: Apple2TS's is paced by the browser's frame timer. After each instruction it applies Apple2TS's vertical-blank rule ($C019 low for the first 4,550 cycles of each 17,030) and stops the disk's motor once its spin-down is over, as Apple2TS's loop does",
+    "Apple2TS's timers run on the machine's cycle count instead of the host's clock",
     "Math.random, which Apple2TS draws the floating bus and empty slots from, is a seeded generator whose state is in the snapshot",
     "the game patches are off: Apple2TS changes some twenty games when it recognises them (Robotron's lives, Lode Runner's and Snoggle's screens, keys)",
     "slots: 3 the extended 80-column card (64K) on the IIe and nothing on the II Plus, 4 a Mockingboard, 6 a Disk II; no hard disk and no clock card, though Apple2TS's No-Slot Clock answers at $C300-$C3FF, with the computer's date and time, to a program that unlocks it",
     "a key goes into the keyboard latch directly: no auto-repeat and no remapping",
     "read and write checkpoints count through the call Apple2TS's debugger makes on each data access; exec checkpoints, frames, the speaker and the code map are the server's",
-    "a snapshot is Apple2TS's own save state (JSON) with the generator's state, the inputs held and the disk controller's private state",
+    "a snapshot is Apple2TS's own save state (JSON) with the generator's state, the inputs held and the cycle the disk's motor stops at, which Apple2TS's own leaves out",
     "a hard reset is a power-on: the generator from its seed, the disk controller as at start-up and each disk put in again from its file, so that every cold boot is the same",
 ];
 
@@ -125,6 +127,7 @@ Math.random = () => {
 };
 
 setIsTesting();                   // Apple2TS's messages to its page go nowhere
+enableGamePatches(false);         // Apple2TS changes some twenty games it recognises: the kit runs them as they are
 doSetAppMode("game");             // no checks for Apple2TS's own breakpoints on each instruction
 vclockInit(() => s6502.cycleCount);
 configureModel(model);
@@ -205,8 +208,9 @@ function coldStart(newModel) {
     configureMachine();
     missing.length = 0;
     if (powerOn) {
+        restoreSlotCardSaveState(powerOn.cards);
         kitDiskRestore(powerOn.disk);
-        kitJoyRestore(powerOn.joy);
+        restoreJoystickSaveState(powerOn.joy);
         for (const d of [2, 1]) {
             const f = mounted[d];
             if (f && !fs.existsSync(f)) {
@@ -222,7 +226,7 @@ function coldStart(newModel) {
     applyInputs();
 }
 coldStart();
-powerOn = { disk: kitDiskSave(), joy: kitJoySave() };
+powerOn = { cards: getSlotCardSaveState().filter((c) => c.card === "disk2"), disk: kitDiskSave(), joy: getJoystickSaveState() };
 
 const cycles = () => s6502.cycleCount;
 const frames = () => Math.floor(s6502.cycleCount / FRAME);
@@ -512,7 +516,8 @@ function access(addr, value, isWrite) {
     }
 }
 
-// One instruction, and what Apple2TS's own loop does after one: the vertical blank and the timers.
+// One instruction, and what Apple2TS's own loop does after one: the disk motor's spin-down, the vertical
+// blank and the timers.
 function execOne() {
     const pc = s6502.PC;
     accessPc = pc;
@@ -521,6 +526,7 @@ function execOne() {
         if (m.count[pc]++ === 0) m.len[pc] = pcodes[memory[physical("cpu", pc)]]?.bytes ?? 1;
     }
     processInstruction();
+    processFloppyMotorTimeout();
     const cif = s6502.cycleCount % FRAME;
     if (cif < VBL) {
         if (SWITCHES.VBLINV.isSet) {
@@ -829,7 +835,6 @@ function state() {
         rng: rngState,
         held: held(),
         disk: kitDiskSave(),
-        joy: kitJoySave(),
         motor: getCurrentDriveState()?.motorRunning ?? false,
         mounted: { ...mounted },
     };
@@ -848,8 +853,12 @@ function restore(k) {
     } finally {
         quiet = false;
     }
+    // a snapshot from Apple2TS 3.7.0 kept the controller's private state and the paddle timer in
+    // the kit's own fields, under the names Apple2TS's save state now uses
+    if (!k.state?.state6502?.cardStates && k.disk?.prevCycleCount != null)
+        restoreSlotCardSaveState([{ slot: 6, card: "disk2", state: { ...k.disk, motorOffPending: false } }]);
+    if (!k.state?.state6502?.joystick && k.joy) restoreJoystickSaveState(k.joy);
     kitDiskRestore(k.disk);
-    kitJoyRestore(k.joy);
     const ds = getCurrentDriveState();
     if (ds) ds.motorRunning = k.motor;
     rngState = k.rng >>> 0;

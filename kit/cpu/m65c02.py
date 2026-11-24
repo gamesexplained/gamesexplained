@@ -17,7 +17,7 @@ The enhanced Apple IIe runs a 65C02 (kit/skills/apple2/apple2-reference). It run
 The other 78 opcodes are no-ops of fixed lengths, NOPS below, and none of the NMOS 6502's
 undocumented instructions survives: a game that relies on one goes wrong on this processor.
 Rockwell's bit instructions (rmb, smb, bbr, bbs) and WDC's wai and stp are no-ops here too,
-as on the kit's Apple II (Apple2TS 3.7.0, src/worker/instructions.ts, which this table matches
+as on the kit's Apple II (Apple2TS 3.8.0, src/worker/instructions.ts, which this table matches
 opcode for opcode: `opcodes.py --check apple2`).
 
   decode(ram, a)                     -> (mnemonic, mode, nbytes) or None; a no-op is None,
