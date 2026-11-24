@@ -1,8 +1,9 @@
 'use strict';
 // Exercise the published controls and all stored choices in the built minisite.
+const {start,watchErrors}=require('../../../kit/scripts/play_browser.js');
 /* exerciseHammerfist */
 async function exerciseHammerfist(page,base){
- const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+ const errors=watchErrors(page,base);
  const root=base+'/c64/hammerfist/';let choices=0;
  await page.goto(root+'graphics.html');
  for(let part=0;part<4;part++){
@@ -41,6 +42,6 @@ async function exerciseHammerfist(page,base){
  if(errors.length)throw Error(errors.join('\n'));return {choices,errors};
 }
 // end of exerciseHammerfist
-async function main(){const {start}=require('../../../kit/scripts/play_browser.js'),{browser,base,stop}=await start(process.argv.slice(2));try{const page=await browser.newPage();console.log(await exerciseHammerfist(page,base));}finally{await stop();}}
+async function main(){const {browser,base,stop}=await start(process.argv.slice(2));try{const page=await browser.newPage();console.log(await exerciseHammerfist(page,base));}finally{await stop();}}
 if(require.main===module)main().catch(e=>{console.error(e);process.exitCode=1;});
 module.exports={exerciseHammerfist};

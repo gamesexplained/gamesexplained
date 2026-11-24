@@ -4,15 +4,14 @@
 // kit/scripts/build.py; argv as play_browser.js.
 const assert = require('assert/strict'), path = require('path');
 const ROOT = path.resolve(__dirname, '../../..');
-const {start} = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
+const {start, watchErrors} = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
 
 (async () => {
   const {browser, base, stop} = await start(process.argv.slice(2));
   try {
     const ctx = await browser.newContext({viewport: {width: 1280, height: 900}});
     const page = await ctx.newPage(), errors = [];
-    page.on('pageerror', e => errors.push(String(e)));
-    page.on('console', m => { if (m.type() === 'error' && !m.text().includes('fonts.g')) errors.push(m.text()); });
+    watchErrors(page, base, errors);
     const status = () => page.locator('#trap-result').textContent();
     const picture = () => page.locator('#trap').evaluate(el => {
       const d = el.getContext('2d').getImageData(0, 0, el.width, el.height).data;

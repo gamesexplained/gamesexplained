@@ -16,10 +16,10 @@ const check = (what, ok, detail = '') => { if (!ok) { fails++; console.log('FAIL
 function fakePage({ sections, buttons = [], selects = [], report = null, shown = [], onLoad = () => {} }) {
   const calls = [], on = {};
   let url = '';
-  const message = (type, text) => ({ type: () => type, text: () => text, location: () => ({ url: 'page.js', lineNumber: 4 }) });
+  const message = (type, text, url = 'page.js') => ({ type: () => type, text: () => text, location: () => ({ url, lineNumber: 4 }) });
   const page = {
     calls,
-    emit: { console: (type, text) => on.console(message(type, text)), error: text => on.pageerror(new Error(text)) },
+    emit: { console: (type, text, url) => on.console(message(type, text, url)), error: text => on.pageerror(new Error(text)) },
     on(ev, fn) { on[ev] = fn; },
     url: () => url,
     async goto(u) { calls.push(['goto', u]); url = u; onLoad(page); },
@@ -73,12 +73,18 @@ const quiet = lines => s => lines.push(s);
   {
     const lines = [];
     const page = fakePage({ sections: [{ id: 'frame', heading: '' }, { id: '', heading: 'The map' }],
-      onLoad: p => { p.emit.console('log', 'hello'); p.emit.console('error', 'no canvas'); p.emit.error('x is undefined'); } });
+      onLoad: p => {
+        p.emit.console('log', 'hello'); p.emit.console('error', 'no canvas'); p.emit.error('x is undefined');
+        p.emit.console('error', 'Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED', 'https://fonts.googleapis.com/css2');
+        p.emit.console('error', 'Failed to load resource: the server responded with a status of 404', 'http://x/lib/gone.js');
+      } });
     const r = await shoot(page, { url: 'http://x/c64/g/index.html', prefix: path.join(dir, 'g'), wait: 300 }, quiet(lines));
     const seq = page.calls.filter(c => c[0] !== 'goto').map(c => c.join(' '));
     check('each section is scrolled to, given two frames and the wait, then taken',
       seq.join(', ') === 'scroll 0, frames, wait 300, shot 0 g-01-frame.png, scroll 1, frames, wait 300, shot 1 g-02-the-map.png', seq.join(', '));
-    check('two errors are counted: the console\'s and the page\'s', r.errors === 2 && r.files.length === 2, JSON.stringify(r));
+    check('three errors are counted: the console\'s two from the site and the page\'s', r.errors === 3 && r.files.length === 2, JSON.stringify(r));
+    check('an error about another site\'s file is printed and not counted (#1021)',
+      lines.some(l => l.includes('fonts.googleapis.com') && l.endsWith('(another site\'s file: not counted)')), lines.join('\n'));
     check('every console message is printed, with where it came from', lines.includes('console.log: hello (page.js:5)')
       && lines.includes('console.error: no canvas (page.js:5)') && lines.includes('page error: x is undefined'), lines.join('\n'));
     check('without ?listing-reads the report is not read', !page.calls.some(c => c[0] === 'report'));

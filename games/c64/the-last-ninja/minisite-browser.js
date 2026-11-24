@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { start } = require('../../../kit/scripts/play_browser.js');
+const { start, watchErrors } = require('../../../kit/scripts/play_browser.js');
 
 async function canvasImage(page, selector) {
   return page.locator(selector).evaluate(canvas => canvas.toDataURL());
@@ -101,10 +101,7 @@ async function main() {
   const { browser, base, stop } = await start(process.argv.slice(2));
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const errors = [];
-  page.on('pageerror', error => errors.push(error.message));
-  page.on('console', message => {
-    if (message.type() === 'error') errors.push(message.text());
-  });
+  watchErrors(page, base, errors);
   const game = base + '/c64/the-last-ninja/';
   try {
     await testMaps(page, game);

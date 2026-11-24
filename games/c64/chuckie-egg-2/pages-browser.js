@@ -1,7 +1,7 @@
 'use strict';
 // Drives the four Chuckie Egg 2 pages in Chromium and checks what each widget shows.
 const assert = require('assert');
-const {start} = require('../../../kit/scripts/play_browser.js');
+const {start, watchErrors} = require('../../../kit/scripts/play_browser.js');
 
 const pixels = async (page, sel) => {
   await page.locator(sel).scrollIntoViewIfNeeded(); await page.waitForTimeout(300);
@@ -16,9 +16,7 @@ const same = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
     for (const width of [1100, 380]) {
       const page = await browser.newPage({viewport: {width, height: 900}});
       const errors = [];
-      page.on('pageerror', (e) => errors.push(e.message));
-      // a resource from outside the site (web fonts, analytics) may be unreachable where the check runs
-      page.on('console', (m) => { if (m.type() === 'error' && (m.location().url || base).startsWith(base)) errors.push(m.text()); });
+      watchErrors(page, base, errors);
       const go = async (p) => { await page.goto(`${base}/c64/chuckie-egg-2/${p}`, {waitUntil: 'load'}); await page.waitForTimeout(1500); };
 
       // How it works: the room viewer, its slider and overlay
