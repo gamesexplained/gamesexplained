@@ -6,12 +6,11 @@
 //   node games/c64/wasteland/solution-browser.js [<site>] [--chromium <path>]
 const assert = require('assert/strict'), path = require('path');
 const ROOT = path.resolve(__dirname, '../../..');
-const { start } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
+const { start, watchErrors } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
 
 async function check(browser, base) {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 1000 } }), page = await ctx.newPage(), errors = [];
-  page.on('pageerror', e => errors.push(String(e)));
-  page.on('console', m => { if (m.type() === 'error' && !m.text().includes('fonts.googleapis')) errors.push(m.text()); });
+  watchErrors(page, base, errors);
   await page.goto(`${base}/c64/wasteland/solution.html`);
   const data = await page.evaluate(() => JSON.parse(document.getElementById('wl-solution').textContent));
   assert.equal(await page.locator('.wl-so-leg').count(), data.legs.length, 'a button for every leg');

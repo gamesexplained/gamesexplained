@@ -11,7 +11,7 @@
 // Run after kit/scripts/build.py; argv as play_browser.js.
 const assert = require('assert/strict'), path = require('path');
 const ROOT = path.resolve(__dirname, '../../..');
-const { start } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
+const { start, watchErrors } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
 
 (async () => {
   const { browser, base, stop } = await start(process.argv.slice(2));
@@ -19,8 +19,7 @@ const { start } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
   try {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     const page = await ctx.newPage();
-    page.on('pageerror', e => errors.push(String(e)));
-    page.on('console', m => { if (m.type() === 'error' && !m.text().includes('fonts.g')) errors.push(m.text()); });
+    watchErrors(page, base, errors);
     const url = f => base + '/c64/turrican/' + f;
     // a hash of what a canvas shows, and how many of its pixels differ from its top-left one
     const hash = sel => page.locator(sel).evaluate(c => {

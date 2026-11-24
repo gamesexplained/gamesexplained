@@ -1,12 +1,11 @@
 'use strict';
 const assert=require('assert/strict'),path=require('path'),fs=require('fs');
 const ROOT=path.resolve(__dirname,'../../..');
-const {start}=require(path.join(ROOT,'kit/scripts/play_browser.js'));
+const {start, watchErrors}=require(path.join(ROOT,'kit/scripts/play_browser.js'));
 
 async function check(browser,base,out=null) {
   const ctx=await browser.newContext({viewport:{width:1280,height:900}}),page=await ctx.newPage(),errors=[];
-  page.on('pageerror',e=>errors.push(String(e)));
-  page.on('console',m=>{if(m.type()==='error'&&!m.text().includes('fonts.googleapis'))errors.push(m.text());});
+  watchErrors(page, base, errors);
   const url=file=>`${base}/c16/cuthbert-in-the-cooler/${file}.html`;
   async function go(file){await page.goto(url(file));await page.waitForFunction(()=>globalThis.coolerReady===true);}
   async function range(id,value){await page.locator('#'+id).evaluate((el,n)=>{el.value=n;el.dispatchEvent(new Event('input',{bubbles:true}));},value);}

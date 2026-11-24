@@ -16,6 +16,12 @@
 //     stop()    closes both
 // start exits with a message and status 2 when the site has not been built, Playwright is missing
 // or no browser starts: in CI, that fails the step, so a check that cannot run never passes.
+//
+//   const errors = watchErrors(page, base);   // or watchErrors(page, base, errors) to add a page
+//     the page's uncaught errors and the errors the console logs for the site's own files, as they
+//     come. A file from elsewhere (web fonts, analytics) may not load where a check runs, and
+//     Chromium logs each as "Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED", which
+//     says nothing about the page, so those are left out (#1021). Assert it is empty at the end.
 const fs = require('fs'), http = require('http'), path = require('path');
 const { playwright, launchOptions, NO_CLIENT, NO_BROWSER } = require('./chromium.js');
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -54,4 +60,23 @@ async function start(argv) {
   };
 }
 
-module.exports = { start };
+// Whether a console message is about a file from another site than the page at `base`: a web font
+// or analytics, which may not load where a check runs (shoot.js leaves those out of its count too)
+function elsewhere(m, base) {
+  const at = ((m.location && m.location()) || {}).url || '';
+  if (!/^https?:\/\//.test(at)) return false;
+  try { return new URL(at).origin !== new URL(base).origin; } catch (e) { return true; }
+}
+
+function watchErrors(page, base, errors = []) {
+  page.on('pageerror', e => errors.push(String(e.message || e)));
+  page.on('console', m => {
+    if (m.type() === 'error' && !elsewhere(m, base)) {
+      const at = ((m.location && m.location()) || {}).url;
+      errors.push(m.text() + (at ? ' (' + at + ')' : ''));
+    }
+  });
+  return errors;
+}
+
+module.exports = { start, watchErrors, elsewhere };

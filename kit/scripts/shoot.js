@@ -10,7 +10,8 @@
 //
 // - Each section goes to <output prefix>-01-<name>.png, -02-..., named by its id or its heading.
 // - Every console message and page error is printed as it comes, and the run exits 1 when the
-//   page threw or logged an error, so one cannot pass unseen.
+//   page threw or logged an error, so one cannot pass unseen. An error about a file from another
+//   site (web fonts, analytics) is printed and not counted: it may not load where this runs.
 // - An element in main with the hidden attribute that shows all the same, because the page's CSS
 //   gives it a display, counts as an error too: the picture has it, and the console says nothing.
 // - --click first clicks every button in main and steps every select through its options, then
@@ -28,6 +29,7 @@
 const fs = require('fs');
 const path = require('path');
 const { playwright, launchOptions, NO_CLIENT, NO_BROWSER } = require('./chromium.js');
+const { elsewhere } = require('./play_browser.js');
 
 const ROOT = path.resolve(__dirname, '../..');
 const STATE = path.join(ROOT, 'tools/shoot');
@@ -98,9 +100,11 @@ async function exercise(page, o, say) {
 async function shoot(page, o, say = console.log) {
   let errors = 0;
   page.on('console', m => {
-    if (m.type() === 'error') errors++;
+    const other = elsewhere(m, o.url);         // a web font or analytics that cannot load here (#1021)
+    if (m.type() === 'error' && !other) errors++;
     const at = m.location && m.location();
-    say(`console.${m.type()}: ${m.text()}${at && at.url ? ` (${at.url}:${at.lineNumber + 1})` : ''}`);
+    say(`console.${m.type()}: ${m.text()}${at && at.url ? ` (${at.url}:${at.lineNumber + 1})` : ''}`
+        + (m.type() === 'error' && other ? ' (another site\'s file: not counted)' : ''));
   });
   page.on('pageerror', e => { errors++; say(`page error: ${e.message}`); });
   page.on('dialog', d => { say(`dialog (dismissed): ${d.message()}`); d.dismiss().catch(() => {}); });

@@ -11,7 +11,7 @@
 //   node games/spectrum/driller/port/test/fast-browser.js [built site, _site] [--chromium <path>]
 const path = require('path');
 const ROOT = path.resolve(__dirname, '../../../../..');
-const { start } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
+const { start, watchErrors } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
 const PAGE = '/spectrum/driller/play.html';
 
 let fails = 0;
@@ -22,8 +22,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   const { browser, base, stop } = await start(process.argv.slice(2));
   const page = await browser.newPage();
   const errors = [];
-  page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
-  page.on('pageerror', e => errors.push(e.message));
+  watchErrors(page, base, errors);
   // the fonts are the only thing from elsewhere: answered empty, off the network
   await page.route(u => !u.href.startsWith('http://127.0.0.1'), r => r.fulfill({ status: 200, body: '' }));
   await page.goto(base + PAGE);

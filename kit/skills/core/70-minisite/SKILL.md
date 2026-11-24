@@ -811,7 +811,8 @@ from its initial state, including on a narrow screen, and check the
 result its label and explanation promise.
 
 Keep those outcomes in a browser check beside the page (a file whose
-name ends in `-browser.js`, run through `kit/scripts/play_browser.js`).
+name ends in `-browser.js`, run through `kit/scripts/play_browser.js`,
+whose `watchErrors` gathers the page's errors).
 A click or a changed button label alone does not establish that a
 demonstration works. Assert the relevant
 visible result: a different rendered state, an object reaching the
