@@ -90,7 +90,10 @@ Usage:
                          count, labels moved to another part). A byte the
                          ledger counts that the listing does not hold, which only
                          the snapshot has, becomes a gap with a note (LOST) until a
-                         build from the snapshot fills it
+                         build from the snapshot fills it. Each listing carries the
+                         game's title and build from game.json, so an edit to
+                         either moves them all: given the folder of a game of
+                         several parts, it rebuilds every part's listing
 
 What CI checks (check_listing.py): every code record re-decodes, from the image the
 listing's own bytes describe, to the same length, mnemonic, bytes and operand, and
@@ -681,6 +684,10 @@ def compare(was, now):
     if len(a) != len(b):
         print(f"FAILED - the listing has {len(a)} records, the rebuild {len(b)}"); return 1
     for k in sorted(set(was) | set(now)):
+        if was.get(k) != now.get(k) and k in ("title", "build"):
+            print(f"FAILED - game.json's {k} has changed since the listing was built ({json.dumps(was.get(k))[:80]}, "
+                  f"now {json.dumps(now.get(k))[:80]}), and every listing of the game carries it")
+            return 1
         if was.get(k) != now.get(k):
             print(f"FAILED - {k} differs: {json.dumps(was.get(k))[:120]} vs {json.dumps(now.get(k))[:120]}")
             return 1
@@ -702,9 +709,17 @@ def main():
     gdir, vsf = argv[0], argv[1]
     rebuild = vsf == "--rebuild"      # check_listing.py: the image comes from the listing's own bytes
     from parts import load_game, parts
+    if parts(gdir) and rebuild:   # an edit to game.json (its build, its title) moves every part's listing (#984)
+        import subprocess
+        worst = 0
+        for p in parts(gdir):
+            if os.path.isfile(os.path.join(p["dir"], "listing.json")):
+                print(f"{os.path.relpath(p['dir'])}:", flush=True)
+                worst = max(worst, subprocess.run([sys.executable, os.path.abspath(__file__), p["dir"], *argv[1:]]).returncode)
+        sys.exit(worst)
     if parts(gdir):
         sys.exit(f"{gdir} is a game of several parts: list one, {os.path.join(gdir, 'parts', '<id>')}, "
-                 "from that part's own snapshot")
+                 "from that part's own snapshot, or rebuild every part's listing from its own bytes with --rebuild")
     game = load_game(gdir)
     platform = game.get("platform")
     cpu, snap, SIZE = machine(game)
