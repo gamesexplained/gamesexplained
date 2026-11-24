@@ -1030,9 +1030,12 @@ def main():
     print(f"wrote {path}: {len(records)} records, {sum(1 for r in records if r['t']=='code')} instructions, "
           f"index {kinds}, {os.path.getsize(path)//1024} KB")
     # a block with a line comment is a routine in the Source tab's index, listed under its name,
-    # and the disassembler's own name for it (b_3A8F) tells a reader nothing
+    # and the disassembler's own name for it (b_3A8F) tells a reader nothing. A name on an
+    # instruction's operand byte (a_0998, a value the code changes as it runs) starts no
+    # instruction and is no routine, so the note leaves it out (#983)
     auto = {x["address"] for x in sym["symbols"] if x.get("kind") == "auto"}
-    unnamed = [i["n"] for i in index if i["k"] == "routine" and i["a"] in auto]
+    opcodes = {r["a"] for r in records if r["t"] == "code"}
+    unnamed = [i["n"] for i in index if i["k"] == "routine" and i["a"] in auto and i["a"] in opcodes]
     if unnamed:
         print(f"note: {len(unnamed)} routine(s) in the Source tab's index keep the disassembler's own name "
               f"({', '.join(unnamed[:3])}{', ...' if len(unnamed) > 3 else ''}): give each a name that says what it does")
