@@ -268,8 +268,11 @@ aliases and SID drivers. An audit of the full listing is recommended.
   a nonzero variant. Approach at `$6B5E` selects an offset target near the
   player. Close choices at `$6CA8` depend on variant and random bits.
   Close wait at `$6CEB` restarts approach after movement or three choices.
-- The chapter room tables contain 302 directed exits. The map finds paths
-  through these stored links; this does not prove terrain is traversable.
+- The chapter room tables contain 302 directed exits, including self and
+  chapter exits. The whole-map viewer connects 135 pictures through 289
+  links to other displayed rooms and five chapter loads. Its positions
+  are a display layout. They do not claim geographic coordinates or prove
+  that terrain is traversable.
 
 `test_mechanics.js` executes the published listing bytes to compare 384
 input selections, 384 movement cases, 4,916 animation steps, 19,200 contact

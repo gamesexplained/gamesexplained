@@ -168,3 +168,16 @@ run on this host because Playwright is absent and local listeners are
 refused. The pages state that they isolate mechanics: terrain collision,
 projectile flight and the complete enemy movement remain outside the demos.
 Coverage and tier are unchanged.
+
+
+## 25 November 2026 — join the chapter maps
+
+Replaced the chapter-at-a-time diagram with a persistent map containing
+all 135 room pictures. Added five chapter-load connections, zoom controls,
+mouse drag and native scrolling. Chapter shortcuts move the viewport and
+selection without replacing any rooms. Native boundary execution checks
+all 289 links between different displayed rooms; a layout test also checks
+that pictures do not overlap and every chapter opening is connected.
+The layout is for reading the connections; the original artwork retains
+its orientation. Browser checks cover selection, the chapter shortcut,
+zoom, scrolling and retaining all 135 pictures.
