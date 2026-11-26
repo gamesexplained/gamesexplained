@@ -31,13 +31,13 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   the alarm's setting, the ringing alarm and the test keys were added
   to the coverage run, which then ran 1,605 instructions; the notes that
   said "never ran" were checked against it.
-- 26 November 2026, the sample (seed 20261126, claude-fable-5-2): 9 of
+- 25 November 2026, the sample (seed 20261126, claude-fable-5-2): 9 of
   60 wrong, all held. Two of them, c_not_game_b's sense and the swapped
   best scores, had already turned up while the port was being written,
   and were left alone until the verdicts were in. Correcting the read_pad
   finding showed a wider mistake: the divider's bits 11-14 step sixteen
   times a second, not eight, so tone_beep's length was wrong too.
-- 26 November 2026, the port. Written routine by routine on Parachute's
+- 25 November 2026, the port. Written routine by routine on Parachute's
   frame, it passed power on and 20 s of the clock at its first lockstep
   run, and four minutes each of Game A and Game B with random presses.
   The first played run parted at $00D3: the port called skip_if_clear2
@@ -50,3 +50,14 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   and the third ended the game; the test now clears the angels when it
   sets the score. Both buttons at once in a game ($02F3) cannot be
   reached in a lockstep, as in Parachute.
+- 25 November 2026, the reader review (claude-fable-5-2,
+  work/reports/reader-review.md). It found the demo's firemen described
+  too loosely, the speed's "each new hundred starts faster" false at 100
+  and 200, test results on the pages, the keys' silence during a game
+  unstated, the miss's sound unclear and the bonus's tone without a
+  button, and dates a day ahead. Fixed. Its leads list also pointed at
+  miss_start clearing every due flag, now a discovery: a second person
+  uncaught at that moment is let off one net (checked on the model; he
+  was missed at his next net instead). Declined: pictures on Discoveries (it
+  links to How it works), test-pad buttons on Play (the pads are not on
+  the case), and marking the chosen row on Graphics.

@@ -5,7 +5,7 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 Tier: platinum. Diamond needs a person's pass over the copy (Gold).
 
-- Audit every comment of the listing: the sample of 26 November 2026
+- Audit every comment of the listing: the sample of 25 November 2026
   found 9 of 60 wrong, over the mark.
 - Gold: a person reads and edits the pages, section by section.
 - Game B's computer player in the coverage tools (`work/tools/auto.js`)

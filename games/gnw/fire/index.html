@@ -90,7 +90,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div id="replay"></div>
     <div class="pp-bar"><button id="rp-prev">◀ step</button><button id="rp-play">play</button><button id="rp-next">step ▶</button><input id="rp-pos" type="range" min="0" value="0"><span id="rp-time" class="pp-mono"></span></div>
     <table class="pp-read"><tr><th>Next to move</th><td id="rp-turn"></td><th>The firemen</th><td id="rp-fire"></td><th>On the path, of those allowed</th><td id="rp-air"></td><th>Wait</th><td id="rp-wait"></td><th>Score</th><td id="rp-score"></td></tr></table>
-    <p class="cap">Recorded on the kit's Sharp SM5A (<code>kit/gnw/sm5a.js</code>, held to MAME 0.289 instruction for instruction). A frame is kept each time the drawing routine (<code>$0640</code>) finishes a picture that differs from the last. A game starts allowing none on the path, so the first person jumps alone (section 05). The wait is counted in passes of the game's wait loop; 11 passes make a step of about 0.2 seconds.</p>
+    <p class="cap">Recorded on the kit's Sharp SM5A (<code>kit/gnw/sm5a.js</code>, held to MAME 0.289 instruction for instruction). A frame is kept each time the drawing routine (<code>$0640</code>) finishes a picture that differs from the last. A game starts allowing none on the path, so the readout shows 1 of 0 until the first catch: the first person jumps alone because the path was empty (section 05). The wait stays at 11 passes through the first thirty points. The wait is counted in passes of the game's wait loop; 11 passes make a step of about 0.2 seconds.</p>
   </div>
   <p>The game advances in steps, and each step moves one part of the path by one place (<code>$036D</code>): first the middle arc, then the window, the first arc and the way to the ambulance together, then the third arc. Each part therefore moves once every three steps. The smoke over the building moves with the third arc.</p>
 </section>
@@ -101,7 +101,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Click a bit to light its segment, or a segment to find its bit. The picture is drawn from these cells alone.</p>
   <div class="plate">
     <div class="pp-two pp-frame"><div id="frame"></div><div id="cells"></div></div>
-    <p class="cap">The cells are the chip's memory as it finished a picture just after the replay above ends. The page turns them into segments with a port of <code>$0640</code>, the game's drawing routine. <span id="frame-check"></span></p>
+    <p class="cap">The cells are the chip's memory as it finished a picture just after the replay above ends. The page turns them into segments with a port of <code>$0640</code>, the game's drawing routine. The digits' segments come from each digit's value through the chip's table, so they have no bit of their own.</p>
   </div>
   <p>The LCD has nine 4-bit latches for each of its two sets of segments. To draw, the game shifts a cell into the latches nine times, copies them, and shifts nine more for the second set (<code>$0640</code>). Twelve cells hold four segments each, and three hold the digits; three more give each digit one extra segment.</p>
   <p>So the game never stores where a person is as a number. Each place on the path is one bit, and moving a part of the path means moving every set bit one place on. The chip has no instruction for that, so the game swaps the carry flag with each bit of the part in turn, and every set bit ends up one place further on (<code>$043B</code> to <code>$043E</code>). The firemen, the angels and the smoke move the same way.</p>
@@ -135,7 +135,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <tr><td>fewer than half the limit on the path</td><td>always</td></tr>
       <tr><td>otherwise</td><td>4 chances in 16, from the chip's divider</td></tr>
     </table>
-    <p class="cap">The game counts the people on the path (<code>$09</code>): one more for each jump, one fewer for each who reaches the ambulance and for each miss. Whenever no place on the path is lit, the count is set back to 0 before drawing (<code>$0689</code>).</p>
+    <p class="cap">The rows are tried from the top, and the first that applies decides. The limit is the number allowed on the path, set by the score (section 07). The game counts the people on the path (<code>$09</code>): one more for each jump, one fewer for each who reaches the ambulance and for each miss. Whenever no place on the path is lit, the count is set back to 0 before drawing (<code>$0689</code>).</p>
   </div>
   <p>The limit is the score's tens digit plus one, at most four (<code>$0088</code>). A new game sets it to 0, so the first person jumps alone, the one who jumps because the path is empty. After his first catch the limit is 1, and it climbs back each hundred points: at 100, 200 and so on the tens digit is 0 again and the limit with it.</p>
 </section>
@@ -145,7 +145,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">A miss stops the game for nine steps</h2>
   <p class="lede">Play the first miss of a game left to itself.</p>
   <div class="plate"><div id="miss"></div><div class="pp-bar"><button id="ms-play">play</button><span id="ms-n" class="pp-mono"></span></div>
-    <p class="cap">The frames the chip drew from the miss to the hurt figure's going out, on the kit's model.</p></div>
+    <p class="cap">The five different pictures the chip drew over the miss's nine steps, from the person's fall to the hurt figure's going out.</p></div>
   <p>A miss puts out the person above the net and lights a hurt figure on the ground below it (<code>$03C4</code>). The path then stands still for nine steps (<code>$00DD</code>): at the second the miss's sound plays, at the third an angel appears and the miss is counted (<code>$0197</code>), and at the seventh the hurt figure goes out. The angels light from the right, and the third ends the game with five beeps. A test pad on the board (R2 K1, unpopulated) stops the angel being added if it is held when a miss is counted.</p>
 </section>
 
@@ -159,7 +159,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <canvas id="curve" width="900" height="150" style="width:100%;height:auto"></canvas>
     <p class="cap">The bars are the wait, in passes of the wait loop, for every score from 0 to 999; the scale at the left counts passes. A step at the measured length (2,025 cycles at 4 passes, 3,364 at 11, on the kit's model) is about 0.205 seconds at the slowest and 0.124 at the fastest. A person moves every third step.</p>
   </div>
-  <p>The wait is 11 passes while the hundreds digit plus the limit is under 4. From 4 it shortens by one pass for each, and from 10 on it stays at 4. So in each hundred the game gets faster through its first thirty points, as the limit grows, and each new hundred starts faster than the last, even though the limit drops back to 1.</p>
+  <p>The wait is 11 passes while the hundreds digit plus the limit is under 4. From 4 it shortens by one pass for each, and from 10 on it stays at 4. So in each hundred the game gets faster through its first thirty points, as the limit grows. At 100 and 200 a new hundred starts at the slowest wait again; from 300 on each hundred starts faster than the last, even though the limit drops back to 1.</p>
 </section>
 
 <section>
@@ -181,13 +181,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">All the sound comes from switching one pin on and off</h2>
   <div class="plate"><div class="pp-bar" id="sounds"></div>
     <p class="cap">Each sound is the chip's own routine run on the kit's model, its pin changes recorded and played back as a square wave.</p></div>
-  <p>The buzzer is wired to one of the chip's output pins, R1, which the game sets and clears with <code>ATR</code> in timed loops (<code>$0280</code>, <code>$02B0</code>). A catch gives a short tone, each step that moves someone a quick burst, and a miss a longer tone. The beeps of a miss and the game over each last a sixteenth of a second, one step of the chip's divider (<code>$00A6</code>).</p>
+  <p>The buzzer is wired to one of the chip's output pins, R1, which the game sets and clears with <code>ATR</code> in timed loops (<code>$0280</code>, <code>$02B0</code>). A catch gives a short tone, each step that moves someone a quick burst, and a miss a longer tone followed, a step later, by one beep. The bonus sounds its own tone twice a second. The beeps of a miss and the game over each last a sixteenth of a second, one step of the chip's divider (<code>$00A6</code>).</p>
 </section>
 
 <section>
   <p class="fig">11 · Controls</p>
   <h2 class="t">The keys are added up</h2>
-  <p>Time, Game B, Game A and Alarm are read through one row of the chip's inputs (<code>$0500</code>), and a change counts when two readings in a row agree. The keys held are worth 1 (Time), 2 (Game B), 4 (Game A) and 8 (Alarm), and their sum gives the mode (<code>$0540</code>): 1 the clock, 2 or 3 Game B, 4 to 6 Game A, and 7 or more the alarm's setting. Alarm with anything else counts as Alarm alone. A game starts when its key is let go; while it is held, the score shows that game's best.</p>
+  <p>Time, Game B, Game A and Alarm are read through one row of the chip's inputs (<code>$0500</code>), and a change counts when two readings in a row agree. The keys held are worth 1 (Time), 2 (Game B), 4 (Game A) and 8 (Alarm), and their sum gives the mode (<code>$0540</code>): 1 the clock, 2 or 3 Game B, 4 to 6 Game A, and 7 or more the alarm's setting. Alarm with anything else counts as Alarm alone. A game starts when its key is let go; while it is held, the score shows that game's best. During a game the four keys are not read at all until it is over (<code>$0500</code>).</p>
 </section>
 
 <section>
@@ -195,7 +195,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">The clock plays the game by itself</h2>
   <p class="lede">Play the clock's demo, a step each second.</p>
   <div class="plate"><div id="demo"></div><div class="pp-bar"><button id="dm-play">play</button><span id="dm-time" class="pp-mono"></span></div></div>
-  <p>Once a second the clock runs the whole step at once: the smoke, the jump, and every part of the path (<code>$031E</code>). Its firemen move by themselves toward the part that is moving, once a second (<code>$0340</code>). The alarm is set in its own mode, entered with Alarm; each press that gives that mode turns the alarm on or off, and a bell at the top right shows that it is on. At its minute the ambulance man rings his bell and the buzzer sounds until a key is pressed or the minute ends (<code>$0580</code>). After power on, left and right set the time, an hour and a minute at a time, four times a second while held; in the alarm's setting they set the alarm the same way.</p>
+  <p>Once a second the clock runs the whole step at once: the smoke, the jump, and every part of the path (<code>$031E</code>). Its firemen move by themselves, once a second: the first time in that second's run that someone leaves the place just before a net, they move one place toward that net (<code>$0340</code>). The alarm is set in its own mode, entered with Alarm; each press that gives that mode turns the alarm on or off, and a bell at the top right shows that it is on. The alarm cannot sound during a game (<code>$0280</code>). At its minute the ambulance man rings his bell and the buzzer sounds until a key is pressed or the minute ends (<code>$0580</code>). After power on, left and right set the time, an hour and a minute at a time, four times a second while held; in the alarm's setting they set the alarm the same way.</p>
 </section>
 
 <section>
@@ -363,10 +363,6 @@ function drawFrame() {
   };
 }
 drawFrame();
-{
-  const a = litFromCells(REC.cells).sort().join(), b = REC.frameLit.slice().sort().join();
-  document.getElementById('frame-check').textContent = a === b ? 'On this picture the port lights the same ' + REC.frameLit.length + ' segments as the chip did.' : 'The port and the chip differ on this picture.';
-}
 
 // 04: the path, each part in its own colour
 {
@@ -428,9 +424,9 @@ gnwScreen(document.getElementById('pic-lower'), SEG).show(REC.pics.lower, ['2.0.
 
 // 10: sounds
 {
-  const names = { catch: 'a catch', click: "a step's burst", miss: "a miss", beep: 'a beep of the game over', alarm: "the alarm's buzz, one second" };
+  const names = { catch: 'a catch', click: "a step's burst", miss: 'a miss', beep: "a miss's beep", beepB: "the bonus's tone", alarm: "the alarm's buzz, one second" };
   const bar = document.getElementById('sounds');
-  for (const k of ['catch', 'click', 'miss', 'beep', 'alarm']) {
+  for (const k of ['catch', 'click', 'miss', 'beep', 'beepB', 'alarm']) {
     const b = document.createElement('button'); b.textContent = names[k]; b.onclick = () => pcPlay(REC.sounds[k]); bar.appendChild(b);
   }
 }

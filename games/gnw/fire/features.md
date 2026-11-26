@@ -46,7 +46,7 @@ Sources, read on 25 November 2026:
 
 | Feature | Status | Where |
 |---|---|---|
-| A clock with AM and PM, shown at rest, with a demo game playing | live | timekeep $0200, clock_screen $06C0, demo_step $031E: the demo moves every part of the path each second, and its firemen go where someone is about to land (demo_firemen $0340) |
+| A clock with AM and PM, shown at rest, with a demo game playing | live | timekeep $0200, clock_screen $06C0, demo_step $031E: the demo moves every part of the path each second, and its firemen move once a second toward the net of the first person about to land (demo_firemen $0340) |
 | An alarm, set, switched on and off, and ringing at its time | live | mode_change $0540 (each press of Alarm flips it, except the first after power on), alarm_minute $0580, the ambulance man's bell (draw_prep $0603) and the buzz (play_sounds $0280) |
 | Setting the time after power on or ACL | live | pad_pressed $02C7: left an hour, right a minute, held repeating every quarter second, in the alarm's setting too (read_pad $03D6) |
 | Game A and Game B, chosen with their buttons | live | mode_change $0540, mode_setup $05C0; the game starts when the key is let go |
@@ -77,5 +77,8 @@ Sources, read on 25 November 2026:
   person who reaches the ambulance scores 2 (catch_check, arc4_move).
 - R2 K3 puts the unit back to setting the time; R2 K4 rings the alarm
   (test_pads $059D). An R3 key at power on shows 888 (clock_screen).
+- A second person uncaught at the moment a miss begins is let off at
+  that net, and must be caught at the next: the miss clears every net's
+  due flag (miss_start $03C4).
 - 256 seconds after a game is over the unit goes back to the clock
   (timekeep $0200).

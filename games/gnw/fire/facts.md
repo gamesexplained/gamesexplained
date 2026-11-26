@@ -100,6 +100,11 @@ November 2026, with the scripts in `work/tools/` (not committed).
 - With an R3 key K3 or K4 down (no pads on the board), a catch scores
   nothing and each person who reaches the ambulance scores 2 (catch_check,
   arc4_move, add_point). *Live*: 2, 4, 6, 8 at four arrivals.
+- A miss clears all three due flags (miss_start, $03C4), so anyone else
+  then waiting uncaught above another net is not missed there: he flies
+  on at his part's next turn, with no point, and must be caught at the
+  next net. *Live*: with two people due and the firemen away, the second
+  was missed at his next net.
 - A miss: the person above the net goes out and a hurt figure lies on
   the ground below (2.3.1, 1.0.1, 1.2.1); miss_time 9 holds the game
   nine steps (miss_timer, $00DD), with the miss's sound at 7, the angel
@@ -127,8 +132,9 @@ November 2026, with the scripts in `work/tools/` (not committed).
   the others. A change counts when two readings in a row agree
   (read_keys, $0500).
 - In the clock the demo moves every part of the path once a second, and
-  its firemen move toward the arc that is moving (demo_step $031E,
-  demo_firemen $0340).
+  its firemen move one place, once a second, toward the net of the first
+  person in that second's run to leave the place before a net
+  (demo_step $031E, demo_firemen $0340).
 - 256 seconds after a game is over the unit goes back to the clock
   (timekeep, $0200).
 - The alarm: on and off with each press that gives the alarm's setting; the bell
@@ -142,7 +148,7 @@ November 2026, with the scripts in `work/tools/` (not committed).
 ## The listing's error rate
 
 A sample of 60 of the listing's 196 comments, drawn with seed 20261126
-and checked by claude-fable-5-2 on 26 November 2026, found 9 wrong (15
+and checked by claude-fable-5-2 on 25 November 2026, found 9 wrong (15
 %, 95 % interval 8.1 % to 26.1 %): c_not_game_b's sense, the two best
 scores swapped, the lower window lit in the clock's demo too, the
 alarm's minutes carrying into its hours, the repeat of a held button
@@ -165,7 +171,7 @@ mark, so an audit of every comment is recommended.
   runs in lockstep with the game's own program on the kit's model
   (`test_play.js`): at every pass, every return from drawing, every pass
   of the wait and every reading of the keys the two agree on all 65
-  cells and on the cycles since power on. *Live*, 26 November 2026: the
+  cells and on the cycles since power on. *Live*, 25 November 2026: the
   test's four sessions, 15 minutes of Game A and 15 of Game B played by
   the page's computer player, 25 minutes of the rare states, and an R3
   key at power on with the R2 pad held through misses; 29 states listed

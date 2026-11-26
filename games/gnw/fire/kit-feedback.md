@@ -13,28 +13,21 @@ time, operating system and tool versions.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/skills/gnw/steps`, the `lockstep` row: a branch that runs only when an input changes between two readings with no checkpoint between them cannot be reached, so the test lists the state the program takes instead. The lesson is `kit/lessons/2026-11-25-fire.md`.
+- `kit/lessons/2026-11-25-fire.md`: the port as a second reading of the listing, and the unreachable branch.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+None.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+Reading the game's pages by hand: only three of Fire's 29 pages are shared with Parachute, so the listing was written from scratch. The look-ahead player, written before the game's pages were annotated, made the coverage run reach the score's carries, the bonus and the game over, which saved re-reading those paths later. The `gnw-reference` passage on the divider ("a value that steps 16 times a second") would have saved a correction had it been reread before the timing comments were written.
+
+## Versions
+
+macOS 27.0.1 on Apple silicon, Python 3.9.6, Node 24.18.0, the kit at 0.0.362.

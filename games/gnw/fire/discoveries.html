@@ -75,7 +75,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">01 · The late catch</p>
   <h2 class="t">A person can be caught after he lands</h2>
-  <p>A person who arrives above a net with the firemen elsewhere is not missed at once. The game sets a bit for that net (<code>$29</code>) and counts the miss only when the next part of the path is due to carry him on, two steps later. Every press of left or right looks at the bit where the firemen arrive (<code>$0300</code>), so a press in those two steps still catches him: about 0.4 seconds at the start of a game and 0.25 at the fastest. The path's parts are drawn on <a href="index.html">How it works</a>, section 04.</p>
+  <p>A person who arrives above a net with the firemen elsewhere is not missed at once. The game sets a bit for that net (<code>$29</code>) and counts the miss only when the next part of the path is due to carry him on, two steps later. Every press of left or right looks at the bit where the firemen arrive (<code>$0300</code>), so a press in those two steps still catches him: about 0.4 seconds at the start of a game and 0.25 at the fastest. The replay on <a href="index.html">How it works</a>, section 02, shows one at 2.7 seconds, and section 04 draws the path's parts.</p>
 </section>
 
 <section>
@@ -87,43 +87,49 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">03 · Every other hundred</p>
   <h2 class="t">At 100, 300, 500, 700 and 900 the count of people slips</h2>
-  <p>When the score reaches a new hundred and the hundreds digit is odd, the game takes one from its count of people on the path (<code>$005A</code>), without taking anyone off the screen. Until the count catches up, by everyone on the path at that moment reaching the ambulance or being missed, one more person may jump than the limit allows. On the kit's model the count went from 1 to 0 when the score reached 300. The count is set back to 0 whenever the path is empty (<code>$0689</code>), so the slip never lasts past the next quiet moment.</p>
+  <p>When the score reaches a new hundred and the hundreds digit is odd, the game takes one from its count of people on the path (<code>$005A</code>), without taking anyone off the screen. Until the count catches up, by everyone on the path at that moment reaching the ambulance or being missed, one more person may jump than the limit allows. The count is set back to 0 whenever the path is empty (<code>$0689</code>), so the slip never lasts past the next quiet moment.</p>
 </section>
 
 <section>
   <p class="fig">04 · A test key</p>
-  <h2 class="t">Holding a pad scores the old way</h2>
-  <p>The chip reads a row of inputs, R3, that has no pads on the board. While its third or fourth key is held, a catch scores nothing; instead each person who reaches the ambulance sets a bit and sounds a tone (<code>$0192</code>), and the next check for a catch turns that bit into points, two each (<code>$0300</code>, <code>$0040</code>). On the kit's model four arrivals made 2, 4, 6 and 8. The Super Mario Wiki says the Silver version of Fire scored only when a person reached the ambulance. The same row held after power on, when every segment is lit, draws 888 with the first set of segments lit and the second dark, a test of the screen (<code>$06DA</code>).</p>
+  <h2 class="t">A test key moves the points to the ambulance</h2>
+  <p>The chip reads a row of inputs, R3, that has no pads on the board. While its third or fourth key is held, a catch scores nothing; instead each person who reaches the ambulance sets a bit and sounds a tone (<code>$0192</code>), and the next check for a catch turns that bit into points, two each (<code>$0300</code>, <code>$0040</code>). The Super Mario Wiki says the Silver version of Fire scored only when a person reached the ambulance. The same row held after power on, when every segment is lit, draws 888 with the first set of segments lit and the second dark, a test of the screen (<code>$06DA</code>).</p>
 </section>
 
 <section>
   <p class="fig">05 · The test pads</p>
   <h2 class="t">A pad held at a miss keeps the angel away</h2>
-  <p>MAME's notes give the board an unpopulated "Infinite Lives" pad, the first key of the chip's R2 row. The game reads it only at the moment a miss is counted (<code>$0199</code>): with it held, the miss beeps once and the angels stay as they were. On the kit's model no angel appeared in a minute of unplayed Game A with it held. The row's third key puts the unit back to setting the time, as after power on, and its fourth rings the alarm at once (<code>$059D</code>).</p>
+  <p>MAME's notes give the board an unpopulated "Infinite Lives" pad, the first key of the chip's R2 row. The game reads it only at the moment a miss is counted (<code>$0199</code>): with it held, the miss beeps once and the angels stay as they were. The row's third key puts the unit back to setting the time, as after power on, and its fourth rings the alarm at once (<code>$059D</code>).</p>
 </section>
 
 <section>
-  <p class="fig">06 · The bonus</p>
+  <p class="fig">06 · Two misses at once</p>
+  <h2 class="t">A second person uncaught at a miss is let off one net</h2>
+  <p>When a miss begins, the game clears the due bits of all three nets, not only the one missed (<code>$03C4</code>). Anyone else who was waiting above another net, uncaught, is no longer due: when his part of the path moves on he flies on to the next net with neither a point nor a miss. There he must be caught as usual.</p>
+</section>
+
+<section>
+  <p class="fig">07 · The bonus</p>
   <h2 class="t">200 and 500 clear the angels only if there are some</h2>
   <p>The bonus at 200 and 500 points is given only when an angel is showing (<code>$005A</code>). Then the game holds still for about six seconds while the angels blink, and clears them. A player with no misses at 200 sees nothing happen.</p>
 </section>
 
 <section>
-  <p class="fig">07 · The alarm</p>
+  <p class="fig">08 · The alarm</p>
   <h2 class="t">The alarm's minutes carry into its hours</h2>
   <p>Setting the alarm uses the same counting code as the clock (<code>$0230</code>). Pressing right past 59 minutes sets the minutes to 00 and adds an hour to the alarm (<code>$0261</code>), just as the clock's own minutes do. Held, left and right repeat four times a second, in the alarm's setting as well as when the time is set after power on (<code>$03D6</code>).</p>
 </section>
 
 <section>
-  <p class="fig">08 · After a game</p>
+  <p class="fig">09 · After a game</p>
   <h2 class="t">The unit goes back to the clock by itself</h2>
   <p>The game counts the seconds since the last key or miss (<code>$40</code>, <code>$41</code>). When that count passes 255 with the game over, the unit returns to the clock (<code>$0222</code>), so a finished game does not leave the screen showing it for good.</p>
 </section>
 
 <section>
-  <p class="fig">09 · The demo</p>
+  <p class="fig">10 · The demo</p>
   <h2 class="t">The clock's demo uses Game B's lower window</h2>
-  <p>The clock's demo runs every part of the path once a second, and its firemen move by themselves toward the part that is moving (<code>$0340</code>). It also runs Game B's second window (<code>$01C3</code>), so jumpers appear at the lower window in the clock, though never in Game A. A person the demo's firemen do not reach falls hurt, as in a game (<code>$031E</code>).</p>
+  <p>The clock's demo runs every part of the path once a second, and its firemen move by themselves, once a second, toward the net of the first person about to land (<code>$0340</code>). It also runs Game B's second window (<code>$01C3</code>), so jumpers appear at the lower window in the clock, though never in Game A. A person the demo's firemen do not reach falls hurt, as in a game (<code>$031E</code>).</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
