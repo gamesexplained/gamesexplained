@@ -302,7 +302,8 @@ its music or its maps can put that first instead.
   other rule that colours, borders, rounds or sets the typeface of a
   control.
 - Start from `kit/template/index.html` for the design tokens and layout.
-  Keep its `<!-- tabs -->` marker; the build puts the tab bar there.
+  Keep its `<!-- tabs -->` marker first in the body, above the header; the
+  build puts the tab bar there, so a marker lower down moves the bar down.
   A finished example to borrow patterns from is any Gold game in `games/`:
   canvas renderers for character sets and screens, Web Audio note
   players, table explorers.
