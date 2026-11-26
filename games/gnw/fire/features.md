@@ -69,7 +69,7 @@ Sources, read on 25 November 2026:
 - A late catch: someone above a net with the firemen elsewhere is not
   missed until that arc's next turn, so a press in between still
   catches (catch_check $0300, turn_0_2 $0140).
-- No one jumps while the clock's seconds end in 4 to 7, unless no one
+- No one jumps while the clock's seconds end in 8 or 9, unless no one
   is on the path (jump_chance $00D3).
 - One fewer is counted in the air at each odd hundred (new_hundred
   $005A).

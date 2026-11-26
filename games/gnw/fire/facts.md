@@ -72,8 +72,8 @@ November 2026, with the scripts in `work/tools/` (not committed).
 
 - jump_chance ($00C0), each step before the turn's move: with no one
   on the path, always; with in_air at jump_limit or more, never;
-  otherwise in a game never while the seconds end in 4 to 7 (secs_lo
-  bit 2), always while twice in_air is under jump_limit, and else four
+  otherwise in a game never while the seconds end in 8 or 9 (secs_lo
+  bit 3), always while twice in_air is under jump_limit, and else four
   chances in sixteen from the divider's bits 11-14.
 - A jump at the window needs the window's place (3.3.1) empty
   (window_arc).
@@ -158,3 +158,25 @@ mark, so an audit of every comment is recommended.
   catch's tone (length code $E), the step's click (a short burst, A taking turns
   with the falling BL), numbered sounds (sound_21), the miss's and the game over's beeps
   (tone_beep, $00A6), and the alarm's buzz.
+
+## The Play tab's port
+
+- `play.html`'s port (`/* fire-port */`, from `work/pages/port.js`)
+  runs in lockstep with the game's own program on the kit's model
+  (`test_play.js`): at every pass, every return from drawing, every pass
+  of the wait and every reading of the keys the two agree on all 65
+  cells and on the cycles since power on. *Live*, 26 November 2026: the
+  test's four sessions, 15 minutes of Game A and 15 of Game B played by
+  the page's computer player, 25 minutes of the rare states, and an R3
+  key at power on with the R2 pad held through misses; 29 states listed
+  in the test were reached, and four checked in the cells.
+- `test_frame.js`: the page's port of the drawing lit the chip's
+  segments on 900 screens of the clock, the alarm's setting, both games
+  and the angels' blinking. `test_speed.js`: fireLimit and fireDelay
+  equal the routine's values for every score in both games.
+  `test_sound.js`: the page's six sounds are the routines' edges.
+- The page's computer player tries no press, left or right, then again
+  at the next step, on copies of the port run 2.4 seconds on, and keeps
+  the plan that loses no one and scores most. A decision took about 4 ms
+  on the Mac mini; the port ran ten seconds of the game in about a
+  millisecond.

@@ -3,12 +3,14 @@
 Current tier and what is missing for the next one. Coverage gaps from
 `coverage.py`. Article ideas.
 
-Tier: bronze until the sample is checked (60-verify); the run is aiming
-at Platinum.
+Tier: platinum. Diamond needs a person's pass over the copy (Gold).
 
-- 60-verify: a sample of the listing's comments checked by another model.
-- 70-minisite: How it works, Discoveries, Graphics and the Play tab (a
-  port held to the chip in lockstep).
-- 75-review and 80-retro.
-- Game B's computer player loses at about 90 points; a better player
-  would carry the coverage run further in Game B.
+- Audit every comment of the listing: the sample of 26 November 2026
+  found 9 of 60 wrong, over the mark.
+- Gold: a person reads and edits the pages, section by section.
+- Game B's computer player in the coverage tools (`work/tools/auto.js`)
+  ends near 90 points; the page's player, a look-ahead on the port, does
+  far better and could replace it.
+- Ideas: a figure of the late catch's window on How it works; a photo of
+  the unit, freely licensed and credited, if the contributor agrees to
+  the download.

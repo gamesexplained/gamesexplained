@@ -37,3 +37,16 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   and were left alone until the verdicts were in. Correcting the read_pad
   finding showed a wider mistake: the divider's bits 11-14 step sixteen
   times a second, not eight, so tone_beep's length was wrong too.
+- 26 November 2026, the port. Written routine by routine on Parachute's
+  frame, it passed power on and 20 s of the clock at its first lockstep
+  run, and four minutes each of Game A and Game B with random presses.
+  The first played run parted at $00D3: the port called skip_if_clear2
+  where the program calls skip_if_clear3, so jumps stop while the
+  seconds end in 8 or 9, not 4 to 7; the comment and the notes had the
+  same misreading. The second parting was read_pad's held repeat in the
+  alarm's setting, the same fact the sample's checker had found. The
+  page's player is a look-ahead on copies of the port. The play test
+  first missed 999: two angels were showing when the top speed was set,
+  and the third ended the game; the test now clears the angels when it
+  sets the score. Both buttons at once in a game ($02F3) cannot be
+  reached in a lockstep, as in Parachute.
