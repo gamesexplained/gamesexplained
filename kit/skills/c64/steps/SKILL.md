@@ -129,8 +129,11 @@ it, before each button, as the game ran it before the sound; the test
 fails a frame that gates a voice on at volume 0. Then
 `node kit/c64/sid_check.js _site [<page> ...]` plays every button of the
 built pages through the player's own worklet and fails one that stays
-silent or whose driver stops there. A button the game leaves silent says
-so in its label, "(silent)". CI runs it over the whole site. It needs
+silent, whose driver stops there, or that plays on after Stop. The player
+calls a driver until its `playing()` says false, so `stop()` runs the
+game's own stop routine and `playing()` reads the state that routine
+sets. A button the game leaves silent says so in its label, "(silent)".
+CI runs it over the whole site. It needs
 Playwright and a Chromium, which `tools.py get-node` and `tools.py
 get-chromium` put in `tools/` (`kit/INSTALL.md`, "Browser checks"), so a
 machine with only Firefox runs it too.

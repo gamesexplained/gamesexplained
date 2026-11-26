@@ -58,7 +58,11 @@ console.log('PASS: 1280 block expansions, '+templateCount+' actor templates × 1
  for(const t of [0,1]){const d=shift({mem:tuneMem},CPUlib);d.init(t);const b=base.slice();b[0x7126]=t?8:0;const sid=new Uint8Array(25);let writes=[];
   const cpu=new CPU(b,{port:0x35,io:{read(a){throw Error('read '+a)},write(a,v){sid[a-0xd400]=v;writes.push(a-0xd400,v);}}});b[0x66ff]=0;cpu.call(0x6cc5,{a:0});for(let f=0;f<2506;f++)cpu.call(0x6701);
   assert.deepStrictEqual(Array.from(d.sid),Array.from(sid),'registers after the run-in '+t);const v=[];
-  for(let f=0;f<2000;f++){writes=[];cpu.call(0x6701);d.play();assert.deepStrictEqual(Array.from(d.writes),writes,'shifted tune '+t+' frame '+f);assert.deepStrictEqual(Array.from(d.sid),Array.from(sid));v.push(sid[14]|sid[15]<<8);}voice3.push(v);}
+  for(let f=0;f<2000;f++){writes=[];cpu.call(0x6701);d.play();assert.deepStrictEqual(Array.from(d.writes),writes,'shifted tune '+t+' frame '+f);assert.deepStrictEqual(Array.from(d.sid),Array.from(sid));v.push(sid[14]|sid[15]<<8);}voice3.push(v);
+  // Stop: the game's stop at $6D10, heard on the next frame, after which the driver plays nothing and says it has stopped
+  assert(d.playing(),'playing before Stop '+t);writes=[];cpu.call(0x6d10);const stopped=writes;d.stop();assert(!d.playing(),'stopped '+t);
+  for(let f=0;f<50;f++){writes=[];cpu.call(0x6701);d.play();assert.deepStrictEqual(Array.from(d.writes),f?writes:stopped.concat(writes),'after Stop '+t+' frame '+f);assert(!d.playing()&&!d.writes.slice(f?0:stopped.length).length,'silent after Stop '+t);}
+  assert.deepStrictEqual(Array.from(d.sid),Array.from(sid),'registers after Stop '+t);assert(!(sid[24]&15)&&![4,11,18].some(r=>sid[r]&1),'volume 0 and gates off after Stop '+t);}
  const f=voice3[0].findIndex((x,i)=>x!==voice3[1][i]);assert(f>0&&f<400,'voice 3 changes within eight seconds: '+f);assert(Math.abs(voice3[1][f+2]/voice3[0][f+2]-Math.pow(2,8/12))<0.01,'eight semitones');
- console.log('PASS: '+purchases+' shop payments, '+tried.length+' high-score names and the shifted tune match the game’s code.');
+ console.log('PASS: '+purchases+' shop payments, '+tried.length+' high-score names and the shifted tune, and its Stop, match the game’s code.');
 }
