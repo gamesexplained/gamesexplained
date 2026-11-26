@@ -61,3 +61,11 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   was missed at his next net instead). Declined: pictures on Discoveries (it
   links to How it works), test-pad buttons on Play (the pads are not on
   the case), and marking the chosen row on Graphics.
+- 25 November 2026, at the contributor's request: more history and
+  photographs, and both pages rewritten in short, plain sentences for a
+  young reader. How it works gained the two units, the screen's layers,
+  the chip, the makers (Iwata Asks) and Fire's later appearances;
+  Discoveries gained the five unused screen outputs and hold_08, the
+  clock page shared with three games, the limit of four against Arcade
+  History's nine, and points kept for a person missed late. Sources and
+  photo credits are in features.md.

@@ -74,62 +74,100 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section>
   <p class="fig">01 · The late catch</p>
-  <h2 class="t">A person can be caught after he lands</h2>
-  <p>A person who arrives above a net with the firemen elsewhere is not missed at once. The game sets a bit for that net (<code>$29</code>) and counts the miss only when the next part of the path is due to carry him on, two steps later. Every press of left or right looks at the bit where the firemen arrive (<code>$0300</code>), so a press in those two steps still catches him: about 0.4 seconds at the start of a game and 0.25 at the fastest. The replay on <a href="index.html">How it works</a>, section 02, shows one at 2.7 seconds, and section 04 draws the path's parts.</p>
+  <h2 class="t">Secret: you can still catch a person after they have landed</h2>
+  <p>When a person lands above a net and the firemen are somewhere else, the game does not count a miss straight away. It sets a flag for that net (cell <code>$29</code>) and waits. The miss only counts when the next part of the path moves, two steps later.</p>
+  <p>Every press of left or right checks the flag at the net where the firemen arrive (<code>$0300</code>). So if you get there in those two steps, it is still a catch. You have about 0.4 seconds at the start of a game and about 0.25 seconds at the fastest.</p>
+  <p>The replay on <a href="index.html">How it works</a>, section 05, shows a late catch at 2.7 seconds. Section 07 shows the parts of the path.</p>
 </section>
 
 <section>
   <p class="fig">02 · The clock</p>
-  <h2 class="t">The window waits while the seconds end in 8 or 9</h2>
-  <p>In a game the chance of a jump is read from the chip's divider only when the clock's seconds end in 0 to 7 (<code>$00D3</code>). For two seconds in every ten the window holds its people back, unless no one is on the path, when one always jumps. The same bit of the seconds lets Game B's lower window drop its jumper (<code>$0117</code>).</p>
+  <h2 class="t">Secret: the window holds people back while the clock's seconds end in 8 or 9</h2>
+  <p>The clock keeps running during a game, even though you cannot see it. Before anyone jumps, the game looks at the clock's seconds (<code>$00D3</code>). If the seconds end in 8 or 9, the game does not let anyone jump.</p>
+  <p>So for two seconds in every ten, the window holds everyone back. There is one exception: if the path is empty, someone always jumps. Game B's lower window looks at the same seconds before its jumper drops (<code>$0117</code>).</p>
 </section>
 
 <section>
   <p class="fig">03 · Every other hundred</p>
-  <h2 class="t">At 100, 300, 500, 700 and 900 the count of people slips</h2>
-  <p>When the score reaches a new hundred and the hundreds digit is odd, the game takes one from its count of people on the path (<code>$005A</code>), without taking anyone off the screen. Until the count catches up, by everyone on the path at that moment reaching the ambulance or being missed, one more person may jump than the limit allows. The count is set back to 0 whenever the path is empty (<code>$0689</code>), so the slip never lasts past the next quiet moment.</p>
+  <h2 class="t">Secret: at 100, 300, 500, 700 and 900, one extra person can jump</h2>
+  <p>The game counts how many people are on the path. When the score reaches a new hundred and the hundreds digit is odd, the game takes one away from that count (<code>$005A</code>). Everyone stays on the screen, so the count is now one too low.</p>
+  <p>Because the count is too low, one more person can jump than the limit allows. This lasts until the path is empty again. Then the game sets the count back to 0 (<code>$0689</code>), and the count is right again.</p>
 </section>
 
 <section>
-  <p class="fig">04 · A test key</p>
-  <h2 class="t">A test key moves the points to the ambulance</h2>
-  <p>The chip reads a row of inputs, R3, that has no pads on the board. While its third or fourth key is held, a catch scores nothing; instead each person who reaches the ambulance sets a bit and sounds a tone (<code>$0192</code>), and the next check for a catch turns that bit into points, two each (<code>$0300</code>, <code>$0040</code>). The Super Mario Wiki says the Silver version of Fire scored only when a person reached the ambulance. The same row held after power on, when every segment is lit, draws 888 with the first set of segments lit and the second dark, a test of the screen (<code>$06DA</code>).</p>
+  <p class="fig">04 · A test button</p>
+  <h2 class="t">Secret: a hidden test button scores people at the ambulance instead</h2>
+  <p>The chip can read a row of buttons called R3. The board has no buttons there. If one of them is held down anyway, catches score nothing. Instead, each person who reaches the ambulance scores 2 points (<code>$0192</code>, <code>$0300</code>, <code>$0040</code>).</p>
+  <p>This is close to how the 1980 Fire scored. The Super Mario Wiki says that in the 1980 version, people only scored when they reached the ambulance.</p>
+  <p>The same row does one more thing. If one of its buttons is held when the batteries go in, the screen shows 888, with half of the segments dark and half clear. It looks like a test of the screen (<code>$06DA</code>).</p>
 </section>
 
 <section>
   <p class="fig">05 · The test pads</p>
-  <h2 class="t">A pad held at a miss keeps the angel away</h2>
-  <p>MAME's notes give the board an unpopulated "Infinite Lives" pad, the first key of the chip's R2 row. The game reads it only at the moment a miss is counted (<code>$0199</code>): with it held, the miss beeps once and the angels stay as they were. The row's third key puts the unit back to setting the time, as after power on, and its fourth rings the alarm at once (<code>$059D</code>).</p>
+  <h2 class="t">Secret: a pad inside the case turns off misses</h2>
+  <p>MAME's notes say the board has a spot for a pad called "Infinite Lives", with nothing fitted to it. It is the first button of a row called R2. The game checks it only at the moment a miss is counted (<code>$0199</code>). If it is held, the miss beeps once, and no angel appears.</p>
+  <p>The other pads of the row do other things (<code>$059D</code>). The third one sends the unit back to setting the time, as if the batteries had just gone in. The fourth one rings the alarm at once.</p>
 </section>
 
 <section>
   <p class="fig">06 · Two misses at once</p>
-  <h2 class="t">A second person uncaught at a miss is let off one net</h2>
-  <p>When a miss begins, the game clears the due bits of all three nets, not only the one missed (<code>$03C4</code>). Anyone else who was waiting above another net, uncaught, is no longer due: when his part of the path moves on he flies on to the next net with neither a point nor a miss. There he must be caught as usual.</p>
+  <h2 class="t">Secret: when two people land at once, the second gets one more chance</h2>
+  <p>Sometimes two people land above two different nets, and the firemen are under neither. The first one becomes a miss. When that miss starts, the game clears the flags of all three nets, not only the one that was missed (<code>$03C4</code>).</p>
+  <p>So the second person is not waiting to be caught any more. When their part of the path moves, they fly on to the next net. They score no point, and they are not a miss. At the next net they must be caught as usual, or they are missed there.</p>
 </section>
 
 <section>
   <p class="fig">07 · The bonus</p>
-  <h2 class="t">200 and 500 clear the angels only if there are some</h2>
-  <p>The bonus at 200 and 500 points is given only when an angel is showing (<code>$005A</code>). Then the game holds still for about six seconds while the angels blink, and clears them. A player with no misses at 200 sees nothing happen.</p>
+  <h2 class="t">Secret: the 200 and 500 bonus only happens if you have missed</h2>
+  <p>At 200 and 500 points, the game checks for an angel (<code>$005A</code>). If there is one, the game stops for about six seconds while the angels blink, and then clears them. If you have no misses, the game does not stop, and you never see the bonus at all.</p>
 </section>
 
 <section>
   <p class="fig">08 · The alarm</p>
-  <h2 class="t">The alarm's minutes carry into its hours</h2>
-  <p>Setting the alarm uses the same counting code as the clock (<code>$0230</code>). Pressing right past 59 minutes sets the minutes to 00 and adds an hour to the alarm (<code>$0261</code>), just as the clock's own minutes do. Held, left and right repeat four times a second, in the alarm's setting as well as when the time is set after power on (<code>$03D6</code>).</p>
+  <h2 class="t">Secret: setting the alarm's minutes past 59 also changes its hour</h2>
+  <p>The alarm is set with the same code as the clock (<code>$0230</code>). If you press right past 59 minutes, the minutes go to 00 and the alarm's hour goes up by one (<code>$0261</code>). The clock's own minutes do the same thing.</p>
+  <p>If you hold left or right, the number moves four times a second. This works when setting the alarm and when setting the time after the batteries go in (<code>$03D6</code>).</p>
 </section>
 
 <section>
   <p class="fig">09 · After a game</p>
-  <h2 class="t">The unit goes back to the clock by itself</h2>
-  <p>The game counts the seconds since the last key or miss (<code>$40</code>, <code>$41</code>). When that count passes 255 with the game over, the unit returns to the clock (<code>$0222</code>), so a finished game does not leave the screen showing it for good.</p>
+  <h2 class="t">Secret: the unit goes back to the clock by itself</h2>
+  <p>The game counts the seconds since you last pressed a button or missed someone (cells <code>$40</code> and <code>$41</code>). After the game is over, when that count goes past 255 seconds, the unit goes back to the clock (<code>$0222</code>). That is about four and a quarter minutes.</p>
 </section>
 
 <section>
   <p class="fig">10 · The demo</p>
-  <h2 class="t">The clock's demo uses Game B's lower window</h2>
-  <p>The clock's demo runs every part of the path once a second, and its firemen move by themselves, once a second, toward the net of the first person about to land (<code>$0340</code>). It also runs Game B's second window (<code>$01C3</code>), so jumpers appear at the lower window in the clock, though never in Game A. A person the demo's firemen do not reach falls hurt, as in a game (<code>$031E</code>).</p>
+  <h2 class="t">Secret: the clock's demo uses Game B's lower window</h2>
+  <p>When the clock is showing, the game plays itself once a second. Its firemen move by themselves, one place a second, toward the net of the first person who is about to land (<code>$0340</code>).</p>
+  <p>The demo also uses the lower window from Game B (<code>$01C3</code>). So people jump from the lower window in the clock, but never in Game A. If the demo's firemen do not get to a person in time, that person falls hurt, just as in a game (<code>$031E</code>).</p>
+</section>
+
+<section>
+  <p class="fig">11 · The screen</p>
+  <h2 class="t">Secret: five of the chip's 72 screen wires drive nothing</h2>
+  <p>The people who made the Game &amp; Watch were proud of using every segment. Makoto Kano said: "Not a single segment went to waste." (<a href="https://iwataasks.nintendo.com/interviews/clubn/game-and-watch-ball-reward/0/1/">Iwata Asks: Game &amp; Watch, part 2</a>). Kano was talking about Ball, the first Game &amp; Watch.</p>
+  <p>Fire's chip can drive 72 segments. MAME's drawing of Fire's screen has 67. The other five outputs are not joined to any picture. They are five bits in cells <code>$03</code>, <code>$08</code> and <code>$18</code>, and the game never uses four of them.</p>
+  <p>The fifth, bit 3 of cell <code>$08</code>, is a note that the game leaves for itself. In Game B, when the jump check says yes at the middle bounce's turn, the game sets the bit (<code>$01C8</code>). The next time the person at the lower window could drop, the game sees the bit, clears it, and lets nobody drop that step (<code>$0117</code>). The bit goes out to the screen like all the others, but there is no picture there, so the note never shows.</p>
+</section>
+
+<section>
+  <p class="fig">12 · Shared code</p>
+  <h2 class="t">Secret: Fire's clock is the same code as in three other games</h2>
+  <p>The program is split into pages of 64 bytes. Page <code>$09</code> keeps the hours and minutes. It is almost byte for byte the same as the page in <a href="../parachute/">Parachute</a>, <a href="../octopus/">Octopus</a> and <a href="../popeye/">Popeye</a>, which use the same chip.</p>
+  <p>The small helper routines on pages <code>$11</code> and <code>$12</code> are mostly the same as Parachute's too: 45 and 50 of their 64 bytes match. The main loop has the same shape as Parachute's, but it calls different routines. The rest of Fire is its own code.</p>
+</section>
+
+<section>
+  <p class="fig">13 · How many people</p>
+  <h2 class="t">Secret: no more than four people jump at once, though a guide says nine</h2>
+  <p><a href="https://www.arcade-history.com/game/100938/">Arcade History</a> says up to nine people can be on the screen at once. The program never lets the limit go above four (<code>$0088</code>), and it stops jumps when the path already holds as many people as the limit (<code>$00C0</code>). After an odd hundred, one extra can slip through (section 03), which makes five.</p>
+</section>
+
+<section>
+  <p class="fig">14 · Scoring</p>
+  <h2 class="t">Secret: you keep the points for a person even if you miss them later</h2>
+  <p>Arcade History says a person scores 3 points when they reach the ambulance. The program scores in a different way. Each catch gives 1 point straight away (<code>$0040</code>). A person carried all the way gives 3 points, one at each net.</p>
+  <p>The difference shows when someone is missed late. If you catch a person twice and then miss them at the third net, you keep the 2 points. Under the rule Arcade History gives, you would get nothing.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

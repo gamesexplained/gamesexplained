@@ -42,6 +42,35 @@ Sources, read on 25 November 2026:
   Game & Watch on the SM5A, and that the Elektronika Kosmicheskiy Most
   (Space Bridge, 1989) runs the same ROM with different graphics.
 
+Sources read on 25 November 2026, for the page's history and photographs:
+
+- Nintendo's "Iwata Asks: Game & Watch", part 2
+  (<https://iwataasks.nintendo.com/interviews/clubn/game-and-watch-ball-reward/0/1/>):
+  the chip was the kind used in calculators; Ball's chip could show 72
+  segments; Makoto Kano: "Not a single segment went to waste."
+  Part 3
+  (<https://www.nintendo.com/en-gb/Iwata-Asks/Iwata-Asks-Game-Watch/Iwata-Asks-Game-Watch/3-Test-Models-with-Little-Bulbs/3-Test-Models-with-Little-Bulbs-223069.html>):
+  Masao Yamamoto and Takehiro Izushi first worked closely on the series
+  with Fire, the fourth game; its prototype was made with a soldering
+  iron; test models about A4 size with grain of wheat bulbs behind
+  acrylic; the "Yokoi standard"; at times one game a month.
+- Wikipedia's "Game & Watch": the alarm came to the units from 1981.
+- SmashWiki, <https://www.ssbwiki.com/Fire>: Mr. Game & Watch's up
+  special, Fire, in Melee, Brawl, Super Smash Bros. 4 and Ultimate.
+- The Super Mario Wiki (above): Gallery 3 uses the Silver design with
+  the Wide Screen scoring.
+- reference/photo-silver.jpg (cropped) and reference/photo-wide-off.jpg:
+  Xabi Vazquez, 2008, CC BY 2.0,
+  <https://commons.wikimedia.org/wiki/File:Game_%26_Watch_fire_silver.jpg>,
+  <https://commons.wikimedia.org/wiki/File:Game_%26_Watch_Fire_Wide_Screen.jpg>.
+  reference/photo-wide-lit.jpg: Peer Schmidt, 2014, CC BY-SA 4.0,
+  <https://commons.wikimedia.org/wiki/File:Nintendo-game-and-watch-wide-screen.jpg>;
+  its screen matches reference/power-on.png. All re-encoded at 1000
+  pixels wide, without their metadata.
+- MAME's screen drawing for FR-27 has 67 segments of the chip's 72
+  outputs; the five without one are 0.0.1, 0.2.0, 0.3.0, 0.3.1 and
+  3.0.0 (lcd_18 bit 0, lcd_08 bits 2 and 3, lcd_18 bit 3, lcd_03 bit 0).
+
 ## Features
 
 | Feature | Status | Where |
