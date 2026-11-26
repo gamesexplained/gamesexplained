@@ -32,7 +32,7 @@ November 2026, with the scripts in `work/tools/` (not committed).
 | The step's turn, the alarm ringing, a key change seen | turn_flags ($0A) bits 0-1, 2, 3 |
 | Someone due above a net | due_flags ($29) bits 0-2: left, middle, right |
 | A miss being shown; a hold for beeps and the bonus | miss_time ($43); hold_count ($2A) |
-| The best scores | best_a ($25-$27), best_b ($45-$47) |
+| The best scores | best_a ($45-$47) for Game A, best_b ($25-$27) for Game B |
 | The time, the alarm, the seconds | $36-$39, $32-$35 (hours' tens with the PM bit 3, hours, minutes' tens, minutes); secs_hi, secs_lo ($3A, $3B) |
 | The seconds' count since a key or a miss | count_hi, count_lo ($40, $41) |
 | The mode | mode ($30): 0 after power on, 1 the clock, 2 Game B, 4 Game A, 8 the alarm's setting |
@@ -62,7 +62,7 @@ November 2026, with the scripts in `work/tools/` (not committed).
   turn carries him on. A flag still set when the arc's turn comes again
   is a miss (turn_0_2 $0140, turn_dispatch). So a press that arrives
   after the person but before the next turn of that arc still catches.
-- Game B's lower window: at the middle arc's turn, when 2.0.1 and the
+- Game B's lower window (lit in the clock's demo too, never in Game A): at the middle arc's turn, when 2.0.1 and the
   first arc's lower places are empty, the jump's chance puts a jumper
   at 2.0.1 (arc2_move, $01C3); at the third arc's turn he drops into
   2.1.0 when the first arc's lower places are empty and the seconds'
@@ -120,8 +120,8 @@ November 2026, with the scripts in `work/tools/` (not committed).
 
 - Power on and ACL clear every cell, light every segment (mode 0) and
   set the time to 12:00 AM and the alarm to 12:00 PM (power_setup,
-  $0526). Left adds an hour, right a minute, held repeating every half
-  second (pad_pressed $02C7, read_pad $03D6).
+  $0526). Left adds an hour, right a minute, held repeating every quarter
+  second, in the alarm's setting too (pad_pressed $02C7, read_pad $03D6). *Live*: 16 presses in 4 s.
 - The keys' sum gives the mode (mode_change, $0540): 1 the clock, 2 or
   3 Game B, 4 to 6 Game A, 7 or more the alarm's setting; Alarm drops
   the others. A change counts when two readings in a row agree
@@ -131,7 +131,7 @@ November 2026, with the scripts in `work/tools/` (not committed).
   demo_firemen $0340).
 - 256 seconds after a game is over the unit goes back to the clock
   (timekeep, $0200).
-- The alarm: on and off as the alarm's setting is entered; the bell
+- The alarm: on and off with each press that gives the alarm's setting; the bell
   (8.2.0) shows it is on; at its minute the ambulance man rings his
   bell and the buzzer sounds (alarm_minute $0580, draw_prep $0603,
   play_sounds $0280). R2 K4 rings it at once; R2 K3 puts the unit back
@@ -139,9 +139,22 @@ November 2026, with the scripts in `work/tools/` (not committed).
 - With an R3 key down after power on the screen shows 888 (clock_screen,
   $06DA).
 
+## The listing's error rate
+
+A sample of 60 of the listing's 196 comments, drawn with seed 20261126
+and checked by claude-fable-5-2 on 26 November 2026, found 9 wrong (15
+%, 95 % interval 8.1 % to 26.1 %): c_not_game_b's sense, the two best
+scores swapped, the lower window lit in the clock's demo too, the
+alarm's minutes carrying into its hours, the repeat of a held button
+(every quarter second, in the alarm's setting too), b_05's page, and the
+alarm's flip on every press that gives its setting. All 9 are corrected,
+with the same mistakes elsewhere (the divider's top bits count sixteen a
+second, not eight, and the click is a short burst). 9 of 60 is over the
+mark, so an audit of every comment is recommended.
+
 ## Sound
 
 - One pin, R1, moved by ATR (play_sounds, $0280; play_tone, $02B0): the
-  catch's tone (length code $E), the step's click (a single move of the
-  pin), numbered sounds (sound_21), the miss's and the game over's beeps
-  (tone_eighth, $00A6), and the alarm's buzz.
+  catch's tone (length code $E), the step's click (a short burst, A taking turns
+  with the falling BL), numbered sounds (sound_21), the miss's and the game over's beeps
+  (tone_beep, $00A6), and the alarm's buzz.

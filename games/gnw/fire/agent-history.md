@@ -31,3 +31,9 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   the alarm's setting, the ringing alarm and the test keys were added
   to the coverage run, which then ran 1,605 instructions; the notes that
   said "never ran" were checked against it.
+- 26 November 2026, the sample (seed 20261126, claude-fable-5-2): 9 of
+  60 wrong, all held. Two of them, c_not_game_b's sense and the swapped
+  best scores, had already turned up while the port was being written,
+  and were left alone until the verdicts were in. Correcting the read_pad
+  finding showed a wider mistake: the divider's bits 11-14 step sixteen
+  times a second, not eight, so tone_beep's length was wrong too.

@@ -47,8 +47,8 @@ Sources, read on 25 November 2026:
 | Feature | Status | Where |
 |---|---|---|
 | A clock with AM and PM, shown at rest, with a demo game playing | live | timekeep $0200, clock_screen $06C0, demo_step $031E: the demo moves every part of the path each second, and its firemen go where someone is about to land (demo_firemen $0340) |
-| An alarm, set, switched on and off, and ringing at its time | live | mode_change $0540 (each press of Alarm flips it), alarm_minute $0580, the ambulance man's bell (draw_prep $0603) and the buzz (play_sounds $0280) |
-| Setting the time after power on or ACL | live | pad_pressed $02C7: left an hour, right a minute, held repeating every half second (read_pad $03D6) |
+| An alarm, set, switched on and off, and ringing at its time | live | mode_change $0540 (each press of Alarm flips it, except the first after power on), alarm_minute $0580, the ambulance man's bell (draw_prep $0603) and the buzz (play_sounds $0280) |
+| Setting the time after power on or ACL | live | pad_pressed $02C7: left an hour, right a minute, held repeating every quarter second, in the alarm's setting too (read_pad $03D6) |
 | Game A and Game B, chosen with their buttons | live | mode_change $0540, mode_setup $05C0; the game starts when the key is let go |
 | The firemen move left and right between three places under the arcs | live | firemen_left $034F, firemen_right $0364 |
 | People jump from the building, more and faster as the game goes on | live | jump_chance $00C0, jump_limit $0088: up to four in the air, a step from 0.205 s down to 0.124 s |
@@ -62,7 +62,7 @@ Sources, read on 25 November 2026:
 | Game B: people jump from two floors | live | arc2_move $01C3 and lower_drop $0117: a second window at 2.0.1, whose jumper drops onto the first arc |
 | The best score of each game, shown while its button is held | live | best_check $006A, draw_prep $0617; cleared only by power_setup |
 | R2 K1: a test pad that turns the misses off | live | count_miss $0197: held when a miss is counted, no angel is added |
-| Sounds: a catch, a miss, the bonus, the alarm | live | play_sounds $0280, play_tone $02B0, tone_eighth $00A6 |
+| Sounds: a catch, a miss, the bonus, the alarm | live | play_sounds $0280, play_tone $02B0, tone_beep $00A6 |
 
 ## Beyond the documentation
 

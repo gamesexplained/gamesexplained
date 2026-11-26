@@ -2,7 +2,7 @@
  "schema": 1,
  "platform": "gnw",
  "game": "fire",
- "build": "",
+ "build": "MAME's ROM set gnw_fire: fr-27, the Sharp SM5A's mask ROM of the Wide Screen Fire (FR-27), 1,856 bytes, CRC32 f4c53ef0, SHA-1 6b57120a0f9d2fd4dcd65ad57a5f32def71d905f, as MAME 0.289 lists it",
  "source": "regen2000proj",
  "regions": {
   "exclude": [
@@ -150,7 +150,7 @@
   },
   {
    "address": 166,
-   "name": "tone_eighth",
+   "name": "tone_beep",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -462,7 +462,7 @@
   },
   {
    "address": 1041,
-   "name": "c_game_b",
+   "name": "c_not_game_b",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -660,7 +660,7 @@
   },
   {
    "address": 1123,
-   "name": "c_game_b_body",
+   "name": "c_not_game_b_body",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1080,19 +1080,19 @@
   },
   {
    "address": 4133,
-   "name": "best_a_hi",
+   "name": "best_b_hi",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 4134,
-   "name": "best_a_mid",
+   "name": "best_b_mid",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 4135,
-   "name": "best_a_lo",
+   "name": "best_b_lo",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1212,19 +1212,19 @@
   },
   {
    "address": 4165,
-   "name": "best_b_hi",
+   "name": "best_a_hi",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 4166,
-   "name": "best_b_mid",
+   "name": "best_a_mid",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 4167,
-   "name": "best_b_lo",
+   "name": "best_a_lo",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1290,7 +1290,7 @@
   {
    "address": 79,
    "type": "line",
-   "text": "past_999: when the hundreds carry too (BL reaches 4 after EXCD, and TABL with A = 4 skips), writes 9 to the units of the best score of the game being played (best_a_lo $27, or best_b_lo $47 in Game B, the SBM choosing row 4), then the best check. The score itself is then 000."
+   "text": "past_999: when the hundreds carry too (BL reaches 4 after EXCD, and TABL with A = 4 skips), writes 9 to the units of a best score: best_a_lo ($47) when C from c_not_game_b is set and SBM chooses row 4, that is in Game A; best_b_lo ($27) in Game B, then the best check. The score itself is then 000."
   },
   {
    "address": 90,
@@ -1300,7 +1300,7 @@
   {
    "address": 106,
    "type": "line",
-   "text": "best_check: compares the score ($15-$17) with the best of the game being played, digit by digit from the hundreds: best_a ($25-$27) or, in Game B (C from c_game_b, and SBM), best_b ($45-$47). Equal digits go on to the next (EXCI 3 writes the digit back unchanged). At the first digit that differs, a score digit greater than the best's (ADDC without a carry) copies the whole score into the best (best_copy, $0080); otherwise nothing changes ($0079). Then jump_limit ($0088)."
+   "text": "best_check: compares the score ($15-$17) with the best of the game being played, digit by digit from the hundreds: best_a ($45-$47) when C from c_not_game_b is set and SBM chooses row 4, that is in Game A; best_b ($25-$27) in Game B. Equal digits go on to the next (EXCI 3 writes the digit back unchanged). At the first digit that differs, a score digit greater than the best's (ADDC without a carry) copies the whole score into the best (best_copy, $0080); otherwise nothing changes ($0079). Then jump_limit ($0088)."
   },
   {
    "address": 128,
@@ -1315,7 +1315,7 @@
   {
    "address": 166,
    "type": "line",
-   "text": "tone_eighth: waits for the divider's bits 11-14 to change, keeping the new reading in tone_div ($1B); then toggles the R pins with ATR from a counting A, R1 being the buzzer, and checks the divider again after each round of ATRs (A counted up to 16, once for each column from $1B down to $10): while it still reads tone_div the tone goes on, and when it has moved on the routine returns. So the tone lasts one step of those bits, 2,048 cycles, an eighth of a second. Called by game_over_beeps ($01AD)."
+   "text": "tone_beep: waits for the divider's bits 11-14 to change, keeping the new reading in tone_div ($1B); then toggles the R pins with ATR from a counting A, R1 being the buzzer, and checks the divider again after each round of ATRs (A counted up to 16, once for each column from $1B down to $10): while it still reads tone_div the tone goes on, and when it has moved on the routine returns. So the tone lasts one step of those bits, 1,024 cycles, a sixteenth of a second (the divider counts two a cycle). Called by game_over_beeps ($01AD)."
   },
   {
    "address": 192,
@@ -1340,7 +1340,7 @@
   {
    "address": 279,
    "type": "line",
-   "text": "lower_drop: the jumper waiting at the lower window (2.0.1, lcd_12 bit 0, lit only in Game B) drops into the first arc's last place before the left net (2.1.0, lcd_02 bit 1), and the step's click is asked for (sound_flags $20 bit 3), when all of these hold: hold_08 (lcd_08 bit 3, no segment) was clear (it is cleared here if set, and then nothing drops); the first arc's lower places 2.0.0, 2.1.0 and 2.2.0 are empty; and the seconds' units (secs_lo, $3B) have bit 3 set or in_air ($09) is odd. Then the end of the step's moves ($01C0)."
+   "text": "lower_drop: the jumper waiting at the lower window (2.0.1, lcd_12 bit 0, lit in Game B and in the clock's demo, never in Game A) drops into the first arc's last place before the left net (2.1.0, lcd_02 bit 1), and the step's click is asked for (sound_flags $20 bit 3), when all of these hold: hold_08 (lcd_08 bit 3, no segment) was clear (it is cleared here if set, and then nothing drops); the first arc's lower places 2.0.0, 2.1.0 and 2.2.0 are empty; and the seconds' units (secs_lo, $3B) have bit 3 set or in_air ($09) is odd. Then the end of the step's moves ($01C0)."
   },
   {
    "address": 305,
@@ -1370,7 +1370,7 @@
   {
    "address": 423,
    "type": "line",
-   "text": "game_over_beeps: while hold_count ($2A) is not 0: takes one from it, plays tone_eighth ($00A6), writes sound $B to sound_21 and keeps time twice ($0200). Then clears sound_flags bit 0 and goes to catch_check ($01B6, $0300)."
+   "text": "game_over_beeps: while hold_count ($2A) is not 0: takes one from it, plays tone_beep ($00A6), writes sound $B to sound_21 and keeps time twice ($0200). Then clears sound_flags bit 0 and goes to catch_check ($01B6, $0300)."
   },
   {
    "address": 440,
@@ -1385,7 +1385,7 @@
   {
    "address": 451,
    "type": "line",
-   "text": "arc2_move: in Game B (mode bit 2 clear), first the lower window: hold_08 (lcd_08 bit 3) is set when C, from jump_chance, is set; and when 2.0.1 (lcd_12 bit 0) and the first arc's 2.0.0 and 2.1.0 are all empty, C puts a jumper at 2.0.1 and in_air ($09) counts it ($01D1). Then, in a game, the middle arc moves one place on, by swaps with C clear: 2.2.0 (above the left net), 2.1.1, demo_firemen, 3.2.0, 3.1.0, 4.3.0, 4.2.0, 4.1.0, demo_firemen, 1.0.0, 1.1.0 (above the middle net). When someone has arrived above the middle net, sets due_flags ($29) bit 1. Then moves_done's click and catch_check ($01EF). In the clock the middle arc is entered at $01D9, from window_arc, and after it the demo goes on to the third arc ($01F3); entered at the top, the clock goes from the lower window's part straight to catch_check ($01D5)."
+   "text": "arc2_move: outside Game A (mode bit 2 clear: Game B, and the clock's demo when it comes here from moves_done), first the lower window: hold_08 (lcd_08 bit 3) is set when C, from jump_chance, is set; and when 2.0.1 (lcd_12 bit 0) and the first arc's 2.0.0 and 2.1.0 are all empty, C puts a jumper at 2.0.1 and in_air ($09) counts it ($01D1). Then, in a game, the middle arc moves one place on, by swaps with C clear: 2.2.0 (above the left net), 2.1.1, demo_firemen, 3.2.0, 3.1.0, 4.3.0, 4.2.0, 4.1.0, demo_firemen, 1.0.0, 1.1.0 (above the middle net). When someone has arrived above the middle net, sets due_flags ($29) bit 1. Then moves_done's click and catch_check ($01EF). In the clock the middle arc is entered at $01D9, from window_arc, and after it the demo goes on to the third arc ($01F3); entered at the top, the clock goes from the lower window's part straight to catch_check ($01D5)."
   },
   {
    "address": 499,
@@ -1415,7 +1415,7 @@
   {
    "address": 609,
    "type": "line",
-   "text": "hour_from_minutes: from minute_rolled when the minutes' tens rolled over: swaps BL into A, and goes to add_hour ($0240) with B at the hours' units. $0263 never ran."
+   "text": "hour_from_minutes: from minute_rolled when the minutes' tens rolled over: swaps BL into A, so A is the column of the minutes' tens, and adds 8. For the time ($38) that carries and it goes to add_hour ($0240); for the alarm's minutes ($34) it does not, and $0263 goes to $0269, the alarm's hours. So the alarm's minutes, set past 59, carry into its hours. The coverage run did not set them past 59, so $0263 did not run there; it did on the model."
   },
   {
    "address": 613,
@@ -1440,7 +1440,7 @@
   {
    "address": 640,
    "type": "line",
-   "text": "play_sounds: the alarm's sound first (sound_flags bit 0): after power on and in the clock, and after a game is over (the third angel), it buzzes while the divider's bits 11-14 read under 4 ($028E, ATR from a counting A) and ends at sound_done; in a game under way the request is dropped. Otherwise, after power on and in the clock and in the alarm's setting the requests are cleared unplayed ($027E). In a game: while a redraw is waiting, only a numbered sound (play_numbered, $02C0); otherwise the catch (bit 2, a tone of length code $E, $02AD) before the step's click (bit 3, $029F: ATR with A = $B, then fifteen more of the same while BL counts down, so the buzzer moves once, a click), and with neither, a numbered sound. Each ends at sound_done."
+   "text": "play_sounds: the alarm's sound first (sound_flags bit 0): after power on and in the clock, and after a game is over (the third angel), it buzzes while the divider's bits 11-14 read under 4 ($028E, ATR from a counting A) and ends at sound_done; in a game under way the request is dropped. Otherwise, after power on and in the clock and in the alarm's setting the requests are cleared unplayed ($027E). In a game: while a redraw is waiting, only a numbered sound (play_numbered, $02C0); otherwise the catch (bit 2, a tone of length code $E, $02AD) before the step's click (bit 3, $029F: an EXBLA before each ATR swaps A and BL while BL counts down, so A takes turns between $B and the falling count and the buzzer moves several times, a short burst), and with neither, a numbered sound. Each ends at sound_done."
   },
   {
    "address": 688,
@@ -1530,7 +1530,7 @@
   {
    "address": 982,
    "type": "line",
-   "text": "read_pad: left and right. In the clock (mode bit 0) it returns at once. Neither, or both at once, clears tick_flags ($1A) bit 0, the held mark, and returns. One of them, newly pressed (bit 0 clear): sets the mark, keeps the divider's reading plus 4 in repeat_at ($28), and returns with a skip, a press. Held: in a game nothing; after power on, while the time is being set (mode 0), a press again each time the divider's bits 11-14 reach repeat_at ($03EB), so a held button repeats every half second."
+   "text": "read_pad: left and right. In the clock (mode bit 0) it returns at once. Neither, or both at once, clears tick_flags ($1A) bit 0, the held mark, and returns. One of them, newly pressed (bit 0 clear): sets the mark, keeps the divider's reading plus 4 in repeat_at ($28), and returns with a skip, a press. Held: in the clock and the games nothing; after power on, while the time is set (mode 0), and in the alarm's setting (mode 8, where ADX 9 at $03E9 carries), a press again each time the divider's bits 11-14, with bit 0 set, read repeat_at ($03EB), which then moves 4 on: a held button repeats every quarter second (those bits count sixteen a second). Live: 16 presses in 4 s."
   },
   {
    "address": 1024,
@@ -1575,7 +1575,7 @@
   {
    "address": 1041,
    "type": "line",
-   "text": "c_game_b: points B at mode ($30) and returns with C set when the mode is Game B (bit 1), clear otherwise ($0463)."
+   "text": "c_not_game_b: points B at mode ($30) and returns with C clear when the mode is Game B (bit 1) and set otherwise ($0463)."
   },
   {
    "address": 1042,
@@ -1620,7 +1620,7 @@
   {
    "address": 1050,
    "type": "line",
-   "text": "b_01: points B at lcd_01 ($01) ($046D). The entries after it point B at other cells the same way: b_02 ($041B), b_03 ($041C), b_04 ($041D), b_05 ($041E), b_06 ($041F) and b_08 ($0420), each through a jump into page $11 or $12."
+   "text": "b_01: points B at lcd_01 ($01) ($046D). The entries after it point B at other cells the same way: b_02 ($041B), b_03 ($041C), b_04 ($041D), b_05 ($041E), b_06 ($041F) and b_08 ($0420), each through a jump into page $11, $12 or $13 (b_05 by $04EC to $04E2)."
   },
   {
    "address": 1057,
@@ -1740,7 +1740,7 @@
   {
    "address": 1123,
    "type": "line",
-   "text": "c_game_b_body: LB 3 ($30), RC, and SC when mode's bit 1 is set."
+   "text": "c_not_game_b_body: LB 3 ($30), RC, then TM 1, which skips the SC when mode's bit 1 is set: C is set unless the mode is Game B."
   },
   {
    "address": 1128,
@@ -1875,7 +1875,7 @@
   {
    "address": 1344,
    "type": "line",
-   "text": "mode_change: a change of the R4 keys, agreed twice. Asks for a redraw. In the clock, any key stops the alarm ringing (turn_flags bit 2). With no key down: when a game key had been held (redraw_flags bit 2), the score is cleared ($0563): a game starts when its key is let go. With keys down: in a game under way they do nothing; otherwise the mode comes from their sum ($054D): 1 the clock (mode 1), 2 or 3 Game B (2), 4 to 6 Game A (4), 7 or more the alarm's setting (8). Coming from power on (old mode 0) it resets the divider and the 1 Hz flag (IDIV, TG), so the clock starts on a whole second. The same mode again outside the clock, and any new mode, asks for mode_setup (redraw_flags bit 3, $0572); entering the alarm's setting from another mode flips the alarm on or off (flags_0B, $0B, bit 2, $056F). Then the test pads ($059D)."
+   "text": "mode_change: a change of the R4 keys, agreed twice. Asks for a redraw. In the clock, any key stops the alarm ringing (turn_flags bit 2). With no key down: when a game key had been held (redraw_flags bit 2), the score is cleared ($0563): a game starts when its key is let go. With keys down: in a game under way they do nothing; otherwise the mode comes from their sum ($054D): 1 the clock (mode 1), 2 or 3 Game B (2), 4 to 6 Game A (4), 7 or more the alarm's setting (8). Coming from power on (old mode 0) it resets the divider and the 1 Hz flag (IDIV, TG), so the clock starts on a whole second. The same mode again outside the clock, and any new mode, asks for mode_setup (redraw_flags bit 3, $0572); every press that gives the alarm's setting (mode 8), from another mode or in the setting already, flips the alarm on or off (flags_0B, $0B, bit 2, $056F), except the first after power on, which takes the IDIV path. Then the test pads ($059D)."
   },
   {
    "address": 1398,
@@ -2030,7 +2030,7 @@
   {
    "address": 4114,
    "type": "line",
-   "text": "lcd_12 ($12): latch 2, H2. Bit 0 the jumper at the lower window, in Game B (2.0.1); bit 1 the middle arc's first place (2.1.1); bit 2 the firemen at the left (2.2.1); bit 3 the hurt figure under the left net (2.3.1)."
+   "text": "lcd_12 ($12): latch 2, H2. Bit 0 the jumper at the lower window, in Game B and the clock's demo (2.0.1); bit 1 the middle arc's first place (2.1.1); bit 2 the firemen at the left (2.2.1); bit 3 the hurt figure under the left net (2.3.1)."
   },
   {
    "address": 4115,
@@ -2075,7 +2075,7 @@
   {
    "address": 4123,
    "type": "line",
-   "text": "tone_div ($1B): the tone routines' count: the divider's reading in tone_eighth, the length code in play_tone."
+   "text": "tone_div ($1B): the tone routines' count: the divider's reading in tone_beep, the length code in play_tone."
   },
   {
    "address": 4128,
@@ -2090,17 +2090,17 @@
   {
    "address": 4133,
    "type": "line",
-   "text": "best_a_hi ($25): the best score of Game A, hundreds; best_a_mid ($26) and best_a_lo ($27) the tens and units. Kept until power is lost: power_setup clears it."
+   "text": "best_b_hi ($25): the best score of Game B, hundreds; best_b_mid ($26) and best_b_lo ($27) the tens and units. Kept until power is lost: power_setup clears it."
   },
   {
    "address": 4134,
    "type": "line",
-   "text": "best_a_mid ($26): see best_a_hi."
+   "text": "best_b_mid ($26): see best_b_hi."
   },
   {
    "address": 4135,
    "type": "line",
-   "text": "best_a_lo ($27): see best_a_hi."
+   "text": "best_b_lo ($27): see best_b_hi."
   },
   {
    "address": 4136,
@@ -2200,17 +2200,17 @@
   {
    "address": 4165,
    "type": "line",
-   "text": "best_b_hi ($45): the best score of Game B, hundreds; best_b_mid ($46) and best_b_lo ($47) the tens and units."
+   "text": "best_a_hi ($45): the best score of Game A, hundreds; best_a_mid ($46) and best_a_lo ($47) the tens and units."
   },
   {
    "address": 4166,
    "type": "line",
-   "text": "best_b_mid ($46): see best_b_hi."
+   "text": "best_a_mid ($46): see best_a_hi."
   },
   {
    "address": 4167,
    "type": "line",
-   "text": "best_b_lo ($47): see best_b_hi."
+   "text": "best_a_lo ($47): see best_a_hi."
   },
   {
    "address": 4169,
