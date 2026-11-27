@@ -54,8 +54,14 @@ button{font-size:13px;padding:4px 10px;margin:0 6px 6px 0}
   <div class="plate"><div class="shots"><img src="reference/instructions-1.png" alt="The first instructions page"><img src="reference/play-start.png" alt="Rambo in the jungle at the start of play"></div>
   <p class="cap">The first instructions page and the start of play. The panel at the bottom is two sprites that hold the words ENERGY and SCORE, the <a href="#energy">energy</a> bar and the score digits (<code>$4400</code>).</p></div>
 </section>
+<section id="makers"><p class="fig">02 · The people behind the game</p><h2 class="t">Who made the C64 version</h2>
+<p>Wikipedia says the game was designed by David Collier and Tony Pomfret. The C64 credits on MobyGames list Tony Pomfret, David Collier, Bill Barna and Martin Galway as coders, and Stephen Wahid, Tony Pomfret and David Collier for graphics. Martin Galway is credited with the music and sound effects, and Jon Woods as producer. The music is covered in the <a href="#sound">Sound</a> section.</p>
+</section>
+<section id="reception"><p class="fig">03 · Reception</p><h2 class="t">Reviewed in ZZAP!64</h2>
+<p>ZZAP!64 reviewed the game in its tenth issue, with a street date of 9 January 1986. The GB64 Games of the Week page quotes most of that review. We could not confirm the reviewer or the score for the C64 version, so this page gives neither.</p>
+</section>
 <section id="map">
-  <p class="fig">02 · The map</p>
+  <p class="fig">04 · The map</p>
   <h2 class="t">The whole jungle, drawn from the game's bytes</h2>
   <p class="lede">The map is 16 tiles wide and 119 tall, and each tile is a block of 8 by 8 characters, so the jungle is 128 characters across and 952 deep. Rambo starts at the south end, the bottom of this picture.</p>
   <div class="plate"><div id="rb-mapwrap"><canvas id="rb-map"></canvas></div>
@@ -63,7 +69,7 @@ button{font-size:13px;padding:4px 10px;margin:0 6px 6px 0}
   <p>The game draws only the screen's new edge as it scrolls: <code>draw_map_row</code> (<code>$27B4</code>) and the two column drawers read the map byte for the tile, then the character inside that tile. Before every game <code>map_restore</code> (<code>$09CC</code>) copies the clean map over the working copy at <code>$E000</code>, because explosions rewrite tiles in the working copy for the rest of the game.</p>
 </section>
 <section id="sound">
-  <p class="fig">03 · The sound</p>
+  <p class="fig">05 · The sound</p>
   <h2 class="t">Martin Galway's music, played by the game's own driver</h2>
   <p class="lede">Every tune the game stores, and its sound effects, each started the way the game starts it.</p>
   <div class="plate"><div id="rb-sid"></div><p class="cap">The game's own driver (<code>$8100</code>-<code>$AFB3</code>, from the listing) runs on this page once a frame, through a model of the SID with a 6581's filter. Each button sends the driver the command the game sends: silence (1), all three voices for music (26), then the tune's command. Tune 28 has no caller in the game's code.</p></div>
@@ -71,7 +77,7 @@ button{font-size:13px;padding:4px 10px;margin:0 6px 6px 0}
   <p>The driver has one entry. The game puts a command number in A and calls <code>sound_command</code> (<code>$8100</code>), which looks up a routine in a split table (<code>$836E</code> and <code>$838D</code>). Several commands land part way into a run of <code>BIT</code> instructions: the second byte of each <code>BIT</code> is a hidden <code>LDY #n</code>, so one entry point per command picks a tune or an effect with no table of its own. Each voice reads a sequence of notes and lengths and of command bytes <code>$C0</code> to <code>$DC</code> (call, return, repeat, jump, load an instrument, transpose, run machine code), with arpeggios, four-part slides and pulse-width sweeps (<code>v1_tick</code>, <code>$870C</code>, and its copies for voices 2 and 3).</p>
 </section>
 <section id="loading-tune">
-  <p class="fig">04 · The loading tune</p>
+  <p class="fig">06 · The loading tune</p>
   <h2 class="t">Music: the loading tune spells out its makers in Morse</h2>
   <p class="lede">While the cassette loads, it plays a tune of its own by Martin Galway, which the game itself never plays. For its first half minute voice 1 is Morse code, tapping out the names of the five people who made the game. Listen closely and every I comes out as an E.</p>
   <div class="plate">
@@ -86,7 +92,7 @@ button{font-size:13px;padding:4px 10px;margin:0 6px 6px 0}
   <p>The cassette starts the tune about 73 seconds in, as the screen turns yellow for the loading picture (<a href="graphics.html#loading">Graphics</a>), and plays it at full volume with no filter. After the Morse, voice 1 joins the other two in the music. The tune runs for 3 minutes 36 seconds, but the cassette stops it after 3 minutes 22 seconds, about 14 seconds before its end, and silences the chip. The player plays it to the end.</p>
 </section>
 <section id="enemies">
-  <p class="fig">05 · The enemies</p>
+  <p class="fig">07 · The enemies</p>
   <h2 class="t">A budget of soldiers</h2>
   <p class="lede">Soldiers walk in from seven entry zones, but only while a budget lasts, and your own noise raises it.</p>
   <table class="tbl"><tr><th>What adds to the spawn budget (<code>$119B</code>)</th><th>How much</th><th>Where</th></tr>
@@ -98,7 +104,7 @@ button{font-size:13px;padding:4px 10px;margin:0 6px 6px 0}
   <p>Soldiers also come out of the ground at character <code>$93</code> (<code>hole_scan</code>, <code>$0D6F</code>), and they fire more often the further north you are: <code>bullet_fire</code> picks a random soldier and aims along a straight line at Rambo (<a href="discoveries.html#north">the odds, by row</a>). The <a href="graphics.html">Graphics</a> tab draws the soldiers walking, kneeling, rising and falling, in their colours and at the game's pace.</p>
 </section>
 <section id="energy">
-  <p class="fig">06 · Energy</p>
+  <p class="fig">08 · Energy</p>
   <h2 class="t">Damage is paid off one unit a frame</h2>
   <p class="lede">Every hit is paid off slowly, and flying costs the same bar.</p>
   <table class="tbl"><tr><th>Hit</th><th>Units of damage</th><th>Where</th></tr>
@@ -109,7 +115,7 @@ button{font-size:13px;padding:4px 10px;margin:0 6px 6px 0}
   <p>The energy starts at 48 units (<code>$0CC3</code>). A hit adds to a damage counter (<code>$0B</code>), and <code>energy_tick</code> (<code>$0C89</code>) takes one unit a frame off the energy and clears one pixel of the bar, so the bar runs down smoothly after a hit. The helicopter has no fuel gauge of its own: its fuel is the same bar.</p>
 </section>
 <section id="heli">
-  <p class="fig">07 · The helicopter</p>
+  <p class="fig">09 · The helicopter</p>
   <h2 class="t">A second engine for the flight</h2>
   <p>The flight runs its own main loop at <code>$3009</code>, with the jungle engine's routines reached through a jump table at <code>$0337</code>. The helicopter has 12 frames of heading, which it turns through toward the stick (<code>steer_heading</code>, <code>$36CE</code>), and scrolls two pixels a step. The gunship steers toward it with its own speed and a fraction for each axis (<code>gunship_steer_y</code>, <code>$3373</code>), takes five rocket hits to bring down, and only follows you on the second flight, after the hut has been opened (<code>gunship_pursues</code>, <code>$3825</code>). The <a href="graphics.html">Graphics</a> tab draws all twelve frames of each, with their rotors turning.</p>
 </section>
