@@ -124,11 +124,13 @@ function imCheckName(m,name){let count=0;for(let n=0;n<6;n++){count=0;for(let i=
 // im-shift-driver
 function createShiftDriver(D,C64Cpu){
  const base=new Uint8Array(65536);for(const [a,b] of D.mem)base.set(b,a);
- const sid=new Uint8Array(25);let m,cpu,writes=[];
+ const sid=new Uint8Array(25);let m,cpu,writes=[],held=[];
  const io={read(a){throw Error('Audio read '+a.toString(16));},write(a,v){if(a>=0xd400&&a<=0xd418){sid[a-0xd400]=v;writes.push(a-0xd400,v);}else throw Error('Audio write '+a.toString(16));}};
  return {sid,get writes(){return writes;},
-  init(t){m=base.slice();m[0x7126]=t?8:0;cpu=new C64Cpu.CPU(m,{port:0x35,io});sid.fill(0);m[0x66ff]=0;cpu.call(0x6cc5,{a:0});for(let f=0;f<2506;f++)cpu.call(0x6701,{},{maxSteps:100000});writes=[];},
-  play(){writes=[];cpu.call(0x6701,{},{maxSteps:100000});},stop(){writes=[];},playing(){return true;}};
+  init(t){m=base.slice();m[0x7126]=t?8:0;cpu=new C64Cpu.CPU(m,{port:0x35,io});sid.fill(0);m[0x66ff]=0;cpu.call(0x6cc5,{a:0});for(let f=0;f<2506;f++)cpu.call(0x6701,{},{maxSteps:100000});writes=[];held=[];},
+  play(){writes=held;held=[];cpu.call(0x6701,{},{maxSteps:100000});},
+  // stop as the game does, at $6D10: it clears the chip's registers and sets the play state ($6D9D) to $FF, so $6701 returns at once from then on
+  stop(){if(!cpu)return;writes=[];cpu.call(0x6d10,{},{maxSteps:100000});held=writes;},playing(){return !!m&&m[0x6d9d]<128;}};
 }
 // end im-shift-driver
 const IM_ITEMS=[[1,'Shatterbomb'],[2,'Power gun'],[3,'Lazer gun'],[4,'Soup can'],[5,'Slimy worms'],[7,'Pinta a day']];

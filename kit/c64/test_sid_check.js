@@ -7,6 +7,8 @@
 // - a driver that sets the volume and gates a voice as heard;
 // - a driver that throws when its tune starts as stopped, with its error;
 // - a driver that decodes its bytes with atob as heard (the worklet has an atob of its own);
+// - a driver whose stop() leaves playing() true as still playing after Stop, which the verdict
+//   fails, and one whose stop() works as stopped;
 // the verdict lets a button whose label says it is silent stay silent, and no other; the script
 // put before the page's own notes every player it mounts; and the pages found are those that load
 // lib/sid.js. Exits 1 on any failure.
@@ -19,7 +21,7 @@ let fails = 0;
 const check = (ok, what) => { if (!ok) { fails++; console.log('FAIL ' + what); } else console.log('ok   ' + what); };
 
 // One button through the checker in a worklet's scope: what it posted to the page
-function run(driver, frames = 100) {
+function run(driver, frames = 100, stopAt = 0) {
   let Proc = null;
   const posted = [];
   const scope = {
@@ -28,16 +30,17 @@ function run(driver, frames = 100) {
     registerProcessor: (name, cls) => { if (name === 'c64-sid-check') Proc = cls; },
   };
   vm.runInNewContext(C64Sid.worklet(driver) + CHECKER, scope);
-  const p = new Proc({ processorOptions: { data: {}, opts: {}, frames: false, tune: 0 } });
+  const p = new Proc({ processorOptions: { data: {}, opts: {}, frames: false, tune: 0, stopAt } });
   const out = [new Float32Array(128)];
   let lo = Infinity, hi = -Infinity;
   for (let k = 0; k < frames * 960 / 128; k++) {
     p.process([], [out]);
     for (const x of out[0]) { lo = Math.min(lo, x); hi = Math.max(hi, x); }
   }
-  const r = { name: 'Tune 0', error: null, heard: false, vol: false, env: false, moves: 0 };
+  const r = { name: 'Tune 0', error: null, heard: false, vol: false, env: false, moves: 0, after: null };
   for (const m of posted) {
     if (m.driverError) r.error = r.error || m.driverError;
+    if (m.after) r.after = m.after;
     for (const k of ['heard', 'vol', 'env']) if (m[k]) r[k] = true;
   }
   r.moves = hi - lo;
@@ -68,6 +71,17 @@ function gated(vol) {
 {
   const r = run(gated(15));
   check(!r.error && r.heard && r.vol && r.env && verdict(r, 10) === null, 'a driver that sets the volume and gates a voice is heard');
+  const s = run(gated(15), 100, 48000);
+  check(s.heard && s.after && !s.after.playing && verdict(s, 10) === null, 'and once Stop is pressed, it says it has stopped');
+}
+{
+  const r = run(function createDriver() {
+    const sid = new Uint8Array(25);
+    return { sid, writes: [], init() { sid[24] = 15; sid[1] = 0x1C; sid[5] = 0x09; sid[6] = 0xF0; sid[4] = 0x21; },
+      stop() {}, play() {}, playing: () => true };
+  }, 100, 48000);
+  check(r.heard && r.after && r.after.playing && /Stop leaves it playing/.test(verdict(r, 10) || ''),
+        'a driver whose stop() leaves it playing fails');
 }
 {
   const r = run(function createDriver() {

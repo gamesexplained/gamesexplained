@@ -2,13 +2,16 @@
 // Every SID music player on the built site, played. Each button of every C64Sid.mount
 // (site/lib/sid.js) is started as a reader's click starts it, through the player's own
 // AudioWorklet, in an OfflineAudioContext that renders --seconds of its sound (10 by default) in
-// a fraction of that. A button fails when
+// a fraction of that, then presses Stop. A button fails when
 // - its driver stops in the worklet, which runs createDriver from its source text alone and has
-//   none of the page's names (the page's console then says "C64Sid: the sound driver stopped"), or
+//   none of the page's names (the page's console then says "C64Sid: the sound driver stopped"),
 // - nothing is heard: no voice's envelope is above 0 while the chip's volume is above 0, and the
 //   output never moves. Most often the game sets the volume ($D418) once, at start-up, outside
 //   its driver, and the page's driver leaves that step out: its writes match the game's frame by
-//   frame, and the chip, at volume 0, plays none of them.
+//   frame, and the chip, at volume 0, plays none of them, or
+// - Stop leaves it playing: a second after the check presses Stop, the driver's playing() still
+//   says true. The player goes on calling a driver until it says it has stopped, so a stop() that
+//   does nothing leaves the tune playing for as long as the page is open.
 // A button whose label says it is silent ("Silent ...", "... (silent)") may be.
 //
 //   node kit/c64/sid_check.js [<site>] [<page> ...] [--seconds 10] [--jobs 4] [--chromium <path>]
@@ -30,6 +33,7 @@ const { playwright, launchOptions, NO_CLIENT, NO_BROWSER } = require('../scripts
 const USAGE = 'usage: node kit/c64/sid_check.js [<site>] [<page> ...] [--seconds 10] [--jobs 4] [--chromium <path>] [--cdp <url>]';
 const RATE = 22050;
 const MOVES = 0.01;            // output that never spans more than this has not sounded
+const AFTER = 1;               // seconds rendered after the check presses Stop
 
 function args(argv) {
   const o = { site: null, pages: [], seconds: 10, jobs: 4, chromium: null, cdp: null };
@@ -68,9 +72,17 @@ function pagesWithSid(site) {
   return out.sort();
 }
 
-// What one button's run found, as a line: null when it sounded or its label says it is silent
+// What one button's run found, as a line: null when it sounded, or its label says it is silent,
+// and Stop stopped it
 function verdict(r, seconds) {
   if (r.error) return 'the driver stopped in the AudioWorklet: ' + r.error;
+  const silent = silence(r, seconds);
+  if (silent) return silent;
+  if (r.after && r.after.playing) return `Stop leaves it playing: ${AFTER} s after the player's stop, the driver's ` +
+    'playing() still says true, so the page goes on calling it and the tune goes on';
+  return null;
+}
+function silence(r, seconds) {
   if ((r.heard && r.moves > 0) || r.moves >= MOVES) return null;
   if (/\bsilen(t|ce)\b/i.test(r.name)) return null;
   if (r.env && !r.vol) return `silent: its voices play, but the chip's volume ($D418) stays at 0 for ${seconds} s`;
@@ -81,22 +93,39 @@ function verdict(r, seconds) {
 
 // Added to the player's worklet module (C64Sid.worklet): the player's own processor, started on
 // the tune given, which tells the page once a voice is heard (its envelope above 0 with the
-// chip's volume above 0), and the first time the volume or an envelope leaves 0
+// chip's volume above 0), and the first time the volume or an envelope leaves 0. At stopAt
+// samples it sends the player's stop, as the Stop button does, and from then tells the page
+// whether the driver still says it plays, each time that changes
 const CHECKER = `
 class C64SidCheck extends C64SidProcessor {
   constructor(o) {
     super(o);
+    const q = o.processorOptions;
     this.said = { heard: false, vol: false, env: false };
-    if (this.p) try { this.p.command({ cmd: 'start', tune: o.processorOptions.tune }); } catch (err) { this.fail(err); }
+    this.n = 0; this.stopAt = q.stopAt > 0 ? q.stopAt : Infinity; this.stopped = false; this.after = null;
+    if (this.p) try { this.p.command({ cmd: 'start', tune: q.tune }); } catch (err) { this.fail(err); }
   }
   tell(k) { if (!this.said[k]) { this.said[k] = true; this.port.postMessage({ [k]: true }); } }
   process(inputs, outputs) {
+    if (this.p && !this.stopped && this.n >= this.stopAt) {
+      this.stopped = true;
+      try { this.p.command({ cmd: 'stop' }); } catch (err) { this.fail(err); }
+    }
     const go = super.process(inputs, outputs);
+    this.n += outputs[0][0].length;
     if (this.p) {
       const vol = this.p.drv.sid[24] & 15, env = this.p.sid.V.some((v) => v.env > 0);
-      if (vol) this.tell('vol');
-      if (env) this.tell('env');
-      if (vol && env) this.tell('heard');
+      if (!this.stopped) {
+        if (vol) this.tell('vol');
+        if (env) this.tell('env');
+        if (vol && env) this.tell('heard');
+      } else {
+        const playing = !!this.p.drv.playing();
+        if (!this.after || playing !== this.after.playing) {
+          this.after = { playing };
+          this.port.postMessage({ after: this.after });
+        }
+      }
     }
     return go;
   }
@@ -118,7 +147,7 @@ const CATCH = `(() => {
 })();`;
 
 // In the page: every button of every player it mounted, rendered through the worklet
-async function inPage({ checker, seconds, rate }) {
+async function inPage({ checker, seconds, after, rate }) {
   const out = [];
   for (const { id, o } of window.__sidMounts) {
     if (!o || typeof o.driver !== 'function') continue;
@@ -126,21 +155,23 @@ async function inPage({ checker, seconds, rate }) {
       period: o.period, digi: o.digi };
     const url = URL.createObjectURL(new Blob([C64Sid.worklet(o.driver) + checker], { type: 'text/javascript' }));
     for (let t = 0; t < o.tunes.length; t++) {
-      const r = { id, t, name: String(o.tunes[t]), error: null, heard: false, vol: false, env: false, moves: 0 };
+      const r = { id, t, name: String(o.tunes[t]), error: null, heard: false, vol: false, env: false, moves: 0, after: null };
       try {
-        const ctx = new OfflineAudioContext(1, Math.round(rate * seconds), rate);
+        const stopAt = Math.round(rate * seconds);
+        const ctx = new OfflineAudioContext(1, stopAt + Math.round(rate * after), rate);
         await ctx.audioWorklet.addModule(url);
         const node = new AudioWorkletNode(ctx, 'c64-sid-check', { numberOfInputs: 0, outputChannelCount: [1],
-          processorOptions: { data: o.data, opts, frames: false, tune: t } });
+          processorOptions: { data: o.data, opts, frames: false, tune: t, stopAt } });
         node.port.onmessage = (e) => {
           if (e.data && e.data.driverError) r.error = r.error || e.data.driverError;
+          else if (e.data && e.data.after) r.after = e.data.after;
           else if (e.data) for (const k of ['heard', 'vol', 'env']) if (e.data[k]) r[k] = true;
         };
         node.connect(ctx.destination);
         const x = (await ctx.startRendering()).getChannelData(0);
         await new Promise((go) => setTimeout(go, 30));          // the worklet's last messages
         let lo = x[0], hi = x[0];
-        for (let i = 1; i < x.length; i++) { if (x[i] < lo) lo = x[i]; else if (x[i] > hi) hi = x[i]; }
+        for (let i = 1; i < stopAt; i++) { if (x[i] < lo) lo = x[i]; else if (x[i] > hi) hi = x[i]; }
         r.moves = hi - lo;
       } catch (e) { r.error = 'the check could not run it: ' + e.message; }
       out.push(r);
@@ -177,7 +208,7 @@ async function checkPage(context, base, p, seconds) {
     await page.goto(base + p, { waitUntil: 'load', timeout: 60000 });
     await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
     await page.waitForTimeout(300);
-    const runs = await page.evaluate(inPage, { checker: CHECKER, seconds, rate: RATE });
+    const runs = await page.evaluate(inPage, { checker: CHECKER, seconds, after: AFTER, rate: RATE });
     return { p, runs, thrown };
   } catch (e) {
     return { p, runs: [], thrown, failed: String(e.message).split('\n')[0] };
@@ -247,7 +278,7 @@ async function main(argv) {
   if (atZero) console.log('A button whose voices play at volume 0 most often needs the step where the game sets $D418, once, ' +
     'at start-up, outside its driver: find the write (the register census) and run that step before each button.');
   console.log(`${pages.length} pages, ${players} players, ${buttons} buttons, ${o.seconds} s each: ` +
-    (bad ? `${bad} failing` : 'every button sounds, or says it is silent'));
+    (bad ? `${bad} failing` : 'every button sounds, or says it is silent, and stops'));
   return bad ? 1 : 0;
 }
 
