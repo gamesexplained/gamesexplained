@@ -3,7 +3,9 @@
 section of facts.md that reports what a sample of the listing found and what was changed
 (#299, #307), a page's
 own class that site.css also styles is caught before the built site collapses it (#143), an id
-on two elements of a page is caught before a button's handler lands on the other one, a
+on two elements of a page is caught before a button's handler lands on the other one, a page
+whose <!-- tabs --> marker comes after its header is caught before its tab bar is published
+halfway down the page, a
 platform's install notes keep one section per system and one row per build and kind of computer,
 a skill names no game in the lines a branch adds, whatever it said before the game arrived, a
 core skill gains no dated record, kit-feedback.md's placeholder fails only once the
@@ -149,6 +151,37 @@ class DuplicateIds(unittest.TestCase):
                      '<p id="a"></p><!-- <p id="a"></p> -->',                              # a comment
                      '<p id="a"></p><p data-id="a"></p><p aria-describedby="a"></p>'):    # not an id
             n, out = duplicates(body)
+            self.assertEqual(n, 0, (body, out))
+
+
+def tabs_place(body):
+    """What check_docs.py reports for one page with this markup."""
+    with tempfile.TemporaryDirectory() as d:
+        page = Path(d) / 'index.html'
+        page.write_text(body, encoding='utf-8')
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            n = check_docs.tabs_below_content([str(page)])
+        return n, out.getvalue()
+
+
+HEAD = ('<!doctype html><html lang="en"><meta charset="utf-8"><title>X</title>'
+        '<style>.hero{padding:0}</style>\n')
+
+
+class TabsMarker(unittest.TestCase):
+    def test_a_marker_below_the_header_fails(self):
+        # Hammerfist: the hero header, then the marker, so the bar sat under the standfirst
+        n, out = tabs_place(HEAD + '<header class="hero"><h1>X</h1></header><!-- tabs --><main></main>')
+        self.assertEqual(n, 1, out)
+        self.assertIn('index.html:2', out)
+        self.assertIn('<header>', out)
+
+    def test_a_marker_first_in_the_body_passes(self):
+        for body in (HEAD + '<!-- tabs -->\n<header class="hero"><h1>X</h1></header><main></main>',
+                     HEAD + '<body><!-- a note --><script>x = "<div>";</script><!-- tabs --><header></header>',
+                     HEAD + '<header class="hero"><h1>X</h1></header><main></main>'):   # no marker: the build places it
+            n, out = tabs_place(body)
             self.assertEqual(n, 0, (body, out))
 
 

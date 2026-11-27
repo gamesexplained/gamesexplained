@@ -36,6 +36,8 @@
                      widget whose buttons are the picture is marked data-own-look
   games/*/*/*.html   no id on two elements: getElementById finds the first, so a script
                      meant for the second never reaches it
+  games/*/*/*.html   nothing of the page's own before its <!-- tabs --> marker: the build puts
+                     the tab bar there, and it belongs at the top of the page
   kit/*/INSTALL.md   one section per system, and one measurements row per build on each kind
                      of computer in site/status.json: a run corrects them in place
   kit/skills/<platform>/steps   a row for every step the core skills hand to a platform's
@@ -382,6 +384,30 @@ def duplicate_ids(pages=None):
     return bad
 
 
+def tabs_below_content(pages=None):
+    """A page whose <!-- tabs --> marker comes after its own content. The build puts the tab bar
+    where the marker is, so a marker below the header leaves the bar halfway down the page,
+    where Hammerfist's four tabs had it, instead of at the top as on every other game."""
+    if pages is None:
+        pages = sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "*.html")))
+    blank = lambda m: re.sub(r"[^\n]", " ", m.group(0))   # line numbers stay where they were
+    bad = 0
+    for f in pages:
+        html = open(f, encoding="utf-8", errors="replace").read()
+        at = html.find("<!-- tabs -->")
+        if at < 0:
+            continue
+        before = re.sub(r"(?is)<!--.*?-->|<script\b[^>]*>.*?</script>|<style\b[^>]*>.*?</style>", blank, html[:at])
+        m = re.search(r"<(?!(?:html|head|body|meta|title|link|base)\b)[a-zA-Z][\w-]*", before, re.I)
+        if m:
+            line = before.count("\n", 0, m.start()) + 1
+            print(f"  x  {os.path.relpath(f, ROOT)}:{line}  {m.group(0)}> comes before <!-- tabs -->, so the"
+                  " tab bar lands below it")
+            print("        put the marker first in the body, above the header, as kit/template/index.html has it")
+            bad += 1
+    return bad
+
+
 def untitled_links(game):
     """The keys of game.json's links that have a url and no title. The About tab shows a
     link by its title, so a bare url, or a {"url"} without one, reads as "wiki" or "manual"."""
@@ -564,6 +590,7 @@ def main():
                       only=only)
     fails += class_collisions()
     fails += duplicate_ids()
+    fails += tabs_below_content()
     fails += button_looks()
     fails += platform_notes()
     fails += steps_tables()
